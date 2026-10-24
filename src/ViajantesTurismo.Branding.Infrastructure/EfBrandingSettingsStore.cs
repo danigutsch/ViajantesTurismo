@@ -11,13 +11,34 @@ namespace ViajantesTurismo.Branding.Infrastructure;
 internal sealed class EfBrandingSettingsStore(
     BrandingDbContext dbContext,
     [FromKeyedServices(typeof(BrandingDbContext))] IIntegrationEventOutbox outbox,
-    TimeProvider timeProvider) : IBrandingSettingsStore
+    TimeProvider timeProvider) : IBrandingSettingsStore, IBrandingSettingsRevisionStore
 {
     public async Task<BrandingSettings?> GetSettings(CancellationToken ct)
     {
         var entity = await Load(ct).ConfigureAwait(false);
 
         return entity?.ToSettings(BrandingFontFamilies.All);
+    }
+
+    public async Task<BrandingSettingsSnapshot?> GetCurrent(CancellationToken ct) =>
+        ToSnapshot(await Load(ct).ConfigureAwait(false));
+
+    public async Task<BrandingSettingsSnapshot?> SaveIfMatch(
+        BrandingSettings settings,
+        Func<BrandingSettingsSnapshot?, bool> precondition,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(precondition);
+
+        var existing = await Load(ct).ConfigureAwait(false);
+        if (!precondition(ToSnapshot(existing)))
+        {
+            return null;
+        }
+
+        await SaveSettings(settings, ct).ConfigureAwait(false);
+        return ToSnapshot(await Load(ct).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -88,6 +109,11 @@ internal sealed class EfBrandingSettingsStore(
             }
         }
     }
+
+    private static BrandingSettingsSnapshot? ToSnapshot(BrandingSettingsRecord? record) =>
+        record is { IsRevisioned: true } && record.ToSettings(BrandingFontFamilies.All) is { } settings
+            ? new BrandingSettingsSnapshot(settings, record.SourceEpoch, record.SourceRevision)
+            : null;
 
     private Task<BrandingSettingsRecord?> Load(CancellationToken ct) =>
         dbContext.BrandingSettings.SingleOrDefaultAsync(settings => settings.Id == BrandingSettingsRecord.SettingsId, ct);

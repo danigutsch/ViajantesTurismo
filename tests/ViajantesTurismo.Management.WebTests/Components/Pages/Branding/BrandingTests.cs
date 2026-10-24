@@ -1,5 +1,6 @@
 using BrandingPage = ViajantesTurismo.Management.Web.Components.Pages.Branding.Branding;
 using PandaBear.HttpClients;
+using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Branding;
 
@@ -10,7 +11,7 @@ public sealed class BrandingTests : BunitContext
     public BrandingTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddSingleton<IManagementBrandingApiClient>(brandingApi);
+        Services.AddSingleton<IBrandingManagementClient>(brandingApi);
     }
 
     [Fact]
@@ -66,6 +67,48 @@ public sealed class BrandingTests : BunitContext
         savedBranding.PrimaryColor.ShouldBe("#112233");
         savedBranding.HeadingFontFamily.ShouldBe("Inter");
         cut.Markup.ShouldContain("Branding saved", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Save_sends_the_loaded_entity_tag_and_refreshes_the_validator_with_a_new_read()
+    {
+        // Arrange
+        var loadedTag = BrandingEntityTags.Format(brandingApi.SourceEpoch, 1);
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#branding-brand-name").Change("First edit");
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.Markup.Contains("Branding saved", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        var firstTag = brandingApi.SavedEntityTag;
+        cut.Find("#branding-brand-name").Change("Second edit");
+        cut.Find("form").Submit();
+        cut.WaitForState(() => brandingApi.SourceRevision == 3, TimeSpan.FromSeconds(2));
+
+        // Assert
+        firstTag.ShouldBe(loadedTag);
+        brandingApi.SavedEntityTag.ShouldBe(BrandingEntityTags.Format(brandingApi.SourceEpoch, 2));
+        brandingApi.GetCount.ShouldBe(3);
+    }
+
+    [Fact]
+    public void Shows_a_reload_message_and_keeps_the_edit_when_another_editor_saved_first()
+    {
+        // Arrange
+        brandingApi.FailPrecondition = true;
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#branding-brand-name").Change("Stale edit");
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => cut.Markup.Contains("changed by someone else", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("#branding-brand-name").GetAttribute("value").ShouldBe("Stale edit");
+        brandingApi.SavedBranding.ShouldBeNull();
+        brandingApi.GetCount.ShouldBe(1);
     }
 
     [Fact]

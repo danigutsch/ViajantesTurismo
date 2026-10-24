@@ -76,6 +76,55 @@ public sealed class BrandingSettingsRevisionTests
     }
 
     [Fact]
+    public async Task Conditional_save_writes_nothing_when_the_precondition_is_false()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        await scenario.CreateStore().SaveSettings(BrandingSettingsTestData.CreateSettings(), ct);
+        BrandingSettingsSnapshot? observed = null;
+
+        // Act
+        var saved = await scenario.CreateStore().SaveIfMatch(
+            BrandingSettingsTestData.CreateSettings("Rejected"),
+            current =>
+            {
+                observed = current;
+                return false;
+            },
+            ct);
+
+        // Assert
+        saved.ShouldBeNull();
+        observed.ShouldNotBeNull().SourceRevision.ShouldBe(1);
+        var snapshot = scenario.ReadSnapshot();
+        snapshot.Current.ShouldNotBeNull().BrandName.ShouldBe(BrandingSettingsTestData.CreateSettings().BrandName);
+        snapshot.Revisions.Count.ShouldBe(1);
+        snapshot.Outbox.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Conditional_save_returns_the_new_revision_when_the_precondition_holds()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        await scenario.CreateStore().SaveSettings(BrandingSettingsTestData.CreateSettings(), ct);
+
+        // Act
+        var saved = await scenario.CreateStore().SaveIfMatch(
+            BrandingSettingsTestData.CreateSettings("Accepted"),
+            current => current is { SourceRevision: 1 },
+            ct);
+
+        // Assert
+        var snapshot = saved.ShouldNotBeNull();
+        snapshot.SourceRevision.ShouldBe(2);
+        snapshot.Settings.BrandName.ShouldBe("Accepted");
+        scenario.ReadSnapshot().Outbox.Count.ShouldBe(2);
+    }
+
+    [Fact]
     public async Task A_writer_with_a_stale_revision_conflicts()
     {
         // Arrange

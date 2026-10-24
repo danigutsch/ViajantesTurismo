@@ -12,7 +12,33 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the returned revision; send it as If-Match on the next PUT.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingManagementSettingsDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication is required."
@@ -31,6 +57,17 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "description": "Entity tag from the latest management GET, or \"*\".",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -43,10 +80,37 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandingManagementSettingsDto"
+                }
+              }
+            }
           },
-          "409": {
-            "description": "Conflict",
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition Failed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition Required",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -72,6 +136,51 @@
   },
   "components": {
     "schemas": {
+      "BrandingManagementSettingsDto": {
+        "type": "object",
+        "properties": {
+          "brandName": {
+            "type": "string"
+          },
+          "primaryColor": {
+            "type": "string"
+          },
+          "accentColor": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "textColor": {
+            "type": "string"
+          },
+          "headingFontFamily": {
+            "type": "string"
+          },
+          "bodyFontFamily": {
+            "type": "string"
+          },
+          "logoUri": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uri"
+          },
+          "sourceEpoch": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceRevision": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "BrandingSettingsDto": {
         "type": "object",
         "properties": {

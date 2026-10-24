@@ -1,3 +1,4 @@
+using ViajantesTurismo.Branding.Infrastructure;
 using System.Text;
 using Microsoft.AspNetCore.TestHost;
 using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.TestTraits;
@@ -25,7 +26,7 @@ public sealed class BrandingEndpointDependencyCompositionTests
         await using var baseFactory = BrandingApiTestHost.Create();
         await using var factory = baseFactory.WithWebHostBuilder(
             builder => builder.ConfigureTestServices(services =>
-                services.Replace(ServiceDescriptor.Singleton<IBrandingSettingsStore>(
+                services.Replace(ServiceDescriptor.Singleton<IBrandingSettingsRevisionStore>(
                     _ => throw new InvalidOperationException("Expected endpoint dependency activation.")))));
         using var client = factory.CreateClient();
         using var content = new StringContent("{}", Encoding.UTF8, "application/json");

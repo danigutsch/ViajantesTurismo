@@ -1,9 +1,29 @@
 using PandaBear.HttpClients;
+using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Branding;
 
-internal sealed class FakeBrandingApiClient : IManagementBrandingApiClient
+internal sealed class FakeBrandingApiClient : IBrandingManagementClient
 {
+    public Guid SourceEpoch { get; } = Guid.CreateVersion7();
+
+    public long SourceRevision { get; set; } = 1;
+
+    public bool FailPrecondition
+    {
+        get; set;
+    }
+
+    public string? SavedEntityTag
+    {
+        get; private set;
+    }
+
+    public int GetCount
+    {
+        get; private set;
+    }
+
     public BrandingSettingsDto Branding { get; set; } = CreateDefaultBranding();
 
     public bool ThrowOnGetSettings
@@ -31,16 +51,23 @@ internal sealed class FakeBrandingApiClient : IManagementBrandingApiClient
         get; private set;
     }
 
-    public Task<BrandingSettingsDto> GetSettings(CancellationToken ct)
+    public Task<BrandingManagementDocument> GetSettings(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ThrowIfGetShouldFail();
-        return Task.FromResult(Branding);
+        GetCount++;
+        return Task.FromResult(new BrandingManagementDocument(ToManagement(Branding), BrandingEntityTags.Format(SourceEpoch, SourceRevision)));
     }
 
-    public Task<BrandingSettingsDto> SaveSettings(BrandingSettingsDto request, CancellationToken ct)
+    public Task<BrandingManagementSettingsDto> SaveSettings(BrandingSettingsDto request, string entityTag, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        SavedEntityTag = entityTag;
+
+        if (FailPrecondition)
+        {
+            throw new BrandingPreconditionFailedException();
+        }
 
         if (ValidationException is not null)
         {
@@ -54,8 +81,23 @@ internal sealed class FakeBrandingApiClient : IManagementBrandingApiClient
 
         SavedBranding = request;
         Branding = request;
-        return Task.FromResult(request);
+        SourceRevision++;
+        return Task.FromResult(ToManagement(request));
     }
+
+    private BrandingManagementSettingsDto ToManagement(BrandingSettingsDto settings) => new()
+    {
+        BrandName = settings.BrandName,
+        LogoUri = string.IsNullOrEmpty(settings.LogoUri) ? null : new Uri(settings.LogoUri, UriKind.RelativeOrAbsolute),
+        PrimaryColor = settings.PrimaryColor,
+        AccentColor = settings.AccentColor,
+        BackgroundColor = settings.BackgroundColor,
+        TextColor = settings.TextColor,
+        HeadingFontFamily = settings.HeadingFontFamily,
+        BodyFontFamily = settings.BodyFontFamily,
+        SourceEpoch = SourceEpoch,
+        SourceRevision = SourceRevision
+    };
 
     private void ThrowIfGetShouldFail()
     {

@@ -30,7 +30,7 @@ public sealed class BrandingApiSecurityBaselineTests
     public async Task Branding_management_mutations_return_too_many_requests_after_policy_limit()
     {
         // Arrange
-        await using var factory = BrandingApiTestHost.Create();
+        await using var factory = BrandingApiTestHost.Create(TestBrandingSettingsStore.Seeded());
         using var client = factory.CreateClient();
         var request = new BrandingSettingsDto
         {
@@ -47,11 +47,11 @@ public sealed class BrandingApiSecurityBaselineTests
         // Act
         for (var requestNumber = 0; requestNumber < 20; requestNumber++)
         {
-            using var allowedResponse = await client.PutAsJsonAsync(new Uri("/api/v1/branding/settings", UriKind.Relative), request, TestContext.Current.CancellationToken);
+            using var allowedResponse = await BrandingManagementRequests.PutSettings(client, request, "*");
             allowedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
 
-        using var limitedResponse = await client.PutAsJsonAsync(new Uri("/api/v1/branding/settings", UriKind.Relative), request, TestContext.Current.CancellationToken);
+        using var limitedResponse = await BrandingManagementRequests.PutSettings(client, request, "*");
 
         // Assert
         limitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);

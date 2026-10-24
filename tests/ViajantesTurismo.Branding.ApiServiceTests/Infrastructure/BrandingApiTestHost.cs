@@ -1,3 +1,4 @@
+using ViajantesTurismo.Branding.Infrastructure;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -62,7 +63,9 @@ internal static class BrandingApiTestHost
             environment,
             services =>
             {
-                services.Replace(ServiceDescriptor.Singleton<IBrandingSettingsStore>(store ?? new TestBrandingSettingsStore()));
+                var settingsStore = store ?? new TestBrandingSettingsStore();
+                services.Replace(ServiceDescriptor.Singleton<IBrandingSettingsStore>(settingsStore));
+                services.Replace(ServiceDescriptor.Singleton<IBrandingSettingsRevisionStore>(settingsStore));
                 if (outputCacheStore is not null)
                 {
                     services.Replace(ServiceDescriptor.Singleton<IOutputCacheStore>(_ => outputCacheStore));
@@ -88,7 +91,7 @@ internal static class BrandingApiTestHost
 
     public static WebApplicationFactory<BrandingApiHostEntryPoint> CreateAnonymous()
     {
-        return Create(null, null, null, null, authenticateClient: false);
+        return Create(null, TestBrandingSettingsStore.Seeded(), null, null, authenticateClient: false);
     }
 
     public static void ConfigureAuthenticatedClient(HttpClient client, string role)

@@ -2,9 +2,10 @@
 @page "/branding"
 @using System.ComponentModel.DataAnnotations
 @using PandaBear.HttpClients
+@using ViajantesTurismo.Branding.Contracts.Http
 @using ViajantesTurismo.Management.Web.Helpers
 
-@inject IManagementBrandingApiClient BrandingApi
+@inject IBrandingManagementClient BrandingApi
 
 <PageTitle>Branding</PageTitle>
 
@@ -96,6 +97,7 @@ else
     private static readonly IReadOnlyList<string> AllowedFontFamilies = BrandingFontFamilies.All;
 
     private BrandingFormModel _model = BrandingFormModel.Default();
+    private string? _entityTag;
     private bool _loading = true;
     private bool _saving;
     private string? _errorMessage;
@@ -106,8 +108,7 @@ else
     {
         try
         {
-            var branding = await BrandingApi.GetSettings(CancellationToken.None);
-            _model = BrandingFormModel.FromDto(branding);
+            ApplyDocument(await BrandingApi.GetSettings(CancellationToken.None));
         }
         catch (HttpRequestException)
         {
@@ -131,9 +132,20 @@ else
 
         try
         {
-            var saved = await BrandingApi.SaveSettings(_model.ToDto(), CancellationToken.None);
-            _model = BrandingFormModel.FromDto(saved);
+            if (_entityTag is null)
+            {
+                _errorMessage = UserFacingErrorMessage.ForOperation("save branding");
+                return;
+            }
+
+            await BrandingApi.SaveSettings(_model.ToDto(), _entityTag, CancellationToken.None);
+            // The write response carries no validator; one fresh read replaces the document and its entity tag together.
+            ApplyDocument(await BrandingApi.GetSettings(CancellationToken.None));
             _successMessage = "Branding saved.";
+        }
+        catch (BrandingPreconditionFailedException)
+        {
+            _errorMessage = "Branding was changed by someone else after you opened this page. Reload the page to see the latest settings, then reapply your changes.";
         }
         catch (ContractValidationException ex)
         {
@@ -153,6 +165,12 @@ else
         {
             _saving = false;
         }
+    }
+
+    private void ApplyDocument(BrandingManagementDocument document)
+    {
+        _model = BrandingFormModel.FromSettings(document.Settings);
+        _entityTag = document.EntityTag;
     }
 
     private sealed class BrandingFormModel
@@ -191,15 +209,26 @@ else
 
         public static BrandingFormModel Default()
         {
-            return FromDto(DefaultBranding());
-        }
-
-        public static BrandingFormModel FromDto(BrandingSettingsDto branding)
-        {
+            var branding = DefaultBranding();
             return new BrandingFormModel
             {
                 BrandName = branding.BrandName,
                 LogoUri = branding.LogoUri ?? string.Empty,
+                PrimaryColor = branding.PrimaryColor,
+                AccentColor = branding.AccentColor,
+                BackgroundColor = branding.BackgroundColor,
+                TextColor = branding.TextColor,
+                HeadingFontFamily = branding.HeadingFontFamily,
+                BodyFontFamily = branding.BodyFontFamily
+            };
+        }
+
+        public static BrandingFormModel FromSettings(BrandingManagementSettingsDto branding)
+        {
+            return new BrandingFormModel
+            {
+                BrandName = branding.BrandName,
+                LogoUri = branding.LogoUri?.OriginalString ?? string.Empty,
                 PrimaryColor = branding.PrimaryColor,
                 AccentColor = branding.AccentColor,
                 BackgroundColor = branding.BackgroundColor,

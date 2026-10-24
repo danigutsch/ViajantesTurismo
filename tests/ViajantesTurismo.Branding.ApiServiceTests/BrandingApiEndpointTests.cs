@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Branding.ApiService;
+using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.Branding.ApiServiceTests;
 
@@ -10,7 +11,6 @@ namespace ViajantesTurismo.Branding.ApiServiceTests;
 public sealed class BrandingApiEndpointTests
 {
     private const string PublicSettingsPath = $"/api/v1/{BrandingRoutes.PublicSettingsPath}";
-    private const string ManagementSettingsPath = $"/api/v1/{BrandingRoutes.ManagementSettingsPath}";
 
     [Fact]
     public void Branding_API_marker_exposes_entry_assembly()
@@ -38,7 +38,7 @@ public sealed class BrandingApiEndpointTests
 
         // Assert
         method.ShouldNotBeNull();
-        method.ReturnType.ShouldBe(typeof(Task<Results<Ok<BrandingSettingsDto>, ProblemHttpResult>>));
+        method.ReturnType.ShouldBe(typeof(Task<Results<Ok<BrandingManagementSettingsDto>, ProblemHttpResult>>));
     }
 
     [Theory]
@@ -87,7 +87,7 @@ public sealed class BrandingApiEndpointTests
     public async Task Branding_management_endpoint_saves_and_public_endpoint_reads_settings()
     {
         // Arrange
-        var store = new TestBrandingSettingsStore();
+        var store = TestBrandingSettingsStore.Seeded();
         await using var factory = BrandingApiTestHost.Create(store);
         using var client = factory.CreateClient();
         var request = new BrandingSettingsDto
@@ -103,10 +103,7 @@ public sealed class BrandingApiEndpointTests
         };
 
         // Act
-        using var writeResponse = await client.PutAsJsonAsync(
-            new Uri(ManagementSettingsPath, UriKind.Relative),
-            request,
-            TestContext.Current.CancellationToken);
+        using var writeResponse = await BrandingManagementRequests.PutSettings(client, request, "*");
         using var readResponse = await client.GetAsync(new Uri(PublicSettingsPath, UriKind.Relative), TestContext.Current.CancellationToken);
         var settings = await readResponse.Content.ReadFromJsonAsync<BrandingSettingsDto>(TestContext.Current.CancellationToken);
 
@@ -125,16 +122,13 @@ public sealed class BrandingApiEndpointTests
     public async Task Branding_management_endpoint_uses_detached_post_commit_cache_eviction()
     {
         // Arrange
-        var store = new TestBrandingSettingsStore();
+        var store = TestBrandingSettingsStore.Seeded();
         var outputCacheStore = new RecordingOutputCacheStore();
         await using var factory = BrandingApiTestHost.Create(store, outputCacheStore);
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.PutAsJsonAsync(
-            new Uri(ManagementSettingsPath, UriKind.Relative),
-            BrandingSettingsTestData.CreateDto(),
-            TestContext.Current.CancellationToken);
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto(), "*");
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -148,7 +142,7 @@ public sealed class BrandingApiEndpointTests
     {
         // Arrange
         const string sensitiveFailureMessage = "synthetic cache message must not be logged";
-        var store = new TestBrandingSettingsStore();
+        var store = TestBrandingSettingsStore.Seeded();
         var outputCacheStore = new RecordingOutputCacheStore
         {
             EvictionException = new IOException(sensitiveFailureMessage)
@@ -158,10 +152,7 @@ public sealed class BrandingApiEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.PutAsJsonAsync(
-            new Uri(ManagementSettingsPath, UriKind.Relative),
-            BrandingSettingsTestData.CreateDto(),
-            TestContext.Current.CancellationToken);
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto(), "*");
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -179,19 +170,14 @@ public sealed class BrandingApiEndpointTests
     public async Task Branding_management_endpoint_does_not_evict_cache_when_settings_save_fails()
     {
         // Arrange
-        var store = new TestBrandingSettingsStore
-        {
-            SaveException = new IOException("synthetic settings failure")
-        };
+        var store = TestBrandingSettingsStore.Seeded();
+        store.SaveException = new IOException("synthetic settings failure");
         var outputCacheStore = new RecordingOutputCacheStore();
         await using var factory = BrandingApiTestHost.Create(store, outputCacheStore);
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.PutAsJsonAsync(
-            new Uri(ManagementSettingsPath, UriKind.Relative),
-            BrandingSettingsTestData.CreateDto(),
-            TestContext.Current.CancellationToken);
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto(), "*");
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
@@ -199,29 +185,188 @@ public sealed class BrandingApiEndpointTests
     }
 
     [Fact]
-    public async Task Branding_management_endpoint_returns_conflict_when_another_writer_saved_first()
+    public async Task Branding_management_endpoint_returns_precondition_failed_when_another_writer_commits_first()
     {
         // Arrange
-        var store = new TestBrandingSettingsStore
-        {
-            SaveException = new Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException("synthetic stale revision")
-        };
+        var store = TestBrandingSettingsStore.Seeded();
+        store.SaveException = new Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException("synthetic stale revision");
         var outputCacheStore = new RecordingOutputCacheStore();
         await using var factory = BrandingApiTestHost.Create(store, outputCacheStore);
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.PutAsJsonAsync(
-            new Uri(ManagementSettingsPath, UriKind.Relative),
-            BrandingSettingsTestData.CreateDto(),
-            TestContext.Current.CancellationToken);
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto(), "*");
         var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
-        body.ShouldContain("Branding settings changed by another request.", StringComparison.Ordinal);
+        response.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
+        body.ShouldContain(BrandingManagementProblemCodes.PreconditionFailed, StringComparison.Ordinal);
         body.ShouldNotContain("synthetic stale revision", StringComparison.Ordinal);
         outputCacheStore.EvictionObserved.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Branding_management_read_returns_the_revision_and_a_strong_entity_tag()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingManagementRequests.GetSettings(client);
+        var settings = await response.Content.ReadFromJsonAsync<BrandingManagementSettingsDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var entityTag = response.Headers.ETag.ShouldNotBeNull();
+        entityTag.IsWeak.ShouldBeFalse();
+        entityTag.Tag.ShouldBe(BrandingEntityTags.Format(store.SourceEpoch, 1));
+        settings.ShouldNotBeNull();
+        settings.SourceEpoch.ShouldBe(store.SourceEpoch);
+        settings.SourceRevision.ShouldBe(1);
+        settings.BrandName.ShouldBe("Seeded");
+    }
+
+    [Fact]
+    public async Task Branding_management_read_fails_closed_before_revisions_start()
+    {
+        // Arrange
+        await using var factory = BrandingApiTestHost.Create(new TestBrandingSettingsStore());
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingManagementRequests.GetSettings(client);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        response.Headers.ETag.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Branding_management_write_requires_if_match()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto());
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe((HttpStatusCode)StatusCodes.Status428PreconditionRequired);
+        body.ShouldContain(BrandingManagementProblemCodes.PreconditionRequired, StringComparison.Ordinal);
+        store.WriteCount.ShouldBe(0);
+    }
+
+    [Theory]
+    [InlineData("not-a-tag")]
+    [InlineData("*, \"abc\"")]
+    [InlineData("\"unterminated")]
+    public async Task Branding_management_write_rejects_malformed_if_match(string ifMatch)
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto(), ifMatch);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        body.ShouldContain(BrandingManagementProblemCodes.InvalidIfMatch, StringComparison.Ordinal);
+        store.WriteCount.ShouldBe(0);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task Branding_management_write_rejects_a_condition_without_a_strong_current_match(bool weak, bool stale)
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        var outputCacheStore = new RecordingOutputCacheStore();
+        await using var factory = BrandingApiTestHost.Create(store, outputCacheStore);
+        using var client = factory.CreateClient();
+        var tag = stale
+            ? BrandingEntityTags.Format(Guid.CreateVersion7(), 1)
+            : BrandingEntityTags.Format(store.SourceEpoch, weak ? 1 : 2);
+        var ifMatch = weak ? "W/" + BrandingEntityTags.Format(store.SourceEpoch, 1) : tag;
+
+        // Act
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto("Changed"), ifMatch);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
+        body.ShouldContain(BrandingManagementProblemCodes.PreconditionFailed, StringComparison.Ordinal);
+        store.WriteCount.ShouldBe(0);
+        store.Settings.ShouldNotBeNull().BrandName.ShouldBe("Seeded");
+        outputCacheStore.EvictionObserved.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Branding_management_write_accepts_a_list_with_the_current_tag_and_omits_the_validator()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var ifMatch = $"W/{BrandingEntityTags.Format(store.SourceEpoch, 1)}, \"other\", {BrandingEntityTags.Format(store.SourceEpoch, 1)}";
+
+        // Act
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto("Changed"), ifMatch);
+        var saved = await response.Content.ReadFromJsonAsync<BrandingManagementSettingsDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Headers.ETag.ShouldBeNull();
+        saved.ShouldNotBeNull();
+        saved.SourceRevision.ShouldBe(2);
+        saved.BrandName.ShouldBe("Changed");
+    }
+
+    [Fact]
+    public async Task Second_editor_with_the_earlier_tag_cannot_overwrite_the_first_editor()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        using var read = await BrandingManagementRequests.GetSettings(client);
+        var sharedTag = read.Headers.ETag.ShouldNotBeNull().Tag;
+
+        // Act
+        using var first = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto("Editor A"), sharedTag);
+        using var second = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto("Editor B"), sharedTag);
+        using var refreshed = await BrandingManagementRequests.GetSettings(client);
+
+        // Assert
+        first.StatusCode.ShouldBe(HttpStatusCode.OK);
+        second.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
+        store.Settings.ShouldNotBeNull().BrandName.ShouldBe("Editor A");
+        refreshed.Headers.ETag.ShouldNotBeNull().Tag.ShouldBe(BrandingEntityTags.Format(store.SourceEpoch, 2));
+    }
+
+    [Fact]
+    public async Task Branding_management_write_with_a_wildcard_fails_when_no_settings_exist()
+    {
+        // Arrange
+        var store = new TestBrandingSettingsStore();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto(), "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
+        store.WriteCount.ShouldBe(0);
     }
 
     [Fact]
@@ -243,10 +388,7 @@ public sealed class BrandingApiEndpointTests
         };
 
         // Act
-        using var response = await client.PutAsJsonAsync(
-            new Uri(ManagementSettingsPath, UriKind.Relative),
-            request,
-            TestContext.Current.CancellationToken);
+        using var response = await BrandingManagementRequests.PutSettings(client, request, "*");
         var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
 
         // Assert

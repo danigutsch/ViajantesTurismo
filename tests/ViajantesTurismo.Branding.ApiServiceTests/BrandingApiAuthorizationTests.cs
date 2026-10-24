@@ -162,13 +162,14 @@ public sealed class BrandingApiAuthorizationTests
             new Uri("/api/v1/branding/settings", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var currentSettings = await currentSettingsResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        using var request = new StringContent(currentSettings, Encoding.UTF8, "application/json");
+        using var request = new HttpRequestMessage(HttpMethod.Put, new Uri("/api/v1/branding/settings", UriKind.Relative))
+        {
+            Content = new StringContent(currentSettings, Encoding.UTF8, "application/json")
+        };
+        request.Headers.IfMatch.Add(currentSettingsResponse.Headers.ETag.ShouldNotBeNull());
 
         // Act
-        using var response = await client.PutAsync(
-            new Uri("/api/v1/branding/settings", UriKind.Relative),
-            request,
-            TestContext.Current.CancellationToken);
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         // Assert
         currentSettingsResponse.StatusCode.ShouldBe(HttpStatusCode.OK);

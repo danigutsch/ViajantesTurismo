@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Net.Http.Headers;
+using Microsoft.OpenApi;
+using ViajantesTurismo.Branding.Contracts.Http;
 using PandaBear.ApiVersioning.AspNetCore;
 using PandaBear.Branding;
 using PandaBear.BuildingBlocks;
@@ -26,11 +29,25 @@ internal static class BrandingEndpoints
             .CacheOutput(policy => policy.Expire(BrandingHttpCache.PublicFreshness).Tag(BrandingHttpCache.PublicBrandingTag))
             .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);
         managementBranding.MapGet("/", GetManagementSettings)
+            .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddEntityTagResponseHeader(operation);
+                return Task.CompletedTask;
+            })
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingRead);
         managementBranding.MapPut("/", SaveSettings)
-            .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status409Conflict)
+            .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status412PreconditionFailed)
+            .ProducesProblem(StatusCodes.Status428PreconditionRequired)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddIfMatchRequestHeader(operation);
+                return Task.CompletedTask;
+            })
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
 
@@ -48,39 +65,127 @@ internal static class BrandingEndpoints
     }
 
     private static async Task<IResult> GetManagementSettings(
-        IBrandingSettingsStore store,
+        IBrandingSettingsRevisionStore store,
+        HttpContext httpContext,
         CancellationToken ct)
     {
-        var settings = await GetSettingsOrDefault(store, ct).ConfigureAwait(false);
-        return Results.Ok(ToDto(settings));
+        var current = await store.GetCurrent(ct).ConfigureAwait(false);
+        if (current is null)
+        {
+            return TypedResults.Problem(
+                "Branding revisions have not started yet.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        httpContext.Response.Headers.ETag = BrandingEntityTags.Format(current.SourceEpoch, current.SourceRevision);
+        return TypedResults.Ok(ToManagementDto(current));
     }
 
-    private static async Task<Results<Ok<BrandingSettingsDto>, ProblemHttpResult>> SaveSettings(
+    private static async Task<Results<Ok<BrandingManagementSettingsDto>, ProblemHttpResult>> SaveSettings(
         BrandingSettingsDto request,
-        IBrandingSettingsStore store,
+        IBrandingSettingsRevisionStore store,
         IOutputCacheStore outputCacheStore,
         ILogger<BrandingApiHostEntryPoint> logger,
+        HttpContext httpContext,
         CancellationToken ct)
     {
+        if (!httpContext.Request.Headers.TryGetValue(HeaderNames.IfMatch, out var ifMatchValues))
+        {
+            return PreconditionProblem(
+                StatusCodes.Status428PreconditionRequired,
+                BrandingManagementProblemCodes.PreconditionRequired,
+                "Send If-Match with the entity tag from the latest Branding read.");
+        }
+
+        var ifMatch = BrandingIfMatch.Parse(ifMatchValues);
+        if (ifMatch is null)
+        {
+            return PreconditionProblem(
+                StatusCodes.Status400BadRequest,
+                BrandingManagementProblemCodes.InvalidIfMatch,
+                "If-Match must be \"*\" or a list of entity tags.");
+        }
+
         var settings = BrandingSettings.Create(request, BrandingDefaults.AllowedFonts);
         if (settings.IsFailure)
         {
             return ToValidationProblem(settings.ErrorDetails);
         }
 
+        BrandingSettingsSnapshot? saved;
         try
         {
-            await store.SaveSettings(settings.Value, ct).ConfigureAwait(false);
+            saved = await store.SaveIfMatch(settings.Value, ifMatch.Matches, ct).ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException)
         {
-            return TypedResults.Problem(
-                "Branding settings changed by another request. Reload them and try again.",
-                statusCode: StatusCodes.Status409Conflict);
+            saved = null;
+        }
+
+        if (saved is null)
+        {
+            return PreconditionProblem(
+                StatusCodes.Status412PreconditionFailed,
+                BrandingManagementProblemCodes.PreconditionFailed,
+                "Branding settings changed after they were loaded. Reload them and reapply your changes.");
         }
 
         await InvalidatePublicBrandingCache(outputCacheStore, logger).ConfigureAwait(false);
-        return TypedResults.Ok(ToDto(settings.Value));
+        return TypedResults.Ok(ToManagementDto(saved));
+    }
+
+    private static ProblemHttpResult PreconditionProblem(int statusCode, string code, string detail) =>
+        TypedResults.Problem(
+            detail,
+            statusCode: statusCode,
+            extensions: new Dictionary<string, object?>(StringComparer.Ordinal)
+            {
+                [BrandingManagementProblemCodes.ExtensionName] = code
+            });
+
+    private static BrandingManagementSettingsDto ToManagementDto(BrandingSettingsSnapshot snapshot) => new()
+    {
+        BrandName = snapshot.Settings.BrandName,
+        PrimaryColor = snapshot.Settings.PrimaryColor,
+        AccentColor = snapshot.Settings.AccentColor,
+        BackgroundColor = snapshot.Settings.BackgroundColor,
+        TextColor = snapshot.Settings.TextColor,
+        HeadingFontFamily = snapshot.Settings.HeadingFontFamily,
+        BodyFontFamily = snapshot.Settings.BodyFontFamily,
+        LogoUri = snapshot.Settings.LogoUri is null ? null : new Uri(snapshot.Settings.LogoUri, UriKind.RelativeOrAbsolute),
+        SourceEpoch = snapshot.SourceEpoch,
+        SourceRevision = snapshot.SourceRevision
+    };
+
+    private static void AddEntityTagResponseHeader(OpenApiOperation operation)
+    {
+        if (operation.Responses is null
+            || !operation.Responses.TryGetValue("200", out var okResponse)
+            || okResponse is not OpenApiResponse response)
+        {
+            return;
+        }
+
+        response.Headers ??= new Dictionary<string, IOpenApiHeader>(StringComparer.Ordinal);
+        response.Headers[HeaderNames.ETag] = new OpenApiHeader
+        {
+            Description = "Strong validator for the returned revision; send it as If-Match on the next PUT.",
+            Required = true,
+            Schema = new OpenApiSchema { Type = JsonSchemaType.String }
+        };
+    }
+
+    private static void AddIfMatchRequestHeader(OpenApiOperation operation)
+    {
+        operation.Parameters ??= [];
+        operation.Parameters.Add(new OpenApiParameter
+        {
+            Name = HeaderNames.IfMatch,
+            In = ParameterLocation.Header,
+            Required = true,
+            Description = "Entity tag from the latest management GET, or \"*\".",
+            Schema = new OpenApiSchema { Type = JsonSchemaType.String }
+        });
     }
 
     private static async Task<BrandingSettings> GetSettingsOrDefault(IBrandingSettingsStore store, CancellationToken ct)
