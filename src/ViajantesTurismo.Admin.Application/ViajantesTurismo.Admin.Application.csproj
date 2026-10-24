@@ -3,6 +3,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj"/>
+        <ProjectReference Include="..\ViajantesTurismo.Branding.Contracts.IntegrationEvents\ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj"/>
         <PackageReference Include="PandaBear.SharedKernel.AuditTrail" />
         <PackageReference Include="PandaBear.SharedKernel.Domain" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />

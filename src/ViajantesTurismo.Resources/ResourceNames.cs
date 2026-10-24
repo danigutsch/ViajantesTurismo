@@ -86,6 +86,11 @@ public static class ResourceNames
     public const string CatalogIntegrationEventWorker = "catalog-integration-event-worker";
 
     /// <summary>
+    /// The name of the Admin-owned integration-event worker resource.
+    /// </summary>
+    public const string AdminIntegrationEventWorker = "admin-integration-event-worker";
+
+    /// <summary>
     /// The name of the web application resource.
     /// </summary>
     public const string WebApp = "web-app";

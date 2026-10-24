@@ -50,6 +50,7 @@ internal static class AppHostComposition
         var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
 
         builder.AddCatalogIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs);
+        builder.AddAdminIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
         builder.AddManagementWeb(cache, securityDatabase, migrationService, identityProvider, managementWebClientSecret, apiService, catalogApiService, brandingApiService);
         builder.AddPublicWeb(catalogApiService, brandingApiService);
         if (includeDeveloperTooling)

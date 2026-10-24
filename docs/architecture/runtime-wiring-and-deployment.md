@@ -20,6 +20,7 @@ source of truth for local runtime wiring.
 
 ```mermaid
 flowchart LR
+    AdminIntegrationEventWorker[Admin Integration Event Worker]
     AdminPerformanceSmoke[Admin Performance Smoke]
     apiService[Admin.ApiService]
     brandingApiService[Branding Api]
@@ -39,6 +40,9 @@ flowchart LR
     cache[Redis cache]
     identityProvider[Run Mode Identity Provider]
     seaweedFs[SeaweedFS]
+    AdminIntegrationEventWorker --> adminDatabase
+    AdminIntegrationEventWorker --> catalogDatabase
+    AdminIntegrationEventWorker --> migrationService
     AdminPerformanceSmoke --> apiService
     CatalogIntegrationEventWorker --> adminDatabase
     CatalogIntegrationEventWorker --> catalogDatabase
@@ -88,6 +92,8 @@ Current AppHost rules:
 - Service-specific references and startup dependencies are shown in the generated graph above; do not
   maintain a second edge list here.
 - `Catalog.IntegrationEventWorker` reads Admin transport rows and writes Catalog idempotency/event-store state.
+- `Admin.IntegrationEventWorker` reads Catalog-database transport rows for consumer `admin` and writes only the
+  Admin `branding_projection` schema.
 - Each worker host belongs to one bounded context and runs only that context's consumers and background
   services; `WorkerOwnershipTests` rejects a worker without an owning context or with another context's
   project references. Current consumers and owners:
@@ -98,7 +104,7 @@ Current AppHost rules:
   | `MediaImageOriginalStoredIntegrationHandler` | Catalog | `Catalog.IntegrationEventWorker` |
   | `CatalogProjectionHostedService` | Catalog | `Catalog.IntegrationEventWorker` |
   | `MediaObjectReconciliationHostedService` | Catalog | `Catalog.IntegrationEventWorker` |
-  | Branding settings projection (transport consumer `admin`, planned) | Admin | `Admin.IntegrationEventWorker`, planned |
+  | `BrandingSettingsChangedIntegrationHandler` (transport consumer `admin`) | Admin | `Admin.IntegrationEventWorker` |
 
 - API services stay internal; web frontends expose external HTTP endpoints.
 - ClamAV stays private on TCP; Admin API, Catalog API, and `Catalog.IntegrationEventWorker` receive its

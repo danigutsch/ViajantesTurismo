@@ -92,8 +92,14 @@ concurrency token), each change appends a row to `branding."BrandingSettingsRevi
 the event in the same `SaveChanges`, and an unchanged save writes nothing. A writer holding a stale
 revision gets `409 Conflict` from Management `PUT`. MigrationService runs the one-time bootstrap after
 Branding migrations: an existing valid row becomes revision 1, a missing row becomes the defaults at
-revision 1, and invalid persisted settings stop initialization. The Admin consumer, document
-capture, recovery, and `If-Match` contract described below are still to come.
+revision 1, and invalid persisted settings stop initialization.
+
+`Admin.IntegrationEventWorker` applies each event to `branding_projection.settings` and records it in
+`branding_projection.inbox_messages` in one Admin transaction. Redelivered events are no-ops, older
+revisions are acknowledged without change, and a newer revision closes any gap. An unexpected epoch, a
+same-revision payload conflict, or an invalid envelope is recorded as `Rejected` with a sanitized reason
+code and acknowledged, so it never blocks later revisions; infrastructure failures are retried by the
+transport. Document capture, recovery, and the `If-Match` contract described below are still to come.
 
 Branding owns `branding.outbox_messages`. Its relay atomically inserts the `ConsumerName = 'admin'`
 envelope into the Catalog database's default `messaging.transport_messages` table and marks the
