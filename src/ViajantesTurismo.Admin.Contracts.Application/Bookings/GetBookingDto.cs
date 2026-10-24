@@ -94,6 +94,15 @@ public sealed record GetBookingDto
         get; init;
     }
 
+    /// <summary>
+    /// Whether the booked services (room, bikes, companion, and discount) can still be changed,
+    /// as decided by the booking.
+    /// </summary>
+    public bool CanModifyBookedServices
+    {
+        get; init;
+    }
+
     /// <summary>The payment status.</summary>
     public required PaymentStatusDto PaymentStatus
     {

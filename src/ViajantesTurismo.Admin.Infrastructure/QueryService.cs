@@ -35,7 +35,10 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                     IncludedServices = [..tour.IncludedServices],
                     MinCustomers = tour.Capacity.MinCustomers,
                     MaxCustomers = tour.Capacity.MaxCustomers,
-                    CurrentCustomerCount = tour.CurrentCustomerCount
+                    CurrentCustomerCount = tour.CurrentCustomerCount,
+                    AvailableSpots = tour.AvailableSpots,
+                    IsFullyBooked = tour.IsFullyBooked,
+                    IsAtMinimumCapacity = tour.IsAtMinimumCapacity
                 };
             })
         ];
@@ -64,7 +67,10 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                 IncludedServices = [.. tour.IncludedServices],
                 MinCustomers = tour.Capacity.MinCustomers,
                 MaxCustomers = tour.Capacity.MaxCustomers,
-                CurrentCustomerCount = tour.CurrentCustomerCount
+                CurrentCustomerCount = tour.CurrentCustomerCount,
+                AvailableSpots = tour.AvailableSpots,
+                IsFullyBooked = tour.IsFullyBooked,
+                IsAtMinimumCapacity = tour.IsAtMinimumCapacity
             };
     }
 
@@ -202,6 +208,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                         : null,
                     BookingDate = b.BookingDate,
                     Status = BookingMapper.MapToBookingStatusDto(b.Status),
+                    CanModifyBookedServices = b.CanModifyBookedServices,
                     PaymentStatus = BookingMapper.MapToPaymentStatusDto(b.PaymentStatus),
                     TotalPrice = b.TotalPrice,
                     DiscountType = BookingMapper.MapToDiscountTypeDto(b.Discount.Type),
@@ -259,6 +266,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                 : null,
             BookingDate = booking.BookingDate,
             Status = BookingMapper.MapToBookingStatusDto(booking.Status),
+            CanModifyBookedServices = booking.CanModifyBookedServices,
             PaymentStatus = BookingMapper.MapToPaymentStatusDto(booking.PaymentStatus),
             TotalPrice = booking.TotalPrice,
             DiscountType = BookingMapper.MapToDiscountTypeDto(booking.Discount.Type),
@@ -324,6 +332,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                             : null,
                         BookingDate = b.BookingDate,
                         Status = BookingMapper.MapToBookingStatusDto(b.Status),
+                        CanModifyBookedServices = b.CanModifyBookedServices,
                         PaymentStatus = BookingMapper.MapToPaymentStatusDto(b.PaymentStatus),
                         TotalPrice = b.TotalPrice,
                         DiscountType = BookingMapper.MapToDiscountTypeDto(b.Discount.Type),
@@ -392,6 +401,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                         : null,
                     BookingDate = b.BookingDate,
                     Status = BookingMapper.MapToBookingStatusDto(b.Status),
+                    CanModifyBookedServices = b.CanModifyBookedServices,
                     PaymentStatus = BookingMapper.MapToPaymentStatusDto(b.PaymentStatus),
                     TotalPrice = b.TotalPrice,
                     DiscountType = BookingMapper.MapToDiscountTypeDto(b.Discount.Type),

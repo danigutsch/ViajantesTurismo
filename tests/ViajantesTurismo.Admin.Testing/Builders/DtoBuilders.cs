@@ -37,7 +37,7 @@ public static class DtoBuilders
         var start = startDate ?? TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(1);
         var end = endDate ?? start.AddDays(7);
 
-        return new GetTourDto
+        return WithCapacityFacts(new GetTourDto
         {
             Id = id ?? Guid.NewGuid(),
             Identifier = identifier ?? "TOUR-2024-001",
@@ -53,6 +53,36 @@ public static class DtoBuilders
             MinCustomers = minCustomers ?? 10,
             MaxCustomers = maxCustomers ?? 30,
             CurrentCustomerCount = currentCustomerCount ?? 15
+        });
+    }
+
+    /// <summary>
+    /// Returns the tour with capacity facts consistent with its counts, mirroring what the API
+    /// reports from the tour aggregate.
+    /// </summary>
+    public static GetTourDto WithCapacityFacts(GetTourDto tour)
+    {
+        ArgumentNullException.ThrowIfNull(tour);
+
+        return tour with
+        {
+            AvailableSpots = tour.MaxCustomers - tour.CurrentCustomerCount,
+            IsFullyBooked = tour.CurrentCustomerCount >= tour.MaxCustomers,
+            IsAtMinimumCapacity = tour.CurrentCustomerCount >= tour.MinCustomers
+        };
+    }
+
+    /// <summary>
+    /// Returns the booking with the booked-services fact consistent with its status, mirroring what
+    /// the API reports from the booking.
+    /// </summary>
+    public static GetBookingDto WithBookedServicesFact(GetBookingDto booking)
+    {
+        ArgumentNullException.ThrowIfNull(booking);
+
+        return booking with
+        {
+            CanModifyBookedServices = booking.Status is not (BookingStatusDto.Cancelled or BookingStatusDto.Completed)
         };
     }
 
@@ -86,7 +116,7 @@ public static class DtoBuilders
         var bookingTotalPrice = totalPrice ?? 1000m;
         var bookingAmountPaid = amountPaid ?? 0m;
 
-        return new GetBookingDto
+        return WithBookedServicesFact(new GetBookingDto
         {
             Id = id ?? Guid.NewGuid(),
             TourId = tourId ?? Guid.NewGuid(),
@@ -110,7 +140,7 @@ public static class DtoBuilders
             AmountPaid = bookingAmountPaid,
             RemainingBalance = remainingBalance ?? 0m,
             Currency = currency ?? CurrencyDto.Real
-        };
+        });
     }
 
     /// <summary>

@@ -88,12 +88,12 @@ public class IndexPageTests : BunitContext
     public void Renders_available_spots_badge_when_tour_has_capacity()
     {
         // Arrange
-        var tour = BuildTourDto() with
+        var tour = WithCapacityFacts(BuildTourDto() with
         {
             MinCustomers = 10,
             MaxCustomers = 30,
             CurrentCustomerCount = 15
-        };
+        });
         _fakeToursApi.AddTour(tour);
 
         // Act
@@ -110,11 +110,11 @@ public class IndexPageTests : BunitContext
     public void Renders_fully_booked_badge_when_at_max_capacity()
     {
         // Arrange
-        var tour = BuildTourDto() with
+        var tour = WithCapacityFacts(BuildTourDto() with
         {
             MaxCustomers = 30,
             CurrentCustomerCount = 30
-        };
+        });
         _fakeToursApi.AddTour(tour);
 
         // Act
@@ -131,12 +131,12 @@ public class IndexPageTests : BunitContext
     public void Renders_below_minimum_badge_when_under_mincustomers()
     {
         // Arrange
-        var tour = BuildTourDto() with
+        var tour = WithCapacityFacts(BuildTourDto() with
         {
             MinCustomers = 10,
             MaxCustomers = 30,
             CurrentCustomerCount = 5
-        };
+        });
         _fakeToursApi.AddTour(tour);
 
         // Act
@@ -147,6 +147,89 @@ public class IndexPageTests : BunitContext
         var badge = cut.Find("span.badge.bg-warning");
         badge.TextContent.ShouldContain("Below Min", StringComparison.Ordinal);
         cut.Markup.ShouldContain("5 / 30", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Renders_available_spots_from_the_read_model_fact()
+    {
+        // Arrange
+        var tour = BuildTourDto() with
+        {
+            MinCustomers = 10,
+            MaxCustomers = 30,
+            CurrentCustomerCount = 15,
+            AvailableSpots = 7,
+            IsFullyBooked = false,
+            IsAtMinimumCapacity = true
+        };
+        _fakeToursApi.AddTour(tour);
+
+        // Act
+        var cut = Render<Index>();
+        cut.WaitForState(() => cut.FindAll("span.badge.bg-success").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var badge = cut.Find("span.badge.bg-success");
+        badge.TextContent.ShouldContain("7 spots", StringComparison.Ordinal);
+        badge.GetAttribute("title").ShouldBe("7 spots available");
+    }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Renders_fully_booked_badge_from_the_read_model_fact()
+    {
+        // Arrange
+        var tour = BuildTourDto() with
+        {
+            MinCustomers = 10,
+            MaxCustomers = 30,
+            CurrentCustomerCount = 15,
+            AvailableSpots = 0,
+            IsFullyBooked = true,
+            IsAtMinimumCapacity = true
+        };
+        _fakeToursApi.AddTour(tour);
+
+        // Act
+        var cut = Render<Index>();
+        cut.WaitForState(() => cut.FindAll("span.badge.bg-danger").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var badge = cut.Find("span.badge.bg-danger");
+        badge.TextContent.ShouldContain("Full", StringComparison.Ordinal);
+        badge.GetAttribute("title").ShouldBe("Tour is fully booked");
+    }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Renders_below_minimum_badge_from_the_read_model_fact()
+    {
+        // Arrange
+        var tour = BuildTourDto() with
+        {
+            MinCustomers = 10,
+            MaxCustomers = 30,
+            CurrentCustomerCount = 15,
+            AvailableSpots = 15,
+            IsFullyBooked = false,
+            IsAtMinimumCapacity = false
+        };
+        _fakeToursApi.AddTour(tour);
+
+        // Act
+        var cut = Render<Index>();
+        cut.WaitForState(() => cut.FindAll("span.badge.bg-warning").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var badge = cut.Find("span.badge.bg-warning");
+        badge.TextContent.ShouldContain("Below Min", StringComparison.Ordinal);
     }
 
     [Fact]

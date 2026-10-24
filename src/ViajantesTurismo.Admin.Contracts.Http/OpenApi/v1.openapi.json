@@ -6016,6 +6016,9 @@
           "status": {
             "$ref": "#/components/schemas/BookingStatusDto"
           },
+          "canModifyBookedServices": {
+            "type": "boolean"
+          },
           "paymentStatus": {
             "$ref": "#/components/schemas/PaymentStatusDto"
           },
@@ -7252,6 +7255,20 @@
               "string"
             ],
             "format": "int32"
+          },
+          "availableSpots": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "isFullyBooked": {
+            "type": "boolean"
+          },
+          "isAtMinimumCapacity": {
+            "type": "boolean"
           }
         }
       },

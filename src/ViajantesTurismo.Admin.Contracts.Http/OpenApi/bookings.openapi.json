@@ -2791,6 +2791,9 @@
           "status": {
             "$ref": "#/components/schemas/BookingStatusDto"
           },
+          "canModifyBookedServices": {
+            "type": "boolean"
+          },
           "paymentStatus": {
             "$ref": "#/components/schemas/PaymentStatusDto"
           },

@@ -117,4 +117,28 @@ public sealed record GetTourDto
     {
         get; init;
     }
+
+    /// <summary>
+    /// Number of spots still available, as calculated by the tour aggregate.
+    /// </summary>
+    public int AvailableSpots
+    {
+        get; init;
+    }
+
+    /// <summary>
+    /// Whether the tour has reached its maximum capacity, as decided by the tour aggregate.
+    /// </summary>
+    public bool IsFullyBooked
+    {
+        get; init;
+    }
+
+    /// <summary>
+    /// Whether the tour has reached its minimum capacity, as decided by the tour aggregate.
+    /// </summary>
+    public bool IsAtMinimumCapacity
+    {
+        get; init;
+    }
 }

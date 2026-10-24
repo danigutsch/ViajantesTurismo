@@ -346,8 +346,7 @@ else if (_booking is not null)
 
     private bool AreMutationsBlocked => RequiresReload || IsMutationInFlight;
 
-    private bool AreEditControlsDisabled => AreMutationsBlocked ||
-                                            _booking?.Status is BookingStatusDto.Completed or BookingStatusDto.Cancelled;
+    private bool AreEditControlsDisabled => AreMutationsBlocked || _booking?.CanModifyBookedServices is false;
 
     private bool RequiresReload => !string.IsNullOrEmpty(_refreshWarningMessage);
 

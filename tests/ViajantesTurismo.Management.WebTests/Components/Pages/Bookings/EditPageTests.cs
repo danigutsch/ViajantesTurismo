@@ -756,6 +756,30 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Edit_controls_follow_the_read_model_booked_services_fact()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed) with
+        {
+            CanModifyBookedServices = false
+        };
+        _fakeBookingsApi.AddBooking(booking);
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        cut.WaitForAssertion(() => cut.Find("form"));
+
+        // Assert
+        cut.Find("#roomType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
+        cut.Find("#principalBikeType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
+        cut.Find("#discountType").HasAttribute(DisabledAttributeName).ShouldBeTrue();
+        cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Cancel_redirect_button_shows_success_message()
     {
         // Arrange

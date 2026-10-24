@@ -146,12 +146,12 @@ public class DetailsPageTests : BunitContext
     public void Renders_available_spots_badge_when_tour_has_capacity()
     {
         // Arrange
-        var tour = BuildTourDto() with
+        var tour = WithCapacityFacts(BuildTourDto() with
         {
             MinCustomers = 10,
             MaxCustomers = 30,
             CurrentCustomerCount = 15
-        };
+        });
 
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
@@ -237,11 +237,11 @@ public class DetailsPageTests : BunitContext
     public void Renders_fully_booked_badge_when_at_max_capacity()
     {
         // Arrange
-        var tour = BuildTourDto() with
+        var tour = WithCapacityFacts(BuildTourDto() with
         {
             MaxCustomers = 30,
             CurrentCustomerCount = 30
-        };
+        });
 
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
@@ -260,12 +260,12 @@ public class DetailsPageTests : BunitContext
     public void Renders_below_minimum_badge_when_under_mincustomers()
     {
         // Arrange
-        var tour = BuildTourDto() with
+        var tour = WithCapacityFacts(BuildTourDto() with
         {
             MinCustomers = 10,
             MaxCustomers = 30,
             CurrentCustomerCount = 5
-        };
+        });
 
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
