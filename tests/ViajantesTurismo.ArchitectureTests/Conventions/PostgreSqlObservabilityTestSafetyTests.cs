@@ -40,6 +40,8 @@ public sealed class PostgreSqlObservabilityTestSafetyTests
         // Assert
         project.ShouldContain("PandaBear.SharedKernel.Npgsql.Testing", StringComparison.Ordinal);
         fixture.ShouldContain("PostgreSqlTestDatabasePool", StringComparison.Ordinal);
+        // The pool takes its server from the on-demand PostgreSQL start, so a run without database tests never starts one.
+        fixture.ShouldContain("new PostgreSqlTestDatabasePool(ct => postgres.Get(ct))", StringComparison.Ordinal);
         duplicateDatabaseImplementations.ShouldBeEmpty();
     }
 }

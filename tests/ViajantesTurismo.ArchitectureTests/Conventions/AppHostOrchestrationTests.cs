@@ -214,11 +214,14 @@ public sealed partial class AppHostOrchestrationTests
     public void System_fixture_allows_full_profile_resources_to_start()
     {
         // Arrange
-        var fixtureText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Infrastructure", "HostedTestFixture.cs"));
+        var fixtureText = HostedTestFixtureSource.ReadNormalized();
 
         // Act
-        var usesBoundedStartup = fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal)
-            && fixtureText.Contains("AspireTestApplication.Start(builder", StringComparison.Ordinal);
+        var usesBoundedStartup = fixtureText.Contains("StartBudget = TimeSpan.FromMinutes(3);", StringComparison.Ordinal)
+            && fixtureText.Contains(
+                "AspireTestApplication.Start(builder, profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [",
+                StringComparison.Ordinal)
+            && fixtureText.Contains("], StartBudget, ct);", StringComparison.Ordinal);
 
         // Assert
         usesBoundedStartup.ShouldBeTrue();
@@ -228,11 +231,11 @@ public sealed partial class AppHostOrchestrationTests
     public void Admin_integration_fixture_allows_admin_profile_resources_to_start()
     {
         // Arrange
-        var fixtureText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Infrastructure", "HostedTestFixture.cs"));
+        var fixtureText = HostedTestFixtureSource.ReadNormalized();
 
         // Act
-        var usesBoundedStartup = fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal)
-            && fixtureText.Contains("AspireTestApplication.Start(builder", StringComparison.Ordinal);
+        var usesBoundedStartup = fixtureText.Contains("StartBudget = TimeSpan.FromMinutes(3);", StringComparison.Ordinal)
+            && fixtureText.Contains(": [ResourceNames.Api, ResourceNames.CatalogApi], StartBudget, ct);", StringComparison.Ordinal);
 
         // Assert
         usesBoundedStartup.ShouldBeTrue();
