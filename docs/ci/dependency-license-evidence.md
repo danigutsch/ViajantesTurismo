@@ -356,3 +356,19 @@ already used by the consuming hosted tests. The exact candidate version and libr
 remain bound in the dependency-review workflow. Existing external-package exceptions are unchanged;
 vulnerability and license review remain enabled. The candidate is prepared locally and has not
 been published as a GitHub release.
+
+## Management Branding client removal candidate
+
+Candidate `0.1.0-alpha.171.1` uses clean library revision
+`753f94c9a8dfd09084cb3b0e6d49739c0a16cac1`. It removes the unused management Branding client
+and otherwise matches `0.1.0-alpha.169.1`. Linux/Windows package consumption passed in the exact-source
+CI run [40179021750](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40179021750). All 79
+archive hashes were verified against the CI artifacts and the GitHub prerelease manifest.
+
+Against application main `0d81d43b` (candidate `0.1.0-alpha.169.1`), the external package version/content-hash
+set across all lock files adds nothing and removes 20 entries, the dependency chain of the removed client
+(Polly, `Microsoft.Extensions.Http.Resilience`, `Microsoft.Extensions.ServiceDiscovery` and related
+packages). The workflow still permits only the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU
+`15.0.0` metadata exceptions; no license category, vulnerability threshold or native distribution gate was
+relaxed. On October 25, 2026, the owner renewed these unchanged exact-package exceptions for this candidate.
+Registry publication and the native distribution obligations remain outside this approval.
