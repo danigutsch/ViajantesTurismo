@@ -49,7 +49,21 @@
       "SUPPORT.md",
       "ViajantesTurismo.code-workspace",
       "ViajantesTurismo.sln.DotSettings",
-      ".idea/*"
+      ".idea/*",
+      ".gitignore",
+      ".git-blame-ignore-revs",
+      ".gitleaks.toml",
+      ".markdownlintignore",
+      ".mcp.json",
+      ".aspire/settings.json",
+      "CODEOWNERS",
+      "docs/architecture/*.json",
+      "tests/AGENTS.md",
+      "tests/ASSEMBLY_FIXTURE_GUIDANCE.md",
+      "tests/BDD_GUIDE.md",
+      "tests/REQNROLL_GUIDE.md",
+      "tests/TEST_FIXTURE_SEAM.md",
+      "tests/performance/*"
     ],
     "alwaysSelected": [
       "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj"

@@ -110,9 +110,10 @@ The nightly schedule therefore runs every slice on `main`. `select` classifies e
 SDK and NuGet configuration, `scripts`, and `setup-dev.*`) select every test project; documentation
 patterns (Markdown and images under `docs`, the root `README.md`, `AGENTS.md`, `CONTRIBUTING.md`,
 `SECURITY.md`, `SUPPORT.md`, and `LICENSE.txt`, roadmap items, order, themes, and README,
-`observability/README.md`, and editor settings) select nothing while every tracked build file is inert; any other path selects the
-test projects that depend on its owning project through `ProjectReference`. A path without an owning
-project, an unreadable or uncertain project graph, a missing or non-ancestor base, and a changed
+`observability/README.md`, repository metadata files such as `CODEOWNERS` and `.gitignore`, the
+test guides under `tests`, `tests/performance`, `docs/architecture/*.json`, and editor settings) select nothing while
+every tracked build file is inert; any other path selects the test projects that depend on its owning project through
+`ProjectReference`. A path without an owning project, an unreadable or uncertain project graph, a missing or non-ancestor base, and a changed
 project that no selected test project covers (`requireCoveringTests`) select every test project.
 
 `alwaysSelected` adds `ViajantesTurismo.ArchitectureTests` and the Admin, Branding, and Catalog
