@@ -37,7 +37,7 @@ public sealed class DocumentationCiTests
         lint.ShouldContain("- name: Set up CI prerequisites\n        uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
         lint.ShouldContain("sudo apt-get install --yes shellcheck", StringComparison.Ordinal);
         lint.ShouldContain("run: shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh", StringComparison.Ordinal);
-        foreach (var check in (string[])["verify-text-encoding", "verify-line-endings", "verify-json", "verify-links", "verify-gherkin"])
+        foreach (var check in (string[])["verify-text-encoding", "verify-line-endings", "verify-json", "verify-links", "verify-gherkin", "verify"])
         {
             lint.ShouldContain($"dotnet tool run sharedkernel-repo -- {check} --root .", StringComparison.Ordinal);
         }

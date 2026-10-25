@@ -56,7 +56,7 @@ Use nested `AGENTS.md` files for scoped rules.
 - Put test-host arguments after `--` when required.
 - .NET formatting: `dotnet format`.
 - Docs/scripts/spec quality checks run in the CI Lint job: shellcheck, markdownlint,
-    `sharedkernel-repo verify-text-encoding|verify-line-endings|verify-json|verify-links|verify-gherkin`,
+    `sharedkernel-repo verify-text-encoding|verify-line-endings|verify-json|verify-links|verify-gherkin|verify`,
     and `sharedkernel-docs verify|check`.
 
 ## Local worktrees

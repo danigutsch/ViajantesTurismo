@@ -46,6 +46,7 @@ public sealed class SharedKernelToolCallerTests
             "sharedkernel-repo verify-json",
             "sharedkernel-repo verify-links",
             "sharedkernel-repo verify-gherkin",
+            "sharedkernel-repo verify",
             "sharedkernel-repo github sync-labels",
             "sharedkernel-repo verify-devcontainer",
             "sharedkernel-docs verify",
