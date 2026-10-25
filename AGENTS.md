@@ -55,7 +55,9 @@ Use nested `AGENTS.md` files for scoped rules.
     and wrap every body line to 100 characters or less.
 - Put test-host arguments after `--` when required.
 - .NET formatting: `dotnet format`.
-- Docs/scripts/spec quality checks run in CI via `bash scripts/lint-all.sh`.
+- Docs/scripts/spec quality checks run in the CI Lint job: shellcheck, markdownlint,
+    `sharedkernel-repo verify-text-encoding|verify-line-endings|verify-json|verify-links|verify-gherkin`,
+    and `sharedkernel-docs verify|check`.
 
 ## Local worktrees
 

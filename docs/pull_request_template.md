@@ -10,7 +10,7 @@
 
 - [ ] `dotnet build ViajantesTurismo.slnx`
 - [ ] `dotnet test --solution ViajantesTurismo.slnx`
-- [ ] CI lint (`bash scripts/lint-all.sh`)
+- [ ] CI lint (shellcheck, markdownlint, `sharedkernel-repo verify-*`, `sharedkernel-docs verify|check`)
 - [ ] Not run, with reason:
 
 ## Checklist

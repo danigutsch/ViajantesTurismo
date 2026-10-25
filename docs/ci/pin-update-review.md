@@ -28,7 +28,7 @@ configuration, and the AppHost/resource extensions.
 | `.devcontainer/devcontainer.json` Features | Dependabot `devcontainers` entry, quarterly; current feature references use digest-only keys | Development-environment maintainers verify whether each digest-only key is actually recognized and updated; treat coverage as unverified until a concrete proposal proves it |
 | `src/ViajantesTurismo.AppHost/AppHostResourceExtensions.cs` | Explicit PostgreSQL, PgWeb, Redis, RedisInsight, and Keycloak tag/digest constants | AppHost maintainers update manually; Dependabot does not parse these C# resource declarations |
 | Consumed ClamAV, SeaweedFS, and Grafana hosting resource extensions | Image pins currently live in the existing SharedKernel hosting packages; AppHost README inventories the observability/security pins | Package owners review upstream package/image updates; ViajantesTurismo maintainers verify compatibility and runtime behavior when consuming them. No library changes are authorized by this documentation workflow |
-| `scripts/lint-all.sh`, `lint-markdown.sh`, `lint-{links,gherkin}.sh` | Docker fallback tools currently use version tags, including markdownlint, Python, ShellCheck, and shfmt; no configured updater covers shell image strings | CI maintainers own this immutable-pin gap; inventory and review digests in a separate hardening change. Do not describe tag-only references as already immutable |
+| `opencode.json` lint, lint-fix, and formatter commands; `.config/sharedkernel-k6.json` | The markdownlint-cli2, shfmt, and k6 images are pinned by tag plus digest; no configured updater covers these strings | CI maintainers resolve and verify the new digest manually when they move a tag |
 | `src/ViajantesTurismo.AppHost/DevelopmentProjectResourceExtensions.cs` | Application publish tags/registry come from deployment configuration rather than third-party dependency pins | Release maintainers review build provenance and deployed digest; do not confuse generated application tags with dependency image updates |
 
 No Dockerfile, Compose, or Kubernetes image update target is configured. Observability configuration
@@ -36,8 +36,8 @@ under `observability/` is mounted by resource extensions; review those configs w
 NuGet/SDK/local-tool lock refresh is a different workflow in
 [Contributing](../../CONTRIBUTING.md#dependency-graph-and-lock-file-maintenance).
 
-The missing shell-image digests and unverified digest-only Feature coverage are recorded gaps,
-not exceptions granting new mutable pins. A bot configuration entry alone is not proof every
+Unverified digest-only Feature coverage is a recorded gap, not an exception granting new mutable
+pins. A bot configuration entry alone is not proof every
 reference in its ecosystem is updated.
 
 ## Action update evidence
@@ -106,8 +106,8 @@ for the resource changed. Dev Container image/Feature changes require its smoke 
    advisory for a maintainer decision.
 7. Renew the preview license approval in `.config/sharedkernel-repo.json` as described in
    [dependency license evidence](dependency-license-evidence.md).
-8. Build, run the full test suite (including `SharedKernelToolCallerTests`), Actionlint, and
-   `bash scripts/lint-all.sh`.
+8. Build, run the full test suite (including `SharedKernelToolCallerTests`), Actionlint, and the
+   Lint job checks in [artifacts and local reproduction](artifacts-and-local-reproduction.md#lint-job).
 9. Run `pwsh ./setup-dev.ps1` by hand on Windows. No CI job runs on Windows, so this manual run is the
    only Windows check of the setup script and the pinned SharedKernel tools.
 

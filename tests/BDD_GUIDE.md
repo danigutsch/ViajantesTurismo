@@ -29,7 +29,7 @@ This guide covers **ViajantesTurismo-specific** BDD patterns, tagging convention
 **Writing Features:**
 
 1. Organize by domain aggregate
-2. Tag with `@BC:<context>` and `@Agg:<aggregate>` (mandatory)
+2. Tag with `@BC:<context>` and `@Agg:<aggregate>`
 3. Write declarative scenarios (**what**, not **how**)
 4. Keep scenarios short (3-5 steps)
 
@@ -52,9 +52,10 @@ See [Test Guidelines](../docs/TEST_GUIDELINES.md) for general testing patterns.
 
 ## Project Tagging Conventions
 
-### Mandatory Tags (Feature Level)
+### Feature-Level Tags
 
-Every feature **must** have:
+Every feature carries these tags by review convention; `verify-gherkin` checks that tags match the
+allowed patterns, not that these are present:
 
 - `@BC:<BoundedContext>` - e.g., `@BC:Admin`
 - `@Agg:<Aggregate>` - e.g., `@Agg:Tour`, `@Agg:Booking`, `@Agg:Customer`
@@ -222,57 +223,39 @@ See [Reqnroll: Reporting][reporting] for advanced reporting options.
 
 ### Enforced Rules
 
-All `.feature` files are linted using the repository linter (`scripts/lint-gherkin.py`) with
-project-specific rules:
+`sharedkernel-repo verify-gherkin` checks the tracked `.feature` files under `tests/`:
 
-**Mandatory:**
+- every tag on a tag line matches an `allowedTagPatterns` entry of the `gherkin` section of
+  `.config/sharedkernel-repo.json` as a whole, and forbidden tags such as `@skip` are rejected
+- every file has a named `Feature:` and at least one scenario; feature names are unique across the
+  checked files, at most 250 characters
+- every `Scenario:` and `Scenario Outline:` is named, at most 150 characters, and unique within its file
+- every `Scenario Outline:` has `Examples:`
+- no trailing whitespace, no tabs outside blank and comment lines, and a newline at end of file
 
-- `@BC:<BoundedContext>` tag on every feature
-- `@Agg:<Aggregate>` tag on every feature
-- No unnamed features/scenarios
-- No duplicate feature or scenario names within the checked scope
-- Scenario outlines must include `Examples`
-- Restricted tags like `@skip` are rejected
-
-**Formatting checks:**
-
-- Trailing spaces are rejected
-- Tabs are rejected
-- A newline at end of file is required
-
-**Note:** The repository linter currently enforces the subset of `.gherkin-lintrc` used by the
-repo-owned Python implementation. It does not currently auto-fix files or enforce indentation/
-conjunction-style rules.
+It does not check indentation, step style, or the presence of particular tags, and it does not
+auto-fix files.
 
 ### Running the Linter
 
-```powershell
-# Validate all feature files
-bash scripts/lint-gherkin.sh tests/**/*.feature
-
-# CI uses the same repository script
-```
-
-**Note:** The repository Gherkin linter validates but does not auto-fix. Errors must be corrected
-manually.
-
-**Configuration:** Rules are defined in `.gherkin-lintrc` at the repository root.
-
-### CI Validation
-
-Gherkin linting runs in CI.
-
-Run locally:
+The CI Lint job runs the same command:
 
 ```powershell
-bash scripts/lint-gherkin.sh tests/**/*.feature
+# Validate all tracked feature files
+dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+
+# Validate one directory or file
+dotnet tool run sharedkernel-repo -- verify-gherkin tests/ViajantesTurismo.Admin.BehaviorTests --root .
 ```
+
+**Configuration:** The allowed tag patterns, forbidden tags, and name lengths are the `gherkin`
+section of `.config/sharedkernel-repo.json`.
 
 ---
 
 ## Best Practices Summary
 
-1. **Tag every feature** with `@BC:` and `@Agg:` (enforced by linter)
+1. **Tag every feature** with `@BC:` and `@Agg:` (checked in review)
 2. **Organize by aggregate**, not by feature file
 3. **Write declarative scenarios** (business behavior, not UI)
 4. **Keep scenarios short** (3-5 steps, one `When` per scenario)

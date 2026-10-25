@@ -36,7 +36,7 @@ flowchart TB
     detect_changes --> quality_gate
     test_slices --> quality_gate
     solution_build --> quality_gate
-    detect_changes --> lint
+    trigger --> lint
 ```
 <!-- generated:ci-main-jobs:end -->
 
@@ -104,11 +104,12 @@ Use the narrowest command that reproduces the failing lane.
 | --- | --- |
 | Full build | `dotnet build ViajantesTurismo.slnx` |
 | Full test suite | `dotnet test --solution ViajantesTurismo.slnx` |
-| Repository docs/scripts/spec lint | `bash scripts/lint-all.sh` |
+| Repository content checks | `dotnet tool run sharedkernel-repo -- verify-links --root .` and the other `verify-*` checks of the Lint job |
+| Generated documentation drift | `dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json` |
 | CI change classification | `dotnet tool run sharedkernel-ci -- select --base <commit>` |
 | One CI test slice | `dotnet tool run sharedkernel-ci -- run --slice <name>` |
-| Devcontainer smoke | `bash scripts/run-devcontainer-smoke.sh` |
-| Devcontainer deeper validation | `bash scripts/run-devcontainer-smoke.sh --run-tests` |
+| Devcontainer smoke | `dotnet tool run sharedkernel-repo -- verify-devcontainer --exec "dotnet --version" --root .` |
+| Devcontainer deeper validation | `verify-devcontainer` with the full-mode `--exec` values of `devcontainer-smoke.yml` |
 | Aspire local run | `dotnet tool run aspire run` |
 
 More details: [artifacts and local reproduction](../ci/artifacts-and-local-reproduction.md),

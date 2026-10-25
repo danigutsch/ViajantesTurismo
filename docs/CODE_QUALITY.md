@@ -8,12 +8,14 @@ This project uses automated tools to enforce consistent formatting and style acr
   (`DavidAnson/markdownlint-cli2-action` in CI and Dockerized CLI locally, no npm required)
 - **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (direct CLI or Docker fallback)
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI or Docker fallback)
-- **Repository Gherkin linter** (`scripts/lint-gherkin.py`) - BDD/Gherkin feature-file linting
-  (runs via local Python or Docker fallback)
+- **Repository Gherkin validator** (`sharedkernel-repo verify-gherkin`) - BDD/Gherkin feature-file
+  linting
 - **Repository JSON validator** (`sharedkernel-repo verify-json`) - Git-indexed JSON
   validation using the .NET SDK, with comments and trailing commas allowed
-- **Repository link validator** (`scripts/lint-links.py`) - Local Markdown/text link, anchor, and
-  durable docs-link validation (runs via local Python or Docker fallback)
+- **Repository link validator** (`sharedkernel-repo verify-links`) - Local Markdown/text link, anchor,
+  and durable docs-link validation
+- **Repository line-ending and encoding validators** (`sharedkernel-repo verify-line-endings` and
+  `verify-text-encoding`) - `.gitattributes` line endings and UTF-8 text in the Git index
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
   (PowerShell module)
 - **[dotnet format](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format)** - .NET code
@@ -23,7 +25,7 @@ This project uses automated tools to enforce consistent formatting and style acr
 
 The repository's local lint and helper-tool posture is intentionally npm-minimized.
 
-- Prefer repo-pinned `.NET` local tools, repository-owned scripts, and Dockerized wrappers.
+- Prefer repo-pinned `.NET` local tools and digest-pinned containers.
 - Prefer vendor or OS package installs for optional standalone tools.
 - Avoid adding `npx`, global npm installs, or other transient package execution to supported
   local lint flows unless a dedicated review approves that exception.
@@ -38,7 +40,7 @@ like [.NET Docs](https://github.com/dotnet/docs), [GitHub Docs](https://github.c
 and [Electron](https://github.com/electron/electron), we use a **multi-layer approach**:
 
 1. **Editor Integration** - Real-time feedback as you type (primary quality gate)
-2. **Explicit Local Checks** - Run the relevant scripts before committing
+2. **Explicit Local Checks** - Run the relevant checks before committing
 3. **CI/CD Pipeline** - Enforces standards for all team members
 
 **Note**: We deliberately **do not** run these checks during .NET builds. Documentation and code style quality checks
@@ -93,6 +95,7 @@ The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName
 - **Severity**: Reports all issues down to style level
 - **Error-level checks**: SC2086, SC2115, SC2154, SC2155 (fail build)
 - **Shell dialect**: Bash
+- **Sourced files**: resolved relative to each script (`source-path=SCRIPTDIR`); SC1091 is disabled
 
 **shfmt** formatting rules:
 
@@ -101,7 +104,7 @@ The [markdownlint extension](https://marketplace.visualstudio.com/items?itemName
 - Binary operators at beginning of line (`-bn`)
 - Space after redirect operators (`-sr`)
 
-See [Available Scripts](#available-scripts) section below.
+See [Available Commands](#available-commands) section below.
 
 ## PowerShell Linting
 
@@ -128,21 +131,27 @@ Invoke-ScriptAnalyzer -Path script.ps1 -Settings PSGallery
 
 ### Configuration
 
-Gherkin linting rules are defined in `.gherkin-lintrc` at the solution root.
+Gherkin rules are the `gherkin` section of `.config/sharedkernel-repo.json`, which
+`sharedkernel-repo verify-gherkin` applies to the tracked `.feature` files under `tests/`.
 
 **Key Rules:**
 
-- **Mandatory tags**: `@BC:<BoundedContext>` and `@Agg:<Aggregate>` required on all features
-- **Tag validation**: Enforces project-specific tag patterns (bounded contexts, aggregates, invariants)
-- **Indentation**: Consistent feature-file indentation (Feature: 0, Background/Rule/Scenario: 4, Steps: 8)
-- **BDD anti-patterns**: Prevents conjunction steps, unnamed features/scenarios
-- **Formatting**: No trailing spaces, newline at EOF, no duplicate scenario names
+- every tag on a tag line matches an `allowedTagPatterns` entry of the `gherkin` section of
+  `.config/sharedkernel-repo.json` as a whole, and forbidden tags such as `@skip` are rejected
+- every file has a named `Feature:` and at least one scenario; feature names are unique across the
+  checked files, at most 250 characters
+- every `Scenario:` and `Scenario Outline:` is named, at most 150 characters, and unique within its file
+- every `Scenario Outline:` has `Examples:`
+- no trailing whitespace, no tabs outside blank and comment lines, and a newline at end of file
 
-See [Available Scripts](#available-scripts) for validation commands.
+The validator does not check indentation, step style, or the presence of particular tags such as
+`@BC:` and `@Agg:`; those stay review conventions.
+
+See [Available Commands](#available-commands) for validation commands.
 
 ### CI Integration
 
-Gherkin files are validated in CI and can also be checked manually with the repository script.
+Gherkin files are validated by the CI Lint job and can also be checked manually with the same command.
 
 See `tests/BDD_GUIDE.md` for comprehensive Gherkin linting documentation.
 
@@ -170,10 +179,10 @@ Untracked package caches, generated artifacts, and nested library checkouts are 
 
 ## Link Validation
 
-The repository validates maintained Markdown and selected text links with `scripts/lint-links.sh`. The chosen
-approach is a repository-owned Python script with the same local Python or Docker fallback pattern
-as the Gherkin linter. This avoids transient npm execution and avoids adding a new package
-ecosystem for documentation checks.
+The repository validates maintained Markdown and selected text links with
+`dotnet tool run sharedkernel-repo -- verify-links --root .`, which scans the files that the `links`
+section of `.config/sharedkernel-repo.json` selects. The pinned .NET tool avoids transient npm execution
+and adds no package ecosystem for documentation checks.
 
 The validator checks stable PR-gating rules:
 
@@ -310,14 +319,17 @@ Agent/editor format-on-save integrations should run only repository-approved sin
 formatters after edits:
 
 - C# (`.cs`): resolve the repository root, then run `dotnet format ViajantesTurismo.slnx --include <file> --no-restore`
-- Markdown (`.md`): `bash scripts/lint-markdown.sh --fix <file>`
-- Shell (`.sh`, `.bash`): `shfmt -w -i 4 -ci -bn -sr <file>` with the same Docker fallback model as `scripts/lint-all.sh`
-- PowerShell (`.ps1`, `.psm1`, `.psd1`): `pwsh -NoProfile -File scripts/format-powershell-file.ps1 -Path <file>` using PSScriptAnalyzer `Invoke-Formatter`
+- Markdown (`.md`): the digest-pinned `davidanson/markdownlint-cli2` container with `--fix <file>`
+- Shell (`.sh`, `.bash`): `shfmt -w -i 4 -ci -bn -sr <file>`, or the digest-pinned `mvdan/shfmt` container
+  when `shfmt` is not installed
+
+`opencode.json` holds these formatters with the exact image digests. PowerShell files have no
+approved single-file formatter.
 
 Broad formatter bundles such as Prettier, Biome, or default shfmt should stay disabled unless
 they are explicitly adopted by the repository so format-on-edit stays aligned with this
 repository's `.editorconfig`, markdownlint, `.NET`, and shell policies.
-JSON, JSONC, YAML, and Gherkin stay validation-only until the repository adopts an approved
+JSON, JSONC, YAML, PowerShell, and Gherkin stay validation-only until the repository adopts an approved
 single-file formatter for those formats.
 
 ### Prerequisites
@@ -340,33 +352,35 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 .\setup-dev.ps1
 ```
 
-### Available Scripts
+### Available Commands
 
 **Markdown:**
 
-```powershell
-bash scripts/lint-markdown.sh                    # CI-owned markdown lint wrapper
-bash scripts/lint-markdown.sh --fix docs/example.md
+```bash
+docker run --rm --user "$(id -u):$(id -g)" --env HOME=/tmp --volume "$PWD:/workspace" --workdir /workspace \
+  docker.io/davidanson/markdownlint-cli2:v0.18.1@sha256:173cb697a255a8a985f2c6a83b4f7a8b3c98f4fb382c71c45f1c52e4d4fed63a \
+  --config /workspace/.markdownlint-cli2.jsonc "**/*.md" "#artifacts"
 ```
+
+Add `--fix` before the globs to apply fixes.
 
 **Shell Scripts:**
 
 ```powershell
-shellcheck **/*.sh       # Lint shell scripts with ShellCheck
-shfmt -w -i 4 -ci -bn -sr **/*.sh    # Format shell scripts with shfmt
+shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh            # Lint with .shellcheckrc
+shfmt -w -i 4 -ci -bn -sr .devcontainer/*.sh scripts/*.sh setup-dev.sh # Format shell scripts
 ```
 
 **PowerShell Scripts:**
 
 ```powershell
-pwsh -NoProfile -File scripts/format-powershell-file.ps1 -Path ./setup-dev.ps1
 Invoke-ScriptAnalyzer -Path ./setup-dev.ps1
 ```
 
 **Gherkin/Feature Files:**
 
 ```powershell
-bash scripts/lint-gherkin.sh tests/**/*.feature     # Repository Gherkin lint wrapper (Python-based)
+dotnet tool run sharedkernel-repo -- verify-gherkin --root .
 ```
 
 **JSON Files:**
@@ -378,17 +392,22 @@ dotnet tool run sharedkernel-repo -- verify-json --root .
 **Links:**
 
 ```powershell
-bash scripts/lint-links.sh                 # Check maintained Markdown links and durable link policy
-bash scripts/lint-links.sh docs README.md  # Check selected Markdown paths
+dotnet tool run sharedkernel-repo -- verify-links --root .                  # Configured files
+dotnet tool run sharedkernel-repo -- verify-links docs README.md --root .  # Selected paths
 ```
 
-**All Linters:**
+**Encoding, line endings, and generated documentation:**
 
 ```powershell
-bash scripts/lint-all.sh                 # Run all linters in check mode
-bash scripts/lint-all.sh --fix           # Apply available autofixes (shfmt + markdownlint), then lint
-bash scripts/lint-all.sh --skip-markdown # Run non-markdown linters only (CI helper)
+dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
+dotnet tool run sharedkernel-repo -- verify-line-endings --root .
+dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
+dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
 ```
+
+The opencode `lint` command runs every check above in order, and `lint-fix` formats the shell scripts
+and Markdown and regenerates the architecture diagrams with
+`dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`.
 
 **All Tools:**
 
@@ -400,18 +419,14 @@ dotnet tool restore      # Install all pinned .NET tools
 
 The repository installs no Git hooks.
 
-- Lint is CI-owned and runs through `bash scripts/lint-all.sh` and `DavidAnson/markdownlint-cli2-action` in workflows.
-- `bash scripts/lint-all.sh --fix` is available locally to apply supported autofixes before strict checks.
+- Lint is CI-owned: the CI Lint job runs shellcheck, the `sharedkernel-repo` and `sharedkernel-docs`
+  checks, and `DavidAnson/markdownlint-cli2-action`.
+- The opencode `lint-fix` command applies the supported autofixes before strict checks.
 - Markdown lint runs via the official `DavidAnson/markdownlint-cli2-action` GitHub Action,
-  and locally through the Docker image `davidanson/markdownlint-cli2`.
-- Gherkin lint runs via the repository-owned `scripts/lint-gherkin.py` (Python-based, no npm).
-- Link validation runs via the repository-owned `scripts/lint-links.py` (Python-based, no npm) and
-  is included in `bash scripts/lint-all.sh`.
-- Running `bash scripts/lint-all.sh` locally does not require manual linter installs when Docker is
-  available; wrappers fall back to pinned Docker images for shellcheck, shfmt, markdown lint, and
-  Python-based linters.
-- If Docker is unavailable, wrappers use local tools when present and fail with an explicit message
-  when neither local tool nor Docker is available.
+  and locally through the digest-pinned Docker image `davidanson/markdownlint-cli2`.
+- Gherkin, link, JSON, line-ending, and text-encoding checks run through the pinned
+  `sharedkernel-repo` .NET tool; no Python or npm is involved.
+- Local shellcheck runs need an installed `shellcheck`; Markdown and shfmt fixes run in Docker.
 - Validate a commit message locally with
   `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>`.
 - For the repository's explicit local helper-tool acquisition rules, see
@@ -460,7 +475,7 @@ Recommended fast local path by change type:
 | Change type | Fast local path | Full confidence before PR when risk is real |
 | --- | --- | --- |
 | Dependency-graph change | `dotnet restore ViajantesTurismo.slnx --force-evaluate`, then `--locked-mode` | `dotnet build ViajantesTurismo.slnx --no-restore` plus impacted test slice |
-| AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `dotnet tool run sharedkernel-ci -- run --slice admin-system --install-playwright` |
+| AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `dotnet tool run sharedkernel-ci -- run --slice hosted-tests --install-playwright` |
 | Test-only change | `dotnet test --project <changed-test-project>.csproj` | Matching CI slice through `dotnet tool run sharedkernel-ci -- run --slice <name>` |
 
 Concrete improvement options:

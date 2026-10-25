@@ -19,8 +19,8 @@ duplicate the volatile resource list or dependency graph.
 
 ### Optional Developer Tooling
 
-- **admin-performance-smoke**: opt-in k6 smoke scenario resource through
-  `ViajantesTurismo.Performance.Tool`; enabled only when `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set
+- **admin-performance-smoke**: opt-in k6 smoke scenario resource that runs
+  `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke`; enabled only when `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set
   before AppHost starts
 - **Grafana LGTM observability stack**: opt-in local telemetry backend; enabled only when
   `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
@@ -261,8 +261,8 @@ VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
 The resource is intentionally disabled by default so regular AppHost runs do not execute load tooling.
-It uses the repository-owned .NET performance tool rather than shell wrappers, so local k6 is the
-default and Docker mode remains explicit opt-in. For profiles, thresholds, security defaults, and result
+It runs `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke`, so local k6 is the default;
+`VT_K6_USE_DOCKER=1` adds `--container`, and `VT_K6_DOCKER_IMAGE` then adds `--image`. For profiles, thresholds, security defaults, and result
 output, see `tests/performance/README.md` and `tests/performance/k6/README.md`.
 
 ## Trusted Telemetry Gateway and Observability Stack

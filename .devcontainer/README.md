@@ -11,8 +11,9 @@ For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DE
 - [Visual Studio Code](https://code.visualstudio.com/) with the
  [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 - Network access to the container image registries, Dev Container Feature registry,
-  .NET install script and SDK download endpoints, OS package feeds used by Dev Container
-  Features, and NuGet package feeds used by this repository
+  .NET install script and SDK download endpoints, `github.com` and
+  `release-assets.githubusercontent.com` for the pinned SharedKernel source and candidate
+  packages, `api.nuget.org`, and OS package feeds used by Dev Container Features
 
 ## What's Included
 
@@ -21,7 +22,6 @@ For contributor-facing usage guidance, see [../docs/DEVCONTAINERS.md](../docs/DE
 Ubuntu 26.04 LTS-based .NET container with the following tools installed via features:
 
 - **Exact .NET SDK from `global.json`**: Installed by `on-create.sh` for the same toolchain as CI
-- **Python 3**: Required by lifecycle setup scripts
 - **Git**: Version control
 - **Docker-in-Docker**: Run a Docker daemon inside the dev container for Aspire-managed resources
 
@@ -90,24 +90,19 @@ No additional database containers are configured in the dev container - Aspire h
 5. **Run the Shared Smoke Validation (Optional)**:
 
    ```bash
-   bash scripts/run-devcontainer-smoke.sh
+   dotnet tool run sharedkernel-repo -- verify-devcontainer --exec 'dotnet --version && git --version && docker version --format "{{.Server.Version}}"' --root .
    ```
 
-   This runs the same non-interactive devcontainer smoke path used by
-   `.github/workflows/devcontainer-smoke.yml` and writes logs to
-   `TestResults/devcontainer-smoke`.
+   Run it on the host from the repository root. This runs the same non-interactive
+   devcontainer smoke path used by `.github/workflows/devcontainer-smoke.yml` and writes
+   logs to `TestResults/devcontainer-smoke`.
 
-   If you also want the temporary container to run the full CI slice test suite,
-   use:
-
-   ```bash
-   bash scripts/run-devcontainer-smoke.sh --run-tests
-   ```
-
-   Full mode installs Chromium's runtime libraries, selects every test project with
-   `sharedkernel-ci select`, and runs the slices of `.config/sharedkernel-ci.json` one
-   after another with `sharedkernel-ci run --slice <name> --install-playwright`. Running
-   one slice at a time avoids all-solution test concurrency flakes.
+   Full mode adds the `INSTALL_PLAYWRIGHT_DEPENDENCIES` and `RUN_TEST_SLICES` values of
+   that workflow as further `--exec` arguments: it installs Chromium's runtime libraries,
+   selects every test project with `sharedkernel-ci select`, and runs the slices of
+   `.config/sharedkernel-ci.json` one after another with
+   `sharedkernel-ci run --slice <name> --install-playwright`. Running one slice at a time
+   avoids all-solution test concurrency flakes.
 
 ## Port Forwarding
 

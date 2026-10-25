@@ -44,8 +44,8 @@ Install `k6` at user/system level, not as a repo-local vendored binary:
 - Windows: `winget install k6 --source winget`
 - Linux: follow the official install guide: <https://grafana.com/docs/k6/latest/set-up/install-k6/>
 
-For hermetic local runs without a host install, use `VT_K6_USE_DOCKER=1`; the repository tool uses a
-digest-pinned image and `--pull=never`.
+For hermetic local runs without a host install, pass `--container`; `sharedkernel-k6` runs the
+digest-pinned image from `.config/sharedkernel-k6.json` with `--pull=never`, so pull it first.
 
 ## Required environment
 
@@ -56,42 +56,48 @@ Optional overrides:
 - `VT_K6_PROFILE`: defaults to `smoke`
 - `VT_K6_VUS`: override VU count
 - `VT_K6_DURATION`: override duration for duration-based profiles
-- `VT_K6_RESULTS_DIR`: relative output folder for k6 summary JSON, defaults to
-  `tests/performance/results` and must stay under that ignored folder
-- `VT_K6_USE_DOCKER`: `0` (default local k6) or `1` (explicit Docker k6)
-- `VT_K6_DOCKER_IMAGE`: Docker image used in Docker mode; must be pinned by digest
-- `VT_UPLOAD_BASE_URL`: base URL of the benchmark upload host for `file-upload-scan.js`
-- `VT_UPLOAD_PAYLOAD_BYTES`: deterministic multipart payload size for `file-upload-scan.js`, defaults to `262144`
-- `VT_K6_ALLOW_EXTERNAL`: set to `1` only when intentionally running the upload scenario outside the
-  local benchmark host
-- `VT_K6_ALLOW_HTTP_DEBUG`: set to `1` only for local redacted debugging when passing `--http-debug`
-- `VT_K6_ALLOW_REMOTE_OUTPUT`: set to `1` only after reviewing any custom `--out` destination and credentials
+- `VT_UPLOAD_PAYLOAD_BYTES`: deterministic multipart payload size for `file-upload-scan.js`, a whole
+  number from 1 to 16777216, defaults to `262144`
+
+`sharedkernel-k6` sets `VT_UPLOAD_BASE_URL` for `file-upload-scan.js` from the benchmark host it starts.
+An unknown `VT_K6_PROFILE` fails the run.
+
+Options of `sharedkernel-k6 run`:
+
+- `--container`: run the configured digest-pinned image with Docker instead of local `k6`
+- `--image <ref@sha256:digest>`: replace the configured image; requires `--container`
+- `--allow-external-target`: allow a base URL outside loopback
+- `--allow-http-debug`: allow `--http-debug`, only for local redacted debugging
+- `--allow-remote-output`: allow `--out` and other k6 outputs, only after reviewing the destination and
+  credentials
 
 ## Run with repository runners
 
 ```bash
-VT_API_BASE_URL=<admin-api-url> dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke
-dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
+VT_API_BASE_URL=<admin-api-url> dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke
+dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 ```
 
 On Windows PowerShell:
 
 ```powershell
 $env:VT_API_BASE_URL = '<admin-api-url>'
-dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke
-dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
+dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke
+dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 ```
 
-The file upload .NET tool starts `benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost` on an ephemeral
-Kestrel port, waits for `/health`, and passes the discovered real base URL to k6.
+For `file-upload-scan`, `sharedkernel-k6` starts `benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost` on
+an ephemeral Kestrel port, waits for `/health`, and passes the discovered real base URL to k6.
 
-Prefer the .NET performance tool for local and Aspire flows.
+Prefer `sharedkernel-k6` for local and Aspire flows.
 
 ## Run with Aspire
 
 Set `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` before starting AppHost. Aspire adds an opt-in
 `admin-performance-smoke` executable resource, waits for the Admin API, injects `VT_API_BASE_URL`,
-and writes summaries to `tests/performance/results/` unless `VT_K6_RESULTS_DIR` is set.
+runs `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke`, and writes summaries under
+`tests/performance/results/`. `VT_K6_USE_DOCKER=1` adds `--container`, and `VT_K6_DOCKER_IMAGE` then adds
+`--image`.
 
 The AppHost resource wiring is intentionally kept outside `AppHost.cs` in
 `src/ViajantesTurismo.AppHost/PerformanceTestingResourceExtensions.cs` so the AppHost remains a
@@ -103,14 +109,12 @@ VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 
 Runner behavior:
 
-- uses local `k6` by default
-- uses Docker only when `VT_K6_USE_DOCKER=1`
-- exports summary JSON to the ignored `tests/performance/results/` folder by default
-- rejects `VT_K6_RESULTS_DIR` outside `tests/performance/results/`
-- rewrites `http://127.0.0.1:*`, `http://localhost:*`, `https://127.0.0.1:*`, `https://localhost:*` to `host.docker.internal` in Docker mode
-- forwards `VT_K6_VUS` and `VT_K6_DURATION` into Docker mode
-- uses a digest-pinned `VT_K6_DOCKER_IMAGE` and runs Docker with `--pull=never`
-- mounts `tests/performance/k6` read-only and writes only under `tests/performance/results/`
+- uses local `k6` with a minimal environment by default, and Docker only with `--container`
+- exports summary JSON to a new run directory under the ignored `tests/performance/results/` folder
+- rewrites a loopback target to `host.docker.internal` in container mode
+- forwards `VT_K6_PROFILE`, `VT_K6_VUS`, `VT_K6_DURATION`, and `VT_UPLOAD_PAYLOAD_BYTES` with `-e` when set
+- runs a digest-pinned image with `--pull=never`
+- mounts `tests/performance/k6` read-only and writes only to the run directory
 - blocks host environment forwarding, remote outputs, `--http-debug`, and `--insecure-skip-tls-verify` by default
 
 ## Run raw k6

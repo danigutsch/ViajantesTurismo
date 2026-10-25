@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "scriptDirectory": "tests/performance/k6",
+  "resultsDirectory": "tests/performance/results",
+  "container": {
+    "engine": "docker",
+    "image": "grafana/k6:0.49.0@sha256:8cd78f9d0de5f50bc8821cceecf356d5d9e839e6611c226a3fcf13c591080fbd"
+  },
+  "scenarios": [
+    {
+      "name": "admin-smoke",
+      "script": "scenarios/admin-smoke.js",
+      "baseUrlVariable": "VT_API_BASE_URL",
+      "environment": ["VT_K6_PROFILE", "VT_K6_VUS", "VT_K6_DURATION"]
+    },
+    {
+      "name": "file-upload-scan",
+      "script": "scenarios/file-upload-scan.js",
+      "baseUrlVariable": "VT_UPLOAD_BASE_URL",
+      "environment": ["VT_K6_PROFILE", "VT_K6_VUS", "VT_K6_DURATION", "VT_UPLOAD_PAYLOAD_BYTES"],
+      "host": {
+        "command": "dotnet",
+        "arguments": [
+          "run",
+          "--project",
+          "benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost/ViajantesTurismo.FileUpload.BenchmarkHost.csproj",
+          "-c",
+          "Release",
+          "--",
+          "--urls",
+          "{listenUrl}"
+        ],
+        "readyFileVariable": "VT_UPLOAD_BENCHMARK_READY_FILE",
+        "healthPath": "/health",
+        "readyTimeoutSeconds": 60,
+        "healthTimeoutSeconds": 30
+      }
+    }
+  ]
+}

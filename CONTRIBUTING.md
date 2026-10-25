@@ -121,9 +121,23 @@ Run the checks relevant to your changes:
 
 - `.NET`: `dotnet build ViajantesTurismo.slnx`
 - Tests: `dotnet test --solution ViajantesTurismo.slnx`
-- Docs, scripts, specs: CI runs `bash scripts/lint-all.sh`
-- Documentation links: `bash scripts/lint-links.sh` for focused local relative link, anchor, and
-  durable GitHub issue/PR reference policy checks
+- Docs, scripts, specs: the CI Lint job runs shellcheck, markdownlint, and the repository checks:
+
+  ```bash
+  shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh
+  dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
+  dotnet tool run sharedkernel-repo -- verify-line-endings --root .
+  dotnet tool run sharedkernel-repo -- verify-json --root .
+  dotnet tool run sharedkernel-repo -- verify-links --root .
+  dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+  dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
+  dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
+  ```
+
+- Documentation links: `dotnet tool run sharedkernel-repo -- verify-links --root .` for focused local relative
+  link, anchor, and durable GitHub issue/PR reference policy checks
+- `scripts/` holds only the SDK bootstrap scripts. Remove untracked local Git hooks that call a lint script
+  under `scripts/`, or replace that call with the checks above
 
 Use the tooling inventory in `README.md` when deciding whether a missing tool is
 required locally, optional for a specific task, CI-only, or already provided by

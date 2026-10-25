@@ -59,12 +59,11 @@ export function getSelectedProfileName() {
 
 export function getScenarioProfile() {
   const profileName = getSelectedProfileName();
-  const profile = profiles[profileName];
-
-  if (!profile) {
+  if (!Object.hasOwn(profiles, profileName)) {
     throw new Error(`Unsupported VT_K6_PROFILE '${profileName}'. Supported profiles: ${Object.keys(profiles).join(', ')}.`);
   }
 
+  const profile = profiles[profileName];
   const vusOverride = Number.parseInt(__ENV.VT_K6_VUS || '', 10);
   const durationOverride = (__ENV.VT_K6_DURATION || '').trim();
 

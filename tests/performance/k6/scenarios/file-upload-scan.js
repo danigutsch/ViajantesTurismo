@@ -114,12 +114,8 @@ function validateUploadBaseUrl(baseUrl) {
     throw new Error('VT_UPLOAD_BASE_URL must start with http:// or https://.');
   }
 
-  if (__ENV.VT_K6_ALLOW_EXTERNAL === '1') {
-    return;
-  }
-
   if (!isLocalUploadBaseUrl(baseUrl)) {
-    throw new Error('VT_UPLOAD_BASE_URL must target localhost, 127.0.0.1, [::1], or host.docker.internal unless VT_K6_ALLOW_EXTERNAL=1 is set.');
+    throw new Error('VT_UPLOAD_BASE_URL must target localhost, 127.0.0.1, [::1], or host.docker.internal.');
   }
 }
 
@@ -162,12 +158,11 @@ function getSelectedProfileName() {
 
 function getScenarioProfile() {
   const profileName = getSelectedProfileName();
-  const profile = profiles[profileName];
-
-  if (!profile) {
+  if (!Object.hasOwn(profiles, profileName)) {
     throw new Error(`Unsupported VT_K6_PROFILE '${profileName}'. Supported profiles: ${Object.keys(profiles).join(', ')}.`);
   }
 
+  const profile = profiles[profileName];
   const vusOverride = Number.parseInt(__ENV.VT_K6_VUS || '', 10);
   const durationOverride = (__ENV.VT_K6_DURATION || '').trim();
 
@@ -178,10 +173,11 @@ function getScenarioProfile() {
 }
 
 function getPayloadBytes() {
-  const value = Number.parseInt(__ENV.VT_UPLOAD_PAYLOAD_BYTES || '262144', 10);
+  const text = __ENV.VT_UPLOAD_PAYLOAD_BYTES || '262144';
+  const value = /^[0-9]+$/.test(text) ? Number(text) : Number.NaN;
 
-  if (Number.isNaN(value) || value < 1 || value > 16777216) {
-    throw new Error('VT_UPLOAD_PAYLOAD_BYTES must be between 1 and 16777216.');
+  if (!(value >= 1 && value <= 16777216)) {
+    throw new Error('VT_UPLOAD_PAYLOAD_BYTES must be a whole number between 1 and 16777216.');
   }
 
   return value;

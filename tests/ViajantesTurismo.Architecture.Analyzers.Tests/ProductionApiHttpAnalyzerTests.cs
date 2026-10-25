@@ -1255,7 +1255,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [InlineData("ViajantesTurismo.Management.Web")]
     [InlineData("ViajantesTurismo.Public.Web")]
     [InlineData("ViajantesTurismo.AppHost")]
-    [InlineData("ViajantesTurismo.Performance.Tool")]
+    [InlineData("ViajantesTurismo.FileUpload.BenchmarkHost")]
     [InlineData("ViajantesTurismo.Admin.Tests")]
     [InlineData("ViajantesTurismo.Admin.ApiServiceTests")]
     public async Task Non_production_API_projects_are_excluded(string assemblyName)

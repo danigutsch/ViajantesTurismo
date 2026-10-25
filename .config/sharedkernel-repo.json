@@ -1,11 +1,30 @@
 {
   "version": 1,
+  "labels": [
+    {"name": "dependencies", "color": "0366d6", "description": "Pull requests and issues related to dependency updates"},
+    {"name": ".net", "color": "512bd4", "description": ".NET and NuGet dependency updates"},
+    {"name": "ci", "color": "1d76db", "description": "Continuous integration and workflow changes"},
+    {"name": "type: epic", "color": "6f42c1", "description": "Parent issue that groups related implementation work"},
+    {"name": "type: feature", "color": "a2eeef", "description": "New user-facing or developer-facing capability"},
+    {"name": "type: enabler", "color": "bfd4f2", "description": "Foundational work that enables future implementation"},
+    {"name": "type: docs", "color": "0075ca", "description": "Documentation-only work"},
+    {"name": "type: chore", "color": "d4c5f9", "description": "Maintenance work without direct behavior change"},
+    {"name": "area: versioning", "color": "5319e7", "description": "Version calculation, stamping, and version policy"},
+    {"name": "area: packaging", "color": "006b75", "description": "NuGet packages, package metadata, and local feeds"},
+    {"name": "area: release", "color": "fbca04", "description": "Release workflows, changelogs, tags, and artifacts"},
+    {"name": "area: api", "color": "0e8a16", "description": "HTTP API contracts, OpenAPI, and API versioning"},
+    {"name": "area: sharedkernel", "color": "0052cc", "description": "SharedKernel libraries, analyzers, tools, and contracts"},
+    {"name": "area: testing", "color": "c2e0c6", "description": "Test libraries, test helpers, and compatibility checks"},
+    {"name": "area: tooling", "color": "1d76db", "description": "Developer and automation tools"},
+    {"name": "risk: breaking-change", "color": "b60205", "description": "Work that may introduce or govern breaking changes"},
+    {"name": "ci:rerun", "color": "1d76db", "description": "Explicitly restart required PR validation; remove and reapply for another attempt."}
+  ],
   "licenseExceptions": {
     "approval": {
       "file": ".config/sharedkernel-candidate.json",
       "values": {
-        "packageVersion": "0.1.0-alpha.167.1",
-        "libraryRevision": "301f7fcce859e4bb5237b2e4a9abaefc71b4b90a",
+        "packageVersion": "0.1.0-alpha.169.1",
+        "libraryRevision": "72625116fe443f123bf07f64c02aeb20c1456efd",
         "libraryDirty": false
       }
     },
@@ -13,5 +32,77 @@
       "StreamJsonRpc": "2.25.29",
       "Magick.NET-Q8-AnyCPU": "15.0.0"
     }
+  },
+  "links": {
+    "include": [
+      "AGENTS.md",
+      "CONTRIBUTING.md",
+      "README.md",
+      "SECURITY.md",
+      "LICENSE.txt",
+      ".agents/*.md",
+      ".devcontainer/*.md",
+      ".github/*.md",
+      "benchmarks/*.md",
+      "docs/*.md",
+      "samples/*.md",
+      "src/*.md",
+      "tests/*.md"
+    ],
+    "exclude": [
+      ".git/*",
+      "*/.git/*",
+      ".worktrees/*",
+      "*/.worktrees/*",
+      "bin/*",
+      "*/bin/*",
+      "obj/*",
+      "*/obj/*",
+      "TestResults/*",
+      "*/TestResults/*",
+      ".github/ISSUE_TEMPLATE/*",
+      "docs/pull_request_template.md",
+      "docs/GENERATED*.md",
+      "tests/ISSUE-*.md"
+    ]
+  },
+  "gherkin": {
+    "include": ["tests/*"],
+    "exclude": [],
+    "allowedTagPatterns": [
+      "@BC:.+",
+      "@Agg:.+",
+      "@Entity:.+",
+      "@VO:.+",
+      "@ADR:\\d+",
+      "@WI:.+",
+      "@US:\\d+",
+      "@Invariant:INV-.+",
+      "@smoke",
+      "@regression",
+      "@integration",
+      "@unit",
+      "@critical",
+      "@high",
+      "@medium",
+      "@low",
+      "@happy_path",
+      "@edge_case",
+      "@error_case",
+      "@security",
+      "@performance",
+      "@architectural",
+      "@wip",
+      "@manual",
+      "@automated",
+      "@flaky",
+      "@ignore",
+      "@summary",
+      "@duplicate_resolution",
+      "@integration-event-transport"
+    ],
+    "forbiddenTags": ["@skip"],
+    "featureNameMaxLength": 250,
+    "scenarioNameMaxLength": 150
   }
 }

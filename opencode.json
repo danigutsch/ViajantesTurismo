@@ -122,8 +122,12 @@
       "template": "!`dotnet test --solution ViajantesTurismo.slnx`"
     },
     "lint": {
-      "description": "Run repository docs/script/spec lint checks.",
-      "template": "!`bash scripts/lint-all.sh`"
+      "description": "Run the repository shell, content, documentation, and Markdown checks.",
+      "template": "!`shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh && dotnet tool run sharedkernel-repo -- verify-text-encoding --root . && dotnet tool run sharedkernel-repo -- verify-line-endings --root . && dotnet tool run sharedkernel-repo -- verify-json --root . && dotnet tool run sharedkernel-repo -- verify-links --root . && dotnet tool run sharedkernel-repo -- verify-gherkin --root . && dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json && dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json && docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/davidanson/markdownlint-cli2:v0.18.1@sha256:173cb697a255a8a985f2c6a83b4f7a8b3c98f4fb382c71c45f1c52e4d4fed63a --config /workspace/.markdownlint-cli2.jsonc \"**/*.md\" \"#artifacts\"`"
+    },
+    "lint-fix": {
+      "description": "Format shell scripts and Markdown, then regenerate the architecture diagrams.",
+      "template": "!`docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/mvdan/shfmt:v3.11.0@sha256:9c6f228b50928e4b174d13da1b10adacd7bbb50796527f58a85ea18e155e0806 -w -i 4 -ci -bn -sr .devcontainer/*.sh scripts/*.sh setup-dev.sh && docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/davidanson/markdownlint-cli2:v0.18.1@sha256:173cb697a255a8a985f2c6a83b4f7a8b3c98f4fb382c71c45f1c52e4d4fed63a --config /workspace/.markdownlint-cli2.jsonc --fix \"**/*.md\" \"#artifacts\" && dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`"
     },
     "prepare-pr": {
       "description": "Prepare a pull request summary using the repository template.",
@@ -160,7 +164,7 @@
       "command": [
         "bash",
         "-lc",
-        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; bash scripts/lint-markdown.sh --fix \"$rel\"",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$root:/workspace\" --workdir /workspace docker.io/davidanson/markdownlint-cli2:v0.18.1@sha256:173cb697a255a8a985f2c6a83b4f7a8b3c98f4fb382c71c45f1c52e4d4fed63a --config /workspace/.markdownlint-cli2.jsonc --fix \"$rel\"",
         "_",
         "$FILE"
       ],
@@ -172,27 +176,13 @@
       "command": [
         "bash",
         "-lc",
-        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v shfmt >/dev/null 2>&1; then shfmt -w -i 4 -ci -bn -sr -- \"$rel\"; elif command -v docker >/dev/null 2>&1; then docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$root:/workspace\" --workdir /workspace mvdan/shfmt:v3.11.0 -w -i 4 -ci -bn -sr -- \"$rel\"; else echo \"Optional: shfmt requires local install or docker. Skipping shell autofix.\" >&2; fi",
+        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v shfmt >/dev/null 2>&1; then shfmt -w -i 4 -ci -bn -sr -- \"$rel\"; elif command -v docker >/dev/null 2>&1; then docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$root:/workspace\" --workdir /workspace docker.io/mvdan/shfmt:v3.11.0@sha256:9c6f228b50928e4b174d13da1b10adacd7bbb50796527f58a85ea18e155e0806 -w -i 4 -ci -bn -sr -- \"$rel\"; else echo \"Optional: shfmt requires local install or docker. Skipping shell autofix.\" >&2; fi",
         "_",
         "$FILE"
       ],
       "extensions": [
         ".sh",
         ".bash"
-      ]
-    },
-    "repo-powershell": {
-      "command": [
-        "bash",
-        "-lc",
-        "root=$(git -C \"$(dirname \"$1\")\" rev-parse --show-toplevel); rel=${1#\"$root\"/}; cd \"$root\"; if command -v pwsh >/dev/null 2>&1; then pwsh -NoProfile -File scripts/format-powershell-file.ps1 -Path \"$rel\"; else echo \"Optional: pwsh is required for PowerShell autofix. Skipping PowerShell formatting.\" >&2; fi",
-        "_",
-        "$FILE"
-      ],
-      "extensions": [
-        ".ps1",
-        ".psm1",
-        ".psd1"
       ]
     }
   }

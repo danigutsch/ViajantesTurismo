@@ -149,8 +149,13 @@ jobs:
           dotnet tool run sharedkernel-repo -- diff \
             --root .
           dotnet tool run sharedkernel-repo -- verify-json --root .
-          bash scripts/lint-markdown.sh roadmap/README.md
-          bash scripts/lint-links.sh roadmap/README.md
+          dotnet tool run sharedkernel-repo -- verify-links roadmap/README.md --root .
+
+      - name: Lint roadmap Markdown
+        uses: DavidAnson/markdownlint-cli2-action@ded1f9488f68a970bc66ea5619e13e9b52e601cd # v23.2.0
+        with:
+          globs: roadmap/README.md
+          config: .markdownlint-cli2.jsonc
 
       - name: Seal confined result
         id: seal
@@ -185,18 +190,3 @@ jobs:
             automation publish-result --force \
             --root .
 
-      - name: Require published pull request
-        if: ${{ steps.seal.outputs.has_changes == 'true' }}
-        shell: bash
-        env:
-          PULL_REQUEST_URL: ${{ steps.publish.outputs.pull_request_url }}
-        run: |
-          if [[ -z "${PULL_REQUEST_URL}" ]]; then
-            echo "Roadmap publication did not return a pull request URL." >&2
-            exit 1
-          fi
-          {
-            echo "## Roadmap maintenance pull request"
-            echo
-            echo "${PULL_REQUEST_URL}"
-          } >> "$GITHUB_STEP_SUMMARY"

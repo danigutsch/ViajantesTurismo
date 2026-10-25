@@ -96,8 +96,9 @@ Current state:
   publisher provenance beyond upstream checksums.
 - `.github/workflows/secret-scan.yml` meets the checksum baseline but does not yet verify
   publisher provenance beyond upstream checksums.
-- `scripts/run-devcontainer-smoke.sh` no longer pipes a remote installer script directly into
-  `sh`; it now owns a version-pinned verified install path.
+- `.github/workflows/devcontainer-smoke.yml` runs `sharedkernel-repo verify-devcontainer`, which
+  installs its Dev Container CLI and Node.js from archives whose hashes are pinned in the tool and
+  pipes no remote installer script into `sh`.
 
 ## npm and tool execution policy
 

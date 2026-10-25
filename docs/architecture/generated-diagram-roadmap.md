@@ -14,7 +14,7 @@ metadata the code does not expose.
 | Supplemental workflows | `.github/workflows/*.yml` workflow names. | `ci-validation-flows.md` | Same generator config. | Generated. |
 | Minimal API endpoints | `MapGet`, `MapPost`, `MapPut`, `MapPatch`, and `MapDelete` declarations. | `generated-endpoint-route-map.md` | Same generator config; stale output fails the existing lint path. | Generated. |
 | Events and messages | Integration-event contracts, event creation sites, consumer registrations, and handlers. | `generated-event-message-flow-map.md` | Same generator config; missing metadata is shown as missing. | Generated. |
-| Machine-readable architecture facts | Stable fact markers plus configured C# switches, registrations, and required invocations. | `FLOWS.md` and the documentation index. | `sharedkernel-docs check` through `scripts/lint-all.sh`. | Source-conformance checked. |
+| Machine-readable architecture facts | Stable fact markers plus configured C# switches, registrations, and required invocations. | `FLOWS.md` and the documentation index. | `sharedkernel-docs check` in the CI Lint job. | Source-conformance checked. |
 | Mediator workflows | Existing mediator generator output and request/handler source. | No generated diagram yet. | Research only until request, handler, pipeline, notification, and stream metadata are explicit. | Deferred. |
 | Code-generation strategy | Repository .NET tool model and local tool security policy. | This roadmap and `diagram-guidance.md`. | No new scripts, Python, npm, or transient tooling. | Use existing .NET generator. |
 

@@ -311,6 +311,24 @@ vulnerability threshold or native distribution gate was relaxed. On October 25, 
 unchanged exact-package exceptions for this candidate. Registry publication and the native distribution
 obligations remain outside this approval.
 
+## Repository tooling wave 3 candidate
+
+Candidate `0.1.0-alpha.169.1` uses clean library revision
+`72625116fe443f123bf07f64c02aeb20c1456efd`. It adds the `sharedkernel-repo` content checks, label sync and dev
+container validation, `sharedkernel-ci run-mutation-tests`, and the new `PandaBear.SharedKernel.K6.Tool`
+package, and otherwise matches `0.1.0-alpha.167.1`. Linux/Windows package consumption and NativeAOT passed in
+the exact-source CI run
+[40174979248](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40174979248). All 79 archive
+hashes were verified against the CI artifacts when the candidate was staged.
+
+Against application main `b4d234ea` (candidate `0.1.0-alpha.167.1`), the external package
+version/content-hash set across all lock files adds and removes nothing (283 entries); removing the local
+performance tool and its test project removed no external package. The workflow still permits only the same
+exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category,
+vulnerability threshold or native distribution gate was relaxed. On October 25, 2026, the owner renewed these
+unchanged exact-package exceptions for this candidate. Registry publication and the native distribution
+obligations remain outside this approval.
+
 ## Remaining decision
 
 Keep current versions and library behavior unchanged while resolving distribution obligations.

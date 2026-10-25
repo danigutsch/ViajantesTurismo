@@ -181,9 +181,10 @@ TOC when next substantively revised:
 
 The current repository checks remain authoritative for their distinct responsibilities:
 
-- `bash scripts/lint-all.sh` checks maintained documentation quality and generated-document drift.
-- `scripts/lint-links.py` validates local links and durable external-reference policy through the
-  repository wrapper.
+- The CI Lint job checks maintained documentation quality with markdownlint and generated-document
+  drift with `sharedkernel-docs verify`.
+- `sharedkernel-repo verify-links` validates local links and durable external-reference policy for the
+  files that the `links` section of `.config/sharedkernel-repo.json` selects.
 - `sharedkernel-docs` owns its configured generated-document outputs.
 
 `sharedkernel-docs check` validates the small set of machine-readable governance and

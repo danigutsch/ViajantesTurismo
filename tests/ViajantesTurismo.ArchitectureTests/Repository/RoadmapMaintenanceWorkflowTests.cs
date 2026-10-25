@@ -48,7 +48,6 @@ public sealed class RoadmapMaintenanceWorkflowTests
         workflow.ShouldContain("if: ${{ inputs.apply_changes && needs.plan.outputs.has_changes == 'true' }}", StringComparison.Ordinal);
         workflow.ShouldContain("environment: roadmap-maintenance", StringComparison.Ordinal);
         workflow.ShouldContain("if: ${{ steps.seal.outputs.has_changes == 'true' }}", StringComparison.Ordinal);
-        workflow.ShouldContain("PULL_REQUEST_URL: ${{ steps.publish.outputs.pull_request_url }}", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -73,6 +72,7 @@ public sealed class RoadmapMaintenanceWorkflowTests
             "actions/upload-artifact",
             "actions/checkout",
             "actions/download-artifact",
+            "DavidAnson/markdownlint-cli2-action",
             "actions/create-github-app-token"]);
         foreach (var reference in references)
         {
@@ -115,7 +115,6 @@ public sealed class RoadmapMaintenanceWorkflowTests
         var applyIndex = workflow.IndexOf("automation apply-plan", StringComparison.Ordinal);
         var sealIndex = workflow.IndexOf("automation seal-result", StringComparison.Ordinal);
         var publishIndex = workflow.IndexOf("automation publish-result", StringComparison.Ordinal);
-        var outputCheckIndex = workflow.IndexOf("Roadmap publication did not return a pull request URL", StringComparison.Ordinal);
 
         // Assert
         workflow.ShouldContain("ROADMAP_PLAN_DIGEST: ${{ needs.plan.outputs.plan_digest }}", StringComparison.Ordinal);
@@ -127,7 +126,6 @@ public sealed class RoadmapMaintenanceWorkflowTests
         applyIndex.ShouldBeGreaterThan(validateIndex);
         sealIndex.ShouldBeGreaterThan(applyIndex);
         publishIndex.ShouldBeGreaterThan(sealIndex);
-        outputCheckIndex.ShouldBeGreaterThan(publishIndex);
     }
 
     [Fact]
@@ -152,8 +150,10 @@ public sealed class RoadmapMaintenanceWorkflowTests
         diffIndex.ShouldBeGreaterThan(verifyIndex);
         sealIndex.ShouldBeGreaterThan(diffIndex);
         workflow.ShouldContain("dotnet tool run sharedkernel-repo -- verify-json --root .", StringComparison.Ordinal);
-        workflow.ShouldContain("bash scripts/lint-markdown.sh roadmap/README.md", StringComparison.Ordinal);
-        workflow.ShouldContain("bash scripts/lint-links.sh roadmap/README.md", StringComparison.Ordinal);
+        workflow.ShouldContain("dotnet tool run sharedkernel-repo -- verify-links roadmap/README.md --root .", StringComparison.Ordinal);
+        workflow.ShouldContain("uses: DavidAnson/markdownlint-cli2-action@ded1f9488f68a970bc66ea5619e13e9b52e601cd # v23.2.0\n        with:\n          globs: roadmap/README.md\n", StringComparison.Ordinal);
+        workflow.IndexOf("globs: roadmap/README.md", StringComparison.Ordinal).ShouldBeLessThan(sealIndex);
+        workflow.ShouldNotContain("scripts/", StringComparison.Ordinal);
         workflow.ShouldNotContain("sync github --apply", StringComparison.Ordinal);
     }
 
@@ -240,20 +240,21 @@ public sealed class RoadmapMaintenanceWorkflowTests
             TimeSpan.FromSeconds(1));
 
         // Assert
-        gateCount.ShouldBe(3);
+        gateCount.ShouldBe(2);
     }
 
     [Fact]
-    public void Nonempty_sealed_changes_fail_when_publication_returns_no_pull_request_url()
+    public void Nonempty_sealed_changes_publish_through_the_tool_that_requires_a_pull_request_url()
     {
         // Act
         var workflow = RoadmapMaintenanceWorkflowTestFile.Content;
+        var publish = workflow.Split("      - name: Publish create-only roadmap pull request\n", StringSplitOptions.None)[1];
 
         // Assert
-        workflow.ShouldContain("PULL_REQUEST_URL: ${{ steps.publish.outputs.pull_request_url }}", StringComparison.Ordinal);
-        workflow.ShouldContain("if [[ -z \"${PULL_REQUEST_URL}\" ]]; then", StringComparison.Ordinal);
-        workflow.ShouldContain("Roadmap publication did not return a pull request URL", StringComparison.Ordinal);
-        workflow.ShouldNotContain("if: ${{ steps.publish.outputs.pull_request_url != '' }}", StringComparison.Ordinal);
+        publish.ShouldContain("automation publish-result --force", StringComparison.Ordinal);
+        publish.ShouldContain("GITHUB_TOKEN: ${{ steps.app_token.outputs.token }}", StringComparison.Ordinal);
+        publish.ShouldNotContain("      - name:", StringComparison.Ordinal);
+        workflow.ShouldNotContain("PULL_REQUEST_URL", StringComparison.Ordinal);
     }
     [Fact]
     public void Workflow_uses_pinned_repository_tool_without_library_source_checkout()

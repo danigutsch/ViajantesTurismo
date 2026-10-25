@@ -67,16 +67,16 @@ For documentation-only pull requests (the `selection.documentation` patterns of
 
 ### Lint job
 
-```bash
-# From repository root
-bash scripts/lint-all.sh
-```
-
-If the CI lint job fails, run individual linters to isolate the failure:
+The Lint job runs these commands from the repository root after `setup-dev.sh` (or
+`setup-dev.ps1`) stages the candidate; run the failing one to reproduce it:
 
 ```bash
-bash scripts/lint-markdown.sh              # Markdown
-shellcheck **/*.sh                         # Shell scripts
+shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh
+dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
+dotnet tool run sharedkernel-repo -- verify-line-endings --root .
 dotnet tool run sharedkernel-repo -- verify-json --root .
-bash scripts/lint-gherkin.sh tests/**/*.feature  # Gherkin/feature files
+dotnet tool run sharedkernel-repo -- verify-links --root .
+dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
+dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
 ```

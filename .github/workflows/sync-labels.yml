@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - .github/labels.json
+      - .config/sharedkernel-repo.json
       - .github/workflows/sync-labels.yml
   workflow_dispatch:
 
@@ -17,53 +17,27 @@ jobs:
   sync-labels:
     name: Sync Labels
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Set up repository tool SDK
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+        with:
+          global-json-file: global.json
+
+      - name: Build pinned SharedKernel repository tool
+        uses: ./.github/actions/build-sharedkernel-tool
+        with:
+          tool: SharedKernel.RepoConfig.Tool
 
       - name: Create or update repository labels
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            const fs = require('node:fs');
-
-            const labelsPath = '.github/labels.json';
-            const labels = JSON.parse(fs.readFileSync(labelsPath, 'utf8'));
-
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-
-            for (const label of labels) {
-              const { name, color, description } = label;
-
-              try {
-                await github.rest.issues.getLabel({ owner, repo, name });
-
-                await github.rest.issues.updateLabel({
-                  owner,
-                  repo,
-                  name,
-                  new_name: name,
-                  color,
-                  description
-                });
-
-                core.info(`Updated label: ${name}`);
-              }
-              catch (error) {
-                if (error.status !== 404) {
-                  throw error;
-                }
-
-                await github.rest.issues.createLabel({
-                  owner,
-                  repo,
-                  name,
-                  color,
-                  description
-                });
-
-                core.info(`Created label: ${name}`);
-              }
-            }
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.RepoConfig.Tool" -c Release --no-build -- \
+            github sync-labels --repository "$GITHUB_REPOSITORY" --force --root .

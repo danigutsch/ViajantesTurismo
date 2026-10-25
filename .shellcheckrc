@@ -18,5 +18,8 @@ severity=style
 # Using bash for our scripts
 shell=bash
 
-# Exclude specific checks if needed (none by default for strictness)
-# disable=SC1091  # Example: Not following sourced files
+# Resolve sourced files relative to the script that sources them
+source-path=SCRIPTDIR
+
+# SC1091: Not following sourced files that are not available at lint time
+disable=SC1091
