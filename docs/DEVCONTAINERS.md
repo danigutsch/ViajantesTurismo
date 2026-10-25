@@ -130,6 +130,9 @@ The `Devcontainer Smoke` workflow runs the same command:
   every CI slice of `.config/sharedkernel-ci.json` one after another with `sharedkernel-ci run`
 - manual dispatch lets you choose either mode
 
+The devcontainer does not provision the fastText engine, so full mode runs every slice with
+`--exclude-trait Requires=fasttext`; CI runs those tests in the Fast Validation 2 job.
+
 The full-mode commands are the `INSTALL_PLAYWRIGHT_DEPENDENCIES` and `RUN_TEST_SLICES` values in
 `.github/workflows/devcontainer-smoke.yml`; pass them as further `--exec` arguments to reproduce a full
 run. Running one slice at a time avoids concurrent all-solution test execution flakes.
