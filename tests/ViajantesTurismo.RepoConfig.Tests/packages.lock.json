@@ -22,45 +22,45 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.159.1, )",
-        "resolved": "0.1.0-alpha.159.1",
-        "contentHash": "lFPV816u49XbuhE1VBATx8h1XF8kmV34uJq0zVLyd31P2yE95CGRHWSAURQUTByLmOrBTA9C7Py3UPpcyXQurw=="
+        "requested": "[0.1.0-alpha.167.1, )",
+        "resolved": "0.1.0-alpha.167.1",
+        "contentHash": "0nDAPlwMM/B1yJ09HxH2zuuMxeOXLFxFX91NlHEjxemgveaQqw3GMGmbIXG3kMZiKLtOAtAlQ9iETUTgg/SnSQ=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.159.1, )",
-        "resolved": "0.1.0-alpha.159.1",
-        "contentHash": "lF9hiuOFVhYKRU2g5Ow5nW0StnAqIKEFxqahbjzPCMdwAS7RlBksqnemHmzAhMuj5/S1hqVyvT3WylS82g9L7A=="
+        "requested": "[0.1.0-alpha.167.1, )",
+        "resolved": "0.1.0-alpha.167.1",
+        "contentHash": "LXy0T/PiK4IBV6awnUQr6s6PV0BMn4BmkReNjk3Irxq12sBVonvUcW00pJrHJvnSr3EjNJ/8oHR/vfNR+Q+i7w=="
       },
       "PandaBear.SharedKernel.Testing": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.159.1, )",
-        "resolved": "0.1.0-alpha.159.1",
-        "contentHash": "XxtXgi8137jLkLG6DLFHgUJyk07ETWXhTZcWbi7mcYc97PrKFKe6ahpT5zRQl2OvtOmOSIaTenENzd4wZJMd6g=="
+        "requested": "[0.1.0-alpha.167.1, )",
+        "resolved": "0.1.0-alpha.167.1",
+        "contentHash": "BFIR2fGghfmN2Ymse/lGR7UbEWYhD4mZS1FGF46Mdl25vGHEjgemHnB6l62MY4/VsGaaLKYon0ePNhMMXVuhwQ=="
       },
       "PandaBear.SharedKernel.Testing.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.159.1, )",
-        "resolved": "0.1.0-alpha.159.1",
-        "contentHash": "g5PiI3B294i7gRqsYLjNZuG38W4KsjlQF1VnlWzJNd26lOsAgXe+gaDK/oPykxxcC7lqNN9Zz+5H+W67aucWjg=="
+        "requested": "[0.1.0-alpha.167.1, )",
+        "resolved": "0.1.0-alpha.167.1",
+        "contentHash": "iEZVGp87XntKlLlkm3boisnJI5vZc6EmroZB6m7G3EPs6C03mSA8AO8mJ5hjMIyPa6meNrRw+Y6ndOys9p9HAA=="
       },
       "PandaBear.SharedKernel.Testing.Assertions": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.159.1, )",
-        "resolved": "0.1.0-alpha.159.1",
-        "contentHash": "yyq8blzdDvdPYXYw5yJDIGzzUuFv1ZHkW6wQMmBR5F6F0LlrzG5vzi6Dch3JUpf1RC72YQbf3Bfy7YUoFTcE5g==",
+        "requested": "[0.1.0-alpha.167.1, )",
+        "resolved": "0.1.0-alpha.167.1",
+        "contentHash": "PG9erFRdZGFSUk+VlgTykgbQ20OEJ0KhMXbAcckKuJ1cZuuJcwlEXXzg3gTnp+rFmn/fvL7WY+hl2rUftXd3rQ==",
         "dependencies": {
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.159.1",
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.167.1",
           "xunit.v3.assert": "4.0.0"
         }
       },
       "PandaBear.SharedKernel.Testing.Http": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.159.1, )",
-        "resolved": "0.1.0-alpha.159.1",
-        "contentHash": "CbtidPjV29OZET+YsAsIAMWekTPpRhERjF3FSrBiFLAoy5drAj5V2PZDY/RZUp6tqA/PoICoTdUm78ptHz5rCg==",
+        "requested": "[0.1.0-alpha.167.1, )",
+        "resolved": "0.1.0-alpha.167.1",
+        "contentHash": "N+L39clKtIuEVFTpMjC154nHkQlyyaVUq2ZWBKJOFAVG1g9uu4E8hcTkvmh+Lb5eUloj4XPnMbGJf9KogkVkUQ==",
         "dependencies": {
-          "PandaBear.SharedKernel.Testing.Assertions": "0.1.0-alpha.159.1"
+          "PandaBear.SharedKernel.Testing.Assertions": "0.1.0-alpha.167.1"
         }
       },
       "xunit.v3.mtp-v2": {
@@ -270,9 +270,9 @@
       },
       "PandaBear.SharedKernel.Results": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.159.1, )",
-        "resolved": "0.1.0-alpha.159.1",
-        "contentHash": "0rP1zFkmlXfI2hjsrhy3U0RdGzuw0wkjWa7KcnbNt2iEiCnsdV+3ABTXh70yhqAFQ6uiIBgra7Ih0Z332ekmEQ=="
+        "requested": "[0.1.0-alpha.167.1, )",
+        "resolved": "0.1.0-alpha.167.1",
+        "contentHash": "DxmvB13yOS4Kj7/wW28o2unmcvx+jRXMNa4bV0/alTqAHdbdPj+VvImdJ2LKO1Dxcf737OMKFwlbTlJKTfuyFw=="
       }
     }
   }

@@ -82,7 +82,7 @@ Changing a required check or hosted gate also follows the [governance runbook](g
 ## External telemetry source identity exceptions
 
 The application test maintainers own three method-scoped `SKTEST010` exceptions, reviewed on
-2026-10-22, re-reviewed on 2026-10-24 for candidate `0.1.0-alpha.159.1` (which changes neither
+2026-10-22, re-reviewed on 2026-10-25 for candidate `0.1.0-alpha.167.1` (which changes neither
 `SKTEST010`, the Scheduling package nor the external instrumentation packages), and due for review by
 2027-01-22 or the next owning-library/analyzer upgrade:
 

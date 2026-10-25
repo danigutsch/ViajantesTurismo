@@ -6,8 +6,8 @@ using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 namespace ViajantesTurismo.Admin.IntegrationEventWorker;
 
 /// <summary>
-/// Registers delivery of the events the Admin worker consumes. It lives in the worker assembly because the
-/// integration-event generator must see a consume-only set of contracts here.
+/// Registers delivery of the events the Admin worker consumes. The handler lives in this assembly because the
+/// integration-event generator requires each consumed contract's handler beside its registration (SKMSG001).
 /// </summary>
 internal static class AdminWorkerIntegrationEvents
 {

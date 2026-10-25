@@ -226,6 +226,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<DateTimeOffset?>("PoisonedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -248,6 +251,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.HasIndex("ConsumerName", "EventId")
                         .IsUnique();
+
+                    b.HasIndex("ConsumerName", "PoisonedAt");
 
                     b.HasIndex("ConsumerName", "ProcessedAt", "NextConsumeAttemptAt", "ReceivedAt");
 
