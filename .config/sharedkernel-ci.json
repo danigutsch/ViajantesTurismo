@@ -154,7 +154,7 @@
     ]
   },
   "mutation": {
-    "strykerVersion": "4.15.0",
+    "strykerVersion": "5.0.0",
     "configFiles": [
       "tests/ViajantesTurismo.Catalog.UnitTests/stryker-domain-config.json",
       "tests/ViajantesTurismo.Catalog.UnitTests/stryker-application-config.json",

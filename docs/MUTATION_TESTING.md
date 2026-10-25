@@ -25,8 +25,9 @@ Relevant local references:
 
 - Stryker.NET documentation exposes an `mtp` test-runner option, but marks Microsoft
   Testing Platform support as **preview**.
-- `dotnet-stryker` `4.15.0` can run contained xUnit v3 + MTP smoke targets in this repository
-  when `test-runner` is set to `mtp` explicitly.
+- `dotnet-stryker` `5.0.0` can run contained xUnit v3 + MTP smoke targets in this repository
+  when `test-runner` is set to `mtp` explicitly, and loads the SharedKernel source generators that
+  `4.15.0` could not.
 - Upstream compatibility reports indicate that Stryker.NET can still struggle with xUnit v3
   even without MTP enabled, producing unexpected test-case warnings and unusable mutation
   results.
@@ -64,7 +65,7 @@ Mutation testing with `Stryker.NET` should remain **local-only and non-gating** 
 The repository contains local smoke targets for contained unit-test and Roslyn analyzer/source-generator projects.
 
 - configs: the `mutation.configFiles` of `.config/sharedkernel-ci.json`, run in order
-- Stryker.NET version: `mutation.strykerVersion` (`4.15.0`), installed on first use under
+- Stryker.NET version: `mutation.strykerVersion` (`5.0.0`), installed on first use under
   `TestResults/tools/dotnet-stryker/<version>` and kept out of the tool manifest
 - runner: `mtp`
 - command: `dotnet tool run sharedkernel-ci -- run-mutation-tests`
@@ -78,7 +79,8 @@ dotnet tool run sharedkernel-ci -- run-mutation-tests
 The command stops at the first failing config and prints each config's output when its run ends.
 Stryker writes its `StrykerOutput` reports next to each config file.
 
-Treat the result as a compatibility smoke signal, not a repository-wide quality gate.
+Treat the result as a local signal, not a repository-wide quality gate. A config fails the run when
+its score falls below its `thresholds.break`.
 
 Constraints for any future expansion:
 
@@ -95,6 +97,8 @@ every survivor mechanically.
 
 1. Confirm the run is trustworthy.
    - Use `test-runner: mtp` for this repository's xUnit v3 + MTP stack.
+   - Check that the killed mutants name many distinct tests in `killedBy` of the JSON report. When
+     every kill names the same test id, the score does not measure the tests.
    - Re-run a failing or surprising target once before changing code.
    - Stop and record tool risk when discovery, timeout, or mapping output is inconsistent.
 2. Classify each finding.
@@ -128,8 +132,9 @@ Roll out mutation testing from the lowest dependency layer upward:
 4. Infrastructure and API integration tests only after local targets are stable.
 5. Browser/system tests only by explicit exception; mutation testing is usually poor value there.
 
-Threshold policy stays non-gating while Stryker.NET MTP support is preview. When upstream support is
-stable, prefer target-specific baselines:
+Each Stryker config sets `thresholds.break` below its measured score, so a regression fails the
+local `run-mutation-tests` run. CI does not run mutation tests while Stryker.NET MTP support is
+preview. Prefer target-specific baselines:
 
 - 100 percent is reasonable for small deterministic value objects, analyzers, parsers, and pure
   mapping logic when survivors represent real missed behavior.
