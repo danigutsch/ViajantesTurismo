@@ -4,7 +4,7 @@
   "parent": "RM-196",
   "title": "Replicate Branding revisions into Admin asynchronously",
   "type": "feature",
-  "status": "proposed",
+  "status": "done",
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Replicate Branding revisions into Admin asynchronously.",

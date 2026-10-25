@@ -4,7 +4,7 @@
   "parent": "RM-196",
   "title": "Host Branding in Catalog and retire the standalone API",
   "type": "feature",
-  "status": "proposed",
+  "status": "done",
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Host Branding in Catalog and retire the standalone API.",

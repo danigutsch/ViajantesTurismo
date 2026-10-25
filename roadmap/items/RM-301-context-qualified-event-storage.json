@@ -4,7 +4,7 @@
   "parent": "RM-196",
   "title": "Support context-qualified EF integration event storage",
   "type": "enabler",
-  "status": "proposed",
+  "status": "done",
   "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Support context-qualified EF integration event storage.",
