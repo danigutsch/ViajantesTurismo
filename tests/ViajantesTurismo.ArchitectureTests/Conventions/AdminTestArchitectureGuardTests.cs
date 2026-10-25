@@ -140,6 +140,28 @@ public sealed partial class AdminTestArchitectureGuardTests
     }
 
     [Fact]
+    public void Customer_import_upload_helper_waits_for_the_input_file_listener()
+    {
+        // Arrange
+        var helperPath = Path.Combine(
+            GetRepositoryRoot(),
+            "tests",
+            "ViajantesTurismo.HostedTests", "Admin", "System",
+            "Infrastructure",
+            "Helpers",
+            "CustomerImportCsvHelpers.cs");
+
+        // Act
+        var helper = File.ReadAllText(helperPath);
+
+        // Assert
+        helper.ShouldContain("_blazorInputFileNextFileId", StringComparison.Ordinal);
+        helper.IndexOf("_blazorInputFileNextFileId", StringComparison.Ordinal)
+            .ShouldBeLessThan(helper.IndexOf("RunAndWaitForFileChooserAsync", StringComparison.Ordinal));
+        helper.ShouldNotContain("Task.Delay", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Customer_wizard_forms_should_have_unique_form_names()
     {
         // Arrange
