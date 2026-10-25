@@ -8,14 +8,7 @@ on:
       - .devcontainer/**
       - .github/workflows/devcontainer-smoke.yml
       - global.json
-      - NuGet.Config
-      - Directory.Packages.props
-      - ViajantesTurismo.slnx
-      - .config/dotnet-tools.json
-      - .config/sharedkernel-candidate.json
-      - .github/actions/**
       - setup-dev.sh
-      - .config/sharedkernel-ci.json
   schedule:
     - cron: '0 6 * * 1'
     - cron: '0 6 1 * *'

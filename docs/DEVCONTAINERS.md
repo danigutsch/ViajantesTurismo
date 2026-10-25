@@ -137,7 +137,8 @@ dotnet test --solution ViajantesTurismo.slnx
 ## Relationship to CI
 
 The repository also has a supplemental `Devcontainer Smoke` workflow in
-`.github/workflows/devcontainer-smoke.yml`.
+`.github/workflows/devcontainer-smoke.yml`. It runs weekly, monthly in full mode, on manual dispatch,
+and on pushes to `main` that touch `.devcontainer/**`, `global.json`, `setup-dev.sh`, or the workflow.
 
 That workflow runs `sharedkernel-repo verify-devcontainer`, so local and CI smoke validation share
 the same bootstrap path.
