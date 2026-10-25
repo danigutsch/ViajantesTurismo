@@ -37,10 +37,18 @@ internal static class CustomerImportCsvHelpers
             Buffer = Encoding.UTF8.GetBytes(csvContent)
         };
 
+    /// <summary>
+    /// Uploads a CSV through the import page's <c>InputFile</c>. ASP.NET Core installs the input's change listener in an
+    /// awaited first-render callback, after the layout's interactive marker, and sets <c>_blazorInputFileNextFileId</c>
+    /// on the element when it does. A file chosen earlier is dropped silently, so the upload waits for that property.
+    /// </summary>
     public static async Task UploadCsv(IPage page, string csvContent)
     {
+        var input = page.Locator("input[type='file']");
+        await input.EvaluateAsync(
+            "element => new Promise(resolve => { const check = () => element._blazorInputFileNextFileId !== undefined ? resolve() : setTimeout(check, 20); check(); })");
         var chooser = await page.RunAndWaitForFileChooserAsync(
-            () => page.Locator("input[type='file']").ClickAsync());
+            () => input.ClickAsync());
         await chooser.SetFilesAsync(ToCsvPayload(csvContent));
     }
 }
