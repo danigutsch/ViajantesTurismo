@@ -4,16 +4,10 @@
   "parent": "RM-215",
   "title": "Align worker ownership to bounded contexts",
   "type": "enabler",
-  "status": "proposed",
-  "order": 416,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "Each event consumer has bounded-context ownership with matching deployment, scaling, credentials, and reliability boundaries.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],

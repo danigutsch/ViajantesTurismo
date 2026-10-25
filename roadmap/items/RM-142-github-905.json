@@ -4,7 +4,7 @@
   "title": "Evaluate Management Catalog read caching",
   "type": "enabler",
   "status": "proposed",
-  "order": 391,
+  "order": 389,
   "theme": "repo-operations",
   "outcome": "GitHub issue #905 is canonically represented from the reconciliation manifest.",
   "scoring": {

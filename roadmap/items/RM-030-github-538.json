@@ -5,7 +5,7 @@
   "title": "Add evaluation and observability for AI image accessibility text",
   "type": "issue",
   "status": "proposed",
-  "order": 365,
+  "order": 363,
   "theme": "repo-operations",
   "outcome": "GitHub issue #538 is canonically represented from the reconciliation manifest.",
   "scoring": {
