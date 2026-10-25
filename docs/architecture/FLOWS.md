@@ -308,8 +308,8 @@ flowchart LR
 
 ### Current implementation
 
-The current standalone Branding API uses validation from `SharedKernel.Branding` and owns persistence,
-endpoint hosting, defaults, authorization, and cache invalidation. It keeps a separate
+Catalog.ApiService hosts the Branding module, which uses validation from `SharedKernel.Branding` and
+owns persistence, endpoints, defaults, authorization, and cache invalidation. It keeps a separate
 `BrandingDbContext` and `branding` schema in the Catalog physical database. Existing app-specific DTO,
 client, and route types in `SharedKernel.Branding` are transitional; ADR-040 assigns them to the
 ViajantesTurismo Branding module.
@@ -317,7 +317,7 @@ ViajantesTurismo Branding module.
 ```mermaid
 sequenceDiagram
     participant Editor as Management.Web branding editor
-    participant API as Standalone Branding API
+    participant API as Catalog.ApiService hosting the Branding module
     participant Core as SharedKernel.Branding
     participant Store as Branding settings store
     participant Public as Public.Web
@@ -341,13 +341,15 @@ Current rendering rules:
   fixed CSS custom-property names with validated values.
 - Preview, review, scheduled publish, and approval workflows are deferred until implemented.
 
-### Accepted target
+### State distribution
 
-Branding remains a logical module but is hosted by Catalog.ApiService. A write commits current state,
+Branding remains a logical module hosted by Catalog.ApiService. A write commits current state,
 an immutable full-state revision, and a Branding-owned outbox event in one transaction. The event
 is `BrandingSettingsChangedIntegrationEvent` and carries a non-empty source epoch, positive source revision, and
 complete immutable document snapshot. `Admin.IntegrationEventWorker` applies it through an Admin inbox to a
 local Admin projection; Admin API never calls Catalog HTTP or reads the Catalog database for Branding.
+Admin document generation, regeneration, and payment instructions fail closed (`503`, audit reason
+`BrandingUnavailable`) while the projection is missing or `Recovering`.
 
 ```mermaid
 flowchart LR
@@ -380,7 +382,7 @@ flowchart LR
     adminApi --> adminProjection
 ```
 
-Target delivery rules:
+Delivery rules:
 
 - No Branding integration event predates `BrandingSettingsChangedIntegrationEvent`, and every valid event has a
   positive revision. Only pre-rollout document rows may have nullable Branding revision provenance.

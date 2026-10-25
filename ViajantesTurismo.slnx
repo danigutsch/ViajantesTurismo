@@ -42,7 +42,6 @@
         <Project Path="src/ViajantesTurismo.DatabaseObservability/ViajantesTurismo.DatabaseObservability.csproj" />
     </Folder>
     <Folder Name="/src/Branding/">
-        <Project Path="src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj" />
         <Project Path="src/ViajantesTurismo.Branding.AspNetCore/ViajantesTurismo.Branding.AspNetCore.csproj" />
         <Project Path="src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj" />
         <Project Path="src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
@@ -70,7 +69,7 @@
         <Project Path="tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj" />
+        <Project Path="tests/ViajantesTurismo.Branding.InfrastructureTests/ViajantesTurismo.Branding.InfrastructureTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj" />
     </Folder>
     <Folder Name="/benchmarks/">

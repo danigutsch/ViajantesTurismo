@@ -163,7 +163,7 @@
         "exact-route-audiences",
         "independent-logical-module",
         "no-ordinary-api-http",
-        "openapi-retarget-gate",
+        "openapi-from-catalog-host",
         "positive-event-revision",
         "production-platform-undecided",
         "public-cache-60-300",

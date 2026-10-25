@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using PandaBear.Branding;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -93,10 +92,7 @@ internal sealed class BrandingStateTransferScenario : IAsyncDisposable
     public async Task<PandaBear.Results.Result<DocumentBrandingSnapshotValues>> CaptureDocumentBranding(CancellationToken ct)
     {
         await using var scope = adminWorkerHost.Services.CreateAsyncScope();
-        var source = new DocumentBrandingSource(
-            new ProjectionOnlyBrandingApiClient(),
-            scope.ServiceProvider.GetRequiredService<IBrandingProjectionStore>(),
-            Options.Create(new DocumentBrandingOptions { Source = DocumentBrandingSourceMode.Projection }));
+        var source = new DocumentBrandingSource(scope.ServiceProvider.GetRequiredService<IBrandingProjectionStore>());
         return await source.Capture(ct);
     }
 

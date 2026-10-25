@@ -138,18 +138,18 @@ and connection-resiliency guidance on transaction commit ambiguity:
 
 ### Branding settings management
 
-- Current trigger: `BrandingEndpoints.SaveSettings` in the standalone Branding host.
-- Target trigger: the same logical Branding endpoint module hosted by Catalog.ApiService.
+- Trigger: `BrandingEndpoints.SaveSettings` in the Branding module hosted by Catalog.ApiService.
+- Code: `src/ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs`.
 - Concurrent editor boundary: Management `GET` returns source epoch/revision and a strong opaque ETag; full-state
   `PUT` requires `If-Match`. A syntactically valid false condition returns 412 without
   current/history/outbox changes or automatic retry; RFC 9110 list and existing-singleton `*` semantics
   remain valid.
-- Systems touched by the target write: Branding current state, append-only full-state revision, and
+- Systems touched by the write: Branding current state, append-only full-state revision, and
   context-qualified `branding.outbox_messages` in one local transaction. The relay later inserts a
   `ConsumerName = 'admin'` row into the Catalog database's default
   `messaging.transport_messages` mapping and marks the Branding outbox row published in one
   `BrandingDbContext` transaction.
-- Consumer transactions: `Catalog.IntegrationEventWorker` claims and updates retry/poison/`ProcessedAt` in
+- Consumer transactions: `Admin.IntegrationEventWorker` claims and updates retry/poison/`ProcessedAt` in
   Catalog-database `messaging.transport_messages`; a separate Admin transaction commits Branding
   inbox, projection, source epoch/revision watermark, and audit state.
 - Failure windows: a relay crash before its commit leaves neither transport enqueue nor outbox ack. A

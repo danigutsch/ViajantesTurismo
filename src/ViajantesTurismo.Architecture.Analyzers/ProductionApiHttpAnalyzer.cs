@@ -15,11 +15,8 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     private const string AddHttpClientMethodName = "AddHttpClient";
     private const string AdminResourceValue = "api";
     private const string BaseAddressPropertyName = "BaseAddress";
-    private const string BrandingResourceValue = "branding-api";
     private const string BrandingApiClientInterfaceTypeName = "IBrandingApiClient";
     private const string BrandingApiClientTypeName = "BrandingApiClient";
-    private const string ManagementBrandingApiClientInterfaceTypeName = "IManagementBrandingApiClient";
-    private const string ManagementBrandingApiClientTypeName = "ManagementBrandingApiClient";
     private const string CreateClientMethodName = "CreateClient";
     private const string CatalogResourceValue = "catalog-api";
     private const string HttpClientFactoryExtensionsTypeName = "HttpClientFactoryServiceCollectionExtensions";
@@ -1049,9 +1046,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return ApiDestination.Catalog;
         }
 
-        return string.Equals(value, BrandingResourceValue, StringComparison.OrdinalIgnoreCase)
-            ? ApiDestination.Branding
-            : ApiDestination.None;
+        return ApiDestination.None;
     }
 
     private static ApiDestination GetNamedClientDestination(string value)
@@ -1066,9 +1061,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return ApiDestination.Catalog;
         }
 
-        return string.Equals(value, BrandingResourceValue, StringComparison.Ordinal)
-            ? ApiDestination.Branding
-            : ApiDestination.None;
+        return ApiDestination.None;
     }
 
     private static string GetResourceValue(ApiDestination destination)
@@ -1077,7 +1070,6 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         {
             ApiDestination.Admin => AdminResourceValue,
             ApiDestination.Catalog => CatalogResourceValue,
-            ApiDestination.Branding => BrandingResourceValue,
             _ => string.Empty
         };
     }
@@ -1093,7 +1085,6 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         {
             "Api" => ApiDestination.Admin,
             "CatalogApi" => ApiDestination.Catalog,
-            "BrandingApi" => ApiDestination.Branding,
             _ => ApiDestination.None
         };
     }
@@ -1106,19 +1097,13 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return ApiDestination.Admin;
         }
 
-        if (IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Catalog.Contracts.Http"))
+        // Catalog.ApiService hosts the Branding routes, so Branding HTTP clients reach the Catalog API.
+        if (IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Catalog.Contracts.Http")
+            || IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Branding.Contracts.Http")
+            || (string.Equals(namespaceName, SharedKernelBrandingNamespace, StringComparison.Ordinal)
+                && type.Name is BrandingApiClientInterfaceTypeName or BrandingApiClientTypeName))
         {
             return ApiDestination.Catalog;
-        }
-
-        if (IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Branding.Contracts.Http")
-            || (string.Equals(namespaceName, SharedKernelBrandingNamespace, StringComparison.Ordinal)
-                && type.Name is BrandingApiClientInterfaceTypeName
-                    or BrandingApiClientTypeName
-                    or ManagementBrandingApiClientInterfaceTypeName
-                    or ManagementBrandingApiClientTypeName))
-        {
-            return ApiDestination.Branding;
         }
 
         return ApiDestination.None;
@@ -1130,7 +1115,6 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         {
             "ViajantesTurismo.Admin.ApiService" => ApiDestination.Admin,
             "ViajantesTurismo.Catalog.ApiService" => ApiDestination.Catalog,
-            "ViajantesTurismo.Branding.ApiService" => ApiDestination.Branding,
             _ => ApiDestination.None
         };
     }
@@ -1293,7 +1277,6 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         {
             ApiDestination.Admin => "Admin API",
             ApiDestination.Catalog => "Catalog API",
-            ApiDestination.Branding => "Branding API",
             _ => "Unknown API"
         };
     }
@@ -1304,7 +1287,6 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         {
             ApiDestination.Admin => "Admin API ('api')",
             ApiDestination.Catalog => "Catalog API ('catalog-api')",
-            ApiDestination.Branding => "Branding API ('branding-api')",
             _ => "unknown API"
         };
     }
@@ -1320,7 +1302,6 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     {
         None,
         Admin,
-        Catalog,
-        Branding
+        Catalog
     }
 }

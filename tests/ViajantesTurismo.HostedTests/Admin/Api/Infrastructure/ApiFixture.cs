@@ -10,6 +10,8 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 
 public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.IAdminTestHost, IAsyncLifetime
 {
+    private static readonly TimeSpan BrandingProjectionTimeout = TimeSpan.FromMinutes(2);
+
     private AspireTestApplication? _app;
     private HttpClient? _client;
     private string? _databaseConnectionString;
@@ -32,6 +34,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
         _app = await shared.GetApplication(HostedProfile.Admin, "api", TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
+        await WaitForBrandingProjection(_databaseConnectionString!, TestContext.Current.CancellationToken);
         _operatorConformanceUserPassword = testConfiguration.OperatorConformanceUserPassword;
         var identityProviderEndpoint = shared.IdentityProviderEndpoint;
         var accessToken = await KeycloakConformanceClient.RequestAccessToken(
@@ -153,6 +156,31 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
     public void Dispose()
     {
         DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
+    // Documents read Branding from the Admin projection, which the Admin worker fills from Catalog-hosted Branding.
+    private static async Task WaitForBrandingProjection(string connectionString, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(BrandingProjectionTimeout);
+        await using var dataSource = NpgsqlDataSource.Create(connectionString);
+        while (true)
+        {
+            try
+            {
+                await using var command = dataSource.CreateCommand("SELECT EXISTS (SELECT 1 FROM branding_projection.settings)");
+                if (await command.ExecuteScalarAsync(timeout.Token) is true)
+                {
+                    return;
+                }
+            }
+            catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UndefinedTable)
+            {
+                // Migrations have not created the projection table yet.
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(500), timeout.Token);
+        }
     }
 
     private string GetDatabaseConnectionString()

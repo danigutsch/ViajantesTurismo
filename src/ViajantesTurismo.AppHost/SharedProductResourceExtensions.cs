@@ -12,14 +12,14 @@ internal static class SharedProductResourceExtensions
         var security = builder.AddConnectionString(ResourceNames.SecurityDatabase);
         var secret = builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true);
         var migrations = builder.AddMigrationService(admin, catalog, security);
-        var branding = builder.AddBrandingApi(catalog, migrations, identityProvider: null);
-        var api = builder.AddAdminApi(admin, branding, migrations, clamAv: null, identityProvider: null);
+        // Catalog hosts Branding and relays its outbox; the Admin worker fills the projection documents read.
+        var catalogApi = builder.AddCatalogApi(admin, catalog, migrations, clamAv: null, seaweedFs: null, identityProvider: null);
+        builder.AddAdminIntegrationEventWorker(admin, catalog, migrations);
+        var api = builder.AddAdminApi(admin, migrations, clamAv: null, identityProvider: null);
         if (profile is not HostedProfile.Admin)
         {
             var cache = builder.AddConnectionString(ResourceNames.Cache);
-            var catalogApi = builder.AddCatalogApi(admin, catalog, migrations, clamAv: null, seaweedFs: null, identityProvider: null);
             builder.AddCatalogIntegrationEventWorker(admin, catalog, migrations, clamAv: null, seaweedFs: null);
-            builder.AddAdminIntegrationEventWorker(admin, catalog, migrations);
             builder.AddManagementWeb(cache, security, migrations, identityProvider: null, secret, api, catalogApi);
             builder.AddPublicWeb(catalogApi);
         }
@@ -29,7 +29,7 @@ internal static class SharedProductResourceExtensions
             var resource = builder.CreateResourceBuilder(project);
             resource.WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", Required(builder, "OtlpEndpoint"))
                 .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc");
-            if (project.Name is ResourceNames.Api or ResourceNames.CatalogApi or ResourceNames.BrandingApi or ResourceNames.WebApp)
+            if (project.Name is ResourceNames.Api or ResourceNames.CatalogApi or ResourceNames.WebApp)
             {
                 resource.WithEnvironment("Authentication__Authority", Required(builder, "Authority"))
                     .WithEnvironment("Authentication__Issuer", Required(builder, "Authority"))

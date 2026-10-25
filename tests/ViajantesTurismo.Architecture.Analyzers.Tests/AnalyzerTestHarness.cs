@@ -8,7 +8,6 @@ namespace ViajantesTurismo.Architecture.Analyzers.Tests;
 internal static class AnalyzerTestHarness
 {
     public const string AdminApiAssemblyName = "ViajantesTurismo.Admin.ApiService";
-    public const string BrandingApiAssemblyName = "ViajantesTurismo.Branding.ApiService";
     public const string CatalogApiAssemblyName = "ViajantesTurismo.Catalog.ApiService";
 
     private const string DefaultUsings = """

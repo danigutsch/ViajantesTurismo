@@ -9,6 +9,11 @@ internal sealed class RecordingOutputCacheStore : IOutputCacheStore
         get; private set;
     }
 
+    public string? EvictionTag
+    {
+        get; private set;
+    }
+
     public CancellationToken EvictionCancellationToken
     {
         get; private set;
@@ -37,6 +42,7 @@ internal sealed class RecordingOutputCacheStore : IOutputCacheStore
     public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
     {
         EvictionObserved = true;
+        EvictionTag = tag;
         EvictionCancellationToken = cancellationToken;
         if (EvictionException is not null)
         {

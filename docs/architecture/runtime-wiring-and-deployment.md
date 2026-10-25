@@ -23,7 +23,6 @@ flowchart LR
     AdminIntegrationEventWorker[Admin Integration Event Worker]
     AdminPerformanceSmoke[Admin Performance Smoke]
     apiService[Admin.ApiService]
-    brandingApiService[Branding Api]
     CatalogIntegrationEventWorker[Catalog Integration Event Worker]
     catalogApiService[Catalog.ApiService]
     clamAv[ClamAV]
@@ -63,13 +62,9 @@ flowchart LR
     PublicWeb --> catalogApiService
     adminDatabase --> databaseServer
     apiService --> adminDatabase
-    apiService --> brandingApiService
     apiService --> clamAv
     apiService --> identityProvider
     apiService --> migrationService
-    brandingApiService --> catalogDatabase
-    brandingApiService --> identityProvider
-    brandingApiService --> migrationService
     catalogApiService --> adminDatabase
     catalogApiService --> catalogDatabase
     catalogApiService --> clamAv
@@ -93,6 +88,8 @@ Current AppHost rules:
 - `Catalog.IntegrationEventWorker` reads Admin transport rows and writes Catalog idempotency/event-store state.
 - `Admin.IntegrationEventWorker` reads Catalog-database transport rows for consumer `admin` and writes only the
   Admin `branding_projection` schema.
+- The Admin-only profile also runs Catalog API and `Admin.IntegrationEventWorker` so the Admin Branding
+  projection is populated.
 - Each worker host belongs to one bounded context and runs only that context's consumers and background
   services; `WorkerOwnershipTests` rejects a worker without an owning context or with another context's
   project references. Current consumers and owners:
@@ -110,33 +107,29 @@ Current AppHost rules:
   private host and port and wait for its PING/PONG health check.
 - The performance smoke resource is opt-in through `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`.
 
-## Accepted Branding runtime transition
+## Branding co-hosting
 
-The generated graph remains the source of truth for the current local runtime: Branding still has a
-standalone executable. ADR-040 accepts a later target in which the independent Branding ASP.NET module
-and `BrandingDbContext` are composed in `ViajantesTurismo.Catalog.ApiService`. Catalog hosts the module
+Per ADR-040, the independent Branding ASP.NET module and `BrandingDbContext` are composed in
+`ViajantesTurismo.Catalog.ApiService`; there is no separate Branding resource. Catalog hosts the module
 but does not own its contracts, `branding` schema, outbox, permissions, or application behavior. This
 is not process isolation: Catalog and Branding share process availability, memory, and the blast radius
 of every credential available to Catalog.ApiService.
 
-In the target flow, Public.Web and Management.Web keep Branding HTTP against the Catalog host.
+Public.Web and Management.Web call Branding HTTP on the Catalog host through service discovery.
 `Admin.IntegrationEventWorker` carries full-state, revisioned Branding events to an Admin-owned inbox and
 local projection. Admin API reads that projection and has no Catalog/Branding HTTP or database
 credential. Ordinary production API-to-API HTTP is not used for Branding state transfer.
 
-The Branding relay atomically moves each envelope from `branding.outbox_messages` into the Catalog
-database's default `messaging.transport_messages` table with `ConsumerName = 'admin'` and marks the
-outbox row published. The worker claims and updates that transport row with its restricted Catalog
-database credential, commits Admin inbox/projection/watermark through a separate restricted Admin
+The Branding relay in Catalog.ApiService atomically moves each envelope from `branding.outbox_messages`
+into the Catalog database's default `messaging.transport_messages` table with `ConsumerName = 'admin'` and
+marks the outbox row published. The worker claims and updates that transport row with its restricted
+Catalog database credential, commits Admin inbox/projection/watermark through a separate restricted Admin
 credential, and only then marks transport `ProcessedAt`. Lease-expiry redelivery covers a crash between
 the Admin commit and transport acknowledgement.
 
-Do not edit the generated graph to show the target before source wiring changes. The standalone
-resource remains the rollback host until forward-compatible schema, dual-host writer, token/session
-drain, zero-traffic observation, rollback drill, retained release artifact, watermark/reseed health,
-private-exposure, and Branding OpenAPI target retarget gates pass. Both hosts retain the exact
-`branding-api` audience during cutover. The production platform and concrete runtime/database roles
-remain undecided; see [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) and
+Catalog.ApiService validates the exact `branding-api` audience for Branding routes. The production
+platform and concrete runtime/database roles remain undecided; see
+[ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) and
 [production readiness](../operations/production-readiness.md#branding-co-hosting-readiness).
 
 ## Reference rules

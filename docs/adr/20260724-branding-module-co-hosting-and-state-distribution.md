@@ -9,20 +9,24 @@ see [Worker ownership](#worker-ownership).
 **Amended**: 2026-10-25 - implementation state and two recorded deviations; see
 [Implementation state](#implementation-state).
 
+**Amended**: 2026-10-25 - contraction complete. With no production deployment, the standalone
+`ViajantesTurismo.Branding.ApiService` host and Admin's Branding HTTP edge were removed directly; the
+expand/contract removal gates no longer apply. See [Executable removal](#executable-removal).
+
 ## Context
 
 Branding is a small business capability with its own settings, permissions, persistence, public reads,
-and management writes. The current implementation gives it a separate `Branding.ApiService` process,
-while some ViajantesTurismo HTTP contracts and route segments are in `SharedKernel.Branding`. Admin
-document generation currently reads Branding through API-to-API HTTP.
+and management writes. Before this decision it ran in a separate `Branding.ApiService` process, some
+ViajantesTurismo HTTP contracts and route segments were in `SharedKernel.Branding`, and Admin document
+generation read Branding through API-to-API HTTP.
 
 The process boundary is more expensive than the capability requires, but moving Branding into Catalog's
 domain or tables would erase useful ownership. Admin also needs a durable local view without receiving a
 Catalog database credential or adding an ordinary synchronous dependency on Catalog availability.
 
 The production hosting platform, concrete runtime identities, database role names, and identity provider
-are not selected. This decision therefore defines required boundaries and removal gates; it does not claim
-that the target topology is deployed or production-ready.
+are not selected. This decision therefore defines required boundaries; it does not claim that the topology
+is deployed or production-ready.
 
 ## Decision
 
@@ -34,8 +38,7 @@ that the target topology is deployed or production-ready.
 - Catalog and Branding deliberately share one process, failure domain, memory space, and credential blast
   radius. Separate DbContexts, connection roles, schemas, transactions, route policies, and module dependencies
   reduce accidental coupling; they do not provide process isolation after code execution is compromised.
-- The standalone Branding executable remains available during an expand/contract migration. It is removed
-  only after every rollback and exposure gate below passes.
+- Catalog.ApiService is the only Branding HTTP host. There is no standalone Branding executable.
 - `SharedKernel.Branding` retains only host-agnostic, pure validation and normalization rules. Branding's
   HTTP contracts, integration-event contracts, application behavior, infrastructure, defaults, and ASP.NET
   endpoint module are ViajantesTurismo-owned.
@@ -48,7 +51,7 @@ that the target topology is deployed or production-ready.
   increasing positive source revision. Each successful write also appends an immutable full-state revision
   record. Expansion assigns the existing settings row an initial epoch and revision before emitting the first
   state-transfer event.
-- Dual-host writes use database-enforced optimistic concurrency against the expected current revision.
+- Branding writes use database-enforced optimistic concurrency against the expected current revision.
   Revision allocation, current-state replacement, history append, and outbox enqueue are one transaction;
   a conflict is returned rather than losing an update through a process-local lock or blind retry.
 - The current row, full-state revision, and outbound integration event commit in one Branding transaction.
@@ -117,7 +120,7 @@ that the target topology is deployed or production-ready.
 - Consumer health records the accepted source epoch, highest observed revision, highest applied revision, last
   successful apply time, retry state, and poison backlog. Operations compare producer delivery and consumer
   epoch/revision watermarks without giving Admin direct source-store access. Exact production alert thresholds
-  remain an SLO/platform decision and must be set before standalone-host removal.
+  remain an SLO/platform decision and must be set before production deployment.
 - Delivery uses bounded retries. Exhausted messages move to an explicit poison state; they do not retry
   forever or block unrelated later full-state revisions. Replay is an audited operator action by immutable
   envelope/event identity after the cause is corrected, and remains safe through inbox idempotency and
@@ -191,7 +194,7 @@ that the target topology is deployed or production-ready.
 
 ### HTTP, caching, and synchronous seams
 
-- Public.Web and Management.Web retain Branding HTTP contracts, hosted by Catalog in the target. Public reads
+- Public.Web and Management.Web retain Branding HTTP contracts, hosted by Catalog. Public reads
   keep a 60-second fresh lifetime and may be served stale for another 300 seconds while revalidating.
 - Management reads and writes are uncached. Branding writes evict the host-local public Branding output cache.
   No Redis or other distributed cache is added without evidence of a stricter freshness, scale, or
@@ -210,39 +213,22 @@ that the target topology is deployed or production-ready.
 - The mounted module preserves Branding validation, the configured CORS allow-list, separate public-read and
   management-mutation rate limits, management `no-store` responses, and the authenticated fallback policy.
   Host defaults must not make a protected Branding route anonymous or broaden an allowed origin.
-- Dual-host cutover does not introduce a second Branding audience or a policy that accepts both API audiences.
-  Standalone and Catalog-hosted Branding routes validate the same `branding-api` tokens while Management
-  retargets the base address. The standalone endpoint remains until the maximum token/session lifetime has
-  drained and telemetry shows zero requests; then its scheme/endpoint registration is removed. The fallback
-  policy remains fail closed throughout.
+- Co-hosting does not introduce a second Branding audience or a policy that accepts both API audiences.
+  Management.Web exchanges tokens for the exact `branding-api` audience and calls the Catalog-hosted Branding
+  routes. The fallback policy remains fail closed.
 - Local Keycloak remains a local/CI conformance provider. Production uses a separately selected and provisioned
   identity provider; this ADR does not claim that provider, its clients, or its roles exist.
 
-### Expand/contract and executable removal gates
+### Executable removal
 
-Removal of `ViajantesTurismo.Branding.ApiService` is a later contraction step. Before removal, the rollout must:
+The removal is done. With no production deployment there was no traffic to drain or roll back, so the
+standalone `ViajantesTurismo.Branding.ApiService` executable, its `branding-api` AppHost resource and
+service-discovery references, and Admin's Branding HTTP client were removed directly. The `branding-api` token
+audience remains the exact audience of the Catalog-hosted Branding routes. Branding `branding` and
+`public-branding` OpenAPI artifacts are generated from Catalog.ApiService.
 
-1. apply forward-compatible additive schema changes that both the rollback artifact and upgraded writer can use;
-2. deploy the upgraded Branding writer in both standalone and Catalog hosts against the same transactional
-   revision, history, and outbox rules;
-3. verify state-transfer events, relay/consumer crash boundaries, Admin inbox/projection updates, watermark
-   telemetry, bounded retry, poison, replay, source rewind, and lost-projection reseed behavior;
-4. move Public.Web and Management.Web traffic to the Catalog-hosted routes while retaining the standalone host;
-5. stop issuing standalone endpoint references, preserve the `branding-api` audience, and wait through the
-   maximum token/session lifetime before removing standalone endpoint/scheme registration;
-6. observe zero standalone Branding traffic for the agreed rollback window;
-7. complete a rollback drill that routes traffic to the retained standalone release artifact and proves
-   read, write, event delivery, and Admin projection recovery;
-8. retain a deployable previous standalone release artifact until the contraction release is accepted;
-9. prove the Catalog API and its Branding routes have the intended private/public exposure, with no accidental
-   backend ingress expansion caused by co-hosting; and
-10. retarget the stable `generate branding` OpenAPI tool command and Branding contract drift tests to
-    Catalog.ApiService generation, preserve Branding-owned canonical `branding`, `public-branding`, and
-    Branding-only `v1` artifacts under `ViajantesTurismo.Branding.Contracts.Http/OpenApi`, and prove no
-    generator, test, or refresh hint still requires the standalone project.
-
-Only after all gates pass may a later change remove the executable, AppHost resource, old service-discovery
-reference, standalone scheme/endpoint registration, and rollback artifact.
+A future production deployment must still prove that the Catalog API and its Branding routes have the intended
+private/public exposure, with no accidental backend ingress expansion caused by co-hosting.
 
 ### Required production roles, still undecided
 
@@ -305,31 +291,34 @@ expanded into Branding by this decision.
   authorized transition `Recovering` -> reseed-only publish/claim/delivery -> `Ready`. Failure injection before
   recovery publish, after publish/before claim, and during delivery proves authorization is retained, the exact
   reseed row remains retryable, projection state stays `Recovering`, and unrelated rows remain fenced.
-- OpenAPI tool and drift tests prove `generate branding` runs against Catalog.ApiService after contraction while
+- OpenAPI tool and drift tests prove the `branding` OpenAPI target generates from Catalog.ApiService while
   preserving Branding-owned artifact names/content boundaries. Authorization tests prove Catalog and Branding
   routes select only their named exact-audience scheme.
 
 ### Implementation state
 
-As of 2026-10-25 the code side of this decision is implemented; none of the operational removal gates above is
-closed.
+As of 2026-10-25 this decision is implemented in code; no production deployment exists.
 
-- Admin document capture goes through `DocumentBrandingSource`. `Documents:Branding:Source` defaults to `Http`,
-  which keeps the Branding API as the value source while shadow-verifying the projection
-  (`admin.documents.branding.projection_mismatch`). `Projection` reads only the projection and fails closed while
-  the projection is missing or `Recovering`. Document drafts store `BrandingSourceRevision`; in `Http` mode it is
-  recorded only when the projection matches. Switching the default to `Projection` and removing the Admin HTTP
-  client remain behind the shadow-verification gate.
+- Admin document generation, regeneration, and payment instructions read Branding only from the local Admin
+  projection through `DocumentBrandingSource` and fail closed (`503`, audit reason `BrandingUnavailable`) while
+  the projection is missing or `Recovering`. Document drafts store `BrandingSourceRevision`. Admin has no HTTP
+  dependency on Branding.
 - The Management conditional-write contract (strong `ETag`, required `If-Match`, 400/412/428 problem codes,
   no validator on a successful `PUT`, refresh with `GET`) is implemented in the shared Branding module and
   Management.Web.
 - Recovery persists `Ready`/`Recovering`, an operator authorization for exactly one reseed event, and an
   append-only recovery audit on both sides. Branding provides same-epoch republish and epoch rotation.
 - Catalog.ApiService co-hosts the shared `ViajantesTurismo.Branding.AspNetCore` module with `CatalogBearer` and
-  `BrandingBearer` schemes; no scheme authenticates by default. Public.Web and Management.Web call Catalog;
-  Admin still calls the standalone host in `Http` mode, and the standalone host remains the rollback deployable.
-  Branding OpenAPI artifacts are still generated from the standalone host; the Catalog-hosted routes are
-  excluded from Catalog's documents until the standalone host is retired.
+  `BrandingBearer` schemes; no scheme authenticates by default. Catalog default and fallback policies select
+  `CatalogBearer`; Branding policies select `BrandingBearer`. Public.Web and Management.Web call Branding
+  through Catalog service discovery. Catalog.ApiService relays the Branding outbox to the Catalog-database
+  transport for consumer `admin`, and `Admin.IntegrationEventWorker` applies it to the `branding_projection`
+  schema.
+- Branding `branding` and `public-branding` OpenAPI artifacts are generated from Catalog.ApiService with
+  `dotnet tool run sharedkernel-ci -- openapi refresh --target branding`. Catalog's own `v1` document includes
+  the co-hosted Branding routes; there is no Branding-only `v1` artifact.
+- `VTARCH001` is enabled in Admin.ApiService and Catalog.ApiService; Branding HTTP clients resolve to the Catalog
+  API destination.
 
 Recorded deviations:
 
@@ -346,8 +335,7 @@ Recorded deviations:
 
 ### Positive
 
-- Branding keeps clear data, contract, permission, and migration ownership while one small executable can
-  eventually be removed.
+- Branding keeps clear data, contract, permission, and migration ownership without its own executable.
 - Admin document generation becomes independent of Catalog HTTP and database availability after its local
   projection is seeded.
 - Full-state events, monotonic revisions, transactional outbox delivery, inbox idempotency, and watermarks make
@@ -357,8 +345,6 @@ Recorded deviations:
 
 ### Negative
 
-- The expand/contract period runs two endpoints with shared `branding-api` audience semantics, increasing
-  routing, rollout, and observability work.
 - Full-state revision and event records duplicate a small document by design and require retention sizing.
 - Admin may serve its last applied Branding projection while delivery is delayed; watermark and poison health
   must make that staleness visible.

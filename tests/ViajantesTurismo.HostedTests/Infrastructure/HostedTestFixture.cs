@@ -150,7 +150,7 @@ public sealed class HostedTestFixture : IAsyncLifetime
         }
 
         return await AspireTestApplication.Start(builder,
-            profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [ResourceNames.Api, ResourceNames.BrandingApi],
+            profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [ResourceNames.Api, ResourceNames.CatalogApi],
             TimeSpan.FromMinutes(3), ct);
     }
 

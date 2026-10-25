@@ -19,8 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ViajantesTurismo.Branding.ApiService" />
-        <InternalsVisibleTo Include="ViajantesTurismo.Branding.ApiServiceTests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Catalog.ApiServiceTests" />
     </ItemGroup>
 
     <ItemGroup>
