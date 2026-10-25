@@ -12,9 +12,9 @@
       "Json"
     ],
     "thresholds": {
-      "high": 80,
-      "low": 60,
-      "break": 55
+      "high": 95,
+      "low": 85,
+      "break": 80
     }
   }
 }

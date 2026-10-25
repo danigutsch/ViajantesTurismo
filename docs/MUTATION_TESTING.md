@@ -132,8 +132,8 @@ Roll out mutation testing from the lowest dependency layer upward:
 4. Infrastructure and API integration tests only after local targets are stable.
 5. Browser/system tests only by explicit exception; mutation testing is usually poor value there.
 
-Each Stryker config sets `thresholds.break` below its measured score, so a regression fails the
-local `run-mutation-tests` run. CI does not run mutation tests while Stryker.NET MTP support is
+Every Stryker config sets `thresholds.break` to at least 80 percent and below its measured score,
+so a score under the floor fails the local `run-mutation-tests` run. CI does not run mutation tests while Stryker.NET MTP support is
 preview. Prefer target-specific baselines:
 
 - 100 percent is reasonable for small deterministic value objects, analyzers, parsers, and pure
