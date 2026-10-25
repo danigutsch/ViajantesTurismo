@@ -1207,6 +1207,7 @@
           "Aspire.Hosting.Redis": "[13.6.1, )",
           "PandaBear.SharedKernel.Aspire.Hosting.ClamAv": "[0.1.0-alpha.187.1, )",
           "PandaBear.SharedKernel.Aspire.Hosting.Grafana": "[0.1.0-alpha.187.1, )",
+          "PandaBear.SharedKernel.Aspire.Hosting.K6": "[0.1.0-alpha.187.1, )",
           "PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs": "[0.1.0-alpha.187.1, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
@@ -1548,6 +1549,15 @@
         "contentHash": "Qi+NicEv1md8Vxm6c40zf5pRsQ9DzPm4UwewjxSk4zbHpdzAMZK8bDZJGdp4Za9/vHP8GTbSdnDuseZQ5h9tmw==",
         "dependencies": {
           "AWSSDK.Core": "[4.0.102.11, 5.0.0)"
+        }
+      },
+      "CommunityToolkit.Aspire.Hosting.k6": {
+        "type": "CentralTransitive",
+        "requested": "[13.6.0, )",
+        "resolved": "13.6.0",
+        "contentHash": "NoBsRNgAMyB66l6XzaTxiHZFshhxF0umAYIl/3ed/CfWhvf6TI6d6xkibsfMOpFMreLuka4f/JUOfXBPRDfUsg==",
+        "dependencies": {
+          "Aspire.Hosting": "13.6.0"
         }
       },
       "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": {
@@ -1956,6 +1966,30 @@
         "contentHash": "1JHGjoAp+v5Ekx0bRtnW/7NB3PmQyvzuO7jbZKd1YXsyeFeLb4FALqKxWabTq/m0OR06h/oBrPW6n8jSUAGVEg==",
         "dependencies": {
           "PandaBear.SharedKernel.ApiVersioning": "0.1.0-alpha.187.1"
+        }
+      },
+      "PandaBear.SharedKernel.Aspire.Hosting.K6": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.187.1, )",
+        "resolved": "0.1.0-alpha.187.1",
+        "contentHash": "KWeislaQq3lN1dt1byC6Vp+L76OXBwiBjv86As+59Pchtz8l9T4gnsXDD4/EPbO8jtjxVCu/Wv/MVjLLoJD9YA==",
+        "dependencies": {
+          "Aspire.Hosting": "13.6.1",
+          "CommunityToolkit.Aspire.Hosting.k6": "13.6.0",
+          "MessagePack": "2.5.303",
+          "Microsoft.Extensions.DependencyInjection": "10.0.13",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Diagnostics": "10.0.13",
+          "Microsoft.Extensions.Diagnostics.HealthChecks": "10.0.13",
+          "Microsoft.Extensions.Hosting": "10.0.13",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Options": "10.0.13",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.13",
+          "Microsoft.NET.StringTools": "18.9.6",
+          "OpenTelemetry": "1.20.0",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.20.0",
+          "OpenTelemetry.Extensions.Hosting": "1.20.0"
         }
       },
       "PandaBear.SharedKernel.AspNetCore": {
