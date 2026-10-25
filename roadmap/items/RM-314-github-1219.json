@@ -5,7 +5,7 @@
   "title": "Establish a privacy-safe PostgreSQL server metrics baseline",
   "type": "issue",
   "status": "proposed",
-  "order": 436,
+  "order": 432,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1219 is canonically represented from the reconciliation manifest.",
   "scoring": {

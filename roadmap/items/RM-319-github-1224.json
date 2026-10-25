@@ -5,7 +5,7 @@
   "title": "Migrate Management Web workflows and state into feature-owned slices",
   "type": "issue",
   "status": "proposed",
-  "order": 441,
+  "order": 437,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1224 is canonically represented from the reconciliation manifest.",
   "scoring": {

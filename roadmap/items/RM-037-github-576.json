@@ -4,7 +4,7 @@
   "title": "Design maintenance mode for web and API surfaces",
   "type": "issue",
   "status": "proposed",
-  "order": 368,
+  "order": 366,
   "theme": "repo-operations",
   "outcome": "GitHub issue #576 is canonically represented from the reconciliation manifest.",
   "scoring": {
