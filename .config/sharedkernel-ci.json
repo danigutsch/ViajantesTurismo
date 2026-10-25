@@ -39,7 +39,17 @@
       ".github/instructions/*",
       ".github/prompts/*",
       ".agents/*",
-      ".claude/*"
+      ".claude/*",
+      "roadmap/items/*",
+      "roadmap/order.json",
+      "roadmap/themes/*",
+      "roadmap/README.md",
+      "observability/README.md",
+      "LICENSE.txt",
+      "SUPPORT.md",
+      "ViajantesTurismo.code-workspace",
+      "ViajantesTurismo.sln.DotSettings",
+      ".idea/*"
     ],
     "alwaysSelected": [
       "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj"

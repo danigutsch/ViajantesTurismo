@@ -130,6 +130,7 @@ Run the checks relevant to your changes:
   dotnet tool run sharedkernel-repo -- verify-json --root .
   dotnet tool run sharedkernel-repo -- verify-links --root .
   dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+  dotnet tool run sharedkernel-repo -- verify --root .
   dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
   dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
   ```

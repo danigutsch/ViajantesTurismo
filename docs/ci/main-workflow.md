@@ -108,8 +108,9 @@ source by `.github/actions/build-sharedkernel-tool` before any candidate is stag
 The nightly schedule therefore runs every slice on `main`. `select` classifies each changed path:
 `fullValidation` patterns (workflows, actions, `.config`, build props and targets, the solution,
 SDK and NuGet configuration, `scripts`, and `setup-dev.*`) select every test project; documentation
-patterns (Markdown and images under `docs`, and the root `README.md`, `AGENTS.md`, `CONTRIBUTING.md`,
-and `SECURITY.md`) select nothing while every tracked build file is inert; any other path selects the
+patterns (Markdown and images under `docs`, the root `README.md`, `AGENTS.md`, `CONTRIBUTING.md`,
+`SECURITY.md`, `SUPPORT.md`, and `LICENSE.txt`, roadmap items, order, themes, and README,
+`observability/README.md`, and editor settings) select nothing while every tracked build file is inert; any other path selects the
 test projects that depend on its owning project through `ProjectReference`. A path without an owning
 project, an unreadable or uncertain project graph, a missing or non-ancestor base, and a changed
 project that no selected test project covers (`requireCoveringTests`) select every test project.
@@ -204,7 +205,8 @@ Documentation-only and code changes run the same steps; the job does not wait fo
 3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
 4. Stage the pinned candidate and restore local tools with `setup-ci-prerequisites`.
 5. Install shellcheck from the runner's package feed and lint `.devcontainer/*.sh`, `scripts/*.sh`, and `setup-dev.sh` with `.shellcheckrc`.
-6. Run `sharedkernel-repo verify-text-encoding`, `verify-line-endings`, `verify-json`, `verify-links`, and `verify-gherkin`.
+6. Run `sharedkernel-repo verify-text-encoding`, `verify-line-endings`, `verify-json`, `verify-links`, `verify-gherkin`,
+   and `verify` (roadmap structure, schema, and reciprocal blocker links).
 7. Run `sharedkernel-docs verify` (generated-diagram drift) and `sharedkernel-docs check` (documentation conformance).
 
 ## Workflow evolution

@@ -28,8 +28,8 @@ existing `.NET`, shell, or Docker path already covers the same need.
   `lint` and `lint-fix` commands and the Markdown formatter in `opencode.json` run it.
 - Shell lint and formatting: local `shellcheck`; local `shfmt`, otherwise the digest-pinned
   `mvdan/shfmt` Docker image.
-- Gherkin, JSON, line-ending, and text-encoding checks: `dotnet tool run sharedkernel-repo --`
-  `verify-gherkin`, `verify-json`, `verify-line-endings`, and `verify-text-encoding`.
+- Gherkin, JSON, line-ending, text-encoding, and roadmap checks: `dotnet tool run sharedkernel-repo --`
+  `verify-gherkin`, `verify-json`, `verify-line-endings`, `verify-text-encoding`, and `verify`.
 - Link validation: `dotnet tool run sharedkernel-repo -- verify-links`. It validates local Markdown
   links and enforces durable documentation link rules; it does not probe external URLs in PR gating.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when

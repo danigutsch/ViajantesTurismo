@@ -7,6 +7,23 @@ public sealed class CiSelectionTests
 {
     [Theory]
     [InlineData("docs/fixture.md", "false", "true", "[]")]
+    [InlineData("roadmap/items/RM-001-fixture.json", "false", "true", "[]")]
+    [InlineData("roadmap/order.json", "false", "true", "[]")]
+    [InlineData("roadmap/themes/fixture.json", "false", "true", "[]")]
+    [InlineData("roadmap/README.md", "false", "true", "[]")]
+    [InlineData("observability/README.md", "false", "true", "[]")]
+    [InlineData("LICENSE.txt", "false", "true", "[]")]
+    [InlineData("SUPPORT.md", "false", "true", "[]")]
+    [InlineData("ViajantesTurismo.code-workspace", "false", "true", "[]")]
+    [InlineData("ViajantesTurismo.sln.DotSettings", "false", "true", "[]")]
+    [InlineData("roadmap/config.json", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
+    [InlineData("roadmap/schema/fixture.schema.json", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
+    [InlineData("roadmap/reconciliation/fixture.json", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
+    [InlineData("observability/otel-collector/aspire.yaml", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
     [InlineData(".github/workflows/ci.yml", "true", "false",
         "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
     [InlineData("tests/ViajantesTurismo.Catalog.UnitTests/Fixture.cs", "true", "false", "[\"fast-validation-1\",\"fast-validation-2\"]")]
