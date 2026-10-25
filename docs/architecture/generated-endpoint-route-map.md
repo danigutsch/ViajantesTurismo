@@ -35,8 +35,8 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `PUT` | `/api/v1/bookings/{id:guid}/details` | UpdateBookingDetails | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDetailsEndpoint.cs` |
 | `PUT` | `/api/v1/bookings/{id:guid}/discount` | UpdateBookingDiscount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDiscountEndpoint.cs` |
 | `PATCH` | `/api/v1/bookings/{id:guid}/notes` | UpdateBookingNotes | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingNotesEndpoint.cs` |
-| `GET` | `/api/v1/branding/settings` | GetManagementSettings | management/internal | required | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
-| `PUT` | `/api/v1/branding/settings` | SaveSettings | management/internal | required | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
+| `GET` | `/api/v1/branding/settings` | GetManagementSettings | management/internal | required | `ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs` |
+| `PUT` | `/api/v1/branding/settings` | SaveSettings | management/internal | required | `ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs` |
 | `POST` | `/api/v1/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/media/images/{id:guid}/accessibility-review` | ReviewMediaImageAccessibility | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | GetManagementMediaPreview | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
@@ -68,7 +68,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/documents/{id:guid}/regenerate` | RegenerateDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
 | `POST` | `/api/v1/documents/{id:guid}/review` | BeginDocumentReview | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
 | `POST` | `/api/v1/documents/{id:guid}/void` | VoidDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `GET` | `/api/v1/public/branding` | GetPublicSettings | public API | not declared | `ViajantesTurismo.Branding.ApiService/BrandingEndpoints.cs` |
+| `GET` | `/api/v1/public/branding` | GetPublicSettings | public API | not declared | `ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/content/{**key}` | GetPublicContent | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/tours` | GetPublishedTours | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |

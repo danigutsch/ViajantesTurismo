@@ -6,6 +6,9 @@
 in an Admin-owned `Admin.IntegrationEventWorker`, not in the Catalog-owned worker that runs Catalog consumers;
 see [Worker ownership](#worker-ownership).
 
+**Amended**: 2026-10-25 - implementation state and two recorded deviations; see
+[Implementation state](#implementation-state).
+
 ## Context
 
 Branding is a small business capability with its own settings, permissions, persistence, public reads,
@@ -305,6 +308,39 @@ expanded into Branding by this decision.
 - OpenAPI tool and drift tests prove `generate branding` runs against Catalog.ApiService after contraction while
   preserving Branding-owned artifact names/content boundaries. Authorization tests prove Catalog and Branding
   routes select only their named exact-audience scheme.
+
+### Implementation state
+
+As of 2026-10-25 the code side of this decision is implemented; none of the operational removal gates above is
+closed.
+
+- Admin document capture goes through `DocumentBrandingSource`. `Documents:Branding:Source` defaults to `Http`,
+  which keeps the Branding API as the value source while shadow-verifying the projection
+  (`admin.documents.branding.projection_mismatch`). `Projection` reads only the projection and fails closed while
+  the projection is missing or `Recovering`. Document drafts store `BrandingSourceRevision`; in `Http` mode it is
+  recorded only when the projection matches. Switching the default to `Projection` and removing the Admin HTTP
+  client remain behind the shadow-verification gate.
+- The Management conditional-write contract (strong `ETag`, required `If-Match`, 400/412/428 problem codes,
+  no validator on a successful `PUT`, refresh with `GET`) is implemented in the shared Branding module and
+  Management.Web.
+- Recovery persists `Ready`/`Recovering`, an operator authorization for exactly one reseed event, and an
+  append-only recovery audit on both sides. Branding provides same-epoch republish and epoch rotation.
+- Catalog.ApiService co-hosts the shared `ViajantesTurismo.Branding.AspNetCore` module with `CatalogBearer` and
+  `BrandingBearer` schemes; no scheme authenticates by default. Public.Web and Management.Web call Catalog;
+  Admin still calls the standalone host in `Http` mode, and the standalone host remains the rollback deployable.
+  Branding OpenAPI artifacts are still generated from the standalone host; the Catalog-hosted routes are
+  excluded from Catalog's documents until the standalone host is retired.
+
+Recorded deviations:
+
+1. Restored old-epoch outbox rows are not marked superseded at the source, because the SharedKernel outbox has
+   no supersession state. Admin quarantines old-epoch events on arrival instead (inbox `Rejected`,
+   `superseded-epoch`), using the epochs retired by audited epoch transitions. The delivery outcome is the
+   same: they never reach the projection.
+2. The Admin Branding consumer keeps unbounded retry. The recovery fence leaves unauthorized events pending by
+   failing their delivery; a consume-attempt limit would poison them merely for waiting. The Catalog consumer
+   uses the bounded retry and poison state, and operators release poisoned messages with
+   `IntegrationEventTransportPoison`.
 
 ## Consequences
 
