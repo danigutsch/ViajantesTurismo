@@ -14,6 +14,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
     private const string InteractivePageSelector = ".page[data-interactive=\"true\"]";
     private const string DeveloperExceptionPageSelector = "#stackpage";
     private HttpClient? apiClient;
+    private PageDiagnostics? diagnostics;
 
     protected TFixture Fixture => fixture;
 
@@ -36,6 +37,7 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
         var initialized = false;
         try
         {
+            diagnostics = new PageDiagnostics(Page);
             Page.SetDefaultTimeout(DefaultTimeoutMilliseconds);
             Page.SetDefaultNavigationTimeout(DefaultTimeoutMilliseconds);
             Assertions.SetDefaultExpectTimeout(DefaultTimeoutMilliseconds);
@@ -102,7 +104,15 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
                     exception);
             }
 
-            throw;
+            if (diagnostics is null)
+            {
+                throw;
+            }
+
+            throw new TimeoutException(
+                $"Management Web page never became interactive. Browser diagnostics:{Environment.NewLine}"
+                + await diagnostics.Describe(Page),
+                exception);
         }
     }
 
