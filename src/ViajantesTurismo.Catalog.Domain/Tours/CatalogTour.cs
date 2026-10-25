@@ -263,6 +263,7 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
     /// <inheritdoc />
     protected override void ApplyEvent(object domainEvent)
     {
+        // Stryker disable once Statement : Replay and AddEvent reject null events before they call ApplyEvent.
         ArgumentNullException.ThrowIfNull(domainEvent);
 
         switch (domainEvent)
