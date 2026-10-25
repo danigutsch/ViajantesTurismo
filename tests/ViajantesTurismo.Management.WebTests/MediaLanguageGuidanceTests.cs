@@ -7,19 +7,16 @@ namespace ViajantesTurismo.Management.WebTests;
 [Trait(TestTraitNames.ScopeName, TestTraits.ComponentScope)]
 public sealed class MediaLanguageGuidanceTests
 {
-    public static bool IsLocalEngineConfigured => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT"))
-        && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT_MODEL"));
-
-    [Theory(Skip = "Requires explicitly provisioned local fastText executable and model.", SkipUnless = nameof(IsLocalEngineConfigured))]
+    [Theory]
+    [Trait(TestTraits.RequiresName, TestTraits.FastTextRequirement)]
     [InlineData("The cyclists are riding bicycles through the beautiful mountain valley.", "en-US", "match")]
     [InlineData("Um grupo de ciclistas atravessa uma estrada nas montanhas ao lado de um vale verde e tranquilo.", "en-US", "mismatch")]
     [InlineData("Um grupo de ciclistas atravessa uma estrada nas montanhas ao lado de um vale verde e tranquilo.", "pt-BR", "match")]
     [InlineData("The cyclists are riding along a mountain road. Os visitantes caminham pela praia durante o passeio.", "en-US", "indeterminate")]
-    public async Task Uses_the_real_local_engine_when_explicitly_configured(string text, string tag, string expected)
+    public async Task Uses_the_real_local_engine(string text, string tag, string expected)
     {
         // Arrange
-        var executable = Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT");
-        var model = Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT_MODEL");
+        var (executable, model) = FastTextEngine.Require();
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["MediaLanguageIdentification:ExecutablePath"] = executable,

@@ -59,14 +59,16 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
         cut.Find("#altText").HasAttribute("disabled").ShouldBeFalse();
     }
 
-    [Fact(Skip = "Requires explicitly provisioned local fastText executable and model.", SkipUnless = nameof(MediaLanguageGuidanceTests.IsLocalEngineConfigured), SkipType = typeof(MediaLanguageGuidanceTests))]
+    [Fact]
+    [Trait(TestTraits.RequiresName, TestTraits.FastTextRequirement)]
     public void Shows_language_mismatch_as_advisory_and_allows_human_override()
     {
         // Arrange
+        var (executable, model) = FastTextEngine.Require();
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["MediaLanguageIdentification:ExecutablePath"] = Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT"),
-            ["MediaLanguageIdentification:ModelPath"] = Environment.GetEnvironmentVariable("MEDIA_TEST_FASTTEXT_MODEL")
+            ["MediaLanguageIdentification:ExecutablePath"] = executable,
+            ["MediaLanguageIdentification:ModelPath"] = model
         }).Build();
         Services.AddSingleton(new MediaLanguageGuidance(configuration));
         catalogApi.Images = [new CatalogMediaImageDto
