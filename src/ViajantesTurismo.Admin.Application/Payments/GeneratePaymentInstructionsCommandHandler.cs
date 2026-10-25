@@ -1,4 +1,3 @@
-using PandaBear.Branding;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -10,7 +9,7 @@ namespace ViajantesTurismo.Admin.Application.Payments;
 
 /// <summary>Generates protected financial snapshots through existing document lineage, branding and draft retention.</summary>
 public sealed class GeneratePaymentInstructionsCommandHandler(PaymentCommandExecutor executor, ITourStore tours, IPaymentAccountStore accounts,
-    IDocumentStore documents, IPaymentInstructionStore instructions, IBrandingApiClient branding, TimeProvider clock)
+    IDocumentStore documents, IPaymentInstructionStore instructions, DocumentBrandingSource branding, TimeProvider clock)
 {
     /// <summary>Creates an immutable draft; no generated financial field is staff-editable.</summary>
     public Task<Result<Guid>> Handle(GeneratePaymentInstructionsCommand command, CancellationToken ct)
@@ -39,7 +38,11 @@ public sealed class GeneratePaymentInstructionsCommandHandler(PaymentCommandExec
             {
                 return FinancialErrors.Changed().ConvertError<Guid>();
             }
-            var capturedBranding = await DocumentBrandingSnapshotFactory.Capture(branding, ct);
+            var capturedBranding = await branding.Capture(ct);
+            if (capturedBranding.IsFailure)
+            {
+                return capturedBranding.ConvertError<DocumentBrandingSnapshotValues, Guid>();
+            }
             var now = clock.GetUtcNow();
             var audit = DocumentAuditContext.Create(command.ActorId, Guid.CreateVersion7().ToString("N"));
             if (audit.IsFailure)
@@ -51,7 +54,7 @@ public sealed class GeneratePaymentInstructionsCommandHandler(PaymentCommandExec
             {
                 return frozen.ConvertError<FrozenPaymentInstruction, Guid>();
             }
-            var content = PaymentInstructionContentFactory.Create(frozen.Value, capturedBranding);
+            var content = PaymentInstructionContentFactory.Create(frozen.Value, capturedBranding.Value);
             if (content.IsFailure)
             {
                 return content.ConvertError<DocumentDraftContent, Guid>();

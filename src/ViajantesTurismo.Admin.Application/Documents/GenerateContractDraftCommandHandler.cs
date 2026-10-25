@@ -1,4 +1,3 @@
-using PandaBear.Branding;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -12,7 +11,7 @@ public sealed class GenerateContractDraftCommandHandler(
     IQueryService queryService,
     ITourStore tourStore,
     IDocumentStore documentStore,
-    IBrandingApiClient brandingApiClient,
+    DocumentBrandingSource documentBrandingSource,
     TimeProvider timeProvider,
     DocumentAuditWriter documentAuditWriter,
     DocumentCommandIdempotency documentCommandIdempotency)
@@ -83,7 +82,20 @@ public sealed class GenerateContractDraftCommandHandler(
                 ct);
         }
 
-        var branding = await DocumentBrandingSnapshotFactory.Capture(brandingApiClient, ct);
+        var brandingResult = await documentBrandingSource.Capture(ct);
+        if (brandingResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                brandingResult.ConvertError<DocumentBrandingSnapshotValues, Guid>(),
+                command.AuditContext,
+                null,
+                booking.Id,
+                null,
+                DocumentAuditReasonCode.BrandingUnavailable,
+                ct);
+        }
+
+        var branding = brandingResult.Value;
         var contentResult = ContractDocumentDraftFactory.Create(
             booking,
             tour,

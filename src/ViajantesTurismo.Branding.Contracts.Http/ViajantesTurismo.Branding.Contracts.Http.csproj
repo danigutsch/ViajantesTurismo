@@ -9,6 +9,15 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="PandaBear.SharedKernel.Branding" />
+        <PackageReference Include="PandaBear.SharedKernel.HttpClients" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Branding.ContractTests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Include="OpenApi/**/*.openapi.json" Pack="true" PackagePath="OpenApi/" />
         <None Include="OpenApi/README.md" Pack="true" PackagePath="OpenApi/" />
     </ItemGroup>

@@ -110,6 +110,7 @@ public static class ServiceDefaultsExtensions
     private static void ConfigureOpenTelemetryMetrics(MeterProviderBuilder metrics)
     {
         metrics.AddAspNetCoreInstrumentation()
+            .AddAdminMetrics()
             .AddCatalogMetrics()
             .AddSharedKernelMediatorMetrics()
             .AddSharedKernelProviderMetrics();

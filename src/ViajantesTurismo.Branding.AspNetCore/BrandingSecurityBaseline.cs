@@ -1,6 +1,6 @@
 using PandaBear.AspNetCore;
 
-namespace ViajantesTurismo.Branding.ApiService;
+namespace ViajantesTurismo.Branding.AspNetCore;
 
 internal static class BrandingSecurityBaseline
 {

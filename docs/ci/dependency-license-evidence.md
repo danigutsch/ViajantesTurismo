@@ -267,6 +267,23 @@ threshold or native distribution gate was relaxed. On October 24, 2026, the owne
 unchanged exact-package exceptions for this candidate. Registry publication and the native
 distribution obligations remain outside this approval.
 
+## Bounded retry and named bearer scheme candidate
+
+Candidate `0.1.0-alpha.167.1` uses clean library revision
+`301f7fcce859e4bb5237b2e4a9abaefc71b4b90a`. It adds bounded transport retry with a poison state, the
+envelope-publisher generator fix for assemblies that both produce and consume, and named exact-audience bearer
+schemes, and otherwise matches `0.1.0-alpha.161.1`. Linux/Windows package consumption and NativeAOT passed in
+the exact-source CI run
+[40172425545](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40172425545). All 78 archive
+hashes were verified against the CI artifacts and the GitHub prerelease manifest.
+
+Against application main `a756abb3` (candidate `0.1.0-alpha.161.1`), the external package
+version/content-hash set across all lock files adds and removes nothing. The workflow still permits only the
+same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category,
+vulnerability threshold or native distribution gate was relaxed. On October 25, 2026, the owner renewed these
+unchanged exact-package exceptions for this candidate. Registry publication and the native distribution
+obligations remain outside this approval.
+
 ## Remaining decision
 
 Keep current versions and library behavior unchanged while resolving distribution obligations.

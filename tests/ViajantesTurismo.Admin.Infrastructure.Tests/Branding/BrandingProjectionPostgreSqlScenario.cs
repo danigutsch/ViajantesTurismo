@@ -43,6 +43,21 @@ internal sealed class BrandingProjectionPostgreSqlScenario : IAsyncDisposable
     public async Task Apply(BrandingSettingsChangedIntegrationEvent integrationEvent, CancellationToken ct) =>
         await new BrandingProjectionApplier(CreateStore(), TimeProvider.System).Apply(integrationEvent, ct);
 
+    public BrandingProjectionRecoveryService CreateRecoveryService() => new(CreateStore(), TimeProvider.System);
+
+    public async Task<(string Status, long AuditEntries)> ReadRecovery(CancellationToken ct)
+    {
+        await using var dataSource = NpgsqlDataSource.Create(database.ConnectionString);
+        await using var command = dataSource.CreateCommand("""
+                                                           SELECT "Status",
+                                                                  (SELECT COUNT(*) FROM branding_projection.recovery_audit)
+                                                           FROM branding_projection.recovery;
+                                                           """);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        await reader.ReadAsync(ct);
+        return (reader.GetString(0), reader.GetInt64(1));
+    }
+
     public async Task<(long Revision, string BrandName, long InboxMessages)> Read(CancellationToken ct)
     {
         await using var dataSource = NpgsqlDataSource.Create(database.ConnectionString);

@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Branding.ApiService;
+namespace ViajantesTurismo.Branding.AspNetCore;
 
 /// <summary>
 /// Defines Branding API permission policies and provider-role mappings.

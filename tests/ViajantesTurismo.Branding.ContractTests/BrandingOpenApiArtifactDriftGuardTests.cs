@@ -39,7 +39,9 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
         var responseStatuses = responses.Select(response => response.Key).Order(StringComparer.Ordinal).ToArray();
 
         // Assert
-        responseStatuses.ShouldBe(["200", "401", "403", "409"]);
-        responses["200"].ShouldNotBeNull().AsObject().ContainsKey("content").ShouldBeFalse();
+        responseStatuses.ShouldBe(["200", "400", "401", "403", "412", "428"]);
+        responses["200"].ShouldNotBeNull().AsObject().ContainsKey("headers").ShouldBeFalse();
+        operation["parameters"].ShouldNotBeNull().AsArray()
+            .ShouldContain(parameter => parameter != null && parameter["name"] != null && parameter["name"]?.GetValue<string>() == "If-Match");
     }
 }

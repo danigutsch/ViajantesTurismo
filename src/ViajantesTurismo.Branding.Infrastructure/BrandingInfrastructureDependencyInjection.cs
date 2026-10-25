@@ -50,6 +50,8 @@ public static class BrandingInfrastructureDependencyInjection
 
         builder.Services.AddScoped<EfBrandingSettingsStore>();
         builder.Services.AddScoped<IBrandingSettingsStore>(services => services.GetRequiredService<EfBrandingSettingsStore>());
+        builder.Services.AddScoped<IBrandingSettingsRevisionStore>(services => services.GetRequiredService<EfBrandingSettingsStore>());
+        builder.Services.AddScoped<IBrandingSourceRecovery>(services => services.GetRequiredService<EfBrandingSettingsStore>());
         builder.Services.AddKeyedSingleton<IIntegrationEventSerializer, BrandingIntegrationEventSerializer>(typeof(BrandingDbContext));
         builder.Services.ConfigureIntegrationEventStorage<BrandingDbContext>(ConfigureBrandingIntegrationEventStorage);
         builder.Services.AddIntegrationEventOutbox<BrandingDbContext>();

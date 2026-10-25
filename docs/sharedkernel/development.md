@@ -6,19 +6,22 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.161.1` at clean library revision
-[`b40822b58c9f6c1797dbea6de1e2a12319906b5b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/b40822b58c9f6c1797dbea6de1e2a12319906b5b).
-It adds the `sharedkernel-ci` `select`, `run`, `openapi`, `install-playwright`, and `coverage` commands that
-`.config/sharedkernel-ci.json` configures, `sharedkernel-version verify-consumer`, and
-`PandaBear.SharedKernel.Npgsql.Testing`; with more than one integration-event outbox or idempotency store,
-the unkeyed service binds only to an explicit default. `run` restores and builds the projects of a slice's
-OpenAPI targets with its selected tests. All 78 package hashes match the unchanged
-artifacts from [CI run 40123246622](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40123246622);
+The published candidate is `0.1.0-alpha.167.1` at clean library revision
+[`301f7fcce859e4bb5237b2e4a9abaefc71b4b90a`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/301f7fcce859e4bb5237b2e4a9abaefc71b4b90a).
+It adds bounded transport retry with an explicit poison state (`MaxConsumeAttempts`,
+`IntegrationEventTransportPoison`), a `PoisonedAt` transport column that the Admin and Catalog transport
+tables migrate, an envelope-publisher generator fix for assemblies that both produce and consume, and
+named exact-audience bearer schemes (`ApiBearerScheme`) that let Catalog.ApiService co-host Branding.
+All 78 package hashes match the unchanged artifacts from
+[CI run 40172425545](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40172425545);
 Linux/Windows package consumption and NativeAOT passed. The unchanged 78 packages, 54 symbol archives
 and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.161.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.161.1).
+[`v0.1.0-alpha.167.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.167.1).
+It keeps the `sharedkernel-ci` commands and the explicit outbox/idempotency default that
+`0.1.0-alpha.161.1` introduced.
 
-The previous previews `0.1.0-alpha.159.1` at revision `afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`,
+The previous previews `0.1.0-alpha.161.1` at revision `b40822b58c9f6c1797dbea6de1e2a12319906b5b`,
+`0.1.0-alpha.159.1` at revision `afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`,
 `0.1.0-alpha.144.1` at revision `ee4126348011b2ddf60d3e580428867689c412dd`,
 `0.1.0-alpha.133.1` at revision `078adf2b2b158f38a211f48274af548d12a85752`,
 `0.1.0-alpha.112.1` at revision `e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1` and `0.1.0-alpha.94.1` at

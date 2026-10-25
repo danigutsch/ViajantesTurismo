@@ -127,6 +127,22 @@ internal sealed class BrandingSettingsRecord
         SourceRevision = 1;
     }
 
+    public void RotateEpoch(Guid sourceEpoch)
+    {
+        if (!IsRevisioned)
+        {
+            throw new InvalidOperationException("Branding settings revisions have not started; run the Branding bootstrap first.");
+        }
+
+        if (sourceEpoch == Guid.Empty || sourceEpoch == SourceEpoch)
+        {
+            throw new ArgumentException("A rotated epoch must be new and non-empty.", nameof(sourceEpoch));
+        }
+
+        SourceEpoch = sourceEpoch;
+        SourceRevision = 1;
+    }
+
     public bool HasSameValues(BrandingSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);

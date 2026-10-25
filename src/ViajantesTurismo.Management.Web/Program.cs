@@ -1,7 +1,7 @@
 using Duende.AccessTokenManagement.OpenIdConnect;
 using PandaBear.AspNetCore;
-using PandaBear.Branding;
 using PandaBear.HttpClients;
+using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Services;
 using ViajantesTurismo.Resources;
@@ -51,7 +51,7 @@ builder.Services.AddHttpClient<ICatalogToursApiClient, CatalogToursApiClient>(cl
 builder.Services.AddHttpClient<IPublicContentApiClient, PublicContentApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
     .AddUserAccessTokenHandler()
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Catalog);
-builder.Services.AddHttpClient<IManagementBrandingApiClient, ManagementBrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"))
+builder.Services.AddHttpClient<IBrandingManagementClient, BrandingManagementClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
     .AddUserAccessTokenHandler()
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Branding);
 

@@ -27,7 +27,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var handler = new GenerateContractDraftCommandHandler(
             new FakeQueryService(null), new FakeTourStore(), store,
-            new FakeBrandingApiClient(new BrandingSettingsDto()),
+            DocumentBrandingTestData.Http(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(new UnusedIdempotencyStore(), unitOfWork, TimeProvider.System));
@@ -59,7 +59,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeQueryService(null),
             new FakeTourStore(),
             store,
-            new FakeBrandingApiClient(new BrandingSettingsDto()),
+            DocumentBrandingTestData.Http(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.CreateStarted(idempotencyScope, idempotencyKey, unitOfWork));
@@ -104,7 +104,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeQueryService(null),
             new FakeTourStore(),
             store,
-            new FakeBrandingApiClient(new BrandingSettingsDto()),
+            DocumentBrandingTestData.Http(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.CreateCompleted(
@@ -156,7 +156,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeQueryService(booking, tour),
             tourData.TourStore,
             store,
-            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(idempotencyStore, unitOfWork, TimeProvider.System));
@@ -218,7 +218,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeQueryService(booking, tour),
             tourData.TourStore,
             documentStore,
-            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(idempotencyStore, unitOfWork, TimeProvider.System));
@@ -260,7 +260,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeQueryService(booking, tour),
             tourData.TourStore,
             store,
-            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -295,7 +295,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var branding = new BrandingSettingsDto { BrandName = "Viajantes", PrimaryColor = "#102030", AccentColor = "#405060", BackgroundColor = "#fdfdfd", TextColor = "#111111", HeadingFontFamily = "Montserrat", BodyFontFamily = "Inter" };
-        var handler = new GenerateContractDraftCommandHandler(queryService, tourData.TourStore, store, new FakeBrandingApiClient(branding), TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), DocumentIdempotencyTestData.Create(unitOfWork));
+        var handler = new GenerateContractDraftCommandHandler(queryService, tourData.TourStore, store, DocumentBrandingTestData.Http(branding), TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))), CancellationToken.None);
@@ -335,7 +335,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeQueryService(booking, tour),
             tourData.TourStore,
             store,
-            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -369,7 +369,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var store = new FakeDocumentStore();
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new GenerateContractDraftCommandHandler(new FakeQueryService(null), new FakeTourStore(), store, new FakeBrandingApiClient(new BrandingSettingsDto()), TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), DocumentIdempotencyTestData.Create(unitOfWork));
+        var handler = new GenerateContractDraftCommandHandler(new FakeQueryService(null), new FakeTourStore(), store, DocumentBrandingTestData.Http(new BrandingSettingsDto()), TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -405,7 +405,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourId)),
             new FakeTourStore(),
             store,
-            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -425,6 +425,68 @@ public sealed class GenerateContractDraftCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_fails_closed_without_a_partial_draft_when_the_branding_projection_is_unavailable()
+    {
+        // Arrange
+        var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
+        var booking = DtoBuilders.BuildBookingDto(id: tourData.BookingId, tourId: tourData.TourId, status: BookingStatusDto.Confirmed);
+        var tour = DtoBuilders.BuildTourDto(id: tourData.TourId);
+        var store = new FakeDocumentStore();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new GenerateContractDraftCommandHandler(
+            new FakeQueryService(booking, tour),
+            tourData.TourStore,
+            store,
+            DocumentBrandingTestData.Projection(null),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
+            CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Unavailable);
+        store.AddedDocuments.ShouldBeEmpty();
+        store.AddedLineages.ShouldBeEmpty();
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.BrandingUnavailable);
+    }
+
+    [Fact]
+    public async Task Handle_records_the_projection_source_revision_with_the_branding_snapshot()
+    {
+        // Arrange
+        var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
+        var booking = DtoBuilders.BuildBookingDto(id: tourData.BookingId, tourId: tourData.TourId, status: BookingStatusDto.Confirmed);
+        var tour = DtoBuilders.BuildTourDto(id: tourData.TourId);
+        var settings = DocumentDraftTestData.CreateBrandingSettings();
+        var store = new FakeDocumentStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new GenerateContractDraftCommandHandler(
+            new FakeQueryService(booking, tour),
+            tourData.TourStore,
+            store,
+            DocumentBrandingTestData.Projection(DocumentBrandingTestData.ProjectionMatching(settings, 12)),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new GenerateContractDraftCommand(booking.Id, "booking-confirmation", "1", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
+            CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var draft = store.AddedDocuments.ShouldHaveSingleItem();
+        draft.BrandingSourceRevision.ShouldBe(12);
+        draft.BrandingName.ShouldBe(settings.BrandName);
+    }
+
+    [Fact]
     public async Task Handle_returns_not_found_without_persisting_when_tour_is_missing()
     {
         // Arrange
@@ -438,7 +500,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             new FakeQueryService(booking),
             tourData.TourStore,
             store,
-            new FakeBrandingApiClient(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -477,7 +539,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var branding = new BrandingSettingsDto { BrandName = "Viajantes", LogoUri = "/\\evil.test/logo.svg", PrimaryColor = "#000", AccentColor = "#000", BackgroundColor = "#fff", TextColor = "#000", HeadingFontFamily = "sans", BodyFontFamily = "sans" };
-        var handler = new GenerateContractDraftCommandHandler(queryService, tourData.TourStore, store, new FakeBrandingApiClient(branding), TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), DocumentIdempotencyTestData.Create(unitOfWork));
+        var handler = new GenerateContractDraftCommandHandler(queryService, tourData.TourStore, store, DocumentBrandingTestData.Http(branding), TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
         var result = await handler.Handle(new GenerateContractDraftCommand(bookingId, "booking-confirmation", "1", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))), CancellationToken.None);

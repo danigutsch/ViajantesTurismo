@@ -76,6 +76,103 @@ public sealed class BrandingSettingsRevisionTests
     }
 
     [Fact]
+    public async Task Conditional_save_writes_nothing_when_the_precondition_is_false()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        await scenario.CreateStore().SaveSettings(BrandingSettingsTestData.CreateSettings(), ct);
+        BrandingSettingsSnapshot? observed = null;
+
+        // Act
+        var saved = await scenario.CreateStore().SaveIfMatch(
+            BrandingSettingsTestData.CreateSettings("Rejected"),
+            current =>
+            {
+                observed = current;
+                return false;
+            },
+            ct);
+
+        // Assert
+        saved.ShouldBeNull();
+        observed.ShouldNotBeNull().SourceRevision.ShouldBe(1);
+        var snapshot = scenario.ReadSnapshot();
+        snapshot.Current.ShouldNotBeNull().BrandName.ShouldBe(BrandingSettingsTestData.CreateSettings().BrandName);
+        snapshot.Revisions.Count.ShouldBe(1);
+        snapshot.Outbox.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Conditional_save_returns_the_new_revision_when_the_precondition_holds()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        await scenario.CreateStore().SaveSettings(BrandingSettingsTestData.CreateSettings(), ct);
+
+        // Act
+        var saved = await scenario.CreateStore().SaveIfMatch(
+            BrandingSettingsTestData.CreateSettings("Accepted"),
+            current => current is { SourceRevision: 1 },
+            ct);
+
+        // Assert
+        var snapshot = saved.ShouldNotBeNull();
+        snapshot.SourceRevision.ShouldBe(2);
+        snapshot.Settings.BrandName.ShouldBe("Accepted");
+        scenario.ReadSnapshot().Outbox.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Republishing_the_current_snapshot_keeps_the_revision_under_a_new_event_identity()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        await scenario.CreateStore().SaveSettings(BrandingSettingsTestData.CreateSettings(), ct);
+        var before = scenario.ReadSnapshot();
+
+        // Act
+        var publication = await scenario.CreateStore().RepublishCurrent("projection-lost", "INC-1", "operator@example.test", ct);
+
+        // Assert
+        var after = scenario.ReadSnapshot();
+        var current = after.Current.ShouldNotBeNull();
+        publication.SourceEpoch.ShouldBe(current.SourceEpoch);
+        publication.SourceRevision.ShouldBe(1);
+        after.Revisions.Count.ShouldBe(1);
+        after.Outbox.Count.ShouldBe(2);
+        after.Outbox.Select(envelope => envelope.EventId).ShouldContain(publication.EventId.ToString());
+        before.Outbox.ShouldHaveSingleItem().EventId.ShouldNotBe(publication.EventId.ToString());
+    }
+
+    [Fact]
+    public async Task Rotating_the_epoch_restarts_the_revision_and_publishes_the_restored_snapshot()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var scenario = BrandingStoreScenario.Create();
+        await scenario.CreateStore().SaveSettings(BrandingSettingsTestData.CreateSettings(), ct);
+        await scenario.CreateStore().SaveSettings(BrandingSettingsTestData.CreateSettings("Second"), ct);
+        var oldEpoch = scenario.ReadSnapshot().Current.ShouldNotBeNull().SourceEpoch;
+
+        // Act
+        var publication = await scenario.CreateStore().RotateEpoch("source-restore", "BACKUP-9", "operator@example.test", ct);
+
+        // Assert
+        var snapshot = scenario.ReadSnapshot();
+        var current = snapshot.Current.ShouldNotBeNull();
+        current.SourceEpoch.ShouldNotBe(oldEpoch);
+        current.SourceRevision.ShouldBe(1);
+        current.BrandName.ShouldBe("Second");
+        publication.SourceEpoch.ShouldBe(current.SourceEpoch);
+        publication.SourceRevision.ShouldBe(1);
+        snapshot.Revisions.ShouldContain(revision => revision.SourceEpoch == current.SourceEpoch && revision.SourceRevision == 1);
+        snapshot.Outbox.Count.ShouldBe(3);
+    }
+
+    [Fact]
     public async Task A_writer_with_a_stale_revision_conflicts()
     {
         // Arrange

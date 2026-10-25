@@ -5,6 +5,7 @@ namespace ViajantesTurismo.Catalog.ApiService;
 /// </summary>
 internal static class CatalogAuthorization
 {
+    public const string BearerScheme = "CatalogBearer";
     public const string CatalogRead = "catalog.read";
     public const string CatalogWrite = "catalog.write";
     public const string CatalogPublish = "catalog.publish";

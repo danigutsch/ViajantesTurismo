@@ -29,9 +29,11 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
         this.sensitiveCircuitBreaker = sensitiveCircuitBreaker;
         this.frontendConfiguration = frontendConfiguration;
         catalogRoot = CatalogApiTestHost.Create(tours, media, objects);
+        // Catalog co-hosts the Branding routes Public.Web reads; give them settings without a database.
+        var withBranding = CatalogHostedBrandingTestHost.Create(catalogRoot);
         catalog = catalogConfiguration is null
-            ? catalogRoot
-            : catalogRoot.WithWebHostBuilder(builder => builder.ConfigureAppConfiguration(
+            ? withBranding
+            : withBranding.WithWebHostBuilder(builder => builder.ConfigureAppConfiguration(
                 (_, configuration) => configuration.AddInMemoryCollection(catalogConfiguration)));
     }
 

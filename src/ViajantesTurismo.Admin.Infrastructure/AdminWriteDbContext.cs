@@ -82,6 +82,8 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new DocumentAuditConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingProjectionConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingInboxConfiguration());
+        modelBuilder.ApplyConfiguration(new BrandingRecoveryConfiguration());
+        modelBuilder.ApplyConfiguration(new BrandingRecoveryAuditConfiguration());
         if (configurations is not null)
         {
             foreach (var configuration in configurations)

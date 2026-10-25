@@ -55,4 +55,32 @@ public sealed class BrandingProjectionPostgreSqlTests(PostgreSqlTestServerFixtur
         var projection = await scenario.Read(ct);
         projection.ShouldBe((3L, "Third", 3L));
     }
+
+    [Fact]
+    public async Task Epoch_rotation_recovery_fences_reseeds_once_and_quarantines_the_retired_lineage()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var database = await fixture.CreateDatabase(ct);
+        await using var scenario = await BrandingProjectionPostgreSqlScenario.Create(database, ct);
+        await scenario.Apply(BrandingProjectionTestEvents.Create(revision: 3, brandName: "Before restore"), ct);
+        var newEpoch = Guid.CreateVersion7();
+        var reseed = BrandingProjectionTestEvents.Create(revision: 1, brandName: "Restored", epoch: newEpoch);
+        var unauthorized = () => scenario.Apply(reseed, ct);
+        await unauthorized.ShouldThrow<BrandingProjectionRecoveringException>();
+        var authorization = await scenario.CreateRecoveryService().AuthorizeReseed(
+            new BrandingReseedRequest(BrandingProjectionTestEvents.Epoch, 3, reseed.EventId, newEpoch, 1, "restore", "INC-7", "operator@example.test"),
+            ct);
+
+        // Act
+        await scenario.Apply(reseed, ct);
+        await scenario.Apply(BrandingProjectionTestEvents.Create(revision: 4, brandName: "Old lineage"), ct);
+
+        // Assert
+        authorization.IsSuccess.ShouldBeTrue();
+        var projection = await scenario.Read(ct);
+        projection.ShouldBe((1L, "Restored", 3L));
+        var recovery = await scenario.ReadRecovery(ct);
+        recovery.ShouldBe(("Ready", 1L));
+    }
 }

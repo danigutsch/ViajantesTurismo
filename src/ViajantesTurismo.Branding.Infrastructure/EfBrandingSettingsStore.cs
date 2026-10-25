@@ -11,13 +11,34 @@ namespace ViajantesTurismo.Branding.Infrastructure;
 internal sealed class EfBrandingSettingsStore(
     BrandingDbContext dbContext,
     [FromKeyedServices(typeof(BrandingDbContext))] IIntegrationEventOutbox outbox,
-    TimeProvider timeProvider) : IBrandingSettingsStore
+    TimeProvider timeProvider) : IBrandingSettingsStore, IBrandingSettingsRevisionStore, IBrandingSourceRecovery
 {
     public async Task<BrandingSettings?> GetSettings(CancellationToken ct)
     {
         var entity = await Load(ct).ConfigureAwait(false);
 
         return entity?.ToSettings(BrandingFontFamilies.All);
+    }
+
+    public async Task<BrandingSettingsSnapshot?> GetCurrent(CancellationToken ct) =>
+        ToSnapshot(await Load(ct).ConfigureAwait(false));
+
+    public async Task<BrandingSettingsSnapshot?> SaveIfMatch(
+        BrandingSettings settings,
+        Func<BrandingSettingsSnapshot?, bool> precondition,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(precondition);
+
+        var existing = await Load(ct).ConfigureAwait(false);
+        if (!precondition(ToSnapshot(existing)))
+        {
+            return null;
+        }
+
+        await SaveSettings(settings, ct).ConfigureAwait(false);
+        return ToSnapshot(await Load(ct).ConfigureAwait(false));
     }
 
     /// <summary>
@@ -89,6 +110,51 @@ internal sealed class EfBrandingSettingsStore(
         }
     }
 
+    public async Task<BrandingReseedPublication> RepublishCurrent(
+        string reason,
+        string incidentReference,
+        string actor,
+        CancellationToken ct)
+    {
+        var current = await LoadRevisioned(ct).ConfigureAwait(false);
+        var publication = new BrandingReseedPublication(Guid.CreateVersion7(), current.SourceEpoch, current.SourceRevision);
+        var recordedAt = timeProvider.GetUtcNow();
+        await Enqueue(current, publication.EventId, recordedAt, ct).ConfigureAwait(false);
+        dbContext.Add(BrandingRecoveryAuditRecord.Create(
+            "same-epoch-reseed", current.SourceEpoch, current.SourceRevision, publication, reason, incidentReference, actor, recordedAt));
+        await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+        return publication;
+    }
+
+    public async Task<BrandingReseedPublication> RotateEpoch(
+        string reason,
+        string incidentReference,
+        string actor,
+        CancellationToken ct)
+    {
+        var current = await LoadRevisioned(ct).ConfigureAwait(false);
+        var (oldEpoch, oldRevision) = (current.SourceEpoch, current.SourceRevision);
+        current.RotateEpoch(Guid.CreateVersion7());
+        var publication = new BrandingReseedPublication(Guid.CreateVersion7(), current.SourceEpoch, current.SourceRevision);
+        var recordedAt = timeProvider.GetUtcNow();
+        dbContext.BrandingSettingsRevisions.Add(BrandingSettingsRevisionRecord.Capture(current, recordedAt));
+        await Enqueue(current, publication.EventId, recordedAt, ct).ConfigureAwait(false);
+        dbContext.Add(BrandingRecoveryAuditRecord.Create(
+            "epoch-rotation", oldEpoch, oldRevision, publication, reason, incidentReference, actor, recordedAt));
+        await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+        return publication;
+    }
+
+    private async Task<BrandingSettingsRecord> LoadRevisioned(CancellationToken ct) =>
+        await Load(ct).ConfigureAwait(false) is { IsRevisioned: true } current
+            ? current
+            : throw new InvalidOperationException("Branding revisions have not started; there is no snapshot to recover from.");
+
+    private static BrandingSettingsSnapshot? ToSnapshot(BrandingSettingsRecord? record) =>
+        record is { IsRevisioned: true } && record.ToSettings(BrandingFontFamilies.All) is { } settings
+            ? new BrandingSettingsSnapshot(settings, record.SourceEpoch, record.SourceRevision)
+            : null;
+
     private Task<BrandingSettingsRecord?> Load(CancellationToken ct) =>
         dbContext.BrandingSettings.SingleOrDefaultAsync(settings => settings.Id == BrandingSettingsRecord.SettingsId, ct);
 
@@ -96,21 +162,7 @@ internal sealed class EfBrandingSettingsStore(
     {
         var committedAt = timeProvider.GetUtcNow();
         dbContext.BrandingSettingsRevisions.Add(BrandingSettingsRevisionRecord.Capture(current, committedAt));
-        await outbox.Enqueue(
-            new BrandingSettingsChangedIntegrationEvent(
-                Guid.CreateVersion7(),
-                committedAt,
-                current.SourceEpoch,
-                current.SourceRevision,
-                current.BrandName,
-                current.PrimaryColor,
-                current.AccentColor,
-                current.BackgroundColor,
-                current.TextColor,
-                current.HeadingFontFamily,
-                current.BodyFontFamily,
-                current.LogoUri is null ? null : new Uri(current.LogoUri, UriKind.RelativeOrAbsolute)),
-            ct).ConfigureAwait(false);
+        await Enqueue(current, Guid.CreateVersion7(), committedAt, ct).ConfigureAwait(false);
 
         try
         {
@@ -124,4 +176,21 @@ internal sealed class EfBrandingSettingsStore(
             throw new DbUpdateConcurrencyException("Branding settings changed by another writer.", exception);
         }
     }
+
+    private ValueTask Enqueue(BrandingSettingsRecord current, Guid eventId, DateTimeOffset occurredAt, CancellationToken ct) =>
+        outbox.Enqueue(
+            new BrandingSettingsChangedIntegrationEvent(
+                eventId,
+                occurredAt,
+                current.SourceEpoch,
+                current.SourceRevision,
+                current.BrandName,
+                current.PrimaryColor,
+                current.AccentColor,
+                current.BackgroundColor,
+                current.TextColor,
+                current.HeadingFontFamily,
+                current.BodyFontFamily,
+                current.LogoUri is null ? null : new Uri(current.LogoUri, UriKind.RelativeOrAbsolute)),
+            ct);
 }

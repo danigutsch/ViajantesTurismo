@@ -18,6 +18,9 @@ internal static class PaymentInstructionContentFactory
         }
         var source = ApplicationRequestFingerprint.Create(terms.BookingId.ToString("N"), terms.ScheduleId.ToString("N"), terms.AccountRevisionId.ToString("N"), terms.Reference, branding.Version);
         return Result.Ok(new DocumentDraftContent("payment-instructions", "1", source, [field.Value], branding.Version, branding.BrandName, branding.LogoUri,
-            branding.PrimaryColor, branding.AccentColor, branding.BackgroundColor, branding.TextColor, branding.HeadingFontFamily, branding.BodyFontFamily, branding.FooterText));
+            branding.PrimaryColor, branding.AccentColor, branding.BackgroundColor, branding.TextColor, branding.HeadingFontFamily, branding.BodyFontFamily, branding.FooterText)
+        {
+            BrandingSourceRevision = branding.SourceRevision
+        });
     }
 }

@@ -34,5 +34,8 @@ public enum DocumentAuditReasonCode
     ManualRegeneration = 9,
 
     /// <summary>A source tour was not found.</summary>
-    TourNotFound = 10
+    TourNotFound = 10,
+
+    /// <summary>Branding could not be captured from a ready source, so no revision was created.</summary>
+    BrandingUnavailable = 11
 }

@@ -180,7 +180,8 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
                     DocumentAuditReasonCode.BookingNotFound or
                     DocumentAuditReasonCode.StateConflict or
                     DocumentAuditReasonCode.ValidationRejected or
-                    DocumentAuditReasonCode.TourNotFound,
+                    DocumentAuditReasonCode.TourNotFound or
+                    DocumentAuditReasonCode.BrandingUnavailable,
                 DocumentAuditOperation.Read => reasonCode == DocumentAuditReasonCode.DocumentNotFound,
                 DocumentAuditOperation.BeginReview or
                     DocumentAuditOperation.RequestChanges or
@@ -200,7 +201,8 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
                     DocumentAuditReasonCode.BookingNotFound or
                     DocumentAuditReasonCode.StateConflict or
                     DocumentAuditReasonCode.ValidationRejected or
-                    DocumentAuditReasonCode.TourNotFound,
+                    DocumentAuditReasonCode.TourNotFound or
+                    DocumentAuditReasonCode.BrandingUnavailable,
                 DocumentAuditOperation.Download => reasonCode is
                     DocumentAuditReasonCode.DocumentNotFound or DocumentAuditReasonCode.ArtifactUnavailable,
                 _ => false,

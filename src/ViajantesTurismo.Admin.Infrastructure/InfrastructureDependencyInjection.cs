@@ -115,6 +115,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
+        builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
         builder.Services.AddIntegrationEventContract(
@@ -200,6 +201,8 @@ public static class InfrastructureDependencyInjection
                 ConfigureNpgsqlTracing(options);
                 builder.Services.ApplyDbContextOptionConfigurations<AdminBrandingTransportDbContext>(options);
             });
+        // Unbounded on purpose: while the projection is recovering, fenced events must stay pending until the
+        // authorized reseed, not be poisoned by the fence itself. Old-epoch events are quarantined in the inbox.
         builder.Services.AddPostgreSqlIntegrationEventTransportConsumer<AdminBrandingTransportDbContext>(
             IntegrationEventConsumerNames.Admin);
 

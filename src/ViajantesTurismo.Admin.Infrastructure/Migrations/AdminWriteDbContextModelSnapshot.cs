@@ -226,6 +226,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<DateTimeOffset?>("PoisonedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -248,6 +251,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.HasIndex("ConsumerName", "EventId")
                         .IsUnique();
+
+                    b.HasIndex("ConsumerName", "PoisonedAt");
 
                     b.HasIndex("ConsumerName", "ProcessedAt", "NextConsumeAttemptAt", "ReceivedAt");
 
@@ -364,6 +369,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
+
+                    b.Property<long?>("BrandingSourceRevision")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("BrandingTextColor")
                         .IsRequired()
@@ -634,6 +642,102 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("settings", "branding_projection");
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Admin.Infrastructure.Branding.BrandingRecoveryAuditRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("IncidentReference")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("NewEpoch")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("NewRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid?>("OldEpoch")
+                        .HasColumnType("uuid");
+
+                    b.Property<long?>("OldRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Kind", "OldEpoch");
+
+                    b.ToTable("recovery_audit", "branding_projection");
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Admin.Infrastructure.Branding.BrandingRecoveryRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AuthorizationReason")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTimeOffset?>("AuthorizedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AuthorizedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("AuthorizedEpoch")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AuthorizedEventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long?>("AuthorizedRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("IncidentReference")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTimeOffset?>("Since")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("recovery", "branding_projection");
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Infrastructure.Payments.PaymentAccountRow", b =>

@@ -20,6 +20,8 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.IntegrationEventWorker\ViajantesTurismo.Admin.IntegrationEventWorker.csproj" Aliases="AdminWorker" IsAspireProjectResource="false" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj" IsAspireProjectResource="false" />
         <PackageReference Include="PandaBear.SharedKernel.IntegrationTesting" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />

@@ -53,14 +53,12 @@ flowchart LR
     DatabaseObservability --> catalogDatabase
     DatabaseObservability --> migrationService
     ManagementWeb --> apiService
-    ManagementWeb --> brandingApiService
     ManagementWeb --> cache
     ManagementWeb --> catalogApiService
     ManagementWeb --> identityProvider
     ManagementWeb --> managementWebClientSecret
     ManagementWeb --> migrationService
     ManagementWeb --> securityDatabase
-    PublicWeb --> brandingApiService
     PublicWeb --> catalogApiService
     adminDatabase --> databaseServer
     apiService --> adminDatabase
