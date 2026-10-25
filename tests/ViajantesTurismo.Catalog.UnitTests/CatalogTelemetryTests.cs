@@ -510,4 +510,62 @@ public sealed class CatalogTelemetryTests
         measurements.ShouldNotContain(CatalogTelemetry.MetricProjectionEvent, StringComparer.Ordinal);
     }
 
+
+    [Fact]
+    public async Task Projection_processing_without_new_events_emits_a_skipped_span_and_batch_metric()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        var measurements = new ConcurrentQueue<string>();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var meterListener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
+        var checkpointStore = new CapturingProjectionCheckpointStore
+        {
+            CurrentCheckpoint = new ProjectionCheckpoint("catalog.tours.read-model", 10),
+        };
+        var projection = new CatalogTourReadModelProjection(new CapturingCatalogTourReadModelStore());
+        var runner = new CatalogProjectionRunner(new CapturingEventStore(), checkpointStore, [projection]);
+
+        // Act
+        await runner.Project(TestContext.Current.CancellationToken);
+
+        // Assert
+        var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
+        CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagBoundedContext, "catalog").ShouldBeTrue();
+        CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagCheckpointPosition, 10L).ShouldBeTrue();
+        CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagEventCount, 0).ShouldBeTrue();
+        CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeSkipped).ShouldBeTrue();
+        projectionActivity.Status.ShouldBe(ActivityStatusCode.Ok);
+        measurements.ShouldContain(CatalogTelemetry.MetricProjectionBatch, StringComparer.Ordinal);
+        measurements.ShouldNotContain(CatalogTelemetry.MetricProjectionEvent, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public async Task Successful_projection_processing_marks_the_span_ok_and_tags_the_bounded_context()
+    {
+        // Arrange
+        var stoppedActivities = new ConcurrentQueue<Activity>();
+        using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(stoppedActivities);
+        using var rootActivity = CatalogTelemetryTestsHelpers.StartRootActivity();
+        var eventStore = new CapturingEventStore();
+        var projection = new CatalogTourReadModelProjection(new CapturingCatalogTourReadModelStore());
+        var runner = new CatalogProjectionRunner(eventStore, new CapturingProjectionCheckpointStore(), [projection]);
+        var draftCreated = new CatalogTourDraftCreated(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            "andes-2026",
+            "Andes 2026",
+            Guid.CreateVersion7(),
+            "andes-2026");
+        eventStore.AddReplayEvent(CatalogTelemetryTestsHelpers.CreateEnvelope(1, draftCreated, TimeProvider.System.GetUtcNow()));
+
+        // Act
+        await runner.Project(TestContext.Current.CancellationToken);
+
+        // Assert
+        var projectionActivity = CatalogTelemetryTestsHelpers.SingleActivity(stoppedActivities, rootActivity, CatalogTelemetry.ActivityProjectionProcess);
+        CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagBoundedContext, "catalog").ShouldBeTrue();
+        projectionActivity.Status.ShouldBe(ActivityStatusCode.Ok);
+    }
 }

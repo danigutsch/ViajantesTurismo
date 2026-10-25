@@ -10,11 +10,10 @@
       "ClearText",
       "Json"
     ],
-    "concurrency": 2,
     "thresholds": {
-      "high": 80,
-      "low": 60,
-      "break": 0
+      "high": 95,
+      "low": 90,
+      "break": 90
     }
   }
 }

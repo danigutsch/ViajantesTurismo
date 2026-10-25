@@ -66,4 +66,18 @@ public class DuplicateDetectorTests
         var conflict = conflicts.ShouldHaveSingleItem();
         conflict.ShouldBe(new ImportConflictDto("john.doe@example.com"));
     }
+
+    [Fact]
+    public void FindDuplicateEmailLineNumbers_ignores_rows_without_an_email()
+    {
+        // Arrange
+        var documentResult = CsvDocument.Parse("FirstName,LastName,Email\nJohn,Doe,\nJane,Roe,\nAna,Lima,ana@example.com");
+        documentResult.IsSuccess.ShouldBeTrue();
+
+        // Act
+        var duplicateLineNumbers = DuplicateDetector.FindDuplicateEmailLineNumbers(documentResult.Value);
+
+        // Assert
+        duplicateLineNumbers.ShouldBeEmpty();
+    }
 }
