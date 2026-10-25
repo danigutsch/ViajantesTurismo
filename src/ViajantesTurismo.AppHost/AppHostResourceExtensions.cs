@@ -53,6 +53,7 @@ internal static class AppHostResourceExtensions
     private const string KeycloakManagementClientSecretEnvironmentVariable = "MANAGEMENT_WEB_CLIENT_SECRET";
     private const string KeycloakConformanceUserPasswordEnvironmentVariable = "LOCAL_CONFORMANCE_PASSWORD";
     private const string KeycloakOperatorConformanceUserPasswordEnvironmentVariable = "LOCAL_OPERATOR_CONFORMANCE_PASSWORD";
+    private const string KeycloakK6ClientSecretEnvironmentVariable = "LOCAL_K6_CLIENT_SECRET";
     private const string KeycloakRealmImportDirectory = "/opt/keycloak/data/import";
     private const string KeycloakBootstrapAdminUsername = "admin";
     private const string LocalHttpAuthorityAllowed = "true";
@@ -138,21 +139,50 @@ internal static class AppHostResourceExtensions
             return null;
         }
 
-        var conformanceUserPassword = builder.AddParameter(ResourceNames.IdentityProviderConformanceUserPassword, secret: true);
-        var operatorConformanceUserPassword = builder.AddParameter(ResourceNames.IdentityProviderOperatorConformanceUserPassword, secret: true);
-        return AddIdentityProvider(builder, managementWebClientSecret, conformanceUserPassword, operatorConformanceUserPassword);
+        var conformanceUserPassword = builder.AddLocalSecret(ResourceNames.IdentityProviderConformanceUserPassword);
+        var operatorConformanceUserPassword = builder.AddLocalSecret(ResourceNames.IdentityProviderOperatorConformanceUserPassword);
+        var k6ClientSecret = builder.AddLocalSecret(ResourceNames.IdentityProviderK6ClientSecret);
+        return AddIdentityProvider(builder, managementWebClientSecret, conformanceUserPassword, operatorConformanceUserPassword, k6ClientSecret);
+    }
+
+    /// <summary>
+    /// Gets the secret parameter that holds the client secret of the k6 service-account client.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <returns>The parameter that <see cref="AddRunModeIdentityProvider"/> created.</returns>
+    public static IResourceBuilder<ParameterResource> GetK6ClientSecret(this IDistributedApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        return builder.CreateResourceBuilder(builder.Resources.OfType<ParameterResource>()
+            .Single(static parameter => string.Equals(parameter.Name, ResourceNames.IdentityProviderK6ClientSecret, StringComparison.Ordinal)));
+    }
+
+    /// <summary>
+    /// Adds a local-only secret parameter that gets a generated value when no configuration supplies one.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="name">The parameter name.</param>
+    /// <returns>The secret parameter.</returns>
+    public static IResourceBuilder<ParameterResource> AddLocalSecret(this IDistributedApplicationBuilder builder, string name)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        return builder.AddParameter(name, new GenerateParameterDefault { MinLength = 32, Special = false }, secret: true);
     }
 
     private static IResourceBuilder<ContainerResource> AddIdentityProvider(
         IDistributedApplicationBuilder builder,
         IResourceBuilder<ParameterResource> managementWebClientSecret,
         IResourceBuilder<ParameterResource> conformanceUserPassword,
-        IResourceBuilder<ParameterResource> operatorConformanceUserPassword)
+        IResourceBuilder<ParameterResource> operatorConformanceUserPassword,
+        IResourceBuilder<ParameterResource> k6ClientSecret)
     {
         ArgumentNullException.ThrowIfNull(conformanceUserPassword);
         ArgumentNullException.ThrowIfNull(operatorConformanceUserPassword);
+        ArgumentNullException.ThrowIfNull(k6ClientSecret);
 
-        var bootstrapAdminPassword = builder.AddParameter(ResourceNames.IdentityProviderAdminPassword, secret: true);
+        var bootstrapAdminPassword = builder.AddLocalSecret(ResourceNames.IdentityProviderAdminPassword);
         var realmImportPath = Path.Combine(AppContext.BaseDirectory, "Keycloak");
 
         return builder.AddContainer(ResourceNames.IdentityProvider, KeycloakImageName)
@@ -167,6 +197,7 @@ internal static class AppHostResourceExtensions
             .WithEnvironment(KeycloakManagementClientSecretEnvironmentVariable, managementWebClientSecret)
             .WithEnvironment(KeycloakConformanceUserPasswordEnvironmentVariable, conformanceUserPassword)
             .WithEnvironment(KeycloakOperatorConformanceUserPasswordEnvironmentVariable, operatorConformanceUserPassword)
+            .WithEnvironment(KeycloakK6ClientSecretEnvironmentVariable, k6ClientSecret)
             .WithHttpHealthCheck("/realms/viajantes/.well-known/openid-configuration")
             .WithArgs("start-dev", "--import-realm");
     }
