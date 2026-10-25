@@ -205,7 +205,8 @@ Documentation-only and code changes run the same steps; the job does not wait fo
 3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
 4. Stage the pinned candidate and restore local tools with `setup-ci-prerequisites`.
 5. Install shellcheck from the runner's package feed and lint `.devcontainer/*.sh`, `scripts/*.sh`, and `setup-dev.sh` with `.shellcheckrc`.
-6. Run `sharedkernel-repo verify-text-encoding`, `verify-line-endings`, `verify-json`, `verify-links`, `verify-gherkin`, and `verify` (roadmap structure, schema, and reciprocal blocker links).
+6. Run `sharedkernel-repo verify-text-encoding`, `verify-line-endings`, `verify-json`, `verify-links`, `verify-gherkin`,
+   and `verify` (roadmap structure, schema, and reciprocal blocker links).
 7. Run `sharedkernel-docs verify` (generated-diagram drift) and `sharedkernel-docs check` (documentation conformance).
 
 ## Workflow evolution
