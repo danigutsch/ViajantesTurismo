@@ -7,13 +7,21 @@ namespace ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
 public sealed class MediaInfrastructureContainerFixture(HostedTestFixture shared) : IAsyncLifetime
 {
     private string? bucket;
+    private Uri? clamAvEndpoint;
+    private Uri? seaweedFsS3Endpoint;
 
-    public Uri ClamAvEndpoint => shared.ClamAvEndpoint;
-    public Uri SeaweedFsS3Endpoint => shared.SeaweedFsEndpoint;
+    public Uri ClamAvEndpoint => clamAvEndpoint ?? throw new InvalidOperationException("Fixture is not initialized.");
+    public Uri SeaweedFsS3Endpoint => seaweedFsS3Endpoint ?? throw new InvalidOperationException("Fixture is not initialized.");
     public string Bucket => bucket ?? throw new InvalidOperationException("Fixture is not initialized.");
 
     public async ValueTask InitializeAsync()
     {
+        var ct = TestContext.Current.CancellationToken;
+        var scanner = shared.GetClamAvEndpoint(ct);
+        var storage = shared.GetSeaweedFsEndpoint(ct);
+        await Task.WhenAll(scanner, storage);
+        clamAvEndpoint = await scanner;
+        seaweedFsS3Endpoint = await storage;
         bucket = $"media-{Guid.NewGuid():N}";
         using var client = CreateSeaweedFsClient();
         await client.PutBucketAsync(bucket, TestContext.Current.CancellationToken);
