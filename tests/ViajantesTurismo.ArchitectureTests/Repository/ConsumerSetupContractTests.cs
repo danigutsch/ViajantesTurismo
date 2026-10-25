@@ -81,6 +81,20 @@ public sealed class ConsumerSetupContractTests
     }
 
     [Fact]
+    public async Task Devcontainer_image_is_pinned_by_digest_alone()
+    {
+        // Arrange
+        var root = RepositoryTestProcess.GetRepositoryRoot();
+
+        // Act
+        var configuration = await File.ReadAllTextAsync(Path.Combine(root, ".devcontainer", "devcontainer.json"), TestContext.Current.CancellationToken);
+        var image = configuration.Split('\n').Where(static line => line.TrimStart().StartsWith("\"image\":", StringComparison.Ordinal)).ShouldHaveSingleItem();
+
+        // Assert
+        image.ShouldMatch("^\\s*\"image\": \"[a-z0-9./-]+@sha256:[0-9a-f]{64}\",$");
+    }
+
+    [Fact]
     public async Task Devcontainer_marker_selects_the_container_build_paths_for_minimal_environment_builds()
     {
         // Arrange

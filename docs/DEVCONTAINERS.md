@@ -15,7 +15,8 @@ VS Code Dev Containers.
 
 The current `.devcontainer/devcontainer.json` defines a shared environment with:
 
-- Ubuntu 26.04 LTS via `mcr.microsoft.com/devcontainers/dotnet:dev-11.0-preview-resolute`
+- Ubuntu 26.04 LTS via the digest-pinned `mcr.microsoft.com/devcontainers/dotnet:dev-11.0-preview-resolute` image,
+  referenced by digest alone because the Dev Containers CLI cannot parse a tag together with a digest
 - the exact .NET SDK from `global.json`, installed by `.devcontainer/on-create.sh`
 - Git and Docker-in-Docker Dev Container Features
 - repository-specific VS Code extensions and default settings
