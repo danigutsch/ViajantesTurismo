@@ -10,11 +10,11 @@ Minimal Kestrel-only host for real multipart upload scanning benchmarks.
 
 ## Run
 
-Use the repository-owned .NET performance tool so the host starts on an ephemeral loopback Kestrel port
-and k6 receives the real base URL:
+Run the `file-upload-scan` scenario of `sharedkernel-k6` so the host starts on an ephemeral loopback
+Kestrel port and k6 receives the real base URL:
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
+dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 ```
 
 Raw two-terminal flow:
@@ -27,5 +27,5 @@ VT_UPLOAD_BASE_URL=http://127.0.0.1:5009 k6 run tests/performance/k6/scenarios/f
 Results and host logs from the tool are written under the ignored `tests/performance/results/`
 path.
 
-Docker mode is explicit opt-in (`VT_K6_USE_DOCKER=1`). In that mode the tool binds the host to
+Container mode is explicit opt-in (`--container`). In that mode the tool binds the host to
 `0.0.0.0` only so the pinned k6 container can reach it through `host.docker.internal`.

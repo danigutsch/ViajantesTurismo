@@ -43,7 +43,8 @@ Local and CI validation path:
 - `dotnet test --project tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj`
   checks that the artifact contains current event types, versions, payload fields, consumer names, and
   topology metadata.
-- `bash scripts/lint-all.sh` validates documentation links and Markdown surrounding the artifact.
+- The CI Lint job validates documentation links (`sharedkernel-repo verify-links`) and Markdown
+  (markdownlint) surrounding the artifact.
 
 ## Topology metadata
 

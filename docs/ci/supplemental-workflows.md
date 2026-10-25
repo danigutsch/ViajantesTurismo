@@ -116,16 +116,17 @@ packages.
 
 **Steps:**
 
-1. Checkout repository (`actions/checkout`).
-2. Choose a validation mode.
+1. Checkout repository (`actions/checkout`, `persist-credentials: false`).
+2. Stage the pinned candidate on the host and restore local tools with `setup-ci-prerequisites`.
+3. Choose a validation mode.
    - Weekly schedule and pushes use the default smoke path.
    - Monthly schedule and manual full runs use the deeper mode.
-3. Run `bash scripts/run-devcontainer-smoke.sh` for smoke validation or
-   `bash scripts/run-devcontainer-smoke.sh --run-tests` for the deeper mode.
-4. Let the shared script build the devcontainer, run lifecycle hooks, verify .NET, Git,
-   and Docker access, and optionally run `dotnet test --solution ViajantesTurismo.slnx`
-   inside the container before cleanup.
-5. Upload `devcontainer-smoke-logs` when the workflow fails.
+4. Run `sharedkernel-repo verify-devcontainer`. It builds the devcontainer, runs lifecycle hooks,
+   and runs each `--exec` command inside the container before cleanup:
+   - smoke mode: `VERIFY_TOOLCHAINS` checks .NET, Git, and Docker access;
+   - deeper mode: `VERIFY_TOOLCHAINS`, then `INSTALL_PLAYWRIGHT_DEPENDENCIES` and `RUN_TEST_SLICES`,
+     which run every CI slice one after another with `sharedkernel-ci run`.
+5. Upload `devcontainer-smoke-logs` (`TestResults/devcontainer-smoke`) when the workflow fails.
 
 This workflow is intentionally supplemental rather than required. It is meant to catch
 environment drift in the repository's containerized developer path without running on every

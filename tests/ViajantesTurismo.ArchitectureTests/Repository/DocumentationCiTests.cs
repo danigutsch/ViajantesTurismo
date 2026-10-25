@@ -6,7 +6,7 @@ namespace ViajantesTurismo.ArchitectureTests.Repository;
 public sealed class DocumentationCiTests
 {
     [Fact]
-    public void Documentation_workflow_avoids_hidden_test_runs_and_candidate_bootstrap()
+    public void Documentation_workflow_avoids_hidden_test_runs_and_lints_every_change_alike()
     {
         // Arrange
         var root = RepositoryTestProcess.GetRepositoryRoot();
@@ -31,11 +31,21 @@ public sealed class DocumentationCiTests
         detection.ShouldContain("select --base \"$BASE_SHA\" --github-output \"$GITHUB_OUTPUT\"", StringComparison.Ordinal);
         version.ShouldContain("needs: detect-changes", StringComparison.Ordinal);
         version.ShouldContain("needs.detect-changes.outputs.build_required == 'true'", StringComparison.Ordinal);
-        lint.ShouldContain("needs: detect-changes", StringComparison.Ordinal);
-        lint.ShouldContain("if: needs.detect-changes.outputs.documentation_only != 'true'\n        uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
-        lint.ShouldContain("if: needs.detect-changes.outputs.documentation_only != 'true'\n        run: bash scripts/lint-all.sh", StringComparison.Ordinal);
-        lint.ShouldContain("python3 -B scripts/lint-links.py", StringComparison.Ordinal);
-        lint.ShouldNotContain("bash scripts/lint-links.sh", StringComparison.Ordinal);
+        lint.ShouldNotContain("documentation_only", StringComparison.Ordinal);
+        lint.ShouldNotContain("python3", StringComparison.Ordinal);
+        lint.ShouldNotContain("scripts/lint-", StringComparison.Ordinal);
+        lint.ShouldContain("- name: Set up CI prerequisites\n        uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
+        lint.ShouldContain("sudo apt-get install --yes shellcheck", StringComparison.Ordinal);
+        lint.ShouldContain("run: shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh", StringComparison.Ordinal);
+        foreach (var check in (string[])["verify-text-encoding", "verify-line-endings", "verify-json", "verify-links", "verify-gherkin"])
+        {
+            lint.ShouldContain($"dotnet tool run sharedkernel-repo -- {check} --root .", StringComparison.Ordinal);
+        }
+
+        lint.ShouldContain("dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json", StringComparison.Ordinal);
+        lint.ShouldContain("dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json", StringComparison.Ordinal);
+        lint.ShouldContain("uses: tj-actions/changed-files@", StringComparison.Ordinal);
+        lint.ShouldContain("uses: DavidAnson/markdownlint-cli2-action@", StringComparison.Ordinal);
         slices.ShouldContain("needs.detect-changes.outputs.build_required == 'true'", StringComparison.Ordinal);
     }
 

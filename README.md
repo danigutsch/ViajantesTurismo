@@ -122,12 +122,12 @@ Optional local tools by task:
 - `pwsh`: required for Playwright browser installation on Linux/macOS and useful for PowerShell script work
 - `PSScriptAnalyzer`: optional local PowerShell linting
 - `k6`: optional performance/load testing under `tests/performance/`
-- `shellcheck`: optional unless you want to run CI-owned lint scripts locally
+- `shellcheck`: optional unless you want to lint the setup scripts locally
 - `gitleaks`: optional standalone local secret scanning
 
 CI-only tools by default:
 
-- Markdown/Gherkin/link lint containers and wrappers used by `bash scripts/lint-all.sh`
+- the markdownlint action and shellcheck of the CI Lint job
 - dependency-review, secret-scanning, and workflow-governance tooling owned by GitHub Actions
 
 Devcontainer-provided tools:
@@ -150,10 +150,11 @@ opt-in, downloads the exact archive from Microsoft's release metadata, verifies 
 adds only files that are not already present in the shared SDK root. The Unix bootstrap requires `jq` to parse SDK metadata; it does not invoke Python.
 
 The supported local helper-tool model is intentionally npm-minimized. Prefer repo-pinned
-`.NET` tools, repository-owned scripts, and Dockerized lint wrappers over transient package
+`.NET` tools, the stage-0 setup scripts, and digest-pinned lint containers over transient package
 execution. See [docs/local-tool-security.md](docs/local-tool-security.md).
 
-Documentation link checks use `bash scripts/lint-links.sh`. The check validates local Markdown and
+Documentation link checks use `dotnet tool run sharedkernel-repo -- verify-links`, which scans the files
+that the `links` section of `.config/sharedkernel-repo.json` selects. The check validates local Markdown and
 selected text links and anchors, blocks GitHub issue and pull request references by URL, path, or bare
 numeric shorthand in maintained docs, and avoids external URL probing in PR gating to keep lint stable.
 
@@ -179,7 +180,7 @@ dotnet tool restore
 dotnet build ViajantesTurismo.slnx --no-restore
 
 # 5. Install Playwright browsers (requires pwsh on Linux/macOS; add --with-dependencies on supported Ubuntu)
-dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj --browser chromium
+dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj --browser chromium
 
 # 6. Install PowerShell linting (optional, when working on PowerShell scripts)
 Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
@@ -227,13 +228,14 @@ Install `k6` only if you plan to run those scenarios:
 Example run:
 
 ```bash
-VT_API_BASE_URL=<admin-api-url> dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke
-dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
+VT_API_BASE_URL=<admin-api-url> dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke
+dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 ```
 
 Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard for the Admin smoke
-scenario. The file upload performance tool starts its own benchmark-only Kestrel host on an
-ephemeral loopback port by default. Docker k6 is explicit opt-in only with a digest-pinned image.
+scenario. `sharedkernel-k6` runs the scenarios that `.config/sharedkernel-k6.json` configures; for
+`file-upload-scan` it starts its own benchmark-only Kestrel host on an ephemeral loopback port.
+Docker k6 runs only with `--container` and a digest-pinned image.
 
 Aspire can also run the same smoke scenario as an opt-in AppHost resource:
 
@@ -319,7 +321,7 @@ dotnet run --project benchmarks/ViajantesTurismo.FileScanning.Benchmarks/Viajant
 **Run real Kestrel upload scanning benchmark:**
 
 ```powershell
-dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
+dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 ```
 
 **Dependency graph and lock files:**
@@ -342,12 +344,19 @@ workflow and rebase recovery steps.
 
 **Run CI-Owned Quality Checks:**
 
-```powershell
-bash scripts/lint-all.sh
+```bash
+shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh
+dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
+dotnet tool run sharedkernel-repo -- verify-line-endings --root .
+dotnet tool run sharedkernel-repo -- verify-json --root .
+dotnet tool run sharedkernel-repo -- verify-links --root .
+dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
+dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
 ```
 
-This lint entry point is primarily for CI. Local contributors do not need to install or run the
-lint toolchain unless they are debugging CI lint failures.
+The CI Lint job runs these checks and the markdownlint action. Local contributors do not need to run
+them unless they are debugging CI lint failures.
 
 See [docs/CODE_QUALITY.md](docs/CODE_QUALITY.md) for tool configuration and linting usage,
 [docs/TEST_GUIDELINES.md](docs/TEST_GUIDELINES.md) for testing strategy and patterns, and

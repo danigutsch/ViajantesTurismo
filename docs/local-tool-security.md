@@ -8,36 +8,34 @@ contributors.
 Prefer local validation paths in this order:
 
 1. Repository-pinned `.NET` local tools restored with `dotnet tool restore`.
-2. Repository-owned scripts that run against tools already present on the machine.
-3. Dockerized tool execution with version tags and reviewed immutable digests when available, when
-   the repository already uses that wrapper path.
+2. Stage-0 setup scripts that run against tools already present on the machine.
+3. Docker images pinned by reviewed immutable digests.
 4. OS package manager or vendor-documented installs for optional standalone tools.
 
 Avoid introducing repo-owned npm or transient package execution for local linting when an
-existing `.NET`, Python, shell, or Docker path already covers the same need.
+existing `.NET`, shell, or Docker path already covers the same need.
 
 ## Current approved paths
 
 - `.NET` local tools: restored from `.config/dotnet-tools.json` with `dotnet tool restore`.
 - SharedKernel `.NET` tools (`sharedkernel-ci`, `sharedkernel-repo`, `sharedkernel-version`,
-  `sharedkernel-docs`, `sharedkernel-playwright-mcp`, `sharedkernel-codefix`): restored from the pinned
+  `sharedkernel-docs`, `sharedkernel-playwright-mcp`, `sharedkernel-codefix`, `sharedkernel-k6`): restored from the pinned
   candidate that `setup-dev.sh` or `setup-dev.ps1` stages in `.local/sharedkernel-feed`. Staging runs
   `sharedkernel-ci stage-candidate` built from a sparse SharedKernel checkout at the pinned
   `libraryRevision`, which verifies each package hash before restore; see
   [SharedKernel consumption](SHAREDKERNEL_CONSUMPTION.md).
-- Markdown lint: `davidanson/markdownlint-cli2` Docker image via `scripts/lint-all.sh` or
-  `scripts/lint-markdown.sh`.
-- Shell lint and formatting: local `shellcheck` and `shfmt` when present, otherwise Docker
-  fallbacks in `scripts/lint-all.sh`.
-- Gherkin lint: repository-owned Python wrapper, with Docker fallback.
-- JSON and text-encoding checks: `dotnet tool run sharedkernel-repo -- verify-json` and
-  `verify-text-encoding`.
-- Link validation: repository-owned Python wrapper (`scripts/lint-links.sh`), with Docker
-  fallback. It validates local Markdown links and enforces durable documentation link rules;
-  it does not probe external URLs in PR gating.
+- Markdown lint: the digest-pinned `davidanson/markdownlint-cli2` Docker image, as the opencode
+  `lint` and `lint-fix` commands and the Markdown formatter in `opencode.json` run it.
+- Shell lint and formatting: local `shellcheck`; local `shfmt`, otherwise the digest-pinned
+  `mvdan/shfmt` Docker image.
+- Gherkin, JSON, line-ending, and text-encoding checks: `dotnet tool run sharedkernel-repo --`
+  `verify-gherkin`, `verify-json`, `verify-line-endings`, and `verify-text-encoding`.
+- Link validation: `dotnet tool run sharedkernel-repo -- verify-links`. It validates local Markdown
+  links and enforces durable documentation link rules; it does not probe external URLs in PR gating.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when
   needed for the specific task, using vendor-documented installation guidance.
-- Local k6 performance runs: prefer a user/system installed `k6` binary from a trusted package manager.
+- Local k6 performance runs: `sharedkernel-k6` with a user/system installed `k6` binary from a trusted
+  package manager, or with `--container` and the digest-pinned `grafana/k6` image.
   Do not vendor or download a repo-local `k6` binary. Docker k6 is explicit opt-in only, must use a
   digest-pinned image, must not mount the repository read-write, and must not forward host environment
   variables wholesale.
@@ -202,7 +200,5 @@ Do not:
   or CI-only.
 - If a future tool truly requires Node.js, require a dedicated review covering pinning,
   lockfiles, script execution behavior, and contributor UX before adopting it.
-- Revisit optional `mdspell` usage before expanding it; today it stays best-effort and is not
-  part of the required local or CI path.
 - Treat unrelated local automation such as `.vscode/mcp.json` separately from the lint model
   unless that automation becomes part of the supported validation workflow.

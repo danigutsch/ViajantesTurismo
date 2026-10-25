@@ -17,7 +17,7 @@ On Ubuntu 26.04, first set `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64` (
 because Playwright 1.60 has no Ubuntu 26.04 manifests yet:
 
 ```bash
-dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj \
+dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj \
     --browser chromium --with-dependencies
 ```
 

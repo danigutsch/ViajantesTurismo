@@ -52,7 +52,7 @@ dotnet run --project benchmarks/ViajantesTurismo.FileScanning.Benchmarks/Viajant
 Run real Kestrel upload scanning with k6:
 
 ```bash
-dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- file-upload-scan
+dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 ```
 
 Raw two-terminal upload flow:
@@ -68,15 +68,14 @@ Useful overrides:
 - `VT_K6_VUS=<count>`
 - `VT_K6_DURATION=<duration>`
 - `VT_UPLOAD_PAYLOAD_BYTES=<bytes>`
-- `VT_K6_RESULTS_DIR=<tests/performance/results-subfolder>`
-- `VT_K6_USE_DOCKER=0|1`
+- `--container` and `--image <ref@sha256:digest>` options of `sharedkernel-k6 run`
 
 Security defaults:
 
-- local `k6` is preferred; Docker requires `VT_K6_USE_DOCKER=1`
+- local `k6` is the default; Docker requires `--container`
 - Docker image references must be digest-pinned and are run with `--pull=never`
-- Docker mounts `tests/performance/k6` read-only and writes only under the ignored results folder
-- result paths must stay under `tests/performance/results`
+- Docker mounts `tests/performance/k6` read-only and writes only to the run directory
+- each run writes to its own directory under the ignored `tests/performance/results` folder
 - local k6 receives a minimal process environment plus explicit `-e` values only
 - remote k6 modules, external upload targets, custom outputs, `--http-debug`, and host environment
   forwarding require explicit review or opt-in

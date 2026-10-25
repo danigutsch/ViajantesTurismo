@@ -17,7 +17,6 @@ The current `.devcontainer/devcontainer.json` defines a shared environment with:
 
 - Ubuntu 26.04 LTS via `mcr.microsoft.com/devcontainers/dotnet:dev-11.0-preview-resolute`
 - the exact .NET SDK from `global.json`, installed by `.devcontainer/on-create.sh`
-- Python 3 via the `ghcr.io/devcontainers/features/python:1` feature for lifecycle scripts
 - Git and Docker-in-Docker Dev Container Features
 - repository-specific VS Code extensions and default settings
 - lifecycle commands for one-time setup, dependency restore, and build verification
@@ -55,9 +54,11 @@ Use this documented path when working locally with Visual Studio Code.
 - Visual Studio Code
 - Dev Containers extension
 - A Docker-compatible container runtime available to the Dev Containers extension
-- Network access to `mcr.microsoft.com`, `ghcr.io`, `nodejs.org`, `registry.npmjs.org`,
-  `dot.net`, `builds.dotnet.microsoft.com`, Ubuntu and Microsoft package feeds used by
-  Dev Container Features, and NuGet package feeds used by the solution
+- Network access to `mcr.microsoft.com`, `ghcr.io`, `dot.net`, `builds.dotnet.microsoft.com`,
+  `github.com` and `release-assets.githubusercontent.com` (the pinned SharedKernel source and
+  candidate packages), `api.nuget.org`, and the Ubuntu and Microsoft package feeds used by Dev
+  Container Features; the smoke validation below also downloads its Dev Container CLI from
+  `nodejs.org` and `registry.npmjs.org`
 - Enough local resources to satisfy the requested devcontainer host requirements
 
 ### Open the repository in the container
@@ -96,53 +97,36 @@ dotnet build ViajantesTurismo.slnx --no-restore
 
 ### Run the shared smoke validation locally
 
-To run the same non-interactive devcontainer smoke path used by CI, use the shared
-script from the repository root:
+To run the same non-interactive devcontainer smoke path used by CI, run the pinned
+`sharedkernel-repo` from the repository root after `dotnet tool restore`:
 
 ```bash
-bash scripts/run-devcontainer-smoke.sh
+dotnet tool run sharedkernel-repo -- verify-devcontainer --exec 'dotnet --version && git --version && docker version --format "{{.Server.Version}}"' --root .
 ```
 
-To run the same bootstrap path and then execute the full CI slice test suite inside the
-temporary container, pass the optional test flag:
+`verify-devcontainer`:
 
-```bash
-bash scripts/run-devcontainer-smoke.sh --run-tests
-```
-
-The script:
-
-- builds and starts the repository devcontainer with the pinned Dev Container CLI
-- installs the pinned Dev Container CLI through a repo-owned verified download path rather
-  than a remote installer pipe
-- lets the configured lifecycle hooks run
-- verifies `.NET`, Git, and Docker access inside the container
-- with `--run-tests`, installs Chromium's runtime libraries, selects every test project with
-  `sharedkernel-ci select`, and runs the configured CI slices one after another with `sharedkernel-ci run`
+- downloads the pinned Dev Container CLI and Node.js into `TestResults/devcontainer-tools`,
+  checking both against hashes pinned in the tool rather than running a remote installer pipe
+- builds and starts the repository devcontainer with `devcontainer up`, which runs the
+  configured lifecycle hooks
+- runs each `--exec` command inside the container with `bash -lc`
 - writes logs to `TestResults/devcontainer-smoke`
-- removes the temporary container automatically when it finishes
+- removes the temporary container when it finishes, unless `--keep-container` is given
 
-Current host support note:
+The CLI download supports Linux `x86_64` hosts only; on other hosts pass
+`--devcontainer-cli <path>` to a compatible preinstalled Dev Container CLI.
 
-- the repo-owned Dev Container CLI bootstrap path currently supports Linux `x86_64` hosts
-- on other host OS or architecture combinations, set `DEVCONTAINER_CLI_PREFIX` to a
-  compatible preinstalled Dev Container CLI path before running the script
+The `Devcontainer Smoke` workflow runs the same command:
 
-If you want to keep the container around for inspection after a failure, set
-`DEVCONTAINER_SMOKE_KEEP_CONTAINER=1` before running the script.
-
-The GitHub Actions workflow uses the same option surface:
-
-- weekly schedule and pushes run the regular smoke path
-- the monthly schedule runs `--run-tests` to validate the full in-container test suite
+- weekly schedule and pushes run the toolchain check above
+- the monthly schedule runs full validation: the same check, then Chromium's runtime libraries and
+  every CI slice of `.config/sharedkernel-ci.json` one after another with `sharedkernel-ci run`
 - manual dispatch lets you choose either mode
-- the workflow uses the shared smoke script and a bundled Dev Container CLI install path instead of
-  a repo-owned npm toolchain
 
-Full validation intentionally keeps the same CI slice membership files while restoring and
-building each unique slice project once. That avoids repeated per-project restore/build setup
-inside the temporary container without building unrelated solution projects or reintroducing
-concurrent all-solution test execution, which was the flake source this workflow avoids.
+The full-mode commands are the `INSTALL_PLAYWRIGHT_DEPENDENCIES` and `RUN_TEST_SLICES` values in
+`.github/workflows/devcontainer-smoke.yml`; pass them as further `--exec` arguments to reproduce a full
+run. Running one slice at a time avoids concurrent all-solution test execution flakes.
 
 Recommended follow-up validation while iterating:
 
@@ -155,10 +139,10 @@ dotnet test --solution ViajantesTurismo.slnx
 The repository also has a supplemental `Devcontainer Smoke` workflow in
 `.github/workflows/devcontainer-smoke.yml`.
 
-That workflow now runs `bash scripts/run-devcontainer-smoke.sh`, so local and CI smoke
-validation share the same bootstrap path.
+That workflow runs `sharedkernel-repo verify-devcontainer`, so local and CI smoke validation share
+the same bootstrap path.
 
-The shared script validates the non-interactive baseline by:
+The command validates the non-interactive baseline by:
 
 - building the devcontainer with the Dev Container CLI
 - letting lifecycle commands run

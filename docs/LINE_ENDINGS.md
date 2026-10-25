@@ -75,11 +75,13 @@ control characters and never include blob content or raw Git errors.
 The root `.editorconfig` entry is editor guidance for new and changed files. Neither `dotnet format`
 nor Git line-ending attributes are the authoritative encoding validator.
 
-Run the complete repository lint entrypoint:
+Check line endings locally with the command that the CI Lint job runs:
 
 ```bash
-bash scripts/lint-all.sh
+dotnet tool run sharedkernel-repo -- verify-line-endings --root .
 ```
 
-The lint entrypoint runs `scripts/check-line-endings.sh`, which uses `git ls-files --eol` to
-verify that checked-out text files match the committed `.gitattributes` policy.
+`verify-line-endings` reads `git ls-files --eol` and fails when a tracked file has CRLF or mixed line
+endings, in the index or the working tree, while its attributes set `eol=lf`, or LF or mixed line
+endings in the working tree while they set `eol=crlf`. Git stores `eol=crlf` text with LF in the
+index, so only the working tree is checked for it.

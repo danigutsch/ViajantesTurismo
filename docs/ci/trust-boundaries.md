@@ -26,7 +26,7 @@ write-scoped GitHub token permissions.
 | `secret-scan.yml` scan job | `pull_request`, `merge_group`, `push`, `workflow_dispatch` | Fork PRs untrusted; same-repo branches trusted | Read-only `contents`; no write scopes | Produces SARIF artifact in a low-privilege job. |
 | `secret-scan.yml` SARIF upload job | `pull_request`, `merge_group`, `push`, `workflow_dispatch` | Only safe for repo-owned refs or same-repo PRs | `security-events: write` only in the follow-up job | Explicit artifact handoff keeps write scope out of the scanner job. |
 | `devcontainer-smoke.yml` | `push main`, `schedule`, `workflow_dispatch` | Repository-owned only | Read-only `contents`; no secrets | Not exposed to fork PR code. |
-| `sync-labels.yml` | `push main`, `workflow_dispatch` | Repository-owned only | `issues: write` | Administrative automation only; never runs on pull requests. |
+| `sync-labels.yml` | `push main`, `workflow_dispatch` | Repository-owned only | `issues: write` | Administrative automation only; never runs on pull requests. Checkout keeps no credentials, and only the `sharedkernel-repo github sync-labels --force` step receives `GH_TOKEN`. |
 
 ## Current conclusions
 

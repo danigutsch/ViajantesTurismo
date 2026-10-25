@@ -6,7 +6,7 @@ namespace ViajantesTurismo.ArchitectureTests.Repository;
 public sealed class ConsumerSetupContractTests
 {
     [Fact]
-    public async Task Devcontainer_ci_stages_candidate_before_starting_container()
+    public async Task Devcontainer_ci_stages_candidate_and_tools_before_validating_the_container()
     {
         // Arrange
         var root = RepositoryTestProcess.GetRepositoryRoot();
@@ -15,12 +15,25 @@ public sealed class ConsumerSetupContractTests
         // Act
         var workflow = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
         var prerequisites = workflow.IndexOf("uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
-        var container = workflow.IndexOf("- name: Run devcontainer validation script", StringComparison.Ordinal);
+        var smoke = workflow.IndexOf("if: steps.validation-mode.outputs.mode == 'smoke'\n        run: dotnet tool run sharedkernel-repo -- verify-devcontainer --exec \"$VERIFY_TOOLCHAINS\" --root .", StringComparison.Ordinal);
+        var full = workflow.IndexOf("if: steps.validation-mode.outputs.mode == 'full'", StringComparison.Ordinal);
+        var fullStep = workflow[full..].Split("\n\n", StringSplitOptions.None)[0];
 
         // Assert
         prerequisites.ShouldBeGreaterThan(-1);
-        container.ShouldBeGreaterThan(prerequisites);
-        workflow.ShouldContain("restore-local-tools: \"false\"", StringComparison.Ordinal);
+        smoke.ShouldBeGreaterThan(prerequisites);
+        full.ShouldBeGreaterThan(prerequisites);
+        fullStep.ShouldContain("verify-devcontainer --exec \"$VERIFY_TOOLCHAINS\"", StringComparison.Ordinal);
+        fullStep.ShouldContain("--exec \"$INSTALL_PLAYWRIGHT_DEPENDENCIES\" --exec \"$RUN_TEST_SLICES\" --root .", StringComparison.Ordinal);
+        workflow.ShouldContain("dotnet tool run sharedkernel-ci -- select --selection \"${selection}\"", StringComparison.Ordinal);
+        workflow.ShouldContain("dotnet tool run sharedkernel-ci -- run --slice \"${slice}\" --selection \"${selection}\" --install-playwright", StringComparison.Ordinal);
+        workflow.ShouldContain("      - .config/dotnet-tools.json\n", StringComparison.Ordinal);
+        workflow.ShouldContain("path: TestResults/devcontainer-smoke/**", StringComparison.Ordinal);
+        workflow.ShouldNotContain("restore-local-tools", StringComparison.Ordinal);
+        workflow.ShouldNotContain("scripts/", StringComparison.Ordinal);
+        workflow.Split("uses: actions/checkout@", StringSplitOptions.None).Skip(1)
+            .Where(static checkout => !checkout.Split("\n      - ", StringSplitOptions.None)[0].Contains("persist-credentials: false", StringComparison.Ordinal))
+            .ShouldBeEmpty();
     }
 
     [Theory]

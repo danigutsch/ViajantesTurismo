@@ -165,7 +165,7 @@ Mutation-testing note:
   projects. Run all configured targets from the repository root:
 
 ```bash
-bash scripts/run-mutation-smoke.sh
+dotnet tool run sharedkernel-ci -- run-mutation-tests
 ```
 
 Do not gate CI on this while Stryker.NET MTP support remains in preview.

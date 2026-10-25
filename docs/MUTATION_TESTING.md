@@ -63,15 +63,20 @@ Mutation testing with `Stryker.NET` should remain **local-only and non-gating** 
 
 The repository contains local smoke targets for contained unit-test and Roslyn analyzer/source-generator projects.
 
-- config pattern: `tests/<project>/stryker*.json`
+- configs: the `mutation.configFiles` of `.config/sharedkernel-ci.json`, run in order
+- Stryker.NET version: `mutation.strykerVersion` (`4.15.0`), installed on first use under
+  `TestResults/tools/dotnet-stryker/<version>` and kept out of the tool manifest
 - runner: `mtp`
-- command: `scripts/run-mutation-smoke.sh`
+- command: `dotnet tool run sharedkernel-ci -- run-mutation-tests`
 
 Run all configured smoke targets from the repository root:
 
 ```bash
-bash scripts/run-mutation-smoke.sh
+dotnet tool run sharedkernel-ci -- run-mutation-tests
 ```
+
+The command stops at the first failing config and prints each config's output when its run ends.
+Stryker writes its `StrykerOutput` reports next to each config file.
 
 Treat the result as a compatibility smoke signal, not a repository-wide quality gate.
 

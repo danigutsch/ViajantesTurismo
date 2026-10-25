@@ -55,5 +55,8 @@
         "number": 1
       }
     }
+  },
+  "automation": {
+    "pullRequestBody": "Refs #1160"
   }
 }

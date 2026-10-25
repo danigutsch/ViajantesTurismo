@@ -197,11 +197,15 @@ and the required remote branch-protection transition.
 
 **Steps:**
 
-1. Checkout repository (`actions/checkout`).
+Documentation-only and code changes run the same steps; the job does not wait for Detect Changes.
+
+1. Checkout repository (`actions/checkout`, `persist-credentials: false`).
 2. On pull requests, detect changed Markdown files and lint only that set with `tj-actions/changed-files` and `DavidAnson/markdownlint-cli2-action`.
 3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
-4. For documentation-only changes, check line endings and local links without running tests.
-5. For other changes, run `bash scripts/lint-all.sh`.
+4. Stage the pinned candidate and restore local tools with `setup-ci-prerequisites`.
+5. Install shellcheck from the runner's package feed and lint `.devcontainer/*.sh`, `scripts/*.sh`, and `setup-dev.sh` with `.shellcheckrc`.
+6. Run `sharedkernel-repo verify-text-encoding`, `verify-line-endings`, `verify-json`, `verify-links`, and `verify-gherkin`.
+7. Run `sharedkernel-docs verify` (generated-diagram drift) and `sharedkernel-docs check` (documentation conformance).
 
 ## Workflow evolution
 

@@ -223,7 +223,7 @@ check_powershell() {
             printf "%b" "   ${CYAN}💡 Install it only if you plan to lint PowerShell scripts:${NC}\n"
             printf "%b" "   ${CYAN}   pwsh -Command 'Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force'${NC}\n"
         fi
-        printf "%b" "   ${CYAN}💡 After dotnet build, install Playwright browsers with: ${NC}dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj --browser chromium\n"
+        printf "%b" "   ${CYAN}💡 After dotnet build, install Playwright browsers with: ${NC}dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj --browser chromium\n"
     else
         printf "%b" "   ${YELLOW}⚠️ pwsh (PowerShell 7+) not available - PowerShell script linting and Playwright browser installation will be skipped${NC}\n"
         printf "%b" "   ${CYAN}💡 Install pwsh (PowerShell 7+) from: https://github.com/PowerShell/PowerShell${NC}\n"
@@ -238,7 +238,7 @@ check_k6() {
     if command -v k6 > /dev/null 2>&1; then
         printf "%b" "   ${GREEN}✅ k6 installed${NC}\n"
         printf "%b" "   ${CYAN}💡 Run the Admin smoke scenario with:${NC}\n"
-        printf "%b" "   ${CYAN}   VT_API_BASE_URL=<admin-api-url> dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke${NC}\n"
+        printf "%b" "   ${CYAN}   VT_API_BASE_URL=<admin-api-url> dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke${NC}\n"
     else
         printf "%b" "   ${YELLOW}⚠️ k6 not available - performance/load testing will be skipped locally${NC}\n"
         printf "%b" "   ${CYAN}💡 Install k6 only if you plan to run tests under tests/performance/:${NC}\n"
@@ -257,8 +257,8 @@ print_summary() {
     printf "%b" "${CYAN}Next steps:${NC}\n"
     printf "%b" "  1. Run the application: ${NC}dotnet tool run aspire run\n"
     printf "%b" "  2. Run tests: ${NC}dotnet test\n"
-    printf "%b" "  3. Install Playwright browsers after build: ${NC}dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj --browser chromium\n"
-    printf "%b" "  4. Optional performance smoke run: ${NC}VT_API_BASE_URL=<admin-api-url> dotnet run --project tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj -- admin-smoke\n"
+    printf "%b" "  3. Install Playwright browsers after build: ${NC}dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj --browser chromium\n"
+    printf "%b" "  4. Optional performance smoke run: ${NC}VT_API_BASE_URL=<admin-api-url> dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke\n"
     printf "%b" "  5. Validate a commit message: ${NC}dotnet tool run sharedkernel-ci -- verify-commit-message --file /path/to/message.txt\n"
     printf "%b" "     ${CYAN}(If Aspire CLI is installed globally or via the official install script, 'aspire run' also works.)${NC}\n"
     printf "%b" "  6. Tool inventory reference: ${NC}README.md (required local, optional local, CI-only, and devcontainer-provided tools)\n"

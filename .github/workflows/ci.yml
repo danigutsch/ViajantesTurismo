@@ -33,7 +33,6 @@ jobs:
     outputs:
       base_sha: ${{ steps.change-scope.outputs.base_sha }}
       build_required: ${{ steps.change-scope.outputs.build_required }}
-      documentation_only: ${{ steps.change-scope.outputs.documentation_only }}
       fast-validation-1_required: ${{ steps.change-scope.outputs['fast-validation-1_required'] }}
       fast-validation-2_required: ${{ steps.change-scope.outputs['fast-validation-2_required'] }}
       hosted-tests_required: ${{ steps.change-scope.outputs['hosted-tests_required'] }}
@@ -396,7 +395,6 @@ jobs:
           retention-days: 14
 
   lint:
-    needs: detect-changes
     if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Lint' }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
@@ -408,6 +406,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Get changed Markdown files
         if: ${{ github.event_name == 'pull_request' }}
@@ -457,19 +456,29 @@ jobs:
           config: .markdownlint-cli2.jsonc
 
       - name: Set up CI prerequisites
-        if: needs.detect-changes.outputs.documentation_only != 'true'
         uses: ./.github/actions/setup-ci-prerequisites
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
           trust-dev-certificate: "false"
 
-      - name: Run repository linters
-        if: needs.detect-changes.outputs.documentation_only != 'true'
-        run: bash scripts/lint-all.sh --skip-markdown
-
-      - name: Validate documentation without running tests
-        if: needs.detect-changes.outputs.documentation_only == 'true'
+      - name: Install shellcheck
         run: |
-          bash scripts/check-line-endings.sh
-          python3 -B scripts/lint-links.py
+          sudo apt-get update
+          sudo apt-get install --yes shellcheck
+
+      - name: Lint shell scripts
+        run: shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh
+
+      - name: Check repository content
+        run: |
+          dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
+          dotnet tool run sharedkernel-repo -- verify-line-endings --root .
+          dotnet tool run sharedkernel-repo -- verify-json --root .
+          dotnet tool run sharedkernel-repo -- verify-links --root .
+          dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+
+      - name: Check generated documentation
+        run: |
+          dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
+          dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json

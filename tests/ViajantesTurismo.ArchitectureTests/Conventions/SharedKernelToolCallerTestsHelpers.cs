@@ -183,6 +183,12 @@ internal static partial class SharedKernelToolCallerTestsHelpers
             }
         }
 
+        // opencode.json command templates run their shell text inside !`...`.
+        if (element.TryGetProperty("template", out var template) && template.ValueKind == JsonValueKind.String)
+        {
+            yield return template.GetString()!;
+        }
+
         foreach (var child in element.EnumerateObject().SelectMany(property => FindJsonCommands(property.Value)))
         {
             yield return child;
@@ -306,7 +312,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
     private static string Quote(string token) =>
         token.Any(char.IsWhiteSpace) ? $"\"{token}\"" : token;
 
-    [GeneratedRegex(@"dotnet\s+(?:tool\s+run\s+(?<command>sharedkernel-[a-z-]+)|run\s+--project\s+[^\n]*?tools/(?<project>SharedKernel\.[A-Za-z.]+?\.Tool)\b[^\n]*?\s--(?=\s|$))(?:\s+--(?=\s|$))?", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"dotnet\s+(?:tool\s+run\s+(?<command>sharedkernel-[a-z0-9-]+)|run\s+--project\s+[^\n]*?tools/(?<project>SharedKernel\.[A-Za-z.]+?\.Tool)\b[^\n]*?\s--(?=\s|$))(?:\s+--(?=\s|$))?", RegexOptions.CultureInvariant)]
     private static partial Regex ToolCommandRegex();
 
     [GeneratedRegex(@"\$\{?(?:env:)?(?<name>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.CultureInvariant)]

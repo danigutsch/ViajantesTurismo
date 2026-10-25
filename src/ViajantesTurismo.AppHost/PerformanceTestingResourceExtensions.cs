@@ -10,14 +10,13 @@ internal static class PerformanceTestingResourceExtensions
     private const string EnablePerformanceTestsVariable = "VT_ASPIRE_ENABLE_PERFORMANCE_TESTS";
     private const string ApiBaseUrlVariable = "VT_API_BASE_URL";
     private const string ProfileVariable = "VT_K6_PROFILE";
-    private const string ResultsDirectoryVariable = "VT_K6_RESULTS_DIR";
+    private const string UseDockerVariable = "VT_K6_USE_DOCKER";
+    private const string DockerImageVariable = "VT_K6_DOCKER_IMAGE";
 
     private static readonly string[] OptionalK6Variables =
     [
         "VT_K6_VUS",
         "VT_K6_DURATION",
-        "VT_K6_USE_DOCKER",
-        "VT_K6_DOCKER_IMAGE",
     ];
 
     /// <summary>
@@ -42,27 +41,43 @@ internal static class PerformanceTestingResourceExtensions
         }
 
         var repositoryRoot = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", ".."));
-        var commandArguments = new[]
-        {
-            "run",
-            "--project",
-            "tools/ViajantesTurismo.Performance.Tool/ViajantesTurismo.Performance.Tool.csproj",
-            "-c",
-            "Release",
-            "--",
-            "admin-smoke",
-        };
+        var commandArguments = GetAdminSmokeArguments(Environment.GetEnvironmentVariable);
 
         var performanceSmoke = builder.AddExecutable(ResourceNames.AdminPerformanceSmoke, "dotnet", repositoryRoot, commandArguments)
             .WithEnvironment(ApiBaseUrlVariable, adminApi.GetEndpoint("http"))
             .WithEnvironment(ProfileVariable, GetEnvironmentOrDefault(ProfileVariable, "smoke"))
-            .WithEnvironment(ResultsDirectoryVariable, GetEnvironmentOrDefault(ResultsDirectoryVariable, "tests/performance/results"))
             .WaitFor(adminApi);
 
         foreach (var variableName in OptionalK6Variables)
         {
             AddOptionalEnvironmentVariable(performanceSmoke, variableName);
         }
+    }
+
+    /// <summary>
+    /// Builds the <c>dotnet</c> arguments that run the <c>admin-smoke</c> scenario of <c>.config/sharedkernel-k6.json</c>.
+    /// </summary>
+    /// <param name="getEnvironmentVariable">Reads an environment variable.</param>
+    /// <returns>
+    /// The arguments; <c>VT_K6_USE_DOCKER=1</c> adds <c>--container</c>, and <c>VT_K6_DOCKER_IMAGE</c> then names
+    /// the image instead of the configured one.
+    /// </returns>
+    internal static string[] GetAdminSmokeArguments(Func<string, string?> getEnvironmentVariable)
+    {
+        List<string> arguments = ["tool", "run", "sharedkernel-k6", "--", "run", "--scenario", "admin-smoke"];
+
+        if (IsEnabled(getEnvironmentVariable(UseDockerVariable)))
+        {
+            arguments.Add("--container");
+
+            var image = getEnvironmentVariable(DockerImageVariable);
+            if (!string.IsNullOrWhiteSpace(image))
+            {
+                arguments.AddRange(["--image", image]);
+            }
+        }
+
+        return [.. arguments];
     }
 
     private static void AddOptionalEnvironmentVariable<TResource>(

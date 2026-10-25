@@ -8,7 +8,6 @@
       ".github/actions/*",
       ".github/dependabot.yml",
       ".github/actionlint.yaml",
-      ".github/labels.json",
       "*.props",
       "*.targets",
       "*.slnx",
@@ -77,8 +76,7 @@
         "tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj",
         "tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj",
         "tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj",
-        "tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj",
-        "tests/ViajantesTurismo.Performance.Tool.Tests/ViajantesTurismo.Performance.Tool.Tests.csproj"
+        "tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj"
       ]
     },
     {
@@ -129,6 +127,14 @@
     ],
     "symbolDirectories": [
       "src"
+    ]
+  },
+  "mutation": {
+    "strykerVersion": "4.15.0",
+    "configFiles": [
+      "tests/ViajantesTurismo.Catalog.UnitTests/stryker-domain-config.json",
+      "tests/ViajantesTurismo.Catalog.UnitTests/stryker-application-config.json",
+      "tests/ViajantesTurismo.Admin.UnitTests/stryker-application-config.json"
     ]
   }
 }
