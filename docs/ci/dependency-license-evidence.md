@@ -13,7 +13,34 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Rate-limit and reconciliation candidate renewal](#rate-limit-and-reconciliation-candidate-renewal)
 - [DDD standards candidate](#ddd-standards-candidate)
 - [ShouldThrow message candidate](#shouldthrow-message-candidate)
+- [Hosted-test lease candidate](#hosted-test-lease-candidate)
+- [Playwright ObjectModel dependency](#playwright-objectmodel-dependency)
 - [Remaining decision](#remaining-decision)
+
+## Hosted-test lease candidate
+
+The exact preview approval now pins `0.1.0-alpha.159.1` at library revision
+`afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d` in `.config/sharedkernel-repo.json` and the candidate
+manifest. The new internal `PandaBear.SharedKernel.Npgsql.Testing` package reuses existing Npgsql,
+Aspire and xUnit dependencies. The StreamJsonRpc and Magick package exceptions remain unchanged.
+All 78 package hashes and all 133 release-asset hashes match the immutable artifacts from
+[CI run 40114059506](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40114059506).
+Linux/Windows package consumption and NativeAOT passed; published-feed staging verified the hashes.
+
+## Playwright ObjectModel dependency
+
+Consolidating the system tests into the hosted manifest caused Dependency Review to inspect the
+existing `Microsoft.Playwright.TestAdapter` dependency on `Microsoft.TestPlatform.ObjectModel 17.3.0`.
+That archive declares `LICENSE_NET.txt`, the Microsoft .NET Library terms, which the repository's
+license policy does not allow. This was present in the former system-test lock file.
+
+Central transitive pinning now selects `Microsoft.TestPlatform.ObjectModel 17.14.1`, within the
+adapter's supported version range and the same package major version. Its actual `.nuspec` declares
+the MIT expression and source revision `490850ae3fdc1b470e3804ceab4f6a41cf89ae51`; the
+[official package page](https://www.nuget.org/packages/Microsoft.TestPlatform.ObjectModel/17.14.1)
+also identifies MIT. The net8.0 asset used by this net10.0 test host removes the old NuGet.Frameworks
+dependency. This is an external transitive dependency update and requires browser compatibility
+validation. The license allowlist and exceptions remain unchanged.
 
 ## Snapshot failure and correction
 
@@ -301,3 +328,13 @@ A zero dependency delta after full snapshots means this docs PR introduces no pa
 does not approve existing Magick.NET distribution or remove the need for the native review. Keep
 license and vulnerability findings visible; never add global NOASSERTION or LGPL allowances to
 turn the check green.
+
+## Hosted-test support candidate — 2026-10-24
+
+The local candidate `0.1.0-alpha.local.hosted.20261024.3` at
+`46f58093464ef6893a46417b32e9cf5fa91bc1f6` adds the MIT-licensed
+`PandaBear.SharedKernel.Npgsql.Testing` package. Its Npgsql, Aspire and xUnit dependencies are
+already used by the consuming hosted tests. The exact candidate version and library revision
+remain bound in the dependency-review workflow. Existing external-package exceptions are unchanged;
+vulnerability and license review remain enabled. The candidate is prepared locally and has not
+been published as a GitHub release.

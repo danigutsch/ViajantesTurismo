@@ -109,7 +109,7 @@ semantics, not proof SeaweedFS supports every AWS option.
 
 Existing coverage to preserve:
 
-- [Local object store tests](../../tests/ViajantesTurismo.Catalog.InfrastructureTests/LocalMediaObjectStoreTests.cs):
+- [Local object store tests](../../tests/ViajantesTurismo.HostedTests/Catalog/Infrastructure/LocalMediaObjectStoreTests.cs):
   existing-reader stability across replacements.
 - [SeaweedFS adapter tests](../../tests/ViajantesTurismo.Catalog.UnitTests/SeaweedFsMediaObjectStoreTests.cs):
   checksum metadata, not-found, pagination, key safety, and provisioning behavior.

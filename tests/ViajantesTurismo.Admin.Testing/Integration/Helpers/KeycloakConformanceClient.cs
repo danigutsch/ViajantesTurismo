@@ -25,21 +25,24 @@ public static class KeycloakConformanceClient
     /// <param name="scopes">The API client scopes to request.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <param name="username">The local Keycloak username.</param>
+    /// <param name="realm">The isolated test realm.</param>
     /// <returns>The issued access token.</returns>
     public static async Task<string> RequestAccessToken(
         Uri identityProviderEndpoint,
         string password,
         IReadOnlyCollection<string> scopes,
         CancellationToken ct,
-        string username = Username)
+        string username = Username,
+        string realm = "viajantes")
     {
         ArgumentNullException.ThrowIfNull(identityProviderEndpoint);
         ArgumentException.ThrowIfNullOrWhiteSpace(password);
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
         ArgumentNullException.ThrowIfNull(scopes);
+        ArgumentException.ThrowIfNullOrWhiteSpace(realm);
 
         using var client = new HttpClient { BaseAddress = identityProviderEndpoint };
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/realms/viajantes/protocol/openid-connect/token")
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"/realms/{Uri.EscapeDataString(realm)}/protocol/openid-connect/token")
         {
             Content = new FormUrlEncodedContent(
             [

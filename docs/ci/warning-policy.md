@@ -89,7 +89,7 @@ The application test maintainers own three method-scoped `SKTEST010` exceptions,
 | File | Method | Reason |
 | --- | --- | --- |
 | `tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs` | Constructor | ASP.NET Core and HTTP client instrumentation expose source names, without accessible singleton instances. |
-| `tests/ViajantesTurismo.Catalog.InfrastructureTests/Tours/CatalogTourSlugLockPostgreSqlTests.cs` | `Catalog_npgsql_tracing_remains_enabled_without_first_response_or_parameter_values` | Npgsql owns the private source; its supported instrumentation selector is its name. |
+| `tests/ViajantesTurismo.HostedTests/Catalog/Infrastructure/Tours/CatalogTourSlugLockPostgreSqlTests.cs` | `Catalog_npgsql_tracing_remains_enabled_without_first_response_or_parameter_values` | Npgsql owns the private source; its supported instrumentation selector is its name. |
 | `tests/ViajantesTurismo.Catalog.UnitTests/PollingBackgroundServiceTestHarness.cs` | `CreateActivityListener` | Scheduling publishes its source name while keeping its singleton internal. |
 
 The baseline is one attribute per named method, three total. Retain name filtering and trace-scoped

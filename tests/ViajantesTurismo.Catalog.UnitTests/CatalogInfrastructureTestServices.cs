@@ -272,15 +272,15 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
     }
 
     public void ShouldResolveDbContextOptions<TContext>()
-        where TContext : Microsoft.EntityFrameworkCore.DbContext
+        where TContext : DbContext
     {
-        provider.GetRequiredService<Microsoft.EntityFrameworkCore.DbContextOptions<TContext>>().ShouldNotBeNull();
+        provider.GetRequiredService<DbContextOptions<TContext>>().ShouldNotBeNull();
     }
 
     public bool IsSensitiveDataLoggingEnabled<TContext>()
-        where TContext : Microsoft.EntityFrameworkCore.DbContext
+        where TContext : DbContext
     {
-        var options = provider.GetRequiredService<Microsoft.EntityFrameworkCore.DbContextOptions<TContext>>();
+        var options = provider.GetRequiredService<DbContextOptions<TContext>>();
         return options.FindExtension<Microsoft.EntityFrameworkCore.Infrastructure.CoreOptionsExtension>()?.IsSensitiveDataLoggingEnabled ?? false;
     }
 
@@ -298,7 +298,7 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
     }
 
     public bool DefaultOutboxBelongsTo<TContext>()
-        where TContext : Microsoft.EntityFrameworkCore.DbContext
+        where TContext : DbContext
     {
         using var scope = provider.CreateScope();
         var defaultOutbox = scope.ServiceProvider.GetRequiredService<IIntegrationEventOutbox>();
@@ -307,7 +307,7 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
     }
 
     public (string? Schema, string? Table) OutboxTable<TContext>()
-        where TContext : Microsoft.EntityFrameworkCore.DbContext
+        where TContext : DbContext
     {
         using var scope = provider.CreateScope();
         var entityType = scope.ServiceProvider.GetRequiredService<TContext>().Model.GetEntityTypes()

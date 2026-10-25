@@ -181,9 +181,9 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured migration service resource.</returns>
     public static IResourceBuilder<ProjectResource> AddMigrationService(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
-        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
-        IResourceBuilder<PostgresDatabaseResource> securityDatabase)
+        IResourceBuilder<IResourceWithConnectionString> adminDatabase,
+        IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
+        IResourceBuilder<IResourceWithConnectionString> securityDatabase)
     {
         return builder.AddDevelopmentDotNetProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
             .WithReference(adminDatabase)
@@ -204,8 +204,8 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured database observability resource.</returns>
     public static IResourceBuilder<ProjectResource> AddDatabaseObservability(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
-        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<IResourceWithConnectionString> adminDatabase,
+        IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService)
     {
         var adminConnectionString = builder.AddParameter(AdminIndexHealthConnectionStringParameterName, secret: true);
@@ -234,22 +234,22 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured Admin API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddAdminApi(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
+        IResourceBuilder<IResourceWithConnectionString> adminDatabase,
         IResourceBuilder<ProjectResource> brandingApiService,
         IResourceBuilder<ProjectResource> migrationService,
-        IResourceBuilder<ClamAvResource> clamAv,
+        IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
+        var api = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(adminDatabase)
             .WithReference(brandingApiService)
             .WaitFor(adminDatabase)
             .WaitFor(brandingApiService)
             .WaitForCompletion(migrationService)
-            .WithClamAvReference(clamAv)
-            .WaitFor(clamAv)
             .WithLocalIdentityProvider(identityProvider);
+
+        return clamAv is null ? api : api.WithClamAvReference(clamAv).WaitFor(clamAv);
     }
 
     /// <summary>
@@ -265,8 +265,8 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured Catalog API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddCatalogApi(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
-        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<IResourceWithConnectionString> adminDatabase,
+        IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<SeaweedFsResource>? seaweedFs,
@@ -304,7 +304,7 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured Branding API resource.</returns>
     public static IResourceBuilder<ProjectResource> AddBrandingApi(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
@@ -328,8 +328,8 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured Catalog integration-event worker resource.</returns>
     public static IResourceBuilder<ProjectResource> AddCatalogIntegrationEventWorker(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
-        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<IResourceWithConnectionString> adminDatabase,
+        IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<SeaweedFsResource>? seaweedFs)
@@ -364,8 +364,8 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured Admin integration-event worker resource.</returns>
     public static IResourceBuilder<ProjectResource> AddAdminIntegrationEventWorker(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<PostgresDatabaseResource> adminDatabase,
-        IResourceBuilder<PostgresDatabaseResource> catalogDatabase,
+        IResourceBuilder<IResourceWithConnectionString> adminDatabase,
+        IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
         IResourceBuilder<ProjectResource> migrationService)
     {
         return builder.AddDevelopmentDotNetProject<ViajantesTurismo_Admin_IntegrationEventWorker>(ResourceNames.AdminIntegrationEventWorker)
@@ -407,8 +407,8 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured management web resource.</returns>
     public static IResourceBuilder<ProjectResource> AddManagementWeb(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<RedisResource> cache,
-        IResourceBuilder<PostgresDatabaseResource> securityDatabase,
+        IResourceBuilder<IResourceWithConnectionString> cache,
+        IResourceBuilder<IResourceWithConnectionString> securityDatabase,
         IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ContainerResource>? identityProvider,
         IResourceBuilder<ParameterResource> managementWebClientSecret,

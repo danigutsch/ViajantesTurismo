@@ -32,6 +32,8 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.9.0" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.11.0" />
     <PackageVersion Include="Microsoft.Playwright" Version="1.63.0" />
+    <!-- Playwright.TestAdapter requests ObjectModel >=17.3.0; use 17.14.1 (MIT) to satisfy license policy. -->
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AWS" Version="1.20.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Postgres" Version="1.2.2" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
@@ -129,6 +131,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" Version="0.1.0-alpha.167.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" Version="0.1.0-alpha.167.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Npgsql" Version="0.1.0-alpha.167.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Npgsql.Testing" Version="0.1.0-alpha.167.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Observability" Version="0.1.0-alpha.167.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Observability.Npgsql" Version="0.1.0-alpha.167.1" />
     <PackageVersion Include="PandaBear.SharedKernel.OpenApi" Version="0.1.0-alpha.167.1" />

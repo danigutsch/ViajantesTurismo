@@ -330,7 +330,7 @@ dotnet_diagnostic.SKTEST010.severity = none
 
 # Npgsql owns its internal source. The privacy probe correlates trace and parent span IDs.
 # Owner: Catalog test maintainers. Remove when Npgsql exposes source identity for testing.
-[tests/ViajantesTurismo.Catalog.InfrastructureTests/Tours/CatalogTourSlugLockPostgreSqlTests.cs]
+[tests/ViajantesTurismo.HostedTests/Catalog/Infrastructure/Tours/CatalogTourSlugLockPostgreSqlTests.cs]
 dotnet_diagnostic.SKTEST010.severity = none
 
 # Framework HTTP sources are internal. The privacy capture deliberately subscribes globally and filters trace IDs.

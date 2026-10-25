@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure" />
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
-        <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure.Tests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.HostedTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.Testing" />
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.BehaviorTests" />
     </ItemGroup>

@@ -214,46 +214,28 @@ public sealed partial class AppHostOrchestrationTests
     public void System_fixture_allows_full_profile_resources_to_start()
     {
         // Arrange
-        var fixtureText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "tests",
-            "ViajantesTurismo.Admin.SystemTests",
-            "Infrastructure",
-            "Fixtures",
-            "AspireSystemTestFixture.cs"));
+        var fixtureText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Infrastructure", "HostedTestFixture.cs"));
 
         // Act
-        var usesDedicatedStartupTimeout = fixtureText.Contains(
-            "SystemResourceStartupTimeout",
-            StringComparison.Ordinal)
-            && fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal);
+        var usesBoundedStartup = fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal)
+            && fixtureText.Contains("AspireTestApplication.Start(builder", StringComparison.Ordinal);
 
         // Assert
-        usesDedicatedStartupTimeout.ShouldBeTrue();
+        usesBoundedStartup.ShouldBeTrue();
     }
 
     [Fact]
     public void Admin_integration_fixture_allows_admin_profile_resources_to_start()
     {
         // Arrange
-        var fixtureText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "tests",
-            "ViajantesTurismo.Admin.IntegrationTests",
-            "Infrastructure",
-            "ApiFixture.cs"));
+        var fixtureText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Infrastructure", "HostedTestFixture.cs"));
 
         // Act
-        var usesDedicatedStartupTimeout = fixtureText.Contains(
-            "ApiResourceStartupTimeout",
-            StringComparison.Ordinal)
-            && fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal)
-            && fixtureText.Contains(
-                "[ResourceNames.Api, ResourceNames.DatabaseServer],\n            ApiResourceStartupTimeout,\n            appHostArguments,",
-                StringComparison.Ordinal);
+        var usesBoundedStartup = fixtureText.Contains("TimeSpan.FromMinutes(3)", StringComparison.Ordinal)
+            && fixtureText.Contains("AspireTestApplication.Start(builder", StringComparison.Ordinal);
 
         // Assert
-        usesDedicatedStartupTimeout.ShouldBeTrue();
+        usesBoundedStartup.ShouldBeTrue();
     }
 
     [Fact]

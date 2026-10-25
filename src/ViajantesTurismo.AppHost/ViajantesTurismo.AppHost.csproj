@@ -29,6 +29,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.ArchitectureTests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.HostedTests" />
         <Content Include="Keycloak\**\*" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 

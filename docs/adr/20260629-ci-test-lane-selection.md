@@ -1,5 +1,16 @@
 # ADR-030: CI Test Lane Selection
 
+## Hosted lane amendment, 2026-10-24
+
+The six container-dependent test projects now run in `ViajantesTurismo.HostedTests`, selected by the
+`hosted-tests` slice in `.config/sharedkernel-ci.json` and one CI matrix row with Playwright enabled.
+A native assembly fixture owns
+one container per infrastructure service; application stacks retain isolated databases, realms and
+media buckets. HTTP, persistence and browser seams remain distinct in folders, namespaces and
+architecture checks. This supersedes the separate hosted/API/system rows described below. Fast
+validation retains its two execution shards. The migrated full Release solution passed locally;
+the earlier failed baseline remains historical evidence for the old fixture ownership.
+
 ## Context
 
 The repository has multiple test costs:

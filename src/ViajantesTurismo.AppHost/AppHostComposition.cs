@@ -21,6 +21,12 @@ internal static class AppHostComposition
             throw new ArgumentOutOfRangeException(nameof(profile), profile, "Unsupported hosted profile.");
         }
 
+        if (string.Equals(builder.Configuration["HostedTests:SharedInfrastructure"], bool.TrueString, StringComparison.OrdinalIgnoreCase))
+        {
+            builder.AddSharedProductResources(profile);
+            return;
+        }
+
         builder.AddObservabilityStack();
         var includeDeveloperTooling = profile.IncludesDeveloperTooling();
         var databaseServer = builder.AddDatabaseServer(includePgWeb: includeDeveloperTooling);

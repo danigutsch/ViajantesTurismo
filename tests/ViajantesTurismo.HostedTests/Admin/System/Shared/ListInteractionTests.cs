@@ -1,0 +1,120 @@
+using Microsoft.Playwright;
+using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
+using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
+using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.Admin.Testing.Integration.Helpers;
+using PandaBear.Testing.Playwright;
+using ViajantesTurismo.Admin.Contracts.Application;
+
+namespace ViajantesTurismo.Admin.SystemTests.Shared;
+
+/// <summary>
+/// E2E smoke tests for list sorting and pagination behavior using owned setup data.
+/// </summary>
+public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
+{
+    private const string DescendingSortSelector = "th[aria-sort='descending']";
+
+    [Fact]
+    public async Task Tour_list_sort_smoke_works_for_name_column()
+    {
+        // Arrange
+        var uid = Guid.NewGuid().ToString("N")[..8];
+        var ascendingSentinelName = $"00000000 Sort Smoke {uid} A";
+        var descendingSentinelName = $"zzzzzzzz Sort Smoke {uid} Z";
+        _ = await ApiClient.CreateTour(new CreateTourOptions
+        {
+            Identifier = $"SRT-{uid}-A",
+            Name = ascendingSentinelName,
+            StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(10),
+            EndDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(17),
+            Price = 500m
+        });
+        _ = await ApiClient.CreateTour(new CreateTourOptions
+        {
+            Identifier = $"SRT-{uid}-Z",
+            Name = descendingSentinelName,
+            StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(40),
+            EndDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(47),
+            Currency = CurrencyDto.Real,
+            Price = 1500m
+        });
+
+        // Act
+        await NavigateTo("/tours");
+        await Page.ShouldHaveTitle("Tours");
+
+        var toursTable = Page.Locator("table");
+        var tourNameCells = toursTable.Locator("tbody tr td:nth-child(2)");
+
+        // Assert: tours sort by Name ascending / descending.
+        await toursTable.GetButton("Name").ClickAsync();
+        await Expect(toursTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
+        await Expect(toursTable.GetByText(
+                ascendingSentinelName,
+                new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: false);
+
+        await toursTable.GetButton("Name").ClickAsync();
+        await Expect(toursTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
+        await Expect(toursTable.GetByText(
+                descendingSentinelName,
+                new LocatorGetByTextOptions { Exact = true }))
+            .ToBeVisibleAsync();
+        var descendingSentinelRow = toursTable.Locator($"tbody tr:has-text('{descendingSentinelName}')");
+        await Expect(descendingSentinelRow).ToContainTextAsync("R$");
+        await Expect(descendingSentinelRow.GetByText(ConsistencyTestRegexes.DateFormat()).First).ToBeVisibleAsync();
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: true);
+    }
+
+    [Fact]
+    public async Task Customer_list_paginator_smoke_works_and_preserves_sort()
+    {
+        // Arrange
+        var uid = Guid.NewGuid().ToString("N")[..8];
+        for (var index = 0; index < 20; index++)
+        {
+            await ApiClient.CreateCustomer(firstName: $"ZzzList{uid}{index:00}", lastName: "Smoke");
+        }
+
+        // Act
+        await NavigateTo("/customers");
+        await Page.ShouldHaveTitle("Customers");
+
+        var customersTable = Page.Locator("table");
+        await Expect(Page.Locator(".paginator")).ToBeVisibleAsync();
+        var paginator = Page.Locator(".paginator");
+        var paginationText = paginator.Locator(".pagination-text");
+
+        var firstPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
+        firstPage.CurrentPage.ShouldBe(1);
+        var isValid = firstPage.TotalPages >= 2;
+        isValid.ShouldBeTrue($"Expected at least 2 pages, but found {firstPage.TotalPages}.");
+
+        await customersTable.GetButton("Name").ClickAsync();
+        await customersTable.GetButton("Name").ClickAsync();
+        await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
+
+        var customerNameCells = customersTable.Locator("tbody tr td:nth-child(1)");
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
+
+        await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
+        await Expect(paginationText).ToContainTextAsync("Page 2 of");
+        var secondPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
+        secondPage.CurrentPage.ShouldBe(2);
+        var isValid1 = secondPage.TotalPages >= 2;
+        isValid1.ShouldBeTrue($"Expected at least 2 pages, but found {secondPage.TotalPages}.");
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
+        await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
+
+        await paginator.Locator("button[aria-label='Go to previous page']").ClickAsync();
+        await Expect(paginationText).ToContainTextAsync("Page 1 of");
+        var returnedPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
+        returnedPage.CurrentPage.ShouldBe(1);
+        var isValid2 = returnedPage.TotalPages >= 2;
+        isValid2.ShouldBeTrue($"Expected at least 2 pages, but found {returnedPage.TotalPages}.");
+        await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
+        await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
+    }
+}
