@@ -1,5 +1,5 @@
 name: Setup CI Prerequisites
-description: Set up the repository toolchains and restore shared prerequisites for CI jobs.
+description: Set up the repository toolchains, stage the pinned SharedKernel candidate, and restore local tools for CI jobs.
 
 inputs:
   sharedkernel-library-root:
@@ -8,14 +8,6 @@ inputs:
     default: ""
   sharedkernel-candidate-feed:
     description: Optional directory containing unchanged pinned candidate packages.
-    required: false
-    default: ""
-  restore-targets:
-    description: Newline-delimited solution or project paths to restore; empty skips this restore.
-    required: false
-    default: ViajantesTurismo.slnx
-  restore-targets-file:
-    description: Path to a newline-delimited file of solution or project paths to restore.
     required: false
     default: ""
   restore-local-tools:
@@ -69,14 +61,6 @@ runs:
           stage-candidate --pin .config/sharedkernel-candidate.json --library-root $env:SHAREDKERNEL_SOURCE `
           --output .local/sharedkernel-feed @source
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-    - name: Restore .NET dependencies
-      if: ${{ inputs.restore-targets != '' || inputs.restore-targets-file != '' }}
-      shell: bash
-      env:
-        RESTORE_TARGETS: ${{ inputs.restore-targets }}
-        RESTORE_TARGETS_FILE: ${{ inputs.restore-targets-file }}
-      run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release -- restore-ci-projects --projects-file "$RESTORE_TARGETS_FILE" --targets "$RESTORE_TARGETS"
 
     - name: Restore .NET local tools
       if: ${{ inputs.restore-local-tools == 'true' }}

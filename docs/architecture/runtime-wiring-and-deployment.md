@@ -135,7 +135,7 @@ the Admin commit and transport acknowledgement.
 Do not edit the generated graph to show the target before source wiring changes. The standalone
 resource remains the rollback host until forward-compatible schema, dual-host writer, token/session
 drain, zero-traffic observation, rollback drill, retained release artifact, watermark/reseed health,
-private-exposure, and Branding OpenAPI-tool retarget gates pass. Both hosts retain the exact
+private-exposure, and Branding OpenAPI target retarget gates pass. Both hosts retain the exact
 `branding-api` audience during cutover. The production platform and concrete runtime/database roles
 remain undecided; see [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) and
 [production readiness](../operations/production-readiness.md#branding-co-hosting-readiness).

@@ -253,6 +253,20 @@ threshold or native distribution gate was relaxed. On October 24, 2026, the owne
 unchanged exact-package exceptions for this candidate. Registry publication and the native
 distribution obligations remain outside this approval.
 
+## OpenAPI restore candidate
+
+Candidate `0.1.0-alpha.161.1` uses clean library revision
+`b40822b58c9f6c1797dbea6de1e2a12319906b5b`. It differs from `0.1.0-alpha.159.1` only in restoring and
+building the projects of a slice's OpenAPI targets during `sharedkernel-ci run`. Linux/Windows package
+consumption and NativeAOT passed in the exact-source CI run `40123246622`. All 78 archive hashes were
+verified. Against application main, the external package version/content-hash set adds nothing; the 57
+lock files hold 282 entries, and the only removal is `Microsoft.Extensions.TimeProvider.Testing` `10.11.0`,
+whose sole user was the deleted local repository tool's test project. The workflow still permits only
+the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability
+threshold or native distribution gate was relaxed. On October 24, 2026, the owner renewed these
+unchanged exact-package exceptions for this candidate. Registry publication and the native
+distribution obligations remain outside this approval.
+
 ## Remaining decision
 
 Keep current versions and library behavior unchanged while resolving distribution obligations.

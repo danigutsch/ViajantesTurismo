@@ -7,16 +7,15 @@ Operational details for the primary GitHub Actions workflow in
 
 The CI workflow runs on pull request activity (`opened`, `labeled` for explicit `ci:rerun`, `synchronize`,
 `reopened`, and `ready_for_review`), every push to `main`, on merge queue checks
-(`merge_group`), and on `workflow_dispatch`. It defines multiple test slices, a version
-calculation job, a repository-owned coverage aggregation job, a lint job, and the shared change-detection gate.
+(`merge_group`), on a nightly `schedule`, and on `workflow_dispatch`. It defines multiple test slices, a version
+calculation job, a solution build, a changed-code coverage gate, a lint job, and the shared change-detection gate.
 
 The workflow-level concurrency policy cancels stale runs for non-`main` refs but preserves
 in-flight `main` runs. This keeps pull request iteration responsive while ensuring the
 protected branch keeps its post-merge validation history intact.
 
-All jobs except `OpenAPI Tool Windows` use the repository `CI_UBUNTU_RUNNER` Actions variable.
-Set that variable to the current repository CI baseline runner. `OpenAPI Tool Windows` uses
-`windows-latest` to validate the platform-specific child-process environment allowlist.
+All jobs use the repository `CI_UBUNTU_RUNNER` Actions variable.
+Set that variable to the current repository CI baseline runner.
 
 > **Note:** When `CI_UBUNTU_RUNNER` points to a preview hosted runner image, queue time
 > and image behavior may be less stable than GA runner images.
@@ -45,34 +44,31 @@ raw JSON as job outputs for later release workflow steps.
 | Job name | Matrix row `display_name` |
 | Runner | Repository CI baseline |
 
-One static matrix owns every Linux test slice. Each row declares its display name, change-detection
-output, project-list file, timeout, and whether Playwright installation is needed. The shared job
-then performs the same checkout, prerequisite setup, test execution, diagnostics, artifact upload,
-and summary steps for every row.
+One static matrix owns every Linux test slice. Each row declares its slice `id`, display name, and
+timeout; the `id` values equal the `slices[].name` values of `.config/sharedkernel-ci.json`, and an
+architecture test keeps them equal. Each row runs only when its `<id>_required` selection output is
+`true`. The shared job then performs the same checkout, prerequisite setup, selection download, and
+test execution for every row:
+
+```bash
+dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
+  run --slice "$SLICE" --coverage --install-playwright --playwright-dependencies --github-summary "$GITHUB_STEP_SUMMARY"
+```
+
+`run` restores, builds, and tests the slice's selected test projects through one solution filter,
+generates the slice's OpenAPI targets, installs the slice's Playwright browsers, and writes one
+Cobertura report per test project. A failed row prints `dotnet --info` and every row uploads
+`ci-test-slice-<id>-results`.
 
 `strategy.fail-fast: false` keeps independent rows running when another row fails, preserving
-their artifacts and diagnostics. The matrix does not set `max-parallel` or
-`CI_TEST_PROJECT_PARALLELISM`, so job-level and project-level parallelism remain unchanged.
+their artifacts and diagnostics. The matrix does not set `max-parallel`, and `run` uses native MTP
+module scheduling with no module-parallelism cap.
 
-The two Fast Validation rows form one logical no-host/no-container lane and share the same change
-gate. The provider/database and full-host Admin API rows
+The two Fast Validation rows form one logical no-host/no-container lane. The provider/database and full-host Admin API rows
 remain separate because DCP runner-capacity isolation was measured to be more reliable than sharing
 one lane. Browser/system and tooling-heavy rows retain their dedicated runtime boundaries. The
 matrix is an execution mechanism; [ADR-030](../adr/20260629-ci-test-lane-selection.md) remains the
 source of the lane-selection policy.
-
-### OpenAPI Tool Windows
-
-| Attribute | Value |
-| --- | --- |
-| Job key | `openapi-tool-windows` |
-| Job name | `OpenAPI Tool Windows` |
-| Runner | `windows-latest` |
-
-This job restores the OpenAPI tool test project and its API-generation targets, then runs the
-OpenAPI tool tests on Windows. It runs independently of the matrix; `Build and Test` aggregates
-both outcomes so the platform-specific child-environment safety check remains part of the required
-merge gate without delaying unrelated test slices.
 
 ### Build and Test
 
@@ -83,74 +79,71 @@ merge gate without delaying unrelated test slices.
 | Runner | Repository CI baseline |
 
 This is the required non-secret aggregate in the `main` branch-protection rule. It waits for the
-test-slice matrix and Windows OpenAPI validation before succeeding. The component rows and Windows
-job remain parallel; the aggregate only reports their combined result. It uses no analysis secrets and blocks a failing test slice on fork pull requests.
+test-slice matrix before succeeding. The component rows remain parallel; the aggregate only reports
+their combined result. It uses no analysis secrets and blocks a failing test slice on fork pull requests.
 
 NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
 that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This
 keeps the dependency graph reproducible across pull requests and merge commits while giving
 the cache a stable key source.
 
-Standalone documentation changes skip the entire test matrix, Windows tests, version calculation,
-and solution build. Required `Build and Test` and `Quality Gate` still report successful results
-from validated selection evidence. `Lint` validates Markdown, links, and line endings without
-running tests. Contributor-maintenance scripts retain repository-tool tests even when they do not
-select application tests. Trigger-level `paths` or `paths-ignore` filters are not used for required
-checks. Every build-relevant project change still selects the Architecture Tests sentinel and
-activates both fast shards; dependency-heavy rows retain their graph-derived gates.
+Documentation-only changes skip the entire test matrix, version calculation, and solution build.
+Required `Build and Test` and `Quality Gate` still report successful results from validated selection
+evidence. `Lint` validates Markdown, links, and line endings without running tests. Trigger-level
+`paths` or `paths-ignore` filters are not used for required checks.
 
-The required change-classification path is the `select-ci-test-projects` command in
-`ViajantesTurismo.RepoConfig.Tool`. It maps changed files to owning solution projects, follows reverse
-transitive `ProjectReference` dependencies, and maps affected tests back to the fixed slice
-manifests. Missing ranges, unknown paths, unresolved references, and malformed graphs fail open to
-full validation. Pull requests use a merge-base range; main pushes compare exact before/after
-revisions. Merge-queue and manual runs validate all slices.
+### Detect Changes
 
-The generated project-level plan is uploaded as `ci-selected-test-projects` for timing and coverage
-evaluation. CI currently uses it to decide which complete slices run, while each active row still
-executes its checked-in source manifest. Changed-code coverage is checked against the artifacts from those active slices;
-full-run coverage trends are kept separate from partial selections.
+The required change classification is `sharedkernel-ci select`, built from the pinned SharedKernel
+source by `.github/actions/build-sharedkernel-tool` before any candidate is staged. It reads
+`.config/sharedkernel-ci.json` and compares a base revision with the checkout:
 
-Test-slice project membership is now centralized under `scripts/ci-test-slices/*.txt` so the
-restore, build, test, and coverage inputs for each slice stay aligned instead of
-duplicating project lists in multiple workflow locations.
+| Event | Base |
+| --- | --- |
+| `pull_request` | the first parent of the pull request merge commit |
+| `push` | `github.event.before` |
+| `merge_group` | `github.event.merge_group.base_sha` |
+| `schedule`, `workflow_dispatch` | none, so every test project is selected |
 
-Keep all five canonical slice files. A slice may become empty after its last test project leaves the application solution; selection emits
-`<slice>_required=false`, and the existing matrix skip step reports success without restoring or
-running that slice. Every xUnit project still in the application solution must remain assigned
-exactly once. Emptying a manifest while leaving its projects in the solution fails membership
-validation; missing or unexpected slice files also remain errors.
+The nightly schedule therefore runs every slice on `main`. `select` classifies each changed path:
+`fullValidation` patterns (workflows, actions, `.config`, build props and targets, the solution,
+SDK and NuGet configuration, `scripts`, and `setup-dev.*`) select every test project; documentation
+patterns (Markdown and images under `docs`, and the root `README.md`, `AGENTS.md`, `CONTRIBUTING.md`,
+and `SECURITY.md`) select nothing while every tracked build file is inert; any other path selects the
+test projects that depend on its owning project through `ProjectReference`. A path without an owning
+project, an unreadable or uncertain project graph, a missing or non-ancestor base, and a changed
+project that no selected test project covers (`requireCoveringTests`) select every test project.
 
-Multi-project slice manifests restore through one temporary solution. This lets MSBuild schedule
-the selected restore graph in parallel while preserving locked-mode restore and slice isolation.
-Jobs that invoke only project-based tools skip `dotnet tool restore`; coverage aggregation and release
-preparation retain local-tool restore because they use manifest tools.
+`alwaysSelected` adds `ViajantesTurismo.ArchitectureTests` and the Admin, Branding, and Catalog
+contract tests whenever a change selects any project. The contract tests are always selected because
+the `fast-validation-1` slice generates the three OpenAPI targets whenever it runs, and generation
+needs the API projects that only those tests restore.
 
-Project order in those slice files is also a scheduling hint for bounded local runs: keep slower
-projects first so the parallel test worker pool does not leave long-running projects until the end.
+`select` writes `TestResults/selection/selection.json` with the reasons, a solution filter per
+required slice, and `build.slnf`; the job uploads the directory as `ci-selection`, and the test rows
+run the projects it lists. Changed-code coverage is checked against the reports of those selected
+projects.
 
-Fast Validation is split into two fixed 28-project execution shards. Run `30085894084` measured the
-former single row at about 138 seconds of setup plus 518 seconds for build, OpenAPI preparation, and
-coverage tests. The split duplicates setup but allows those phases to proceed on two runners. Each
-shard uses its own `fast_validation_1_required` or `fast_validation_2_required` selection flag.
-The `Build and Test` aggregate and coverage artifact pattern continue to represent one logical lane.
+### Slice membership
 
-The shard containing all three HTTP contract projects prepares Admin, Catalog, and Branding OpenAPI
-artifacts through one parallel MSBuild graph. Focused local slices that contain only a subset keep the
-individual generation commands.
+`.config/sharedkernel-ci.json` lists every test project of the solution in exactly one slice;
+`select` fails when a solution test project is unlisted or listed twice. A slice runs only its
+selected test projects. Keep the five slices; a slice that selects nothing for a change reports
+`<slice>_required=false`, and the matrix skip step reports success without restoring or running it.
 
-When a slice contains more than one project, `scripts/run-ci-test-slice.sh` builds the selected
-test projects through one temporary solution so MSBuild owns graph scheduling. It then uses
-`scripts/collect-test-coverage.sh` to run those test projects in parallel up to the runner CPU
-count. Set `CI_TEST_PROJECT_PARALLELISM` only when diagnosing local resource pressure or a
-runner-specific bottleneck.
+Fast Validation is split into two fixed execution shards that share setup cost across two runners.
+The `fast-validation-1` slice holds all three HTTP contract projects and generates the Admin,
+Branding, and Catalog OpenAPI artifacts after its build. The `admin-system` slice installs Chromium
+with its system dependencies; on Ubuntu 26.04 the job sets `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` to the
+Ubuntu 24.04 platform because Playwright 1.60 has no Ubuntu 26.04 manifests yet.
 
 Lane placement follows [ADR-030: CI Test Lane Selection](../adr/20260629-ci-test-lane-selection.md).
-Benchmark locally with `scripts/benchmark-local-validation.sh` before changing CI slice membership.
+Measure locally with `dotnet tool run sharedkernel-ci -- run --slice <name>` and its phase timings before
+changing CI slice membership.
 
 Fast-slice membership is intentionally stricter than "small test count." A project that starts an
 AppHost, container, database, browser, queue, or other external dependency is dependency-heavy and
-must not be added to `scripts/ci-test-slices/fast-validation-*.txt`. Prefer bundling tests that share a
+must not be added to the `fast-validation-*` slices. Prefer bundling tests that share a
 slow dependency class into an existing dependency-heavy lane before adding another parallel job;
 split only after CI timing data shows duplicated setup is cheaper than serial execution.
 
@@ -175,12 +168,20 @@ must review regenerated locks and follow the canonical
 | Job name | `Quality Gate` |
 | Runner | Repository CI baseline |
 
-The job requires successful change detection and test slices. For build-relevant changes it
-merges selected slice Cobertura reports with ReportGenerator and uploads `quality-evidence`.
-Pull requests and merge groups run the C# `verify-coverage` command against a zero-context diff,
-enforcing 80% combined coverage of changed executable lines and conditions. Missing or malformed
-evidence fails. Full runs publish trends without pretending to enforce a global 80% threshold.
-Documentation-only changes use the lightweight success path.
+The job requires successful change detection, test slices, and solution build. For build-relevant
+pull requests and merge groups it builds the pinned `sharedkernel-ci` from source, downloads the solution
+build evidence and every `ci-test-slice-*-results` artifact, and runs one check:
+
+```bash
+dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
+  coverage verify --report artifacts --base "$BASE_SHA" --symbols TestResults/symbol-evidence.json
+```
+
+`BASE_SHA` is the Detect Changes base. The check enforces `coverage.thresholdPercent` (80%) of the
+changed executable lines and conditions of files that match `coverage.include` and no
+`coverage.exclude` in `.config/sharedkernel-ci.json`, and uploads `TestResults/coverage-gate.json` as
+`quality-evidence`. Missing or malformed evidence fails. Pushes, scheduled, and manual runs do not
+enforce a changed-code threshold. Documentation-only changes use the lightweight success path.
 
 This job requires no Sonar token or other analysis secret and runs for fork pull requests.
 See [quality gates](quality-gates.md) for analysis gaps, child-process coverage limitations,
@@ -200,7 +201,7 @@ and the required remote branch-protection transition.
 2. On pull requests, detect changed Markdown files and lint only that set with `tj-actions/changed-files` and `DavidAnson/markdownlint-cli2-action`.
 3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
 4. For documentation-only changes, check line endings and local links without running tests.
-5. For other changes, run `bash scripts/lint-all.sh`, including its repository-tool tests.
+5. For other changes, run `bash scripts/lint-all.sh`.
 
 ## Workflow evolution
 
@@ -220,12 +221,9 @@ For missing PR-context checks, see [Governance](governance.md#recovery-for-missi
 
 ## Parallel solution-build evidence
 
-`Solution Build` runs after change detection alongside test slices. It validates the complete
-solution, including projects outside test dependency graphs, and uploads revision-bound Release
-symbols as `solution-build-evidence`. `Quality Gate` checks the solution-build result, downloads and
-verifies those symbols, and restores only the reporting/repository tools; it does not rebuild the
-full solution after tests. Portable-PDB document checks retain their existing coverage semantics.
-
-The `run-ci-test-slice` application command owns graph creation, OpenAPI preparation, Playwright
-selection, timing logs, and failure manifests. The Bash entrypoint delegates to that command;
-existing coverage collection and browser installation remain platform adapters.
+`Solution Build` runs after change detection alongside test slices. It restores and builds the
+complete solution, including projects outside test dependency graphs, runs `sharedkernel-ci coverage
+record-symbols`, and uploads `TestResults/symbol-evidence.json` with the Release PDBs under `src` as
+`solution-build-evidence`. `Quality Gate` verifies those revision-bound symbols inside `coverage verify`;
+it does not rebuild the full solution after tests. A changed file that no report lists passes only when
+a recorded portable PDB maps no executable code to it.

@@ -19,10 +19,9 @@ This diagram is generated from `.github/workflows/ci.yml` job names and `needs` 
 
 ```mermaid
 flowchart TB
-    trigger[Pull request, push to main, merge queue, or manual run]
+    trigger[Pull request, push to main, merge queue, nightly schedule, or manual run]
     detect_changes[Detect Changes]
     calculate_version[Calculate Version]
-    openapi_tool_windows[OpenAPI Tool Windows]
     test_slices[test-slices]
     build_and_test[build-and-test]
     solution_build[Solution Build]
@@ -30,11 +29,9 @@ flowchart TB
     lint[lint]
     trigger --> detect_changes
     detect_changes --> calculate_version
-    detect_changes --> openapi_tool_windows
     detect_changes --> test_slices
     detect_changes --> build_and_test
     test_slices --> build_and_test
-    openapi_tool_windows --> build_and_test
     detect_changes --> solution_build
     detect_changes --> quality_gate
     test_slices --> quality_gate
@@ -51,15 +48,15 @@ Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/mai
 | Lane | Current purpose | Cost posture |
 | --- | --- | --- |
 | `Calculate Version` | Run the versioning tool and expose release-version outputs. | Runs after change selection. |
-| `Test slices` | Run path-gated fast, provider/database, full-host API, browser/system, and tooling rows. | Matrix rows run independently. |
+| `Test slices` | Run the selected test projects of the fast, provider/database, full-host API, and browser/system rows. | Matrix rows run independently. |
 | `Lint` | Markdown, scripts, specs, and repository quality checks. | Runs after change selection. |
 | `Dependency Review` | Scan dependency manifest and lock-file diffs. | Fast governance lane. |
 | `Secret Scan` | Detect committed secrets and publish SARIF when allowed. | Fast security lane. |
-| `Quality Gate` | Aggregate coverage and enforce changed-code threshold. | Runs after tests; no analysis secrets. |
+| `Quality Gate` | Enforce the changed-code coverage threshold over the slices' reports. | Runs after tests; no analysis secrets. |
 
-The `select-ci-test-projects` command in `ViajantesTurismo.RepoConfig.Tool` owns path decisions. If diff
-or project-graph detection is uncertain, it fails open so CI runs more work rather than skipping a
-needed check.
+`sharedkernel-ci select`, configured by `.config/sharedkernel-ci.json`, owns path decisions. If diff
+or project-graph detection is uncertain, it selects every test project so CI runs more work rather than
+skipping a needed check.
 
 ## Supplemental workflows
 
@@ -108,7 +105,8 @@ Use the narrowest command that reproduces the failing lane.
 | Full build | `dotnet build ViajantesTurismo.slnx` |
 | Full test suite | `dotnet test --solution ViajantesTurismo.slnx` |
 | Repository docs/scripts/spec lint | `bash scripts/lint-all.sh` |
-| CI change classification | `dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -- select-ci-test-projects --mode full` |
+| CI change classification | `dotnet tool run sharedkernel-ci -- select --base <commit>` |
+| One CI test slice | `dotnet tool run sharedkernel-ci -- run --slice <name>` |
 | Devcontainer smoke | `bash scripts/run-devcontainer-smoke.sh` |
 | Devcontainer deeper validation | `bash scripts/run-devcontainer-smoke.sh --run-tests` |
 | Aspire local run | `dotnet tool run aspire run` |

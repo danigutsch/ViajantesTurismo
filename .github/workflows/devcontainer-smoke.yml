@@ -15,7 +15,7 @@ on:
       - .config/sharedkernel-candidate.json
       - .github/actions/**
       - setup-dev.sh
-      - tools/ViajantesTurismo.RepoConfig.Tool/**
+      - .config/sharedkernel-ci.json
   schedule:
     - cron: '0 6 * * 1'
     - cron: '0 6 1 * *'
@@ -51,7 +51,6 @@ jobs:
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
           restore-local-tools: "false"
           trust-dev-certificate: "false"
 

@@ -388,10 +388,19 @@ main() {
     ' 2>&1 | tee "${verify_log_path}"
 
     if [[ "${run_tests}" == "1" ]]; then
-        print_step "Installing Playwright browsers inside the devcontainer"
+        # Playwright 1.60 still uses Ubuntu 24.04 dependency manifests (microsoft/playwright#40117), so the
+        # devcontainer installs Chromium's Ubuntu 26.04 libraries itself and Playwright skips --with-deps.
+        print_step "Installing Playwright Chromium dependencies inside the devcontainer"
+        # shellcheck disable=SC2016
         run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
-            DEVCONTAINER_SMOKE=1 bash scripts/install-playwright.sh chromium
+            apt=(apt-get)
+            [[ "$(id -u)" == 0 ]] || apt=(sudo apt-get)
+            "${apt[@]}" update
+            "${apt[@]}" install -y --no-install-recommends \
+                libasound2t64 libatk-bridge2.0-0t64 libatk1.0-0t64 libatspi2.0-0t64 libcairo2 libcups2t64 \
+                libdbus-1-3 libdrm2 libgbm1 libglib2.0-0t64 libnspr4 libnss3 libpango-1.0-0 libx11-6 libxcb1 \
+                libxcomposite1 libxdamage1 libxext6 libxfixes3 libxkbcommon0 libxrandr2
         ' 2>&1 | tee "${playwright_log_path}"
 
         print_step "Running test suite inside the devcontainer"
@@ -399,27 +408,16 @@ main() {
         run_devcontainer_cli exec --workspace-folder "${workspace_folder}" bash -lc '
             set -euo pipefail
 
-            run_test_projects() {
-                local slice_name="$1"
-                local projects_file="$2"
+            case "$(uname -m)" in
+                x86_64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64 ;;
+                aarch64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-arm64 ;;
+            esac
 
-                echo "==> Running ${slice_name}"
-
-                while IFS= read -r project_path; do
-                    [[ -z "${project_path}" ]] && continue
-                    dotnet test --project "${project_path}" --no-restore --no-build
-                done < "${projects_file}"
-            }
-
-            while IFS= read -r project_path; do
-                [[ -z "${project_path}" ]] && continue
-                dotnet restore "${project_path}" --locked-mode
-                dotnet build "${project_path}" --no-restore
-            done < <(sort -u scripts/ci-test-slices/*.txt)
-
-            for projects_file in scripts/ci-test-slices/*.txt; do
-                slice_name="${projects_file##*/}"
-                run_test_projects "Devcontainer ${slice_name%.txt}" "${projects_file}"
+            selection=TestResults/devcontainer-selection
+            dotnet tool run sharedkernel-ci -- select --selection "${selection}"
+            for slice in $(pwsh -NoProfile -Command "(Get-Content .config/sharedkernel-ci.json -Raw | ConvertFrom-Json).slices.name"); do
+                echo "==> Running ${slice}"
+                dotnet tool run sharedkernel-ci -- run --slice "${slice}" --selection "${selection}" --install-playwright
             done
         ' 2>&1 | tee "${test_log_path}"
     fi

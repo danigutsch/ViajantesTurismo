@@ -12,18 +12,18 @@ Ownership rules:
 
 - Source metadata lives in `src/ViajantesTurismo.Catalog.ApiService`.
 - The refresh build generates intermediate documents under `OpenApi/.generated/`.
-- The .NET tool starts the trusted document generator with a minimal environment. It preserves
+- After a locked restore, `sharedkernel-ci openapi` starts the trusted document generator with a minimal environment. It preserves
   authorization metadata without registering JWT/OIDC; normal application runs stay fail-closed.
 - CI drift checks can generate only intermediate documents with:
 
   ```bash
-  dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate catalog
+  dotnet tool run sharedkernel-ci -- openapi generate --target catalog
   ```
 
 - Refresh the committed canonical artifacts intentionally with:
 
   ```bash
-  dotnet run --project tools/ViajantesTurismo.OpenApi.Tool --no-restore -- generate catalog --refresh
+  dotnet tool run sharedkernel-ci -- openapi refresh --target catalog
   ```
 
 - `OpenApi/.generated/` is intermediate output only.

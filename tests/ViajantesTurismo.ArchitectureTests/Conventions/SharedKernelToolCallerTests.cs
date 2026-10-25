@@ -28,6 +28,7 @@ public sealed class SharedKernelToolCallerTests
         string[] knownCallers =
         [
             ".github/actions/setup-ci-prerequisites/action.yml",
+            ".github/workflows/ci.yml",
             ".github/workflows/dependency-review.yml",
             ".github/workflows/pr-metadata.yml",
             ".github/workflows/roadmap-maintenance.yml",
@@ -35,6 +36,7 @@ public sealed class SharedKernelToolCallerTests
             "scripts/lint-all.sh",
             "setup-dev.ps1",
             "setup-dev.sh",
+            "tests/ViajantesTurismo.Admin.ContractTests/AdminOpenApiArtifactDriftGuard.cs",
         ];
         knownCallers.Except(commandLines.Select(static line => line.Source)).ShouldBeEmpty("The scanner missed known callers.");
         failures.ShouldBeEmpty(string.Join(Environment.NewLine, failures));

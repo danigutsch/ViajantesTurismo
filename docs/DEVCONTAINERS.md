@@ -117,8 +117,8 @@ The script:
   than a remote installer pipe
 - lets the configured lifecycle hooks run
 - verifies `.NET`, Git, and Docker access inside the container
-- optionally restores and builds each CI slice project once, then runs the existing
-  CI test slice project lists sequentially with `--no-build` when `--run-tests` is passed
+- with `--run-tests`, installs Chromium's runtime libraries, selects every test project with
+  `sharedkernel-ci select`, and runs the configured CI slices one after another with `sharedkernel-ci run`
 - writes logs to `TestResults/devcontainer-smoke`
 - removes the temporary container automatically when it finishes
 

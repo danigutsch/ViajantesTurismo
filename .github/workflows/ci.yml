@@ -14,6 +14,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -25,18 +27,18 @@ jobs:
     if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     name: Detect Changes
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
-    timeout-minutes: 5
+    timeout-minutes: 10
     permissions:
       contents: read
     outputs:
+      base_sha: ${{ steps.change-scope.outputs.base_sha }}
       build_required: ${{ steps.change-scope.outputs.build_required }}
       documentation_only: ${{ steps.change-scope.outputs.documentation_only }}
-      fast_validation_1_required: ${{ steps.change-scope.outputs.fast_validation_1_required }}
-      fast_validation_2_required: ${{ steps.change-scope.outputs.fast_validation_2_required }}
-      admin_integration_required: ${{ steps.change-scope.outputs.admin_integration_required }}
-      admin_api_integration_required: ${{ steps.change-scope.outputs.admin_api_integration_required }}
-      admin_system_required: ${{ steps.change-scope.outputs.admin_system_required }}
-      openapi_tool_windows_required: ${{ steps.change-scope.outputs.openapi_tool_windows_required }}
+      fast-validation-1_required: ${{ steps.change-scope.outputs['fast-validation-1_required'] }}
+      fast-validation-2_required: ${{ steps.change-scope.outputs['fast-validation-2_required'] }}
+      admin-integration_required: ${{ steps.change-scope.outputs['admin-integration_required'] }}
+      admin-api-integration_required: ${{ steps.change-scope.outputs['admin-api-integration_required'] }}
+      admin-system_required: ${{ steps.change-scope.outputs['admin-system_required'] }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -48,35 +50,38 @@ jobs:
         uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
           global-json-file: global.json
-      - name: Restore standalone selection tool
-        run: dotnet restore tools/ViajantesTurismo.RepoConfig.Tool --locked-mode
 
+      - name: Build SharedKernel CI tool
+        uses: ./.github/actions/build-sharedkernel-tool
+        with:
+          tool: SharedKernel.CI.Tool
+
+      # Pull requests compare the merge commit with its first parent; scheduled and manual runs select everything.
       - name: Select affected CI test projects
         id: change-scope
         shell: bash
         env:
-          SELECTION_MODE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha != '' && github.event.pull_request.head.sha != '' && 'merge-base' || github.event_name == 'push' && github.event.before != '' && 'direct' || 'full' }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
         run: |
-          dotnet run \
-            --project tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj \
-            -c Release --no-restore \
-            -- \
-            select-ci-test-projects \
-            --mode "${SELECTION_MODE}" \
-            --base "${BASE_SHA}" \
-            --head "${HEAD_SHA}" \
-            --output-directory TestResults/selected-ci-test-slices \
-            --github-output "${GITHUB_OUTPUT}"
+          case "$EVENT_NAME" in
+            pull_request) BASE_SHA="$(git rev-parse HEAD^1)" ;;
+            push) BASE_SHA="$PUSH_BEFORE" ;;
+            merge_group) BASE_SHA="$MERGE_GROUP_BASE" ;;
+            *) BASE_SHA="" ;;
+          esac
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
+            select --base "$BASE_SHA" --github-output "$GITHUB_OUTPUT"
 
-      - name: Upload selected CI test projects
+      - name: Upload CI selection
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           if-no-files-found: error
-          name: ci-selected-test-projects
-          path: TestResults/selected-ci-test-slices/*.txt
-          retention-days: 1
+          name: ci-selection
+          path: TestResults/selection/**
+          retention-days: 7
 
   calculate-version:
     needs: detect-changes
@@ -108,7 +113,6 @@ jobs:
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
           trust-dev-certificate: "false"
 
       - name: Calculate release version
@@ -125,47 +129,6 @@ jobs:
             --github-output "${GITHUB_OUTPUT}" \
             --github-summary "${GITHUB_STEP_SUMMARY}"
 
-  openapi-tool-windows:
-    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && needs.detect-changes.outputs.build_required == 'true' }}
-    name: OpenAPI Tool Windows
-    needs:
-      - detect-changes
-    runs-on: windows-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    steps:
-      - name: Skip OpenAPI tool tests when not required
-        if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required != 'true' }}
-        shell: bash
-        run: |
-          echo "OpenAPI tool tests were not required for this change set."
-
-      - name: Checkout repository
-        if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required == 'true' }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Set up CI prerequisites
-        if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required == 'true' }}
-        uses: ./.github/actions/setup-ci-prerequisites
-        with:
-          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
-          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-local-tools: "false"
-          restore-targets: |
-            tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj
-            src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj
-            src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj
-            src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj
-          trust-dev-certificate: "false"
-
-      - name: Run OpenAPI tool tests
-        if: ${{ needs.detect-changes.outputs.openapi_tool_windows_required == 'true' }}
-        run: dotnet test --project tests/ViajantesTurismo.OpenApi.Tool.Tests/ViajantesTurismo.OpenApi.Tool.Tests.csproj --no-restore
-
   test-slices:
     name: ${{ matrix.display_name }}
     needs:
@@ -181,39 +144,19 @@ jobs:
         include:
           - id: fast-validation-1
             display_name: Fast Validation 1
-            change_output: fast_validation_1_required
-            projects_file: scripts/ci-test-slices/fast-validation-1.txt
             timeout_minutes: 15
-            install_playwright: false
-            playwright_outcome: not-applicable
           - id: fast-validation-2
             display_name: Fast Validation 2
-            change_output: fast_validation_2_required
-            projects_file: scripts/ci-test-slices/fast-validation-2.txt
             timeout_minutes: 15
-            install_playwright: false
-            playwright_outcome: not-applicable
           - id: admin-integration
             display_name: Admin Integration Tests
-            change_output: admin_integration_required
-            projects_file: scripts/ci-test-slices/admin-integration.txt
             timeout_minutes: 15
-            install_playwright: false
-            playwright_outcome: not-applicable
           - id: admin-api-integration
             display_name: Admin API Integration Tests
-            change_output: admin_api_integration_required
-            projects_file: scripts/ci-test-slices/admin-api-integration.txt
             timeout_minutes: 15
-            install_playwright: false
-            playwright_outcome: not-applicable
           - id: admin-system
             display_name: Admin System Tests
-            change_output: admin_system_required
-            projects_file: scripts/ci-test-slices/admin-system.txt
             timeout_minutes: 30
-            install_playwright: true
-            playwright_outcome: included-in-test-slice
     steps:
       - name: Fail test slice when change detection fails
         if: ${{ needs.detect-changes.result != 'success' }}
@@ -223,34 +166,40 @@ jobs:
           exit 1
 
       - name: Skip test slice when not required
-        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[matrix.change_output] != 'true' }}
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] != 'true' }}
         shell: bash
         run: |
           echo "${{ matrix.display_name }} was not required for this change set."
           {
             echo "## ${{ matrix.display_name }}"
             echo
-            echo "This test slice was skipped because no matching paths changed."
+            echo "This test slice was skipped because no selected test project belongs to it."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout repository
-        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[matrix.change_output] == 'true' }}
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Set up CI prerequisites
-        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[matrix.change_output] == 'true' }}
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' }}
         uses: ./.github/actions/setup-ci-prerequisites
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
           restore-local-tools: ${{ matrix.id == 'fast-validation-2' && 'true' || 'false' }}
-          restore-targets-file: ${{ matrix.projects_file }}
+
+      - name: Download CI selection
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' }}
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ci-selection
+          path: TestResults/selection
 
       - name: Provision pinned local language engine for component tests
-        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[matrix.change_output] == 'true' && matrix.id == 'fast-validation-2' }}
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' && matrix.id == 'fast-validation-2' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -272,68 +221,48 @@ jobs:
             echo "MEDIA_TEST_FASTTEXT_MODEL=${language_root}/lid.176.ftz"
           } >> "${GITHUB_ENV}"
 
-      - name: Run test slice
-        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[matrix.change_output] == 'true' }}
-        id: run-test-slice
-        env:
-          INSTALL_PLAYWRIGHT: ${{ matrix.install_playwright }}
+      # Playwright 1.60 has no Ubuntu 26.04 browser manifests yet (microsoft/playwright#40117), so it installs the
+      # Ubuntu 24.04 builds and dependencies there.
+      - name: Select the Playwright host platform
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' && matrix.id == 'admin-system' }}
+        shell: bash
         run: |
-          set -o pipefail
-          mkdir -p TestResults
-          args=(--slice-name "${{ matrix.display_name }}")
-          if [[ "${INSTALL_PLAYWRIGHT}" == "true" ]]; then
-            args+=(--install-playwright)
+          . /etc/os-release
+          if [[ "${ID:-}" == ubuntu && "${VERSION_ID:-}" == 26.04 ]]; then
+            case "$(uname -m)" in
+              x86_64) echo "PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64" >> "$GITHUB_ENV" ;;
+              aarch64) echo "PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-arm64" >> "$GITHUB_ENV" ;;
+            esac
           fi
-          args+=(--projects-file "${{ matrix.projects_file }}")
-          bash scripts/run-ci-test-slice.sh "${args[@]}"
 
-      - name: Capture test slice diagnostics
-        if: ${{ failure() && steps.run-test-slice.outcome != 'skipped' }}
+      - name: Run test slice
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' }}
+        id: run-test-slice
+        shell: bash
         env:
-          BUILD_OUTCOME: included-in-test-slice
-          PLAYWRIGHT_OUTCOME: ${{ matrix.playwright_outcome }}
-          TEST_OUTCOME: ${{ steps.run-test-slice.outcome }}
+          SLICE: ${{ matrix.id }}
         run: |
-          bash scripts/collect-ci-build-test-diagnostics.sh \
-            "$BUILD_OUTCOME" \
-            "$PLAYWRIGHT_OUTCOME" \
-            "$TEST_OUTCOME"
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
+            run --slice "$SLICE" --coverage --install-playwright --playwright-dependencies --github-summary "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload test slice diagnostics
-        id: upload-test-slice-diagnostics
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        if: ${{ failure() && steps.run-test-slice.outcome != 'skipped' }}
-        with:
-          if-no-files-found: error
-          name: ci-test-slice-${{ matrix.id }}-diagnostics
-          path: TestResults/ci-diagnostics/**
-          retention-days: 7
+      - name: Report the .NET environment
+        if: failure()
+        run: dotnet --info
 
       - name: Upload test slice results
-        id: upload-test-slice-results
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: ${{ always() && steps.run-test-slice.outcome != 'skipped' }}
         with:
           if-no-files-found: ignore
           name: ci-test-slice-${{ matrix.id }}-results
-          path: |
-            **/TestResults/**
-            !TestResults/ci-diagnostics/**
+          path: "**/TestResults/**"
           retention-days: 7
-
-      - name: Report test slice artifacts
-        if: ${{ always() && steps.run-test-slice.outcome != 'skipped' }}
-        env:
-          DIAGNOSTICS_ARTIFACT_URL: ${{ steps.upload-test-slice-diagnostics.outputs.artifact-url }}
-          RESULTS_ARTIFACT_URL: ${{ steps.upload-test-slice-results.outputs.artifact-url }}
-        run: bash scripts/write-ci-artifact-summary.sh "${{ matrix.display_name }}"
 
   build-and-test:
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Build and Test' }}
     needs:
       - detect-changes
       - test-slices
-      - openapi-tool-windows
     if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 5
@@ -358,11 +287,6 @@ jobs:
               exit 1
           fi
 
-          if [[ "${{ needs.openapi-tool-windows.result }}" != "success" ]]; then
-              echo "OpenAPI Tool Windows failed." >&2
-              exit 1
-          fi
-
           echo "Build and Test completed successfully across the validation slices."
           exit 0
 
@@ -382,22 +306,22 @@ jobs:
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-targets: ViajantesTurismo.slnx
           restore-local-tools: "false"
           trust-dev-certificate: "false"
+      - name: Restore all solution projects
+        run: dotnet restore ViajantesTurismo.slnx --locked-mode
       - name: Build all solution projects
         run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
       - name: Record revision and symbol hashes
-        run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- write-build-evidence
+        run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- coverage record-symbols
       - name: Upload build evidence
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: solution-build-evidence
           if-no-files-found: error
           path: |
-            TestResults/build-evidence.json
+            TestResults/symbol-evidence.json
             src/**/bin/Release/**/*.pdb
-            tools/**/bin/Release/**/*.pdb
           retention-days: 7
 
   quality-gate:
@@ -428,75 +352,55 @@ jobs:
           esac
 
       - name: Checkout repository
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up quality tooling
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
-        uses: ./.github/actions/setup-ci-prerequisites
+      - name: Set up coverage SDK
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
         with:
-          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
-          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-targets: tools/ViajantesTurismo.RepoConfig.Tool/ViajantesTurismo.RepoConfig.Tool.csproj
-          trust-dev-certificate: "false"
+          global-json-file: global.json
+
+      - name: Build SharedKernel CI tool
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
+        uses: ./.github/actions/build-sharedkernel-tool
+        with:
+          tool: SharedKernel.CI.Tool
 
       - name: Download build evidence
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: solution-build-evidence
           path: .
 
-      - name: Verify build evidence
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
-        run: dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- verify-build-evidence
-
       - name: Download test slice coverage
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: ci-test-slice-*-results
           path: artifacts
           merge-multiple: false
 
-      - name: Merge coverage reports
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' }}
-        shell: bash
-        run: |
-          dotnet tool run reportgenerator \
-            "-reports:artifacts/**/*.cobertura*.xml" \
-            "-targetdir:TestResults/CoverageReport" \
-            "-reporttypes:Html;Cobertura"
-          test -s TestResults/CoverageReport/Cobertura.xml
-
       - name: Enforce changed-code coverage
         if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
         shell: bash
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+          BASE_SHA: ${{ needs.detect-changes.outputs.base_sha }}
         run: |
-          test -n "$BASE_SHA"
-          test -n "$HEAD_SHA"
-          git -c core.quotePath=false diff --no-ext-diff --unified=0 --find-renames \
-            "$BASE_SHA...$HEAD_SHA" -- '*.cs' '*.razor' > TestResults/coverage-changes.patch
-          dotnet run --project tools/ViajantesTurismo.RepoConfig.Tool -c Release --no-build --no-restore -- \
-            verify-coverage --report TestResults/CoverageReport/Cobertura.xml \
-            --diff TestResults/coverage-changes.patch
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
+            coverage verify --report artifacts --base "$BASE_SHA" --symbols TestResults/symbol-evidence.json
 
       - name: Upload quality evidence
-        if: ${{ always() && needs.detect-changes.outputs.build_required == 'true' }}
+        if: ${{ always() && needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           if-no-files-found: error
           name: quality-evidence
-          path: |
-            TestResults/CoverageReport/**
-            TestResults/coverage-gate.json
-            TestResults/coverage-changes.patch
+          path: TestResults/coverage-gate.json
           retention-days: 14
 
   lint:
@@ -566,7 +470,6 @@ jobs:
         with:
           sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
           sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
-          restore-targets: tests/ViajantesTurismo.RepoConfig.Tests/ViajantesTurismo.RepoConfig.Tests.csproj
           trust-dev-certificate: "false"
 
       - name: Run repository linters

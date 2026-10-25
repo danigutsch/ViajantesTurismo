@@ -16,8 +16,8 @@ CI does not maintain a separate library test lane.
 - Application domain-dispatch tests, HTTP/OpenAPI contract tests, and integration tests verify consumer
   behavior and composition against the pinned candidate.
 
-These projects remain in the application test slices declared in `scripts/ci-test-slices/`.
-Solution membership checks require every application xUnit project to belong to exactly one slice.
+These projects remain in the application test slices declared in `.config/sharedkernel-ci.json`.
+`sharedkernel-ci select` requires every application test project to belong to exactly one slice.
 
 ## Library changes and adoption
 
