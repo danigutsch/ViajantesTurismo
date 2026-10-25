@@ -11,8 +11,8 @@ internal static class DocumentBrandingTestData
     public static DocumentBrandingSource Http(BrandingSettingsDto settings, BrandingProjectionState? projection = null) =>
         Create(new FakeBrandingApiClient(settings), projection, DocumentBrandingSourceMode.Http);
 
-    public static DocumentBrandingSource Projection(BrandingProjectionState? projection) =>
-        Create(new UnusedBrandingApiClient(), projection, DocumentBrandingSourceMode.Projection);
+    public static DocumentBrandingSource Projection(BrandingProjectionState? projection, BrandingProjectionRecovery? recovery = null) =>
+        Create(new UnusedBrandingApiClient(), projection, DocumentBrandingSourceMode.Projection, recovery);
 
     public static BrandingProjectionState ProjectionMatching(BrandingSettingsDto settings, long sourceRevision) => new(
         Guid.CreateVersion7(),
@@ -29,8 +29,9 @@ internal static class DocumentBrandingTestData
     private static DocumentBrandingSource Create(
         IBrandingApiClient client,
         BrandingProjectionState? projection,
-        DocumentBrandingSourceMode mode) => new(
+        DocumentBrandingSourceMode mode,
+        BrandingProjectionRecovery? recovery = null) => new(
             client,
-            new FakeBrandingProjectionStore { Current = projection },
+            new FakeBrandingProjectionStore { Current = projection, Recovery = recovery },
             Options.Create(new DocumentBrandingOptions { Source = mode }));
 }

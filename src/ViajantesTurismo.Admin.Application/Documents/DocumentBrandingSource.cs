@@ -19,14 +19,17 @@ public sealed class DocumentBrandingSource(
 
     internal async Task<Result<DocumentBrandingSnapshotValues>> Capture(CancellationToken ct)
     {
-        var projection = await projectionStore.GetCurrent(ct);
         if (options.Value.Source == DocumentBrandingSourceMode.Projection)
         {
-            return projection is null
+            // A recovering projection is fenced: documents fail closed instead of capturing a stale or partial snapshot.
+            var recovery = await projectionStore.GetRecovery(ct);
+            var current = recovery.IsReady ? await projectionStore.GetCurrent(ct) : null;
+            return current is null
                 ? Result.Unavailable<DocumentBrandingSnapshotValues>(UnavailableDetail)
-                : Result.Ok(DocumentBrandingSnapshotFactory.FromProjection(projection));
+                : Result.Ok(DocumentBrandingSnapshotFactory.FromProjection(current));
         }
 
+        var projection = await projectionStore.GetCurrent(ct);
         var captured = DocumentBrandingSnapshotFactory.FromSettings(await brandingApiClient.GetPublicSettings(ct));
         if (projection is null)
         {

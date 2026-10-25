@@ -1,5 +1,6 @@
 using PandaBear.Results;
 using PandaBear.Testing;
+using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -94,5 +95,21 @@ public sealed class DocumentBrandingSourceTests
         // Assert
         result.Status.ShouldBe(ResultStatus.Unavailable);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(DocumentBrandingSource.UnavailableDetail);
+    }
+
+    [Fact]
+    public async Task Projection_capture_fails_closed_while_the_projection_is_recovering()
+    {
+        // Arrange
+        var settings = DocumentDraftTestData.CreateBrandingSettings();
+        var source = DocumentBrandingTestData.Projection(
+            DocumentBrandingTestData.ProjectionMatching(settings, 9),
+            BrandingProjectionRecovery.Start("source-restore", DateTimeOffset.UnixEpoch));
+
+        // Act
+        var result = await source.Capture(CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Unavailable);
     }
 }

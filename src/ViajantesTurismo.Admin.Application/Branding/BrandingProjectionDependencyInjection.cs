@@ -18,6 +18,7 @@ public static class BrandingProjectionDependencyInjection
 
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddScoped<BrandingProjectionApplier>();
+        services.TryAddScoped<BrandingProjectionRecoveryService>();
 
         return services;
     }

@@ -42,6 +42,7 @@ public sealed class BrandingDbContext(
         modelBuilder.HasDefaultSchema(SchemaName);
         modelBuilder.ApplyConfiguration(new BrandingSettingsConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingSettingsRevisionConfiguration());
+        modelBuilder.ApplyConfiguration(new BrandingRecoveryAuditConfiguration());
 
         if (configurations is not null)
         {

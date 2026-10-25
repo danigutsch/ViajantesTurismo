@@ -225,6 +225,54 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ViajantesTurismo.Branding.Infrastructure.BrandingRecoveryAuditRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("IncidentReference")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("NewEpoch")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("NewRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("OldEpoch")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("OldRevision")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BrandingRecoveryAudits", "branding");
+                });
+
             modelBuilder.Entity("ViajantesTurismo.Branding.Infrastructure.BrandingSettingsRecord", b =>
                 {
                     b.Property<Guid>("Id")

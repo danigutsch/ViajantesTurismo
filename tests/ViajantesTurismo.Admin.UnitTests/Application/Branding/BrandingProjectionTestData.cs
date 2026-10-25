@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Branding;
@@ -23,4 +24,20 @@ internal static class BrandingProjectionTestData
         "Georgia",
         "system-ui",
         new Uri("/logo.svg", UriKind.Relative));
+
+    public static BrandingReseedAuthorization CreateAuthorization(BrandingSettingsChangedIntegrationEvent reseed) => new(
+        reseed.EventId,
+        reseed.SourceEpoch,
+        reseed.SourceRevision,
+        "restore after incident",
+        "INC-42",
+        "operator@example.test",
+        new DateTimeOffset(2026, 10, 24, 13, 0, 0, TimeSpan.Zero));
+
+    public static BrandingReseedRequest CreateReseedRequest(
+        Guid? expectedEpoch,
+        long? expectedRevision,
+        Guid targetEpoch,
+        long targetRevision) =>
+        new(expectedEpoch, expectedRevision, Guid.CreateVersion7(), targetEpoch, targetRevision, "restore", "INC-42", "operator@example.test");
 }
