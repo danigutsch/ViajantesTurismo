@@ -1,7 +1,7 @@
 using PandaBear.ApiVersioning;
 using PandaBear.OpenApi;
 
-namespace ViajantesTurismo.Branding.ApiService;
+namespace ViajantesTurismo.Branding.AspNetCore;
 
 internal static class BrandingOpenApiDocuments
 {

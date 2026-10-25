@@ -1,3 +1,4 @@
+using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Branding.Infrastructure;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -29,7 +30,7 @@ internal static class BrandingApiTestHost
     public static WebApplicationFactory<BrandingApiHostEntryPoint> Create(
         TestBrandingSettingsStore store,
         RecordingOutputCacheStore outputCacheStore,
-        CollectingLogger<BrandingApiHostEntryPoint>? logger = null)
+        CollectingLogger<BrandingAspNetCoreMarker>? logger = null)
     {
         return Create(null, store, outputCacheStore, logger);
     }
@@ -56,7 +57,7 @@ internal static class BrandingApiTestHost
         string? environment,
         TestBrandingSettingsStore? store,
         RecordingOutputCacheStore? outputCacheStore,
-        CollectingLogger<BrandingApiHostEntryPoint>? logger,
+        CollectingLogger<BrandingAspNetCoreMarker>? logger,
         bool authenticateClient = true)
     {
         return WebApplicationTestHost.Create<BrandingApiHostEntryPoint>(
@@ -73,7 +74,7 @@ internal static class BrandingApiTestHost
 
                 if (logger is not null)
                 {
-                    services.Replace(ServiceDescriptor.Singleton<ILogger<BrandingApiHostEntryPoint>>(_ => logger));
+                    services.Replace(ServiceDescriptor.Singleton<ILogger<BrandingAspNetCoreMarker>>(_ => logger));
                 }
 
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());

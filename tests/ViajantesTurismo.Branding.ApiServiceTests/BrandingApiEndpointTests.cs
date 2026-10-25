@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using TestTraits = ViajantesTurismo.Branding.ApiServiceTests.Infrastructure.TestTraits;
+using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Branding.ApiService;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -147,7 +148,7 @@ public sealed class BrandingApiEndpointTests
         {
             EvictionException = new IOException(sensitiveFailureMessage)
         };
-        var logger = new CollectingLogger<BrandingApiHostEntryPoint>();
+        var logger = new CollectingLogger<BrandingAspNetCoreMarker>();
         await using var factory = BrandingApiTestHost.Create(store, outputCacheStore, logger);
         using var client = factory.CreateClient();
 

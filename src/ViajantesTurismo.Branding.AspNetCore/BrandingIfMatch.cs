@@ -3,7 +3,7 @@ using Microsoft.Net.Http.Headers;
 using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Branding.Infrastructure;
 
-namespace ViajantesTurismo.Branding.ApiService;
+namespace ViajantesTurismo.Branding.AspNetCore;
 
 /// <summary>An RFC 9110 <c>If-Match</c> condition evaluated with strong comparison.</summary>
 internal sealed class BrandingIfMatch

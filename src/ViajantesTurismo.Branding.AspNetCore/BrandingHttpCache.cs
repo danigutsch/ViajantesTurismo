@@ -1,6 +1,6 @@
 using PandaBear.HttpCaching.AspNetCore;
 
-namespace ViajantesTurismo.Branding.ApiService;
+namespace ViajantesTurismo.Branding.AspNetCore;
 
 internal static class BrandingHttpCache
 {

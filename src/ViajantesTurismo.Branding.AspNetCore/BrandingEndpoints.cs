@@ -11,7 +11,7 @@ using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.Results;
 using ViajantesTurismo.Branding.Infrastructure;
 
-namespace ViajantesTurismo.Branding.ApiService;
+namespace ViajantesTurismo.Branding.AspNetCore;
 
 internal static class BrandingEndpoints
 {
@@ -20,6 +20,7 @@ internal static class BrandingEndpoints
         ArgumentNullException.ThrowIfNull(app);
 
         var versionedApi = app.MapApiVersionGroup(BrandingOpenApiDocuments.CurrentApiVersion);
+        versionedApi.RequireCors(BrandingSecurityBaseline.CorsPolicyName);
         var publicBranding = versionedApi.MapGroup($"/{BrandingRoutes.PublicSettingsPath}")
             .AllowAnonymous();
         var managementBranding = versionedApi.MapGroup($"/{BrandingRoutes.ManagementSettingsPath}")
@@ -85,7 +86,7 @@ internal static class BrandingEndpoints
         BrandingSettingsDto request,
         IBrandingSettingsRevisionStore store,
         IOutputCacheStore outputCacheStore,
-        ILogger<BrandingApiHostEntryPoint> logger,
+        ILogger<BrandingAspNetCoreMarker> logger,
         HttpContext httpContext,
         CancellationToken ct)
     {

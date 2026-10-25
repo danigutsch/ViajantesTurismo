@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Branding.ApiService;
+namespace ViajantesTurismo.Branding.AspNetCore;
 
 internal static partial class BrandingCacheLog
 {

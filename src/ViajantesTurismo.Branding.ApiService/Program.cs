@@ -1,7 +1,6 @@
 using PandaBear.AspNetCore;
 using PandaBear.OpenApi;
-using ViajantesTurismo.Branding.ApiService;
-using ViajantesTurismo.Branding.Infrastructure;
+using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 
@@ -12,15 +11,13 @@ builder.AddServiceDefaults();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddBrandingOpenApiDocuments();
 builder.Services.AddOutputCache();
-builder.Services.AddBrandingSecurityBaseline(builder.Configuration);
 builder.Services.AddApiSecurity(
         builder.Configuration,
         builder.Environment,
         ApiAudienceNames.Branding,
-        BrandingAuthorization.PermissionsByRole)
-    .AddPolicy(BrandingAuthorization.BrandingRead, policy => policy.RequirePermission(BrandingAuthorization.BrandingRead))
-    .AddPolicy(BrandingAuthorization.BrandingWrite, policy => policy.RequirePermission(BrandingAuthorization.BrandingWrite));
-builder.AddBrandingInfrastructure(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(builder.Environment));
+        BrandingModule.PermissionsByRole)
+    .AddBrandingPolicies(authenticationScheme: null);
+builder.AddBrandingModule(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(builder.Environment));
 
 var app = builder.Build();
 
@@ -33,7 +30,7 @@ app.UseApiSecurity();
 app.UseRateLimiter();
 app.UseOutputCache();
 
-app.MapBrandingEndpoints();
+app.MapBrandingModule();
 
 app.MapDefaultEndpoints();
 

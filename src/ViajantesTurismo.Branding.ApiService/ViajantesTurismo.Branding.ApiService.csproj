@@ -20,7 +20,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.OpenApi" />
-        <ProjectReference Include="..\ViajantesTurismo.Branding.Contracts.Http\ViajantesTurismo.Branding.Contracts.Http.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.Branding.AspNetCore\ViajantesTurismo.Branding.AspNetCore.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.ServiceDefaults\ViajantesTurismo.ServiceDefaults.csproj" />
