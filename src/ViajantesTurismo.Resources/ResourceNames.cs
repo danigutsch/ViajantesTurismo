@@ -76,11 +76,6 @@ public static class ResourceNames
     public const string CatalogApi = "catalog-api";
 
     /// <summary>
-    /// The name of the Branding API service resource.
-    /// </summary>
-    public const string BrandingApi = "branding-api";
-
-    /// <summary>
     /// The name of the Catalog-owned integration-event worker resource.
     /// </summary>
     public const string CatalogIntegrationEventWorker = "catalog-integration-event-worker";

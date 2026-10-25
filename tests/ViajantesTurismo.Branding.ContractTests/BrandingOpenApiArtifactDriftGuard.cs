@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Branding.ContractTests;
 internal static class BrandingOpenApiArtifactDriftGuard
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
-    private const string GeneratedArtifactPrefix = "ViajantesTurismo.Branding.ApiService_";
+    private const string GeneratedArtifactPrefix = "ViajantesTurismo.Catalog.ApiService_";
     private const string RefreshHint = "Refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target branding` when the HTTP contract changes intentionally.";
 
     public static JsonSnapshotArtifactSet CreateSnapshotSet()
@@ -26,9 +26,6 @@ internal static class BrandingOpenApiArtifactDriftGuard
             GeneratedArtifactPrefix,
             "Branding OpenAPI",
             RefreshHint,
-            new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["v1"] = "ViajantesTurismo.Branding.ApiService.json"
-            });
+            new Dictionary<string, string>(StringComparer.Ordinal));
     }
 }

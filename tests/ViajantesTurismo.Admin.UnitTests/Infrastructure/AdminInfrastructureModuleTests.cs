@@ -1,10 +1,10 @@
+using ViajantesTurismo.Admin.Infrastructure.Branding;
 using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
-using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -146,7 +146,7 @@ public sealed class AdminInfrastructureModuleTests
         var documentStore = services.DocumentStore;
         var outbox = services.Outbox;
         var idempotencyStore = services.IdempotencyStore;
-        var brandingApiClient = services.BrandingApiClient;
+        var brandingProjectionStore = services.BrandingProjectionStore;
         var hostedServices = services.HostedServices;
 
         // Assert
@@ -157,7 +157,7 @@ public sealed class AdminInfrastructureModuleTests
         documentStore.ShouldBeOfType<DocumentStore>();
         outbox.ShouldNotBeNull();
         idempotencyStore.ShouldNotBeNull();
-        brandingApiClient.ShouldBeOfType<FakeBrandingApiClient>();
+        brandingProjectionStore.ShouldBeOfType<EfBrandingProjectionStore>();
         hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
         hostedServices.ShouldContain(service => service is DocumentAuditRetentionHostedService);
         services.HasOutboxRelay.ShouldBeTrue();

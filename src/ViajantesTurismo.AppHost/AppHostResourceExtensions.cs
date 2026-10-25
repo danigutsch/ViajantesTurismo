@@ -227,7 +227,6 @@ internal static class AppHostResourceExtensions
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="adminDatabase">The Admin database resource.</param>
-    /// <param name="brandingApiService">The Branding API resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
     /// <param name="clamAv">The private ClamAV malware scanner resource.</param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
@@ -235,7 +234,6 @@ internal static class AppHostResourceExtensions
     public static IResourceBuilder<ProjectResource> AddAdminApi(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<IResourceWithConnectionString> adminDatabase,
-        IResourceBuilder<ProjectResource> brandingApiService,
         IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<ContainerResource>? identityProvider)
@@ -243,9 +241,7 @@ internal static class AppHostResourceExtensions
         var api = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(adminDatabase)
-            .WithReference(brandingApiService)
             .WaitFor(adminDatabase)
-            .WaitFor(brandingApiService)
             .WaitForCompletion(migrationService)
             .WithLocalIdentityProvider(identityProvider);
 
@@ -292,28 +288,6 @@ internal static class AppHostResourceExtensions
         }
 
         return catalogApi;
-    }
-
-    /// <summary>
-    /// Adds the Branding API service.
-    /// </summary>
-    /// <param name="builder">The distributed application builder.</param>
-    /// <param name="catalogDatabase">The Catalog database resource that also stores Branding settings.</param>
-    /// <param name="migrationService">The migration service resource.</param>
-    /// <param name="identityProvider">The local identity-provider resource.</param>
-    /// <returns>The configured Branding API resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddBrandingApi(
-        this IDistributedApplicationBuilder builder,
-        IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
-        IResourceBuilder<ProjectResource> migrationService,
-        IResourceBuilder<ContainerResource>? identityProvider)
-    {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Branding_ApiService>(ResourceNames.BrandingApi)
-            .WithHttpHealthCheck(EndpointPaths.Health)
-            .WithReference(catalogDatabase)
-            .WaitFor(catalogDatabase)
-            .WaitForCompletion(migrationService)
-            .WithLocalIdentityProvider(identityProvider);
     }
 
     /// <summary>

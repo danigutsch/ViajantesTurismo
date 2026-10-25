@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Contracts.Application;
 

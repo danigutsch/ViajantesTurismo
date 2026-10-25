@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Application.Branding;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -5,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using PandaBear.Branding;
 using PandaBear.Domain;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency;
@@ -53,7 +53,7 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
 
     public IIntegrationEventOutbox Outbox => scope.ServiceProvider.GetRequiredService<IIntegrationEventOutbox>();
 
-    public IBrandingApiClient BrandingApiClient => scope.ServiceProvider.GetRequiredService<IBrandingApiClient>();
+    public IBrandingProjectionStore BrandingProjectionStore => scope.ServiceProvider.GetRequiredService<IBrandingProjectionStore>();
 
     public IIdempotencyStore? IdempotencyStore => scope.ServiceProvider.GetService<IIdempotencyStore>();
 

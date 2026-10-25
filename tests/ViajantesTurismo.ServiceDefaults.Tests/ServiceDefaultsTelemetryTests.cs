@@ -15,8 +15,6 @@ public sealed class ServiceDefaultsTelemetryTests
     private const string NpgsqlEventSourcingTelemetryName = "SharedKernel.EventSourcing.Npgsql";
     private const string PostgreSqlEventSourcingActivityAppend = "eventsourcing.postgresql.append";
     private const string PostgreSqlEventSourcingMetricEventsAppended = "eventsourcing.postgresql.event.appended";
-    private const string AdminTelemetryName = "ViajantesTurismo.Admin";
-    private const string AdminMetricBrandingProjectionMismatch = "admin.documents.branding.projection_mismatch";
     private const string CatalogTelemetryName = "ViajantesTurismo.Catalog";
     private const string CatalogActivityIntegrationEventHandle = "catalog.integration_event.handle";
     private const string CatalogMetricIntegrationEvent = "catalog.integration_event";
@@ -52,31 +50,6 @@ public sealed class ServiceDefaultsTelemetryTests
             string.Equals(activity.Source.Name, sourceName, StringComparison.Ordinal));
         exported.OperationName.ShouldBe("customers.create");
         exported.Status.ShouldBe(ActivityStatusCode.Error);
-    }
-
-    [Fact]
-    public void Add_service_defaults_exports_admin_custom_metrics()
-    {
-        // Arrange
-        var exportedMetricNames = new ConcurrentQueue<string>();
-        using var meter = new Meter(AdminTelemetryName);
-        var counter = meter.CreateCounter<long>(AdminMetricBrandingProjectionMismatch);
-        var builder = Host.CreateApplicationBuilder();
-        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
-
-        builder.AddServiceDefaults();
-        builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
-            metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames))));
-
-        using var host = builder.Build();
-        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
-
-        // Act
-        counter.Add(1);
-        meterProvider.ForceFlush();
-
-        // Assert
-        exportedMetricNames.ShouldContain(AdminMetricBrandingProjectionMismatch, StringComparer.Ordinal);
     }
 
     [Fact]

@@ -25,7 +25,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var handler = new RegenerateDocumentDraftCommandHandler(
             store, new FakeQueryService(null), new FakeTourStore(),
-            DocumentBrandingTestData.Http(new BrandingSettingsDto()),
+            DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(new UnusedIdempotencyStore(), unitOfWork, TimeProvider.System));
@@ -57,7 +57,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(null),
             new FakeTourStore(),
-            DocumentBrandingTestData.Http(new BrandingSettingsDto()),
+            DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.CreateStarted(idempotencyScope, idempotencyKey, unitOfWork));
@@ -102,7 +102,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(null),
             new FakeTourStore(),
-            DocumentBrandingTestData.Http(new BrandingSettingsDto()),
+            DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.CreateCompleted(
@@ -155,7 +155,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking, tour),
             tourData.TourStore,
-            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(idempotencyStore, unitOfWork, TimeProvider.System));
@@ -219,7 +219,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             documentStore,
             new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourId)),
             tourData.TourStore,
-            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(idempotencyStore, unitOfWork, TimeProvider.System));
@@ -267,7 +267,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourId)),
             tourData.TourStore,
-            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -297,7 +297,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(null),
             new FakeTourStore(),
-            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -344,7 +344,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking, tour),
             tourData.TourStore,
-            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -384,7 +384,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking, tour),
             tourData.TourStore,
-            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -423,7 +423,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(null),
             new FakeTourStore(),
-            DocumentBrandingTestData.Http(new BrandingSettingsDto()),
+            DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -463,7 +463,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourId)),
             new FakeTourStore(),
-            DocumentBrandingTestData.Http(DocumentDraftTestData.CreateBrandingSettings()),
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
@@ -500,7 +500,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             store,
             new FakeQueryService(booking),
             tourData.TourStore,
-            DocumentBrandingTestData.Http(new BrandingSettingsDto()),
+            DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));

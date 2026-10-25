@@ -18,7 +18,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Current_admin_to_branding_typed_registration_reports_the_destination_and_remediation()
+    public async Task Admin_to_catalog_hosted_branding_typed_registration_reports_the_destination_and_remediation()
     {
         // Arrange
         const string source = """
@@ -29,7 +29,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(ServiceCollection services)
                 {
                     services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(
-                        client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
+                        client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
                 }
             }
             """;
@@ -40,7 +40,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Assert
         var diagnostic = diagnostics.ShouldHaveSingleItem(static candidate => candidate.Id == ArchitectureDiagnosticIds.ProductionApiHttp);
         var message = diagnostic.GetMessage(CultureInfo.InvariantCulture);
-        message.ShouldContain("Branding API ('branding-api')", StringComparison.Ordinal);
+        message.ShouldContain("Catalog API ('catalog-api')", StringComparison.Ordinal);
         message.ShouldContain("versioned integration event", StringComparison.Ordinal);
         message.ShouldContain("explicit gRPC", StringComparison.Ordinal);
         message.ShouldContain("in-process module call", StringComparison.Ordinal);
@@ -51,13 +51,13 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace PandaBear.Branding
+            namespace ViajantesTurismo.Branding.Contracts.Http
             {
-                public interface IManagementBrandingApiClient
+                public interface IBrandingManagementClient
                 {
                 }
 
-                public sealed class ManagementBrandingApiClient : IManagementBrandingApiClient
+                public sealed class BrandingManagementClient : IBrandingManagementClient
                 {
                 }
             }
@@ -68,7 +68,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     public static void Configure(ServiceCollection services)
                     {
-                        services.AddHttpClient<IManagementBrandingApiClient, ManagementBrandingApiClient>();
+                        services.AddHttpClient<ViajantesTurismo.Branding.Contracts.Http.IBrandingManagementClient, ViajantesTurismo.Branding.Contracts.Http.BrandingManagementClient>();
                     }
                 }
             }
@@ -86,8 +86,8 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("IManagementBrandingApiClient", "NeutralManagementBrandingClient")]
-    [InlineData("ManagementBrandingApiClient", "ManagementBrandingApiClient")]
+    [InlineData("IBrandingManagementClient", "NeutralManagementBrandingClient")]
+    [InlineData("BrandingManagementClient", "BrandingManagementClient")]
     public async Task Management_branding_typed_client_names_are_classified_independently(
         string clientType,
         string implementationType)
@@ -96,17 +96,17 @@ public sealed class ProductionApiHttpAnalyzerTests
         ArgumentException.ThrowIfNullOrWhiteSpace(clientType);
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationType);
         var source = $$"""
-            namespace PandaBear.Branding
+            namespace ViajantesTurismo.Branding.Contracts.Http
             {
-                public interface IManagementBrandingApiClient
+                public interface IBrandingManagementClient
                 {
                 }
 
-                public sealed class ManagementBrandingApiClient : IManagementBrandingApiClient
+                public sealed class BrandingManagementClient : IBrandingManagementClient
                 {
                 }
 
-                public sealed class NeutralManagementBrandingClient : IManagementBrandingApiClient
+                public sealed class NeutralManagementBrandingClient : IBrandingManagementClient
                 {
                 }
             }
@@ -117,7 +117,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     public static void Configure(ServiceCollection services)
                     {
-                        services.AddHttpClient<{{clientType}}, {{implementationType}}>();
+                        services.AddHttpClient<ViajantesTurismo.Branding.Contracts.Http.{{clientType}}, ViajantesTurismo.Branding.Contracts.Http.{{implementationType}}>();
                     }
                 }
             }
@@ -131,10 +131,10 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("client.BaseAddress = new Uri(\"https+http://branding-api\");")]
-    [InlineData("const string Destination = ResourceNames.BrandingApi; client.BaseAddress = new Uri(Destination);")]
-    [InlineData("var destination = ResourceNames.BrandingApi; var uri = new Uri($\"https+http://{destination}\"); client.BaseAddress = uri;")]
-    [InlineData("var destination = new Uri($\"https+http://{ResourceNames.BrandingApi}/v1/settings\"); client.BaseAddress = destination;")]
+    [InlineData("client.BaseAddress = new Uri(\"https+http://catalog-api\");")]
+    [InlineData("const string Destination = ResourceNames.CatalogApi; client.BaseAddress = new Uri(Destination);")]
+    [InlineData("var destination = ResourceNames.CatalogApi; var uri = new Uri($\"https+http://{destination}\"); client.BaseAddress = uri;")]
+    [InlineData("var destination = new Uri($\"https+http://{ResourceNames.CatalogApi}/v1/settings\"); client.BaseAddress = destination;")]
     public async Task Base_address_resolves_literals_constants_aliases_and_interpolated_aspire_uris(string statement)
     {
         // Arrange
@@ -168,7 +168,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client)
                 {
-                    var host = "branding-api";
+                    var host = "catalog-api";
                     client.BaseAddress = new Uri($"https+http://{host}");
                 }
             }
@@ -192,7 +192,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client)
                 {
-                    client.BaseAddress = new Uri($"https://provider.example/{ResourceNames.BrandingApi}");
+                    client.BaseAddress = new Uri($"https://provider.example/{ResourceNames.CatalogApi}");
                 }
             }
             """;
@@ -215,7 +215,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client)
                 {
-                    var path = ResourceNames.BrandingApi;
+                    var path = ResourceNames.CatalogApi;
                     client.BaseAddress = new Uri("https://provider.example/" + path);
                 }
             }
@@ -240,7 +240,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client)
                 {
                     var prefix = "https+http://";
-                    client.BaseAddress = new Uri(prefix + ResourceNames.BrandingApi);
+                    client.BaseAddress = new Uri(prefix + ResourceNames.CatalogApi);
                 }
             }
             """;
@@ -263,7 +263,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client, string configuredPrefix)
                 {
-                    client.BaseAddress = new Uri(configuredPrefix + ResourceNames.BrandingApi);
+                    client.BaseAddress = new Uri(configuredPrefix + ResourceNames.CatalogApi);
                 }
             }
             """;
@@ -287,7 +287,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client)
                 {
                     var slash = "/";
-                    client.BaseAddress = new Uri("https:" + slash + slash + ResourceNames.BrandingApi);
+                    client.BaseAddress = new Uri("https:" + slash + slash + ResourceNames.CatalogApi);
                 }
             }
             """;
@@ -310,7 +310,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client, bool useAdmin)
                 {
-                    var destination = useAdmin ? ResourceNames.Api : ResourceNames.BrandingApi;
+                    var destination = useAdmin ? ResourceNames.Api : ResourceNames.CatalogApi;
                     client.BaseAddress = new Uri($"https+http://{destination}");
                 }
             }
@@ -334,7 +334,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(ServiceCollection services)
                 {
-                    const string ClientName = ResourceNames.BrandingApi;
+                    const string ClientName = ResourceNames.CatalogApi;
                     services.AddHttpClient(ClientName);
                 }
             }
@@ -348,8 +348,8 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("services.AddHttpClient($\"provider-{ResourceNames.BrandingApi}\");")]
-    [InlineData("services.AddHttpClient($\"{ResourceNames.BrandingApi}-backup\");")]
+    [InlineData("services.AddHttpClient($\"provider-{ResourceNames.CatalogApi}\");")]
+    [InlineData("services.AddHttpClient($\"{ResourceNames.CatalogApi}-backup\");")]
     public async Task Composed_named_clients_require_an_exact_repository_resource_name(string statement)
     {
         // Arrange
@@ -374,8 +374,8 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("services.AddHttpClient(\"https://branding-api\");")]
-    [InlineData("_ = factory.CreateClient(\"https://branding-api\");")]
+    [InlineData("services.AddHttpClient(\"https://catalog-api\");")]
+    [InlineData("_ = factory.CreateClient(\"https://catalog-api\");")]
     [InlineData("services.AddHttpClient(\" BRANDING-API \");")]
     [InlineData("_ = factory.CreateClient(\"Branding-Api\");")]
     [InlineData("var name = \" BRANDING-API \"; _ = factory.CreateClient($\"{name}\");")]
@@ -404,8 +404,8 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("true ? \"https+http://api\" : \"https+http://branding-api\"")]
-    [InlineData("\"https+http://api\" ?? \"https+http://branding-api\"")]
+    [InlineData("true ? \"https+http://api\" : \"https+http://catalog-api\"")]
+    [InlineData("\"https+http://api\" ?? \"https+http://catalog-api\"")]
     public async Task Unreachable_cross_API_branches_are_not_destinations(string destination)
     {
         // Arrange
@@ -441,7 +441,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client)
                 {
                     string? destination = "https+http://api";
-                    client.BaseAddress = new Uri(destination ?? "https+http://branding-api");
+                    client.BaseAddress = new Uri(destination ?? "https+http://catalog-api");
                 }
             }
             """;
@@ -465,7 +465,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client)
                 {
                     Uri? destination = new Uri("https+http://api");
-                    client.BaseAddress = destination ?? new Uri("https+http://branding-api");
+                    client.BaseAddress = destination ?? new Uri("https+http://catalog-api");
                 }
             }
             """;
@@ -489,7 +489,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client)
                 {
                     object value = new object();
-                    client.BaseAddress = value as Uri ?? new Uri("https+http://branding-api");
+                    client.BaseAddress = value as Uri ?? new Uri("https+http://catalog-api");
                 }
             }
             """;
@@ -502,8 +502,8 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("false ? \"https+http://api\" : \"https+http://branding-api\"")]
-    [InlineData("(string?)null ?? \"https+http://branding-api\"")]
+    [InlineData("false ? \"https+http://api\" : \"https+http://catalog-api\"")]
+    [InlineData("(string?)null ?? \"https+http://catalog-api\"")]
     public async Task Reachable_cross_API_branches_remain_destinations(string destination)
     {
         // Arrange
@@ -538,7 +538,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(ServiceCollection services)
                 {
-                    services.AddHttpClient($"{ResourceNames.BrandingApi}");
+                    services.AddHttpClient($"{ResourceNames.CatalogApi}");
                 }
             }
             """;
@@ -551,8 +551,8 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("services.AddHttpClient($\"{ResourceNames.BrandingApi,20}\");")]
-    [InlineData("client.BaseAddress = new Uri($\"https+http://{ResourceNames.BrandingApi:ignored}\");")]
+    [InlineData("services.AddHttpClient($\"{ResourceNames.CatalogApi,20}\");")]
+    [InlineData("client.BaseAddress = new Uri($\"https+http://{ResourceNames.CatalogApi:ignored}\");")]
     public async Task Aligned_or_formatted_interpolations_are_not_resolved_as_exact_destinations(string statement)
     {
         // Arrange
@@ -587,7 +587,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client)
                 {
-                    client.BaseAddress = new Uri(new Uri("https://provider.example"), ResourceNames.BrandingApi);
+                    client.BaseAddress = new Uri(new Uri("https://provider.example"), ResourceNames.CatalogApi);
                 }
             }
             """;
@@ -616,7 +616,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client)
                 {
                     client.BaseAddress = new Uri(
-                        new Uri($"https+http://{ResourceNames.BrandingApi}"),
+                        new Uri($"https+http://{ResourceNames.CatalogApi}"),
                         "{{relativePath}}");
                 }
             }
@@ -641,7 +641,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client)
                 {
                     client.BaseAddress = new Uri(
-                        new Uri($"https+http://{ResourceNames.BrandingApi}"),
+                        new Uri($"https+http://{ResourceNames.CatalogApi}"),
                         new Uri("v1/settings", UriKind.Relative));
                 }
             }
@@ -665,7 +665,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client)
                 {
-                    client.BaseAddress = new Uri("https+http://branding-api", UriKind.Relative);
+                    client.BaseAddress = new Uri("https+http://catalog-api", UriKind.Relative);
                 }
             }
             """;
@@ -692,7 +692,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client, string configuredEndpoint)
                 {
                     client.BaseAddress = new Uri(
-                        new Uri($"https+http://{ResourceNames.BrandingApi}"),
+                        new Uri($"https+http://{ResourceNames.CatalogApi}"),
                         {{overrideExpression}});
                 }
             }
@@ -723,7 +723,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client)
                 {
                     var networkPath = "//provider.example";
-                    client.BaseAddress = new Uri(new Uri("https://branding-api"), {{overrideExpression}});
+                    client.BaseAddress = new Uri(new Uri("https://catalog-api"), {{overrideExpression}});
                 }
             }
             """;
@@ -804,7 +804,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static HttpClient Create(IHttpClientFactory factory)
                 {
-                    var clientName = ResourceNames.BrandingApi;
+                    var clientName = ResourceNames.CatalogApi;
                     return factory.CreateClient(clientName);
                 }
             }
@@ -836,7 +836,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     public static HttpClient Create(Contoso.IHttpClientFactory factory)
                     {
-                        return factory.CreateClient(ResourceNames.BrandingApi);
+                        return factory.CreateClient(ResourceNames.CatalogApi);
                     }
                 }
             }
@@ -860,7 +860,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<HttpResponseMessage> Read(HttpClient client)
                 {
-                    var resource = ResourceNames.BrandingApi;
+                    var resource = ResourceNames.CatalogApi;
                     var destination = new Uri($"https+http://{resource}/v1/settings");
                     return client.GetAsync(destination);
                 }
@@ -875,9 +875,9 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("return client.GetAsync(ResourceNames.BrandingApi);")]
-    [InlineData("var request = new HttpRequestMessage(HttpMethod.Get, ResourceNames.BrandingApi); return client.SendAsync(request);")]
-    [InlineData("var request = new HttpRequestMessage { RequestUri = new Uri(ResourceNames.BrandingApi, UriKind.Relative) }; return client.SendAsync(request);")]
+    [InlineData("return client.GetAsync(ResourceNames.CatalogApi);")]
+    [InlineData("var request = new HttpRequestMessage(HttpMethod.Get, ResourceNames.CatalogApi); return client.SendAsync(request);")]
+    [InlineData("var request = new HttpRequestMessage { RequestUri = new Uri(ResourceNames.CatalogApi, UriKind.Relative) }; return client.SendAsync(request);")]
     public async Task Relative_resource_name_request_uris_are_not_destinations(string statement)
     {
         // Arrange
@@ -902,9 +902,9 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("var request = new HttpRequestMessage(HttpMethod.Get, new Uri($\"https+http://{ResourceNames.BrandingApi}/v1/settings\"));")]
-    [InlineData("var request = new HttpRequestMessage { RequestUri = new Uri($\"https+http://{ResourceNames.BrandingApi}/v1/settings\") };")]
-    [InlineData("var request = new HttpRequestMessage(); request.RequestUri = new Uri($\"https+http://{ResourceNames.BrandingApi}/v1/settings\");")]
+    [InlineData("var request = new HttpRequestMessage(HttpMethod.Get, new Uri($\"https+http://{ResourceNames.CatalogApi}/v1/settings\"));")]
+    [InlineData("var request = new HttpRequestMessage { RequestUri = new Uri($\"https+http://{ResourceNames.CatalogApi}/v1/settings\") };")]
+    [InlineData("var request = new HttpRequestMessage(); request.RequestUri = new Uri($\"https+http://{ResourceNames.CatalogApi}/v1/settings\");")]
     public async Task Send_resolves_known_http_request_message_destinations(string requestDeclaration)
     {
         // Arrange
@@ -940,7 +940,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<HttpResponseMessage> Read(HttpClient client)
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.CatalogApi}/v1/settings"));
                     request.Method = HttpMethod.Post;
                     return client.SendAsync(request);
                 }
@@ -968,7 +968,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, "https://branding-api")
+                    var request = new HttpRequestMessage(HttpMethod.Get, "https://catalog-api")
                     {
                         RequestUri = {{overrideExpression}}
                     };
@@ -997,7 +997,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, "https://provider.example")
                     {
-                        RequestUri = new Uri("https://branding-api")
+                        RequestUri = new Uri("https://catalog-api")
                     };
                     return client.SendAsync(request);
                 }
@@ -1022,7 +1022,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.CatalogApi}/v1/settings"));
                     var alias = request;
                     alias.RequestUri = new Uri(configuredEndpoint);
                     return client.SendAsync(request);
@@ -1050,7 +1050,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     var request = new HttpRequestMessage();
                     var alias = request;
-                    request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.CatalogApi}/v1/settings"));
                     alias.RequestUri = new Uri(configuredEndpoint);
                     return client.SendAsync(request);
                 }
@@ -1075,7 +1075,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.CatalogApi}/v1/settings"));
                     var firstAlias = request;
                     var secondAlias = firstAlias;
                     secondAlias.RequestUri = new Uri(configuredEndpoint);
@@ -1102,7 +1102,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.CatalogApi}/v1/settings"));
                     var alias = request;
                     alias = new HttpRequestMessage();
                     alias.RequestUri = new Uri(configuredEndpoint);
@@ -1129,7 +1129,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<HttpResponseMessage> Read(HttpClient client, string configuredEndpoint)
                 {
-                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.BrandingApi}/v1/settings"));
+                    var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https+http://{ResourceNames.CatalogApi}/v1/settings"));
                     request.RequestUri = new Uri(configuredEndpoint);
                     return client.SendAsync(request);
                 }
@@ -1144,8 +1144,8 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Theory]
-    [InlineData("client.BaseAddress ??= new Uri($\"https+http://{ResourceNames.BrandingApi}\");")]
-    [InlineData("var request = new HttpRequestMessage(); request.RequestUri ??= new Uri($\"https+http://{ResourceNames.BrandingApi}\");")]
+    [InlineData("client.BaseAddress ??= new Uri($\"https+http://{ResourceNames.CatalogApi}\");")]
+    [InlineData("var request = new HttpRequestMessage(); request.RequestUri ??= new Uri($\"https+http://{ResourceNames.CatalogApi}\");")]
     public async Task Coalesce_assignments_resolve_known_http_destinations(string statement)
     {
         // Arrange
@@ -1180,7 +1180,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<HttpResponseMessage> Read(HttpClient client)
                 {
-                    return client.GetAsync("branding-api");
+                    return client.GetAsync("catalog-api");
                 }
             }
             """;
@@ -1213,7 +1213,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 {
                     public static void Record(HttpClient client)
                     {
-                        client.RecordDestination($"https+http://{ResourceNames.BrandingApi}");
+                        client.RecordDestination($"https+http://{ResourceNames.CatalogApi}");
                     }
                 }
             }
@@ -1239,7 +1239,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static Task<object?> Delete(HttpClient client)
                 {
-                    return client.DeleteFromJsonAsync<object>($"https+http://{ResourceNames.BrandingApi}");
+                    return client.DeleteFromJsonAsync<object>($"https+http://{ResourceNames.CatalogApi}");
                 }
             }
             """;
@@ -1268,7 +1268,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client)
                 {
-                    client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}");
+                    client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}");
                 }
             }
             """;
@@ -1320,9 +1320,9 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HealthBuilder health, TelemetryOptions telemetry, GrpcClient grpc, EventPublisher events, BrandingModule module)
                 {
-                    health.AddUrlGroup(new Uri($"https+http://{ResourceNames.BrandingApi}/health"));
+                    health.AddUrlGroup(new Uri($"https+http://{ResourceNames.CatalogApi}/health"));
                     telemetry.Endpoint = new Uri($"https+http://{ResourceNames.OpenTelemetryCollector}:4318");
-                    grpc.Connect($"https+http://{ResourceNames.BrandingApi}");
+                    grpc.Connect($"https+http://{ResourceNames.CatalogApi}");
                     events.Publish(new BrandingUpdatedIntegrationEvent());
                     module.ReadSettings();
                 }
@@ -1399,7 +1399,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client, string configuredEndpoint)
                 {
-                    var destination = ResourceNames.BrandingApi;
+                    var destination = ResourceNames.CatalogApi;
                     destination = configuredEndpoint;
                     client.BaseAddress = new Uri(destination);
                 }
@@ -1424,7 +1424,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client, string configuredEndpoint)
                 {
-                    var destination = ResourceNames.BrandingApi;
+                    var destination = ResourceNames.CatalogApi;
                     client.BaseAddress = new Uri($"https+http://{destination}");
                     destination = configuredEndpoint;
                 }
@@ -1450,7 +1450,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(HttpClient client, string configuredEndpoint)
                 {
                     var destination = configuredEndpoint;
-                    destination = ResourceNames.BrandingApi;
+                    destination = ResourceNames.CatalogApi;
                     client.BaseAddress = new Uri($"https+http://{destination}");
                 }
             }
@@ -1477,7 +1477,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                     var destination = configuredEndpoint;
                     if (useBranding)
                     {
-                        destination = ResourceNames.BrandingApi;
+                        destination = ResourceNames.CatalogApi;
                     }
 
                     client.BaseAddress = new Uri($"https+http://{destination}");
@@ -1503,7 +1503,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client, string configuredSuffix)
                 {
-                    var destination = ResourceNames.BrandingApi;
+                    var destination = ResourceNames.CatalogApi;
                     destination = destination + configuredSuffix;
                     client.BaseAddress = new Uri($"https+http://{destination}");
                 }
@@ -1520,7 +1520,6 @@ public sealed class ProductionApiHttpAnalyzerTests
     [Theory]
     [InlineData(AnalyzerTestHarness.AdminApiAssemblyName, "Api")]
     [InlineData(AnalyzerTestHarness.CatalogApiAssemblyName, "CatalogApi")]
-    [InlineData(AnalyzerTestHarness.BrandingApiAssemblyName, "BrandingApi")]
     public async Task Production_apis_may_reference_their_own_resource(string assemblyName, string resourceName)
     {
         // Arrange
@@ -1555,7 +1554,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 public static void Configure(ServiceCollection services)
                 {
             #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
-                    services.AddHttpClient(ResourceNames.BrandingApi);
+                    services.AddHttpClient(ResourceNames.CatalogApi);
             #pragma warning restore VTARCH001
                 }
             }
@@ -1579,7 +1578,7 @@ public sealed class ProductionApiHttpAnalyzerTests
             {
                 public static void Configure(HttpClient client)
                 {
-                    client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}");
+                    client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}");
                 }
             }
             """;

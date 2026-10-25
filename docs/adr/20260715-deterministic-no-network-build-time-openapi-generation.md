@@ -32,23 +32,23 @@ telemetry, service discovery, and runtime worker relays.
 from endpoint authorization metadata and the authenticated fallback policy; it does not require a JWT
 handler or identity-provider configuration.
 
-OpenAPI tool targets are logical contract owners, not permanent executable owners. The stable
-`generate branding` command currently builds `ViajantesTurismo.Branding.ApiService`; before ADR-040
-removes that executable, the command must build Catalog.ApiService in a Branding-only generation mode.
-That mode preserves canonical `branding`, `public-branding`, and Branding-only `v1` artifacts under
-`ViajantesTurismo.Branding.Contracts.Http/OpenApi`, including their existing refresh command and
-Branding contract-test ownership. Catalog-hosted generation must not merge Branding artifacts into
-Catalog ownership or include unrelated Catalog routes in the Branding-only documents.
+OpenAPI tool targets are logical contract owners, not permanent executable owners. The `branding`
+target (`dotnet tool run sharedkernel-ci -- openapi refresh --target branding`) builds Catalog.ApiService
+in a Branding-only generation mode. That mode produces the canonical `branding` and `public-branding`
+artifacts under `ViajantesTurismo.Branding.Contracts.Http/OpenApi`, with Branding contract-test ownership.
+Catalog's own `v1` document includes the co-hosted Branding routes. Catalog-hosted generation must not
+merge Branding artifacts into Catalog ownership or include unrelated Catalog routes in the Branding-only
+documents.
 
 Branding generation also preserves the Management conditional contract: strong `ETag` on `GET`,
 required `If-Match` on `PUT`, no successful-`PUT` validator after normalization, RFC 9110 entity-tag
 list/weak-tag/`*` semantics, and distinct 400 malformed-syntax, 412 false-precondition, and 428
 missing-precondition responses.
 
-The contraction gate updates tool target tests, generated filename mapping, drift guards, refresh
-hints, and contract tests before deleting the standalone project. Trusted generation still omits
-runtime relays, database access, service discovery, and OIDC/JWT registration while retaining both
-named route schemes' authorization metadata.
+Tool target tests, generated filename mapping, drift guards, refresh hints, and contract tests target
+Catalog.ApiService for Branding generation. Trusted generation still omits runtime relays, database
+access, service discovery, and OIDC/JWT registration while retaining both named route schemes'
+authorization metadata.
 
 ## Consequences
 

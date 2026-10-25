@@ -21,12 +21,12 @@ project. Apps configure base addresses and keep UI fallback behavior local.
 Branding HTTP DTOs, typed clients, and route segments belong to ViajantesTurismo-owned Branding
 contract modules. `SharedKernel.Branding` owns only pure validation and normalization. Existing
 app-specific HTTP types in `SharedKernel.Branding` are transitional and move with the Branding module;
-they are not a reusable-library ownership precedent. The standalone Branding host mounts the current
-routes; the accepted target mounts the same logical surface in `ViajantesTurismo.Catalog.ApiService`.
-The host owns the API version prefix and base-address wiring, while the Branding module owns its route
-segments, defaults, persistence behavior, authorization, and cache policy.
+they are not a reusable-library ownership precedent. `ViajantesTurismo.Catalog.ApiService` mounts the
+Branding routes, and Branding clients resolve to the Catalog API destination. The host owns the API
+version prefix and base-address wiring, while the Branding module owns its route segments, defaults,
+persistence behavior, authorization, and cache policy.
 
-The target Management Branding client returns source epoch/revision plus a strong opaque ETag from
+The Management Branding client returns source epoch/revision plus a strong opaque ETag from
 `GET` and sends an RFC 9110 `If-Match` precondition for full-state `PUT`. It treats entity tags as
 opaque, defaults to the exact GET validator, and does not reimplement strong comparison or classify
 valid lists, weak tags, or `*` as malformed. It exposes 400 malformed syntax, 412 false precondition,

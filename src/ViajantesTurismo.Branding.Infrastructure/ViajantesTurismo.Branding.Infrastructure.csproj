@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ViajantesTurismo.Branding.ApiServiceTests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.Branding.InfrastructureTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.HostedTests" />
     </ItemGroup>
 

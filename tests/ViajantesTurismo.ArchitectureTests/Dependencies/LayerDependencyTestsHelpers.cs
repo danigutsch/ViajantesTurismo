@@ -506,14 +506,16 @@ internal static partial class LayerDependencyTestsHelpers
                 && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Domain");
         }
 
-        if (IsApiProjectName(referencingProjectName))
+        // A co-hosted HTTP module (for example Branding.AspNetCore) follows the API host rules for its own context.
+        if (IsApiProjectName(referencingProjectName) || IsHttpModuleProjectName(referencingProjectName))
         {
             return IsProductProjectName(referencedProjectName)
                 && !IsResourcesProjectName(referencedProjectName)
                 && !IsServiceDefaultsProjectName(referencedProjectName)
                 && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Application")
                 && !IsAllowedApiContractReference(referencingProjectName, referencedProjectName)
-                && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Infrastructure");
+                && !IsSameContextLayerProjectName(referencingProjectName, referencedProjectName, "Infrastructure")
+                && !(IsApiProjectName(referencingProjectName) && IsHttpModuleProjectName(referencedProjectName));
         }
 
         if (IsWebProjectName(referencingProjectName))
@@ -549,6 +551,12 @@ internal static partial class LayerDependencyTestsHelpers
         return IsSameBoundedContextProject(referencingProjectName, referencedProjectName)
             && (IsContractsApplicationProjectName(referencedProjectName)
                 || IsContractsHttpProjectName(referencedProjectName));
+    }
+
+    private static bool IsHttpModuleProjectName(string projectName)
+    {
+        return IsProductProjectName(projectName)
+            && projectName.EndsWith(".AspNetCore", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsProductProjectName(string projectName)

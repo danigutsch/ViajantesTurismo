@@ -66,7 +66,6 @@ internal static class AnalyzerTestSupport
             {
                 public const string Api = "api";
                 public const string CatalogApi = "catalog-api";
-                public const string BrandingApi = "branding-api";
                 public const string IdentityProvider = "identity-provider";
                 public const string SeaweedFs = "seaweedfs";
                 public const string OpenTelemetryCollector = "opentelemetry-collector";
