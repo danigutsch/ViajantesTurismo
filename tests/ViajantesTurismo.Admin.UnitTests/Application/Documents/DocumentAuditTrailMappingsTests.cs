@@ -57,4 +57,58 @@ public sealed class DocumentAuditTrailMappingsTests
         // Assert
         _ = map.ShouldThrow<ArgumentOutOfRangeException>();
     }
+
+    [Fact]
+    public void Map_rejects_a_missing_lifecycle_event()
+    {
+        // Arrange
+        Func<object?> map = () => DocumentAuditTrailMappings.Map(null!, TimeProvider.System.GetUtcNow());
+
+        // Act
+        var exception = map.ShouldThrow<ArgumentNullException>();
+
+        // Assert
+        exception.ParamName.ShouldBe("domainEvent");
+    }
+
+    [Fact]
+    public void Map_names_the_unsupported_operation_in_its_rejection()
+    {
+        // Arrange
+        var domainEvent = new DocumentLifecycleAuditDomainEvent(
+            "actor",
+            "correlation",
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            1,
+            DocumentAuditOperation.Read);
+        Func<object?> map = () => DocumentAuditTrailMappings.Map(domainEvent, TimeProvider.System.GetUtcNow());
+
+        // Act
+        var exception = map.ShouldThrow<ArgumentOutOfRangeException>();
+
+        // Assert
+        exception.ParamName.ShouldBe("operation");
+        exception.Message.ShouldStartWith("Unsupported lifecycle audit operation.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Map_rejects_a_lifecycle_event_whose_metadata_cannot_form_an_audit_record()
+    {
+        // Arrange
+        var domainEvent = new DocumentLifecycleAuditDomainEvent(
+            string.Empty,
+            "correlation",
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            1,
+            DocumentAuditOperation.Generate);
+        Func<object?> map = () => DocumentAuditTrailMappings.Map(domainEvent, TimeProvider.System.GetUtcNow());
+
+        // Act
+        var exception = map.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        exception.Message.ShouldBe("A successful document lifecycle event produced invalid audit metadata.");
+    }
 }
