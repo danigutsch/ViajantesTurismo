@@ -60,9 +60,9 @@ internal static class AppHostComposition
         builder.AddCatalogIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs);
         builder.AddManagementWeb(cache, securityDatabase, migrationService, identityProvider, managementWebClientSecret, apiService, catalogApiService);
         builder.AddPublicWeb(catalogApiService);
-        if (includeDeveloperTooling)
+        if (includeDeveloperTooling && identityProvider is not null)
         {
-            builder.AddAdminPerformanceSmoke(apiService);
+            builder.AddAdminPerformanceSmoke(apiService, identityProvider);
         }
     }
 }
