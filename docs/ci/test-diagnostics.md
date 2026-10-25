@@ -23,8 +23,11 @@ slice with seven-day retention. `sharedkernel-ci run` writes `phase-timings.tsv`
 slice prints `dotnet --info`.
 These are current capabilities, not proof of test-to-resource trace correlation.
 
-The [System assembly fixture](../../tests/ViajantesTurismo.HostedTests/Admin/System/Infrastructure/Fixtures/AspireSystemTestFixture.cs)
-owns one AppHost lifetime, authenticates resource clients, and warms the web surfaces. Its
+The [hosted-test assembly fixture](../../tests/ViajantesTurismo.HostedTests/Infrastructure/HostedTestFixture.cs) starts each
+infrastructure container on first demand and caches one application stack per stack name (`api`, `system`, `concurrent-a` and
+`concurrent-b`). The
+[System class fixture](../../tests/ViajantesTurismo.HostedTests/Admin/System/Infrastructure/Fixtures/AspireSystemTestFixture.cs)
+borrows the `system` stack, authenticates resource clients, and warms the web surfaces. Its
 [Playwright base](../../tests/ViajantesTurismo.HostedTests/Admin/System/Infrastructure/Bases/AspireSystemTestBase.cs)
 provides pages and navigation. The inspected fixture/base do not implement the per-test bounded
 resource-log/OTel bundle below. Do not claim an artifact exists until its producer is implemented.

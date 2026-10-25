@@ -92,3 +92,16 @@ The previous project names survive as test namespaces for filtering; the project
 boundary is replaced by architecture checks. CI executes this assembly once in its hosted-test job.
 Garage evaluation coverage was intentionally removed. Reusable PostgreSQL lease ownership belongs
 to `PandaBear.SharedKernel.Npgsql.Testing`; no custom runner or cross-process coordinator is added.
+
+## Demand-driven infrastructure — 2026-10-25
+
+The assembly fixture no longer starts its containers in `InitializeAsync`. xUnit creates an assembly fixture whenever
+one selected test exists, so a filtered run used to pay for all six containers, about a minute for a single pure helper
+class. The fixture now composes one infrastructure Aspire application on the first demand, with every container set to
+explicit start, and starts each container once, through its own on-demand gate, when a test first needs it.
+
+Ownership is unchanged: the one assembly fixture owns the six containers and disposes the application stacks, the
+database pool and the infrastructure in that order. A filtered run starts only what its tests need (no container,
+PostgreSQL, the media pair, the five containers of an Admin stack, or all six); the full suite still starts all six. Each
+container has its own start budget, and a start that fails is cached and fails the tests that need it rather than the whole
+assembly. See the [HostedTests README](../../tests/ViajantesTurismo.HostedTests/README.md#demand-driven-infrastructure).
