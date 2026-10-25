@@ -9,4 +9,8 @@ if [[ -f "${dotnet_env_file}" ]]; then
     source "${dotnet_env_file}"
 fi
 
+# Mark the container for builds that run with a minimal environment, such as OpenAPI generation, so that
+# Directory.Build.props selects the same .build output paths as the restore.
+touch "${HOME}/.viajantesturismo-devcontainer"
+
 dotnet dev-certs https --trust || true

@@ -81,6 +81,21 @@ public sealed class ConsumerSetupContractTests
     }
 
     [Fact]
+    public async Task Devcontainer_marker_selects_the_container_build_paths_for_minimal_environment_builds()
+    {
+        // Arrange
+        var root = RepositoryTestProcess.GetRepositoryRoot();
+
+        // Act
+        var props = await File.ReadAllTextAsync(Path.Combine(root, "Directory.Build.props"), TestContext.Current.CancellationToken);
+        var postStart = await File.ReadAllTextAsync(Path.Combine(root, ".devcontainer", "post-start.sh"), TestContext.Current.CancellationToken);
+
+        // Assert
+        props.ShouldContain("Condition=\"'$(REMOTE_CONTAINERS)' == 'true' or Exists('$(HOME)/.viajantesturismo-devcontainer')\"", StringComparison.Ordinal);
+        postStart.ShouldContain("touch \"${HOME}/.viajantesturismo-devcontainer\"", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Hosted_prerequisites_build_the_ci_tool_and_stage_the_exact_candidate_before_restoring_tools()
     {
         // Arrange

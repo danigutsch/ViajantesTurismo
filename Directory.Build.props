@@ -61,7 +61,9 @@
 
 	<!-- Centralize build output for dev containers to avoid Windows bind mount permission issues -->
 	<!-- See: https://code.visualstudio.com/remote/advancedcontainers/improve-performance -->
-	<PropertyGroup Condition="'$(REMOTE_CONTAINERS)' == 'true'">
+	<!-- The OpenAPI generation build runs with a minimal environment that keeps HOME but not REMOTE_CONTAINERS, so the -->
+	<!-- marker that .devcontainer/post-start.sh writes under HOME selects the same output paths as the restore. -->
+	<PropertyGroup Condition="'$(REMOTE_CONTAINERS)' == 'true' or Exists('$(HOME)/.viajantesturismo-devcontainer')">
 		<!-- Keep project-local bin/obj excluded when container outputs move to .build -->
 		<DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
 		<BaseIntermediateOutputPath>$(MSBuildThisFileDirectory).build\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
