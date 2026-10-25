@@ -16,6 +16,18 @@ public sealed class CiSelectionTests
     [InlineData("SUPPORT.md", "false", "true", "[]")]
     [InlineData("ViajantesTurismo.code-workspace", "false", "true", "[]")]
     [InlineData("ViajantesTurismo.sln.DotSettings", "false", "true", "[]")]
+    [InlineData(".gitignore", "false", "true", "[]")]
+    [InlineData("CODEOWNERS", "false", "true", "[]")]
+    [InlineData(".mcp.json", "false", "true", "[]")]
+    [InlineData("docs/architecture/generated-diagrams.json", "false", "true", "[]")]
+    [InlineData("tests/BDD_GUIDE.md", "false", "true", "[]")]
+    [InlineData("tests/performance/k6/scenarios/admin-smoke.js", "false", "true", "[]")]
+    [InlineData("tests/README.md", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
+    [InlineData("docs/asyncapi.json", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
+    [InlineData(".devcontainer/devcontainer.json", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
     [InlineData("roadmap/config.json", "true", "false",
         "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
     [InlineData("roadmap/schema/fixture.schema.json", "true", "false",
