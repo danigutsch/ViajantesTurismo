@@ -19,9 +19,8 @@ duplicate the volatile resource list or dependency graph.
 
 ### Optional Developer Tooling
 
-- **admin-performance-smoke**: opt-in k6 smoke scenario resource that runs
-  `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke`; enabled only when `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set
-  before AppHost starts
+- **admin-performance-smoke**: opt-in k6 smoke scenario resource, a container pinned by tag and digest that starts only on
+  request; enabled only when `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set before AppHost starts
 - **Grafana LGTM observability stack**: opt-in local telemetry backend; enabled only when
   `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
 
@@ -261,9 +260,10 @@ VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
 The resource is intentionally disabled by default so regular AppHost runs do not execute load tooling.
-It runs `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke`, so local k6 is the default;
-`VT_K6_USE_DOCKER=1` adds `--container`, and `VT_K6_DOCKER_IMAGE` then adds `--image`. For profiles, thresholds, security defaults, and result
-output, see `tests/performance/README.md` and `tests/performance/k6/README.md`.
+It is a `grafana/k6` container from `PandaBear.SharedKernel.Aspire.Hosting.K6` that waits for the Admin API and the identity
+provider and starts only when you start it from the dashboard or with `aspire resource`. It signs in with the
+`k6-smoke` service account (the `Reader` role) and a generated secret parameter. For profiles, thresholds, security
+defaults, and result output, see `tests/performance/README.md` and `tests/performance/k6/README.md`.
 
 ## Trusted Telemetry Gateway and Observability Stack
 

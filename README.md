@@ -228,16 +228,15 @@ Install `k6` only if you plan to run those scenarios:
 Example run:
 
 ```bash
-VT_API_BASE_URL=<admin-api-url> dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke
 dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 ```
 
-Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard for the Admin smoke
-scenario. `sharedkernel-k6` runs the scenarios that `.config/sharedkernel-k6.json` configures; for
+`sharedkernel-k6` runs the scenarios that `.config/sharedkernel-k6.json` configures; for
 `file-upload-scan` it starts its own benchmark-only Kestrel host on an ephemeral loopback port.
 Docker k6 runs only with `--container` and a digest-pinned image.
 
-Aspire can also run the same smoke scenario as an opt-in AppHost resource:
+The Admin smoke scenario runs as an opt-in AppHost resource, a pinned k6 container that starts on
+request from the Aspire dashboard or CLI and signs in with a read-only service account:
 
 ```bash
 VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
