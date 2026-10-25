@@ -101,9 +101,9 @@ check name instead of stalling on a missing governance result.
 
 A separate workflow (`.github/workflows/devcontainer-smoke.yml`) runs supplemental
 devcontainer validation on a weekly schedule, on a monthly deeper-validation schedule, on
-manual dispatch, and on pushes to `main` that touch devcontainer and bootstrap inputs such
-as `.devcontainer/**`, `global.json`, or dependency manifests for NuGet
-packages.
+manual dispatch, and on pushes to `main` that touch `.devcontainer/**`, the workflow file,
+`global.json`, or `setup-dev.sh`. Candidate pins, NuGet inputs, local tool manifests, and
+composite actions are covered by the weekly schedule.
 
 ### Devcontainer Smoke
 
@@ -132,7 +132,8 @@ This workflow is intentionally supplemental rather than required. It is meant to
 environment drift in the repository's containerized developer path without running on every
 pull request or expanding the required merge gate for ordinary application changes.
 That trade-off means a devcontainer regression can now reach `main` before the scheduled,
-manual, or post-merge smoke run catches it.
+manual, or post-merge smoke run catches it, and a candidate or package change that breaks only the
+container waits for the weekly run.
 
 Because the workflow now uses the same script contributors can run locally, failures are
 more reproducible and devcontainer changes only need to update one smoke-validation path.

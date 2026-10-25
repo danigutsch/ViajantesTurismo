@@ -91,7 +91,7 @@ Supplemental workflows are intentionally outside the normal required merge gate:
 
 - `Actionlint` validates workflow edits and local composite actions.
 - `Devcontainer Smoke` validates the containerized developer path on schedule, manual dispatch, and
-  post-merge devcontainer-sensitive changes.
+  post-merge changes to `.devcontainer/**`, `global.json`, `setup-dev.sh`, or the workflow.
 - `Sync labels` is repository-owned administrative automation and never runs on pull requests.
 
 Source doc: [supplemental workflows](../ci/supplemental-workflows.md).
