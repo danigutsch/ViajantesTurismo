@@ -51,7 +51,7 @@ builder.Services.AddHttpClient<ICatalogToursApiClient, CatalogToursApiClient>(cl
 builder.Services.AddHttpClient<IPublicContentApiClient, PublicContentApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
     .AddUserAccessTokenHandler()
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Catalog);
-builder.Services.AddHttpClient<IBrandingManagementClient, BrandingManagementClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"))
+builder.Services.AddHttpClient<IBrandingManagementClient, BrandingManagementClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
     .AddUserAccessTokenHandler()
     .AddKeycloakAudienceTokenExchangeHandler(ApiAudienceNames.Branding);
 

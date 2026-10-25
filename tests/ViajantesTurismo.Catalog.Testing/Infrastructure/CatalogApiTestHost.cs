@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -7,6 +8,7 @@ using PandaBear.EventSourcing;
 using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Testing.AspNetCore;
+using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -17,6 +19,7 @@ namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 internal static class CatalogApiTestHost
 {
     private const string Audience = "catalog-api";
+    private const string BrandingAudience = "branding-api";
     private const string AdministratorRole = "Admin";
     private const string UntrustedIssuer = "https://untrusted.test";
     private const string WrongAudience = "wrong-audience";
@@ -87,6 +90,10 @@ internal static class CatalogApiTestHost
             {
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
                 ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
+                // The co-hosted Branding scheme keeps its own audience after the test signing key is applied.
+                services.PostConfigure<JwtBearerOptions>(
+                    BrandingModule.BearerScheme,
+                    options => options.TokenValidationParameters.ValidAudience = BrandingAudience);
                 services.RemoveAll<IHostedService>();
             },
             null,
@@ -107,6 +114,11 @@ internal static class CatalogApiTestHost
     public static void ConfigureAuthenticatedClient(HttpClient client, string role)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, role);
+    }
+
+    public static void ConfigureBrandingClient(HttpClient client, string role)
+    {
+        ApiTestAuthentication.ConfigureAuthenticatedClient(client, BrandingAudience, role);
     }
 
     public static void ConfigureClientWithUntrustedIssuer(HttpClient client)
@@ -197,6 +209,10 @@ internal static class CatalogApiTestHost
 
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
                 ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
+                // The co-hosted Branding scheme keeps its own audience after the test signing key is applied.
+                services.PostConfigure<JwtBearerOptions>(
+                    BrandingModule.BearerScheme,
+                    options => options.TokenValidationParameters.ValidAudience = BrandingAudience);
             },
             authenticateClient
                 ? ConfigureAuthenticatedClient

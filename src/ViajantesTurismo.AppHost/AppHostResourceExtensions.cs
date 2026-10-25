@@ -403,8 +403,7 @@ internal static class AppHostResourceExtensions
     /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <param name="managementWebClientSecret">The confidential Management Web client secret.</param>
     /// <param name="apiService">The Admin API resource.</param>
-    /// <param name="catalogApiService">The Catalog API resource.</param>
-    /// <param name="brandingApiService">The Branding API resource.</param>
+    /// <param name="catalogApiService">The Catalog API resource, which also hosts the Branding routes.</param>
     /// <returns>The configured management web resource.</returns>
     public static IResourceBuilder<ProjectResource> AddManagementWeb(
         this IDistributedApplicationBuilder builder,
@@ -414,8 +413,7 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<ContainerResource>? identityProvider,
         IResourceBuilder<ParameterResource> managementWebClientSecret,
         IResourceBuilder<ProjectResource> apiService,
-        IResourceBuilder<ProjectResource> catalogApiService,
-        IResourceBuilder<ProjectResource> brandingApiService)
+        IResourceBuilder<ProjectResource> catalogApiService)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
             .WithExternalHttpEndpoints()
@@ -433,9 +431,7 @@ internal static class AppHostResourceExtensions
             .WithReference(apiService)
             .WaitFor(apiService)
             .WithReference(catalogApiService)
-            .WaitFor(catalogApiService)
-            .WithReference(brandingApiService)
-            .WaitFor(brandingApiService);
+            .WaitFor(catalogApiService);
     }
 
     private static IResourceBuilder<TResource> WithDevelopmentOidcAuthority<TResource>(
@@ -469,13 +465,11 @@ internal static class AppHostResourceExtensions
     /// Adds the public web frontend.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
-    /// <param name="catalogApiService">The Catalog API resource.</param>
-    /// <param name="brandingApiService">The Branding API resource.</param>
+    /// <param name="catalogApiService">The Catalog API resource, which also hosts the Branding routes.</param>
     /// <returns>The configured public web resource.</returns>
     public static IResourceBuilder<ProjectResource> AddPublicWeb(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> catalogApiService,
-        IResourceBuilder<ProjectResource> brandingApiService)
+        IResourceBuilder<ProjectResource> catalogApiService)
     {
         var replicas = builder.Configuration.GetValue(PublicWebReplicasConfigurationKey, 1);
         if (replicas < 1)
@@ -491,8 +485,6 @@ internal static class AppHostResourceExtensions
             .WithEnvironment(PublicWebSitemapCanonicalOriginEnvironmentVariable, publicWeb.GetEndpoint("https"))
             .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(catalogApiService)
-            .WaitFor(catalogApiService)
-            .WithReference(brandingApiService)
-            .WaitFor(brandingApiService);
+            .WaitFor(catalogApiService);
     }
 }

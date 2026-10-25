@@ -15,12 +15,16 @@ namespace ViajantesTurismo.Branding.AspNetCore;
 
 internal static class BrandingEndpoints
 {
-    public static IEndpointRouteBuilder MapBrandingEndpoints(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapBrandingEndpoints(this IEndpointRouteBuilder app, bool includeInOpenApi = true)
     {
         ArgumentNullException.ThrowIfNull(app);
 
         var versionedApi = app.MapApiVersionGroup(BrandingOpenApiDocuments.CurrentApiVersion);
         versionedApi.RequireCors(BrandingSecurityBaseline.CorsPolicyName);
+        if (!includeInOpenApi)
+        {
+            versionedApi.ExcludeFromDescription();
+        }
         var publicBranding = versionedApi.MapGroup($"/{BrandingRoutes.PublicSettingsPath}")
             .AllowAnonymous();
         var managementBranding = versionedApi.MapGroup($"/{BrandingRoutes.ManagementSettingsPath}")

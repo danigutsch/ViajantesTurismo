@@ -50,8 +50,10 @@ public static class BrandingModule
 
     /// <summary>Maps the public and management Branding routes.</summary>
     /// <param name="endpoints">The endpoint route builder.</param>
+    /// <param name="includeInOpenApi">Whether the host's OpenAPI documents describe the Branding routes.</param>
     /// <returns>The endpoint route builder.</returns>
-    public static IEndpointRouteBuilder MapBrandingModule(this IEndpointRouteBuilder endpoints) => endpoints.MapBrandingEndpoints();
+    public static IEndpointRouteBuilder MapBrandingModule(this IEndpointRouteBuilder endpoints, bool includeInOpenApi = true) =>
+        endpoints.MapBrandingEndpoints(includeInOpenApi);
 
     private static void Configure(AuthorizationPolicyBuilder policy, string? authenticationScheme, string permission)
     {

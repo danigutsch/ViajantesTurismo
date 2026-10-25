@@ -14,7 +14,7 @@ builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddPublicWebSecurityBaseline();
 builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
     .AddForwardedClientIp();
-builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
+builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
 builder.Services.AddRazorComponents();
 builder.Services.AddOptions<PublicWebSitemapOptions>()
     .BindConfiguration(PublicWebSitemapOptions.SectionName)

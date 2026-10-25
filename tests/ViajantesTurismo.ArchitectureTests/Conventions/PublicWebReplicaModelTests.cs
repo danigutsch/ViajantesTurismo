@@ -48,7 +48,7 @@ public sealed class PublicWebReplicaModelTests
         var dependencies = publicWeb.Annotations.OfType<WaitAnnotation>()
             .Select(annotation => annotation.Resource.Name).ToArray();
         dependencies.ShouldContain(ResourceNames.CatalogApi);
-        dependencies.ShouldContain(ResourceNames.BrandingApi);
+        dependencies.ShouldNotContain(ResourceNames.BrandingApi);
         otherProjects.ShouldNotBeEmpty();
         foreach (var project in otherProjects)
         {
