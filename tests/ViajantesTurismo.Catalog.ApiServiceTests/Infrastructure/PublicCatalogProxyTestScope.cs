@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http.Resilience;
-using PandaBear.Branding;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -30,7 +29,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
         this.frontendConfiguration = frontendConfiguration;
         catalogRoot = CatalogApiTestHost.Create(tours, media, objects);
         // Catalog co-hosts the Branding routes Public.Web reads; give them settings without a database.
-        var withBranding = CatalogHostedBrandingTestHost.Create(catalogRoot);
+        var withBranding = BrandingApiTestHost.WithBranding(catalogRoot, TestBrandingSettingsStore.Seeded());
         catalog = catalogConfiguration is null
             ? withBranding
             : withBranding.WithWebHostBuilder(builder => builder.ConfigureAppConfiguration(

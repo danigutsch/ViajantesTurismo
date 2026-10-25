@@ -24,23 +24,23 @@ public sealed class ConcurrentAspireTestApplicationTests(HostedTestFixture share
         // Act
         var firstEndpoint = firstApp.GetEndpoint(ResourceNames.Api, "https");
         var secondEndpoint = secondApp.GetEndpoint(ResourceNames.Api, "https");
-        var firstBrandingEndpoint = firstApp.GetEndpoint(ResourceNames.BrandingApi, "https");
-        var secondBrandingEndpoint = secondApp.GetEndpoint(ResourceNames.BrandingApi, "https");
+        var firstCatalogEndpoint = firstApp.GetEndpoint(ResourceNames.CatalogApi, "https");
+        var secondCatalogEndpoint = secondApp.GetEndpoint(ResourceNames.CatalogApi, "https");
         using var firstClient = firstApp.CreateHttpClient(ResourceNames.Api);
         using var secondClient = secondApp.CreateHttpClient(ResourceNames.Api);
-        using var firstBrandingClient = firstApp.CreateHttpClient(ResourceNames.BrandingApi);
-        using var secondBrandingClient = secondApp.CreateHttpClient(ResourceNames.BrandingApi);
+        using var firstCatalogClient = firstApp.CreateHttpClient(ResourceNames.CatalogApi);
+        using var secondCatalogClient = secondApp.CreateHttpClient(ResourceNames.CatalogApi);
         using var firstResponse = await firstClient.GetAsync(new Uri("/health", UriKind.Relative), cancellationToken);
         using var secondResponse = await secondClient.GetAsync(new Uri("/health", UriKind.Relative), cancellationToken);
-        using var firstBrandingResponse = await firstBrandingClient.GetAsync(new Uri("/health", UriKind.Relative), cancellationToken);
-        using var secondBrandingResponse = await secondBrandingClient.GetAsync(new Uri("/health", UriKind.Relative), cancellationToken);
+        using var firstCatalogResponse = await firstCatalogClient.GetAsync(new Uri("/health", UriKind.Relative), cancellationToken);
+        using var secondCatalogResponse = await secondCatalogClient.GetAsync(new Uri("/health", UriKind.Relative), cancellationToken);
 
         // Assert
         firstEndpoint.ShouldNotBe(secondEndpoint);
-        firstBrandingEndpoint.ShouldNotBe(secondBrandingEndpoint);
+        firstCatalogEndpoint.ShouldNotBe(secondCatalogEndpoint);
         firstResponse.IsSuccessStatusCode.ShouldBeTrue();
         secondResponse.IsSuccessStatusCode.ShouldBeTrue();
-        firstBrandingResponse.IsSuccessStatusCode.ShouldBeTrue();
-        secondBrandingResponse.IsSuccessStatusCode.ShouldBeTrue();
+        firstCatalogResponse.IsSuccessStatusCode.ShouldBeTrue();
+        secondCatalogResponse.IsSuccessStatusCode.ShouldBeTrue();
     }
 }

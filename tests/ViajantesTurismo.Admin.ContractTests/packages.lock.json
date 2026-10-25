@@ -383,7 +383,6 @@
           "Microsoft.Extensions.ApiDescription.Server": "[10.0.13, )",
           "PandaBear.SharedKernel.ApiVersioning.AspNetCore": "[0.1.0-alpha.169.1, )",
           "PandaBear.SharedKernel.AspNetCore": "[0.1.0-alpha.169.1, )",
-          "PandaBear.SharedKernel.Branding": "[0.1.0-alpha.169.1, )",
           "PandaBear.SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.169.1, )",
           "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.169.1, )",
           "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.169.1, )",
@@ -403,7 +402,6 @@
         "type": "Project",
         "dependencies": {
           "PandaBear.SharedKernel.AuditTrail": "[0.1.0-alpha.169.1, )",
-          "PandaBear.SharedKernel.Branding": "[0.1.0-alpha.169.1, )",
           "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.169.1, )",
           "PandaBear.SharedKernel.DocumentRendering": "[0.1.0-alpha.169.1, )",
           "PandaBear.SharedKernel.Domain": "[0.1.0-alpha.169.1, )",
@@ -753,24 +751,6 @@
         "requested": "[0.1.0-alpha.169.1, )",
         "resolved": "0.1.0-alpha.169.1",
         "contentHash": "NkML6VlSnSxQ8ZEzuosZUN8c36tUG4/mN4DPje8SV0f8F1r1P64CmocvTxRwgeBloDzX7bi23/hqgoHqgblN3A=="
-      },
-      "PandaBear.SharedKernel.Branding": {
-        "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.169.1, )",
-        "resolved": "0.1.0-alpha.169.1",
-        "contentHash": "H6pOhO7NbBOFj3hrWkOI4i6+SXBpQGvmAurG/6OtF4FCvvjeAkJhFzDR9CE3HzSDHUVNZE+oa03FoR33ANXvGg==",
-        "dependencies": {
-          "Microsoft.Extensions.Compliance.Abstractions": "10.11.0",
-          "Microsoft.Extensions.Http.Resilience": "10.11.0",
-          "Microsoft.Extensions.ServiceDiscovery": "10.11.0",
-          "Microsoft.Extensions.Telemetry": "10.11.0",
-          "OpenTelemetry": "1.20.0",
-          "OpenTelemetry.Extensions.Hosting": "1.20.0",
-          "OpenTelemetry.Instrumentation.Http": "1.20.0",
-          "PandaBear.SharedKernel.HttpClients": "0.1.0-alpha.169.1",
-          "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.169.1",
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.169.1"
-        }
       },
       "PandaBear.SharedKernel.BuildingBlocks": {
         "type": "CentralTransitive",

@@ -28,8 +28,7 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { DisableDefaults = true });
         builder.AddApplication();
         var services = builder.Services;
-        services.AddSingleton<PandaBear.Branding.IBrandingApiClient, PaymentTestBrandingClient>();
-        services.AddScoped<Application.Branding.IBrandingProjectionStore, Infrastructure.Branding.EfBrandingProjectionStore>();
+        services.AddSingleton<Application.Branding.IBrandingProjectionStore, PaymentTestBrandingProjection>();
         services.AddSingleton(clock);
         services.AddSingleton(protection);
         services.AddSingleton(new PaymentBusinessCalendar(clock, TimeZoneInfo.Utc));

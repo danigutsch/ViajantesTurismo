@@ -82,6 +82,12 @@ internal static class CatalogApiTestHost
         return Create(null, null, null, null, null, null, authenticateClient: false);
     }
 
+    /// <summary>Creates a host whose clients carry an Administrator token for the co-hosted Branding routes.</summary>
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateForBranding(string? environment = null)
+    {
+        return Create(environment, null, null, null, null, null, authenticateClient: false, configureClient: client => ConfigureBrandingClient(client, AdministratorRole));
+    }
+
     public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateProductionComposition()
     {
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
@@ -152,7 +158,8 @@ internal static class CatalogApiTestHost
         TestMediaObjectStore? objectStore,
         IImageTextGenerator? imageTextGenerator,
         bool authenticateClient = true,
-        TestEventStore? eventStore = null)
+        TestEventStore? eventStore = null,
+        Action<HttpClient>? configureClient = null)
     {
         var configuredTourStore = tourStore ?? new TestCatalogTourReadModelStore();
         var configuredEventStore = eventStore ?? new TestEventStore();
@@ -214,9 +221,9 @@ internal static class CatalogApiTestHost
                     BrandingModule.BearerScheme,
                     options => options.TokenValidationParameters.ValidAudience = BrandingAudience);
             },
-            authenticateClient
+            configureClient ?? (authenticateClient
                 ? ConfigureAuthenticatedClient
-                : null,
+                : null),
             configuration);
     }
 }

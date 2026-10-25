@@ -1,5 +1,4 @@
 using PandaBear.AspNetCore;
-using PandaBear.Branding;
 using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.HttpClients;
 using PandaBear.MalwareScanning.ClamAv;
@@ -26,7 +25,6 @@ builder.AddServiceDefaults();
 builder.Services.AddHttpClientDefaults();
 
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.BrandingApi}"));
 
 builder.Services.AddProblemDetails();
 builder.AddConfiguredTrustedForwardedHeaders();

@@ -37,8 +37,13 @@ internal static class AppHostComposition
         var identityProvider = builder.AddRunModeIdentityProvider(managementWebClientSecret);
         var clamAv = builder.AddClamAv(ResourceNames.ClamAv);
         var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase, securityDatabase);
-        var brandingApiService = builder.AddBrandingApi(catalogDatabase, migrationService, identityProvider);
-        var apiService = builder.AddAdminApi(adminDatabase, brandingApiService, migrationService, clamAv, identityProvider);
+        var seaweedFs = profile.IncludesMediaInfrastructure() ? builder.AddMediaObjectStorage() : null;
+
+        // Catalog hosts Branding and relays its outbox; the Admin worker keeps the Admin Branding projection that
+        // document generation reads, so even the Admin-only profile needs both.
+        var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
+        builder.AddAdminIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
+        var apiService = builder.AddAdminApi(adminDatabase, migrationService, clamAv, identityProvider);
 
         if (profile is HostedProfile.Admin)
         {
@@ -46,17 +51,13 @@ internal static class AppHostComposition
         }
 
         var cache = builder.AddCache(includeRedisInsight: includeDeveloperTooling);
-        var seaweedFs = profile.IncludesMediaInfrastructure() ? builder.AddMediaObjectStorage() : null;
 
         if (builder.EnablesDatabaseObservability(profile))
         {
             builder.AddDatabaseObservability(adminDatabase, catalogDatabase, migrationService);
         }
 
-        var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
-
         builder.AddCatalogIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs);
-        builder.AddAdminIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
         builder.AddManagementWeb(cache, securityDatabase, migrationService, identityProvider, managementWebClientSecret, apiService, catalogApiService);
         builder.AddPublicWeb(catalogApiService);
         if (includeDeveloperTooling)

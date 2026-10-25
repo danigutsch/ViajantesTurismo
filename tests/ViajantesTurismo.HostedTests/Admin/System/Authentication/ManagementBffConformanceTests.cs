@@ -117,7 +117,6 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
             ct, realm: Fixture.IdentityProviderRealm);
         using var adminApiClient = Fixture.CreateResourceClient(ResourceNames.Api);
         using var catalogApiClient = Fixture.CreateResourceClient(ResourceNames.CatalogApi);
-        using var brandingApiClient = Fixture.CreateResourceClient(ResourceNames.BrandingApi);
         using var adminRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/bookings/");
         using var catalogRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/catalog/tours");
         using var brandingRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/branding/settings");
@@ -128,7 +127,8 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         // Act
         using var adminResponse = await adminApiClient.SendAsync(adminRequest, ct);
         using var catalogResponse = await catalogApiClient.SendAsync(catalogRequest, ct);
-        using var brandingResponse = await brandingApiClient.SendAsync(brandingRequest, ct);
+        // Branding routes are hosted by Catalog and accept only Branding-audience tokens.
+        using var brandingResponse = await catalogApiClient.SendAsync(brandingRequest, ct);
 
         // Assert
         adminResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);

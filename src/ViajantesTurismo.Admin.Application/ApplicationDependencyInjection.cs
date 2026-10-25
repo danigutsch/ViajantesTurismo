@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using ViajantesTurismo.Admin.Application.Payments;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
@@ -83,7 +81,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<CustomerImportWorkflowService>();
         builder.Services.AddScoped<UpdateCustomerCommandHandler>();
         builder.Services.AddScoped<GenerateContractDraftCommandHandler>();
-        builder.Services.AddDocumentBranding(builder.Configuration);
+        builder.Services.AddScoped<DocumentBrandingSource>();
         builder.Services.AddScoped<DocumentCommandIdempotency>();
         builder.Services.AddScoped<DocumentAuditWriter>();
         builder.Services.AddScoped<BeginDocumentReviewCommandHandler>();
@@ -102,33 +100,6 @@ public static class ApplicationDependencyInjection
         builder.Services.AddDomainEventProcessing();
 
         return builder;
-    }
-
-    /// <summary>
-    /// Adds document Branding capture. The source mode is read from <see cref="DocumentBrandingOptions.SectionName" />
-    /// and defaults to HTTP; an unrecognized value fails startup instead of silently choosing a source.
-    /// </summary>
-    /// <param name="services">The service collection to configure.</param>
-    /// <param name="configuration">The application configuration.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddDocumentBranding(this IServiceCollection services, IConfiguration configuration)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        var configuredSource = configuration[$"{DocumentBrandingOptions.SectionName}:{nameof(DocumentBrandingOptions.Source)}"];
-        var source = DocumentBrandingSourceMode.Http;
-        if (!string.IsNullOrWhiteSpace(configuredSource)
-            && (!Enum.TryParse(configuredSource, ignoreCase: true, out source) || !Enum.IsDefined(source)))
-        {
-            throw new InvalidOperationException(
-                $"'{DocumentBrandingOptions.SectionName}:{nameof(DocumentBrandingOptions.Source)}' must be one of: "
-                + string.Join(", ", Enum.GetNames<DocumentBrandingSourceMode>()) + ".");
-        }
-
-        services.AddOptions<DocumentBrandingOptions>().Configure(options => options.Source = source);
-        services.TryAddScoped<DocumentBrandingSource>();
-        return services;
     }
 
     /// <summary>

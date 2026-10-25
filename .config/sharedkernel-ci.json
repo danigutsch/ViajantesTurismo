@@ -52,7 +52,7 @@
       "projects": [
         "tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj",
         "tests/ViajantesTurismo.Admin.ApiServiceTests/ViajantesTurismo.Admin.ApiServiceTests.csproj",
-        "tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj",
+        "tests/ViajantesTurismo.Branding.InfrastructureTests/ViajantesTurismo.Branding.InfrastructureTests.csproj",
         "tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj",
         "tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj",
         "tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj",
@@ -101,7 +101,7 @@
     },
     {
       "name": "branding",
-      "project": "src/ViajantesTurismo.Branding.ApiService/ViajantesTurismo.Branding.ApiService.csproj",
+      "project": "src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj",
       "generateProperty": "GenerateBrandingOpenApiArtifacts",
       "refreshProperty": "RefreshBrandingOpenApiArtifacts"
     },

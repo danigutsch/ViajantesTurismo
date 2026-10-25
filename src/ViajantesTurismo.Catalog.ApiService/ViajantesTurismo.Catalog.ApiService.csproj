@@ -9,6 +9,10 @@
         <OpenApiGenerateDocuments Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocuments>
         <OpenApiGenerateDocumentsOnBuild Condition="'$(GenerateCatalogOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocumentsOnBuild>
         <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts.Http/OpenApi/.generated</OpenApiDocumentsDirectory>
+        <!-- The co-hosted Branding module's boundary documents are generated from this host into Branding contracts. -->
+        <GenerateBrandingOpenApiArtifacts Condition="'$(RefreshBrandingOpenApiArtifacts)' == 'true'">true</GenerateBrandingOpenApiArtifacts>
+        <OpenApiGenerateDocuments Condition="'$(GenerateBrandingOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocuments>
+        <OpenApiGenerateDocumentsOnBuild Condition="'$(GenerateBrandingOpenApiArtifacts)' == 'true'">true</OpenApiGenerateDocumentsOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,6 +20,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.Architecture.Analyzers\ViajantesTurismo.Architecture.Analyzers.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"
+                          PrivateAssets="all"
+                          IsAspireProjectResource="false" />
         <ProjectReference Include="..\ViajantesTurismo.Branding.AspNetCore\ViajantesTurismo.Branding.AspNetCore.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj" />
@@ -50,6 +59,24 @@
 
         <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Catalog.Contracts.Http/OpenApi" />
         <Copy SourceFiles="@(GeneratedOpenApiArtifact->'%(SourcePath)')" DestinationFiles="@(GeneratedOpenApiArtifact->'%(TargetPath)')" SkipUnchangedFiles="true" />
+    </Target>
+
+    <!-- The co-hosted Branding documents belong beside the Branding contracts, not in Catalog's generated set. -->
+    <Target Name="CopyBrandingBoundaryOpenApiArtifacts" AfterTargets="GenerateOpenApiDocuments" Condition="'$(OpenApiGenerateDocuments)' == 'true'">
+        <ItemGroup>
+            <BrandingOpenApiArtifact Include="branding;public-branding" />
+            <GeneratedBrandingOpenApiArtifact Include="@(BrandingOpenApiArtifact)">
+                <SourcePath>$(OpenApiDocumentsDirectory)/$(AssemblyName)_%(Identity).json</SourcePath>
+                <GeneratedPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Branding.Contracts.Http/OpenApi/.generated/$(AssemblyName)_%(Identity).json</GeneratedPath>
+                <TargetPath>$(MSBuildProjectDirectory)/../ViajantesTurismo.Branding.Contracts.Http/OpenApi/%(Identity).openapi.json</TargetPath>
+            </GeneratedBrandingOpenApiArtifact>
+        </ItemGroup>
+
+        <MakeDir Directories="$(MSBuildProjectDirectory)/../ViajantesTurismo.Branding.Contracts.Http/OpenApi/.generated" />
+        <!-- An up-to-date build skips generation; the documents were already moved by the run that produced them. -->
+        <Copy Condition="Exists('%(GeneratedBrandingOpenApiArtifact.SourcePath)')" SourceFiles="%(GeneratedBrandingOpenApiArtifact.SourcePath)" DestinationFiles="%(GeneratedBrandingOpenApiArtifact.GeneratedPath)" SkipUnchangedFiles="true" />
+        <Copy Condition="'$(RefreshBrandingOpenApiArtifacts)' == 'true' And Exists('%(GeneratedBrandingOpenApiArtifact.GeneratedPath)')" SourceFiles="%(GeneratedBrandingOpenApiArtifact.GeneratedPath)" DestinationFiles="%(GeneratedBrandingOpenApiArtifact.TargetPath)" SkipUnchangedFiles="true" />
+        <Delete Files="@(GeneratedBrandingOpenApiArtifact->'%(SourcePath)')" />
     </Target>
 
 </Project>

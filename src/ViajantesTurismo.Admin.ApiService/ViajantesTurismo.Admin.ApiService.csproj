@@ -16,6 +16,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.Architecture.Analyzers\ViajantesTurismo.Architecture.Analyzers.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"
+                          PrivateAssets="all"
+                          IsAspireProjectResource="false" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Infrastructure\ViajantesTurismo.Admin.Infrastructure.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
@@ -27,7 +32,6 @@
         <PackageReference Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.ApiVersioning.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.OpenApi" />
-        <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.HttpClients" />
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning" />

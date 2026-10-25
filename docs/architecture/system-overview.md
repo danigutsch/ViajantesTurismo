@@ -28,7 +28,6 @@ flowchart LR
     end
     subgraph internalBoundary[Internal service boundary]
         adminApi[Admin.ApiService internal API]
-        brandingApi[Branding.ApiService internal API]
         catalogApi[Catalog.ApiService internal API]
         worker[Catalog.IntegrationEventWorker]
         migration[MigrationService]
@@ -55,9 +54,7 @@ flowchart LR
     maintainer -- pull request and release workflows --> github
     github -- package restore --> packageFeeds
     publicWeb -- service discovery HTTPS --> catalogApi
-    publicWeb -- service discovery HTTPS --> brandingApi
     managementWeb -- service discovery HTTPS --> adminApi
-    managementWeb -- service discovery HTTPS --> brandingApi
     managementWeb -- service discovery HTTPS --> catalogApi
     managementWeb -- distributed cache --> cache
     managementWeb -- EF Core SQL and security state --> securityDatabase
@@ -66,8 +63,7 @@ flowchart LR
     adminOutbox -- relay publishes --> catalogTransport
     adminOutbox -- belongs to --> adminDatabase
     catalogTransport -- belongs to --> adminDatabase
-    catalogApi -- EF Core SQL and public content --> catalogDatabase
-    brandingApi -- EF Core SQL and branding settings --> catalogDatabase
+    catalogApi -- EF Core SQL, public content, and branding settings --> catalogDatabase
     catalogApi -- binary media objects --> mediaStorage
     catalogApi -- transactional media events and relay --> catalogOutbox
     catalogOutbox -- belongs to --> catalogDatabase
@@ -98,7 +94,7 @@ flowchart LR
     classDef external fill:#f8f9fa,stroke:#868e96,stroke-width:2px,stroke-dasharray: 5 5
     class publicWeb public
     class managementWeb management
-    class adminApi,brandingApi,catalogApi,worker,migration,sharedKernel internal
+    class adminApi,catalogApi,worker,migration,sharedKernel internal
     class databaseServer,adminDatabase,catalogDatabase,securityDatabase,adminOutbox,catalogTransport,catalogOutbox,cache,mediaStorage data
     class github,packageFeeds,observability external
 ```

@@ -3,14 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PandaBear.AuditTrail;
-using PandaBear.Branding;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure;
-using ViajantesTurismo.Admin.UnitTests.Documents;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
@@ -106,8 +104,6 @@ internal static class AdminInfrastructureModuleTestServices
         {
             EnvironmentName = environmentName,
         });
-        builder.Services.AddSingleton<IBrandingApiClient>(
-            new FakeBrandingApiClient(new BrandingSettingsDto()));
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
             [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=viajantes-admin;Username=test;Password=test"

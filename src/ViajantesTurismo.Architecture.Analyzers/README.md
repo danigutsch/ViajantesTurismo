@@ -26,7 +26,7 @@ include a code-owner-reviewed justification:
 
 ```csharp
 #pragma warning disable VTARCH001 // Justification: approved synchronous exception reviewed by architecture owners.
-services.AddHttpClient(ResourceNames.BrandingApi);
+services.AddHttpClient(ResourceNames.CatalogApi);
 #pragma warning restore VTARCH001
 ```
 
@@ -39,12 +39,10 @@ inputs, and `CodeAnalysisRuleSet` inputs are prohibited as broad suppression pat
 The centrally pinned `Microsoft.CodeAnalysis.PublicApiAnalyzers` package enforces the committed
 `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` baselines for this project's public analyzer APIs.
 
-## Staged rollout: not enabled
+## Enforcement
 
-This project and its tests land before enforcement. Do not reference the analyzer from production
-projects while the Admin-to-Branding HTTP edge remains. Activate only after the asynchronous Admin
-Branding projection removes that dependency and Catalog co-hosting retires the standalone Branding
-API. Then add the analyzer explicitly to each remaining production `ApiService` project:
+The analyzer is referenced explicitly by each production `ApiService` project (Admin and Catalog), which
+build with warnings as errors:
 
 ```xml
 <ProjectReference Include="..\ViajantesTurismo.Architecture.Analyzers\ViajantesTurismo.Architecture.Analyzers.csproj"
@@ -54,6 +52,6 @@ API. Then add the analyzer explicitly to each remaining production `ApiService` 
                   IsAspireProjectResource="false" />
 ```
 
-Do not add this reference to `Directory.Build.props`, tests, AppHost, tools, frontends, or external-
-provider projects. The later activation commit must update the architecture rollout test after all
-production `ApiService` projects build cleanly with warnings as errors.
+Catalog.ApiService hosts the Branding routes, so Branding HTTP clients and contracts resolve to the Catalog
+API destination. Do not add this reference to `Directory.Build.props`, tests, AppHost, tools, frontends, or
+external-provider projects.

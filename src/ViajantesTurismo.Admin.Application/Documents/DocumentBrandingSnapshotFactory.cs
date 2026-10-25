@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using PandaBear.Branding;
 using PandaBear.InputNormalization;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -12,22 +11,6 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// </summary>
 internal static class DocumentBrandingSnapshotFactory
 {
-    public static DocumentBrandingSnapshotValues FromSettings(BrandingSettingsDto settings)
-    {
-        ArgumentNullException.ThrowIfNull(settings);
-
-        return Create(
-            settings.BrandName,
-            settings.LogoUri,
-            settings.PrimaryColor,
-            settings.AccentColor,
-            settings.BackgroundColor,
-            settings.TextColor,
-            settings.HeadingFontFamily,
-            settings.BodyFontFamily,
-            sourceRevision: null);
-    }
-
     public static DocumentBrandingSnapshotValues FromProjection(BrandingProjectionState projection)
     {
         ArgumentNullException.ThrowIfNull(projection);
@@ -53,7 +36,7 @@ internal static class DocumentBrandingSnapshotFactory
         string textColor,
         string headingFontFamily,
         string bodyFontFamily,
-        long? sourceRevision)
+        long sourceRevision)
     {
         var logoUri = rawLogoUri is { Length: <= DocumentLimits.MaxBrandingLogoUriLength } value ? value : null;
         var parsedLogoUri = WebAssetUriSanitizer.ToRootRelativeOrHttpsUri(logoUri, DocumentLimits.MaxBrandingLogoUriLength);

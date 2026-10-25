@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using PandaBear.Testing;
 using PandaBear.EventSourcing;
 using ViajantesTurismo.Catalog.Domain.Tours;
