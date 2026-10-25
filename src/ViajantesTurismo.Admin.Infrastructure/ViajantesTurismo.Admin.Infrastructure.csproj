@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <!-- EF Core DbContext and migrations are not Native AOT-compatible. -->
@@ -7,7 +7,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
-        <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure.Tests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.HostedTests" />
     </ItemGroup>
 
     <ItemGroup>

@@ -23,9 +23,9 @@ slice with seven-day retention. `sharedkernel-ci run` writes `phase-timings.tsv`
 slice prints `dotnet --info`.
 These are current capabilities, not proof of test-to-resource trace correlation.
 
-The [System assembly fixture](../../tests/ViajantesTurismo.Admin.SystemTests/Infrastructure/Fixtures/AspireSystemTestFixture.cs)
+The [System assembly fixture](../../tests/ViajantesTurismo.HostedTests/Admin/System/Infrastructure/Fixtures/AspireSystemTestFixture.cs)
 owns one AppHost lifetime, authenticates resource clients, and warms the web surfaces. Its
-[Playwright base](../../tests/ViajantesTurismo.Admin.SystemTests/Infrastructure/Bases/AspireSystemTestBase.cs)
+[Playwright base](../../tests/ViajantesTurismo.HostedTests/Admin/System/Infrastructure/Bases/AspireSystemTestBase.cs)
 provides pages and navigation. The inspected fixture/base do not implement the per-test bounded
 resource-log/OTel bundle below. Do not claim an artifact exists until its producer is implemented.
 
@@ -78,7 +78,7 @@ Today: reproduce with the existing focused MTP invocation, then inspect the suit
 and slice phase log. Choose a known failing method without sensitive theory arguments:
 
 ```bash
-dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj \
+dotnet test --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj \
     --filter-method '<fully-qualified-method>'
 ```
 

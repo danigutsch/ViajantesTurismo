@@ -1,0 +1,149 @@
+using Microsoft.Playwright;
+using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
+using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
+using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.Admin.Testing.Integration.Helpers;
+using PandaBear.Testing.Playwright;
+namespace ViajantesTurismo.Admin.SystemTests.Customers;
+
+/// <summary>
+/// E2E tests for the CSV customer import wizard.
+/// </summary>
+public partial class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
+{
+    [Fact]
+    public async Task Can_navigate_to_import_page_and_upload_csv_wizard_opens()
+    {
+        // Arrange
+        var email = $"e2e-ui1-{Guid.NewGuid():N}@import.test";
+        var autoMatchedAlert = Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" });
+        var previewButton = Page.GetButton("Preview");
+
+        // Act
+        await NavigateTo(CustomerImportRoutes.Import);
+        await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
+
+        // Assert
+        await Page.ShouldHaveTitle("Import Customers");
+        await Expect(Page.GetHeading("Import Customers")).ToBeVisibleAsync();
+        await Expect(autoMatchedAlert).ToBeVisibleAsync();
+        await Expect(previewButton).Not.ToBeDisabledAsync();
+        await Expect(Page.Locator(".badge.bg-secondary", new PageLocatorOptions { HasText = "column(s) detected" }))
+            .ToBeVisibleAsync();
+    }
+
+    [Fact]
+    public async Task Can_auto_match_canonical_headers_and_enable_preview()
+    {
+        // Arrange
+        var email = $"e2e-ui2-{Guid.NewGuid():N}@import.test";
+
+        // Act
+        await NavigateTo(CustomerImportRoutes.Import);
+        await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(email));
+
+        // Assert
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
+            .ToBeVisibleAsync();
+
+        var previewButton = Page.GetButton("Preview");
+        await Expect(previewButton).Not.ToBeDisabledAsync();
+    }
+
+    [Fact]
+    public async Task Can_block_preview_when_required_header_is_not_canonical()
+    {
+        // Arrange
+        var nonCanonicalCsv = CustomerImportCsvHelpers.ReplaceCanonicalHeader("Email", "EmailAddress") +
+                              "\n" +
+                              CustomerImportCsvHelpers.BuildValidRow($"e2e-ui3-{Guid.NewGuid():N}@import.test");
+
+        // Act
+        await NavigateTo(CustomerImportRoutes.Import);
+        await CustomerImportCsvHelpers.UploadCsv(Page, nonCanonicalCsv);
+
+        // Assert
+        await Expect(Page.Locator(".alert-warning", new PageLocatorOptions { HasText = "could not be matched" }))
+            .ToBeVisibleAsync();
+
+        var previewButton = Page.GetButton("Preview");
+        await Expect(previewButton).ToBeDisabledAsync();
+    }
+
+    [Fact]
+    public async Task Can_surface_duplicate_resolution_and_commit_keep_decision()
+    {
+        // Arrange
+        var existingCustomer = await ApiClient.CreateCustomer();
+
+        // Act
+        await NavigateTo(CustomerImportRoutes.Import);
+        await CustomerImportCsvHelpers.UploadCsv(Page, CustomerImportCsvHelpers.BuildCanonicalCsv(existingCustomer.Email));
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
+            .ToBeVisibleAsync();
+        await Page.GetButton("Preview").ClickAsync();
+        await Page.GetButton("Confirm Import").ClickAsync();
+
+        // Assert
+        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Resolve Duplicates")).ToBeVisibleAsync();
+        var duplicateRow = Page.Locator(".duplicate-resolution-table tbody tr")
+            .Filter(new LocatorFilterOptions { HasText = existingCustomer.Email });
+        await Expect(duplicateRow).ToHaveCountAsync(1);
+
+        var keepButton = duplicateRow.Locator("button[data-action='keep']");
+        await keepButton.ClickAsync();
+
+        var confirmImportButton = Page.Locator("button[data-action='confirm-import']");
+        await Expect(confirmImportButton).Not.ToBeDisabledAsync();
+        await confirmImportButton.ClickAsync();
+
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "Import complete" }))
+            .ToBeVisibleAsync();
+    }
+
+    [Fact]
+    public async Task Can_complete_import_flow_show_final_summary_and_open_customer_details()
+    {
+        // Arrange
+        var email = $"e2e-ui6-{Guid.NewGuid():N}@import.test";
+        var csv = CustomerImportCsvHelpers.BuildCanonicalCsv(email);
+
+        // Act
+        await NavigateTo(CustomerImportRoutes.Import);
+        await CustomerImportCsvHelpers.UploadCsv(Page, csv);
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
+            .ToBeVisibleAsync();
+        await Page.GetButton("Preview").ClickAsync();
+
+        var previewRow = Page.Locator(".preview-table tbody tr")
+            .Filter(new LocatorFilterOptions { HasText = email });
+
+        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
+        await Expect(previewRow).ToHaveCountAsync(1);
+
+        await Page.GetButton("Confirm Import").ClickAsync();
+
+        // Assert
+        await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "1 customer(s) imported successfully" }))
+            .ToBeVisibleAsync();
+        await Expect(Page.Locator("[data-testid='import-summary-counts']")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Created: 1")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Updated: 0")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Skipped: 0")).ToBeVisibleAsync();
+        await Expect(Page.GetByText("Failed: 0")).ToBeVisibleAsync();
+
+        var successRow = Page.Locator("[data-testid='summary-success-rows'] tbody tr")
+            .Filter(new LocatorFilterOptions { HasText = email });
+        await Expect(successRow).ToHaveCountAsync(1);
+
+        var viewCustomerLink = successRow.Locator("a[data-action='view-customer']");
+        await Expect(viewCustomerLink).ToBeVisibleAsync();
+        var actualValue = await viewCustomerLink.GetAttributeAsync("href");
+        var customerDetailsHref = actualValue.ShouldNotBeNull();
+
+        await NavigateTo(customerDetailsHref);
+        await Expect(Page).ToHaveURLAsync(CustomerImportTestRegexes.CustomerUrl());
+        await Page.ShouldHaveTitle("Customer Details");
+    }
+}

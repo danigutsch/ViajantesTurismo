@@ -144,7 +144,7 @@ diagram used when adding or moving test projects between CI lanes.
 Example — run system tests in headed mode:
 
 ```powershell
-dotnet test --project tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj -- Playwright.LaunchOptions.Headless=false
+dotnet test --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj -- Playwright.LaunchOptions.Headless=false
 ```
 
 Official references:
@@ -238,7 +238,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*T
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-class "ViajantesTurismo.Admin.UnitTests.Tours.TourCreationTests"
 
 # Run multiple test classes at once
-dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class "ViajantesTurismo.Admin.SystemTests.Tests.ConditionalStateTests" "ViajantesTurismo.Admin.SystemTests.Tests.BookingDeleteAndDialogTests"
+dotnet test --project tests/ViajantesTurismo.HostedTests --filter-class "ViajantesTurismo.Admin.SystemTests.Bookings.ConditionalStateTests" "ViajantesTurismo.Admin.SystemTests.Bookings.BookingDeleteAndDialogTests"
 
 # Run all tests in a namespace
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"
@@ -266,7 +266,7 @@ These are built-in MTP options available on all test projects:
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --list-tests
 
 # Run with a 10-minute timeout
-dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --timeout 10m
+dotnet test --project tests/ViajantesTurismo.HostedTests --timeout 10m
 
 # See all available options (including xUnit and extension switches)
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --help
@@ -760,7 +760,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Ad
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*Mapper*"
 
 # Run specific test classes
-dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
+dotnet test --project tests/ViajantesTurismo.HostedTests --filter-class ConditionalStateTests BookingDeleteAndDialogTests
 ```
 
 > **Reminder:** Do NOT use `--filter "FullyQualifiedName~..."` — that is VSTest syntax and

@@ -81,3 +81,14 @@ records. Code review and the ADR documentation enforce this.
 
 - [xUnit v3 Assembly Fixtures Documentation](https://xunit.net/docs/shared-context#assembly-fixtures)
 - [Architecture Decisions Index](../ARCHITECTURE_DECISIONS.md)
+
+## Hosted-test consolidation — 2026-10-24
+
+The six container-dependent projects now compile into `ViajantesTurismo.HostedTests`. One native
+xUnit assembly fixture owns PostgreSQL, Redis, Keycloak, ClamAV, SeaweedFS and the collector.
+Typed class fixtures receive that owner through native constructor injection. Parallel collections
+remain enabled. Distinct application stacks retain separate databases, realms and owned test data.
+The previous project names survive as test namespaces for filtering; the project-level compiler
+boundary is replaced by architecture checks. CI executes this assembly once in its hosted-test job.
+Garage evaluation coverage was intentionally removed. Reusable PostgreSQL lease ownership belongs
+to `PandaBear.SharedKernel.Npgsql.Testing`; no custom runner or cross-process coordinator is added.

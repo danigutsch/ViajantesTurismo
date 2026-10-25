@@ -11,7 +11,7 @@ public sealed class PostgreSqlObservabilityTestSafetyTests
         var scenarioPath = Path.Combine(
             GetRepositoryRoot(),
             "tests",
-            "ViajantesTurismo.Admin.IntegrationTests",
+            "ViajantesTurismo.HostedTests", "Admin", "Infrastructure",
             "Observability",
             "PostgreSqlIndexHealthCollectorScenario.cs");
         var scenarioText = File.ReadAllText(scenarioPath);
@@ -27,25 +27,19 @@ public sealed class PostgreSqlObservabilityTestSafetyTests
     }
 
     [Fact]
-    public void PostgreSql_test_database_bounds_disposal()
+    public void PostgreSql_test_databases_use_the_shared_pool_with_library_owned_cleanup_guards()
     {
         // Arrange
-        var testDatabasePath = Path.Combine(
-            GetRepositoryRoot(),
-            "tests",
-            "ViajantesTurismo.Admin.IntegrationTests",
-            "Infrastructure",
-            "PostgreSqlTestDatabase.cs");
-        var testDatabaseText = File.ReadAllText(testDatabasePath);
+        var hostedRoot = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests");
+        var project = File.ReadAllText(Path.Combine(hostedRoot, "ViajantesTurismo.HostedTests.csproj"));
+        var fixture = File.ReadAllText(Path.Combine(hostedRoot, "Infrastructure", "HostedTestFixture.cs"));
 
         // Act
-        var usesBoundedDisposal = testDatabaseText.Contains(
-                "new CancellationTokenSource(DefaultDisposalTimeout)",
-                StringComparison.Ordinal)
-            && testDatabaseText.Contains("OpenConnectionAsync(timeoutCts.Token)", StringComparison.Ordinal)
-            && testDatabaseText.Contains("ExecuteNonQueryAsync(timeoutCts.Token)", StringComparison.Ordinal);
+        var duplicateDatabaseImplementations = Directory.GetFiles(hostedRoot, "PostgreSqlTestDatabase.cs", SearchOption.AllDirectories);
 
         // Assert
-        usesBoundedDisposal.ShouldBeTrue();
+        project.ShouldContain("PandaBear.SharedKernel.Npgsql.Testing", StringComparison.Ordinal);
+        fixture.ShouldContain("PostgreSqlTestDatabasePool", StringComparison.Ordinal);
+        duplicateDatabaseImplementations.ShouldBeEmpty();
     }
 }

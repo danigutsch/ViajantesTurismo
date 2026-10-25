@@ -28,79 +28,30 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Admin_hosted_test_infrastructure_should_use_the_approved_fixture_and_base_class_model()
     {
-        var repositoryRoot = GetRepositoryRoot();
-        var integrationInfrastructurePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure");
-        var systemTestBasesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Bases");
-        var systemTestFixturesPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure", "Fixtures");
-        var assemblyFixtureText = File.ReadAllText(Path.Combine(integrationInfrastructurePath, "AssemblyFixture.cs"));
-        var apiFixtureText = File.ReadAllText(Path.Combine(integrationInfrastructurePath, "ApiFixture.cs"));
-        var serialIntegrationCollectionExists = File.Exists(Path.Combine(
-            integrationInfrastructurePath,
-            "Fixtures",
-            "AspireSerialIntegrationTestCollection.cs"));
-        var serialIntegrationBaseExists = File.Exists(Path.Combine(
-            integrationInfrastructurePath,
-            "Bases",
-            "AspireSerialIntegrationTestBase.cs"));
-        var systemTestBaseText = File.ReadAllText(Path.Combine(systemTestBasesPath, "AspireSystemTestBase.cs"));
-        var serialSystemTestBaseExists = File.Exists(Path.Combine(systemTestBasesPath, "AspireSerialSystemTestBase.cs"));
-        var serialReasonAttributeExists = File.Exists(Path.Combine(systemTestBasesPath, "SerialE2EReasonAttribute.cs"));
-        var e2eTestCollectionsExists = File.Exists(Path.Combine(systemTestBasesPath, "E2ETestCollections.cs"));
-        var systemFixtureText = File.ReadAllText(Path.Combine(systemTestFixturesPath, "AspireSystemTestFixture.cs"));
-        var obsoleteIntegrationFixtureExists = File.Exists(Path.Combine(
-            integrationInfrastructurePath,
-            "Fixtures",
-            "AspireSerialIntegrationTestFixture.cs"));
-        var obsoleteSystemFixtureExists = File.Exists(Path.Combine(systemTestFixturesPath, "AspireSerialSystemTestFixture.cs"));
-        var obsoleteE2ETestBaseExists = File.Exists(Path.Combine(systemTestBasesPath, "E2ETestBase.cs"));
-        var obsoleteE2ESerialTestBaseExists = File.Exists(Path.Combine(systemTestBasesPath, "E2ESerialTestBase.cs"));
-        var obsoleteE2EFixtureExists = File.Exists(Path.Combine(systemTestFixturesPath, "E2EFixture.cs"));
+        // Arrange
+        var root = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests");
+        var owner = File.ReadAllText(Path.Combine(root, "Infrastructure", "AssemblyFixture.cs"));
+        var fixture = File.ReadAllText(Path.Combine(root, "Infrastructure", "HostedTestFixture.cs"));
+        var api = File.ReadAllText(Path.Combine(root, "Admin", "Api", "Infrastructure", "ApiFixture.cs"));
+        var browser = File.ReadAllText(Path.Combine(root, "Admin", "System", "Infrastructure", "Bases", "AspireSystemTestBase.cs"));
 
-        assemblyFixtureText.ShouldContain(
-            "[assembly: AssemblyFixture(typeof(ApiFixture))]",
-            StringComparison.Ordinal);
-        apiFixtureText.ShouldContain(
-            "public sealed class ApiFixture : Testing.Integration.IAdminTestHost, IAsyncLifetime",
-            StringComparison.Ordinal);
-        apiFixtureText.ShouldContain("var testConfiguration = AppHostTestArguments.CreateConfiguration();", StringComparison.Ordinal);
-        apiFixtureText.ShouldContain("HostedProfile.Admin.ToArguments()", StringComparison.Ordinal);
-        apiFixtureText.ShouldContain("string[] appHostArguments =", StringComparison.Ordinal);
-        apiFixtureText.ShouldContain("_app = await AspireTestApplication.Start<ViajantesTurismo_AppHost>(", StringComparison.Ordinal);
-        apiFixtureText.ShouldContain("_client = _app.CreateHttpClient(ResourceNames.Api);", StringComparison.Ordinal);
-        apiFixtureText.ShouldContain(
-            "_databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);",
-            StringComparison.Ordinal);
-        apiFixtureText.ShouldNotContain("ResetToKnownBaseline", StringComparison.Ordinal);
-        serialIntegrationCollectionExists.ShouldBeFalse();
-        serialIntegrationBaseExists.ShouldBeFalse();
+        // Act
+        var fixtureDeclarations = Directory.GetFiles(root, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsGeneratedTestPath(path))
+            .SelectMany(File.ReadAllLines)
+            .Where(line => line.StartsWith("[assembly: AssemblyFixture(", StringComparison.Ordinal))
+            .ToArray();
 
-        obsoleteIntegrationFixtureExists.ShouldBeFalse();
-
-        systemTestBaseText.ShouldContain(
-            "public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest",
-            StringComparison.Ordinal);
-        systemTestBaseText.ShouldNotContain(
-            "[assembly: CollectionBehavior(DisableTestParallelization = true)]",
-            StringComparison.Ordinal);
-        systemTestBaseText.ShouldContain("protected Uri ApiBaseUri => ApiClient.BaseAddress", StringComparison.Ordinal);
-        systemFixtureText.ShouldContain("public Task<HttpClient> CreateApiClient(CancellationToken ct)", StringComparison.Ordinal);
-        systemFixtureText.ShouldNotContain("private HttpClient? _apiClient;", StringComparison.Ordinal);
-        systemFixtureText.ShouldNotContain("private HttpClient? _catalogApiClient;", StringComparison.Ordinal);
-        serialSystemTestBaseExists.ShouldBeFalse();
-        serialReasonAttributeExists.ShouldBeFalse();
-        e2eTestCollectionsExists.ShouldBeFalse();
-        systemFixtureText.ShouldContain(
-            "await PostgreSqlPublicSchemaReset.Reset(connection, [\"DocumentAuditRecords\"], ct);",
-            StringComparison.Ordinal);
-
-        systemFixtureText.ShouldContain(
-            "public sealed class AspireSystemTestFixture : IAspireSystemTestFixture, IAsyncLifetime",
-            StringComparison.Ordinal);
-
-        obsoleteSystemFixtureExists.ShouldBeFalse();
-        obsoleteE2ETestBaseExists.ShouldBeFalse();
-        obsoleteE2ESerialTestBaseExists.ShouldBeFalse();
-        obsoleteE2EFixtureExists.ShouldBeFalse();
+        // Assert
+        fixtureDeclarations.ShouldHaveSingleItem();
+        owner.ShouldContain("[assembly: AssemblyFixture(typeof(HostedTestFixture))]", StringComparison.Ordinal);
+        fixture.ShouldContain("PostgreSqlTestDatabasePool", StringComparison.Ordinal);
+        fixture.ShouldContain("builder.AddDatabaseServer(includePgWeb: false)", StringComparison.Ordinal);
+        fixture.ShouldContain("builder.AddCache(includeRedisInsight: false)", StringComparison.Ordinal);
+        api.ShouldContain("shared.GetApplication(HostedProfile.Admin", StringComparison.Ordinal);
+        api.ShouldNotContain("ResetToKnownBaseline", StringComparison.Ordinal);
+        browser.ShouldContain("IClassFixture<AspireSystemTestFixture>", StringComparison.Ordinal);
+        browser.ShouldContain("protected Uri ApiBaseUri => ApiClient.BaseAddress", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -108,7 +59,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         // Arrange
         var repositoryRoot = GetRepositoryRoot();
-        var systemTestsPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.SystemTests");
+        var systemTestsPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.HostedTests", "Admin", "System");
         var runnerConfigurationPath = Path.Combine(repositoryRoot, "tests", "xunit.runner.json");
         var localRunnerConfigurationPaths = Directory.GetFiles(
             systemTestsPath,
@@ -150,7 +101,7 @@ public sealed partial class AdminTestArchitectureGuardTests
         var systemTestBasePath = Path.Combine(
             repositoryRoot,
             "tests",
-            "ViajantesTurismo.Admin.SystemTests",
+            "ViajantesTurismo.HostedTests", "Admin", "System",
             "Infrastructure",
             "Bases",
             "AspireSystemTestBase.cs");
@@ -244,8 +195,8 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         var infrastructureRoots = new[]
         {
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.IntegrationTests", "Infrastructure"),
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.Admin.SystemTests", "Infrastructure")
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Admin", "Api", "Infrastructure"),
+            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Admin", "System", "Infrastructure")
         };
 
         var offendingMembers = infrastructureRoots

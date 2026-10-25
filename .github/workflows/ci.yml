@@ -36,9 +36,7 @@ jobs:
       documentation_only: ${{ steps.change-scope.outputs.documentation_only }}
       fast-validation-1_required: ${{ steps.change-scope.outputs['fast-validation-1_required'] }}
       fast-validation-2_required: ${{ steps.change-scope.outputs['fast-validation-2_required'] }}
-      admin-integration_required: ${{ steps.change-scope.outputs['admin-integration_required'] }}
-      admin-api-integration_required: ${{ steps.change-scope.outputs['admin-api-integration_required'] }}
-      admin-system_required: ${{ steps.change-scope.outputs['admin-system_required'] }}
+      hosted-tests_required: ${{ steps.change-scope.outputs['hosted-tests_required'] }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -148,14 +146,8 @@ jobs:
           - id: fast-validation-2
             display_name: Fast Validation 2
             timeout_minutes: 15
-          - id: admin-integration
-            display_name: Admin Integration Tests
-            timeout_minutes: 15
-          - id: admin-api-integration
-            display_name: Admin API Integration Tests
-            timeout_minutes: 15
-          - id: admin-system
-            display_name: Admin System Tests
+          - id: hosted-tests
+            display_name: Hosted Integration and System Tests
             timeout_minutes: 30
     steps:
       - name: Fail test slice when change detection fails
@@ -224,7 +216,7 @@ jobs:
       # Playwright 1.60 has no Ubuntu 26.04 browser manifests yet (microsoft/playwright#40117), so it installs the
       # Ubuntu 24.04 builds and dependencies there.
       - name: Select the Playwright host platform
-        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' && matrix.id == 'admin-system' }}
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' && matrix.id == 'hosted-tests' }}
         shell: bash
         run: |
           . /etc/os-release

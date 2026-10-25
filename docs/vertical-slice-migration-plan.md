@@ -147,8 +147,8 @@ approve a wire-contract change. Preserve [request semantics](API_REQUEST_SHAPES.
 Prerequisites: inventory current consumers and test seams; record any intended contract change
 separately. Risks: aggregate-wide transaction rules, broad query contracts, generated metadata,
 and concurrent date/document work. Gate each step with Admin.UnitTests and the affected
-Admin.ApiServiceTests/ContractTests; use Admin.IntegrationTests/Infrastructure.Tests for database
-behavior and BehaviorTests/UI/System suites for the workflow actually changed.
+Admin.ApiServiceTests/ContractTests; use HostedTests/Admin/Api and HostedTests/Admin/Infrastructure for
+database behavior and BehaviorTests/UI/HostedTests/Admin/System for the workflow actually changed.
 
 ## Catalog sequence
 

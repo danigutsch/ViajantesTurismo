@@ -55,7 +55,7 @@ dotnet tool run sharedkernel-ci -- run --slice <slice-id> --coverage
 since that commit affects. `run` restores, builds, and tests the slice's selected projects, generates
 its OpenAPI targets, and records per-phase timings in `TestResults/selection/execution-<slice-id>/`.
 Replace `<slice-id>` with a `slices[].name` of `.config/sharedkernel-ci.json`; add `--install-playwright`
-for `admin-system`. The logical fast lane uses the `fast-validation-1` and `fast-validation-2` slices
+for `hosted-tests`. The logical fast lane uses the `fast-validation-1` and `fast-validation-2` slices
 and produces a separate result artifact for each shard.
 
 To reproduce coverage aggregation and changed-code enforcement locally, use the commands in

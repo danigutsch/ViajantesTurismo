@@ -2,7 +2,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
-        <InternalsVisibleTo Include="ViajantesTurismo.Admin.Infrastructure.Tests" />
+        <InternalsVisibleTo Include="ViajantesTurismo.HostedTests" />
     </ItemGroup>
 
     <ItemGroup>

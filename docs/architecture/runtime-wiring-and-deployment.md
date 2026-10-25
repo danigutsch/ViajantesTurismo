@@ -40,6 +40,7 @@ flowchart LR
     cache[Redis cache]
     identityProvider[Run Mode Identity Provider]
     seaweedFs[SeaweedFS]
+    SharedProductResources[Shared Product Resources]
     AdminIntegrationEventWorker --> adminDatabase
     AdminIntegrationEventWorker --> catalogDatabase
     AdminIntegrationEventWorker --> migrationService

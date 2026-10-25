@@ -133,7 +133,7 @@ selected test projects. Keep the five slices; a slice that selects nothing for a
 
 Fast Validation is split into two fixed execution shards that share setup cost across two runners.
 The `fast-validation-1` slice holds all three HTTP contract projects and generates the Admin,
-Branding, and Catalog OpenAPI artifacts after its build. The `admin-system` slice installs Chromium
+Branding, and Catalog OpenAPI artifacts after its build. The `hosted-tests` slice installs Chromium
 with its system dependencies; on Ubuntu 26.04 the job sets `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` to the
 Ubuntu 24.04 platform because Playwright 1.60 has no Ubuntu 26.04 manifests yet.
 

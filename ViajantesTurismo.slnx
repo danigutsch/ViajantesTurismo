@@ -52,30 +52,25 @@
         <Project Path="src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj" />
     </Folder>
     <Folder Name="/tests/">
+    <Project Path="tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Performance.Tool.Tests/ViajantesTurismo.Performance.Tool.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Admin.SystemTests/ViajantesTurismo.Admin.SystemTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj" />
         <Project Path="tests/ViajantesTurismo.DatabaseObservability.Tests/ViajantesTurismo.DatabaseObservability.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Management.WebIntegrationTests/ViajantesTurismo.Management.WebIntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Architecture.Analyzers.Tests/ViajantesTurismo.Architecture.Analyzers.Tests.csproj" />
         <Project Path="tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Admin.Infrastructure.Tests/ViajantesTurismo.Admin.Infrastructure.Tests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Admin.IntegrationTests/ViajantesTurismo.Admin.IntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.ApiServiceTests/ViajantesTurismo.Admin.ApiServiceTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Catalog.IntegrationTests/ViajantesTurismo.Catalog.IntegrationTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj" />
-        <Project Path="tests/ViajantesTurismo.Catalog.InfrastructureTests/ViajantesTurismo.Catalog.InfrastructureTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Branding.ApiServiceTests/ViajantesTurismo.Branding.ApiServiceTests.csproj" />
         <Project Path="tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj" />
     </Folder>

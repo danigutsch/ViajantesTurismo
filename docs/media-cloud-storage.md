@@ -6,8 +6,9 @@ writes and deletion. Reusing that implementation avoids a second storage stack o
 SeaweedFS remains available for local development.
 
 Garage v2.4.1 was rejected on 2026-10-21: the current adapter's upload fails with
-`Bad request: Invalid payload signature`. [Compatibility tests](../tests/ViajantesTurismo.Catalog.IntegrationTests/GarageMediaObjectStoreTests.cs)
-retain the evidence. Its [AGPL-3.0 license](https://github.com/deuxfleurs-org/garage/blob/main-v2/LICENSE)
+`Bad request: Invalid payload signature`. The rejected-provider evaluation tests were removed when
+hosted tests were consolidated; SeaweedFS remains covered by real storage integration tests. Its
+[AGPL-3.0 license](https://github.com/deuxfleurs-org/garage/blob/main-v2/LICENSE)
 and [S3 policy/versioning gaps](https://garagehq.deuxfleurs.fr/documentation/reference-manual/s3-compatibility/)
 also require review before reconsideration.
 
