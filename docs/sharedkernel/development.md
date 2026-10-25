@@ -6,22 +6,18 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.169.1` at clean library revision
-[`72625116fe443f123bf07f64c02aeb20c1456efd`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/72625116fe443f123bf07f64c02aeb20c1456efd).
-It adds `sharedkernel-repo verify-line-endings`, `verify-links`, `verify-gherkin`, `github sync-labels` and
-`verify-devcontainer`, configured by the `links`, `gherkin` and `labels` sections of
-`.config/sharedkernel-repo.json`; `sharedkernel-ci run-mutation-tests`, configured by the `mutation` section of
-`.config/sharedkernel-ci.json`; the `sharedkernel-k6` tool (`PandaBear.SharedKernel.K6.Tool`), configured by
-`.config/sharedkernel-k6.json`; and an `automation publish-result` that takes its pull request body from
-`automation.pullRequestBody` in `roadmap/config.json` and fails without a pull request URL. It keeps the
-bounded transport retry, poison state and named exact-audience bearer schemes of `0.1.0-alpha.167.1`.
-All 79 package hashes match the unchanged artifacts from
-[CI run 40174979248](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40174979248);
-Linux/Windows package consumption and NativeAOT passed. The unchanged 79 packages, 54 symbol archives
-and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.169.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.169.1).
+The published candidate is `0.1.0-alpha.171.1` at clean library revision
+[`753f94c9a8dfd09084cb3b0e6d49739c0a16cac1`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/753f94c9a8dfd09084cb3b0e6d49739c0a16cac1).
+It removes the unused management Branding client (`ManagementBrandingApiClient`) and its dependency chain
+and otherwise matches `0.1.0-alpha.169.1`. All 79 package hashes match the unchanged
+artifacts from
+[CI run 40179021750](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40179021750);
+Linux/Windows package consumption passed. The unchanged 79 packages, 54 symbol archives and manifest are
+published in GitHub prerelease
+[`v0.1.0-alpha.171.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.171.1).
 
-The previous previews `0.1.0-alpha.167.1` at revision `301f7fcce859e4bb5237b2e4a9abaefc71b4b90a`,
+The previous previews `0.1.0-alpha.169.1` at revision `72625116fe443f123bf07f64c02aeb20c1456efd`,
+`0.1.0-alpha.167.1` at revision `301f7fcce859e4bb5237b2e4a9abaefc71b4b90a`,
 `0.1.0-alpha.161.1` at revision `b40822b58c9f6c1797dbea6de1e2a12319906b5b`,
 `0.1.0-alpha.159.1` at revision `afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`,
 `0.1.0-alpha.144.1` at revision `ee4126348011b2ddf60d3e580428867689c412dd`,
