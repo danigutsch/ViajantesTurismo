@@ -392,9 +392,9 @@ this approval.
 
 Candidate `0.1.0-alpha.191.1` uses clean library revision
 `96c6684921e227441da56d8883c2a59bba29b09e`. It aligns the ClamAV, SeaweedFS and Grafana hosting resources with the
-Aspire integrations: the resource types move to `Aspire.Hosting.ApplicationModel`, ClamAV and SeaweedFS mount no
-volume unless `WithDataVolume` or `WithDataBindMount` is called, and every resource exposes `PrimaryEndpoint`, `Host`
-and `Port`. All 80 archive hashes were verified against the CI artifacts of
+Aspire integrations: every resource exposes `PrimaryEndpoint`, `Host` and `Port`, the ClamAV and SeaweedFS resource
+types move to `Aspire.Hosting.ApplicationModel` like the Grafana ones, and ClamAV and SeaweedFS mount no volume unless
+`WithDataVolume` or `WithDataBindMount` is called. All 80 archive hashes were verified against the CI artifacts of
 run [40284890189](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40284890189) and the GitHub
 prerelease manifest.
 
