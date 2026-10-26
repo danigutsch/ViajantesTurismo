@@ -1,6 +1,6 @@
 # ADR-018: Test Parallelization with xUnit v3 Assembly Fixtures
 
-**Status**: Accepted — 2026-02-28; amended 2026-07-19
+**Status**: Accepted — 2026-02-28; amended 2026-07-19, 2026-10-24, 2026-10-25
 
 ## Context
 
@@ -92,3 +92,11 @@ The previous project names survive as test namespaces for filtering; the project
 boundary is replaced by architecture checks. CI executes this assembly once in its hosted-test job.
 Garage evaluation coverage was intentionally removed. Reusable PostgreSQL lease ownership belongs
 to `PandaBear.SharedKernel.Npgsql.Testing`; no custom runner or cross-process coordinator is added.
+
+## Demand-driven infrastructure — 2026-10-25
+
+The assembly fixture no longer starts its containers in `InitializeAsync`: xUnit creates it whenever one test is selected, so
+a filtered run paid for all six. It now composes one explicit-start infrastructure application on first demand and starts each
+container once, through its own gate, when a test first needs it. Ownership and disposal order are unchanged, and a failed
+start fails only the tests that need that container. See the
+[HostedTests README](../../tests/ViajantesTurismo.HostedTests/README.md#demand-driven-infrastructure).

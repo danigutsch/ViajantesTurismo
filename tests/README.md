@@ -45,7 +45,7 @@ justified.
 | `ViajantesTurismo.HostedTests` — `Admin/System` | End-user Admin flows through the real UI | Playwright page navigation, semantic UI assertions, helper pages/workflows, narrow API-assisted owned-data setup | Browser-driven tests against Aspire-managed running services | PostgreSQL, Redis, API, Blazor UI | Direct assertions on private service state, generic container access, non-deterministic list scanning | Canonical |
 | `ViajantesTurismo.Admin.Testing` | Shared test-only contracts, traits, and helper abstractions | Reusable helper types consumed by test projects | No standalone host | No | Business logic ownership, app runtime ownership, test-project-specific orchestration | Should stay host-agnostic |
 
-Hosted tests retain their original namespaces and traits inside one assembly. See
+Hosted tests retain their original namespaces and traits inside one assembly, and their containers start on demand. See
 [ViajantesTurismo.HostedTests](ViajantesTurismo.HostedTests/README.md) for fixture ownership and filtering.
 
 ## Boundary Rules

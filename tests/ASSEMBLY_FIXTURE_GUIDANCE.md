@@ -24,15 +24,18 @@ Assembly fixtures are a sharing mechanism for expensive context. They are not th
 ## Provider-service direction
 
 - Share an expensive provider server only when the whole assembly uses it.
+- Start each provider server when a test first needs it, behind a gate that starts it once. xUnit creates an assembly
+  fixture whenever one selected test exists, so a focused run pays for every server the fixture starts up front; keep
+  `InitializeAsync` free of container starts so the run pays only for the servers its tests use.
 - Give every parallel test its own mutable namespace, such as a PostgreSQL database or S3 bucket.
 - Track exact fixture-issued names and clean only those names with a fixture-owned timeout.
 - Do not use fixed persistent container names or fall back to developer or production endpoints.
 - Keep collection parallelism enabled; server sharing does not justify shared mutable test data.
 
 Current examples are `SharedKernel.Npgsql.Tests`, `SharedKernel.EventSourcing.Npgsql.Tests`,
-`SharedKernel.EntityFrameworkCore.Tests`, `ViajantesTurismo.Admin.Infrastructure.Tests`, and
-`ViajantesTurismo.Management.WebIntegrationTests`. Each keeps the Aspire server assembly-scoped,
-issues a GUID-owned database to each test instance, and drops only fixture-owned databases with an
-independent cleanup timeout. Registries retain database names until a successful drop and retry any
-remaining cleanup during assembly teardown. The Entity Framework Core and Admin Infrastructure
-fixtures start lazily so database-free focused runs remain container-free.
+`SharedKernel.EntityFrameworkCore.Tests`, and the PostgreSQL seams of `ViajantesTurismo.HostedTests`. Each issues a
+GUID-owned database to each test instance and drops only fixture-owned databases with an independent cleanup
+timeout. Registries retain database names until a successful drop and retry any remaining cleanup during assembly
+teardown. None of them starts a server before a test needs a database, so database-free focused runs remain
+container-free; `ViajantesTurismo.HostedTests` does the same for its other five containers (see its
+[README](ViajantesTurismo.HostedTests/README.md#demand-driven-infrastructure)).
