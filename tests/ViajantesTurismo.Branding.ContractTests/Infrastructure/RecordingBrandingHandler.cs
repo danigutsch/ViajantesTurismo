@@ -20,7 +20,7 @@ internal sealed class RecordingBrandingHandler(Func<HttpRequestMessage, HttpResp
         };
         if (entityTag is not null)
         {
-            response.Headers.ETag = new System.Net.Http.Headers.EntityTagHeaderValue(entityTag);
+            response.Headers.ETag = System.Net.Http.Headers.EntityTagHeaderValue.Parse(entityTag);
         }
 
         return response;

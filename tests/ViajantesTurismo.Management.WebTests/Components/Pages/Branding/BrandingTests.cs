@@ -1,5 +1,4 @@
 using BrandingPage = ViajantesTurismo.Management.Web.Components.Pages.Branding.Branding;
-using PandaBear.HttpClients;
 using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Branding;
@@ -168,10 +167,27 @@ public sealed class BrandingTests : BunitContext
     }
 
     [Fact]
+    public void Shows_the_server_validation_messages_when_branding_is_rejected()
+    {
+        // Arrange
+        brandingApi.ValidationErrors = new Dictionary<string, string[]> { ["PrimaryColor"] = ["Use a safe color."] };
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.Markup.Contains("Use a safe color.", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("Use a safe color.", StringComparison.Ordinal);
+        brandingApi.SavedBranding.ShouldBeNull();
+    }
+
+    [Fact]
     public void Shows_fallback_error_when_branding_validation_has_no_messages()
     {
         // Arrange
-        brandingApi.ValidationException = new ContractValidationException("Validation problem response body was malformed.");
+        brandingApi.ReturnMalformedValidationProblem = true;
         var cut = Render<BrandingPage>();
         cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
 

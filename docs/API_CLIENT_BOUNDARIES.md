@@ -26,11 +26,15 @@ Branding routes, and Branding clients resolve to the Catalog API destination. Th
 version prefix and base-address wiring, while the Branding module owns its route segments, defaults,
 persistence behavior, authorization, and cache policy.
 
-The Management Branding client returns source epoch/revision plus a strong opaque ETag from
-`GET` and sends an RFC 9110 `If-Match` precondition for full-state `PUT`. It treats entity tags as
+The Management Branding client returns `HttpOutcome<T>` like the Admin and Catalog clients. A successful
+`GET` carries the source epoch/revision plus a strong opaque ETag, taken from the outcome's `ETag`; a
+weak or missing tag cannot guard a full-state `PUT`, so it is a malformed body. The client sends an
+RFC 9110 `If-Match` precondition for full-state `PUT`. It treats entity tags as
 opaque, defaults to the exact GET validator, and does not reimplement strong comparison or classify
-valid lists, weak tags, or `*` as malformed. It exposes 400 malformed syntax, 412 false precondition,
-and 428 missing precondition as explicit outcomes. Neither the HTTP client nor resilience handlers
+valid lists, weak tags, or `*` as malformed on the request side. The server's 412 false precondition and
+428 missing precondition surface as unexpected-status outcomes that keep their status code, and a 400
+without validation errors, such as a rejected `If-Match` syntax, surfaces as a malformed body with status
+400. A 400 with validation errors is a validation problem. Neither the HTTP client nor resilience handlers
 retry a 412 full-state mutation automatically; the editor reloads and deliberately reapplies or merges.
 Because the server normalizes the document and allocates a revision, successful `PUT` omits `ETag` and
 the client performs `GET` before the next edit. That response atomically replaces the editor's document,
@@ -94,7 +98,7 @@ If any item is false, keep the client app-local until the contract boundary is c
 
 ## Shared outcome model
 
-Admin and Catalog JSON clients use the shared contract outcome shape for caller-visible HTTP branches:
+Admin, Catalog, and Branding JSON clients use the shared contract outcome shape for caller-visible HTTP branches:
 
 - `HttpOutcome` carries `Kind`, `StatusCode`, optional `Location`, optional `ValidationErrors`, and an optional
   diagnostic `Message`.
@@ -105,6 +109,20 @@ Admin and Catalog JSON clients use the shared contract outcome shape for caller-
   cancellation and lets upload callers retain their file-specific error messages and progress behavior.
 - Streaming media retains explicit response-stream ownership, while buffered document downloads retain their existing
   artifact contract. Neither is wrapped in a materialized JSON outcome.
+
+## Retained client inventory
+
+Every retained HTTP client belongs to one family and one owner. Production APIs do not call each other over
+ordinary HTTP; the architecture analyzer test project guards that rule.
+
+| Family | Clients | Owner | Outcome handling |
+| --- | --- | --- | --- |
+| Admin command and query | `BookingsApiClient`, `CustomersApiClient`, `DocumentsApiClient`, `ToursApiClient`, `BookingPaymentsApiClient`, `PaymentAccountsApiClient`, `PaymentInstructionsApiClient` | `ViajantesTurismo.Admin.Contracts.Http` | Shared `HttpOutcome` |
+| Catalog management and public | `CatalogToursApiClient`, `PublicCatalogApiClient`, `PublicContentApiClient` | `ViajantesTurismo.Catalog.Contracts.Http` | Shared `HttpOutcome` |
+| Branding | `BrandingManagementClient` | `ViajantesTurismo.Branding.Contracts.Http` | Shared `HttpOutcome`, ETag from the outcome |
+| Media and document streams | Streaming members of the Admin and Catalog clients | Same projects as above | Owned async-disposable response; not wrapped in a buffered outcome |
+| Identity provider | Keycloak token exchange in `KeycloakAudienceTokenExchangeHandler` | `ViajantesTurismo.Management.Web` | Not migrated: the identity library owns the token response and error model, and the handler is an HTTP pipeline step, not a contract client |
+| AI text generation | `LiteLlmImageTextGenerator` registered in `ViajantesTurismo.Catalog.Infrastructure` | SharedKernel AI package | Not migrated: the provider client is library-owned and returns domain results, not caller-visible HTTP branches |
 
 ## Response outcome modeling
 

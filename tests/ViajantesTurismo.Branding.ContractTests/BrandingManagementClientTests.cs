@@ -1,5 +1,6 @@
 using System.Net;
 using PandaBear.Branding;
+using PandaBear.HttpClients;
 using ViajantesTurismo.Branding.ContractTests.Infrastructure;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -21,12 +22,55 @@ public sealed class BrandingManagementClientTests
         var client = new BrandingManagementClient(httpClient);
 
         // Act
-        var document = await client.GetSettings(TestContext.Current.CancellationToken);
+        var outcome = await client.GetSettings(TestContext.Current.CancellationToken);
 
         // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var document = outcome.Value.ShouldNotBeNull();
         document.EntityTag.ShouldBe(tag);
         document.Settings.SourceRevision.ShouldBe(4);
         document.Settings.BrandName.ShouldBe("Viajantes");
+    }
+
+    [Theory]
+    [InlineData("W/\"weak\"")]
+    [InlineData(null)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    public async Task Read_reports_a_malformed_body_without_a_strong_entity_tag(string? tag)
+    {
+        // Arrange
+        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(HttpStatusCode.OK, SettingsJson, tag));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
+        var client = new BrandingManagementClient(httpClient);
+
+        // Act
+        var outcome = await client.GetSettings(TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.OK);
+        outcome.Value.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound, HttpOutcomeKind.NotFound)]
+    [InlineData(HttpStatusCode.Unauthorized, HttpOutcomeKind.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden, HttpOutcomeKind.Forbidden)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    public async Task Read_reports_the_documented_failure_status_as_an_outcome(HttpStatusCode status, HttpOutcomeKind kind)
+    {
+        // Arrange
+        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(status, "{}"));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
+        var client = new BrandingManagementClient(httpClient);
+
+        // Act
+        var outcome = await client.GetSettings(TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(kind);
+        outcome.StatusCode.ShouldBe(status);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
@@ -40,32 +84,80 @@ public sealed class BrandingManagementClientTests
         var client = new BrandingManagementClient(httpClient);
 
         // Act
-        var saved = await client.SaveSettings(new BrandingSettingsDto { BrandName = "Viajantes" }, tag, TestContext.Current.CancellationToken);
+        var outcome = await client.SaveSettings(new BrandingSettingsDto { BrandName = "Viajantes" }, tag, TestContext.Current.CancellationToken);
 
         // Assert
         var request = handler.Requests.ShouldHaveSingleItem();
         request.Method.ShouldBe(HttpMethod.Put);
         request.Headers.IfMatch.ShouldHaveSingleItem().Tag.ShouldBe(tag);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var saved = outcome.Value.ShouldNotBeNull();
         saved.SourceRevision.ShouldBe(4);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData(HttpStatusCode.PreconditionFailed)]
+    [InlineData(HttpStatusCode.PreconditionRequired)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
-    public async Task Write_reports_a_lost_update_without_retrying()
+    public async Task Write_reports_a_precondition_status_without_retrying(HttpStatusCode status)
     {
         // Arrange
-        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(HttpStatusCode.PreconditionFailed, "{}"));
+        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(status, "{}"));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 
         // Act
-        var save = () => client.SaveSettings(
+        var outcome = await client.SaveSettings(
             new BrandingSettingsDto { BrandName = "Viajantes" },
             BrandingEntityTags.Format(Guid.CreateVersion7(), 1),
             TestContext.Current.CancellationToken);
 
         // Assert
-        await save.ShouldThrow<BrandingPreconditionFailedException>();
+        outcome.Kind.ShouldBe(HttpOutcomeKind.UnexpectedStatus);
+        outcome.StatusCode.ShouldBe(status);
         handler.Requests.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    public async Task Write_reports_a_malformed_if_match_as_a_bad_request_without_validation_errors()
+    {
+        // Arrange
+        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(
+            HttpStatusCode.BadRequest,
+            """{"status":400,"code":"branding.invalid_if_match"}"""));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
+        var client = new BrandingManagementClient(httpClient);
+
+        // Act
+        var outcome = await client.SaveSettings(
+            new BrandingSettingsDto { BrandName = "Viajantes" },
+            BrandingEntityTags.Format(Guid.CreateVersion7(), 1),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
+        outcome.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        outcome.ValidationErrors.ShouldBeNull();
+    }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    public async Task Write_reports_an_empty_success_body()
+    {
+        // Arrange
+        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(HttpStatusCode.OK, string.Empty));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
+        var client = new BrandingManagementClient(httpClient);
+
+        // Act
+        var outcome = await client.SaveSettings(
+            new BrandingSettingsDto { BrandName = "Viajantes" },
+            BrandingEntityTags.Format(Guid.CreateVersion7(), 1),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.EmptyBody);
+        outcome.Value.ShouldBeNull();
     }
 }
