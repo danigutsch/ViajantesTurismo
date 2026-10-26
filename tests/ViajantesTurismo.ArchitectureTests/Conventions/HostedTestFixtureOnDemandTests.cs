@@ -95,6 +95,22 @@ public sealed class HostedTestFixtureOnDemandTests
     }
 
     [Fact]
+    public void Fixture_starts_clamav_with_the_definitions_of_its_image()
+    {
+        // Arrange
+        var fixture = HostedTestFixtureSource.Read();
+
+        // Act
+        var creation = HostedTestFixtureSource.Body(fixture, "private async Task<InfrastructureHost> CreateInfrastructure(");
+
+        // Assert
+        creation.ShouldContain(
+            "builder.AddClamAv(ResourceNames.ClamAv).WithFreshClam(false)",
+            StringComparison.Ordinal,
+            "a test run must not download virus definitions from the ClamAV mirrors when the container starts");
+    }
+
+    [Fact]
     public void Fixture_reads_infrastructure_endpoints_only_after_the_resource_is_healthy()
     {
         // Arrange
