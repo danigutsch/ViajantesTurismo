@@ -51,6 +51,24 @@ public class RowToCustomerMapperTests
         result.Value.AccommodationPreferences.BedType.ShouldBe(BedType.DoubleBed);
     }
 
+    [Fact]
+    public void MapCustomer_maps_a_valid_companion_id()
+    {
+        // Arrange
+        var companionId = Guid.NewGuid();
+        var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string>
+        {
+            ["CompanionId"] = companionId.ToString()
+        });
+
+        // Act
+        var result = RowToCustomerMapper.MapCustomer(document, row, new DateOnly(2030, 1, 1));
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.AccommodationPreferences.CompanionId.ShouldBe(companionId);
+    }
+
     private const string MultipleValidationErrorsDetailMessage = "Multiple validation errors occurred.";
     [Fact]
     public void MapCustomer_when_row_contains_all_supported_columns_returns_customer()

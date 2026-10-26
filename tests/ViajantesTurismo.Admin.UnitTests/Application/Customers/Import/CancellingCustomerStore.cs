@@ -8,6 +8,11 @@ internal sealed class CancellingCustomerStore(
     CancellationTokenSource cancellation,
     bool cancelOnAdd) : ICustomerStore
 {
+    public int EmailExistsCallCount
+    {
+        get; private set;
+    }
+
     public void Add(Customer customer)
     {
         inner.Add(customer);
@@ -25,6 +30,7 @@ internal sealed class CancellingCustomerStore(
 
     public async Task<bool> EmailExists(string email, CancellationToken ct)
     {
+        EmailExistsCallCount++;
         var exists = await inner.EmailExists(email, ct);
         if (!cancelOnAdd)
         {
