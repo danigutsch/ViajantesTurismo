@@ -48,7 +48,6 @@ public sealed class CsvDocument : IImportDocument
     /// </exception>
     public static Result<CsvDocument> Create(IReadOnlyList<string> headers, IReadOnlyList<CsvRow> rows)
     {
-        ArgumentNullException.ThrowIfNull(headers);
         ArgumentNullException.ThrowIfNull(rows);
 
         var created = PandaBear.Tabular.CsvDocument.Create(headers, rows.Select(row => row.Row).ToArray());

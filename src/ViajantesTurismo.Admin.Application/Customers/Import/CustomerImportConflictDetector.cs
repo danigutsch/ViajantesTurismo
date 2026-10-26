@@ -31,22 +31,12 @@ public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
         conflictLineNumbers.UnionWith(DuplicateDetector.FindDuplicateNameLineNumbers(document));
         conflictLineNumbers.UnionWith(await FindDuplicateEmailLineNumbersAgainstDatabase(document, ct));
 
-        if (conflictLineNumbers.Count == 0)
-        {
-            return [];
-        }
-
         var seenEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var conflicts = new List<ImportConflictDto>();
 
         foreach (var lineNumber in conflictLineNumbers.Order())
         {
             var rowIndex = lineNumber - 2;
-            if (rowIndex < 0 || rowIndex >= document.Rows.Count)
-            {
-                continue;
-            }
-
             var row = document.Rows[rowIndex];
             if (!row.TryGetByHeader(document.Headers, ImportHeaders.Email, out var email) || string.IsNullOrWhiteSpace(email))
             {
@@ -69,8 +59,6 @@ public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
         CsvDocument document,
         CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(document);
-
         var duplicateLineNumbers = new List<int>();
 
         foreach (var (row, lineNumber) in document.Rows.Select((row, index) => (row, index + 2)))

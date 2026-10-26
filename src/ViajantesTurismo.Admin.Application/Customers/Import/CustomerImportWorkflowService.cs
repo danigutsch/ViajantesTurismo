@@ -108,8 +108,7 @@ public sealed class CustomerImportWorkflowService(
         }
 
         var persistenceErrors = successCandidates
-            .GroupBy(candidate => candidate.Email, StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
+            .DistinctBy(candidate => candidate.Email, StringComparer.OrdinalIgnoreCase)
             .Select(candidate => new ImportErrorRowDto(
                 candidate.LineNumber,
                 EmailFieldName,
@@ -160,7 +159,7 @@ public sealed class CustomerImportWorkflowService(
         {
             return new ImportSummaryAnalysis(
                 [],
-                [new ImportErrorRowDto(1, "Csv", documentResult.ErrorDetails?.Detail ?? "Invalid CSV content")]);
+                [new ImportErrorRowDto(1, "Csv", documentResult.ErrorDetails.Detail)]);
         }
 
         var document = documentResult.Value;
@@ -190,7 +189,7 @@ public sealed class CustomerImportWorkflowService(
             var customerResult = RowToCustomerMapper.MapCustomer(document, row, today);
             if (customerResult.IsFailure)
             {
-                var (field, message) = GetValidationFieldAndMessage(customerResult);
+                var (field, message) = GetValidationFieldAndMessage(customerResult.ErrorDetails);
                 errorRows.Add(new ImportErrorRowDto(lineNumber, field, message, normalizedEmail));
                 continue;
             }
@@ -224,17 +223,15 @@ public sealed class CustomerImportWorkflowService(
         return new ImportSummaryAnalysis(successCandidates, errorRows);
     }
 
-    private static (string? Field, string Message) GetValidationFieldAndMessage(Result<Customer> result)
+    private static (string? Field, string Message) GetValidationFieldAndMessage(ResultError details)
     {
-        var details = result.ErrorDetails;
-        if (details?.ValidationErrors is { Count: > 0 } validationErrors)
+        if (details.ValidationErrors is { Count: > 0 } validationErrors)
         {
             var first = validationErrors.First();
-            var message = first.Value.Count > 0 ? first.Value[0] : details.Detail;
-            return (first.Key, message);
+            return (first.Key, first.Value[0]);
         }
 
-        return (null, details?.Detail ?? "Row failed validation.");
+        return (null, details.Detail);
     }
 
     private static ConflictDecision ResolveDecision(
