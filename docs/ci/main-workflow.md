@@ -237,3 +237,9 @@ record-symbols`, and uploads `TestResults/symbol-evidence.json` with the Release
 `solution-build-evidence`. `Quality Gate` verifies those revision-bound symbols inside `coverage verify`;
 it does not rebuild the full solution after tests. A changed file that no report lists passes only when
 a recorded portable PDB maps no executable code to it.
+
+The job saves the locked restore output and runs `sharedkernel-ci verify-restore-warnings` on it before the build.
+A high or critical NuGet vulnerability advisory (`NU1903`, `NU1904`) fails the job and names each package and version;
+lower severities and other NuGet warnings stay advisory. `sharedkernel-ci warning-summary` then writes the
+blocking and advisory totals to the job summary, also when the verification fails. Restore itself is unchanged, so
+`--locked-mode` still rejects drift.
