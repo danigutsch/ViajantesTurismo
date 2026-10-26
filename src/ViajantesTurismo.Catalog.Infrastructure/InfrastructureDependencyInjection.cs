@@ -250,14 +250,6 @@ public static class InfrastructureDependencyInjection
         where TContext : DbContext
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        if (!builder.Environment.IsDevelopment())
-        {
-            builder.Services.ApplyDbContextOptionConfigurations<TContext>(options);
-            return;
-        }
-
-        options.EnableDetailedErrors();
-        options.EnableSensitiveDataLogging();
-        builder.Services.ApplyDbContextOptionConfigurations<TContext>(options);
+        builder.Services.ApplyDbContextOptionConfigurations<TContext>(options, builder.Environment.IsDevelopment());
     }
 }

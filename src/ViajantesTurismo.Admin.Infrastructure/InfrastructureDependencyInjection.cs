@@ -79,12 +79,6 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        if (builder.Environment.IsDevelopment())
-        {
-            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
-            builder.Services.AddDbContextDevelopmentDiagnostics<AdminReadDbContext>();
-        }
-
         builder.AddTourCapacityMutationLock();
         builder.AddAdminWriteDbContext();
         builder.AddAdminReadDbContext();
@@ -142,11 +136,6 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        if (builder.Environment.IsDevelopment())
-        {
-            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
-        }
-
         builder.AddAdminWriteDbContext();
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
@@ -178,11 +167,6 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        if (builder.Environment.IsDevelopment())
-        {
-            builder.Services.AddDbContextDevelopmentDiagnostics<AdminWriteDbContext>();
-        }
-
         builder.AddAdminWriteDbContext();
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
@@ -199,7 +183,9 @@ public static class InfrastructureDependencyInjection
             configureDbContextOptions: options =>
             {
                 ConfigureNpgsqlTracing(options);
-                builder.Services.ApplyDbContextOptionConfigurations<AdminBrandingTransportDbContext>(options);
+                builder.Services.ApplyDbContextOptionConfigurations<AdminBrandingTransportDbContext>(
+                    options,
+                    builder.Environment.IsDevelopment());
             });
         // Unbounded on purpose: while the projection is recovering, fenced events must stay pending until the
         // authorized reseed, not be poisoned by the fence itself. Old-epoch events are quarantined in the inbox.
@@ -269,7 +255,7 @@ public static class InfrastructureDependencyInjection
     {
         ConfigureNpgsqlTracing(options);
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-        builder.Services.ApplyDbContextOptionConfigurations<AdminReadDbContext>(options);
+        builder.Services.ApplyDbContextOptionConfigurations<AdminReadDbContext>(options, builder.Environment.IsDevelopment());
     }
 
     private static void ConfigureAdminWriteDbContext<TApplicationBuilder>(
@@ -278,7 +264,7 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         ConfigureNpgsqlTracing(options);
-        builder.Services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+        builder.Services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options, builder.Environment.IsDevelopment());
     }
 
     private static void ConfigureNpgsqlTracing(DbContextOptionsBuilder options)
