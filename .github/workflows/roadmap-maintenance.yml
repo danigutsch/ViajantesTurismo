@@ -75,11 +75,11 @@ jobs:
       ROADMAP_PLAN_DIGEST: ${{ needs.plan.outputs.plan_digest }}
       ROADMAP_ARTIFACT_DIGEST: ${{ needs.plan.outputs.artifact_digest }}
     steps:
-      - name: Checkout planned base
+      - name: Checkout current main
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-          ref: ${{ needs.plan.outputs.base_sha }}
+          ref: main
           persist-credentials: false
 
       - name: Set up repository tool
