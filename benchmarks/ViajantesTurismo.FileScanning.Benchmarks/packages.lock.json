@@ -22,15 +22,15 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.209.1, )",
-        "resolved": "0.1.0-alpha.209.1",
-        "contentHash": "n1kMBi0bpZCxmCETt2WRylI6pls9yPd/StJOk2TYJP+m0kiWOq6BE2uZQZtwSfMjLjfzyoovcr1a99spHqGD5A=="
+        "requested": "[0.1.0-alpha.214.1, )",
+        "resolved": "0.1.0-alpha.214.1",
+        "contentHash": "oIuhhPhV6HUOM+FsVC+4q7TbxwXkwGX7ALm3ZMuj3dKOKG25mPAQyunFSC6bVeq9jj8wkuqJhokFxBzmiTJhtQ=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.209.1, )",
-        "resolved": "0.1.0-alpha.209.1",
-        "contentHash": "NmeJIsQH1EjXw/zoPkZzfr0dediOD5e7KPIJdfQPVdVCZ0ndi6PeCrNrRjztlsz4ogUyj2+LAmy021atd9KByg=="
+        "requested": "[0.1.0-alpha.214.1, )",
+        "resolved": "0.1.0-alpha.214.1",
+        "contentHash": "sa9Suj5+3H3A4IXuVFleMGbO3SNsLOW8b1UAPl8F4RGD1oCHy4XHGNguoFrcDPm9xlMEGm0EDKPLf9UT9NsUTQ=="
       },
       "BenchmarkDotNet.Annotations": {
         "type": "Transitive",

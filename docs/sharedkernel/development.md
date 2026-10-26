@@ -6,17 +6,18 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.209.1` at clean library revision
-[`19d4092bb862664545eb489d66620efa01a49590`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/19d4092bb862664545eb489d66620efa01a49590).
-It makes `sharedkernel-ci install-playwright` report the duration of its msbuild evaluation and installer, stop after
-15 minutes, and install only the Chromium headless shell with `--only-shell`; the `hosted-tests` slice sets
-`playwright.onlyShell`. All 80 package hashes match the unchanged artifacts from
-[CI run 40315281440](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40315281440). The
+The published candidate is `0.1.0-alpha.214.1` at clean library revision
+[`e5293567c645b1ae8b4557ed75bd82689eaa7c8b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/e5293567c645b1ae8b4557ed75bd82689eaa7c8b).
+It makes `sharedkernel-ci` write each line of the Playwright installer to standard error with its UTC time as it
+arrives, so the hosted log shows whether the operating system dependencies or the browser downloads take the time. All
+80 package hashes match the unchanged artifacts from
+[CI run 40324435724](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40324435724). The
 unchanged 80 packages, 55 symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.209.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.209.1).
+[`v0.1.0-alpha.214.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.214.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.191.1` at revision `96c6684921e227441da56d8883c2a59bba29b09e`,
+The previous previews `0.1.0-alpha.209.1` at revision `19d4092bb862664545eb489d66620efa01a49590`,
+`0.1.0-alpha.191.1` at revision `96c6684921e227441da56d8883c2a59bba29b09e`,
 `0.1.0-alpha.187.1` at revision `12864e0bc2a490d5343f5a11ff7876919ea6c190`,
 `0.1.0-alpha.171.1` at revision `753f94c9a8dfd09084cb3b0e6d49739c0a16cac1`,
 `0.1.0-alpha.169.1` at revision `72625116fe443f123bf07f64c02aeb20c1456efd`,
