@@ -85,11 +85,9 @@
     "PandaBear.SharedKernel.Versioning.Tool.0.1.0-alpha.214.1.nupkg": "712e8d93a38c3abb992886b1b94d85927df77ce55e78c7f1692fd56eb9cf375c"
   },
   "consumerCompatibility": "pending",
-  "linuxPackageConsumption": "passed",
-  "windowsPackageConsumption": "passed",
+  "linuxPackageConsumption": "pending",
+  "windowsPackageConsumption": "pending",
   "apiBaselineComparison": "pending",
   "apiValidation": "passed",
-  "stablePromotion": "pending",
-  "linuxNativeAot": "passed",
-  "windowsNativeAot": "passed"
+  "stablePromotion": "pending"
 }
