@@ -141,7 +141,8 @@
         "project": "tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj",
         "browsers": [
           "chromium"
-        ]
+        ],
+        "onlyShell": true
       }
     }
   ],
