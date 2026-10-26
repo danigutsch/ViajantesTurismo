@@ -16,7 +16,7 @@ specialized docs instead of repeating the same policy.
 | Testing | [Test guidelines](TEST_GUIDELINES.md) | [Tests README](../tests/README.md), [BDD guide](../tests/BDD_GUIDE.md) |
 | Architecture and ADRs | [Architecture overview](architecture/README.md) and [Architecture decisions](ARCHITECTURE_DECISIONS.md) | [Bounded contexts](bounded-contexts/Admin.md), [Domain aggregates](domain/AGGREGATES.md) |
 | Domain validation | [Domain validation](DOMAIN_VALIDATION.md) | [Rich domain model](domain/RICH_DOMAIN_MODEL.md), [Domain aggregates](domain/AGGREGATES.md), [Glossary](domain/GLOSSARY.md) |
-| API request and client boundaries | [API request shape policy](API_REQUEST_SHAPES.md) and [API client boundaries](API_CLIENT_BOUNDARIES.md) | [API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |
+| API request and client boundaries | [API request shape policy](API_REQUEST_SHAPES.md), [API I/O and streaming contracts](API_IO_AND_STREAMING.md), and [API client boundaries](API_CLIENT_BOUNDARIES.md) | [API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |
 | Async integration contracts | [Async contracts](ASYNC_CONTRACTS.md) | [AsyncAPI contract](asyncapi.json), [Events and messaging](domain/EVENTS_AND_MESSAGING.md) |
 | Configuration and feature flags | [Configuration standards](CONFIGURATION.md) | [OpenTelemetry custom telemetry](OPEN_TELEMETRY.md) |
 | Documentation governance | [Documentation governance](DOCUMENTATION_GOVERNANCE.md) | [Architecture decisions](ARCHITECTURE_DECISIONS.md), [Local tool security](local-tool-security.md) |
@@ -83,6 +83,7 @@ outdated behavior.
 - [Documentation governance](DOCUMENTATION_GOVERNANCE.md)
 - [Documentation inventory and consolidation](documentation-inventory.md)
 - [API request shape policy](API_REQUEST_SHAPES.md)
+- [API endpoint I/O and streaming contracts](API_IO_AND_STREAMING.md)
 - [API versioning](API_VERSIONING.md)
 - [Async contracts](ASYNC_CONTRACTS.md)
 - [AsyncAPI contract](asyncapi.json)

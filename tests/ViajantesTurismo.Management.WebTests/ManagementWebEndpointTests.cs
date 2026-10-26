@@ -90,6 +90,36 @@ public sealed class ManagementWebEndpointTests
     }
 
     [Fact]
+    public async Task Management_media_preview_ignores_range_requests_and_disposes_the_upstream_stream_after_the_response()
+    {
+        // Arrange
+        var imageId = Guid.CreateVersion7();
+        using var catalogResponse = new HttpResponseMessage(HttpStatusCode.OK);
+        var upstreamStream = new MemoryStream("image"u8.ToArray());
+        var catalogApi = new FakeCatalogToursApiClient
+        {
+            Media = new PublicMediaObjectResponse(catalogResponse, upstreamStream, "image/jpeg")
+        };
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
+            Xunit.TestContext.Current.CancellationToken,
+            catalogApi);
+        using var client = host.GetTestClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"/catalog/media/images/{imageId}/preview/640/jpg", UriKind.Relative));
+        request.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(1, 2);
+
+        // Act
+        using var response = await client.SendAsync(request, Xunit.TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsByteArrayAsync(Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Headers.AcceptRanges.ShouldBeEmpty();
+        response.Content.Headers.ContentRange.ShouldBeNull();
+        content.ShouldBe("image"u8.ToArray());
+        upstreamStream.CanRead.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task Management_media_preview_returns_non_cacheable_service_unavailable_when_catalog_request_fails()
     {
         // Arrange

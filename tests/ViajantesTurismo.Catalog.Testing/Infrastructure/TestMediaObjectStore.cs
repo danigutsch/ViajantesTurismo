@@ -10,10 +10,15 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
 
     private const int MaxObjectKeyLength = CatalogDomainLimits.MaxMediaObjectKeyLength;
 
+    private readonly List<DisposalTrackingStream> openedStreams = [];
+
     public bool ThrowFileNotFoundOnOpenRead
     {
         get; set;
     }
+
+    /// <summary>Gets the streams handed out by <see cref="OpenRead"/>, in call order.</summary>
+    public IReadOnlyList<DisposalTrackingStream> OpenedStreams => openedStreams;
 
     public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
     {
@@ -45,7 +50,9 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
         using var content = new MemoryStream();
         await request.Content.CopyToAsync(content, ct).ConfigureAwait(false);
 
-        return new MediaObjectReadResult(objectKey, new MemoryStream(content.ToArray()), request.ContentType, request.Length, request.Checksum);
+        var stream = new DisposalTrackingStream(new MemoryStream(content.ToArray()));
+        openedStreams.Add(stream);
+        return new MediaObjectReadResult(objectKey, stream, request.ContentType, request.Length, request.Checksum);
     }
 
     public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
