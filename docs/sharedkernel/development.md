@@ -9,8 +9,8 @@ documentation configuration, CI and coverage policy, setup scripts, and compatib
 The published candidate is `0.1.0-alpha.222.1` at clean library revision
 [`37c1642dd2193d9684c45757c27710dc3dff5b30`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/37c1642dd2193d9684c45757c27710dc3dff5b30).
 It makes `HttpOutcome<TValue>` retain the response `ETag` header exactly as received, so a contract client can send the
-validator of a successful read as `If-Match` on its next write (SharedKernel #142). It also adds the Filer UI, the
-shared EF diagnostics flag and the shared package-consumption helpers (SharedKernel #143). All
+validator of a successful read as `If-Match` on its next write. It also adds the Filer UI, the
+shared EF diagnostics flag and the shared package-consumption helpers. All
 80 package hashes match the unchanged artifacts from
 [CI run 40389051320](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40389051320). The
 unchanged 80 packages, 55 symbol archives and manifest are published in GitHub prerelease
