@@ -300,7 +300,18 @@ jobs:
           restore-local-tools: "false"
           trust-dev-certificate: "false"
       - name: Restore all solution projects
-        run: dotnet restore ViajantesTurismo.slnx --locked-mode
+        id: restore
+        shell: bash
+        run: |
+          mkdir -p TestResults
+          dotnet restore ViajantesTurismo.slnx --locked-mode 2>&1 | tee TestResults/restore.log
+      - name: Verify restore and audit warnings
+        id: verify-restore
+        if: ${{ !cancelled() && steps.restore.outcome != 'skipped' }}
+        run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- verify-restore-warnings --log TestResults/restore.log --report TestResults/restore-warnings.json
+      - name: Publish CI warning summary
+        if: ${{ !cancelled() && steps.restore.outcome != 'skipped' }}
+        run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- warning-summary --report TestResults/restore-warnings.json --summary "$GITHUB_STEP_SUMMARY"
       - name: Build all solution projects
         run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
       - name: Record revision and symbol hashes

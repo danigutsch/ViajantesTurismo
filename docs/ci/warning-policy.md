@@ -19,7 +19,7 @@ a blocker; an unknown or incomplete analysis is not evidence of success.
 | Tool or signal | Blocking | Budgeted debt or advisory | Enforcement owner and current boundary |
 | --- | --- | --- | --- |
 | Build/compiler/analyzers | Build errors and unsuppressed warning diagnostics under warnings-as-errors; actionable correctness, security, or lifetime failures | Reviewed path/rule suppressions are debt; suggestion/info diagnostics remain visible advice | Application owner fixes findings; repository maintainers own `Directory.Build.props`, `.editorconfig`, and the required full-solution Quality Gate build |
-| NuGet restore/audit | Failed restore, invalid lock graph, and diagnostics currently promoted by build/restore configuration; actionable high/critical vulnerability decisions require resolution or explicit reviewed exception | Lower-confidence/advisory diagnostics remain visible; selected audit-warning promotion is separate enforcement work, not assumed complete here | Dependency owner triages packages and transitive impact; CI maintainers own locked restores; current audit configuration is enabled, all dependencies, high threshold |
+| NuGet restore/audit | Failed restore, invalid lock graph, and diagnostics currently promoted by build/restore configuration; actionable high/critical vulnerability decisions require resolution or explicit reviewed exception | Lower-confidence/advisory diagnostics remain visible; `NU1903` and `NU1904` fail the `Solution Build` job through `verify-restore-warnings`; lower severities stay advisory | Dependency owner triages packages and transitive impact; CI maintainers own locked restores; current audit configuration is enabled, all dependencies, high threshold |
 | Dependency Review | Actionable vulnerability/license failures selected by its workflow configuration | Findings outside its configured threshold require review; absence from a dependency diff is not a clean whole-tree audit | Repository/security maintainers own the required Dependency Review check and configuration |
 | Secret scanning | Confirmed secret detections and failed required scanning execution | Reviewed false-positive allowlist entries are debt, never permission to retain a real secret | Security/repository maintainers own Secret Scan; application owner rotates/removes exposed credentials through the incident path |
 | Lint | Nonzero required Markdown, links, JSON, Gherkin, shell, workflow, encoding, and generated-document checks | Optional spelling suggestions are advisory; unrelated existing debt needs an explicit baseline before it can be budgeted | Documentation/workflow owners fix their files; repository maintainers own Lint and Actionlint configuration |
@@ -36,8 +36,9 @@ an account, scanner, secrets, or remote check.
 Do not bypass required failures with `continue-on-error`, ignored exit codes, broad catch wrappers,
 or unconditional successful aggregate checks. Optional advisory steps must be explicitly identified
 and must not contain blocker work. Preserve fork safety and documentation-only exclusions;
-"not run" must be distinguishable from "passed" in review evidence. Consolidated warning summaries
-and selected NuGet diagnostic enforcement remain separate implementation work.
+"not run" must be distinguishable from "passed" in review evidence. The `Solution Build` job enforces
+high and critical NuGet vulnerability advisories and publishes their totals with `sharedkernel-ci warning-summary`;
+reports from other tools and accepted-debt counts remain separate implementation work.
 
 ## Exceptions and baseline
 
