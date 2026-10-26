@@ -216,15 +216,12 @@ public sealed partial class AppHostOrchestrationTests
         // Arrange
         var fixtureText = HostedTestFixtureSource.ReadNormalized();
 
-        // Act
-        var usesBoundedStartup = fixtureText.Contains("StartBudget = TimeSpan.FromMinutes(3);", StringComparison.Ordinal)
-            && fixtureText.Contains(
-                "AspireTestApplication.Start(builder, profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [",
-                StringComparison.Ordinal)
-            && fixtureText.Contains("], StartBudget, ct);", StringComparison.Ordinal);
-
         // Assert
-        usesBoundedStartup.ShouldBeTrue();
+        fixtureText.ShouldContain("StartBudget = TimeSpan.FromMinutes(3);", StringComparison.Ordinal, "the start of a stack is bounded");
+        fixtureText.ShouldContain(
+            "AspireTestApplication.Start(builder, profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [",
+            StringComparison.Ordinal,
+            "the System stack awaits the API and both web applications");
     }
 
     [Fact]
@@ -233,12 +230,12 @@ public sealed partial class AppHostOrchestrationTests
         // Arrange
         var fixtureText = HostedTestFixtureSource.ReadNormalized();
 
-        // Act
-        var usesBoundedStartup = fixtureText.Contains("StartBudget = TimeSpan.FromMinutes(3);", StringComparison.Ordinal)
-            && fixtureText.Contains(": [ResourceNames.Api, ResourceNames.CatalogApi], StartBudget, ct);", StringComparison.Ordinal);
-
         // Assert
-        usesBoundedStartup.ShouldBeTrue();
+        fixtureText.ShouldContain("StartBudget = TimeSpan.FromMinutes(3);", StringComparison.Ordinal, "the start of a stack is bounded");
+        fixtureText.ShouldContain(
+            ": [ResourceNames.Api, ResourceNames.CatalogApi], StartBudget, ct);",
+            StringComparison.Ordinal,
+            "the Admin stack awaits the API and the Catalog API within the start budget");
     }
 
     [Fact]

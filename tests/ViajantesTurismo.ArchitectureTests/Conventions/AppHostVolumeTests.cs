@@ -17,9 +17,11 @@ public sealed class AppHostVolumeTests
         AppHost.AppHostComposition.AddProductResources(builder, HostedProfile.Full);
         var clamAv = builder.Resources.OfType<ClamAvResource>().ShouldHaveSingleItem();
         var seaweedFs = builder.Resources.OfType<SeaweedFsResource>().ShouldHaveSingleItem();
+        var clamAvMounts = clamAv.Annotations.OfType<ContainerMountAnnotation>().ToArray();
+        var seaweedFsMounts = seaweedFs.Annotations.OfType<ContainerMountAnnotation>().ToArray();
 
         // Assert
-        clamAv.Annotations.OfType<ContainerMountAnnotation>().ShouldHaveSingleItem().Source.ShouldBe("clamav-definitions");
-        seaweedFs.Annotations.OfType<ContainerMountAnnotation>().ShouldHaveSingleItem().Source.ShouldBe("seaweedfs-data");
+        clamAvMounts.ShouldHaveSingleItem().Source.ShouldBe("clamav-definitions");
+        seaweedFsMounts.ShouldHaveSingleItem().Source.ShouldBe("seaweedfs-data");
     }
 }
