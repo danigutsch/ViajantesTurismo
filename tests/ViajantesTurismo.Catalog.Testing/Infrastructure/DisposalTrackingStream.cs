@@ -1,9 +1,17 @@
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 /// <summary>A read-only stream wrapper that records whether it was disposed.</summary>
-public sealed class DisposalTrackingStream(Stream inner) : Stream
+public sealed class DisposalTrackingStream(Stream inner, bool stallAfterFirstRead = false) : Stream
 {
+    private bool hasRead;
+
     public bool IsDisposed
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets a value indicating whether a stalled read observed cancellation.</summary>
+    public bool StalledReadWasCancelled
     {
         get; private set;
     }
@@ -26,7 +34,24 @@ public sealed class DisposalTrackingStream(Stream inner) : Stream
 
     public override int Read(byte[] buffer, int offset, int count) => inner.Read(buffer, offset, count);
 
-    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => inner.ReadAsync(buffer, cancellationToken);
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        if (stallAfterFirstRead && hasRead)
+        {
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                StalledReadWasCancelled = true;
+                throw;
+            }
+        }
+
+        hasRead = true;
+        return await inner.ReadAsync(stallAfterFirstRead && buffer.Length > 1 ? buffer[..1] : buffer, cancellationToken).ConfigureAwait(false);
+    }
 
     public override long Seek(long offset, SeekOrigin origin) => inner.Seek(offset, origin);
 

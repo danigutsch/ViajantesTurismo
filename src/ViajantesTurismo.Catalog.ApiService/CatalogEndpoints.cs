@@ -74,6 +74,9 @@ internal static class CatalogEndpoints
         managementCatalog.MapGet("/tours/{id:guid}/images", ListTourImages)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/media/images/{id:guid}/preview/{width:int}/{format}", GetManagementMediaPreview)
+            .Produces<Stream>(StatusCodes.Status200OK, MediaImageContentTypes[0], MediaImageContentTypes[1..])
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapPost("/tours/{id:guid}/images", UploadTourImage)
             .Accepts<MediaImageUploadFormDto>("multipart/form-data")
@@ -121,6 +124,8 @@ internal static class CatalogEndpoints
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/media/{id:guid}/{width:int}/{format}", GetPublicMedia)
+            .Produces<Stream>(StatusCodes.Status200OK, MediaImageContentTypes[0], MediaImageContentTypes[1..])
+            .Produces(StatusCodes.Status404NotFound)
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/content/{**key}", GetPublicContent)
@@ -1006,6 +1011,8 @@ internal static class CatalogEndpoints
             FileSizeBytes = variant.FileSizeBytes
         };
     }
+
+    private static readonly string[] MediaImageContentTypes = ["image/avif", "image/jpeg", "image/png", "image/webp"];
 
     private static string? GetMediaContentType(string format) => format.Trim().ToUpperInvariant() switch
     {

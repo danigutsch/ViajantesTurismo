@@ -48,4 +48,35 @@ public sealed class MediaStreamingContractTests
         // Assert
         scenario.ObjectStore.OpenedStreams.ShouldHaveSingleItem().IsDisposed.ShouldBeTrue();
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Media_delivery_cancels_the_stalled_read_and_disposes_the_stream_when_the_client_disconnects(bool isPublic)
+    {
+        // Arrange
+        await using var scenario = await MediaDeliveryScenario.Create(stallReadsAfterFirstByte: true);
+        using var client = scenario.Factory.CreateClient();
+        var response = await client.GetAsync(
+            new Uri(scenario.Route(isPublic), UriKind.Relative),
+            HttpCompletionOption.ResponseHeadersRead,
+            TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var firstByte = new byte[1];
+        var bytesRead = await body.ReadAsync(firstByte, TestContext.Current.CancellationToken);
+        bytesRead.ShouldBe(1);
+
+        // Act
+        response.Dispose();
+        var stream = scenario.ObjectStore.OpenedStreams.ShouldHaveSingleItem();
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(10));
+        while (!stream.IsDisposed)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
+        }
+
+        // Assert
+        stream.StalledReadWasCancelled.ShouldBeTrue();
+    }
 }
