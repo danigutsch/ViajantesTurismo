@@ -6,18 +6,18 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.191.1` at clean library revision
-[`96c6684921e227441da56d8883c2a59bba29b09e`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/96c6684921e227441da56d8883c2a59bba29b09e).
-It aligns the ClamAV, SeaweedFS and Grafana hosting resources with the Aspire integrations: every resource exposes
-`PrimaryEndpoint`, `Host` and `Port`, the ClamAV and SeaweedFS resource types move to `Aspire.Hosting.ApplicationModel`
-like the Grafana ones, and ClamAV and SeaweedFS mount no volume unless `WithDataVolume` or `WithDataBindMount` is
-called. All 80 package hashes match the unchanged artifacts from
-[CI run 40284890189](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40284890189). The
+The published candidate is `0.1.0-alpha.209.1` at clean library revision
+[`19d4092bb862664545eb489d66620efa01a49590`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/19d4092bb862664545eb489d66620efa01a49590).
+It makes `sharedkernel-ci install-playwright` report the duration of its msbuild evaluation and installer, stop after
+15 minutes, and install only the Chromium headless shell with `--only-shell`; the `hosted-tests` slice sets
+`playwright.onlyShell`. All 80 package hashes match the unchanged artifacts from
+[CI run 40315281440](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40315281440). The
 unchanged 80 packages, 55 symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.191.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.191.1).
+[`v0.1.0-alpha.209.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.209.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.187.1` at revision `12864e0bc2a490d5343f5a11ff7876919ea6c190`,
+The previous previews `0.1.0-alpha.191.1` at revision `96c6684921e227441da56d8883c2a59bba29b09e`,
+`0.1.0-alpha.187.1` at revision `12864e0bc2a490d5343f5a11ff7876919ea6c190`,
 `0.1.0-alpha.171.1` at revision `753f94c9a8dfd09084cb3b0e6d49739c0a16cac1`,
 `0.1.0-alpha.169.1` at revision `72625116fe443f123bf07f64c02aeb20c1456efd`,
 `0.1.0-alpha.167.1` at revision `301f7fcce859e4bb5237b2e4a9abaefc71b4b90a`,
