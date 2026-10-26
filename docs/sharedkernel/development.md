@@ -6,24 +6,18 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.210.1` at clean library revision
-[`768d4c3994ff6a88dbdd25ab713e13f72e762fad`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/768d4c3994ff6a88dbdd25ab713e13f72e762fad).
-`sharedkernel-ci` reads an optional `openApi[].preserveEnvironment` list of parent environment variables that the target's
-build keeps; every `openApi` target of `.config/sharedkernel-ci.json` lists `REMOTE_CONTAINERS`, which selects the
-container build paths. Names that look like credentials, and loader or runtime-hook variables, are rejected. The k6
-container run directory is writable for the container user, and a container run that exits 0 without `k6-summary.json`
-fails with exit code 2. `AddK6Scenario` writes `k6.log` and `k6-console.log` next to the summary.
-`sharedkernel-ci install-playwright` reports the duration of its msbuild evaluation and installer, stops after 15 minutes,
-and installs only the Chromium headless shell with `--only-shell`; the `hosted-tests` slice sets `playwright.onlyShell`.
-All 80 package hashes match the unchanged artifacts from
-[CI run 40315305723](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40315305723). The unchanged
-80 packages, 55 symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.210.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.210.1).
-The pin records Linux/Windows package consumption and NativeAOT as `passed`
-([SharedKernel run 40319535538](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40319535538))
-and stable promotion as `pending`.
+The published candidate is `0.1.0-alpha.214.1` at clean library revision
+[`e5293567c645b1ae8b4557ed75bd82689eaa7c8b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/e5293567c645b1ae8b4557ed75bd82689eaa7c8b).
+It makes `sharedkernel-ci` write each line of the Playwright installer to standard error with its UTC time as it
+arrives, so the hosted log shows whether the operating system dependencies or the browser downloads take the time. All
+80 package hashes match the unchanged artifacts from
+[CI run 40324435724](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40324435724). The
+unchanged 80 packages, 55 symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.214.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.214.1).
+The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.209.1` at revision `19d4092bb862664545eb489d66620efa01a49590`,
+The previous previews `0.1.0-alpha.210.1` at revision `768d4c3994ff6a88dbdd25ab713e13f72e762fad`,
+`0.1.0-alpha.209.1` at revision `19d4092bb862664545eb489d66620efa01a49590`,
 `0.1.0-alpha.191.1` at revision `96c6684921e227441da56d8883c2a59bba29b09e`,
 `0.1.0-alpha.187.1` at revision `12864e0bc2a490d5343f5a11ff7876919ea6c190`,
 `0.1.0-alpha.171.1` at revision `753f94c9a8dfd09084cb3b0e6d49739c0a16cac1`,
