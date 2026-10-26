@@ -387,3 +387,19 @@ across all lock files adds nothing and removes nothing. The workflow still permi
 `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability threshold or
 native distribution gate was relaxed. Registry publication and the native distribution obligations remain outside
 this approval.
+
+## Aspire resource conventions candidate
+
+Candidate `0.1.0-alpha.191.1` uses clean library revision
+`96c6684921e227441da56d8883c2a59bba29b09e`. It aligns the ClamAV, SeaweedFS and Grafana hosting resources with the
+Aspire integrations: the resource types move to `Aspire.Hosting.ApplicationModel`, ClamAV and SeaweedFS mount no
+volume unless `WithDataVolume` or `WithDataBindMount` is called, and every resource exposes `PrimaryEndpoint`, `Host`
+and `Port`. All 80 archive hashes were verified against the CI artifacts of
+run [40284890189](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40284890189) and the GitHub
+prerelease manifest.
+
+Against application main `896ba74d7` (candidate `0.1.0-alpha.187.1`), the external package version/content-hash set
+across all lock files adds nothing and removes nothing. The workflow still permits only the same exact StreamJsonRpc
+`2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability threshold or
+native distribution gate was relaxed. Registry publication and the native distribution obligations remain outside
+this approval.
