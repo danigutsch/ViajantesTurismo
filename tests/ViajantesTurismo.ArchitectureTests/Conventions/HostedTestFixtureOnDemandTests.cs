@@ -81,7 +81,8 @@ public sealed class HostedTestFixtureOnDemandTests
         var startCommands = HostedTestFixtureSource.Count(fixture, "KnownResourceCommands.StartCommand");
         var commandExecutions = HostedTestFixtureSource.Count(fixture, "ExecuteCommandAsync(");
         var startCalls = HostedTestFixtureSource.Count(fixture, "StartResource(");
-        var gatedStartCalls = HostedTestFixtureSource.Count(constructor, "StartResource(");
+        var gatedStartCalls = HostedTestFixtureSource.Count(constructor, "=> StartResource(") + HostedTestFixtureSource.Count(constructor, "return await StartResource(");
+        var constructorGets = HostedTestFixtureSource.Count(constructor, ".Get(");
         var resourcesStartedOnce = ResourceStarts.Count(resource => HostedTestFixtureSource.Count(constructor, $"StartResource({resource},") == 1);
         var gates = HostedTestFixtureSource.Count(fixture, "private readonly OnDemandResource<");
 
@@ -89,9 +90,27 @@ public sealed class HostedTestFixtureOnDemandTests
         startCommands.ShouldBe(1);
         commandExecutions.ShouldBe(1);
         startCalls.ShouldBe(ResourceStarts.Length);
-        gatedStartCalls.ShouldBe(ResourceStarts.Length);
+        gatedStartCalls.ShouldBe(ResourceStarts.Length, "a start outside a gate lambda would run when the fixture is created");
+        constructorGets.ShouldBe(1, "the pool resolver is the only gate read in the constructor");
         resourcesStartedOnce.ShouldBe(ResourceStarts.Length);
         gates.ShouldBe(ResourceStarts.Length + 1);
+    }
+
+    [Fact]
+    public void Fixture_starts_every_resource_with_the_token_its_gate_hands_out()
+    {
+        // Arrange
+        var fixture = HostedTestFixtureSource.Read();
+
+        // Act
+        var application = HostedTestFixtureSource.Body(fixture, "public Task<AspireTestApplication> GetApplication(");
+
+        // Assert
+        application.ShouldContain(
+            "startCt => StartApplication(profile, stack, startCt)",
+            StringComparison.Ordinal,
+            "a start on the token of the test that triggered it is cancelled with that test, and the gate caches the cancellation");
+        fixture.ShouldNotContain("TestContext.Current", StringComparison.Ordinal, "a start must not use the token of one test");
     }
 
     [Fact]
@@ -108,6 +127,20 @@ public sealed class HostedTestFixtureOnDemandTests
             "builder.AddClamAv(ResourceNames.ClamAv).WithFreshClam(false)",
             StringComparison.Ordinal,
             "a test run must not download virus definitions from the ClamAV mirrors when the container starts");
+    }
+
+    [Fact]
+    public void Fixture_mounts_no_data_volume()
+    {
+        // Arrange
+        var fixture = HostedTestFixtureSource.Read();
+
+        // Act
+        var creation = HostedTestFixtureSource.Body(fixture, "private async Task<InfrastructureHost> CreateInfrastructure(");
+
+        // Assert
+        creation.ShouldNotContain("WithDataVolume(", StringComparison.Ordinal, "a named volume outlives its container, so a hosted run would leave it behind");
+        creation.ShouldNotContain("WithDataBindMount(", StringComparison.Ordinal, "a hosted run keeps no state outside its containers");
     }
 
     [Fact]
