@@ -98,6 +98,19 @@ public sealed class ConsumerSetupContractTests
     }
 
     [Fact]
+    public async Task Devcontainer_setup_gives_the_user_the_local_share_directory_that_the_k6_library_materializes_into()
+    {
+        // Arrange
+        var root = RepositoryTestProcess.GetRepositoryRoot();
+
+        // Act
+        var onCreate = await File.ReadAllTextAsync(Path.Combine(root, ".devcontainer", "on-create.sh"), TestContext.Current.CancellationToken);
+
+        // Assert
+        onCreate.ShouldContain("sudo chown vscode:vscode /home/vscode/.local /home/vscode/.local/share", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Minimal_environment_builds_keep_the_container_flag_that_selects_the_container_build_paths()
     {
         // Arrange

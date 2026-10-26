@@ -25,6 +25,10 @@ sudo mkdir -p \
     "${DOTNET_INSTALL_DIR}" \
     "${BUILD_DIR}"
 
+# The mkdir above creates .local and .local/share as root when the image lacks them; tools such as the SharedKernel
+# k6 library write their per-user data under .local/share.
+sudo chown vscode:vscode /home/vscode/.local /home/vscode/.local/share
+
 sudo chown -R vscode:vscode \
     /home/vscode/.nuget \
     /home/vscode/.local/share/NuGet \
