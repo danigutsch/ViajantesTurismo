@@ -39,6 +39,35 @@ public sealed class CustomerImportWorkflowServiceTests
         clock.ReadCount.ShouldBe(1);
     }
 
+    [Theory]
+    [InlineData(1999, 12, 31, 0, 1)]
+    [InlineData(2000, 1, 1, 1, 0)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
+    public async Task Commit_captures_one_date_for_summary_and_persistence_across_midnight(int year, int month, int day, int successes, int errors)
+    {
+        // Arrange
+        var clock = new FakeTimeProvider(new DateTimeOffset(year, month, day, 23, 59, 59, TimeSpan.Zero))
+        {
+            AutoAdvance = TimeSpan.FromDays(1)
+        };
+        var store = new FakeCustomerStore();
+        var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), clock);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, clock);
+        var csv = $"{CsvHeaders}\n{CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "commit-birthday@example.com")}";
+        // Act
+        var result = await sut.Commit(csv, new Dictionary<string, string>(), TestContext.Current.CancellationToken);
+        // Assert
+        result.SuccessCount.ShouldBe(successes);
+        result.ErrorCount.ShouldBe(errors);
+        var actualValue = result.SuccessRows?.Count ?? 0;
+        actualValue.ShouldBe(successes);
+        var actualValue1 = result.ErrorRows?.Count ?? 0;
+        actualValue1.ShouldBe(errors);
+        store.AllCustomers.Count.ShouldBe(successes);
+        clock.ReadCount.ShouldBe(1);
+    }
+
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
     [Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
