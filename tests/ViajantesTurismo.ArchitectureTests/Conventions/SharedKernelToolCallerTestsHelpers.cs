@@ -22,6 +22,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
         ["@source"] = [["--feed", Placeholder], ["--repository", "danigutsch/PandaBear.SharedKernel"]],
         ["@stageSource"] = [["--feed", Placeholder], ["--repository", "danigutsch/PandaBear.SharedKernel"]],
         ["\"${stage_source[@]}\""] = [["--feed", Placeholder], ["--repository", "danigutsch/PandaBear.SharedKernel"]],
+        ["\"${reports[@]}\""] = [["--report", Placeholder]],
     };
 
     // Shell variables whose value an option restricts, mapped to every value a caller can pass; others become a placeholder.

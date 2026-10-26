@@ -249,6 +249,25 @@ jobs:
           path: "**/TestResults/**"
           retention-days: 7
 
+      - name: Write test warning report
+        if: ${{ !cancelled() && steps.run-test-slice.outcome != 'skipped' }}
+        shell: bash
+        env:
+          SLICE: ${{ matrix.id }}
+          OUTCOME: ${{ steps.run-test-slice.outcome }}
+        run: |
+          mkdir -p warning-reports
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- warning-report --tool "Tests $SLICE" --outcome "$OUTCOME" --report "warning-reports/tests-$SLICE-warnings.json"
+
+      - name: Upload warning report
+        if: ${{ !cancelled() && steps.run-test-slice.outcome != 'skipped' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          if-no-files-found: error
+          name: warning-report-tests-${{ matrix.id }}
+          path: warning-reports/tests-${{ matrix.id }}-warnings.json
+          retention-days: 7
+
   build-and-test:
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Build and Test' }}
     needs:
@@ -308,12 +327,23 @@ jobs:
       - name: Verify restore and audit warnings
         id: verify-restore
         if: ${{ !cancelled() && steps.restore.outcome != 'skipped' }}
-        run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- verify-restore-warnings --log TestResults/restore.log --report TestResults/restore-warnings.json
-      - name: Publish CI warning summary
-        if: ${{ !cancelled() && steps.restore.outcome != 'skipped' }}
-        run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- warning-summary --report TestResults/restore-warnings.json --summary "$GITHUB_STEP_SUMMARY"
+        run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- verify-restore-warnings --log TestResults/restore.log --report TestResults/restore-warnings.json --exceptions .github/ci-warning-exceptions.json
       - name: Build all solution projects
+        id: build
         run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
+      - name: Write build warning report
+        if: ${{ !cancelled() && steps.build.outcome != 'skipped' }}
+        run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- warning-report --tool Build --outcome "${{ steps.build.outcome }}" --report TestResults/build-warnings.json
+      - name: Upload warning reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          if-no-files-found: ignore
+          name: warning-report-solution-build
+          path: |
+            TestResults/restore-warnings.json
+            TestResults/build-warnings.json
+          retention-days: 7
       - name: Record revision and symbol hashes
         run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- coverage record-symbols
       - name: Upload build evidence
@@ -405,6 +435,46 @@ jobs:
           path: TestResults/coverage-gate.json
           retention-days: 14
 
+  warning-summary:
+    name: Warning Summary
+    needs:
+      - test-slices
+      - solution-build
+      - lint
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && !cancelled() }}
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
+          restore-local-tools: "false"
+          trust-dev-certificate: "false"
+      - name: Download warning reports
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: warning-report-*
+          path: warning-reports
+          merge-multiple: true
+      - name: Publish CI warning summary
+        shell: bash
+        run: |
+          reports=()
+          for report in warning-reports/*.json; do
+            test -e "$report" && reports+=(--report "$report")
+          done
+          if [ "${#reports[@]}" -eq 0 ]; then
+            echo "No warning reports were produced; no required job ran." >> "$GITHUB_STEP_SUMMARY"
+          else
+            dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- warning-summary "${reports[@]}" --summary "$GITHUB_STEP_SUMMARY"
+          fi
+
   lint:
     if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Lint' }}
@@ -494,3 +564,21 @@ jobs:
         run: |
           dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
           dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
+
+      - name: Write lint warning report
+        if: ${{ !cancelled() }}
+        shell: bash
+        env:
+          OUTCOME: ${{ job.status }}
+        run: |
+          mkdir -p warning-reports
+          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- warning-report --tool Lint --outcome "$OUTCOME" --report warning-reports/lint-warnings.json
+
+      - name: Upload warning report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          if-no-files-found: error
+          name: warning-report-lint
+          path: warning-reports/lint-warnings.json
+          retention-days: 7

@@ -6,18 +6,17 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.222.1` at clean library revision
-[`37c1642dd2193d9684c45757c27710dc3dff5b30`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/37c1642dd2193d9684c45757c27710dc3dff5b30).
-It makes `HttpOutcome<TValue>` retain the response `ETag` header exactly as received, so a contract client can send the
-validator of a successful read as `If-Match` on its next write. It also adds the Filer UI, the
-shared EF diagnostics flag and the shared package-consumption helpers. All
-80 package hashes match the unchanged artifacts from
-[CI run 40389051320](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40389051320). The
+The published candidate is `0.1.0-alpha.236.1` at clean library revision
+[`cc42e587d482ded854840cb8afae1f7baac6c6c2`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/cc42e587d482ded854840cb8afae1f7baac6c6c2).
+It adds the warning exception ledger (`verify-restore-warnings --exceptions`) and the `warning-report` command, so CI
+steps without a log can join `warning-summary`. All 80 package hashes match the unchanged artifacts from
+[CI run 40406776686](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40406776686). The
 unchanged 80 packages, 55 symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.222.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.222.1).
+[`v0.1.0-alpha.236.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.236.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.214.1` at revision `e5293567c645b1ae8b4557ed75bd82689eaa7c8b`,
+The previous previews `0.1.0-alpha.222.1` at revision `37c1642dd2193d9684c45757c27710dc3dff5b30`,
+`0.1.0-alpha.214.1` at revision `e5293567c645b1ae8b4557ed75bd82689eaa7c8b`,
 `0.1.0-alpha.210.1` at revision `768d4c3994ff6a88dbdd25ab713e13f72e762fad`,
 `0.1.0-alpha.209.1` at revision `19d4092bb862664545eb489d66620efa01a49590`,
 `0.1.0-alpha.191.1` at revision `96c6684921e227441da56d8883c2a59bba29b09e`,
