@@ -17,6 +17,12 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
         get; set;
     }
 
+    /// <summary>Gets or sets a value indicating whether opened streams deliver one byte and then stall until cancelled.</summary>
+    public bool StallReadsAfterFirstByte
+    {
+        get; set;
+    }
+
     /// <summary>Gets the streams handed out by <see cref="OpenRead"/>, in call order.</summary>
     public IReadOnlyList<DisposalTrackingStream> OpenedStreams => openedStreams;
 
@@ -50,7 +56,7 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
         using var content = new MemoryStream();
         await request.Content.CopyToAsync(content, ct).ConfigureAwait(false);
 
-        var stream = new DisposalTrackingStream(new MemoryStream(content.ToArray()));
+        var stream = new DisposalTrackingStream(new MemoryStream(content.ToArray()), StallReadsAfterFirstByte);
         openedStreams.Add(stream);
         return new MediaObjectReadResult(objectKey, stream, request.ContentType, request.Length, request.Checksum);
     }

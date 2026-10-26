@@ -34,7 +34,7 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
         ? $"/api/v1/public/catalog/media/{imageId}/640/jpg"
         : $"/api/v1/catalog/media/images/{imageId}/preview/640/jpg";
 
-    public static async Task<MediaDeliveryScenario> Create()
+    public static async Task<MediaDeliveryScenario> Create(bool stallReadsAfterFirstByte = false)
     {
         var tourId = Guid.CreateVersion7();
         var tourStore = new TestCatalogTourReadModelStore();
@@ -59,7 +59,7 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
             isCover: true);
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = new TestMediaObjectStore { StallReadsAfterFirstByte = stallReadsAfterFirstByte };
         await objectStore.Put(
             new MediaObjectWriteRequest(ObjectKey, new MemoryStream(Payload), "image/jpeg", Payload.Length, "sha256:stream"),
             TestContext.Current.CancellationToken);

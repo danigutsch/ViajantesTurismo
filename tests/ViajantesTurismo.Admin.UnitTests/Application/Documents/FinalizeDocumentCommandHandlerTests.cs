@@ -10,6 +10,9 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 [Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class FinalizeDocumentCommandHandlerTests
 {
+    // Measured 49,481 bytes with the three editable fields at the maximum length of escaped characters.
+    private const int MeasuredBoundBytes = 65_536;
+
     [Fact]
     public async Task Handle_finalizes_approved_document_and_saves()
     {
@@ -34,6 +37,47 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
         html.ShouldBeWellFormedHtmlDocument();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Handle_keeps_the_worst_case_finalized_artifact_within_the_buffered_delivery_bound()
+    {
+        // Arrange
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var worstCaseValue = new string('<', DocumentLimits.MaxStaffOverrideLength);
+        var document = DocumentDraft.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            "tour-service-contract",
+            "1",
+            "SOURCE-VERSION",
+            [
+                DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,
+                DocumentField.Create("trip-note", "Trip note", string.Empty, DocumentPrivacyClassification.PersonalData, true).Value,
+                DocumentField.Create("support-contact", "Support contact", "Support", DocumentPrivacyClassification.Public, true).Value,
+            ],
+            "BRANDING-VERSION",
+            "Viajantes Turismo",
+            new Uri("/logo.svg", UriKind.Relative),
+            now).Value;
+        foreach (var fieldId in new[] { "greeting", "trip-note", "support-contact" })
+        {
+            document.UpdateField(fieldId, worstCaseValue, now).IsSuccess.ShouldBeTrue();
+        }
+
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+
+        // Act
+        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        document.GetFinalizedArtifactContent().ShouldNotBeNull().Length.ShouldBeLessThanOrEqualTo(MeasuredBoundBytes);
     }
 
     [Fact]

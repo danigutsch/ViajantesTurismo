@@ -95,7 +95,32 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "image/avif": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -237,6 +262,10 @@
             }
           }
         }
+      },
+      "Stream": {
+        "type": "string",
+        "format": "binary"
       },
       "TourDetailsDto": {
         "required": [

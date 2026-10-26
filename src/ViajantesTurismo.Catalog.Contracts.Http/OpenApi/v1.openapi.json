@@ -463,7 +463,35 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "image/avif": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
           },
           "401": {
             "description": "Authentication is required."
@@ -794,7 +822,32 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "image/avif": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stream"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -1567,6 +1620,10 @@
             "type": "boolean"
           }
         }
+      },
+      "Stream": {
+        "type": "string",
+        "format": "binary"
       },
       "TourDetailsDto": {
         "required": [
