@@ -47,7 +47,8 @@
       "intake": {
         "theme": "repo-operations",
         "openStatus": "proposed",
-        "closedStatus": "done"
+        "closedStatus": "done",
+        "notPlannedStatus": "dropped"
       },
       "projectV2": {
         "id": "PVT_kwHOBRDnvc4BdSvO",
