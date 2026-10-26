@@ -226,6 +226,14 @@ jobs:
             esac
           fi
 
+      # Caches the downloaded browsers only; the operating system dependencies are still installed on every run.
+      - name: Cache the Playwright browsers
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' && matrix.id == 'hosted-tests' }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Directory.Packages.props') }}
+
       - name: Run test slice
         if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' }}
         id: run-test-slice
