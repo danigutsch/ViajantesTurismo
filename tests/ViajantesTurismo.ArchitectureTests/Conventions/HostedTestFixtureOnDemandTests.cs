@@ -137,10 +137,14 @@ public sealed class HostedTestFixtureOnDemandTests
 
         // Act
         var creation = HostedTestFixtureSource.Body(fixture, "private async Task<InfrastructureHost> CreateInfrastructure(");
+        var volumes = HostedTestFixtureSource.Count(creation, ".WithVolume(") + HostedTestFixtureSource.Count(creation, ".WithDataVolume(");
+        var dataBindMounts = HostedTestFixtureSource.Count(creation, ".WithDataBindMount(");
+        var bindMounts = HostedTestFixtureSource.Count(creation, ".WithBindMount(");
 
         // Assert
-        creation.ShouldNotContain("WithDataVolume(", StringComparison.Ordinal, "a named volume outlives its container, so a hosted run would leave it behind");
-        creation.ShouldNotContain("WithDataBindMount(", StringComparison.Ordinal, "a hosted run keeps no state outside its containers");
+        volumes.ShouldBe(0, "a named volume outlives its container, so a hosted run would leave it behind");
+        dataBindMounts.ShouldBe(0, "a hosted run keeps no resource data outside its containers");
+        bindMounts.ShouldBe(1, "the read-only realm import of the identity provider is the only host directory the infrastructure mounts");
     }
 
     [Fact]

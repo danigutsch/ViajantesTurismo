@@ -8,6 +8,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public sealed class HostedTestFixtureSafetyTests
 {
     [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
     public void Fixture_gives_the_shared_collector_the_privacy_and_aspire_configuration()
     {
         // Arrange
