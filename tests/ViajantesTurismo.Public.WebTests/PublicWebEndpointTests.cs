@@ -58,6 +58,33 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
+    public async Task Public_media_ignores_range_requests_and_disposes_the_upstream_stream_after_the_response()
+    {
+        // Arrange
+        using var upstreamResponse = new HttpResponseMessage();
+        var upstreamStream = new MemoryStream("image"u8.ToArray());
+        var catalogApi = new FakePublicCatalogApiClient
+        {
+            Media = new PublicMediaObjectResponse(upstreamResponse, upstreamStream, "image/jpeg")
+        };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640/640/jpg", UriKind.Relative));
+        request.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(1, 2);
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Headers.AcceptRanges.ShouldBeEmpty();
+        response.Content.Headers.ContentRange.ShouldBeNull();
+        content.ShouldBe("image"u8.ToArray());
+        upstreamStream.CanRead.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task Public_media_returns_non_cacheable_service_unavailable_when_catalog_cancels_upstream()
     {
         // Arrange
