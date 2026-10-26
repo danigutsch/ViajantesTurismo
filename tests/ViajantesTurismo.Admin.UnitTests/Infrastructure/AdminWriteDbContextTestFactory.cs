@@ -33,7 +33,7 @@ internal static class AdminWriteDbContextTestFactory
             (provider, options) =>
             {
                 options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
-                services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+                services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options, enableDevelopmentDiagnostics: false);
                 options.AddInterceptors(additionalInterceptors);
             },
             poolSize: 1);
@@ -70,7 +70,7 @@ internal static class AdminWriteDbContextTestFactory
             (provider, options) =>
             {
                 options.UseInMemoryDatabase(Guid.NewGuid().ToString("N"));
-                services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+                services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options, enableDevelopmentDiagnostics: false);
                 options.AddInterceptors(additionalInterceptors);
             },
             poolSize: 1);

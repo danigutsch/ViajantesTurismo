@@ -143,7 +143,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         services.AddDbContext<AdminWriteDbContext>((_, options) =>
         {
             options.UseNpgsql(connectionString);
-            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options, enableDevelopmentDiagnostics: false);
             if (interceptor is not null)
             {
                 options.AddInterceptors(interceptor);

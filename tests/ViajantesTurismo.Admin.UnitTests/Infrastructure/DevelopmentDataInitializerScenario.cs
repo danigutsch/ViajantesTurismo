@@ -36,7 +36,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         services.AddDbContext<AdminWriteDbContext>(options =>
         {
             options.UseInMemoryDatabase(Guid.CreateVersion7().ToString("N"));
-            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options, enableDevelopmentDiagnostics: false);
         });
         services.AddSingleton<TimeProvider>(new FakeTimeProvider(CurrentTime));
         services.AddScoped(sp => new DevelopmentDataInitializer(

@@ -117,7 +117,7 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         services.AddDbContext<AdminWriteDbContext>(options =>
         {
             options.UseInMemoryDatabase(adminDatabaseName, adminDatabaseRoot);
-            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options);
+            services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options, enableDevelopmentDiagnostics: false);
         });
         services.AddSingleton(TimeProvider.System);
         services.AddScoped(sp => new DevelopmentDataInitializer(

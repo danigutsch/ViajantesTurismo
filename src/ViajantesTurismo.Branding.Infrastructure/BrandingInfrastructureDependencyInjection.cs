@@ -103,15 +103,7 @@ public static class BrandingInfrastructureDependencyInjection
             providerOptions.ConfigureDataSource(ConfigureNpgsqlDataSource);
         });
 
-        if (!builder.Environment.IsDevelopment())
-        {
-            builder.Services.ApplyDbContextOptionConfigurations<TContext>(options);
-            return;
-        }
-
-        options.EnableDetailedErrors();
-        options.EnableSensitiveDataLogging();
-        builder.Services.ApplyDbContextOptionConfigurations<TContext>(options);
+        builder.Services.ApplyDbContextOptionConfigurations<TContext>(options, builder.Environment.IsDevelopment());
     }
 
     private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
