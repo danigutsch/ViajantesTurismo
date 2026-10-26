@@ -198,8 +198,8 @@ ClamAV exposes only its private TCP `clamd` endpoint on port `3310`; it has no p
 HTTP health check. Admin.ApiService, Catalog.ApiService, and Integration Event Worker receive the
 private host and port through AppHost configuration and wait for the ClamAV PING/PONG health check.
 
-The scanner persists definitions in `clamav-definitions` at `/var/lib/clamav`. Test runs use the
-isolated name `clamav-<suffix>-definitions`. FreshClam is enabled by default. A missing or reset
+The AppHost keeps the definitions in the named volume `clamav-definitions` at `/var/lib/clamav`, and
+hosted test runs mount no volume. FreshClam is enabled by default. A missing or reset
 definitions volume can make the next startup take longer while definitions download and ClamAV loads
 them. The AppHost does not configure a ClamAV memory limit; ensure the local container runtime has
 enough memory for the daemon and its definitions. Health waits, not fixed delays, decide readiness.
@@ -240,7 +240,8 @@ reaches the browser.
 `conformance-test-client` permits password grants solely for owned integration and browser-test
 setup; it is a local realm client and is not a production client.
 
-SeaweedFS access and secret keys are persisted Aspire parameters. To override them locally, use the
+SeaweedFS keeps its objects in the named volume `seaweedfs-data`. Its access and secret keys are
+persisted Aspire parameters. To override them locally, use the
 AppHost user-secrets store and omit resolved values from source control:
 
 ```bash

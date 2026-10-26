@@ -35,7 +35,7 @@ internal static class AppHostComposition
         var securityDatabase = databaseServer.AddDatabase(ResourceNames.SecurityDatabase);
         var managementWebClientSecret = builder.AddLocalSecret(ResourceNames.ManagementWebClientSecret);
         var identityProvider = builder.AddRunModeIdentityProvider(managementWebClientSecret);
-        var clamAv = builder.AddClamAv(ResourceNames.ClamAv);
+        var clamAv = builder.AddMalwareScanner();
         var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase, securityDatabase);
         var seaweedFs = profile.IncludesMediaInfrastructure() ? builder.AddMediaObjectStorage() : null;
 

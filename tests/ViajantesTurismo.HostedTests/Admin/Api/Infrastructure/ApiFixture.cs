@@ -36,7 +36,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
         await WaitForBrandingProjection(_databaseConnectionString!, TestContext.Current.CancellationToken);
         _operatorConformanceUserPassword = testConfiguration.OperatorConformanceUserPassword;
-        var identityProviderEndpoint = shared.IdentityProviderEndpoint;
+        var identityProviderEndpoint = await shared.GetIdentityProviderEndpoint(TestContext.Current.CancellationToken);
         var accessToken = await KeycloakConformanceClient.RequestAccessToken(
             identityProviderEndpoint,
             testConfiguration.ConformanceUserPassword,
@@ -128,7 +128,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
         ArgumentNullException.ThrowIfNull(_app);
         ArgumentException.ThrowIfNullOrWhiteSpace(_operatorConformanceUserPassword);
 
-        var identityProviderEndpoint = shared.IdentityProviderEndpoint;
+        var identityProviderEndpoint = await shared.GetIdentityProviderEndpoint(ct);
         var accessToken = await KeycloakConformanceClient.RequestAccessToken(
             identityProviderEndpoint,
             _operatorConformanceUserPassword,

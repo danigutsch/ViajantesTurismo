@@ -66,6 +66,12 @@ internal static class AppHostResourceExtensions
     /// <summary>Default bucket for Viajantes media object storage.</summary>
     private const string SeaweedFsBucketDefault = "viajantes-media";
 
+    /// <summary>The named volume that keeps the ClamAV virus definitions between AppHost runs.</summary>
+    private const string ClamAvDefinitionsVolumeName = "clamav-definitions";
+
+    /// <summary>The named volume that keeps the SeaweedFS media objects between AppHost runs.</summary>
+    private const string SeaweedFsDataVolumeName = "seaweedfs-data";
+
     /// <summary>
     /// Adds the PostgreSQL server and, when selected, its PgWeb companion resource.
     /// </summary>
@@ -112,13 +118,23 @@ internal static class AppHostResourceExtensions
     }
 
     /// <summary>
+    /// Adds the ClamAV resource that scans Viajantes uploads for malware.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <returns>The configured ClamAV resource.</returns>
+    public static IResourceBuilder<ClamAvResource> AddMalwareScanner(this IDistributedApplicationBuilder builder)
+    {
+        return builder.AddClamAv(ResourceNames.ClamAv).WithDataVolume(ClamAvDefinitionsVolumeName);
+    }
+
+    /// <summary>
     /// Adds the SeaweedFS resource that stores Viajantes media objects.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <returns>The configured SeaweedFS resource.</returns>
     public static IResourceBuilder<SeaweedFsResource> AddMediaObjectStorage(this IDistributedApplicationBuilder builder)
     {
-        return builder.AddSeaweedFs(ResourceNames.SeaweedFs, SeaweedFsBucketDefault);
+        return builder.AddSeaweedFs(ResourceNames.SeaweedFs, SeaweedFsBucketDefault).WithDataVolume(SeaweedFsDataVolumeName);
     }
 
     /// <summary>

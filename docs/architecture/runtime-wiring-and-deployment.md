@@ -199,8 +199,8 @@ Deployment guidance:
 
 ### Local scanner and storage reset
 
-ClamAV definitions persist in `clamav-definitions` at `/var/lib/clamav`; an isolated test run uses
-`clamav-<suffix>-definitions`. Stop the AppHost first, inspect the exact volume with
+ClamAV definitions persist in `clamav-definitions` at `/var/lib/clamav`; hosted test runs mount no
+volume. Stop the AppHost first, inspect the exact volume with
 `docker volume ls`, then remove only a verified volume with `docker volume rm <verified-volume-name>`
 when a definitions reset is required. Removing it is destructive: cached signatures are deleted and
 FreshClam downloads them again on the next start. Do not run `docker volume prune` for this purpose.

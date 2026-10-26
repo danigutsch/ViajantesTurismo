@@ -126,6 +126,9 @@ or shared project fixtures that pay the dependency startup cost once.
 Follow the [assembly fixture guidance](../tests/ASSEMBLY_FIXTURE_GUIDANCE.md) when sharing a provider
 server; keep mutable state and GUID-owned databases isolated per test.
 
+`ViajantesTurismo.HostedTests` starts each container the first time a selected test needs it, so a focused run pays only for
+the services its tests use (see the [README](../tests/ViajantesTurismo.HostedTests/README.md#demand-driven-infrastructure)).
+
 Current external guidance behind this policy:
 
 - GitHub Actions dependency caching improves restore time, but caches are branch-scoped and must not
@@ -819,6 +822,9 @@ serialization first; check the daemon.
 dotnet tool run sharedkernel-repo -- verify-podman-dns
 # exits 1 when stale state is detected
 ```
+
+The hosted-test fixture starts containers on first demand, so a container that cannot become healthy fails only the tests
+that need it, with an error that names it. Run the preflight before the run.
 
 The preflight supports only local rootless Podman and fails closed for remote
 services. It is intentionally check-only. Podman does not expose a lock that

@@ -23,6 +23,11 @@ For Admin test taxonomy and seam guidance, treat `tests/README.md` as the canoni
 - `ErrorClassTests` — Ensures domain `*Errors` helper classes follow the required static-class convention.
 - `AdminTestArchitectureGuardTests` — Guards the canonical Admin test-architecture documentation owner plus the
   approved hosted fixture/base-class seams for integration and system tests.
+- `HostedTestFixtureOnDemandTests` — Pins the demand-driven start of `HostedTestFixture`: explicit-start containers, one gated
+  and bounded start path per container, no start in the constructor or `InitializeAsync`, and no volume.
+- `HostedTestFixtureSafetyTests` — Pins the collector's privacy processors, the shared-infrastructure marker of each stack,
+  and the deletion of the work directory.
+- `AppHostVolumeTests` — Keeps the AppHost's named volumes for the ClamAV definitions and the SeaweedFS objects.
 - `SharedKernelToolCallerTests` — Parses every SharedKernel tool command line in workflows, composite actions,
   setup and repository scripts, Dev Container scripts, `opencode.json`, and workspace tasks with the pinned local tool and its
   `[diagram]` directive, which parses without running the command.

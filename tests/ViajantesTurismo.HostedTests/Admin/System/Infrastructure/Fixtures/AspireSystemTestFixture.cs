@@ -12,6 +12,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
     private AspireTestApplication? _app;
     private string? _databaseConnectionString;
     private string? _catalogDatabaseConnectionString;
+    private Uri? _identityProviderEndpoint;
 
     public Uri WebAppUrl { get; private set; } = null!;
 
@@ -19,7 +20,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
 
     public string ConformanceUserPassword { get; private set; } = string.Empty;
 
-    internal Uri IdentityProviderEndpoint => shared.IdentityProviderEndpoint;
+    internal Uri IdentityProviderEndpoint => _identityProviderEndpoint ?? throw new InvalidOperationException("Fixture is not initialized.");
 
     internal string IdentityProviderRealm => shared.Realm("system");
 
@@ -45,6 +46,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         var testConfiguration = shared.Configuration;
         ConformanceUserPassword = testConfiguration.ConformanceUserPassword;
         _app = await shared.GetApplication(HostedProfile.System, "system", TestContext.Current.CancellationToken);
+        _identityProviderEndpoint = await shared.GetIdentityProviderEndpoint(TestContext.Current.CancellationToken);
 
         WebAppUrl = _app.GetEndpoint(ResourceNames.WebApp, "https");
         PublicWebAppUrl = _app.GetEndpoint(ResourceNames.PublicWebApp, "https");

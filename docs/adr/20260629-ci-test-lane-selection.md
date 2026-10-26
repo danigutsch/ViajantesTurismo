@@ -11,6 +11,12 @@ architecture checks. This supersedes the separate hosted/API/system rows describ
 validation retains its two execution shards. The migrated full Release solution passed locally;
 the earlier failed baseline remains historical evidence for the old fixture ownership.
 
+## Hosted infrastructure on demand, 2026-10-25
+
+The `hosted-tests` slice is unchanged and still starts all six containers, because it runs the whole assembly. Its fixture now
+starts each container on first demand, so a narrower local selection pays only for what it uses (see
+[ADR-018](20260228-test-parallelization-with-assembly-fixtures.md)).
+
 ## Context
 
 The repository has multiple test costs:
