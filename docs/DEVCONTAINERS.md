@@ -31,12 +31,12 @@ The current lifecycle flow is:
 1. `onCreateCommand` runs `.devcontainer/on-create.sh`, which installs the pinned SDK and runs
    `setup-dev.sh` to stage the pinned SharedKernel candidate
 2. `postCreateCommand` runs `.devcontainer/post-create.sh`
-3. `postStartCommand` runs `.devcontainer/post-start.sh`, which trusts the development certificate and writes
-   `~/.viajantesturismo-devcontainer`
+3. `postStartCommand` runs `.devcontainer/post-start.sh`, which trusts the development certificate
 
-`Directory.Build.props` moves `bin` and `obj` to `.build` when `REMOTE_CONTAINERS` is `true` or that marker exists.
-Builds that run with a minimal environment, such as OpenAPI generation through `sharedkernel-ci`, keep `HOME` but not
-`REMOTE_CONTAINERS`, so the marker keeps their paths equal to the restore.
+`Directory.Build.props` moves `bin` and `obj` to `.build` when `REMOTE_CONTAINERS` is `true`. Builds that run with a
+minimal environment, such as OpenAPI generation through `sharedkernel-ci`, drop `REMOTE_CONTAINERS` unless the target
+lists it in `preserveEnvironment`, so every `openApi` target of `.config/sharedkernel-ci.json` lists it and keeps its
+paths equal to the restore.
 
 By default, the post-create script restores NuGet packages and builds `ViajantesTurismo.slnx` unless
 `DEVCONTAINER_VERIFY_BUILD=0` is set.
