@@ -4,7 +4,7 @@
   "parent": "RM-009",
   "title": "Optimize GitHub Project sync query reuse",
   "type": "issue",
-  "status": "proposed",
+  "status": "done",
   "order": 90,
   "theme": "repo-operations",
   "outcome": "GitHub Project sync reuses target metadata while preserving existing timeout, drift, and idempotency behavior.",
