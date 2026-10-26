@@ -26,6 +26,7 @@ flowchart TB
     build_and_test[build-and-test]
     solution_build[Solution Build]
     quality_gate[quality-gate]
+    warning_summary[Warning Summary]
     lint[lint]
     trigger --> detect_changes
     detect_changes --> calculate_version
@@ -36,6 +37,9 @@ flowchart TB
     detect_changes --> quality_gate
     test_slices --> quality_gate
     solution_build --> quality_gate
+    test_slices --> warning_summary
+    solution_build --> warning_summary
+    lint --> warning_summary
     trigger --> lint
 ```
 <!-- generated:ci-main-jobs:end -->

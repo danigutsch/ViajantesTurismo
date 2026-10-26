@@ -240,6 +240,16 @@ a recorded portable PDB maps no executable code to it.
 
 The job saves the locked restore output and runs `sharedkernel-ci verify-restore-warnings` on it before the build.
 A high or critical NuGet vulnerability advisory (`NU1903`, `NU1904`) fails the job and names each package and version;
-lower severities and other NuGet warnings stay advisory. `sharedkernel-ci warning-summary` then writes the
-blocking and advisory totals to the job summary, also when the verification fails. Restore itself is unchanged, so
-`--locked-mode` still rejects drift.
+lower severities and other NuGet warnings stay advisory. Findings covered by an unexpired record in
+`.github/ci-warning-exceptions.json` count as accepted instead. Restore itself is unchanged, so `--locked-mode`
+still rejects drift.
+
+### Warning Summary
+
+Each required job writes a warning report with `sharedkernel-ci warning-report` (or `verify-restore-warnings --report`)
+and uploads it as a `warning-report-*` artifact: `Solution Build` reports restore and build, each test slice reports
+`Tests <slice>`, and `Lint` reports `Lint`. A failed step is one blocking finding; a skipped step writes no report, so
+"not run" never reads as "passed". The `Warning Summary` job downloads the reports and runs
+`sharedkernel-ci warning-summary`, which writes one table of blocking, advisory, and accepted totals per tool to the
+job summary. It runs even when a required job failed, adds no annotations, and is not a merge gate: the blocking
+jobs already fail their own checks.
