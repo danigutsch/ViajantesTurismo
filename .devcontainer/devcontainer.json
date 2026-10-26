@@ -1,6 +1,8 @@
 {
   "name": "ViajantesTurismo",
-  "image": "mcr.microsoft.com/devcontainers/dotnet:dev-11.0-preview-resolute@sha256:387c18d55f3ba4c45d4821208c953302dc7abe5c2f9f2f2a0f42c61b9f6712a6",
+  // Digest of mcr.microsoft.com/devcontainers/dotnet:dev-11.0-resolute. The Dev Containers CLI cannot parse a
+  // reference that has both a tag and a digest and logs an error before it falls back to docker pull.
+  "image": "mcr.microsoft.com/devcontainers/dotnet@sha256:f34994e22a263a508d5310d27a1c68b66af0066f57ebebe17ce7693da206094c",
 
   "features": {
     "ghcr.io/devcontainers/features/git@sha256:27905dc196c01f77d6ba8709cb82eeaf330b3b108772e2f02d1cd0d826de1251": {

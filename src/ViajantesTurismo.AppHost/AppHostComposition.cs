@@ -33,9 +33,9 @@ internal static class AppHostComposition
         var adminDatabase = databaseServer.AddDatabase(ResourceNames.AdminDatabase);
         var catalogDatabase = databaseServer.AddDatabase(ResourceNames.CatalogDatabase);
         var securityDatabase = databaseServer.AddDatabase(ResourceNames.SecurityDatabase);
-        var managementWebClientSecret = builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true);
+        var managementWebClientSecret = builder.AddLocalSecret(ResourceNames.ManagementWebClientSecret);
         var identityProvider = builder.AddRunModeIdentityProvider(managementWebClientSecret);
-        var clamAv = builder.AddClamAv(ResourceNames.ClamAv);
+        var clamAv = builder.AddMalwareScanner();
         var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase, securityDatabase);
         var seaweedFs = profile.IncludesMediaInfrastructure() ? builder.AddMediaObjectStorage() : null;
 
@@ -60,9 +60,9 @@ internal static class AppHostComposition
         builder.AddCatalogIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs);
         builder.AddManagementWeb(cache, securityDatabase, migrationService, identityProvider, managementWebClientSecret, apiService, catalogApiService);
         builder.AddPublicWeb(catalogApiService);
-        if (includeDeveloperTooling)
+        if (includeDeveloperTooling && identityProvider is not null)
         {
-            builder.AddAdminPerformanceSmoke(apiService);
+            builder.AddAdminPerformanceSmoke(apiService, identityProvider);
         }
     }
 }

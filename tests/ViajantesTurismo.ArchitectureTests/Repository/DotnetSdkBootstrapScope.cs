@@ -153,6 +153,17 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
             ["BOOTSTRAP_INSTALL_DIR"] = PathFor("install"),
             ["BOOTSTRAP_INSTALL"] = install ? "true" : "false"
         };
+        if (_powershell)
+        {
+            // The SDK that runs the tests exports DOTNET_ROOT_<ARCH> for its children. A framework-dependent pwsh, as in the
+            // devcontainer image, then looks for its runtime in the pinned SDK directory instead of its own installation.
+            foreach (var variable in Environment.GetEnvironmentVariables().Keys.Cast<string>()
+                .Where(static name => name.StartsWith("DOTNET_ROOT", StringComparison.Ordinal)))
+            {
+                environment[variable] = null;
+            }
+        }
+
         List<string> arguments = _powershell
             ? ["-NoLogo", "-NoProfile", "-File", PathFor("invoke.ps1")]
             : [subject, "--global-json", PathFor(globalJson), "--install-dir", PathFor("install")];

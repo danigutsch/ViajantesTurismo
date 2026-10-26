@@ -52,6 +52,14 @@ internal static class AdminAuthorization
                 PaymentWrite,
                 TourRead,
                 TourWrite
+            ],
+            ["Reader"] =
+            [
+                BookingRead,
+                CustomerRead,
+                CustomerSensitiveRead,
+                PaymentRead,
+                TourRead
             ]
         };
 }

@@ -30,12 +30,12 @@ Current workload profiles:
 
 Current runner:
 
-- `sharedkernel-k6`, configured by `../../.config/sharedkernel-k6.json` with the `admin-smoke` and
-  `file-upload-scan` scenarios
+- `sharedkernel-k6`, configured by `../../.config/sharedkernel-k6.json` with the `file-upload-scan` scenario
+- the `admin-smoke` scenario runs only as the AppHost resource below
 
 Current Aspire integration:
 
-- opt-in resource: `admin-performance-smoke`
+- opt-in resource: `admin-performance-smoke`, a k6 container that starts on request
 - enable with `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1`
 - AppHost wiring lives in `src/ViajantesTurismo.AppHost/PerformanceTestingResourceExtensions.cs`
 
@@ -52,22 +52,7 @@ This is not yet a full load-testing suite.
 
 ## Run
 
-Start the local stack first, then point `sharedkernel-k6` at the Admin API endpoint:
-
-```bash
-VT_API_BASE_URL=<admin-api-url> dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke
-```
-
-On Windows PowerShell:
-
-```powershell
-$env:VT_API_BASE_URL = '<admin-api-url>'
-dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke
-```
-
-Use the Admin API endpoint printed by Aspire or shown in the Aspire dashboard.
-
-For real multipart upload scanning, run the `file-upload-scan` scenario. `sharedkernel-k6` starts the
+The Admin smoke runs through Aspire (see below). For real multipart upload scanning, run the `file-upload-scan` scenario. `sharedkernel-k6` starts the
 isolated benchmark host on an ephemeral loopback Kestrel port, waits for the URL it writes to
 `VT_UPLOAD_BENCHMARK_READY_FILE`, probes `/health`, and runs k6 against the real socket:
 
@@ -81,11 +66,7 @@ The tool runs a local `k6` by default. `--container` runs the configured digest-
 `grafana/k6` image with Docker instead, mounts the scripts read-only, and never pulls, so pull the image
 first; `--image <ref@sha256:digest>` replaces the configured image. The target must be a loopback URL
 unless `--allow-external-target` is passed; `--http-debug` needs `--allow-http-debug`, and k6 outputs
-such as `--out` need `--allow-remote-output`. k6 arguments follow a second `--`:
-
-```bash
-dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke -- --vus 2 --duration 10s
-```
+such as `--out` need `--allow-remote-output`. k6 arguments follow a second `--`.
 
 The scripts read `VT_K6_PROFILE`, `VT_K6_VUS`, `VT_K6_DURATION`, and, for `file-upload-scan`,
 `VT_UPLOAD_PAYLOAD_BYTES` (a whole number from 1 to 16777216) from the environment the tool forwards.
@@ -93,24 +74,31 @@ An unknown profile fails the run.
 
 ## Run With Aspire
 
-The AppHost can run the smoke scenario after the Admin API starts. This is opt-in so normal Aspire
+The AppHost can run the smoke scenario against the Admin API. This is opt-in so normal Aspire
 runs do not execute load tooling accidentally:
 
 ```bash
 VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
-Use `VT_K6_PROFILE=average-load` for conservative broader validation. Keep `stress` manual-only.
+Start `admin-performance-smoke` from the Aspire dashboard, or with `dotnet tool run aspire resource
+admin-performance-smoke start`, once the Admin API is healthy. Use `VT_K6_PROFILE=average-load` for conservative
+broader validation. Keep `stress` manual-only.
 
-The Aspire resource runs `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke` and injects
-`VT_API_BASE_URL` from the Admin API endpoint. It forwards `VT_K6_PROFILE` (default `smoke`),
-`VT_K6_VUS`, and `VT_K6_DURATION` when they are set before AppHost starts. `VT_K6_USE_DOCKER=1` adds
-`--container`, and `VT_K6_DOCKER_IMAGE` then adds `--image` with that digest-pinned image.
+The resource is a `grafana/k6` container pinned by tag and digest from
+`PandaBear.SharedKernel.Aspire.Hosting.K6`. It receives `VT_API_BASE_URL` from the Admin API endpoint and forwards
+`VT_K6_PROFILE` (default `smoke`), `VT_K6_VUS`, and `VT_K6_DURATION` when they are set before AppHost starts. The
+scenario signs in with the `k6-smoke` service account, whose `Reader` role holds only the read permissions of the
+customer, tour, and booking collection endpoints. The client secret is the generated
+`identity-provider-k6-client-secret` parameter; the container receives it as an environment variable, and it never
+reaches a file or the k6 output. The container exits when the run ends; a failed token request or a breached threshold
+ends it with a non-zero exit code.
 
 ## Results
 
-Each run writes its k6 summary to its own directory under `tests/performance/results/`, which the tool
-prints. That folder is ignored by Git so local investigation output does not become source.
+Each `sharedkernel-k6` run writes its k6 summary to its own directory under `tests/performance/results/`, which the
+tool prints. The Admin smoke container writes `tests/performance/results/admin-smoke-summary.json`. That folder is
+ignored by Git so local investigation output does not become source.
 
 The `file-upload-scan` run directory also holds the benchmark host's `host.stdout.log` and
 `host.stderr.log` and the ready file with the discovered ephemeral base URL.

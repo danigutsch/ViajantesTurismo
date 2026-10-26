@@ -111,7 +111,74 @@ public sealed class PaymentRecipientContractTests
 
         // Assert
         recipient.IsFailure.ShouldBeTrue();
+        recipient.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull().Keys.ShouldBe(["recipient"]);
         recipient.ToString().ShouldNotContain("DE89370400440532013000", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("pix-in-euro")]
+    [InlineData("pix-with-iban")]
+    [InlineData("pix-with-bic")]
+    [InlineData("pix-with-bank-field")]
+    [InlineData("bank-in-euro")]
+    [InlineData("bank-with-iban")]
+    [InlineData("bank-with-bic")]
+    [InlineData("bank-with-pix-key")]
+    [InlineData("bank-with-pix-type")]
+    public void Pix_and_bank_recipients_reject_settlement_currency_and_fields_from_another_rail(string field)
+    {
+        // Arrange
+        var pix = new PaymentRecipientDto
+        {
+            Kind = PaymentAccountKindDto.Pix,
+            SettlementCurrency = CurrencyDto.Real,
+            RecipientName = "Checked recipient",
+            PixKeyType = PixKeyTypeDto.Cpf,
+            PixKey = "52998224725"
+        };
+        var bank = new PaymentRecipientDto
+        {
+            Kind = PaymentAccountKindDto.BrazilianBank,
+            SettlementCurrency = CurrencyDto.Real,
+            RecipientName = "Checked recipient",
+            AccountType = BrazilianAccountTypeDto.Checking,
+            Ispb = "00000000",
+            Branch = "0001",
+            AccountNumber = "123456",
+            TaxId = "52998224725"
+        };
+        var input = field switch
+        {
+            "pix-in-euro" => pix with { SettlementCurrency = CurrencyDto.Euro },
+            "pix-with-iban" => pix with { Iban = "DE89370400440532013000" },
+            "pix-with-bic" => pix with { Bic = "COBADEFFXXX" },
+            "pix-with-bank-field" => pix with { Branch = "0001" },
+            "bank-in-euro" => bank with { SettlementCurrency = CurrencyDto.Euro },
+            "bank-with-iban" => bank with { Iban = "DE89370400440532013000" },
+            "bank-with-bic" => bank with { Bic = "COBADEFFXXX" },
+            "bank-with-pix-key" => bank with { PixKey = "52998224725" },
+            "bank-with-pix-type" => bank with { PixKeyType = PixKeyTypeDto.Cpf },
+            _ => throw new ArgumentOutOfRangeException(nameof(field))
+        };
+
+        // Act
+        var recipient = PaymentAccountMappings.ToRecipient(input);
+
+        // Assert
+        recipient.IsFailure.ShouldBeTrue();
+        recipient.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull().Keys.ShouldBe(["recipient"]);
+    }
+
+    [Fact]
+    public void Recipient_and_summary_mapping_reject_missing_inputs()
+    {
+        // Arrange
+        Action recipient = () => PaymentAccountMappings.ToRecipient(null!);
+        Action summary = () => PaymentAccountMappings.ToSummary(null!);
+
+        // Act and assert
+        recipient.ShouldThrow<ArgumentNullException>().ParamName.ShouldBe("dto");
+        summary.ShouldThrow<ArgumentNullException>().ParamName.ShouldBe("account");
     }
 
     [Fact]

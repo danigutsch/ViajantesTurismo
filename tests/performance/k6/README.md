@@ -4,7 +4,8 @@ This folder contains the first performance/load testing implementation for this 
 
 ## Scenario
 
-- `scenarios/admin-smoke.js`: small Admin API smoke/repro scenario
+- `scenarios/admin-smoke.js`: small Admin API smoke/repro scenario; runs as the AppHost `admin-performance-smoke`
+  container and signs in with the `k6-smoke` service account
 - `scenarios/file-upload-scan.js`: real Kestrel multipart upload scan scenario
 
 ## Supported Profiles
@@ -49,7 +50,9 @@ digest-pinned image from `.config/sharedkernel-k6.json` with `--pull=never`, so 
 
 ## Required environment
 
-- `VT_API_BASE_URL`: base URL of the Admin API, from Aspire output or the Aspire dashboard
+- `admin-smoke.js`: the AppHost resource sets `VT_API_BASE_URL` and the `SK_K6_TOKEN_URL`, `SK_K6_TOKEN_HOST`,
+  `SK_K6_CLIENT_ID`, and `SK_K6_CLIENT_SECRET` sign-in values. The scripts import `/k6lib/auth.js` and
+  `/k6lib/summary.js`, which the AppHost package mounts.
 
 Optional overrides:
 
@@ -74,30 +77,21 @@ Options of `sharedkernel-k6 run`:
 ## Run with repository runners
 
 ```bash
-VT_API_BASE_URL=<admin-api-url> dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke
-dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
-```
-
-On Windows PowerShell:
-
-```powershell
-$env:VT_API_BASE_URL = '<admin-api-url>'
-dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke
 dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 ```
 
 For `file-upload-scan`, `sharedkernel-k6` starts `benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost` on
 an ephemeral Kestrel port, waits for `/health`, and passes the discovered real base URL to k6.
 
-Prefer `sharedkernel-k6` for local and Aspire flows.
-
 ## Run with Aspire
 
 Set `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` before starting AppHost. Aspire adds an opt-in
-`admin-performance-smoke` executable resource, waits for the Admin API, injects `VT_API_BASE_URL`,
-runs `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke`, and writes summaries under
-`tests/performance/results/`. `VT_K6_USE_DOCKER=1` adds `--container`, and `VT_K6_DOCKER_IMAGE` then adds
-`--image`.
+`admin-performance-smoke` k6 container resource that waits for the Admin API and the identity provider, injects
+`VT_API_BASE_URL`, and starts only when you start it from the dashboard or with
+`dotnet tool run aspire resource admin-performance-smoke start`. The container mounts `tests/performance/k6`
+read-only and writes `tests/performance/results/admin-smoke-summary.json`. The summary holds options, metrics, and
+checks; it holds no token or secret. A failed token request or a breached threshold ends the container with a
+non-zero exit code.
 
 The AppHost resource wiring is intentionally kept outside `AppHost.cs` in
 `src/ViajantesTurismo.AppHost/PerformanceTestingResourceExtensions.cs` so the AppHost remains a
@@ -107,7 +101,7 @@ readable orchestration map.
 VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
-Runner behavior:
+`sharedkernel-k6` runner behavior (`file-upload-scan`):
 
 - uses local `k6` with a minimal environment by default, and Docker only with `--container`
 - exports summary JSON to a new run directory under the ignored `tests/performance/results/` folder
@@ -120,32 +114,5 @@ Runner behavior:
 ## Run raw k6
 
 ```bash
-k6 run -e VT_API_BASE_URL=<admin-api-url> tests/performance/k6/scenarios/admin-smoke.js
 k6 run -e VT_UPLOAD_BASE_URL=<upload-benchmark-host-url> tests/performance/k6/scenarios/file-upload-scan.js
 ```
-
-## Run raw Docker k6
-
-```bash
-docker run --rm \
-  --add-host host.docker.internal:host-gateway \
-  --mount type=bind,source="$(pwd)/tests/performance/k6",target=/k6,readonly \
-  --mount type=bind,source="$(pwd)/tests/performance/results",target=/results \
-  -w /k6 \
-  grafana/k6:0.49.0@sha256:8cd78f9d0de5f50bc8821cceecf356d5d9e839e6611c226a3fcf13c591080fbd run \
-  --no-usage-report \
-  -e VT_API_BASE_URL=<docker-reachable-admin-api-url> \
-  -e VT_K6_PROFILE=smoke \
-  scenarios/admin-smoke.js
-```
-
-## Conventions
-
-- keep scenario logic separate from workload/profile configuration
-- use local modules for repo-owned helpers
-- do not import remote JavaScript modules at runtime from maintained scenarios
-- use checks for assertions and thresholds for pass/fail behavior
-- keep tags and groups meaningful, but avoid one group per request
-- keep smoke profiles simple and reproducible
-- keep targets local by default; require explicit opt-in for external endpoints
-- avoid logging request/response data unless debugging locally and redacting sensitive values

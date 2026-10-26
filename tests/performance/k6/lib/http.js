@@ -4,11 +4,9 @@ function mergeTags(name, extraTags) {
   return Object.assign({ name }, extraTags || {});
 }
 
-export function getJson(url, name, extraTags = {}) {
+export function getJson(url, name, extraTags = {}, headers = {}) {
   return http.get(url, {
-    headers: {
-      Accept: 'application/json',
-    },
+    headers: Object.assign({ Accept: 'application/json' }, headers),
     tags: mergeTags(name, extraTags),
   });
 }

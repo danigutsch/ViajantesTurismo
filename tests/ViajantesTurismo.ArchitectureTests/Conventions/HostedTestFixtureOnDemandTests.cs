@@ -66,9 +66,8 @@ public sealed class HostedTestFixtureOnDemandTests
         // Assert
         creation.ShouldContain("await AspireTestApplication.Start(builder, [], StartBudget, ct)", StringComparison.Ordinal);
         fixture.ShouldNotContain("[ResourceNames.DatabaseServer", StringComparison.Ordinal);
-        // A WaitFor edge to a resource that never starts blocks the application start, and only containers belong in this model.
-        creation.ShouldNotContain("WaitFor(", StringComparison.Ordinal);
-        creation.ShouldNotContain("AddProject", StringComparison.Ordinal);
+        creation.ShouldNotContain("WaitFor(", StringComparison.Ordinal, "a WaitFor edge to a resource that never starts blocks the application start");
+        creation.ShouldNotContain("AddProject", StringComparison.Ordinal, "only containers belong in the infrastructure model");
     }
 
     [Fact]
@@ -82,7 +81,8 @@ public sealed class HostedTestFixtureOnDemandTests
         var startCommands = HostedTestFixtureSource.Count(fixture, "KnownResourceCommands.StartCommand");
         var commandExecutions = HostedTestFixtureSource.Count(fixture, "ExecuteCommandAsync(");
         var startCalls = HostedTestFixtureSource.Count(fixture, "StartResource(");
-        var gatedStartCalls = HostedTestFixtureSource.Count(constructor, "StartResource(");
+        var gatedStartCalls = HostedTestFixtureSource.Count(constructor, "=> StartResource(") + HostedTestFixtureSource.Count(constructor, "return await StartResource(");
+        var constructorGets = HostedTestFixtureSource.Count(constructor, ".Get(");
         var resourcesStartedOnce = ResourceStarts.Count(resource => HostedTestFixtureSource.Count(constructor, $"StartResource({resource},") == 1);
         var gates = HostedTestFixtureSource.Count(fixture, "private readonly OnDemandResource<");
 
@@ -90,9 +90,57 @@ public sealed class HostedTestFixtureOnDemandTests
         startCommands.ShouldBe(1);
         commandExecutions.ShouldBe(1);
         startCalls.ShouldBe(ResourceStarts.Length);
-        gatedStartCalls.ShouldBe(ResourceStarts.Length);
+        gatedStartCalls.ShouldBe(ResourceStarts.Length, "a start outside a gate lambda would run when the fixture is created");
+        constructorGets.ShouldBe(1, "the pool resolver is the only gate read in the constructor");
         resourcesStartedOnce.ShouldBe(ResourceStarts.Length);
         gates.ShouldBe(ResourceStarts.Length + 1);
+    }
+
+    [Fact]
+    public void Fixture_starts_every_resource_with_the_token_its_gate_hands_out()
+    {
+        // Arrange
+        var fixture = HostedTestFixtureSource.Read();
+
+        // Act
+        var application = HostedTestFixtureSource.Body(fixture, "public Task<AspireTestApplication> GetApplication(");
+
+        // Assert
+        application.ShouldContain(
+            "startCt => StartApplication(profile, stack, startCt)",
+            StringComparison.Ordinal,
+            "a start on the token of the test that triggered it is cancelled with that test, and the gate caches the cancellation");
+        fixture.ShouldNotContain("TestContext.Current", StringComparison.Ordinal, "a start must not use the token of one test");
+    }
+
+    [Fact]
+    public void Fixture_starts_clamav_with_the_definitions_of_its_image()
+    {
+        // Arrange
+        var fixture = HostedTestFixtureSource.Read();
+
+        // Act
+        var creation = HostedTestFixtureSource.Body(fixture, "private async Task<InfrastructureHost> CreateInfrastructure(");
+
+        // Assert
+        creation.ShouldContain(
+            "builder.AddClamAv(ResourceNames.ClamAv).WithFreshClam(false)",
+            StringComparison.Ordinal,
+            "a test run must not download virus definitions from the ClamAV mirrors when the container starts");
+    }
+
+    [Fact]
+    public void Fixture_mounts_no_data_volume()
+    {
+        // Arrange
+        var fixture = HostedTestFixtureSource.Read();
+
+        // Act
+        var creation = HostedTestFixtureSource.Body(fixture, "private async Task<InfrastructureHost> CreateInfrastructure(");
+
+        // Assert
+        creation.ShouldNotContain("WithDataVolume(", StringComparison.Ordinal, "a named volume outlives its container, so a hosted run would leave it behind");
+        creation.ShouldNotContain("WithDataBindMount(", StringComparison.Ordinal, "a hosted run keeps no state outside its containers");
     }
 
     [Fact]
@@ -132,10 +180,10 @@ public sealed class HostedTestFixtureOnDemandTests
         var read = start.IndexOf("read(host.Application)", StringComparison.Ordinal);
 
         // Assert
-        // Aspire creates a server's databases after the server is ready, so the server being healthy does not mean its database exists.
         constructor.ShouldContain(
             "StartResource(ResourceNames.DatabaseServer, application => application.GetConnectionString(FixtureDatabaseName, ct), ct, FixtureDatabaseName)",
-            StringComparison.Ordinal);
+            StringComparison.Ordinal,
+            "Aspire creates a server's databases after the server is ready, so the start must wait for the database");
         serverHealthy.ShouldBeGreaterThan(-1);
         databaseHealthy.ShouldBeGreaterThan(serverHealthy);
         read.ShouldBeGreaterThan(databaseHealthy);
@@ -153,9 +201,11 @@ public sealed class HostedTestFixtureOnDemandTests
         var applicationStarts = HostedTestFixtureSource.Count(fixture, "AspireTestApplication.Start(");
 
         // Assert
-        // The start budget cancels the start with a bare "A task was canceled." that the gate would cache for every borrower.
         applicationStarts.ShouldBe(2);
-        infrastructure.ShouldContain("catch (OperationCanceledException cancellation) when (!ct.IsCancellationRequested)", StringComparison.Ordinal);
+        infrastructure.ShouldContain(
+            "catch (OperationCanceledException cancellation) when (!ct.IsCancellationRequested)",
+            StringComparison.Ordinal,
+            "an expired budget must surface as a TimeoutException that names the application, not as a bare cancellation that the gate caches");
         infrastructure.ShouldContain("throw new TimeoutException($\"The infrastructure application did not start within {StartBudget}.\", cancellation);", StringComparison.Ordinal);
         stack.ShouldContain("catch (OperationCanceledException cancellation) when (!ct.IsCancellationRequested)", StringComparison.Ordinal);
         stack.ShouldContain("throw new TimeoutException($\"The '{stack}' application stack did not start within {StartBudget}.\", cancellation);", StringComparison.Ordinal);

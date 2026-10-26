@@ -93,7 +93,7 @@ public sealed class HostedTestFixture : IAsyncLifetime
         var database = builder.AddDatabaseServer(includePgWeb: false).WithExplicitStart();
         _ = database.AddDatabase(FixtureDatabaseName);
         _ = builder.AddCache(includeRedisInsight: false).WithExplicitStart();
-        _ = builder.AddClamAv(ResourceNames.ClamAv).WithExplicitStart();
+        _ = builder.AddClamAv(ResourceNames.ClamAv).WithFreshClam(false).WithExplicitStart();
         _ = builder.AddSeaweedFs(ResourceNames.SeaweedFs, "hosted-media").WithExplicitStart();
         var clientSecret = builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true);
         var identity = builder.AddRunModeIdentityProvider(clientSecret)

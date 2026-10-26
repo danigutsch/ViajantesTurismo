@@ -13,10 +13,9 @@ the earlier failed baseline remains historical evidence for the old fixture owne
 
 ## Hosted infrastructure on demand, 2026-10-25
 
-The hosted lane keeps its single `hosted-tests` slice, but its assembly fixture no longer starts the six containers
-before the first test; each container starts when a selected test first needs it (see
-[ADR-018](20260228-test-parallelization-with-assembly-fixtures.md)). The slice still starts all six because it runs the
-whole assembly. A local run or a narrower selection of the assembly now pays only for the services its tests use.
+The `hosted-tests` slice is unchanged and still starts all six containers, because it runs the whole assembly. Its fixture now
+starts each container on first demand, so a narrower local selection pays only for what it uses (see
+[ADR-018](20260228-test-parallelization-with-assembly-fixtures.md)).
 
 ## Context
 

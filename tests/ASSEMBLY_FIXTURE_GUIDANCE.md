@@ -33,10 +33,9 @@ Assembly fixtures are a sharing mechanism for expensive context. They are not th
 - Keep collection parallelism enabled; server sharing does not justify shared mutable test data.
 
 Current examples are `SharedKernel.Npgsql.Tests`, `SharedKernel.EventSourcing.Npgsql.Tests`,
-`SharedKernel.EntityFrameworkCore.Tests`, and the PostgreSQL seams of `ViajantesTurismo.HostedTests`. Each keeps
-the Aspire server assembly-scoped, issues a GUID-owned database to each test instance, and drops only
-fixture-owned databases with an independent cleanup timeout. Registries retain database names until a successful
-drop and retry any remaining cleanup during assembly teardown. The Entity Framework Core fixture and
-`ViajantesTurismo.HostedTests` start their servers on first demand, so database-free focused runs remain
-container-free; the hosted assembly does the same for its other five containers (see its
+`SharedKernel.EntityFrameworkCore.Tests`, and the PostgreSQL seams of `ViajantesTurismo.HostedTests`. Each issues a
+GUID-owned database to each test instance and drops only fixture-owned databases with an independent cleanup
+timeout. Registries retain database names until a successful drop and retry any remaining cleanup during assembly
+teardown. None of them starts a server before a test needs a database, so database-free focused runs remain
+container-free; `ViajantesTurismo.HostedTests` does the same for its other five containers (see its
 [README](ViajantesTurismo.HostedTests/README.md#demand-driven-infrastructure)).

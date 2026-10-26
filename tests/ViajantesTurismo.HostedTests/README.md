@@ -12,8 +12,8 @@ Keycloak realms and media buckets. Each test scenario owns its data. The assembl
 instances before disposing database leases and infrastructure. No custom runner is required.
 
 Tests retain their original namespaces, class names and traits. Use `--filter-namespace`,
-`--filter-class` or `--filter-trait` to select a seam. A filtered run starts only the infrastructure
-its tests need. Playwright browser installation is required only when browser tests run.
+`--filter-class` or `--filter-trait` to select a seam. Playwright browser installation is required only when browser
+tests run.
 
 | Folder | Entry point and responsibility |
 | --- | --- |
@@ -32,11 +32,9 @@ configuration, authentication and business assertions stay in this project.
 
 ## Demand-driven infrastructure
 
-xUnit creates an assembly fixture whenever one selected test exists, so the fixture has to stay cheap:
-`HostedTestFixture.InitializeAsync` starts nothing. The first test that needs infrastructure makes the
-fixture compose one Aspire application that holds all six containers as explicit-start resources
-(nothing runs yet; this takes about five seconds). Each container is then started once, when a test
-first asks for it, and the containers one request needs start concurrently.
+`HostedTestFixture.InitializeAsync` starts nothing, because xUnit creates an assembly fixture whenever one test is selected.
+The first test that needs infrastructure makes the fixture compose one Aspire application with all six containers as
+explicit-start resources. Each container then starts once, when a test first asks for it.
 
 | What the selected tests need | Containers started |
 | --- | --- |
@@ -44,41 +42,22 @@ first asks for it, and the containers one request needs start concurrently.
 | Only leased databases, such as the PostgreSQL persistence seams | PostgreSQL |
 | `Catalog/Media` | ClamAV and SeaweedFS |
 | An `Admin/Api` stack | PostgreSQL, Keycloak, ClamAV, SeaweedFS and the collector, but not Redis |
-| An `Admin/System` stack | All six |
-| The whole project | All six |
+| An `Admin/System` stack or the whole project | All six |
 
-The full suite still starts all six containers, so its cost does not change; the saving is for focused runs.
-
-What to know when you write or debug a test:
-
-- Each container has exactly one start path, guarded by a gate. Starting a container twice recreates it and
-  loses its data. Never start a container outside `HostedTestFixture`, and read an endpoint or connection
-  string only through the asynchronous accessors (`GetPostgreSqlConnectionString`,
-  `GetIdentityProviderEndpoint`, `GetClamAvEndpoint`, `GetSeaweedFsEndpoint`, `GetApplication`) or lease
-  databases through `Databases`. Before its container starts, an endpoint is a valid-looking address with
-  nothing behind it.
-- Each container gets its own three-minute start budget. The former fixture had one budget for all six. The
-  infrastructure application and every application stack have their own three-minute budget as well.
-- A start that fails or times out is remembered. Every test that needs that container fails quickly with the
-  same error, which names the container, and nothing retries per test. Tests that do not need it are not
-  affected, and the failure does not fail the whole assembly. The same holds for the infrastructure application
-  and for an application stack: when its budget expires, the remembered error is a `TimeoutException` that names
-  it (if stopping the half-started application fails too, the error lists both failures).
-- The PostgreSQL start is complete when the `fixture` database is healthy, not only the server. Aspire creates
-  the database after the server is ready, and the connection string that `GetPostgreSqlConnectionString` returns
-  points at it. This adds about a second to a run that starts PostgreSQL.
-- Aspire picks each container's host port when the infrastructure application starts and reserves it only inside
-  that application, and a container binds its port when it starts. A container that starts minutes into the run
-  can therefore find its port taken by another process on the same host, such as a parallel test run. That start
-  fails like any other failed start and is remembered; run the tests again.
-- The start runs on a token the fixture owns. Cancelling or timing out the test that triggered a start
-  abandons only that test's wait; the start continues for the tests that need it next.
-- A stack waits for every container it needs before it starts, so the first test of a stack pays for them
-  and later tests reuse them.
-- `HostedTestFixture.ConformanceUserId(stack)` is valid only after the identity provider has been demanded,
-  for example through `GetApplication` or `GetIdentityProviderEndpoint`. Before that it throws an
-  `InvalidOperationException` that says so.
-- The gates are SharedKernel's `OnDemandResource<T>`, and `Databases` is a `PostgreSqlTestDatabasePool` built with
-  its resolver constructor, `new PostgreSqlTestDatabasePool(ct => postgres.Get(ct))`. Both come from the pinned
-  package, so this repository keeps no copy of either. The pool contacts no server until a test creates its first
-  database.
+- Start a container only through `HostedTestFixture`: starting one twice recreates it and loses its data. Read endpoints and
+  connection strings through its asynchronous accessors (`GetPostgreSqlConnectionString`, `GetIdentityProviderEndpoint`,
+  `GetClamAvEndpoint`, `GetSeaweedFsEndpoint`, `GetApplication`) and lease databases through `Databases`.
+- Each container, the infrastructure application and each application stack has its own three-minute start budget. A start
+  that fails or times out is remembered: the tests that need it fail with an error that names it, and the others are
+  unaffected.
+- The start runs on a token the fixture owns, so cancelling the test that triggered it abandons only that test's wait.
+- The PostgreSQL start completes when the `fixture` database is healthy, which Aspire creates after the server.
+- `ConformanceUserId(stack)` is valid only after the identity provider has been demanded.
+- Aspire reserves each host port only inside the infrastructure application, so a container that starts late can find its port
+  taken by another process, such as a parallel run. That start fails like any other; run the tests again.
+- ClamAV runs with the definitions of its pinned image (`WithFreshClam(false)`), so a run downloads none. `clamd` answers a
+  `PING` after about eight seconds either way.
+- No hosted container mounts a named volume, so a run leaves none behind. Earlier runs left `clamav-hosted-<id>-definitions` and
+  `seaweedfs-hosted-<id>-data`; remove only exact names you recognize with `podman volume rm <name>`.
+- The gates are SharedKernel's `OnDemandResource<T>`, and `Databases` is built with
+  `new PostgreSqlTestDatabasePool(ct => postgres.Get(ct))`, which contacts no server until the first database is created.

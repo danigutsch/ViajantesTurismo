@@ -1,4 +1,5 @@
 using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Catalog.Domain;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -274,5 +275,177 @@ public sealed class EditablePublicContentTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+    }
+    [Fact]
+    public void Create_rejects_missing_variants()
+    {
+        Action create = () => EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, null!);
+
+        // Act
+        var exception = create.ShouldThrow<ArgumentNullException>();
+
+        // Assert
+        exception.ParamName.ShouldBe("variants");
+    }
+
+    [Fact]
+    public void Create_accepts_a_key_at_the_maximum_length_and_rejects_one_character_more()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+
+        // Act
+        var atLimit = EditablePublicContent.Create(new string('k', CatalogDomainLimits.MaxDefaultLength), PublicContentLanguage.EnUs, [enUs, ptBr]);
+        var overLimit = EditablePublicContent.Create(new string('k', CatalogDomainLimits.MaxDefaultLength + 1), PublicContentLanguage.EnUs, [enUs, ptBr]);
+
+        // Assert
+        atLimit.IsSuccess.ShouldBeTrue();
+        overLimit.IsFailure.ShouldBeTrue();
+        var validationErrors = overLimit.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors["key"].ShouldHaveSingleItem().ShouldBe($"Key cannot exceed {CatalogDomainLimits.MaxDefaultLength} characters.");
+    }
+
+    [Fact]
+    public void Create_reports_each_duplicate_language_exactly_once()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var otherPtBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
+
+        // Act
+        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs, ptBr, otherPtBr]);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors["Variants"].ShouldHaveSingleItem().ShouldBe("Variants contains a duplicate language variant.");
+    }
+
+    [Fact]
+    public void Create_reports_only_the_missing_language()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+
+        // Act
+        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs]);
+
+        // Assert
+        var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        validationErrors["Variants"].ShouldHaveSingleItem().ShouldBe("Variants is missing a supported language variant.");
+        result.ErrorDetails.Detail.ShouldContain(nameof(PublicContentLanguage.PtBr), StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldNotContain(nameof(PublicContentLanguage.EnUs), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PublishIfReady_publishes_content_when_every_variant_is_approved()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        // Act
+        var result = content.PublishIfReady();
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        content.PublicationState.ShouldBe(PublicContentPublicationState.Published);
+    }
+
+    [Fact]
+    public void PublishIfReady_leaves_content_in_review_when_a_variant_needs_review()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: true);
+
+        // Act
+        var result = content.PublishIfReady();
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        content.PublicationState.ShouldBe(PublicContentPublicationState.ReviewRequired);
+    }
+
+    [Fact]
+    public void ReplaceVariants_rejects_missing_variants()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        Action replace = () => content.ReplaceVariants(PublicContentLanguage.EnUs, null!);
+
+        // Act
+        var exception = replace.ShouldThrow<ArgumentNullException>();
+
+        // Assert
+        exception.ParamName.ShouldBe("variants");
+    }
+
+    [Fact]
+    public void ReplaceVariants_rejects_an_unsupported_source_language_without_changing_content()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
+
+        // Act
+        var result = content.ReplaceVariants(PublicContentLanguage.None, [enUs, ptBr]);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        content.SourceLanguage.ShouldBe(PublicContentLanguage.EnUs);
+        content.PublicationState.ShouldBe(PublicContentPublicationState.Draft);
+    }
+
+    [Fact]
+    public void ReplaceVariants_stores_exactly_the_new_variants_and_recomputes_the_publication_state()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
+
+        // Act
+        var result = content.ReplaceVariants(PublicContentLanguage.PtBr, [enUs, ptBr]);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        content.SourceLanguage.ShouldBe(PublicContentLanguage.PtBr);
+        content.Variants.Count.ShouldBe(2);
+        content.Variants.ShouldContain(ptBr);
+        content.PublicationState.ShouldBe(PublicContentPublicationState.ReviewRequired);
+    }
+
+    [Fact]
+    public void ReplaceWith_rejects_missing_replacement_content()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        Action replace = () => content.ReplaceWith(null!);
+
+        // Act
+        var exception = replace.ShouldThrow<ArgumentNullException>();
+
+        // Assert
+        exception.ParamName.ShouldBe("replacement");
+    }
+
+    [Fact]
+    public void FindPublicVariant_returns_null_when_neither_the_requested_language_nor_english_is_approved()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: true);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
+        content.ReplaceVariants(PublicContentLanguage.EnUs, [enUs, ptBr]).IsSuccess.ShouldBeTrue();
+
+        // Act
+        var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
+
+        // Assert
+        variant.ShouldBeNull();
     }
 }

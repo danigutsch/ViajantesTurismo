@@ -6,8 +6,6 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed class ClamAvResourceTests
 {
-    private const string ResourceNameSuffixConfigurationKey = "DcpPublisher:ResourceNameSuffix";
-
     [Fact]
     public async Task AddClamAv_creates_a_private_typed_resource_with_pinned_image_and_health_check()
     {
@@ -18,7 +16,6 @@ public sealed class ClamAvResourceTests
         var clamAv = builder.AddClamAv("clamav");
         var image = clamAv.Resource.Annotations.OfType<ContainerImageAnnotation>().ShouldHaveSingleItem();
         var endpoint = clamAv.Resource.Annotations.OfType<EndpointAnnotation>().ShouldHaveSingleItem();
-        var volume = clamAv.Resource.Annotations.OfType<ContainerMountAnnotation>().ShouldHaveSingleItem();
         var healthCheck = clamAv.Resource.Annotations.OfType<HealthCheckAnnotation>().ShouldHaveSingleItem();
         endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "clamav", 3310, "3310");
         var destination = builder.AddResource(new ContainerResource("consumer")).WithClamAvReference(clamAv);
@@ -39,9 +36,7 @@ public sealed class ClamAvResourceTests
         endpoint.TargetPort.ShouldBe(3310);
         endpoint.UriScheme.ShouldBe("tcp");
         endpoint.IsExternal.ShouldBeFalse();
-        volume.Source.ShouldBe("clamav-definitions");
-        volume.Target.ShouldBe("/var/lib/clamav");
-        volume.Type.ShouldBe(ContainerMountType.Volume);
+        clamAv.Resource.Annotations.OfType<ContainerMountAnnotation>().ShouldBeEmpty();
         healthCheck.Key.ShouldBe("clamav-tcp-ping");
         clamAv.Resource.Annotations.OfType<ContainerLifetimeAnnotation>().ShouldBeEmpty();
         environmentConfiguration.EnvironmentVariablesWithUnprocessed
@@ -50,21 +45,6 @@ public sealed class ClamAvResourceTests
         environmentConfiguration.EnvironmentVariablesWithUnprocessed
             .Where(variable => variable.Key == "MalwareScanning__ClamAv__Port")
             .ShouldHaveSingleItem();
-    }
-
-    [Fact]
-    public void AddClamAv_scopes_definition_volume_with_dcp_resource_name_suffix()
-    {
-        // Arrange
-        var builder = DistributedApplication.CreateBuilder([]);
-        builder.Configuration[ResourceNameSuffixConfigurationKey] = "test";
-
-        // Act
-        var clamAv = builder.AddClamAv("clamav");
-        var volume = clamAv.Resource.Annotations.OfType<ContainerMountAnnotation>().ShouldHaveSingleItem();
-
-        // Assert
-        volume.Source.ShouldBe("clamav-test-definitions");
     }
 
     [Fact]

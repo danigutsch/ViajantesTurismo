@@ -28,14 +28,13 @@ public sealed class CiSelectionTests
         "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
     [InlineData(".devcontainer/devcontainer.json", "true", "false",
         "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
-    [InlineData("roadmap/config.json", "true", "false",
-        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
-    [InlineData("roadmap/schema/fixture.schema.json", "true", "false",
-        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
-    [InlineData("roadmap/reconciliation/fixture.json", "true", "false",
-        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
+    [InlineData("roadmap/config.json", "true", "false", "[\"fast-validation-2\"]")]
+    [InlineData("roadmap/schema/fixture.schema.json", "true", "false", "[\"fast-validation-2\"]")]
+    [InlineData("roadmap/reconciliation/fixture.json", "true", "false", "[\"fast-validation-2\"]")]
     [InlineData("observability/otel-collector/aspire.yaml", "true", "false",
-        "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
+        "[\"fast-validation-2\",\"hosted-tests\"]")]
+    [InlineData("tests/fixtures/media-accessibility/baseline.json", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\"]")]
     [InlineData(".github/workflows/ci.yml", "true", "false",
         "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
     [InlineData("tests/ViajantesTurismo.Catalog.UnitTests/Fixture.cs", "true", "false", "[\"fast-validation-1\",\"fast-validation-2\"]")]

@@ -19,9 +19,8 @@ duplicate the volatile resource list or dependency graph.
 
 ### Optional Developer Tooling
 
-- **admin-performance-smoke**: opt-in k6 smoke scenario resource that runs
-  `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke`; enabled only when `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set
-  before AppHost starts
+- **admin-performance-smoke**: opt-in k6 smoke scenario resource, a container pinned by tag and digest that starts only on
+  request; enabled only when `VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1` is set before AppHost starts
 - **Grafana LGTM observability stack**: opt-in local telemetry backend; enabled only when
   `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` is set before AppHost starts
 
@@ -199,8 +198,8 @@ ClamAV exposes only its private TCP `clamd` endpoint on port `3310`; it has no p
 HTTP health check. Admin.ApiService, Catalog.ApiService, and Integration Event Worker receive the
 private host and port through AppHost configuration and wait for the ClamAV PING/PONG health check.
 
-The scanner persists definitions in `clamav-definitions` at `/var/lib/clamav`. Test runs use the
-isolated name `clamav-<suffix>-definitions`. FreshClam is enabled by default. A missing or reset
+The AppHost keeps the definitions in the named volume `clamav-definitions` at `/var/lib/clamav`, and
+hosted test runs mount no volume. FreshClam is enabled by default. A missing or reset
 definitions volume can make the next startup take longer while definitions download and ClamAV loads
 them. The AppHost does not configure a ClamAV memory limit; ensure the local container runtime has
 enough memory for the daemon and its definitions. Health waits, not fixed delays, decide readiness.
@@ -241,7 +240,8 @@ reaches the browser.
 `conformance-test-client` permits password grants solely for owned integration and browser-test
 setup; it is a local realm client and is not a production client.
 
-SeaweedFS access and secret keys are persisted Aspire parameters. To override them locally, use the
+SeaweedFS keeps its objects in the named volume `seaweedfs-data`. Its access and secret keys are
+persisted Aspire parameters. To override them locally, use the
 AppHost user-secrets store and omit resolved values from source control:
 
 ```bash
@@ -261,9 +261,10 @@ VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
 The resource is intentionally disabled by default so regular AppHost runs do not execute load tooling.
-It runs `dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke`, so local k6 is the default;
-`VT_K6_USE_DOCKER=1` adds `--container`, and `VT_K6_DOCKER_IMAGE` then adds `--image`. For profiles, thresholds, security defaults, and result
-output, see `tests/performance/README.md` and `tests/performance/k6/README.md`.
+It is a `grafana/k6` container from `PandaBear.SharedKernel.Aspire.Hosting.K6` that waits for the Admin API and the identity
+provider and starts only when you start it from the dashboard or with `aspire resource`. It signs in with the
+`k6-smoke` service account (the `Reader` role) and a generated secret parameter. For profiles, thresholds, security
+defaults, and result output, see `tests/performance/README.md` and `tests/performance/k6/README.md`.
 
 ## Trusted Telemetry Gateway and Observability Stack
 

@@ -26,7 +26,9 @@ public sealed class ConsumerSetupContractTests
         fullStep.ShouldContain("verify-devcontainer --exec \"$VERIFY_TOOLCHAINS\"", StringComparison.Ordinal);
         fullStep.ShouldContain("--exec \"$INSTALL_PLAYWRIGHT_DEPENDENCIES\" --exec \"$RUN_TEST_SLICES\" --root .", StringComparison.Ordinal);
         workflow.ShouldContain("dotnet tool run sharedkernel-ci -- select --selection \"${selection}\"", StringComparison.Ordinal);
-        workflow.ShouldContain("dotnet tool run sharedkernel-ci -- run --slice \"${slice}\" --selection \"${selection}\" --install-playwright", StringComparison.Ordinal);
+        workflow.ShouldContain(
+            "dotnet tool run sharedkernel-ci -- run --slice \"${slice}\" --selection \"${selection}\" --install-playwright \\\n            --exclude-trait Requires=fasttext",
+            StringComparison.Ordinal);
         workflow.ShouldContain("    paths:\n      - .devcontainer/**\n      - .github/workflows/devcontainer-smoke.yml\n      - global.json\n      - setup-dev.sh\n  schedule:", StringComparison.Ordinal);
         workflow.ShouldContain("path: TestResults/devcontainer-smoke/**", StringComparison.Ordinal);
         workflow.ShouldNotContain("restore-local-tools", StringComparison.Ordinal);
@@ -78,6 +80,20 @@ public sealed class ConsumerSetupContractTests
         // Assert
         safeDirectory.ShouldBeGreaterThan(-1);
         setup.ShouldBeGreaterThan(safeDirectory);
+    }
+
+    [Fact]
+    public async Task Devcontainer_image_is_pinned_by_digest_alone()
+    {
+        // Arrange
+        var root = RepositoryTestProcess.GetRepositoryRoot();
+
+        // Act
+        var configuration = await File.ReadAllTextAsync(Path.Combine(root, ".devcontainer", "devcontainer.json"), TestContext.Current.CancellationToken);
+        var image = configuration.Split('\n').Where(static line => line.TrimStart().StartsWith("\"image\":", StringComparison.Ordinal)).ShouldHaveSingleItem();
+
+        // Assert
+        image.ShouldMatch("^\\s*\"image\": \"[a-z0-9./-]+@sha256:[0-9a-f]{64}\",$");
     }
 
     [Fact]

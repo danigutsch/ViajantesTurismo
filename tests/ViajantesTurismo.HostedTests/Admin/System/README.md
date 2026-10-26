@@ -52,8 +52,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.SystemTests --filter-method "
 ## Notes
 
 - `AspireSystemTestFixture` borrows the system stack cached by the assembly's `HostedTestFixture`; each test gets a fresh
-  `BrowserContext` and fresh authenticated API clients that it owns and disposes. The first System test starts the System stack
-  and every container no earlier test has started (all six when it runs alone), and later tests reuse them.
+  `BrowserContext` and fresh authenticated API clients that it owns and disposes.
 - Tests seed their own data and don't depend on each other.
 - `Shared.NavigationTests` is the canonical first parallel-safe Aspire-hosted migration slice for narrow reliability checks.
 - `ViajantesTurismo.Management.Web` prerenders routes but keeps the layout inert until the

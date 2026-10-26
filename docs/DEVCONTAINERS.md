@@ -15,7 +15,8 @@ VS Code Dev Containers.
 
 The current `.devcontainer/devcontainer.json` defines a shared environment with:
 
-- Ubuntu 26.04 LTS via `mcr.microsoft.com/devcontainers/dotnet:dev-11.0-preview-resolute`
+- Ubuntu 26.04 LTS via the digest-pinned `mcr.microsoft.com/devcontainers/dotnet:dev-11.0-resolute` image,
+  referenced by digest alone because the Dev Containers CLI cannot parse a tag together with a digest
 - the exact .NET SDK from `global.json`, installed by `.devcontainer/on-create.sh`
 - Git and Docker-in-Docker Dev Container Features
 - repository-specific VS Code extensions and default settings
@@ -128,6 +129,9 @@ The `Devcontainer Smoke` workflow runs the same command:
 - the monthly schedule runs full validation: the same check, then Chromium's runtime libraries and
   every CI slice of `.config/sharedkernel-ci.json` one after another with `sharedkernel-ci run`
 - manual dispatch lets you choose either mode
+
+The devcontainer does not provision the fastText engine, so full mode runs every slice with
+`--exclude-trait Requires=fasttext`; CI runs those tests in the Fast Validation 2 job.
 
 The full-mode commands are the `INSTALL_PLAYWRIGHT_DEPENDENCIES` and `RUN_TEST_SLICES` values in
 `.github/workflows/devcontainer-smoke.yml`; pass them as further `--exec` arguments to reproduce a full

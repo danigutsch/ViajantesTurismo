@@ -37,8 +37,12 @@ public sealed class PaymentContractMappingTests
         Action project = () => PaymentAccountMappings.Map((PaymentAccountKind)value);
 
         // Assert
-        parse.ShouldThrow<ArgumentOutOfRangeException>();
-        project.ShouldThrow<ArgumentOutOfRangeException>();
+        var parseError = parse.ShouldThrow<ArgumentOutOfRangeException>();
+        parseError.ParamName.ShouldBe("value");
+        parseError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
+        var projectError = project.ShouldThrow<ArgumentOutOfRangeException>();
+        projectError.ParamName.ShouldBe("value");
+        projectError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -66,8 +70,12 @@ public sealed class PaymentContractMappingTests
         Action project = () => PaymentAccountMappings.Map((PaymentAccountStatus)value);
 
         // Assert
-        parse.ShouldThrow<ArgumentOutOfRangeException>();
-        project.ShouldThrow<ArgumentOutOfRangeException>();
+        var parseError = parse.ShouldThrow<ArgumentOutOfRangeException>();
+        parseError.ParamName.ShouldBe("value");
+        parseError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
+        var projectError = project.ShouldThrow<ArgumentOutOfRangeException>();
+        projectError.ParamName.ShouldBe("value");
+        projectError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -97,8 +105,12 @@ public sealed class PaymentContractMappingTests
         Action project = () => PaymentAccountMappings.Map((BrazilianAccountType)value);
 
         // Assert
-        parse.ShouldThrow<ArgumentOutOfRangeException>();
-        project.ShouldThrow<ArgumentOutOfRangeException>();
+        var parseError = parse.ShouldThrow<ArgumentOutOfRangeException>();
+        parseError.ParamName.ShouldBe("value");
+        parseError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
+        var projectError = project.ShouldThrow<ArgumentOutOfRangeException>();
+        projectError.ParamName.ShouldBe("value");
+        projectError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -127,8 +139,12 @@ public sealed class PaymentContractMappingTests
         Action project = () => PaymentAccountMappings.Map((PaymentAccountVerificationMethod)value);
 
         // Assert
-        parse.ShouldThrow<ArgumentOutOfRangeException>();
-        project.ShouldThrow<ArgumentOutOfRangeException>();
+        var parseError = parse.ShouldThrow<ArgumentOutOfRangeException>();
+        parseError.ParamName.ShouldBe("value");
+        parseError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
+        var projectError = project.ShouldThrow<ArgumentOutOfRangeException>();
+        projectError.ParamName.ShouldBe("value");
+        projectError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -156,8 +172,12 @@ public sealed class PaymentContractMappingTests
         Action project = () => PaymentAccountMappings.Map((PaymentAccountReviewOutcome)value);
 
         // Assert
-        parse.ShouldThrow<ArgumentOutOfRangeException>();
-        project.ShouldThrow<ArgumentOutOfRangeException>();
+        var parseError = parse.ShouldThrow<ArgumentOutOfRangeException>();
+        parseError.ParamName.ShouldBe("value");
+        parseError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
+        var projectError = project.ShouldThrow<ArgumentOutOfRangeException>();
+        projectError.ParamName.ShouldBe("value");
+        projectError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -192,8 +212,12 @@ public sealed class PaymentContractMappingTests
         Action project = () => PaymentAccountMappings.Map((PaymentAccountReason)value);
 
         // Assert
-        parse.ShouldThrow<ArgumentOutOfRangeException>();
-        project.ShouldThrow<ArgumentOutOfRangeException>();
+        var parseError = parse.ShouldThrow<ArgumentOutOfRangeException>();
+        parseError.ParamName.ShouldBe("value");
+        parseError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
+        var projectError = project.ShouldThrow<ArgumentOutOfRangeException>();
+        projectError.ParamName.ShouldBe("value");
+        projectError.Message.ShouldStartWith("Unknown payment account label.", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -243,8 +267,12 @@ public sealed class PaymentContractMappingTests
         Action project = () => FinancialMappings.Map((FinancialReason)value);
 
         // Assert
-        parse.ShouldThrow<ArgumentOutOfRangeException>();
-        project.ShouldThrow<ArgumentOutOfRangeException>();
+        var parseError = parse.ShouldThrow<ArgumentOutOfRangeException>();
+        parseError.ParamName.ShouldBe("value");
+        parseError.Message.ShouldStartWith("Unknown financial reason.", StringComparison.Ordinal);
+        var projectError = project.ShouldThrow<ArgumentOutOfRangeException>();
+        projectError.ParamName.ShouldBe("value");
+        projectError.Message.ShouldStartWith("Unknown financial reason.", StringComparison.Ordinal);
     }
 
 }
