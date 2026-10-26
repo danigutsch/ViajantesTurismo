@@ -126,6 +126,7 @@ dotnet_diagnostic.CA1040.severity = warning
 dotnet_diagnostic.CA1303.severity = warning
 dotnet_diagnostic.CA1508.severity = warning
 dotnet_diagnostic.CA1515.severity = warning
+dotnet_diagnostic.CA1502.severity = warning
 dotnet_diagnostic.CA1711.severity = warning
 dotnet_diagnostic.CA1814.severity = warning
 dotnet_diagnostic.CA1822.severity = warning
@@ -346,3 +347,8 @@ dotnet_diagnostic.SKTEST010.severity = none
 # Owner: Admin API test maintainers. Remove when framework source identities are publicly available.
 [tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs]
 dotnet_diagnostic.SKTEST010.severity = none
+
+# Persisted-state validation in one method has a cyclomatic complexity of 170, above the CodeMetricsConfig.txt limit.
+# Owner: Admin domain maintainers. Remove when #1287 splits the method.
+[src/ViajantesTurismo.Admin.Domain/Payments/BookingFinancialHistory.Persistence.cs]
+dotnet_diagnostic.CA1502.severity = none

@@ -23,8 +23,6 @@
 # Generated local caches
 /caches/
 # Local plugin state
-/sonarlint/
-/sonarlint.xml
 /aws.xml
 # GitHub Copilot ignored files
 /copilot*

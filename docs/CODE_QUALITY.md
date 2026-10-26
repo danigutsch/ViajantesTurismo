@@ -251,10 +251,9 @@ Keep suppressions narrow and do not use guard clauses instead of domain validati
 ### Build analysis and coverage gates
 
 The SDK analyzers use `AnalysisLevel=latest`, `AnalysisMode=All`, and warnings as errors.
-SharedKernel analyzers and architecture checks remain enabled. SonarAnalyzer and SonarCloud
-have been removed; this does not reproduce every Sonar diagnostic, cognitive-complexity metric,
-duplication metric, or issue classification. See [quality gates](ci/quality-gates.md) for
-removed rules, coverage policy, and the branch-protection migration.
+SharedKernel analyzers and architecture checks remain enabled, and `CA1502` limits cyclomatic complexity
+through `CodeMetricsConfig.txt`. Cognitive complexity and duplicate-code detection are not enforced.
+See [quality gates](ci/quality-gates.md) for the complexity limit, coverage policy, and branch protection.
 
 ### NuGet audit and restore policy
 

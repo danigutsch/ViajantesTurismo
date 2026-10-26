@@ -1,0 +1,3 @@
+# Cyclomatic complexity limit for CA1502, replacing the retired Sonar complexity gate.
+# Lower it as the reviewed exceptions in .editorconfig are refactored; do not raise it.
+CA1502: 50

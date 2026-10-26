@@ -188,7 +188,7 @@ changed executable lines and conditions of files that match `coverage.include` a
 `quality-evidence`. Missing or malformed evidence fails. Pushes, scheduled, and manual runs do not
 enforce a changed-code threshold. Documentation-only changes use the lightweight success path.
 
-This job requires no Sonar token or other analysis secret and runs for fork pull requests.
+This job requires no analysis secret and runs for fork pull requests.
 See [quality gates](quality-gates.md) for analysis gaps, child-process coverage limitations,
 and the required remote branch-protection transition.
 
@@ -216,16 +216,15 @@ Documentation-only and code changes run the same steps; the job does not wait fo
 ## Workflow evolution
 
 Validation remains consolidated in one primary workflow: select changes, execute independent
-slices, aggregate coverage, and report required checks. The historical hosted Sonar analysis
-has been replaced by repository-owned SDK analysis and changed-code coverage; no scanner-wrapped
-rebuild or hosted analysis credentials are needed.
+slices, aggregate coverage, and report required checks. Repository-owned SDK analysis and
+changed-code coverage need no hosted analysis credentials.
 
 Pull-request validation and post-merge `main` validation serve separate purposes: the latter
 checks the actual merged branch. Keep `merge_group` enabled and preserve in-flight `main` runs.
 Never use `pull_request_target` to execute untrusted pull-request build or test code.
 
-A maintainer must update the remote required check from `SonarCloud` to `Quality Gate` only
-after the replacement passes. Workflow edits alone do not change branch protection.
+Workflow edits alone do not change branch protection; a maintainer updates required checks
+only after the replacement passes.
 
 For missing PR-context checks, see [Governance](governance.md#recovery-for-missing-pr-checks).
 

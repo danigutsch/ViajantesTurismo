@@ -322,7 +322,7 @@ Do not put those connection strings in source-controlled configuration.
 ## Coverage
 
 The AppHost project is local orchestration code and is excluded from Coverlet MTP coverage
-collection by `tests/testconfig.json`. There is no hosted Sonar coverage configuration.
+collection by `tests/testconfig.json`.
 
 Coverage of services launched as separate AppHost child processes is not automatic. Passing an
 Aspire-backed test does not prove that its child-service code was instrumented. Missing coverage

@@ -24,8 +24,7 @@ The repository already has a stronger analyzer baseline than when this roadmap b
 - `Directory.Build.props` enables `TreatWarningsAsErrors`, `CodeAnalysisTreatWarningsAsErrors`,
   `EnforceCodeStyleInBuild`, `AnalysisLevel=latest`, and `AnalysisMode=All`.
 - SDK 10.0.402 and SharedKernel analyzers provide ordinary build diagnostics.
-- SonarAnalyzer and SonarCloud are retired; [quality gates](ci/quality-gates.md) records
-  removed rules and the analysis gaps that are not reproduced.
+- [Quality gates](ci/quality-gates.md) records the complexity limit and the analysis gaps that are not reproduced.
 - `.editorconfig` owns most scoped severity tuning and exception policy, while test-project-wide
   exceptions still include a small `NoWarn` set in `tests/Directory.Build.props`.
 

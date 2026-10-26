@@ -379,8 +379,7 @@ The required checks on `main` are documented in [docs/ci/governance.md](docs/ci/
 The main CI test slices preserve their required check names and use lightweight success paths when
 path detection shows an expensive slice is not required. The repository-owned `Quality Gate`
 aggregates coverage and enforces 80% coverage on changed executable lines and conditions.
-Switch the branch-protection requirement from `SonarCloud` only after the new check passes;
-see [quality gates](docs/ci/quality-gates.md) for migration limitations.
+See [quality gates](docs/ci/quality-gates.md) for analysis limitations.
 
 To reproduce the core checks locally, run:
 
