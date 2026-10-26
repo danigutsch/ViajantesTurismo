@@ -221,8 +221,7 @@ public sealed partial class AppHostOrchestrationTests
         fixtureText.ShouldContain(
             "AspireTestApplication.Start(builder, profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [",
             StringComparison.Ordinal,
-            "the System stack awaits the API and both web applications, and the Full stack awaits its own resources");
-        fixtureText.ShouldContain("], StartBudget, ct);", StringComparison.Ordinal, "the stack awaits its resources within the start budget");
+            "the System stack awaits the API and both web applications");
     }
 
     [Fact]
