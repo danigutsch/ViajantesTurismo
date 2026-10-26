@@ -11,7 +11,7 @@ public sealed class AdminAuthorizationTests
     public void Role_mapping_is_allowlisted_and_case_sensitive()
     {
         // Arrange
-        string[] expectedRoles = ["Admin", "Operator"];
+        string[] expectedRoles = ["Admin", "Operator", "Reader"];
 
         // Act
         var permissionsByRole = AdminAuthorization.PermissionsByRole;
@@ -81,5 +81,34 @@ public sealed class AdminAuthorizationTests
         actualPermissions.ShouldNotContain(AdminAuthorization.CustomerWrite);
         actualPermissions.ShouldNotContain(AdminAuthorization.DocumentManage);
         actualPermissions.ShouldNotContain(AdminAuthorization.PaymentManage);
+    }
+
+    [Fact]
+    public void Reader_role_receives_only_the_read_permissions_of_the_collection_endpoints()
+    {
+        // Arrange
+        string[] expectedPermissions =
+        [
+            AdminAuthorization.BookingRead,
+            AdminAuthorization.CustomerRead,
+            AdminAuthorization.CustomerSensitiveRead,
+            AdminAuthorization.PaymentRead,
+            AdminAuthorization.TourRead
+        ];
+
+        // Act
+        var actualPermissions = AdminAuthorization.PermissionsByRole["Reader"];
+
+        // Assert
+        actualPermissions.Except(expectedPermissions, StringComparer.Ordinal).ShouldBeEmpty();
+        expectedPermissions.Except(actualPermissions, StringComparer.Ordinal).ShouldBeEmpty();
+        actualPermissions.ShouldNotContain(AdminAuthorization.BookingWrite);
+        actualPermissions.ShouldNotContain(AdminAuthorization.BookingDelete);
+        actualPermissions.ShouldNotContain(AdminAuthorization.CustomerWrite);
+        actualPermissions.ShouldNotContain(AdminAuthorization.CustomerImport);
+        actualPermissions.ShouldNotContain(AdminAuthorization.DocumentManage);
+        actualPermissions.ShouldNotContain(AdminAuthorization.PaymentManage);
+        actualPermissions.ShouldNotContain(AdminAuthorization.PaymentWrite);
+        actualPermissions.ShouldNotContain(AdminAuthorization.TourWrite);
     }
 }

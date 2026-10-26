@@ -49,10 +49,11 @@ used. Only the primary subtag is compared, independently of the declared region.
 The model expects UTF-8, as documented upstream. The v0.9.2 sources may require the compiler option
 `-include cstdint` on modern GCC; current upstream source includes that header explicitly.
 
-To run the real-engine verification cases after building the WebTests project, set
-`MEDIA_TEST_FASTTEXT` and `MEDIA_TEST_FASTTEXT_MODEL` to the provisioned absolute paths, then run the
-`MediaLanguageGuidanceTests` class. Without those variables, real-engine cases are not exercised;
-parser and indeterminate-rule cases remain independent of external artifacts.
+The real-engine verification cases run with every other test of the WebTests project. They carry the trait
+`Requires=fasttext`, and they fail with a message that names the variables when `MEDIA_TEST_FASTTEXT` and
+`MEDIA_TEST_FASTTEXT_MODEL` do not hold the provisioned absolute paths. An environment without the engine leaves
+them out with `--filter-not-trait Requires=fasttext`; `sharedkernel-ci run --exclude-trait Requires=fasttext`
+does the same for a slice. Parser and indeterminate-rule cases remain independent of external artifacts.
 
 The Linux Fast Validation 2 CI job provisions the same checksum-pinned source archive and model,
 builds the CLI with the runner's C++ compiler, and enables these real-engine tests for coverage.

@@ -8,12 +8,6 @@
   },
   "scenarios": [
     {
-      "name": "admin-smoke",
-      "script": "scenarios/admin-smoke.js",
-      "baseUrlVariable": "VT_API_BASE_URL",
-      "environment": ["VT_K6_PROFILE", "VT_K6_VUS", "VT_K6_DURATION"]
-    },
-    {
       "name": "file-upload-scan",
       "script": "scenarios/file-upload-scan.js",
       "baseUrlVariable": "VT_UPLOAD_BASE_URL",

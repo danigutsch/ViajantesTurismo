@@ -5,6 +5,7 @@
     "realm": [
       { "name": "Admin" },
       { "name": "Operator" },
+      { "name": "Reader" },
       { "name": "offline_access" }
     ]
   },
@@ -238,6 +239,37 @@
           }
         }
       ]
+    },
+    {
+      "clientId": "k6-smoke",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${LOCAL_K6_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": [
+        "roles",
+        "admin-api"
+      ],
+      "optionalClientScopes": [],
+      "protocolMappers": [
+        {
+          "name": "roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "userinfo.token.claim": "false"
+          }
+        }
+      ]
     }
   ],
   "users": [
@@ -279,6 +311,14 @@
       "realmRoles": [
         "Operator",
         "offline_access"
+      ]
+    },
+    {
+      "username": "service-account-k6-smoke",
+      "enabled": true,
+      "serviceAccountClientId": "k6-smoke",
+      "realmRoles": [
+        "Reader"
       ]
     }
   ]

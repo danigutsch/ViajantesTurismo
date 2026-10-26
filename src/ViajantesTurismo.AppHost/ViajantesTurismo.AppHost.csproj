@@ -20,6 +20,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"/>
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.Grafana" />
+        <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.K6" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Analyzers" PrivateAssets="all" />

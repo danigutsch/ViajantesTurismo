@@ -30,10 +30,10 @@ flowchart LR
     catalogDatabase[Database]
     securityDatabase[Database]
     DatabaseObservability[Database Observability]
+    managementWebClientSecret[Local Secret]
     ManagementWeb[Management.Web]
     migrationService[MigrationService]
     ObservabilityStack[Observability Stack]
-    managementWebClientSecret[Parameter]
     databaseServer[PostgreSQL server]
     PublicWeb[Public.Web]
     cache[Redis cache]
@@ -44,6 +44,7 @@ flowchart LR
     AdminIntegrationEventWorker --> catalogDatabase
     AdminIntegrationEventWorker --> migrationService
     AdminPerformanceSmoke --> apiService
+    AdminPerformanceSmoke --> identityProvider
     CatalogIntegrationEventWorker --> adminDatabase
     CatalogIntegrationEventWorker --> catalogDatabase
     CatalogIntegrationEventWorker --> clamAv
