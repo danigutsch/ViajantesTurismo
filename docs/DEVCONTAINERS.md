@@ -17,6 +17,8 @@ The current `.devcontainer/devcontainer.json` defines a shared environment with:
 
 - Ubuntu 26.04 LTS via the digest-pinned `mcr.microsoft.com/devcontainers/dotnet:dev-11.0-resolute` image,
   referenced by digest alone because the Dev Containers CLI cannot parse a tag together with a digest
+- an image digest that is refreshed by hand: Dependabot's `devcontainers` ecosystem updates Features only, so a new
+  digest comes from resolving the tag at `mcr.microsoft.com` and is validated with a `validation_mode=full` smoke run
 - the exact .NET SDK from `global.json`, installed by `.devcontainer/on-create.sh`
 - Git and Docker-in-Docker Dev Container Features
 - repository-specific VS Code extensions and default settings
