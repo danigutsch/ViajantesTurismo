@@ -9,26 +9,40 @@ namespace ViajantesTurismo.Branding.Contracts.Http;
 /// <param name="httpClient">The configured HTTP client.</param>
 public sealed class BrandingManagementClient(HttpClient httpClient) : IBrandingManagementClient
 {
-    internal const int MaximumSettingsResponseBytes = 1024 * 1024;
     private const string ManagementSettingsRequestPath = $"/api/v1/{BrandingRoutes.ManagementSettingsPath}";
+    private const string MissingStrongEntityTagMessage = "Branding API returned settings without a strong entity tag.";
     private static readonly BrandingManagementJsonContext Json = BrandingManagementJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<BrandingManagementDocument> GetSettings(CancellationToken ct)
+    public async Task<HttpOutcome<BrandingManagementDocument>> GetSettings(CancellationToken ct)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(ManagementSettingsRequestPath, UriKind.Relative));
-        return await Send(request, static async (response, token) =>
+        var outcome = await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(ManagementSettingsRequestPath, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.BrandingManagementSettingsDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+
+        if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } settings, StatusCode: { } status })
         {
-            response.EnsureSuccessStatusCode();
-            var entityTag = response.Headers.ETag is { IsWeak: false } tag
-                ? tag.Tag
-                : throw new InvalidOperationException("Branding API returned settings without a strong entity tag.");
-            return new BrandingManagementDocument(await ReadSettings(response, token).ConfigureAwait(false), entityTag);
-        }, ct).ConfigureAwait(false);
+            return new HttpOutcome<BrandingManagementDocument>
+            {
+                Kind = outcome.Kind,
+                StatusCode = outcome.StatusCode,
+                ValidationErrors = outcome.ValidationErrors,
+                Message = outcome.Message
+            };
+        }
+
+        // The validator is opaque to the client; only a weak or missing tag cannot guard the next full-state PUT.
+        return outcome.ETag is { } entityTag && !entityTag.StartsWith("W/", StringComparison.Ordinal)
+            ? HttpOutcomeMapper.Succeeded(status, new BrandingManagementDocument(settings, entityTag))
+            : HttpOutcomeMapper.Status<BrandingManagementDocument>(HttpOutcomeKind.MalformedBody, status, MissingStrongEntityTagMessage);
     }
 
     /// <inheritdoc />
-    public async Task<BrandingManagementSettingsDto> SaveSettings(
+    public async Task<HttpOutcome<BrandingManagementSettingsDto>> SaveSettings(
         BrandingSettingsDto request,
         string entityTag,
         CancellationToken ct)
@@ -36,57 +50,17 @@ public sealed class BrandingManagementClient(HttpClient httpClient) : IBrandingM
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(entityTag);
 
-        using var httpRequest = new HttpRequestMessage(HttpMethod.Put, new Uri(ManagementSettingsRequestPath, UriKind.Relative))
+        var httpRequest = new HttpRequestMessage(HttpMethod.Put, new Uri(ManagementSettingsRequestPath, UriKind.Relative))
         {
             Content = JsonContent.Create(request, Json.BrandingSettingsDto)
         };
         httpRequest.Headers.IfMatch.ParseAdd(entityTag);
-        return await Send(httpRequest, static async (response, token) =>
-        {
-            if (response.StatusCode == HttpStatusCode.PreconditionFailed)
-            {
-                throw new BrandingPreconditionFailedException();
-            }
-
-            await ContractHttpValidation.EnsureSuccessOrThrowValidationException(
-                response,
-                Json.ContractValidationProblemDto,
-                token).ConfigureAwait(false);
-            return await ReadSettings(response, token).ConfigureAwait(false);
-        }, ct).ConfigureAwait(false);
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            httpRequest,
+            HttpStatusCode.OK,
+            Json.BrandingManagementSettingsDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
     }
-
-    // The body is read after the headers, so the client timeout and the response-size ceiling are applied here.
-    private async Task<T> Send<T>(
-        HttpRequestMessage request,
-        Func<HttpResponseMessage, CancellationToken, Task<T>> read,
-        CancellationToken ct)
-    {
-        using var timeoutSource = httpClient.Timeout == Timeout.InfiniteTimeSpan
-            ? null
-            : CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeoutSource?.CancelAfter(httpClient.Timeout);
-        var requestToken = timeoutSource?.Token ?? ct;
-        try
-        {
-            using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, requestToken)
-                .ConfigureAwait(false);
-            var responseLimit = Math.Min(httpClient.MaxResponseContentBufferSize, MaximumSettingsResponseBytes);
-            if (response.Content.Headers.ContentLength > responseLimit)
-            {
-                throw new HttpRequestException("Branding API response body exceeds the maximum response bytes.");
-            }
-
-            await response.Content.LoadIntoBufferAsync(responseLimit, requestToken).ConfigureAwait(false);
-            return await read(response, requestToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException exception) when (ct.IsCancellationRequested)
-        {
-            throw new OperationCanceledException(exception.Message, exception, ct);
-        }
-    }
-
-    private static async Task<BrandingManagementSettingsDto> ReadSettings(HttpResponseMessage response, CancellationToken ct) =>
-        await response.Content.ReadFromJsonAsync(Json.BrandingManagementSettingsDto, ct).ConfigureAwait(false)
-        ?? throw new InvalidOperationException("Branding API returned an empty settings response.");
 }

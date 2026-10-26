@@ -1,6 +1,7 @@
 @page "/catalog/theme"
 @page "/branding"
 @using System.ComponentModel.DataAnnotations
+@using System.Net
 @using PandaBear.HttpClients
 @using ViajantesTurismo.Branding.Contracts.Http
 @using ViajantesTurismo.Management.Web.Helpers
@@ -106,22 +107,17 @@ else
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        try
+        var outcome = await BrandingApi.GetSettings(CancellationToken.None);
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
         {
-            ApplyDocument(await BrandingApi.GetSettings(CancellationToken.None));
+            ApplyDocument(document);
         }
-        catch (HttpRequestException)
-        {
-            _errorMessage = UserFacingErrorMessage.ForOperation("load branding");
-        }
-        catch (InvalidOperationException)
+        else
         {
             _errorMessage = UserFacingErrorMessage.ForOperation("load branding");
         }
-        finally
-        {
-            _loading = false;
-        }
+
+        _loading = false;
     }
 
     private async Task SaveBranding()
@@ -130,41 +126,46 @@ else
         _errorMessage = null;
         _successMessage = null;
 
-        try
+        if (_entityTag is null)
         {
-            if (_entityTag is null)
-            {
-                _errorMessage = UserFacingErrorMessage.ForOperation("save branding");
-                return;
-            }
+            _errorMessage = UserFacingErrorMessage.ForOperation("save branding");
+            _saving = false;
+            return;
+        }
 
-            await BrandingApi.SaveSettings(_model.ToDto(), _entityTag, CancellationToken.None);
-            // The write response carries no validator; one fresh read replaces the document and its entity tag together.
-            ApplyDocument(await BrandingApi.GetSettings(CancellationToken.None));
+        var saved = await BrandingApi.SaveSettings(_model.ToDto(), _entityTag, CancellationToken.None);
+        if (saved.Kind != HttpOutcomeKind.Succeeded)
+        {
+            _errorMessage = SaveErrorMessage(saved);
+            _saving = false;
+            return;
+        }
+
+        // The write response carries no validator; one fresh read replaces the document and its entity tag together.
+        var reloaded = await BrandingApi.GetSettings(CancellationToken.None);
+        if (reloaded is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
+        {
+            ApplyDocument(document);
             _successMessage = "Branding saved.";
         }
-        catch (BrandingPreconditionFailedException)
-        {
-            _errorMessage = "Branding was changed by someone else after you opened this page. Reload the page to see the latest settings, then reapply your changes.";
-        }
-        catch (ContractValidationException ex)
-        {
-            _errorMessage = ex.ValidationErrors.Count == 0
-                ? UserFacingErrorMessage.ForOperation("save branding")
-                : string.Join(" ", ex.ValidationErrors.SelectMany(error => error.Value));
-        }
-        catch (HttpRequestException)
+        else
         {
             _errorMessage = UserFacingErrorMessage.ForOperation("save branding");
         }
-        catch (InvalidOperationException)
+
+        _saving = false;
+    }
+
+    private static string SaveErrorMessage(HttpOutcome<BrandingManagementSettingsDto> outcome)
+    {
+        if (outcome.StatusCode == HttpStatusCode.PreconditionFailed)
         {
-            _errorMessage = UserFacingErrorMessage.ForOperation("save branding");
+            return "Branding was changed by someone else after you opened this page. Reload the page to see the latest settings, then reapply your changes.";
         }
-        finally
-        {
-            _saving = false;
-        }
+
+        return outcome is { Kind: HttpOutcomeKind.ValidationProblem, ValidationErrors: { Count: > 0 } errors }
+            ? string.Join(" ", errors.SelectMany(error => error.Value))
+            : UserFacingErrorMessage.ForOperation("save branding");
     }
 
     private void ApplyDocument(BrandingManagementDocument document)

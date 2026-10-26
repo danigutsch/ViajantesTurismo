@@ -1,3 +1,4 @@
+using System.Net;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -26,11 +27,6 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
 
     public BrandingSettingsDto Branding { get; set; } = CreateDefaultBranding();
 
-    public bool ThrowOnGetSettings
-    {
-        get; set;
-    }
-
     public bool ReturnEmptyGetResponse
     {
         get; set;
@@ -41,7 +37,12 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
         get; set;
     }
 
-    public ContractValidationException? ValidationException
+    public bool ReturnMalformedValidationProblem
+    {
+        get; set;
+    }
+
+    public IReadOnlyDictionary<string, string[]>? ValidationErrors
     {
         get; set;
     }
@@ -51,38 +52,57 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
         get; private set;
     }
 
-    public Task<BrandingManagementDocument> GetSettings(CancellationToken ct)
+    public Task<HttpOutcome<BrandingManagementDocument>> GetSettings(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        ThrowIfGetShouldFail();
+        if (ReturnEmptyGetResponse)
+        {
+            return Task.FromResult(HttpOutcomeMapper.Status<BrandingManagementDocument>(HttpOutcomeKind.EmptyBody, HttpStatusCode.OK));
+        }
+
         GetCount++;
-        return Task.FromResult(new BrandingManagementDocument(ToManagement(Branding), BrandingEntityTags.Format(SourceEpoch, SourceRevision)));
+        var document = new BrandingManagementDocument(ToManagement(Branding), BrandingEntityTags.Format(SourceEpoch, SourceRevision));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, document));
     }
 
-    public Task<BrandingManagementSettingsDto> SaveSettings(BrandingSettingsDto request, string entityTag, CancellationToken ct)
+    public Task<HttpOutcome<BrandingManagementSettingsDto>> SaveSettings(BrandingSettingsDto request, string entityTag, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         SavedEntityTag = entityTag;
 
         if (FailPrecondition)
         {
-            throw new BrandingPreconditionFailedException();
+            return Task.FromResult(HttpOutcomeMapper.Status<BrandingManagementSettingsDto>(
+                HttpOutcomeKind.UnexpectedStatus,
+                HttpStatusCode.PreconditionFailed));
         }
 
-        if (ValidationException is not null)
+        if (ReturnMalformedValidationProblem)
         {
-            throw ValidationException;
+            return Task.FromResult(HttpOutcomeMapper.Status<BrandingManagementSettingsDto>(
+                HttpOutcomeKind.MalformedBody,
+                HttpStatusCode.BadRequest));
+        }
+
+        if (ValidationErrors is not null)
+        {
+            return Task.FromResult(new HttpOutcome<BrandingManagementSettingsDto>
+            {
+                Kind = HttpOutcomeKind.ValidationProblem,
+                StatusCode = HttpStatusCode.BadRequest,
+                ValidationErrors = ValidationErrors
+            });
         }
 
         if (ReturnEmptySaveResponse)
         {
-            throw new InvalidOperationException("Branding API returned an empty settings response.");
+            return Task.FromResult(HttpOutcomeMapper.Status<BrandingManagementSettingsDto>(HttpOutcomeKind.EmptyBody, HttpStatusCode.OK));
         }
 
         SavedBranding = request;
         Branding = request;
         SourceRevision++;
-        return Task.FromResult(ToManagement(request));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, ToManagement(request)));
     }
 
     private BrandingManagementSettingsDto ToManagement(BrandingSettingsDto settings) => new()
@@ -98,19 +118,6 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
         SourceEpoch = SourceEpoch,
         SourceRevision = SourceRevision
     };
-
-    private void ThrowIfGetShouldFail()
-    {
-        if (ThrowOnGetSettings)
-        {
-            throw new HttpRequestException("Branding settings unavailable.");
-        }
-
-        if (ReturnEmptyGetResponse)
-        {
-            throw new InvalidOperationException("Branding API returned an empty settings response.");
-        }
-    }
 
     private static BrandingSettingsDto CreateDefaultBranding()
     {

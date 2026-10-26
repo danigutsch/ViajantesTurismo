@@ -9,20 +9,23 @@ namespace ViajantesTurismo.Branding.ContractTests;
 
 public sealed class BrandingManagementClientHardeningTests
 {
+    private const int ResponseCeilingBytes = 1024 * 1024;
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
-    public async Task Read_rejects_a_body_above_the_response_ceiling(bool knownLength)
+    public async Task Read_reports_a_body_above_the_response_ceiling_as_malformed(bool knownLength)
     {
         // Arrange
-        var body = new string(' ', BrandingManagementClient.MaximumSettingsResponseBytes + 1);
+        var body = new string(' ', ResponseCeilingBytes + 1);
         using var handler = new RecordingBrandingHandler(_ =>
         {
             var response = RecordingBrandingHandler.Json(HttpStatusCode.OK, body, "\"tag\"");
             if (!knownLength)
             {
                 response.Content = new StreamContent(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body)));
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             }
 
             return response;
@@ -31,15 +34,16 @@ public sealed class BrandingManagementClientHardeningTests
         var client = new BrandingManagementClient(httpClient);
 
         // Act
-        var read = () => client.GetSettings(TestContext.Current.CancellationToken);
+        var outcome = await client.GetSettings(TestContext.Current.CancellationToken);
 
         // Assert
-        await read.ShouldThrow<HttpRequestException>();
+        outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
+        outcome.Value.ShouldBeNull();
     }
 
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
-    public async Task Write_maps_a_validation_problem_to_a_contract_validation_exception()
+    public async Task Write_returns_a_validation_problem_with_its_field_errors()
     {
         // Arrange
         using var handler = new RecordingBrandingHandler(_ =>
@@ -54,15 +58,17 @@ public sealed class BrandingManagementClientHardeningTests
         var client = new BrandingManagementClient(httpClient);
 
         // Act
-        var save = () => client.SaveSettings(new BrandingSettingsDto(), "\"tag\"", TestContext.Current.CancellationToken);
+        var outcome = await client.SaveSettings(new BrandingSettingsDto(), "\"tag\"", TestContext.Current.CancellationToken);
 
         // Assert
-        await save.ShouldThrow<ContractValidationException>();
+        outcome.Kind.ShouldBe(HttpOutcomeKind.ValidationProblem);
+        var errors = outcome.ValidationErrors.ShouldNotBeNull();
+        errors["PrimaryColor"].ShouldBe(["Use a safe color."]);
     }
 
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
-    public async Task Write_times_out_while_reading_a_stalled_response_body()
+    public async Task Write_reports_a_timeout_while_reading_a_stalled_response_body()
     {
         // Arrange
         using var responseBody = new BlockingBrandingReadStream();
@@ -78,10 +84,10 @@ public sealed class BrandingManagementClientHardeningTests
         var client = new BrandingManagementClient(httpClient);
 
         // Act
-        var save = () => client.SaveSettings(new BrandingSettingsDto(), "\"tag\"", TestContext.Current.CancellationToken);
+        var outcome = await client.SaveSettings(new BrandingSettingsDto(), "\"tag\"", TestContext.Current.CancellationToken);
 
         // Assert
-        await save.ShouldThrowAssignableTo<OperationCanceledException>();
+        outcome.Kind.ShouldBe(HttpOutcomeKind.TimedOut);
         responseBody.ReadStarted.IsCompletedSuccessfully.ShouldBeTrue();
     }
 
