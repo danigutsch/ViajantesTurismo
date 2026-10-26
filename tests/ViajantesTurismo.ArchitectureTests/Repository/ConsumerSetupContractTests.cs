@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PandaBear.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Repository;
@@ -97,7 +98,7 @@ public sealed class ConsumerSetupContractTests
     }
 
     [Fact]
-    public async Task Devcontainer_marker_selects_the_container_build_paths_for_minimal_environment_builds()
+    public async Task Minimal_environment_builds_keep_the_container_flag_that_selects_the_container_build_paths()
     {
         // Arrange
         var root = RepositoryTestProcess.GetRepositoryRoot();
@@ -105,10 +106,16 @@ public sealed class ConsumerSetupContractTests
         // Act
         var props = await File.ReadAllTextAsync(Path.Combine(root, "Directory.Build.props"), TestContext.Current.CancellationToken);
         var postStart = await File.ReadAllTextAsync(Path.Combine(root, ".devcontainer", "post-start.sh"), TestContext.Current.CancellationToken);
+        var configuration = await File.ReadAllTextAsync(Path.Combine(root, ".config", "sharedkernel-ci.json"), TestContext.Current.CancellationToken);
+        using var document = JsonDocument.Parse(configuration);
+        var targets = document.RootElement.GetProperty("openApi").EnumerateArray().ToArray();
 
         // Assert
-        props.ShouldContain("Condition=\"'$(REMOTE_CONTAINERS)' == 'true' or Exists('$(HOME)/.viajantesturismo-devcontainer')\"", StringComparison.Ordinal);
-        postStart.ShouldContain("touch \"${HOME}/.viajantesturismo-devcontainer\"", StringComparison.Ordinal);
+        props.ShouldContain("Condition=\"'$(REMOTE_CONTAINERS)' == 'true'\"", StringComparison.Ordinal);
+        props.ShouldNotContain("viajantesturismo-devcontainer", StringComparison.Ordinal);
+        postStart.ShouldNotContain("viajantesturismo-devcontainer", StringComparison.Ordinal);
+        targets.ShouldNotBeEmpty();
+        targets.ShouldAllSatisfy(static target => target.GetProperty("preserveEnvironment").EnumerateArray().Select(static name => name.GetString()).ShouldContain("REMOTE_CONTAINERS"));
     }
 
     [Fact]
