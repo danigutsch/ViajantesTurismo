@@ -54,7 +54,7 @@
 		<PackageReference Include="PandaBear.SharedKernel.Style.CodeFixes" PrivateAssets="all" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(IsRoslynComponent)' != 'true'">
+	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
 		<AdditionalFiles Include="$(MSBuildThisFileDirectory)CodeMetricsConfig.txt" Link="CodeMetricsConfig.txt" />
 	</ItemGroup>
 
