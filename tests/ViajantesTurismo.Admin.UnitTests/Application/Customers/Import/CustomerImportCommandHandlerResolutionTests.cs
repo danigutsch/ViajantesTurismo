@@ -64,7 +64,8 @@ public sealed class CustomerImportCommandHandlerResolutionTests
         using var cancellation = new CancellationTokenSource();
         var inner = new FakeCustomerStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new CustomerImportCommandHandler(new CancellingCustomerStore(inner, cancellation, cancelOnAdd: false), unitOfWork, TimeProvider.System);
+        var store = new CancellingCustomerStore(inner, cancellation, cancelOnAdd: false);
+        var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
         var csv = CustomerImportWorkflowScenario.Csv(
             CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "ana@example.com"),
             CustomerImportWorkflowCsvRows.Build("Bia", "Souza", "bia@example.com"));
@@ -76,6 +77,7 @@ public sealed class CustomerImportCommandHandlerResolutionTests
         // Assert
         inner.AllCustomers.ShouldBeEmpty();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
+        store.EmailExistsCallCount.ShouldBe(1);
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using PandaBear.EventSourcing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
@@ -113,6 +114,37 @@ public sealed class CatalogTelemetryTests
         CatalogTelemetryTestsHelpers.HasTag(projectionActivity, CatalogTelemetry.TagOutcome, CatalogTelemetry.OutcomeSuccess).ShouldBeTrue();
         measurements.ShouldContain(CatalogTelemetry.MetricProjectionEvent, StringComparer.Ordinal);
         measurements.ShouldContain(CatalogTelemetry.MetricProjectionBatch, StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public async Task Projection_batch_metric_carries_the_projection_name_and_skipped_outcome_for_an_empty_batch()
+    {
+        // Arrange
+        var batchTags = new ConcurrentQueue<Dictionary<string, object?>>();
+        using var meterListener = new MeterListener
+        {
+            InstrumentPublished = static (instrument, listener) =>
+            {
+                if (string.Equals(instrument.Meter.Name, CatalogTelemetry.Name, StringComparison.Ordinal)
+                    && string.Equals(instrument.Name, CatalogTelemetry.MetricProjectionBatch, StringComparison.Ordinal))
+                {
+                    listener.EnableMeasurementEvents(instrument);
+                }
+            },
+        };
+        meterListener.SetMeasurementEventCallback<long>((_, _, tags, _) =>
+            batchTags.Enqueue(tags.ToArray().ToDictionary(static tag => tag.Key, static tag => tag.Value, StringComparer.Ordinal)));
+        meterListener.Start();
+        var projection = new CatalogTourReadModelProjection(new CapturingCatalogTourReadModelStore());
+        var runner = new CatalogProjectionRunner(new CapturingEventStore(), new CapturingProjectionCheckpointStore(), [projection]);
+
+        // Act
+        await runner.Project(TestContext.Current.CancellationToken);
+
+        // Assert
+        var tags = batchTags.ShouldHaveSingleItem();
+        tags[CatalogTelemetry.TagProjectionName].ShouldBe(projection.Name);
+        tags[CatalogTelemetry.TagOutcome].ShouldBe(CatalogTelemetry.OutcomeSkipped);
     }
 
     [Fact]

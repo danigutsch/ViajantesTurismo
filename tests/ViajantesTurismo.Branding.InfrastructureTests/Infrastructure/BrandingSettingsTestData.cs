@@ -15,5 +15,5 @@ internal static class BrandingSettingsTestData
     };
 
     public static BrandingSettings CreateSettings(string brandName = "Viajantes") =>
-        BrandingSettings.Create(CreateDto(brandName), ViajantesTurismo.Branding.Infrastructure.BrandingDefaults.AllowedFonts).Value;
+        BrandingSettings.Create(CreateDto(brandName), Branding.Infrastructure.BrandingDefaults.AllowedFonts).Value;
 }

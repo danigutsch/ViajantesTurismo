@@ -122,6 +122,24 @@ state transitions, error behavior, or externally observable side effects. Low-va
 mirror private implementation branches, assert incidental ordering, require excessive setup, or
 become flaky without improving mutation signal.
 
+## Mutants that stay alive
+
+Every other mutant of the three configured Stryker configs is killed. Four mutants in three places stay alive because no
+observable behavior differs. None is excluded in a Stryker config.
+
+| Config | Location | Mutation | Why it stays alive |
+| --- | --- | --- | --- |
+| Catalog domain | `CatalogTour.ApplyEvent` null check | Statement removed | `CatalogTour` is sealed and `ApplyEvent` is protected, so only the event-sourced aggregate base class calls it, and the base class rejects a null event first. Without the check a null event would reach the `default` arm. |
+| Admin application | `CustomerImportCommandHandler.ApplyOverwrite` failure branch | Statement and message removed | `Customer.Revise` runs the same validation as `Customer.Create`. The incoming customer was created from the same row with the same business date, so the revision cannot fail. The branch guards that invariant and throws instead of ignoring a failed `Result`. |
+| Admin application | `PaymentAccountMappings.Map(PixKeyTypeDto)` default arm | Message removed | `ToRecipient`, the only caller, rejects every undefined `PixKeyTypeDto` with `Enum.IsDefined` before it maps. The default arm exists for the exhaustive `switch`. |
+
+Rules for the code around these:
+
+- Remove a check that another layer already guarantees instead of adding a Stryker disable comment.
+- Keep a check that turns a broken invariant into an exception when ignoring the failure would lose data.
+- A `Result` failure always carries its `ErrorDetails`, and validation messages are never empty, so code that
+  reads them does not need a fallback value.
+
 ## Rollout order and thresholds
 
 Roll out mutation testing from the lowest dependency layer upward:

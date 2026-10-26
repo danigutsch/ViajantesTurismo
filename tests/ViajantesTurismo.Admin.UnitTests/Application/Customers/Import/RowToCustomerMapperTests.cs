@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Application.Customers.Import;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
@@ -27,6 +28,45 @@ public class RowToCustomerMapperTests
         result.ErrorDetails.ShouldNotBeNull();
         result.ErrorDetails.ValidationErrors.ShouldNotBeNull();
         result.ErrorDetails.ValidationErrors.ContainsKey(field).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void MapCustomer_accepts_enum_names_in_any_letter_case()
+    {
+        // Arrange
+        var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string>
+        {
+            ["BikeType"] = "regular",
+            ["RoomType"] = "SINGLEOCCUPANCY",
+            ["BedType"] = "doublebed"
+        });
+
+        // Act
+        var result = RowToCustomerMapper.MapCustomer(document, row, new DateOnly(2030, 1, 1));
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.PhysicalInfo.BikeType.ShouldBe(BikeType.Regular);
+        result.Value.AccommodationPreferences.RoomType.ShouldBe(RoomType.SingleOccupancy);
+        result.Value.AccommodationPreferences.BedType.ShouldBe(BedType.DoubleBed);
+    }
+
+    [Fact]
+    public void MapCustomer_maps_a_valid_companion_id()
+    {
+        // Arrange
+        var companionId = Guid.NewGuid();
+        var (document, row) = MappingInputs.Create(overrides: new Dictionary<string, string>
+        {
+            ["CompanionId"] = companionId.ToString()
+        });
+
+        // Act
+        var result = RowToCustomerMapper.MapCustomer(document, row, new DateOnly(2030, 1, 1));
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.AccommodationPreferences.CompanionId.ShouldBe(companionId);
     }
 
     private const string MultipleValidationErrorsDetailMessage = "Multiple validation errors occurred.";
