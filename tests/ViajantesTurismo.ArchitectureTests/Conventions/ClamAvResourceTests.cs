@@ -17,6 +17,7 @@ public sealed class ClamAvResourceTests
         var image = clamAv.Resource.Annotations.OfType<ContainerImageAnnotation>().ShouldHaveSingleItem();
         var endpoint = clamAv.Resource.Annotations.OfType<EndpointAnnotation>().ShouldHaveSingleItem();
         var healthCheck = clamAv.Resource.Annotations.OfType<HealthCheckAnnotation>().ShouldHaveSingleItem();
+        var mounts = clamAv.Resource.Annotations.OfType<ContainerMountAnnotation>().ToArray();
         endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "clamav", 3310, "3310");
         var destination = builder.AddResource(new ContainerResource("consumer")).WithClamAvReference(clamAv);
         var environmentConfiguration = await ExecutionConfigurationBuilder
@@ -36,7 +37,7 @@ public sealed class ClamAvResourceTests
         endpoint.TargetPort.ShouldBe(3310);
         endpoint.UriScheme.ShouldBe("tcp");
         endpoint.IsExternal.ShouldBeFalse();
-        clamAv.Resource.Annotations.OfType<ContainerMountAnnotation>().ShouldBeEmpty();
+        mounts.ShouldBeEmpty();
         healthCheck.Key.ShouldBe("clamav-tcp-ping");
         clamAv.Resource.Annotations.OfType<ContainerLifetimeAnnotation>().ShouldBeEmpty();
         environmentConfiguration.EnvironmentVariablesWithUnprocessed

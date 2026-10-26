@@ -223,9 +223,10 @@ public sealed class HostedTestFixtureOnDemandTests
 
         // Act
         var start = HostedTestFixtureSource.Body(fixture, "private async Task<T> StartResource<T>(");
+        var budgetDeclarations = HostedTestFixtureSource.Count(fixture, "StartBudget = TimeSpan.FromMinutes(3);");
 
         // Assert
-        HostedTestFixtureSource.Count(fixture, "StartBudget = TimeSpan.FromMinutes(3);").ShouldBe(1);
+        budgetDeclarations.ShouldBe(1, "one named budget bounds every start");
         start.ShouldContain("budget.CancelAfter(StartBudget);", StringComparison.Ordinal);
         start.ShouldContain("ExecuteCommandAsync(resourceName, KnownResourceCommands.StartCommand, budget.Token)", StringComparison.Ordinal);
         start.ShouldContain("WaitForResourceHealthyAsync(resourceName, budget.Token)", StringComparison.Ordinal);

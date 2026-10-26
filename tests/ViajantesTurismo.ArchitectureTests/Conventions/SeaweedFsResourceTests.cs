@@ -27,12 +27,13 @@ public sealed class SeaweedFsResourceTests
         var bucketEnvironment = environmentConfiguration.EnvironmentVariablesWithUnprocessed
             .Where(variable => variable.Key == "S3_BUCKET")
             .ShouldHaveSingleItem();
+        var mounts = seaweedFs.Resource.Annotations.OfType<ContainerMountAnnotation>().ToArray();
 
         // Assert
         image.Registry.ShouldBe("docker.io");
         image.Image.ShouldBe("chrislusf/seaweedfs");
         image.SHA256.ShouldBe("c7d6c721b30ae711db766bbbfd40192776e263d4e51e22f57baef7bef93c12c6");
-        seaweedFs.Resource.Annotations.OfType<ContainerMountAnnotation>().ShouldBeEmpty();
+        mounts.ShouldBeEmpty();
         seaweedFs.Resource.BucketParameter.Name.ShouldBe("seaweed-bucket");
         bucketEnvironment.Value.Unprocessed.ShouldBeSameAs(seaweedFs.Resource.BucketParameter);
         bucketEnvironment.Value.Processed.ShouldBe("media");
