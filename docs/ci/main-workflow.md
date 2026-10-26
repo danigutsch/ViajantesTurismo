@@ -112,9 +112,12 @@ patterns (Markdown and images under `docs`, the root `README.md`, `AGENTS.md`, `
 `SECURITY.md`, `SUPPORT.md`, and `LICENSE.txt`, roadmap items, order, themes, and README,
 `observability/README.md`, repository metadata files such as `CODEOWNERS` and `.gitignore`, the
 test guides under `tests`, `tests/performance`, `docs/architecture/*.json`, and editor settings) select nothing while
-every tracked build file is inert; any other path selects the test projects that depend on its owning project through
-`ProjectReference`. A path without an owning project, an unreadable or uncertain project graph, a missing or non-ancestor base, and a changed
-project that no selected test project covers (`requireCoveringTests`) select every test project.
+every tracked build file is inert; `testPaths` rules send the roadmap configuration, schemas and reconciliation to
+`ViajantesTurismo.ArchitectureTests`, `observability` configuration to the architecture and hosted tests, and
+`tests/fixtures/media-accessibility` to `ViajantesTurismo.Catalog.UnitTests`; any other path selects the test projects
+that depend on its owning project through `ProjectReference`. A path without an owning project, an unreadable or
+uncertain project graph, a missing or non-ancestor base,
+and a changed project that no selected test project covers (`requireCoveringTests`) select every test project.
 
 `alwaysSelected` adds `ViajantesTurismo.ArchitectureTests` and the Admin, Branding, and Catalog
 contract tests whenever a change selects any project. The contract tests are always selected because

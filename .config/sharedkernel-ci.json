@@ -68,7 +68,36 @@
     "alwaysSelected": [
       "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj"
     ],
-    "requireCoveringTests": true
+    "requireCoveringTests": true,
+    "testPaths": [
+      {
+        "paths": [
+          "roadmap/config.json",
+          "roadmap/schema/*",
+          "roadmap/reconciliation/*"
+        ],
+        "tests": [
+          "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj"
+        ]
+      },
+      {
+        "paths": [
+          "observability/*"
+        ],
+        "tests": [
+          "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj",
+          "tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj"
+        ]
+      },
+      {
+        "paths": [
+          "tests/fixtures/media-accessibility/*"
+        ],
+        "tests": [
+          "tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj"
+        ]
+      }
+    ]
   },
   "slices": [
     {

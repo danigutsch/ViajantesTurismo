@@ -49,7 +49,7 @@ public sealed class SeaweedFsResourceTests
     }
 
     [Fact]
-    public void AddSeaweedFs_scopes_data_volume_with_dcp_resource_name_suffix()
+    public void AddSeaweedFs_mounts_an_anonymous_data_volume_for_an_isolated_instance()
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
@@ -62,7 +62,9 @@ public sealed class SeaweedFsResourceTests
             .ShouldHaveSingleItem();
 
         // Assert
-        volume.Source.ShouldBe("seaweed-test-data");
+        volume.Source.ShouldBeNull();
+        volume.Target.ShouldBe("/data");
+        volume.Type.ShouldBe(ContainerMountType.Volume);
     }
 
     [Fact]

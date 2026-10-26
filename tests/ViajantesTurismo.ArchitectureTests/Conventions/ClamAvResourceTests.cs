@@ -53,7 +53,7 @@ public sealed class ClamAvResourceTests
     }
 
     [Fact]
-    public void AddClamAv_scopes_definition_volume_with_dcp_resource_name_suffix()
+    public void AddClamAv_mounts_an_anonymous_definition_volume_for_an_isolated_instance()
     {
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
@@ -64,7 +64,9 @@ public sealed class ClamAvResourceTests
         var volume = clamAv.Resource.Annotations.OfType<ContainerMountAnnotation>().ShouldHaveSingleItem();
 
         // Assert
-        volume.Source.ShouldBe("clamav-test-definitions");
+        volume.Source.ShouldBeNull();
+        volume.Target.ShouldBe("/var/lib/clamav");
+        volume.Type.ShouldBe(ContainerMountType.Volume);
     }
 
     [Fact]
