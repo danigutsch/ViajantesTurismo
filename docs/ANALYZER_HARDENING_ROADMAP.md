@@ -226,8 +226,8 @@ Remaining Phase 2 backlog:
 
 Candidate future custom rules still worth evaluating:
 
-- error classes must end with `Errors`
-- integration events must end with `IntegrationEvent`
+- Done: error classes must end with `Errors` (`VTARCH003`) and integration events must end with
+  `IntegrationEvent` (`VTARCH002`), both in `ViajantesTurismo.Architecture.Analyzers`
 - focused guardrails for known repository architecture conventions that are too specific for
   off-the-shelf analyzers and too noisy for architecture tests alone
 

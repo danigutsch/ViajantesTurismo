@@ -61,8 +61,17 @@ internal static class AnalyzerTestHarness
         string assemblyName = AdminApiAssemblyName,
         string path = "TestSource.cs")
     {
+        return await GetAnalyzerDiagnostics(new ProductionApiHttpAnalyzer(), source, assemblyName, path).ConfigureAwait(false);
+    }
+
+    /// <summary>Runs the given analyzer over test source and returns its diagnostics.</summary>
+    public static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnostics(
+        DiagnosticAnalyzer analyzer,
+        string source,
+        string assemblyName = AdminApiAssemblyName,
+        string path = "TestSource.cs")
+    {
         var compilation = CreateCompilation(source, assemblyName, path);
-        var analyzer = new ProductionApiHttpAnalyzer();
         var analyzerOptions = new AnalyzerOptions([]);
         var compilationOptions = new CompilationWithAnalyzersOptions(
             analyzerOptions,
