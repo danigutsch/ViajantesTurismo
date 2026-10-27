@@ -34,7 +34,8 @@ and real-time updates using Blazor Server components.
     - Map server errors to form field validation
 - **Services**: `CustomerCreationState`, `CountryService`
 - **Models**: View models (`BookingFormModel`) with client-side validation
-- **Helpers**: `ValidationErrorHelper`, `EditContextValidationHelper`
+- **Helpers**: `UserFacingErrorMessage`, `ValidationSummaryItems`; server validation binding, error summary,
+  HTTP outcome copy, and handled-failure reporting come from `PandaBear.SharedKernel.Blazor`
 
 ## Module Boundary Governance
 

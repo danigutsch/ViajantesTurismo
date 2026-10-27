@@ -200,7 +200,7 @@ else if (_tour != null)
         }
         else
         {
-            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "The tour could not be loaded.");
+            _errorMessage = new HttpOutcomeMessages("The tour could not be loaded.").For(outcome.Kind);
         }
 
         _loading = false;
@@ -264,7 +264,7 @@ else if (_tour != null)
 
             if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _toast?.ShowError(HttpOutcomeUserMessage.For(outcome.Kind, "Failed to create booking. Please try again."));
+                _toast?.ShowError(new HttpOutcomeMessages("Failed to create booking. Please try again.").For(outcome.Kind));
                 return;
             }
 
@@ -286,9 +286,9 @@ else if (_tour != null)
 
     private void ApplyBookingValidationErrors(HttpOutcome outcome)
     {
-        if (_bookingCreateFormRef?.EditContext is not null && outcome.ValidationErrors is not null)
+        if (_bookingCreateFormRef?.ApplyServerValidation(outcome) != true)
         {
-            EditContextValidationHelper.ApplyValidationErrors(_bookingCreateFormRef.EditContext, outcome.ValidationErrors);
+            _toast?.ShowError("Failed to create booking. Please try again.");
         }
     }
 

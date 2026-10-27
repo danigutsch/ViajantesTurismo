@@ -1,3 +1,4 @@
+using PandaBear.Blazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using PandaBear.HttpClients;
@@ -15,6 +16,7 @@ public sealed class DetailsPageTests : BunitContext
 
     public DetailsPageTests()
     {
+        Services.AddUiFailureReporting();
         var authorization = AddAuthorization();
         authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Admin");
@@ -61,6 +63,7 @@ public sealed class DetailsPageTests : BunitContext
         authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Admin");
         staticContext.Services.AddSingleton<IDocumentsApiClient>(new FakeDocumentsApiClient());
+        staticContext.Services.AddUiFailureReporting();
         staticContext.SetRendererInfo(new RendererInfo("Static", false));
         var documentId = Guid.CreateVersion7();
         var navigationManager = staticContext.Services.GetRequiredService<NavigationManager>();
@@ -83,6 +86,7 @@ public sealed class DetailsPageTests : BunitContext
         authorization.SetAuthorized("operator@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Operator");
         context.Services.AddSingleton<IDocumentsApiClient>(new FakeDocumentsApiClient());
+        context.Services.AddUiFailureReporting();
         context.SetRendererInfo(new RendererInfo("Server", true));
         var documentId = Guid.CreateVersion7();
         var navigationManager = context.Services.GetRequiredService<NavigationManager>();

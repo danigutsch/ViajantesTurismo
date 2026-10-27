@@ -1,4 +1,6 @@
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Navigation
 
 <div class="page"
      inert="@(!RendererInfo.IsInteractive ? "inert" : null)"
@@ -23,7 +25,12 @@
         </div>
 
         <article class="content px-4">
-            @Body
+            <RecoveryErrorBoundary @ref="_boundary"
+                                   OperationName="management.layout.content"
+                                   RecoveryMessage="Something went wrong on this page. Try again, or reload the page."
+                                   RecoverLabel="Try again">
+                @Body
+            </RecoveryErrorBoundary>
         </article>
     </main>
 </div>
@@ -33,3 +40,36 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private RecoveryErrorBoundary? _boundary;
+    private string _path = string.Empty;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _path = CurrentPath();
+        Navigation.LocationChanged += RecoverOnNavigation;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= RecoverOnNavigation;
+    }
+
+    private string CurrentPath() => new Uri(Navigation.Uri).AbsolutePath;
+
+    // A failed page must not hide the next one: leave the failed state when the path changes, not on fragment or query changes.
+    private void RecoverOnNavigation(object? sender, LocationChangedEventArgs args)
+    {
+        var path = CurrentPath();
+        if (string.Equals(path, _path, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _path = path;
+        _boundary?.Recover();
+    }
+}

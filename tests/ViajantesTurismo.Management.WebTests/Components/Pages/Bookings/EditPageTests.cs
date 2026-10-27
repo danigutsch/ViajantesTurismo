@@ -1,3 +1,4 @@
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
@@ -16,9 +17,11 @@ public sealed class EditPageTests : BunitContext
 
     private readonly FakeBookingsApiClient _fakeBookingsApi = new();
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
+    private readonly RecordingUiFailureReporter _failures = new();
 
     public EditPageTests()
     {
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(TimeProvider.System);
         Services.AddSingleton<IBookingsApiClient>(_fakeBookingsApi);
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
@@ -54,6 +57,7 @@ public sealed class EditPageTests : BunitContext
         var alert = cut.Find(".alert.alert-danger");
         alert.TextContent.ShouldContain("We couldn't load the booking right now. Please try again.", StringComparison.Ordinal);
         alert.TextContent.ShouldNotContain("SQL timeout", StringComparison.Ordinal);
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.edit.load")]);
     }
 
     [Fact]
@@ -1218,5 +1222,160 @@ public sealed class EditPageTests : BunitContext
         // Assert
         page.FindAll("button").ShouldNotContain(button => button.TextContent.Contains("Record Payment", StringComparison.Ordinal));
         page.Find($"a[href='/bookings/{booking.Id}/finances']").TextContent.ShouldContain("Record and allocate", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Transport_failure_while_loading_shows_a_safe_error_message()
+    {
+        // Arrange
+        _fakeBookingsApi.SetGetBookingByIdOutcome(FakeApiClientOutcomes.TransportFailure<GetBookingDto>());
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, Guid.NewGuid()));
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find(".alert.alert-danger").TextContent.ShouldContain(
+            "We couldn't load the booking right now. Please try again.",
+            StringComparison.Ordinal));
+        _failures.Reports.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Companion_choice_exception_is_reported_and_keeps_booking_edit_available()
+    {
+        // Arrange
+        var booking = BuildBookingDto();
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeCustomersApi.SetGetCustomersException(new InvalidOperationException("customers store offline"));
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        cut.WaitForAssertion(() => cut.Find("form"));
+
+        // Assert
+        cut.Markup.ShouldContain("Other companion choices are unavailable", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("customers store offline", StringComparison.Ordinal);
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.edit.load-companions")]);
+    }
+
+    [Fact]
+    public async Task Update_exception_is_reported_and_shows_a_safe_error_message()
+    {
+        // Arrange
+        var booking = BuildBookingDto(notes: "Original notes");
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("SQL deadlock"));
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("form"));
+        await cut.Find("#notes").ChangeAsync(new ChangeEventArgs { Value = "Updated notes" });
+
+        // Act
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Find(".alert.alert-danger").TextContent.ShouldContain(
+                "We couldn't update the booking right now. Please try again.",
+                StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("SQL deadlock", StringComparison.Ordinal);
+        });
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.edit.update")]);
+    }
+
+    [Fact]
+    public async Task Refresh_exception_after_a_saved_update_is_reported_without_failing_the_update()
+    {
+        // Arrange
+        var booking = BuildBookingDto(notes: "Original notes");
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeBookingsApi.SetGetBookingByIdExceptionOnCall(2, new InvalidOperationException("read replica offline"));
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("form"));
+        await cut.Find("#notes").ChangeAsync(new ChangeEventArgs { Value = "Updated notes" });
+
+        // Act
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("Booking updated successfully!", StringComparison.Ordinal);
+            cut.Markup.ShouldContain("The change was saved, but we couldn't refresh the booking", StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("read replica offline", StringComparison.Ordinal);
+        });
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.edit.refresh-after-save")]);
+    }
+
+    [Fact]
+    public async Task Reconcile_exception_after_a_failed_update_is_reported_and_locks_further_mutations()
+    {
+        // Arrange
+        var booking = BuildBookingDto(notes: "Original notes");
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeBookingsApi.SetUpdateBookingNotesException(new InvalidOperationException("SQL deadlock"));
+        _fakeBookingsApi.SetGetBookingByIdExceptionOnCall(2, new InvalidOperationException("read replica offline"));
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("form"));
+        await cut.Find("#notes").ChangeAsync(new ChangeEventArgs { Value = "Updated notes" });
+
+        // Act
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("Some changes may have been saved, but we couldn't refresh the booking", StringComparison.Ordinal);
+            cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
+        });
+        _failures.Reports.ShouldBe(
+        [
+            (nameof(InvalidOperationException), "bookings.edit.update"),
+            (nameof(InvalidOperationException), "bookings.edit.reconcile")
+        ]);
+    }
+
+    [Fact]
+    public async Task Failed_status_action_outcome_shows_a_safe_toast_without_reporting_a_failure()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending);
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeBookingsApi.SetBookingActionOutcome(FakeApiClientOutcomes.TransportFailure());
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
+        var confirmButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains("Confirm Booking", StringComparison.Ordinal));
+
+        // Act
+        await cut.InvokeAsync((Action)(() => confirmButton.Click()));
+
+        // Assert
+        await cut.WaitForAssertionAsync(() => cut.Find(".toast-body").TextContent.ShouldContain(
+            "We couldn't confirm the booking right now. Please try again.",
+            StringComparison.Ordinal));
+        cut.FindComponent<BookingStatusBadge>().Instance.Status.ShouldBe(BookingStatusDto.Pending);
+        _failures.Reports.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Status_action_exception_is_reported_and_shows_a_safe_toast()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Pending);
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeBookingsApi.SetBookingActionTask(Task.FromException(new InvalidOperationException("workflow engine down")));
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));
+        var confirmButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains("Confirm Booking", StringComparison.Ordinal));
+
+        // Act
+        await cut.InvokeAsync((Action)(() => confirmButton.Click()));
+
+        // Assert
+        await cut.WaitForAssertionAsync(() => cut.Find(".toast-body").TextContent.ShouldContain(
+            "We couldn't confirm the booking right now. Please try again.",
+            StringComparison.Ordinal));
+        cut.Markup.ShouldNotContain("workflow engine down", StringComparison.Ordinal);
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.edit.action")]);
     }
 }

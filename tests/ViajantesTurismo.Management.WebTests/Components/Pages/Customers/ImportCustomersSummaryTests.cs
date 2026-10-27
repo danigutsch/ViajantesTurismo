@@ -1,3 +1,4 @@
+using PandaBear.Blazor;
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 public sealed class ImportCustomersSummaryTests : BunitContext
@@ -6,6 +7,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
 
     public ImportCustomersSummaryTests()
     {
+        Services.AddUiFailureReporting();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }

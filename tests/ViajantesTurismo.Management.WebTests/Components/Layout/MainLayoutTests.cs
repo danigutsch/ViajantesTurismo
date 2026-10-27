@@ -1,12 +1,50 @@
+using Microsoft.AspNetCore.Components;
+using PandaBear.Blazor;
 using ViajantesTurismo.Management.Web.Components.Layout;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Layout;
 
 public sealed class MainLayoutTests : BunitContext
 {
+    private readonly RecordingUiFailureReporter reporter = new();
+
     public MainLayoutTests()
     {
+        Services.AddSingleton<IUiFailureReporter>(reporter);
         SetRendererInfo(new Microsoft.AspNetCore.Components.RendererInfo("Server", true));
+    }
+
+    [Fact]
+    public void Shows_fixed_recovery_copy_and_reports_the_fault_when_page_content_throws()
+    {
+        // Act
+        var cut = Render<MainLayout>(parameters => parameters.Add<ThrowingContent>(layout => layout.Body));
+
+        // Assert
+        var alert = cut.Find("article.content [role=alert]");
+        alert.TextContent.ShouldContain("Something went wrong on this page", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain(ThrowingContent.SecretDetail, StringComparison.Ordinal);
+        cut.Find("div.sidebar").ShouldNotBeNull();
+        reporter.Reports.ShouldBe([(nameof(InvalidOperationException), "management.layout.content")]);
+    }
+
+    [Fact]
+    public void Shows_the_next_page_after_navigating_away_from_a_failed_page()
+    {
+        // Arrange
+        var cut = Render<MainLayout>(parameters => parameters.Add<ThrowingContent>(layout => layout.Body));
+        cut.Find("article.content [role=alert]").ShouldNotBeNull();
+
+        // Act
+        cut.Render(parameters => parameters.Add(layout => layout.Body, "Healthy page"));
+        var stillFailedBeforeNavigation = cut.FindAll("article.content [role=alert]").Count;
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/another-page");
+
+        // Assert
+        stillFailedBeforeNavigation.ShouldBe(1);
+        cut.FindAll("article.content [role=alert]").ShouldBeEmpty();
+        cut.Find("article.content").TextContent.ShouldContain("Healthy page", StringComparison.Ordinal);
     }
 
     [Fact]

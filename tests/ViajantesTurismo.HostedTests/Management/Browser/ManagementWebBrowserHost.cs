@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PandaBear.Blazor;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components;
 using ViajantesTurismo.Management.Web.Services;
@@ -48,6 +49,7 @@ internal sealed class ManagementWebBrowserHost : IAsyncDisposable
         builder.Services.AddAuthorization();
         builder.Services.AddAntiforgery();
         builder.Services.AddCascadingAuthenticationState();
+        builder.Services.AddUiFailureReporting();
         builder.Services.AddRazorComponents().AddInteractiveServerComponents();
         builder.Services.AddScoped<CustomerCreationState>();
         builder.Services.AddScoped<ICountryService, CountryService>();

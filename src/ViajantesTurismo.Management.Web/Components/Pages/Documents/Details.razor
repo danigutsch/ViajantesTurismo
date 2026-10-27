@@ -142,7 +142,7 @@
         }
         else if (!_notFound)
         {
-            _loadErrorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "The document could not be loaded. Please try again.");
+            _loadErrorMessage = new HttpOutcomeMessages("The document could not be loaded. Please try again.").For(outcome.Kind);
         }
 
         _loading = false;
@@ -222,7 +222,7 @@
         var outcome = await action();
         if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
         {
-            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, errorMessage);
+            _errorMessage = new HttpOutcomeMessages(errorMessage).For(outcome.Kind);
             return;
         }
 

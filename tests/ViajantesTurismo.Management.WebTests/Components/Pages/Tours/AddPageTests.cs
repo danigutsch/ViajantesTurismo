@@ -1,5 +1,6 @@
 using ViajantesTurismo.Admin.Testing.Fakes;
 using PandaBear.HttpClients;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Add = ViajantesTurismo.Management.Web.Components.Pages.Tours.Add;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
@@ -7,9 +8,11 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
 public class AddPageTests : BunitContext
 {
     private readonly FakeToursApiClient _fakeToursApi;
+    private readonly RecordingUiFailureReporter _failures = new();
 
     public AddPageTests()
     {
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(TimeProvider.System);
         _fakeToursApi = new FakeToursApiClient();
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);
@@ -323,6 +326,64 @@ public class AddPageTests : BunitContext
 
         var errorAlert = cut.Find(".alert-danger");
         errorAlert.TextContent.ShouldContain("Please correct the highlighted fields.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Create_validation_problem_with_unknown_or_hostile_server_text_shows_fixed_copy_only()
+    {
+        // Arrange
+        const string Hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42";
+        _fakeToursApi.SetCreateTourOutcome(new HttpOutcome
+        {
+            Kind = HttpOutcomeKind.ValidationProblem,
+            StatusCode = System.Net.HttpStatusCode.BadRequest,
+            ValidationErrors = new Dictionary<string, string[]> { ["internalRuleSet"] = [Hostile], ["Name"] = [Hostile] }
+        });
+        var cut = Render<Add>();
+        await cut.InvokeAsync(() => cut.Find("input#identifier").Change("CUBA2024"));
+        await cut.InvokeAsync(() => cut.Find("input#name").Change("Cuba Adventure"));
+        await cut.InvokeAsync(() => cut.Find("input#price").Change("1500"));
+        await cut.InvokeAsync(() => cut.Find("input#singleRoom").Change("200"));
+        await cut.InvokeAsync(() => cut.Find("input#regularBike").Change("50"));
+        await cut.InvokeAsync(() => cut.Find("input#eBike").Change("100"));
+        await cut.InvokeAsync(() => cut.Find("textarea#services").Change("Hotel"));
+        await cut.InvokeAsync(() => cut.Find("input#minCustomers").Change("5"));
+        await cut.InvokeAsync(() => cut.Find("input#maxCustomers").Change("15"));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find(".alert-danger").TextContent.ShouldContain("We couldn't create the tour right now. Please try again.", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Create_failure_is_reported_without_showing_the_exception_text()
+    {
+        // Arrange
+        _fakeToursApi.SetCreateTourException(new InvalidOperationException("secret connection string"));
+        var cut = Render<Add>();
+        await cut.InvokeAsync(() => cut.Find("input#identifier").Change("CUBA2024"));
+        await cut.InvokeAsync(() => cut.Find("input#name").Change("Cuba Adventure"));
+        await cut.InvokeAsync(() => cut.Find("input#price").Change("1500"));
+        await cut.InvokeAsync(() => cut.Find("input#singleRoom").Change("200"));
+        await cut.InvokeAsync(() => cut.Find("input#regularBike").Change("50"));
+        await cut.InvokeAsync(() => cut.Find("input#eBike").Change("100"));
+        await cut.InvokeAsync(() => cut.Find("textarea#services").Change("Hotel"));
+        await cut.InvokeAsync(() => cut.Find("input#minCustomers").Change("5"));
+        await cut.InvokeAsync(() => cut.Find("input#maxCustomers").Change("15"));
+
+        // Act
+        await cut.InvokeAsync(() => cut.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForStateAsync(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find(".alert-danger").TextContent.ShouldContain("We couldn't create the tour right now. Please try again.", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("secret connection string", StringComparison.Ordinal);
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "tours.create")]);
     }
 
     [Fact]

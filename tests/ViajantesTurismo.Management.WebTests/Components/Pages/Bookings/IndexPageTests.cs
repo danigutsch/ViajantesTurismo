@@ -1,3 +1,4 @@
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Bookings.Index;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
@@ -5,9 +6,11 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 public class IndexPageTests : BunitContext
 {
     private readonly FakeBookingsApiClient _fakeBookingsApi;
+    private readonly RecordingUiFailureReporter _failures = new();
 
     public IndexPageTests()
     {
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
         JSInterop.Mode = JSRuntimeMode.Loose;
 
         _fakeBookingsApi = new FakeBookingsApiClient();
@@ -35,6 +38,7 @@ public class IndexPageTests : BunitContext
         alert.TextContent.ShouldContain("We couldn't load bookings right now. Please try again.", StringComparison.Ordinal);
         alert.TextContent.ShouldNotContain("database password leaked", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Bookings Overview", StringComparison.Ordinal);
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.index.load")]);
     }
 
     [Fact]
@@ -174,5 +178,19 @@ public class IndexPageTests : BunitContext
         // Assert
         cut.Markup.ShouldContain("Completed: 2", StringComparison.Ordinal);
         cut.Markup.ShouldContain("Cancelled: 1", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Transport_failure_while_loading_shows_a_safe_error_message()
+    {
+        // Arrange
+        _fakeBookingsApi.SetGetAllBookingsOutcome(FakeApiClientOutcomes.TransportFailure<GetBookingDto[]>());
+
+        // Act
+        var cut = Render<Index>();
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("We couldn't load bookings right now. Please try again."));
+        _failures.Reports.ShouldBeEmpty();
     }
 }

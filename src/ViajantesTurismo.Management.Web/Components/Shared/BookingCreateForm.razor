@@ -1,5 +1,6 @@
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
+@implements IDisposable
 <EditForm EditContext="@EditContext" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator/>
     <ValidationSummary class="alert alert-danger" role="alert"/>
@@ -257,11 +258,29 @@
 
     public EditContext? EditContext { get; private set; }
 
+    private ServerValidationBinder? _binder;
+
+    /// <summary>
+    /// Shows the server's field-keyed validation errors on the matching fields. Unknown keys and unusable text are never shown.
+    /// </summary>
+    /// <param name="outcome">The rejected outcome.</param>
+    /// <returns>True when at least one message was shown and none was withheld; otherwise the caller shows fixed copy.</returns>
+    public bool ApplyServerValidation(HttpOutcome outcome)
+    {
+        var result = _binder?.Apply(outcome);
+        return result is { HasUnplacedErrors: false, Issues.Count: > 0 };
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => _binder?.Dispose();
+
     protected override void OnParametersSet()
     {
         if (EditContext is null || !ReferenceEquals(EditContext.Model, Model))
         {
+            _binder?.Dispose();
             EditContext = new EditContext(Model);
+            _binder = new ServerValidationBinder(EditContext, BookingFormModel.ServerValidation);
         }
 
         UpdateSelectedTour();

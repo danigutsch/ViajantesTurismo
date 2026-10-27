@@ -1,9 +1,15 @@
+using PandaBear.Blazor;
 using ViajantesTurismo.Management.Web.Components.Layout;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Layout;
 
 public sealed class MainLayoutInteractivityTests : BunitContext
 {
+    public MainLayoutInteractivityTests()
+    {
+        Services.AddUiFailureReporting();
+    }
+
     [Fact]
     public void Prerendered_page_blocks_interaction_until_the_renderer_is_interactive()
     {

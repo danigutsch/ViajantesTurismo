@@ -1,4 +1,5 @@
 @page "/catalog/tours/{id:guid}/presentation"
+@implements IDisposable
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Catalog.Contracts.Application
 @using PandaBear.HttpClients
@@ -35,9 +36,9 @@ else if (_editContext is not null)
         <div class="alert alert-info" role="status">Unpublish this tour before editing its public presentation.</div>
     }
 
-    <EditForm EditContext="@_editContext" OnValidSubmit="@HandleSubmit" OnInvalidSubmit="@RequestSummaryFocus" FormName="editCatalogPresentation">
+    <EditForm EditContext="@_editContext" OnValidSubmit="@HandleSubmit" OnInvalidSubmit="@ShowSummary" FormName="editCatalogPresentation">
         <DataAnnotationsValidator />
-        <FieldErrorSummary @ref="_summary" EditContext="@_editContext" Fields="@FieldIds" />
+        <ErrorSummary Title="There is a problem" Items="_summaryItems" id="error-summary" class="border border-danger rounded p-3 mb-3" />
 
         <div class="mb-3">
             <label for="title" class="form-label">Public title</label>
@@ -118,8 +119,8 @@ else if (_errorMessage is not null)
     [Parameter]
     public Guid Id { get; set; }
 
-    private FieldErrorSummary? _summary;
-    private bool _focusSummary;
+    private IReadOnlyList<ErrorSummaryItem> _summaryItems = [];
+    private ServerValidationBinder? _binder;
 
     private static readonly IReadOnlyList<KeyValuePair<string, string>> FieldIds =
     [
@@ -134,17 +135,12 @@ else if (_errorMessage is not null)
 
     private static readonly string[] FieldNames = [.. FieldIds.Select(field => field.Key)];
 
-    private void RequestSummaryFocus() => _focusSummary = true;
+    private static readonly ServerValidationOptions ServerValidation = new(FieldNames, UserFacingErrorMessage.InvalidFieldValue);
+
+    private void ShowSummary() => _summaryItems = ValidationSummaryItems.From(_editContext!, FieldIds);
 
     /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_focusSummary && _summary is not null)
-        {
-            _focusSummary = false;
-            await _summary.FocusAsync();
-        }
-    }
+    public void Dispose() => _binder?.Dispose();
 
     private CatalogTourPresentationFormModel _model = new();
     private EditContext? _editContext;
@@ -175,6 +171,7 @@ else if (_errorMessage is not null)
                 ExpectedVersion = tour.Version
             };
             _editContext = new EditContext(_model);
+            _binder = new ServerValidationBinder(_editContext, ServerValidation);
             _isPublished = tour.IsPublished;
         }
         else if (outcome.Kind == HttpOutcomeKind.NotFound)
@@ -183,7 +180,7 @@ else if (_errorMessage is not null)
         }
         else
         {
-            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tour presentation could not be loaded. Try again later.");
+            _errorMessage = new HttpOutcomeMessages("Catalog tour presentation could not be loaded. Try again later.").For(outcome.Kind);
         }
 
         _loading = false;
@@ -191,7 +188,7 @@ else if (_errorMessage is not null)
 
     private async Task HandleSubmit()
     {
-        EditContextValidationHelper.ApplyValidationErrors(_editContext!, new Dictionary<string, string[]>());
+        _summaryItems = [];
         _saving = true;
         _successMessage = null;
         _errorMessage = null;
@@ -215,12 +212,13 @@ else if (_errorMessage is not null)
 
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
-                if (!EditContextValidationHelper.ApplyKnownFieldErrors(_editContext!, outcome.ValidationErrors, FieldNames))
+                var result = _binder!.Apply(outcome.ValidationErrors);
+                _summaryItems = ValidationSummaryItems.From(_editContext!, FieldIds);
+                if (result is not { HasUnplacedErrors: false, Issues.Count: > 0 })
                 {
                     _errorMessage = "Catalog tour presentation could not be saved. Try again later.";
                 }
 
-                _focusSummary = true;
                 return;
             }
 
@@ -244,7 +242,7 @@ else if (_errorMessage is not null)
 
             if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } updated })
             {
-                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tour presentation could not be saved. Try again later.");
+                _errorMessage = new HttpOutcomeMessages("Catalog tour presentation could not be saved. Try again later.").For(outcome.Kind);
                 return;
             }
 
@@ -297,7 +295,7 @@ else if (_errorMessage is not null)
 
             if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Catalog tour publication could not be changed. Reload the tour and try again.");
+                _errorMessage = new HttpOutcomeMessages("Catalog tour publication could not be changed. Reload the tour and try again.").For(outcome.Kind);
                 return;
             }
 

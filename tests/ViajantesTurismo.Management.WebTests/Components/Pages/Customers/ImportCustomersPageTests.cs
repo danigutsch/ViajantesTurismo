@@ -1,3 +1,4 @@
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using System.Globalization;
 using System.Text;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
@@ -10,9 +11,11 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 public sealed class ImportCustomersPageTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
+    private readonly RecordingUiFailureReporter _failures = new();
 
     public ImportCustomersPageTests()
     {
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
@@ -218,6 +221,7 @@ public sealed class ImportCustomersPageTests : BunitContext
             cut.Markup.ShouldContain("We couldn't import the customers right now. Please try again.", StringComparison.Ordinal);
             cut.Markup.ShouldNotContain("Connection refused", StringComparison.Ordinal);
         });
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "customers.import.upload")]);
     }
 
     [Fact]

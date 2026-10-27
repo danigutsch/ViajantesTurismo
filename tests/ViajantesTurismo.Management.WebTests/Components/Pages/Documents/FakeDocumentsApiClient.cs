@@ -8,6 +8,12 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
 {
     private readonly Dictionary<Guid, GetDocumentDto> _documents = [];
 
+    /// <summary>When set, a generate call throws it.</summary>
+    public Exception? GenerateContractDraftException
+    {
+        get; set;
+    }
+
     /// <summary>Document returned by a generate call.</summary>
     public GetDocumentDto? GeneratedDocument
     {
@@ -93,6 +99,11 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
     public Task<HttpOutcome<GetDocumentDto>> GenerateContractDraft(Guid bookingId, string idempotencyKey, CancellationToken ct)
     {
         GenerationKeys.Add(idempotencyKey);
+        if (GenerateContractDraftException is not null)
+        {
+            throw GenerateContractDraftException;
+        }
+
         return Task.FromResult(DocumentOutcome(GeneratedDocument, HttpStatusCode.Created));
     }
 

@@ -104,4 +104,17 @@ public sealed class AccommodationPageTests : BunitContext
         await cut.WaitForAssertionAsync(() => navigationManager.Uri.ShouldEndWith("/customers/create/physical", StringComparison.Ordinal));
         _state.CurrentStep.ShouldBe(5);
     }
+
+    [Fact]
+    public void Transport_failure_while_loading_companions_shows_a_safe_error_message()
+    {
+        // Arrange
+        _fakeCustomersApi.SetGetCustomersOutcome(FakeApiClientOutcomes.TransportFailure<GetCustomerDto[]>());
+
+        // Act
+        var cut = Render<Accommodation>();
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("Customers could not be loaded for companion selection."));
+    }
 }

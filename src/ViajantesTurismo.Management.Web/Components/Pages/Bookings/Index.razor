@@ -2,6 +2,7 @@
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 
+@inject IUiFailureReporter Failures
 @inject IBookingsApiClient BookingsApi
 
 <PageTitle>Bookings</PageTitle>
@@ -67,13 +68,12 @@
             else
             {
                 _bookings = [];
-                _errorMessage = HttpOutcomeUserMessage.For(
-                    outcome.Kind,
-                    UserFacingErrorMessage.ForOperation("load bookings"));
+                _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load bookings")).For(outcome.Kind);
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.index.load");
             _errorMessage = UserFacingErrorMessage.ForOperation("load bookings");
         }
         finally

@@ -2,7 +2,7 @@ using PandaBear.AspNetCore;
 using Microsoft.AspNetCore.Components;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Management.Web.Helpers;
+using PandaBear.Blazor;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
@@ -87,7 +87,7 @@ public partial class Finances
             }
             else
             {
-                _error = HttpOutcomeUserMessage.For(result.Kind, "Financial history could not be loaded.");
+                _error = new HttpOutcomeMessages("Financial history could not be loaded.").For(result.Kind);
             }
         }
         finally { _loading = false; }
@@ -106,7 +106,7 @@ public partial class Finances
         }
         else
         {
-            _error = HttpOutcomeUserMessage.For(result.Kind, "Sensitive evidence could not be loaded.");
+            _error = new HttpOutcomeMessages("Sensitive evidence could not be loaded.").For(result.Kind);
         }
     }
     private void Select(string action, Guid target, string summary, FinancialReasonDto reason)
@@ -262,7 +262,7 @@ public partial class Finances
         }
         else
         {
-            _error = HttpOutcomeUserMessage.For(result.Kind, "The financial action could not be completed. Check the selected amounts, dates and required evidence.");
+            _error = new HttpOutcomeMessages("The financial action could not be completed. Check the selected amounts, dates and required evidence.").For(result.Kind);
         }
     }
 }

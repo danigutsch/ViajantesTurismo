@@ -6,6 +6,11 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 internal static class UserFacingErrorMessage
 {
     /// <summary>
+    /// The fixed message shown next to a field when the server rejects its value without a usable message.
+    /// </summary>
+    public const string InvalidFieldValue = "This value is not valid. Check it and try again.";
+
+    /// <summary>
     /// Creates a generic error message for a failed user-facing operation.
     /// </summary>
     /// <param name="action">The human-readable action that could not be completed.</param>
