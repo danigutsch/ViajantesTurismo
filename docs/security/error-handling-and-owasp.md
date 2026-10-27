@@ -79,7 +79,9 @@ Triage uses regular telemetry only. There is no separate error-tracking system.
 Current state:
 
 - Exists today: structured logs with stable `EventId` values, the privacy processors, trace ids, and the local Prometheus, Loki, Tempo, and Grafana stack.
-- Being delivered in two places: the tiered user-facing rule in the web client in this repository, and the `unhandled_exceptions_total` counter, its tags, and the exception handler in SharedKernel, which this repository adopts once a prerelease candidate exists.
+- Being delivered in two places: the tiered user-facing rule in the web client in this repository,
+  and the `unhandled_exceptions_total` counter, its tags, and the exception handler in SharedKernel,
+  which this repository adopts once a prerelease candidate exists.
 - Open decisions, not yet made: the production telemetry sink, alert routing, alert thresholds (including the 5xx ratio), and the owner of triage.
   This page does not set values for them. They belong in the deployment runbook referenced from `docs/operations/production-readiness.md`.
 
