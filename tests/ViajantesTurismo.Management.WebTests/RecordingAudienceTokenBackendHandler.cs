@@ -8,7 +8,7 @@ internal sealed class RecordingAudienceTokenBackendHandler : HttpMessageHandler
     /// <summary>Authorization headers received, null when absent.</summary>
     public List<string?> AuthorizationHeaders { get; } = [];
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         AuthorizationHeaders.Add(request.Headers.Authorization?.ToString());
         return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));

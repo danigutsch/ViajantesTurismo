@@ -136,7 +136,7 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
 
     private sealed class FixedUserAccessor(ClaimsPrincipal user) : IUserAccessor
     {
-        public Task<ClaimsPrincipal> GetCurrentUserAsync(CancellationToken ct = default)
+        public Task<ClaimsPrincipal> GetCurrentUserAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(user);

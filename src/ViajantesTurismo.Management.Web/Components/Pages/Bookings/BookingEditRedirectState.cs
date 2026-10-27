@@ -45,8 +45,8 @@ internal sealed class BookingEditRedirectState : IAsyncDisposable
     }
 
     /// <summary>Returns whether navigation may proceed: a redirect is pending and the token is not cancelled.</summary>
-    internal bool CanNavigate(CancellationToken cancellationToken) =>
-        IsPending && !cancellationToken.IsCancellationRequested;
+    internal bool CanNavigate(CancellationToken ct) =>
+        IsPending && !ct.IsCancellationRequested;
 
     /// <summary>Cancels and disposes the current cancellation source, if any.</summary>
     internal async Task DisposeCancellation()

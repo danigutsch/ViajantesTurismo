@@ -18,14 +18,14 @@ internal sealed class ConcurrentInitializationSaveBarrierInterceptor : SaveChang
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct)
     {
         if (Interlocked.Increment(ref arrivals) == 2)
         {
             bothSaving.TrySetResult();
         }
 
-        await release.Task.WaitAsync(cancellationToken);
+        await release.Task.WaitAsync(ct);
         return result;
     }
 }

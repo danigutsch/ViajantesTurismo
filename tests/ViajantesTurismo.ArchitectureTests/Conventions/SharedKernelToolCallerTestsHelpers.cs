@@ -89,7 +89,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
     }
 
     /// <summary>Runs the tool with the [diagram] directive and returns the parse errors it prints, or null when the command line parses.</summary>
-    public static async Task<string?> ParseWithDiagramDirective(string root, ToolCommandLine line, CancellationToken cancellationToken)
+    public static async Task<string?> ParseWithDiagramDirective(string root, ToolCommandLine line, CancellationToken ct)
     {
         var startInfo = new ProcessStartInfo("dotnet")
         {
@@ -104,9 +104,9 @@ internal static partial class SharedKernelToolCallerTestsHelpers
         }
 
         using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("dotnet did not start.");
-        var output = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var error = process.StandardError.ReadToEndAsync(cancellationToken);
-        await process.WaitForExitAsync(cancellationToken);
+        var output = process.StandardOutput.ReadToEndAsync(ct);
+        var error = process.StandardError.ReadToEndAsync(ct);
+        await process.WaitForExitAsync(ct);
 
         // The directive prints the parse tree without running the command and returns 1 when the parse has errors.
         return process.ExitCode == 0

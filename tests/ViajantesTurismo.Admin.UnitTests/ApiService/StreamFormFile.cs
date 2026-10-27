@@ -32,5 +32,5 @@ internal sealed class StreamFormFile(Stream stream, long length) : IFormFile
     public void CopyTo(Stream target) => throw new NotSupportedException();
 
     /// <inheritdoc />
-    public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    public Task CopyToAsync(Stream target, CancellationToken ct) => throw new NotSupportedException();
 }

@@ -17,9 +17,9 @@ public sealed class FakeToursApiClient : IToursApiClient
     private Exception? _updateTourException;
     private HttpOutcome? _updateTourOutcome;
 
-    public Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
+    public Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue)
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        ct.ThrowIfCancellationRequested();
 
         if (_getToursException is not null)
         {
@@ -34,9 +34,9 @@ public sealed class FakeToursApiClient : IToursApiClient
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _tours.Take(maxItems).ToArray()));
     }
 
-    public Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
+    public Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken ct)
     {
-        cancellationToken.ThrowIfCancellationRequested();
+        ct.ThrowIfCancellationRequested();
 
         if (_getTourByIdException is not null)
         {
@@ -54,10 +54,10 @@ public sealed class FakeToursApiClient : IToursApiClient
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour));
     }
 
-    public Task<HttpOutcome> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
+    public Task<HttpOutcome> CreateTour(CreateTourDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        cancellationToken.ThrowIfCancellationRequested();
+        ct.ThrowIfCancellationRequested();
 
         if (_createTourException is not null)
         {
@@ -92,10 +92,10 @@ public sealed class FakeToursApiClient : IToursApiClient
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, new Uri($"/api/v1/tours/{newTour.Id}", UriKind.Relative)));
     }
 
-    public Task<HttpOutcome> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
+    public Task<HttpOutcome> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        cancellationToken.ThrowIfCancellationRequested();
+        ct.ThrowIfCancellationRequested();
 
         if (_updateTourException is not null)
         {

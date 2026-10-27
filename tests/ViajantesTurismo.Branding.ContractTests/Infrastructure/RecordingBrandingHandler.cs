@@ -11,7 +11,7 @@ internal sealed class RecordingBrandingHandler(Func<HttpRequestMessage, HttpResp
     /// <summary>Gets the requests received, in order.</summary>
     public List<HttpRequestMessage> Requests { get; } = [];
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         Requests.Add(request);
         return Task.FromResult(respond(request));

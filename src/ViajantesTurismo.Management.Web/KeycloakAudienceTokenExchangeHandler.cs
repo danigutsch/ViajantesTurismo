@@ -47,17 +47,17 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
         _timeProvider = timeProvider;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var user = await _userAccessor.GetCurrentUserAsync(cancellationToken);
+        var user = await _userAccessor.GetCurrentUserAsync(ct);
         var session = ManagementTokenSession.From(user);
         var sourceAccessToken = GetSourceAccessToken(request);
         var cachedAccessToken = await _userTokenStore.ExecuteForActiveSession(
             user,
             ct => _audienceTokenStore.Get(_audience, session, sourceAccessToken, ct),
-            cancellationToken);
+            ct);
         string accessToken;
         if (cachedAccessToken is not null)
         {
@@ -65,7 +65,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
         }
         else
         {
-            var exchangedToken = await ExchangeAccessToken(sourceAccessToken, cancellationToken);
+            var exchangedToken = await ExchangeAccessToken(sourceAccessToken, ct);
             accessToken = await _userTokenStore.ExecuteForActiveSession(
                 user,
                 async ct =>
@@ -85,16 +85,16 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
                         ct);
                     return exchangedToken.AccessToken;
                 },
-                cancellationToken);
+                ct);
         }
 
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        return await base.SendAsync(request, cancellationToken);
+        return await base.SendAsync(request, ct);
     }
 
     private async Task<(string AccessToken, DateTimeOffset ExpiresAt)> ExchangeAccessToken(
         string sourceAccessToken,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         var options = _openIdConnectOptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
         var clientId = options.ClientId;
@@ -104,7 +104,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
             throw new InvalidOperationException("The management token-exchange client is unavailable.");
         }
 
-        var tokenEndpoint = await GetTokenEndpoint(options, cancellationToken);
+        var tokenEndpoint = await GetTokenEndpoint(options, ct);
         var tokenClient = _httpClientFactory.CreateClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName);
         var response = await tokenClient.RequestTokenExchangeTokenAsync(
             new TokenExchangeTokenRequest
@@ -118,7 +118,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
                 Audience = _audience,
                 Scope = _audience
             },
-            cancellationToken);
+            ct);
 
         var accessToken = response.AccessToken;
         if (response.IsError
@@ -157,12 +157,12 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
         return authorization.Parameter;
     }
 
-    private static async Task<string> GetTokenEndpoint(OpenIdConnectOptions options, CancellationToken cancellationToken)
+    private static async Task<string> GetTokenEndpoint(OpenIdConnectOptions options, CancellationToken ct)
     {
         var tokenEndpoint = options.Configuration?.TokenEndpoint;
         if (string.IsNullOrWhiteSpace(tokenEndpoint) && options.ConfigurationManager is not null)
         {
-            var configuration = await options.ConfigurationManager.GetConfigurationAsync(cancellationToken);
+            var configuration = await options.ConfigurationManager.GetConfigurationAsync(ct);
             tokenEndpoint = configuration.TokenEndpoint;
         }
 

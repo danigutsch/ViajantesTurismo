@@ -14,7 +14,7 @@ public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests(PostgreSql
 
     public ValueTask InitializeAsync()
     {
-        return _scenario.InitializeAsync();
+        return _scenario.Initialize();
     }
 
     public ValueTask DisposeAsync()
@@ -28,7 +28,7 @@ public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests(PostgreSql
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var sibling = new PostgreSqlManagementUserTokenStoreScenario(fixture);
-        await sibling.InitializeAsync();
+        await sibling.Initialize();
         var cache = sibling.BlockingCache;
         var store = sibling.CreateStore(cache);
         var user = PostgreSqlManagementUserTokenStoreScenario.CreateUser("sibling-session");

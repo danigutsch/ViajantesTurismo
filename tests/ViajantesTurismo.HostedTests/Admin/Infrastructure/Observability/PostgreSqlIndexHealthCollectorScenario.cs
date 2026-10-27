@@ -115,7 +115,7 @@ public sealed class PostgreSqlIndexHealthCollectorScenario(HostedTestFixture sha
         if (testDataSource is not null)
         {
             await CaptureTeardownFailure(
-                teardownCt => DropMonitoringRole(testDataSource, _monitoringRoleName, teardownCt),
+                ct => DropMonitoringRole(testDataSource, _monitoringRoleName, ct),
                 teardownFailures);
             await CaptureTeardownFailure(_ => testDataSource.DisposeAsync().AsTask(), teardownFailures);
         }

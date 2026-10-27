@@ -18,12 +18,12 @@ internal sealed class CatalogProjectionHostedService(
     private const string CatalogProjectionServiceName = "catalog-projections";
 
     /// <summary>Runs one projection batch and returns the number of items processed.</summary>
-    internal ValueTask<int> RunBatch(CancellationToken stoppingToken) => ExecuteBatch(stoppingToken);
+    internal ValueTask<int> RunBatch(CancellationToken ct) => ExecuteBatch(ct);
 
-    protected override async ValueTask<int> ExecuteBatch(CancellationToken stoppingToken)
+    protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var runner = scope.ServiceProvider.GetRequiredService<CatalogProjectionRunner>();
-        return await runner.Project(stoppingToken).ConfigureAwait(false);
+        return await runner.Project(ct).ConfigureAwait(false);
     }
 }

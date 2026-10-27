@@ -40,7 +40,7 @@ internal sealed class ThrowingReadStream(IOException exception) : Stream
         throw exception;
     }
 
-    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct)
     {
         ReadCount++;
         return ValueTask.FromException<int>(exception);
@@ -53,9 +53,9 @@ internal sealed class ThrowingReadStream(IOException exception) : Stream
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
     /// <summary>Test handler that forces the request content to be read, so the failing stream throws, and otherwise returns 201 Created.</summary>
-    public static HttpResponseMessage SerializeRequest(HttpRequestMessage request, CancellationToken cancellationToken)
+    public static HttpResponseMessage SerializeRequest(HttpRequestMessage request, CancellationToken ct)
     {
-        request.Content.ShouldNotBeNull().ReadAsByteArrayAsync(cancellationToken).GetAwaiter().GetResult();
+        request.Content.ShouldNotBeNull().ReadAsByteArrayAsync(ct).GetAwaiter().GetResult();
         return new HttpResponseMessage(System.Net.HttpStatusCode.Created);
     }
 

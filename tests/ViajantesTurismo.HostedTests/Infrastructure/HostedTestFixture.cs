@@ -84,7 +84,7 @@ public sealed class HostedTestFixture : IAsyncLifetime
 
     public Task<AspireTestApplication> GetApplication(HostedProfile profile, string stack, CancellationToken ct)
     {
-        return applications.GetOrAdd(stack, _ => new OnDemandResource<AspireTestApplication>(startCt => StartApplication(profile, stack, startCt))).Get(ct);
+        return applications.GetOrAdd(stack, _ => new OnDemandResource<AspireTestApplication>(ct => StartApplication(profile, stack, ct))).Get(ct);
     }
 
     private async Task<InfrastructureHost> CreateInfrastructure(CancellationToken ct)

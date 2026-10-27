@@ -50,7 +50,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         "Reliability",
         "CA2000:Dispose objects before losing scope",
         Justification = "Successful setup transfers database, data-source, and provider ownership to the scenario.")]
-    public async ValueTask InitializeAsync()
+    public async ValueTask Initialize()
     {
         var ct = TestContext.Current.CancellationToken;
         var database = await _fixture.CreateDatabase(ct);

@@ -42,14 +42,14 @@ internal sealed class BlockingDocumentReadStream(Action? onReadStarted = null) :
 
     public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
-    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
-        ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken ct) =>
+        ReadAsync(buffer.AsMemory(offset, count), ct).AsTask();
 
-    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct)
     {
         _readStarted.TrySetResult();
         Interlocked.Exchange(ref _onReadStarted, null)?.Invoke();
-        await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        await Task.Delay(Timeout.InfiniteTimeSpan, ct).ConfigureAwait(false);
         return 0;
     }
 

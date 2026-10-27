@@ -30,7 +30,7 @@ internal sealed class RecordingOutputCacheStore : IOutputCacheStore
     }
 
     /// <summary>Always returns a cache miss.</summary>
-    public ValueTask<byte[]?> GetAsync(string key, CancellationToken cancellationToken)
+    public ValueTask<byte[]?> GetAsync(string key, CancellationToken ct)
     {
         return ValueTask.FromResult<byte[]?>(null);
     }
@@ -41,17 +41,17 @@ internal sealed class RecordingOutputCacheStore : IOutputCacheStore
         byte[] value,
         string[]? tags,
         TimeSpan validFor,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         return ValueTask.CompletedTask;
     }
 
     /// <summary>Records the eviction and throws <see cref="EvictionException" /> when set.</summary>
-    public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
+    public ValueTask EvictByTagAsync(string tag, CancellationToken ct)
     {
         EvictionObserved = true;
         EvictionTag = tag;
-        EvictionCancellationToken = cancellationToken;
+        EvictionCancellationToken = ct;
         if (EvictionException is not null)
         {
             throw EvictionException;

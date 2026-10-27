@@ -9,7 +9,7 @@ internal sealed class CancelAfterSaveInterceptor(CancellationTokenSource cancell
     public override async ValueTask<int> SavedChangesAsync(
         SaveChangesCompletedEventData eventData,
         int result,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct)
     {
         await cancellation.CancelAsync();
         throw new OperationCanceledException(cancellation.Token);

@@ -134,10 +134,10 @@ dotnet_diagnostic.CA1852.severity = warning
 dotnet_diagnostic.CA5394.severity = warning
 dotnet_diagnostic.CS1591.severity = warning
 dotnet_diagnostic.IDE0161.severity = warning
-dotnet_diagnostic.SKSTYLE001.severity = suggestion
-dotnet_diagnostic.SKSTYLE002.severity = suggestion
-dotnet_diagnostic.SKSTYLE003.severity = suggestion
-dotnet_diagnostic.SKSTYLE004.severity = suggestion
+dotnet_diagnostic.SKSTYLE001.severity = warning
+dotnet_diagnostic.SKSTYLE002.severity = warning
+dotnet_diagnostic.SKSTYLE003.severity = warning
+dotnet_diagnostic.SKSTYLE004.severity = warning
 dotnet_diagnostic.SKSTYLE017.severity = warning
 dotnet_diagnostic.SKTEST001.severity = warning
 dotnet_diagnostic.SKTEST002.severity = warning
@@ -284,10 +284,13 @@ dotnet_diagnostic.CA1515.severity = none
 [src/ViajantesTurismo.Management.Web/Models/PaymentFormModel.cs]
 dotnet_diagnostic.CA1515.severity = none
 
-[src/ViajantesTurismo.Management.Web/Services/CountryService.cs]
+[src/ViajantesTurismo.Management.Web/Services/CountryInfo.cs]
 dotnet_diagnostic.CA1515.severity = none
 
-[src/ViajantesTurismo.Management.Web/Services/CustomerImportHeaderMatcher.cs]
+[src/ViajantesTurismo.Management.Web/Services/CustomerImportField.cs]
+dotnet_diagnostic.CA1515.severity = none
+
+[src/ViajantesTurismo.Management.Web/Services/CustomerImportFieldMapping.cs]
 dotnet_diagnostic.CA1515.severity = none
 
 [src/ViajantesTurismo.Management.Web/Components/Pages/Customers/ImportCustomersDuplicateResolutionItem.cs]
@@ -302,23 +305,12 @@ dotnet_diagnostic.CA1515.severity = none
 dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA1716.severity = none
 dotnet_diagnostic.CS1591.severity = none
-dotnet_diagnostic.SKSTYLE004.severity = suggestion
+dotnet_diagnostic.SKSTYLE004.severity = warning
 
 # Reqnroll discovers binding and generated test support types by reflection.
 # Owner: behavior-test maintainers. Remove when unused binding types can be internalized safely.
 [tests/ViajantesTurismo.Admin.BehaviorTests/**.cs]
 dotnet_diagnostic.CA1812.severity = none
-
-# Staged rollout for one-top-level-type-per-file. Owner: style analyzer maintainers.
-# Keep this allowlist small and remove each entry when the grouped file is split intentionally.
-[src/ViajantesTurismo.Admin.Contracts.Application/ImportResultDto.cs]
-dotnet_diagnostic.SKSTYLE004.severity = none
-
-[src/ViajantesTurismo.Management.Web/Services/CountryService.cs]
-dotnet_diagnostic.SKSTYLE004.severity = none
-
-[src/ViajantesTurismo.Management.Web/Services/CustomerImportHeaderMatcher.cs]
-dotnet_diagnostic.SKSTYLE004.severity = none
 
 # HTTP contract contexts read external API payloads, so they must keep case-insensitive property names (SKSTYLE015).
 # Owner: API contract maintainers. Persistence, fingerprint, integration-event, and server binding contexts stay out of

@@ -131,10 +131,10 @@ internal sealed class MigrationProcessTestHost : IHost
     /// <summary>
     /// Records the start and completes, or faults with the configured start failure.
     /// </summary>
-    public Task StartAsync(CancellationToken cancellationToken = default)
+    public Task StartAsync(CancellationToken ct)
     {
         StartCalled = true;
-        StartToken = cancellationToken;
+        StartToken = ct;
         lifecycleEvents.Add("Start");
 
         return startFailure is null ? Task.CompletedTask : Task.FromException(startFailure);
@@ -143,10 +143,10 @@ internal sealed class MigrationProcessTestHost : IHost
     /// <summary>
     /// Records the stop and completes, or faults with the configured stop failure.
     /// </summary>
-    public Task StopAsync(CancellationToken cancellationToken = default)
+    public Task StopAsync(CancellationToken ct)
     {
         StopCalled = true;
-        StopToken = cancellationToken;
+        StopToken = ct;
         lifecycleEvents.Add("Stop");
 
         return stopFailure is null ? Task.CompletedTask : Task.FromException(stopFailure);

@@ -15,11 +15,11 @@ internal sealed class RecordingAudienceTokenEndpointHandler : HttpMessageHandler
     /// <summary>Builds the response for a token request; defaults to a successful token for the requested audience.</summary>
     public Func<IReadOnlyDictionary<string, string>, HttpResponseMessage> ResponseFactory { get; set; } = CreateSuccessResponse;
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request.Content);
 
-        var formContent = await request.Content.ReadAsStringAsync(cancellationToken);
+        var formContent = await request.Content.ReadAsStringAsync(ct);
         var values = QueryHelpers.ParseQuery($"?{formContent}");
         var tokenRequest = values.ToDictionary(
             static pair => pair.Key,

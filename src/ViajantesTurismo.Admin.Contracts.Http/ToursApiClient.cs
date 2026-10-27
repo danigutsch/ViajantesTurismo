@@ -16,7 +16,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     private static readonly ToursApiClientJsonContext Json = ToursApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken cancellationToken, int maxItems = int.MaxValue)
+    public async Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue)
     {
         if (maxItems <= 0)
         {
@@ -29,7 +29,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
             HttpStatusCode.OK,
             Json.GetTourDtoArray,
             Json.ContractValidationProblemDto,
-            cancellationToken).ConfigureAwait(false);
+            ct).ConfigureAwait(false);
 
         return outcome.Kind == HttpOutcomeKind.Succeeded
             ? outcome with
@@ -40,7 +40,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken cancellationToken)
+    public async Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken ct)
     {
         return await HttpOutcomeMapper.Send(
             httpClient,
@@ -48,11 +48,11 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
             HttpStatusCode.OK,
             Json.GetTourDto,
             Json.ContractValidationProblemDto,
-            cancellationToken).ConfigureAwait(false);
+            ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<HttpOutcome> CreateTour(CreateTourDto dto, CancellationToken cancellationToken)
+    public async Task<HttpOutcome> CreateTour(CreateTourDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -71,7 +71,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
             request,
             HttpStatusCode.Created,
             Json.ContractValidationProblemDto,
-            cancellationToken).ConfigureAwait(false);
+            ct).ConfigureAwait(false);
 
         if (outcome.StatusCode is not null)
         {
@@ -88,7 +88,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     /// <inheritdoc />
-    public async Task<HttpOutcome> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken cancellationToken)
+    public async Task<HttpOutcome> UpdateTour(Guid id, UpdateTourDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -101,7 +101,7 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
             request,
             HttpStatusCode.NoContent,
             Json.ContractValidationProblemDto,
-            cancellationToken).ConfigureAwait(false);
+            ct).ConfigureAwait(false);
     }
 
     [LoggerMessage(1, LogLevel.Warning, "Tour create returned {StatusCode} with outcome {OutcomeKind}.")]

@@ -108,11 +108,11 @@ internal sealed class AudienceTokenExchangeIntegrationTestScope : IDisposable
 
         public List<string?> AuthorizationHeaders { get; } = [];
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             AuthorizationHeaders.Add(request.Headers.Authorization?.ToString());
             _sendStarted.TrySetResult();
-            await _releaseSend.Task.WaitAsync(cancellationToken);
+            await _releaseSend.Task.WaitAsync(ct);
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
 
@@ -129,7 +129,7 @@ internal sealed class AudienceTokenExchangeIntegrationTestScope : IDisposable
 
     private sealed class FixedUserAccessor(ClaimsPrincipal user) : IUserAccessor
     {
-        public Task<ClaimsPrincipal> GetCurrentUserAsync(CancellationToken ct = default)
+        public Task<ClaimsPrincipal> GetCurrentUserAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(user);

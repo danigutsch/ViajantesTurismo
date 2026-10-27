@@ -29,9 +29,9 @@ internal sealed class PostTransportValidationScenario(
     public async Task<CatalogTourDto> WaitForCatalogTour(Guid adminTourId, CancellationToken ct)
     {
         return await Eventually.Until(
-            async probeCt =>
+            async ct =>
             {
-                var outcome = await catalogTours.GetTours(probeCt);
+                var outcome = await catalogTours.GetTours(ct);
                 if (outcome is { Kind: PandaBear.HttpClients.HttpOutcomeKind.Succeeded, Value: { } tours })
                 {
                     return tours.SingleOrDefault(tour => tour.AdminTourId == adminTourId);

@@ -6,12 +6,12 @@ namespace ViajantesTurismo.ArchitectureTests.Repository;
 /// <summary>Runs child processes and locates the repository root for repository tests.</summary>
 internal static class RepositoryTestProcess
 {
-    /// <summary>Starts a process, captures its output and exit code, and kills its process tree if <paramref name="cancellationToken"/> is canceled.</summary>
+    /// <summary>Starts a process, captures its output and exit code, and kills its process tree if <paramref name="ct"/> is canceled.</summary>
     public static async Task<ProcessResult> Run(
         string fileName,
         string workingDirectory,
         IReadOnlyList<string> arguments,
-        CancellationToken cancellationToken,
+        CancellationToken ct,
         IReadOnlyDictionary<string, string?>? environment = null)
     {
         var startInfo = new ProcessStartInfo(fileName)
@@ -39,7 +39,7 @@ internal static class RepositoryTestProcess
         var standardError = process.StandardError.ReadToEndAsync(CancellationToken.None);
         try
         {
-            await process.WaitForExitAsync(cancellationToken);
+            await process.WaitForExitAsync(ct);
         }
         catch (OperationCanceledException)
         {

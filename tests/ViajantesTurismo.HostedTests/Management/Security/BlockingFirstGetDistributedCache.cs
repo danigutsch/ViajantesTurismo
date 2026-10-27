@@ -17,13 +17,13 @@ internal sealed class BlockingFirstGetDistributedCache(IDistributedCache inner, 
     }
 
     /// <summary>Reads from the inner cache, then holds the first read of the blocked key until released.</summary>
-    public async Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+    public async Task<byte[]?> GetAsync(string key, CancellationToken ct)
     {
-        var value = await inner.GetAsync(key, token);
+        var value = await inner.GetAsync(key, ct);
         if (key == blockedKey && Interlocked.CompareExchange(ref _firstGetPending, 0, 1) == 1)
         {
             _firstGetStarted.TrySetResult();
-            await _releaseFirstGet.Task.WaitAsync(token);
+            await _releaseFirstGet.Task.WaitAsync(ct);
         }
 
         return value;
@@ -36,9 +36,9 @@ internal sealed class BlockingFirstGetDistributedCache(IDistributedCache inner, 
     }
 
     /// <summary>Forwards the asynchronous refresh to the inner cache.</summary>
-    public Task RefreshAsync(string key, CancellationToken token = default)
+    public Task RefreshAsync(string key, CancellationToken ct)
     {
-        return inner.RefreshAsync(key, token);
+        return inner.RefreshAsync(key, ct);
     }
 
     /// <summary>Forwards the synchronous removal to the inner cache.</summary>
@@ -48,9 +48,9 @@ internal sealed class BlockingFirstGetDistributedCache(IDistributedCache inner, 
     }
 
     /// <summary>Forwards the asynchronous removal to the inner cache.</summary>
-    public Task RemoveAsync(string key, CancellationToken token = default)
+    public Task RemoveAsync(string key, CancellationToken ct)
     {
-        return inner.RemoveAsync(key, token);
+        return inner.RemoveAsync(key, ct);
     }
 
     /// <summary>Forwards the synchronous write to the inner cache.</summary>
@@ -60,9 +60,9 @@ internal sealed class BlockingFirstGetDistributedCache(IDistributedCache inner, 
     }
 
     /// <summary>Forwards the asynchronous write to the inner cache.</summary>
-    public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+    public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken ct)
     {
-        return inner.SetAsync(key, value, options, token);
+        return inner.SetAsync(key, value, options, ct);
     }
 
     /// <summary>Completes once the first read of the blocked key has started and is being held.</summary>

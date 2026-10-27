@@ -16,7 +16,7 @@ internal sealed class BrandingSettingsStubHandler(string field, string message) 
 {
     private static readonly Guid SourceEpoch = Guid.Parse("0f0f0f0f-0f0f-4f0f-8f0f-0f0f0f0f0f0f");
 
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 

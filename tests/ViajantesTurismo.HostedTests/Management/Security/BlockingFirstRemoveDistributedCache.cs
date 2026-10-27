@@ -16,9 +16,9 @@ internal sealed class BlockingFirstRemoveDistributedCache(IDistributedCache inne
     }
 
     /// <summary>Forwards the asynchronous read to the inner cache.</summary>
-    public Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+    public Task<byte[]?> GetAsync(string key, CancellationToken ct)
     {
-        return inner.GetAsync(key, token);
+        return inner.GetAsync(key, ct);
     }
 
     /// <summary>Forwards the synchronous refresh to the inner cache.</summary>
@@ -28,9 +28,9 @@ internal sealed class BlockingFirstRemoveDistributedCache(IDistributedCache inne
     }
 
     /// <summary>Forwards the asynchronous refresh to the inner cache.</summary>
-    public Task RefreshAsync(string key, CancellationToken token = default)
+    public Task RefreshAsync(string key, CancellationToken ct)
     {
-        return inner.RefreshAsync(key, token);
+        return inner.RefreshAsync(key, ct);
     }
 
     /// <summary>Forwards the synchronous removal to the inner cache.</summary>
@@ -40,15 +40,15 @@ internal sealed class BlockingFirstRemoveDistributedCache(IDistributedCache inne
     }
 
     /// <summary>Holds the first removal until released, then removes the key from the inner cache.</summary>
-    public async Task RemoveAsync(string key, CancellationToken token = default)
+    public async Task RemoveAsync(string key, CancellationToken ct)
     {
         if (Interlocked.CompareExchange(ref _firstRemovePending, 0, 1) == 1)
         {
             _firstRemoveStarted.TrySetResult();
-            await _releaseFirstRemove.Task.WaitAsync(token);
+            await _releaseFirstRemove.Task.WaitAsync(ct);
         }
 
-        await inner.RemoveAsync(key, token);
+        await inner.RemoveAsync(key, ct);
     }
 
     /// <summary>Forwards the synchronous write to the inner cache.</summary>
@@ -58,9 +58,9 @@ internal sealed class BlockingFirstRemoveDistributedCache(IDistributedCache inne
     }
 
     /// <summary>Forwards the asynchronous write to the inner cache.</summary>
-    public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+    public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken ct)
     {
-        return inner.SetAsync(key, value, options, token);
+        return inner.SetAsync(key, value, options, ct);
     }
 
     /// <summary>Completes once the first removal has started and is being held.</summary>

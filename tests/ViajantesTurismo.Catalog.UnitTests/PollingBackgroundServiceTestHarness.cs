@@ -39,10 +39,10 @@ internal sealed class PollingBackgroundServiceTestHarness
         return listener;
     }
 
-    protected override async ValueTask<int> ExecuteBatch(CancellationToken stoppingToken)
+    protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
     {
         started.TrySetResult();
-        await Task.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+        await Task.Delay(Timeout.InfiniteTimeSpan, ct);
         return 0;
     }
 }

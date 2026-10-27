@@ -16,9 +16,9 @@ internal sealed class BlockingFirstSetDistributedCache(IDistributedCache inner) 
     }
 
     /// <summary>Forwards the asynchronous read to the inner cache.</summary>
-    public Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+    public Task<byte[]?> GetAsync(string key, CancellationToken ct)
     {
-        return inner.GetAsync(key, token);
+        return inner.GetAsync(key, ct);
     }
 
     /// <summary>Forwards the synchronous refresh to the inner cache.</summary>
@@ -28,9 +28,9 @@ internal sealed class BlockingFirstSetDistributedCache(IDistributedCache inner) 
     }
 
     /// <summary>Forwards the asynchronous refresh to the inner cache.</summary>
-    public Task RefreshAsync(string key, CancellationToken token = default)
+    public Task RefreshAsync(string key, CancellationToken ct)
     {
-        return inner.RefreshAsync(key, token);
+        return inner.RefreshAsync(key, ct);
     }
 
     /// <summary>Forwards the synchronous removal to the inner cache.</summary>
@@ -40,9 +40,9 @@ internal sealed class BlockingFirstSetDistributedCache(IDistributedCache inner) 
     }
 
     /// <summary>Forwards the asynchronous removal to the inner cache.</summary>
-    public Task RemoveAsync(string key, CancellationToken token = default)
+    public Task RemoveAsync(string key, CancellationToken ct)
     {
-        return inner.RemoveAsync(key, token);
+        return inner.RemoveAsync(key, ct);
     }
 
     /// <summary>Forwards the synchronous write to the inner cache.</summary>
@@ -52,15 +52,15 @@ internal sealed class BlockingFirstSetDistributedCache(IDistributedCache inner) 
     }
 
     /// <summary>Holds the first write until released, then writes to the inner cache.</summary>
-    public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+    public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken ct)
     {
         if (Interlocked.CompareExchange(ref _firstSetPending, 0, 1) == 1)
         {
             _firstSetStarted.TrySetResult();
-            await _releaseFirstSet.Task.WaitAsync(token);
+            await _releaseFirstSet.Task.WaitAsync(ct);
         }
 
-        await inner.SetAsync(key, value, options, token);
+        await inner.SetAsync(key, value, options, ct);
     }
 
     /// <summary>Completes once the first write has started and is being held.</summary>

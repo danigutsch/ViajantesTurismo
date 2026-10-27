@@ -143,9 +143,9 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
     internal async Task WaitForCatalogTransportMessageProcessed(Guid adminTourId, CancellationToken ct)
     {
         await Eventually.Until(
-            async probeCt =>
+            async ct =>
             {
-                var status = await ReadCatalogTransportMessageStatus(adminTourId, probeCt);
+                var status = await ReadCatalogTransportMessageStatus(adminTourId, ct);
                 if (status.LastConsumeError is not null)
                 {
                     throw new InvalidOperationException(status.LastConsumeError);

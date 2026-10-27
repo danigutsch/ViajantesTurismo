@@ -46,11 +46,11 @@ internal sealed class GatedChunkReadStream(byte[] content, int chunkSize) : Stre
         set => throw new NotSupportedException();
     }
 
-    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct)
     {
         LargestRequestedRead = Math.Max(LargestRequestedRead, buffer.Length);
         _ = pending.Release();
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await gate.WaitAsync(ct).ConfigureAwait(false);
 
         var count = Math.Min(Math.Min(chunkSize, buffer.Length), content.Length - offset);
         content.AsMemory(offset, count).CopyTo(buffer);

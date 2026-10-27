@@ -13,7 +13,7 @@ public static class CustomersApiHelper
     public static async Task<HttpResponseMessage> CreateCustomer(
         this HttpClient client,
         CreateCustomerDto request,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(request);
@@ -21,17 +21,17 @@ public static class CustomersApiHelper
         return await client.PostAsJsonAsync(
             new Uri(RoutePrefix, UriKind.Relative),
             request,
-            cancellationToken);
+            ct);
     }
 
     public static async Task<HttpResponseMessage> GetAllCustomers(
         this HttpClient client,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
         return await client.GetAsync(
             new Uri(RoutePrefix, UriKind.Relative),
-            cancellationToken);
+            ct);
     }
 }
