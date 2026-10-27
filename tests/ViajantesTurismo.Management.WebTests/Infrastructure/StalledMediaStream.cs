@@ -5,6 +5,11 @@ internal sealed class StalledMediaStream : Stream
 {
     private bool hasRead;
 
+    private readonly TaskCompletionSource stalledReadStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    /// <summary>Completes when the stalled read has begun waiting for cancellation.</summary>
+    public Task StalledReadStarted => stalledReadStarted.Task;
+
     /// <summary>True once the stream has been disposed.</summary>
     public bool IsDisposed
     {
@@ -41,6 +46,7 @@ internal sealed class StalledMediaStream : Stream
     {
         if (hasRead)
         {
+            stalledReadStarted.TrySetResult();
             try
             {
                 await Task.Delay(Timeout.InfiniteTimeSpan, ct).ConfigureAwait(false);

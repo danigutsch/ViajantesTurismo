@@ -4,6 +4,10 @@ namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 public sealed class DisposalTrackingStream(Stream inner, bool stallAfterFirstRead = false) : Stream
 {
     private bool hasRead;
+    private readonly TaskCompletionSource stalledReadStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    /// <summary>Gets a task that completes when the stalled read has begun waiting for cancellation.</summary>
+    public Task StalledReadStarted => stalledReadStarted.Task;
 
     public bool IsDisposed
     {
@@ -38,6 +42,7 @@ public sealed class DisposalTrackingStream(Stream inner, bool stallAfterFirstRea
     {
         if (stallAfterFirstRead && hasRead)
         {
+            stalledReadStarted.TrySetResult();
             try
             {
                 await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
