@@ -263,6 +263,36 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
+    public async Task Cancel_moves_focus_to_the_status_region_that_outlives_the_cancel_button()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCompletion = new TaskCompletionSource<ImportResultDto>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _fakeCustomersApi.SetImportCustomersHandler((_, _, _, _) =>
+        {
+            requestStarted.TrySetResult();
+            return requestCompletion.Task;
+        });
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        cut.FindComponent<InputFile>().UploadFiles(file);
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
+        var importTask = ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+        await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        await cut.Find("button[aria-label='Cancel upload of customers.csv']").ClickAsync();
+        requestCompletion.TrySetResult(new ImportResultDto(1, 0));
+        await importTask;
+
+        // Assert
+        cut.Find("section[aria-label='Customer import upload status']").GetAttribute("tabindex").ShouldBe("-1");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
+    [Fact]
     public async Task Cancel_targets_the_current_file_and_late_completion_cannot_replace_canceled_state()
     {
         // Arrange

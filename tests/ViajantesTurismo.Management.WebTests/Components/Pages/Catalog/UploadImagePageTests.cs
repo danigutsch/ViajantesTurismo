@@ -77,6 +77,34 @@ public sealed class UploadImagePageTests : BunitContext
     }
 
     [Fact]
+    public async Task Cancel_moves_focus_to_the_status_region_that_outlives_the_cancel_button()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCompletion = new TaskCompletionSource<CatalogMediaImageDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        catalogApi.UploadTourImageHandler = (_, _, _, _) =>
+        {
+            requestStarted.TrySetResult();
+            return requestCompletion.Task;
+        };
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var file = new RecordingBrowserFile();
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
+        await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
+        var uploadTask = cut.Find("form").SubmitAsync();
+        await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+
+        // Act
+        await cut.Find("button[aria-label='Cancel upload of tour-image.jpg']").ClickAsync();
+        requestCompletion.TrySetResult(null);
+        await uploadTask;
+
+        // Assert
+        cut.Find("section[aria-label='Catalog image upload status']").GetAttribute("tabindex").ShouldBe("-1");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
+    [Fact]
     public async Task Cancel_targets_the_selected_image_and_late_completion_cannot_replace_canceled_state()
     {
         // Arrange
