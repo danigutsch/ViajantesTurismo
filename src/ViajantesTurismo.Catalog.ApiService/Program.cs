@@ -15,6 +15,8 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.AddConfiguredTrustedForwardedHeaders();
+builder.Services.AddUnhandledExceptionHandler();
+builder.Services.AddSecurityEventTelemetry();
 builder.Services.AddCatalogOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddCatalogSecurityBaseline(builder.Configuration);
@@ -39,6 +41,8 @@ builder.AddCatalogInfrastructure();
 builder.AddBrandingModule(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(builder.Environment));
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.UseForwardedHeaders();
 

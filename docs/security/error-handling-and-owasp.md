@@ -53,24 +53,24 @@ Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exerci
 | Structured logs with stable identifiers | Implemented | `docs/OPEN_TELEMETRY.md` (stable `EventId` values and names) |
 | Rate limiting and input size limits | Implemented | `docs/security/security-baseline.md` (named rate-limit policies, import size caps) |
 | Do not send exception text or stack traces to clients | Implemented | No exception text is sent to clients; development exception pages are gated by environment in `src/ViajantesTurismo.Management.Web/Program.cs` and `src/ViajantesTurismo.Public.Web/Program.cs` |
-| Global exception handler on every service | Partial | `src/ViajantesTurismo.Admin.ApiService/Program.cs` has `AddProblemDetails` and `UseExceptionHandler`; the Catalog API, which hosts Branding, has none |
-| Consistent 4xx/5xx mapping and monitoring | Partial | The mapping exists; 5xx responses are not monitored |
+| Global exception handler on every service | Partial | The Admin and Catalog API hosts (the Catalog API also hosts Branding) register `AddUnhandledExceptionHandler` and `UseExceptionHandler` in their `Program.cs`; Management.Web and Public.Web keep `/Error` pages |
+| Consistent 4xx/5xx mapping and monitoring | Partial | The mapping exists; the API hosts export `unhandled_exceptions_total`, but no alert or 5xx ratio rule consumes it yet |
 | Validation text authored by us, no echo of input | Partial | Two echoes remain: the caller identifier in the documentation 404, and enum states in booking errors |
-| Log security events (authentication, authorization, rate limit, validation failures) | Partial | No dedicated 401, 403, JWT-failure, rate-limit, or validation-failure event logging |
+| Log security events (authentication, authorization, rate limit, validation failures) | Partial | The Admin and Catalog API hosts call `AddSecurityEventTelemetry` (JWT bearer failure, challenge, forbidden, rate-limit rejection; `EventId` 4101 and 4102); validation failures are not logged as security events |
 | Handle UI-level errors without losing the session | Partial | `blazor-error-ui` exists in `src/ViajantesTurismo.Management.Web/Components/Layout/MainLayout.razor`; there is no `ErrorBoundary` |
 | Incident response process | Partial | Notes only in `docs/operations/production-readiness.md`; `SECURITY.md` covers vulnerability reporting only |
 | Protect logs from tampering and unauthorized access | Partial | The observability stack under `observability/` is local-only |
-| Alert on errors and suspicious activity | Missing | `observability/` has Prometheus, Loki, Tempo, and Grafana dashboards but no alert rules; `docs/operations/production-readiness.md` says thresholds are undecided |
+| Alert on errors and suspicious activity | Missing | The signals now exist (`unhandled_exceptions_total`, `authentication_events_total`, `rate_limit_rejections_total`), but `observability/` has no alert rules; `docs/operations/production-readiness.md` says thresholds are undecided |
 | Summarize repeated errors | Missing | No aggregation of repeated errors |
-| Never swallow exceptions silently | Missing | The malware-scanner catch in `src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` and about a dozen pages in `src/ViajantesTurismo.Management.Web/Components/Pages` catch without logging |
+| Never swallow exceptions silently | Partial | The malware-scanner catch in `src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` now logs `EventId` 1 `CustomerImportScannerFailed` with the failure type and still fails closed; about a dozen pages in `src/ViajantesTurismo.Management.Web/Components/Pages` still catch without logging |
 | Honeytokens | Missing | Not expected now |
 
 ## Triage flow for new and unknown errors
 
 Triage uses regular telemetry only. There is no separate error-tracking system.
 
-1. Unhandled failures, and handled failures that are swallowed, are logged with a stable `EventId` and counted in `unhandled_exceptions_total`
-   tagged `error_type`, `route_template`, and `handled`.
+1. Unhandled failures are logged with `EventId` 4001 and counted in `unhandled_exceptions_total` tagged `error_type`, `route_template`, and `handled`.
+   Handled failures that would otherwise be swallowed are logged with their own stable `EventId`.
 2. An alert fires when a first-seen `error_type` appears, or when the 5xx ratio breaches its threshold.
 3. The responder opens the trace id in the logs and traces backend and classifies the error as known or new.
 4. The fix starts with a failing test, as required by the repository `AGENTS.md`. Then add or adjust fixed copy or a mapped error.
@@ -78,11 +78,15 @@ Triage uses regular telemetry only. There is no separate error-tracking system.
 
 Current state:
 
+- Adopted in the Admin and Catalog API hosts: the SharedKernel exception handler (`AddUnhandledExceptionHandler`), which answers 500 with an RFC 9457
+  `application/problem+json` body holding only `status`, `title`, `type`, and `traceId`; and `AddSecurityEventTelemetry` for authentication events and
+  rate-limit rejections. `ServiceDefaults` exports the `PandaBear.AspNetCore` meter, so `unhandled_exceptions_total`, `authentication_events_total`,
+  and `rate_limit_rejections_total` reach the OpenTelemetry pipeline.
+- Existing RFC 9457 error bodies and the error documentation links are unchanged; the handler only covers exceptions that no endpoint maps.
+- Not adopted: Management.Web and Public.Web render an error page through `UseExceptionHandler("/Error")`, so they do not register the handler.
+  Reporting from those hosts is tracked separately.
 - Exists today: structured logs with stable `EventId` values, the privacy processors, trace ids, and the local Prometheus, Loki, Tempo, and Grafana stack.
-- Being delivered in two places: the tiered user-facing rule in the web client in this repository,
-  and the `unhandled_exceptions_total` counter, its tags, and the exception handler in SharedKernel,
-  which this repository adopts once a prerelease candidate exists.
-- Open decisions, not yet made: the production telemetry sink, alert routing, alert thresholds (including the 5xx ratio), and the owner of triage.
+- Open decisions, not yet made: the production telemetry sink, alert rules, alert routing, alert thresholds (including the 5xx ratio), and the owner of triage.
   This page does not set values for them. They belong in the deployment runbook referenced from `docs/operations/production-readiness.md`.
 
 ## Reuse

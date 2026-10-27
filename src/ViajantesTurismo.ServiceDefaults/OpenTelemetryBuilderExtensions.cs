@@ -7,6 +7,7 @@ internal static class OpenTelemetryBuilderExtensions
 {
     private const string CatalogTelemetryName = "ViajantesTurismo.Catalog";
     private const string BrandingTelemetryName = "ViajantesTurismo.Branding";
+    private const string SharedKernelAspNetCoreName = "PandaBear.AspNetCore";
     private const string SharedKernelNpgsqlEventSourcingName = "SharedKernel.EventSourcing.Npgsql";
 
     /// <summary>Adds the SharedKernel mediator meter.</summary>
@@ -39,6 +40,14 @@ internal static class OpenTelemetryBuilderExtensions
         ArgumentNullException.ThrowIfNull(tracing);
 
         return tracing.AddSource(SharedKernelNpgsqlEventSourcingName);
+    }
+
+    /// <summary>Adds the SharedKernel ASP.NET Core error and security meter (<c>PandaBear.AspNetCore</c>).</summary>
+    public static MeterProviderBuilder AddSharedKernelAspNetCoreMetrics(this MeterProviderBuilder metrics)
+    {
+        ArgumentNullException.ThrowIfNull(metrics);
+
+        return metrics.AddMeter(SharedKernelAspNetCoreName);
     }
 
     /// <summary>Adds the Catalog meter.</summary>

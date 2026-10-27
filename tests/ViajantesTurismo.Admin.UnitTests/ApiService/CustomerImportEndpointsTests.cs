@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using PandaBear.MalwareScanning;
 using PandaBear.Results;
 using PandaBear.Testing;
@@ -162,7 +164,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -183,7 +185,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected));
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -205,7 +207,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Failed));
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -227,13 +229,42 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed, new IOException());
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Unavailable);
         result.ErrorDetails.ShouldNotBeNull();
         result.ErrorDetails.Detail.ShouldBe("Customer import scanner is unavailable.");
+    }
+
+    [Fact]
+    public async Task Logs_a_structured_warning_without_exception_text_or_file_name_when_the_csv_scanner_throws()
+    {
+        // Arrange
+        const string sensitiveText = "clamd refused customers-private.csv";
+        using var stream = new MemoryStream("firstName,lastName\nAda,Lovelace"u8.ToArray());
+        var file = new FormFile(stream, 0, stream.Length, "file", "customers-private.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed, new IOException(sensitiveText));
+        var logger = new RecordingLogger();
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, logger, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Unavailable);
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.EventId.Id.ShouldBe(1);
+        entry.EventId.Name.ShouldBe("CustomerImportScannerFailed");
+        entry.Values.ShouldContain(value => value.Key == "FailureType" && Equals(value.Value, nameof(IOException)));
+        entry.Message.ShouldNotContain(sensitiveText, StringComparison.Ordinal);
+        entry.Message.ShouldNotContain("customers-private", StringComparison.Ordinal);
+        entry.Exception.ShouldBeNull();
     }
 
     [Fact]
@@ -287,7 +318,7 @@ public sealed class CustomerImportEndpointsTests
         using var requestCancellation = new CancellationTokenSource();
 
         // Act
-        var read = CustomerImportEndpoints.ReadCsv(file, scanner, requestCancellation.Token);
+        var read = CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, requestCancellation.Token);
         await stream.ReadStarted.WaitAsync(TestContext.Current.CancellationToken);
         await requestCancellation.CancelAsync();
         Func<Task> action = async () => await read;
@@ -313,7 +344,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -336,7 +367,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -365,7 +396,7 @@ public sealed class CustomerImportEndpointsTests
         };
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, new StubMalwareScanner(MalwareScanResult.Passed), TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, new StubMalwareScanner(MalwareScanResult.Passed), NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -383,7 +414,7 @@ public sealed class CustomerImportEndpointsTests
         var chunkReads = (content.Length + 6) / 7;
 
         // Act
-        var read = CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var read = CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
         for (var i = 0; i < chunkReads; i++)
         {
             await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
@@ -415,7 +446,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -435,7 +466,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -457,7 +488,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -476,7 +507,7 @@ public sealed class CustomerImportEndpointsTests
         using var requestCancellation = new CancellationTokenSource();
 
         // Act
-        var read = CustomerImportEndpoints.ReadCsv(file, scanner, requestCancellation.Token);
+        var read = CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, requestCancellation.Token);
         await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
         stream.ReleaseRead();
         await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
@@ -514,7 +545,7 @@ public sealed class CustomerImportEndpointsTests
         };
 
         // Act
-        _ = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        _ = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         stream.IsDisposed.ShouldBeTrue();
@@ -531,7 +562,7 @@ public sealed class CustomerImportEndpointsTests
         var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected));
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();

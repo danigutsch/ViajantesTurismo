@@ -97,6 +97,36 @@ public sealed class ServiceDefaultsTelemetryTests
     }
 
     [Fact]
+    public void Add_service_defaults_exports_aspnetcore_error_and_security_metrics()
+    {
+        // Arrange
+        const string aspNetCoreMeterName = "PandaBear.AspNetCore";
+        const string unhandledExceptionsCounter = "unhandled_exceptions_total";
+        var exportedMetricNames = new ConcurrentQueue<string>();
+        using var meter = new Meter(aspNetCoreMeterName);
+        var counter = meter.CreateCounter<long>(unhandledExceptionsCounter);
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+
+        builder.AddServiceDefaults();
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
+            });
+
+        using var host = builder.Build();
+        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
+
+        // Act
+        counter.Add(1);
+        meterProvider.ForceFlush();
+
+        // Assert
+        exportedMetricNames.ShouldContain(unhandledExceptionsCounter, StringComparer.Ordinal);
+    }
+
+    [Fact]
     public void Add_service_defaults_exports_mediator_custom_tracing_and_metrics()
     {
         // Arrange

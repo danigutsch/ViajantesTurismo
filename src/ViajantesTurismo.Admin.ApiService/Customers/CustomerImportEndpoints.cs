@@ -57,6 +57,7 @@ internal static class CustomerImportEndpoints
         [Required]
         IFormFile? file,
         [FromServices] IMalwareScanner scanner,
+        [FromServices] ILogger<CustomerImportEndpointsCategory> logger,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
@@ -68,7 +69,7 @@ internal static class CustomerImportEndpoints
                 statusCode: problem.Status);
         }
 
-        var csvResult = await ReadCsv(file, scanner, ct);
+        var csvResult = await ReadCsv(file, scanner, logger, ct);
         if (csvResult.IsFailure)
         {
             return CreateScanProblem(csvResult);
@@ -81,6 +82,7 @@ internal static class CustomerImportEndpoints
     private static async Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> CommitImportWithResolutions(
         [AsParameters] CommitCustomerImportFormDto form,
         [FromServices] IMalwareScanner scanner,
+        [FromServices] ILogger<CustomerImportEndpointsCategory> logger,
         [FromServices] CustomerImportWorkflowService workflow,
         CancellationToken ct)
     {
@@ -92,7 +94,7 @@ internal static class CustomerImportEndpoints
                 statusCode: problem.Status);
         }
 
-        var csvResult = await ReadCsv(form.File, scanner, ct);
+        var csvResult = await ReadCsv(form.File, scanner, logger, ct);
         if (csvResult.IsFailure)
         {
             return CreateScanProblem(csvResult);
@@ -112,10 +114,11 @@ internal static class CustomerImportEndpoints
         "Design",
         "CA1031:Do not catch general exception types",
         Justification = "Untrusted uploads must fail closed when a scanner implementation cannot make a decision.")]
-    internal static async Task<Result<ReadOnlyMemory<byte>>> ReadCsv(IFormFile file, IMalwareScanner scanner, CancellationToken ct)
+    internal static async Task<Result<ReadOnlyMemory<byte>>> ReadCsv(IFormFile file, IMalwareScanner scanner, ILogger logger, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(file);
         ArgumentNullException.ThrowIfNull(scanner);
+        ArgumentNullException.ThrowIfNull(logger);
 
         using var content = new MemoryStream((int)Math.Clamp(file.Length, 0, ContractConstants.CustomerImportMaxFileBytes));
         await using var source = file.OpenReadStream();
@@ -138,8 +141,9 @@ internal static class CustomerImportEndpoints
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            logger.CustomerImportScannerFailed(exception.GetType().Name);
             return Result.Unavailable<ReadOnlyMemory<byte>>(ScannerUnavailableMessage);
         }
 

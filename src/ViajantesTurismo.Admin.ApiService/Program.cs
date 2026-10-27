@@ -27,6 +27,8 @@ builder.Services.AddHttpClientDefaults();
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddProblemDetails();
+builder.Services.AddUnhandledExceptionHandler();
+builder.Services.AddSecurityEventTelemetry();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddAdminSecurityBaseline(builder.Configuration);
 builder.Services.AddApiSecurity(
