@@ -105,6 +105,31 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
     }
 
     [Fact]
+    public void DuplicateResolution_commit_conflict_does_not_show_a_completed_upload_for_the_file()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        _fakeCustomersApi.SetCommitImportResult(
+            new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(
+            this,
+            CustomerImportCsvTestData.BuildCsvWithEmail("a@example.com"));
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.Find("button[data-action='keep']").Click();
+
+        // Act
+        cut.Find("button[data-action='confirm-import']").Click();
+
+        // Assert
+        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull());
+        cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Complete: ", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain(" complete.", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DuplicateResolution_shows_mixed_decision_and_field_source_controls()
     {
         _fakeCustomersApi.SetImportCustomersResult(
