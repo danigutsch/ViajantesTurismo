@@ -1,6 +1,6 @@
+using PandaBear.ObjectStorage;
 using Microsoft.Extensions.Options;
 using PandaBear.Testing;
-using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.InfrastructureTests;
@@ -18,7 +18,7 @@ public sealed class LocalMediaObjectStoreTests
         var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
         await using var originalContent = new MemoryStream([9, 8, 7]);
         _ = await store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", originalContent, "image/jpeg", originalContent.Length),
+            new ObjectWriteRequest("images/photo.jpg", originalContent, "image/jpeg", originalContent.Length),
             TestContext.Current.CancellationToken);
         using var originalReader = await store.OpenRead("images/photo.jpg", TestContext.Current.CancellationToken);
 
@@ -27,7 +27,7 @@ public sealed class LocalMediaObjectStoreTests
         {
             await using var replacement = new MemoryStream([(byte)index]);
             _ = await store.Put(
-                new MediaObjectWriteRequest("images/photo.jpg", replacement, "image/jpeg", replacement.Length),
+                new ObjectWriteRequest("images/photo.jpg", replacement, "image/jpeg", replacement.Length),
                 TestContext.Current.CancellationToken);
         }
 

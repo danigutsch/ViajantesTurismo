@@ -1,10 +1,10 @@
-using ViajantesTurismo.Catalog.Application.Media;
+using PandaBear.ObjectStorage;
 using PandaBear.InputNormalization;
 using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
+internal sealed class InMemoryMediaObjectStore : IObjectStore
 {
     private readonly Dictionary<string, StoredMediaObject> objects = [];
     private readonly HashSet<string> failingDeletes = [];
@@ -19,7 +19,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
         get; private set;
     }
 
-    public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
+    public async ValueTask<ObjectWriteResult> Put(ObjectWriteRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ValidateObjectKey(request.ObjectKey);
@@ -33,7 +33,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
             },
             TimeProvider.System.GetUtcNow());
 
-        return new MediaObjectWriteResult(
+        return new ObjectWriteResult(
             request.ObjectKey,
             new Uri($"file:///media/{request.ObjectKey}"),
             GetPublicUri(request.ObjectKey),
@@ -42,7 +42,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
             request.Checksum);
     }
 
-    public async ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
+    public async ValueTask<ObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ValidateObjectKey(objectKey);
@@ -59,7 +59,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
         using var source = new MemoryStream();
         await request.Content.CopyToAsync(source, ct);
 
-        return new MediaObjectReadResult(
+        return new ObjectReadResult(
             objectKey,
             new MemoryStream(source.ToArray()),
             request.ContentType,
@@ -85,18 +85,18 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
             [.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal)]);
     }
 
-    public ValueTask<IReadOnlyList<MediaObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
+    public ValueTask<IReadOnlyList<ObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ValidatePrefix(prefix);
 
-        return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>(
+        return ValueTask.FromResult<IReadOnlyList<ObjectInventoryItem>>(
             [.. objects.Where(item => item.Key.StartsWith(prefix, StringComparison.Ordinal))
-                .Select(item => new MediaObjectInventoryItem(item.Key, item.Value.LastModifiedAt))
+                .Select(item => new ObjectInventoryItem(item.Key, item.Value.LastModifiedAt))
                 .OrderBy(item => item.ObjectKey, StringComparer.Ordinal)]);
     }
 
-    public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
+    public ValueTask<ObjectUploadTicket> CreateUploadUrl(ObjectUploadRequest request, CancellationToken ct)
     {
         throw new NotSupportedException();
     }
@@ -141,7 +141,7 @@ internal sealed class InMemoryMediaObjectStore : IMediaObjectStore
         openReadException = exception;
     }
 
-    private sealed record StoredMediaObject(MediaObjectWriteRequest Request, DateTimeOffset LastModifiedAt);
+    private sealed record StoredMediaObject(ObjectWriteRequest Request, DateTimeOffset LastModifiedAt);
 
     private static void ValidateObjectKey(string objectKey)
     {

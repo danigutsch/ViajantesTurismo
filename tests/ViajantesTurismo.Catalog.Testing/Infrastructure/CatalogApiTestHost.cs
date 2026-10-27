@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -207,7 +208,7 @@ internal static class CatalogApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourSlugLock>(new TestCatalogTourSlugLock()));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourMutationLock>(new TestCatalogTourMutationLock()));
                 services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(mediaStore ?? new TestPublicMediaImageStore()));
-                services.Replace(ServiceDescriptor.Singleton<IMediaObjectStore>(objectStore ?? new TestMediaObjectStore()));
+                services.Replace(ServiceDescriptor.Singleton<IObjectStore>(objectStore ?? new TestMediaObjectStore()));
                 services.Replace(ServiceDescriptor.Singleton<IIntegrationEventOutbox, TestIntegrationEventOutbox>());
                 if (imageTextGenerator is not null)
                 {

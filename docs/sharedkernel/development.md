@@ -6,16 +6,16 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.236.1` at clean library revision
-[`cc42e587d482ded854840cb8afae1f7baac6c6c2`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/cc42e587d482ded854840cb8afae1f7baac6c6c2).
-It adds the warning exception ledger (`verify-restore-warnings --exceptions`) and the `warning-report` command, so CI
-steps without a log can join `warning-summary`. All 80 package hashes match the unchanged artifacts from
-[CI run 40406776686](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40406776686). The
-unchanged 80 packages, 55 symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.236.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.236.1).
+The published candidate is `0.1.0-alpha.294.1` at clean library revision
+[`a2901f0188a49795e6af37c945e98f8a2b88319b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/a2901f0188a49795e6af37c945e98f8a2b88319b).
+It adds `SharedKernel.ObjectStorage` and `SharedKernel.ObjectStorage.S3`, the host-agnostic object-store contract and its
+S3-compatible provider. The unchanged packages, symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.294.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.294.1), built by
+[CI run 40493082388](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40493082388).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.222.1` at revision `37c1642dd2193d9684c45757c27710dc3dff5b30`,
+The previous previews `0.1.0-alpha.236.1` at revision `cc42e587d482ded854840cb8afae1f7baac6c6c2`,
+`0.1.0-alpha.222.1` at revision `37c1642dd2193d9684c45757c27710dc3dff5b30`,
 `0.1.0-alpha.214.1` at revision `e5293567c645b1ae8b4557ed75bd82689eaa7c8b`,
 `0.1.0-alpha.210.1` at revision `768d4c3994ff6a88dbdd25ab713e13f72e762fad`,
 `0.1.0-alpha.209.1` at revision `19d4092bb862664545eb489d66620efa01a49590`,

@@ -1,12 +1,12 @@
-using ViajantesTurismo.Catalog.Application.Media;
+using PandaBear.ObjectStorage;
 using PandaBear.InputNormalization;
 using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-public sealed class TestMediaObjectStore : IMediaObjectStore
+public sealed class TestMediaObjectStore : IObjectStore
 {
-    private readonly Dictionary<string, MediaObjectWriteRequest> objects = [];
+    private readonly Dictionary<string, ObjectWriteRequest> objects = [];
 
     private const int MaxObjectKeyLength = CatalogDomainLimits.MaxMediaObjectKeyLength;
 
@@ -26,7 +26,7 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
     /// <summary>Gets the streams handed out by <see cref="OpenRead"/>, in call order.</summary>
     public IReadOnlyList<DisposalTrackingStream> OpenedStreams => openedStreams;
 
-    public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
+    public async ValueTask<ObjectWriteResult> Put(ObjectWriteRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
@@ -39,10 +39,10 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
             Length = content.Length
         };
 
-        return new MediaObjectWriteResult(request.ObjectKey, GetPublicUri(request.ObjectKey), GetPublicUri(request.ObjectKey), request.ContentType, content.Length, request.Checksum);
+        return new ObjectWriteResult(request.ObjectKey, GetPublicUri(request.ObjectKey), GetPublicUri(request.ObjectKey), request.ContentType, content.Length, request.Checksum);
     }
 
-    public async ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
+    public async ValueTask<ObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ValidateObjectKey(objectKey);
@@ -58,7 +58,7 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
 
         var stream = new DisposalTrackingStream(new MemoryStream(content.ToArray()), StallReadsAfterFirstByte);
         openedStreams.Add(stream);
-        return new MediaObjectReadResult(objectKey, stream, request.ContentType, request.Length, request.Checksum);
+        return new ObjectReadResult(objectKey, stream, request.ContentType, request.Length, request.Checksum);
     }
 
     public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
@@ -75,11 +75,11 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
         return ValueTask.FromResult<IReadOnlyList<string>>([.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal)]);
     }
 
-    public ValueTask<IReadOnlyList<MediaObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
+    public ValueTask<IReadOnlyList<ObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ValidatePrefix(prefix);
-        return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>([.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal).Select(key => new MediaObjectInventoryItem(key, TimeProvider.System.GetUtcNow()))]);
+        return ValueTask.FromResult<IReadOnlyList<ObjectInventoryItem>>([.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal).Select(key => new ObjectInventoryItem(key, TimeProvider.System.GetUtcNow()))]);
     }
 
     public Uri GetPublicUri(string objectKey)
@@ -88,7 +88,7 @@ public sealed class TestMediaObjectStore : IMediaObjectStore
         return new Uri($"https://cdn.example/{objectKey}");
     }
 
-    public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct) => throw new NotSupportedException();
+    public ValueTask<ObjectUploadTicket> CreateUploadUrl(ObjectUploadRequest request, CancellationToken ct) => throw new NotSupportedException();
 
     public ValueTask Delete(string objectKey, CancellationToken ct)
     {

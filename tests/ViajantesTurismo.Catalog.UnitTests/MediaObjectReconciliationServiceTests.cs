@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
@@ -34,10 +35,10 @@ public sealed class MediaObjectReconciliationServiceTests
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
-            new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
+            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
             TestContext.Current.CancellationToken);
         await objectStore.Put(
-            new MediaObjectWriteRequest("media/orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
+            new ObjectWriteRequest("media/orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
@@ -60,10 +61,10 @@ public sealed class MediaObjectReconciliationServiceTests
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
-            new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
+            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
             TestContext.Current.CancellationToken);
         await objectStore.Put(
-            new MediaObjectWriteRequest("media/orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
+            new ObjectWriteRequest("media/orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
@@ -87,7 +88,7 @@ public sealed class MediaObjectReconciliationServiceTests
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
-            new MediaObjectWriteRequest("media/recent-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
+            new ObjectWriteRequest("media/recent-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
@@ -109,7 +110,7 @@ public sealed class MediaObjectReconciliationServiceTests
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
-            new MediaObjectWriteRequest("media/old-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
+            new ObjectWriteRequest("media/old-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
         objectStore.SetLastModified("media/old-orphan.jpg", TimeProvider.System.GetUtcNow().AddDays(-2));
         var imageStore = new InMemoryPublicMediaImageStore(image);
@@ -134,7 +135,7 @@ public sealed class MediaObjectReconciliationServiceTests
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
-            new MediaObjectWriteRequest(objectKey, new MemoryStream([2]), "image/jpeg", 1),
+            new ObjectWriteRequest(objectKey, new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
         objectStore.FailNextDelete(objectKey);
         var imageStore = new InMemoryPublicMediaImageStore(image);

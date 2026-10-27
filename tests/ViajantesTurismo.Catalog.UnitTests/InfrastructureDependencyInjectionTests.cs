@@ -1,3 +1,5 @@
+using PandaBear.ObjectStorage;
+using PandaBear.ObjectStorage.S3;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -49,7 +51,7 @@ public sealed class InfrastructureDependencyInjectionTests
         scenario.ShouldResolve<CatalogDbContext>();
         scenario.ShouldResolveSingleton<NpgsqlDataSource>();
         scenario.ShouldResolveAs<IPublicContentStore, EfPublicContentStore>();
-        scenario.ShouldResolveAs<IMediaObjectStore, LocalMediaObjectStore>();
+        scenario.ShouldResolveAs<IObjectStore, LocalMediaObjectStore>();
         scenario.ShouldResolveAs<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
         scenario.ShouldResolveAs<IMediaUploadValidator, MediaUploadValidator>();
         scenario.ShouldResolveAs<IEventSerializer, CatalogEventSerializer>();
@@ -71,7 +73,7 @@ public sealed class InfrastructureDependencyInjectionTests
 
         // Assert
         exception.Message.ShouldBe(
-            $"Catalog durable media object storage requires configuration section '{SeaweedFsMediaObjectStorageOptions.SectionName}'.");
+            $"Catalog durable media object storage requires configuration section '{MediaObjectStorageConfiguration.SectionName}'.");
     }
 
     [Fact]
@@ -107,22 +109,22 @@ public sealed class InfrastructureDependencyInjectionTests
         // Act
 
         // Assert
-        scenario.ShouldResolveAs<IMediaObjectStore, SeaweedFsMediaObjectStore>();
-        scenario.ShouldResolveSingleton<IMediaObjectStore>();
+        scenario.ShouldResolveAs<IObjectStore, S3ObjectStore>();
+        scenario.ShouldResolveSingleton<IObjectStore>();
     }
 
     [Fact]
     [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-    public void Seaweedfs_storage_registers_aws_tracing_and_metrics()
+    public void Seaweedfs_storage_registers_object_storage_tracing_and_aws_metrics()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateSeaweedFsScenario();
         _ = scenario.ShouldResolve<TracerProvider>();
         _ = scenario.ShouldResolve<MeterProvider>();
-        using var activitySource = new ActivitySource("AWSSDK.S3");
+        using var activitySource = new ActivitySource(S3ObjectStoreTelemetry.Name);
 
         // Act
-        using var activity = activitySource.StartActivity("S3.PutObject", ActivityKind.Client);
+        using var activity = activitySource.StartActivity("object_storage.put", ActivityKind.Client);
 
         // Assert
         activity.ShouldNotBeNull();

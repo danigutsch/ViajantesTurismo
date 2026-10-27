@@ -1,8 +1,8 @@
+using PandaBear.ObjectStorage;
+using PandaBear.ObjectStorage.S3;
 using Amazon.S3;
 using Microsoft.Extensions.Options;
 using PandaBear.Testing;
-using ViajantesTurismo.Catalog.Application.Media;
-using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -16,8 +16,8 @@ public sealed class S3MediaObjectStorageConfigurationTests
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateS3Scenario(includeSeaweedFsSection);
-        var store = scenario.ShouldResolve<IMediaObjectStore>();
-        var request = new MediaObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
+        var store = scenario.ShouldResolve<IObjectStore>();
+        var request = new ObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
 
         // Act
         var ticket = await store.CreateUploadUrl(request, TestContext.Current.CancellationToken);
@@ -28,7 +28,7 @@ public sealed class S3MediaObjectStorageConfigurationTests
         var query = Uri.UnescapeDataString(ticket.UploadUri.Query);
         query.ShouldContain("/eu-central-1/s3/aws4_request", StringComparison.Ordinal);
         publicUri.AbsoluteUri.ShouldBe("https://cdn.example.com/published/tours/image%201.jpg");
-        scenario.ShouldResolveSingleton<IMediaObjectStore>();
+        scenario.ShouldResolveSingleton<IObjectStore>();
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public sealed class S3MediaObjectStorageConfigurationTests
         using var scenario = CatalogInfrastructureTestServices.CreateS3Scenario(includeSeaweedFsSection: true);
 
         // Act
-        var options = scenario.ShouldResolve<IOptions<SeaweedFsMediaObjectStorageOptions>>().Value;
+        var options = scenario.ShouldResolve<IOptions<S3ObjectStoreOptions>>().Value;
         var client = scenario.ShouldResolve<IAmazonS3>();
 
         // Assert
@@ -49,21 +49,5 @@ public sealed class S3MediaObjectStorageConfigurationTests
         options.AccessKey.ShouldBe("test-access");
         options.SecretKey.ShouldBe("test-secret");
         client.Config.ServiceURL.ShouldBe("https://s3.eu-central-1.amazonaws.com/");
-    }
-
-    [Fact]
-    public void Rejects_missing_signing_region_before_creating_cloud_client()
-    {
-        // Arrange
-        var options = SeaweedFsMediaObjectStorageOptionsTestFactory.CreateValidOptions();
-        options.AuthenticationRegion = " ";
-        var validator = new SeaweedFsMediaObjectStorageOptionsValidator();
-
-        // Act
-        var result = validator.Validate(null, options);
-
-        // Assert
-        result.Failed.ShouldBeTrue();
-        result.FailureMessage.ShouldBe("S3 authentication region must be provided.");
     }
 }

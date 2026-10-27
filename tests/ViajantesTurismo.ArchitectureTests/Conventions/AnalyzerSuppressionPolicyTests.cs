@@ -133,6 +133,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             "custom-config:.editorconfig:SKSTYLE003",
             "custom-config:.editorconfig:SKSTYLE004",
             "custom-config:.editorconfig:SKSTYLE015",
+            "custom-config:.editorconfig:SKSTYLE017",
             "custom-config:.editorconfig:SKTEST001",
             "custom-config:.editorconfig:SKTEST002",
             "custom-config:.editorconfig:SKTEST003",

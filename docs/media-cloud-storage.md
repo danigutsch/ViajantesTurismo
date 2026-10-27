@@ -1,9 +1,11 @@
 # Cloud media object storage
 
-Cloud media storage uses AWS S3 as the first provider. The existing AWS SDK and S3-compatible
-adapter already support application-owned object keys, object metadata, inventory, reads,
-writes and deletion. Reusing that implementation avoids a second storage stack or dependency.
-SeaweedFS remains available for local development.
+Cloud media storage uses AWS S3 as the first provider. The S3-compatible adapter is the SharedKernel
+package `PandaBear.SharedKernel.ObjectStorage.S3`, which implements the host-agnostic
+`PandaBear.SharedKernel.ObjectStorage` contract (`IObjectStore`). It supports application-owned object
+keys, object metadata, inventory, reads, writes and deletion. Catalog keeps the key policy
+(`CatalogDomainLimits.MaxMediaObjectKeyLength`), reconciliation and publishing rules, and binds the
+`Catalog:MediaObjectStorage` sections to the package options. SeaweedFS remains available for local development.
 
 Garage v2.4.1 was rejected on 2026-10-21: the current adapter's upload fails with
 `Bad request: Invalid payload signature`. The rejected-provider evaluation tests were removed when
@@ -54,6 +56,13 @@ A future direct-upload flow must stage objects privately and run those checks be
 objects publishable. Browser clients cannot set `Content-Length` manually; their HTTP stack
 must send the known body length. Configure narrowly scoped bucket CORS only if enabling that
 flow. Presigned PUT does not offer a size range policy; this adapter signs the exact length.
+
+## Telemetry
+
+The adapter emits `object_storage.*` activities from the `SharedKernel.ObjectStorage.S3` activity source, tagged with the
+operation name only. Bucket, object key, URL and request identifiers are never tagged, and HttpClient
+instrumentation is suppressed while an operation runs, so path-style URLs cannot reach trace exporters.
+AWS SDK metrics stay registered.
 
 ## Validation and operations
 

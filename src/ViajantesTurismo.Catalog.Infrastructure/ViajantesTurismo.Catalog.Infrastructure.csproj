@@ -14,12 +14,10 @@
     <ItemGroup>
         <PackageReference Include="Aspire.Npgsql" />
         <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
-        <PackageReference Include="AWSSDK.S3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="OpenTelemetry.Instrumentation.AWS" />
     </ItemGroup>
 
     <ItemGroup>
@@ -35,6 +33,7 @@
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning" />
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning.ClamAv" />
         <PackageReference Include="PandaBear.SharedKernel.Npgsql" />
+        <PackageReference Include="PandaBear.SharedKernel.ObjectStorage.S3" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />

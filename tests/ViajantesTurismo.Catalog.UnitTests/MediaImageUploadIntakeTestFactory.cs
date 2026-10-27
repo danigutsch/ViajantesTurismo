@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -9,14 +10,14 @@ internal static class MediaImageUploadIntakeTestFactory
 {
     public static MediaImageUploadIntake Create(
         IMediaUploadScanner scanner,
-        IMediaObjectStore objectStore,
+        IObjectStore objectStore,
         IPublicMediaImageStore imageStore,
         MediaUploadValidationOptions options) =>
         Create(scanner, objectStore, imageStore, null, options);
 
     public static MediaImageUploadIntake Create(
         IMediaUploadScanner scanner,
-        IMediaObjectStore objectStore,
+        IObjectStore objectStore,
         IPublicMediaImageStore imageStore,
         CapturingIntegrationEventOutbox? outbox = null,
         MediaUploadValidationOptions? options = null,

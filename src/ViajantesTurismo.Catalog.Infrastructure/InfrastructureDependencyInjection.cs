@@ -123,13 +123,13 @@ public static class InfrastructureDependencyInjection
     private static TApplicationBuilder AddCatalogStoreInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        if (builder.Configuration.GetSection(SeaweedFsMediaObjectStorageOptions.S3SectionName).Exists())
+        if (builder.Configuration.GetSection(MediaObjectStorageConfiguration.S3SectionName).Exists())
         {
-            builder.Services.AddSeaweedFsMediaObjectStorage(SeaweedFsMediaObjectStorageOptions.S3SectionName);
+            builder.Services.AddMediaS3ObjectStorage(builder.Configuration, MediaObjectStorageConfiguration.S3SectionName);
         }
-        else if (builder.Configuration.GetSection(SeaweedFsMediaObjectStorageOptions.SectionName).Exists())
+        else if (builder.Configuration.GetSection(MediaObjectStorageConfiguration.SectionName).Exists())
         {
-            builder.Services.AddSeaweedFsMediaObjectStorage();
+            builder.Services.AddMediaS3ObjectStorage(builder.Configuration);
         }
         else if (builder.Environment.IsDevelopment() || OpenApiGenerationMode.IsEnabled(builder.Environment))
         {
@@ -138,7 +138,7 @@ public static class InfrastructureDependencyInjection
         else
         {
             throw new InvalidOperationException(
-                $"Catalog durable media object storage requires configuration section '{SeaweedFsMediaObjectStorageOptions.SectionName}'.");
+                $"Catalog durable media object storage requires configuration section '{MediaObjectStorageConfiguration.SectionName}'.");
         }
         builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
         builder.Services.AddSingleton<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();

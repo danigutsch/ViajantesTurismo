@@ -1,5 +1,5 @@
+using PandaBear.ObjectStorage;
 using Microsoft.Extensions.Options;
-using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -22,7 +22,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         var result = await store.Put(
-            new MediaObjectWriteRequest("images/tour/photo.jpg", content, "image/jpeg", 3, "sha256:test"),
+            new ObjectWriteRequest("images/tour/photo.jpg", content, "image/jpeg", 3, "sha256:test"),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -68,7 +68,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         var result = await store.Put(
-            new MediaObjectWriteRequest("tour photos/photo 1.jpg", content, "image/jpeg", 1),
+            new ObjectWriteRequest("tour photos/photo 1.jpg", content, "image/jpeg", 1),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -89,7 +89,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         var result = await store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 1),
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 1),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -106,7 +106,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         Func<Task> action = async () => await store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 3),
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 3),
             TestContext.Current.CancellationToken);
         _ = await action.ShouldThrow<IOException>();
         var keys = await store.ListKeys(string.Empty, TestContext.Current.CancellationToken);
@@ -133,7 +133,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         Func<Task> action = async () => await store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 3),
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 3),
             TestContext.Current.CancellationToken);
         _ = await action.ShouldThrow<IOException>();
         var persistedBytes = await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken);
@@ -154,7 +154,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         var put = store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
             TestContext.Current.CancellationToken).AsTask();
         await content.WaitUntilBlocked(TestContext.Current.CancellationToken);
         var existsWhileBlocked = File.Exists(path);
@@ -180,7 +180,7 @@ public sealed class LocalMediaObjectStoreTests
         using var cancellation = new CancellationTokenSource();
         var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
         var put = store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
             cancellation.Token).AsTask();
         await content.WaitUntilBlocked(TestContext.Current.CancellationToken);
 
@@ -212,7 +212,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         var put = store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
             TestContext.Current.CancellationToken).AsTask();
         await content.WaitUntilBlocked(TestContext.Current.CancellationToken);
         var bytesWhileBlocked = await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken);
@@ -233,7 +233,7 @@ public sealed class LocalMediaObjectStoreTests
         var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
         await using var originalContent = new MemoryStream([9, 8, 7]);
         _ = await store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", originalContent, "image/jpeg", originalContent.Length),
+            new ObjectWriteRequest("images/photo.jpg", originalContent, "image/jpeg", originalContent.Length),
             TestContext.Current.CancellationToken);
         using var existingReader = await store.OpenRead(
             "images/photo.jpg",
@@ -242,7 +242,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         _ = await store.Put(
-            new MediaObjectWriteRequest(
+            new ObjectWriteRequest(
                 "images/photo.jpg",
                 replacementContent,
                 "image/jpeg",
@@ -380,7 +380,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         var result = await store.Put(
-            new MediaObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 1),
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 1),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -398,7 +398,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         Func<Task> action = async () => await store.Put(
-            new MediaObjectWriteRequest("../photo.jpg", content, "image/jpeg", 1),
+            new ObjectWriteRequest("../photo.jpg", content, "image/jpeg", 1),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -415,7 +415,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         Func<Task> action = async () => await store.Put(
-            new MediaObjectWriteRequest("..\\photo.jpg", content, "image/jpeg", 1),
+            new ObjectWriteRequest("..\\photo.jpg", content, "image/jpeg", 1),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -433,7 +433,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         Func<Task> action = async () => await store.Put(
-            new MediaObjectWriteRequest(rootedKey, content, "image/jpeg", 1),
+            new ObjectWriteRequest(rootedKey, content, "image/jpeg", 1),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -453,7 +453,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         Func<Task> action = async () => await store.Put(
-            new MediaObjectWriteRequest(objectKey, content, "image/jpeg", 1),
+            new ObjectWriteRequest(objectKey, content, "image/jpeg", 1),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -469,7 +469,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         Func<Task> action = async () => await store.CreateUploadUrl(
-            new MediaObjectUploadRequest("images/photo.jpg", "image/jpeg", 1, TimeSpan.FromMinutes(5)),
+            new ObjectUploadRequest("images/photo.jpg", "image/jpeg", 1, TimeSpan.FromMinutes(5)),
             TestContext.Current.CancellationToken);
 
         // Assert
