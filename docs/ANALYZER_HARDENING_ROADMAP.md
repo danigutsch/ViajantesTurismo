@@ -70,7 +70,7 @@ rather than a greenfield analyzer implementation plan.
 ## Canonical severity policy
 
 `.editorconfig` is the canonical severity matrix for C#, style, and SharedKernel analyzer
-policy. Project files and `Directory.Build.props` can temporarily carry approved `NoWarn` entries
+policy. Project files and `Directory.Build.props` can carry approved `NoWarn` entries
 only when the exception is tracked by this roadmap and guarded by architecture tests.
 
 Severity ownership rules:
@@ -92,7 +92,7 @@ reintroduced without review.
 
 | Surface | Suppression kind | Owner | Removal path |
 | --- | --- | --- | --- |
-| `Directory.Build.props` | `NoWarn`: `ASPIRE010` | Aspire orchestration dependencies | Remove after CLI bundle delegation is stable and the repository's pinned local-tool path includes the DCP and dashboard bundle |
+| `Directory.Build.props` | `NoWarn`: `ASPIRE010` | Aspire orchestration dependencies | Permanent while the repository keeps orchestration dependencies lock-file managed through the pinned local-tool path; revisit if it adopts the Aspire CLI bundle |
 
 The architecture-test suppression guard owns this allowlist and should fail if new broad
 suppression surfaces appear without review.

@@ -23,7 +23,7 @@ all listed code. The goal is to separate:
 | Mediator telemetry names | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Feature-specific to mediator, but reusable across mediator consumers. |
 | Mediator runtime instrumentation | `src/SharedKernel/SharedKernel.Mediator/` | Feature-specific runtime helper layer, not general observability infrastructure. |
 
-### Reusable but not yet in the final package boundary
+### Reusable but outside the SharedKernel package boundary
 
 | Surface | Current location | Why it matters |
 | --- | --- | --- |

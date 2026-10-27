@@ -2,8 +2,7 @@
 #
 # These aggregate/entity/value-object files use private constructors for EF Core
 # materialization while public creation remains guarded by domain factories.
-# Owner: Domain maintainers. Remove when the domain model no longer needs
-# EF materialization constructors or uses constructor binding for these members.
+# Owner: Domain maintainers.
 
 [Customers/AccommodationPreferences.cs]
 dotnet_diagnostic.CS8618.severity = none

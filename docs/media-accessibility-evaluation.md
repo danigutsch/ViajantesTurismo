@@ -59,7 +59,7 @@ The public media delivery gate records images withheld for missing alternative t
 on `catalog.media_accessibility.publication.blocked`, including list filtering and direct image requests.
 Generation stores a per-language pending draft timestamp using the injected `TimeProvider`. Successful
 review clears only that language's pending timestamp. Queue age is measured after persistence using
-the prior draft timestamp; clock skew clamps negative age to zero. Legacy drafts without timestamps
+the prior draft timestamp; clock skew clamps negative age to zero. Drafts without timestamps
 do not report an age. The nullable timestamp migration does not invent dates for existing rows.
-Token and cost panels remain unavailable until the shared provider
-contract supplies measured usage. See [.NET metrics guidance](https://learn.microsoft.com/dotnet/core/diagnostics/metrics-instrumentation).
+Token and cost panels are unavailable because the shared provider
+contract supplies no measured usage. See [.NET metrics guidance](https://learn.microsoft.com/dotnet/core/diagnostics/metrics-instrumentation).

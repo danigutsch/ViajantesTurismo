@@ -88,12 +88,12 @@ inventory or proof of license compliance.
 
 A future application distribution workflow must define its own component inventory, notices,
 provenance, and applicable native-source or relinking obligations before claiming those artifacts.
-Public artifact attestations remain deferred; no application attestation guarantee is made here.
+Public artifact attestations are not provided; no application attestation guarantee is made here.
 
 ## Community and support docs
 
 Support routing is documented in [Support](../SUPPORT.md). Security disclosure stays in
 [Security](../SECURITY.md).
 
-`CODE_OF_CONDUCT.md` is intentionally deferred. Maintainers need to choose a public community conduct
-policy and enforcement contact before adding one.
+There is intentionally no `CODE_OF_CONDUCT.md`. Adding one needs a maintainer-chosen public community
+conduct policy and enforcement contact.

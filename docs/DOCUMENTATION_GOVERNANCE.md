@@ -188,7 +188,7 @@ The current repository checks remain authoritative for their distinct responsibi
 - `sharedkernel-docs` owns its configured generated-document outputs.
 
 `sharedkernel-docs check` validates the small set of machine-readable governance and
-architecture facts that have concrete consumers. Keep broader schema enforcement deferred until a
+architecture facts that have concrete consumers. Do not add broader schema enforcement unless a
 new durable fact has a real consumer; extend the existing .NET tool rather than adding another
 script or tool.
 

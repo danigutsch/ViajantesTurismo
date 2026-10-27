@@ -42,9 +42,11 @@ repository.
 
 ## Decision
 
-Mutation testing with `Stryker.NET` should remain **local-only and non-gating** for now.
+Mutation testing with `Stryker.NET` remains **local-only and non-gating**. `dotnet-stryker` 5.0.0 runs xUnit v3 + MTP smoke targets with
+`test-runner` set to `mtp`, but upstream still documents the `mtp` runner as preview. Revisit when it
+leaves preview.
 
-## Why it is deferred
+## Why it stays local-only
 
 1. The repository baseline is intentionally xUnit v3 + MTP.
 2. Upstream Stryker.NET support for this combination is not mature enough to trust broadly.
@@ -174,7 +176,7 @@ Revisit mutation-testing adoption only when at least one of these becomes true:
 
 - **Adopt now:** No
 - **Use for a limited subset now:** Local smoke only
-- **Document as deferred:** Broad adoption remains deferred
+- **Broad adoption:** Not adopted
 
 ## References
 
