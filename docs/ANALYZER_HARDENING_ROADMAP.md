@@ -70,8 +70,8 @@ rather than a greenfield analyzer implementation plan.
 ## Canonical severity policy
 
 `.editorconfig` is the canonical severity matrix for C#, style, and SharedKernel analyzer
-policy. The repository carries no `NoWarn` entries; a new one needs an issue owner and an
-architecture-test allowlist entry.
+policy. Project files and `Directory.Build.props` can carry approved `NoWarn` entries
+only when the exception is tracked by this roadmap and guarded by architecture tests.
 
 Severity ownership rules:
 
@@ -84,10 +84,15 @@ Severity ownership rules:
 - Generated files, migrations, code-generation fixtures, and analyzer test fixtures should be
   separated from hand-written source policy.
 
-Approved broad suppressions:
+Approved broad suppression owners:
 
-The architecture test requires an empty `NoWarn` inventory, so a new suppression cannot be introduced
-without review.
+The architecture test uses these allowlists as the approved broad-suppression inventory. `NoWarn`
+entries must exactly match current repository suppressions so removed suppressions cannot be
+reintroduced without review.
+
+| Surface | Suppression kind | Owner | Removal path |
+| --- | --- | --- | --- |
+| `tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj` | `NoWarn`: `ASPIRE010` | Hosted test project | Permanent while the project uses `Aspire.AppHost.Sdk` for project metadata: with the CLI bundle the SDK replaces its run command with `aspire run`, which breaks `dotnet test` |
 
 The architecture-test suppression guard owns this allowlist and should fail if new broad
 suppression surfaces appear without review.

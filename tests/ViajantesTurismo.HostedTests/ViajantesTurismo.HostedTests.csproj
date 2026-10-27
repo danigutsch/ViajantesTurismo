@@ -2,6 +2,11 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.HostedTests</RootNamespace>
+        <!-- This test project uses the Aspire SDK for project metadata, not as an AppHost. With the CLI bundle,
+             the SDK replaces its run command with `aspire run`, which breaks `dotnet test`. Keep the NuGet
+             orchestration packages and suppress ASPIRE010 here only. -->
+        <AspireUseCliBundle>false</AspireUseCliBundle>
+        <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
     </PropertyGroup>
     <ItemGroup>
         <Using Include="Xunit" />
