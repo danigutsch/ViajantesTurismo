@@ -58,8 +58,7 @@ jobs:
         dotnet tool run sharedkernel-ci -- select --selection "${selection}"
         for slice in $(pwsh -NoProfile -Command "(Get-Content .config/sharedkernel-ci.json -Raw | ConvertFrom-Json).slices.name"); do
           echo "==> Running ${slice}"
-          dotnet tool run sharedkernel-ci -- run --slice "${slice}" --selection "${selection}" --install-playwright \
-            --exclude-trait Requires=fasttext
+          dotnet tool run sharedkernel-ci -- run --slice "${slice}" --selection "${selection}" --install-playwright
         done
     steps:
       - name: Checkout repository

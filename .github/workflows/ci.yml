@@ -189,29 +189,6 @@ jobs:
           name: ci-selection
           path: TestResults/selection
 
-      - name: Provision pinned local language engine for component tests
-        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' && matrix.id == 'fast-validation-2' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          language_root="${RUNNER_TEMP}/media-language-identification"
-          mkdir -p "${language_root}"
-          curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
-            https://github.com/facebookresearch/fastText/archive/refs/tags/v0.9.2.tar.gz \
-            --output "${language_root}/fasttext.tar.gz"
-          curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
-            https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz \
-            --output "${language_root}/lid.176.ftz"
-          echo "7ea4edcdb64bfc6faaaec193ef181bdc108ee62bb6a04e48b2e80b639a99e27e  ${language_root}/fasttext.tar.gz" | sha256sum --check --strict
-          echo "8f3472cfe8738a7b6099e8e999c3cbfae0dcd15696aac7d7738a8039db603e83  ${language_root}/lid.176.ftz" | sha256sum --check --strict
-          tar -xzf "${language_root}/fasttext.tar.gz" -C "${language_root}"
-          make -C "${language_root}/fastText-0.9.2" -j2 \
-            CXXFLAGS='-pthread -std=c++11 -O3 -funroll-loops -include cstdint' fasttext
-          {
-            echo "MEDIA_TEST_FASTTEXT=${language_root}/fastText-0.9.2/fasttext"
-            echo "MEDIA_TEST_FASTTEXT_MODEL=${language_root}/lid.176.ftz"
-          } >> "${GITHUB_ENV}"
-
       # Playwright 1.60 has no Ubuntu 26.04 browser manifests yet (microsoft/playwright#40117), so it installs the
       # Ubuntu 24.04 builds and dependencies there.
       - name: Select the Playwright host platform
