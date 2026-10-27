@@ -34,6 +34,7 @@ internal static class SeaweedFsMediaObjectStorageDependencyInjection
             .WithTracing(tracing => tracing
                 .AddAWSInstrumentation(options => options.SuppressDownstreamInstrumentation = true)
                 .AddProcessor(new SeaweedFsS3SensitiveAttributeRedactionProcessor()));
+        services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<IMediaObjectStore, SeaweedFsMediaObjectStore>();
 
         return services;
