@@ -15,24 +15,24 @@ internal static class ToursOpenApiDocumentClient
     /// <summary>
     /// Retrieves the subset of the canonical tours OpenAPI contract that this consumer relies on.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token for the file read.</param>
+    /// <param name="ct">The cancellation token for the file read.</param>
     /// <returns>The mapped tours OpenAPI contract slice.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the required tours contract shape is missing.</exception>
-    public static async Task<ToursOpenApiContractDto> GetContract(CancellationToken cancellationToken)
-        => await GetContract(GetCanonicalDocumentPath(), cancellationToken);
+    public static async Task<ToursOpenApiContractDto> GetContract(CancellationToken ct)
+        => await GetContract(GetCanonicalDocumentPath(), ct);
 
     /// <summary>
     /// Retrieves the subset of the build-time generated tours OpenAPI contract used for
     /// generated-vs-canonical compatibility validation.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token for the file read.</param>
+    /// <param name="ct">The cancellation token for the file read.</param>
     /// <returns>The mapped tours OpenAPI contract slice from the generated artifact.</returns>
-    public static async Task<ToursOpenApiContractDto> GetGeneratedContract(CancellationToken cancellationToken)
-        => await GetContract(GetGeneratedDocumentPath(), cancellationToken);
+    public static async Task<ToursOpenApiContractDto> GetGeneratedContract(CancellationToken ct)
+        => await GetContract(GetGeneratedDocumentPath(), ct);
 
-    private static async Task<ToursOpenApiContractDto> GetContract(string documentPath, CancellationToken cancellationToken)
+    private static async Task<ToursOpenApiContractDto> GetContract(string documentPath, CancellationToken ct)
     {
-        var document = await ReadDocument(documentPath, cancellationToken);
+        var document = await ReadDocument(documentPath, ct);
 
         if (document?.Info is null || document.Paths is null)
         {
@@ -70,10 +70,10 @@ internal static class ToursOpenApiDocumentClient
             updateTourSchemaReference);
     }
 
-    private static async Task<ToursOpenApiDocumentDto?> ReadDocument(string documentPath, CancellationToken cancellationToken)
+    private static async Task<ToursOpenApiDocumentDto?> ReadDocument(string documentPath, CancellationToken ct)
     {
         await using var stream = File.OpenRead(documentPath);
-        return await JsonSerializer.DeserializeAsync<ToursOpenApiDocumentDto>(stream, SerializerOptions, cancellationToken);
+        return await JsonSerializer.DeserializeAsync<ToursOpenApiDocumentDto>(stream, SerializerOptions, ct);
     }
 
     private static string GetCanonicalDocumentPath()

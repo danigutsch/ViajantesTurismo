@@ -2,13 +2,6 @@ using System.Text;
 
 namespace ViajantesTurismo.Management.Web.Services;
 
-public sealed record CustomerImportField(string Name, string DisplayName, bool IsRequired);
-
-public sealed record CustomerImportFieldMapping(CustomerImportField Field, string? MatchedCsvHeader)
-{
-    public bool IsAutoMatched => MatchedCsvHeader is not null;
-}
-
 /// <summary>Matches CSV headers to customer import fields and rewrites the header row to canonical field names.</summary>
 internal static class CustomerImportHeaderMatcher
 {

@@ -33,14 +33,14 @@ internal sealed class PaymentPageHttpHandler : HttpMessageHandler
         "approvedObligationEuro":0,"outstandingEuro":0,"unallocatedEuroCredit":0,"businessDate":"2030-01-05","overdue":false,
         "schedules":[],"quotes":[],"receipts":[],"reconciliations":[],"allocations":[],"refunds":[],"reversals":[],"reviews":[]}
         """;
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         if (request.Method != HttpMethod.Get)
         {
             Paths.Add(request.RequestUri?.AbsolutePath ?? string.Empty);
             Keys.Add(request.Headers.GetValues("Idempotency-Key").Single());
-            Payloads.Add(request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync(cancellationToken));
+            Payloads.Add(request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync(ct));
             if (FailNextSubmission)
             {
                 FailNextSubmission = false;

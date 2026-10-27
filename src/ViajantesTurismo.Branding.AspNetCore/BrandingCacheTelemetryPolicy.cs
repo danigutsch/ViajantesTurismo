@@ -6,11 +6,11 @@ namespace ViajantesTurismo.Branding.AspNetCore;
 internal sealed class BrandingCacheTelemetryPolicy : IOutputCachePolicy
 {
     /// <inheritdoc />
-    public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken) =>
+    public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken ct) =>
         ValueTask.CompletedTask;
 
     /// <inheritdoc />
-    public ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
+    public ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -19,6 +19,6 @@ internal sealed class BrandingCacheTelemetryPolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken) =>
+    public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken ct) =>
         ValueTask.CompletedTask;
 }

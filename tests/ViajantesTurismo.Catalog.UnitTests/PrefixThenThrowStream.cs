@@ -16,9 +16,9 @@ internal sealed class PrefixThenThrowStream(byte[] prefix, IOException exception
         set => throw new NotSupportedException();
     }
 
-    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken ct)
     {
-        await destination.WriteAsync(prefix, cancellationToken);
+        await destination.WriteAsync(prefix, ct);
         throw exception;
     }
 

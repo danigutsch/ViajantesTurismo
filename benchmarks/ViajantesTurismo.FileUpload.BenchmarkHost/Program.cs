@@ -28,7 +28,7 @@ app.Lifetime.ApplicationStarted.Register(() => WriteReadyFile(app, Environment.G
 
 await app.RunAsync().ConfigureAwait(false);
 
-static async Task<IResult> ScanUpload(HttpRequest request, CancellationToken cancellationToken)
+static async Task<IResult> ScanUpload(HttpRequest request, CancellationToken ct)
 {
     if (!TryGetBoundary(request, out var boundary))
     {
@@ -41,14 +41,14 @@ static async Task<IResult> ScanUpload(HttpRequest request, CancellationToken can
     var fileCount = 0;
 
     MultipartSection? section;
-    while ((section = await reader.ReadNextSectionAsync(cancellationToken).ConfigureAwait(false)) is not null)
+    while ((section = await reader.ReadNextSectionAsync(ct).ConfigureAwait(false)) is not null)
     {
         if (!IsFileSection(section))
         {
             continue;
         }
 
-        var scanResult = await ScanStream(section.Body, cancellationToken).ConfigureAwait(false);
+        var scanResult = await ScanStream(section.Body, ct).ConfigureAwait(false);
         totalBytesScanned += scanResult.BytesScanned;
         totalMatches += scanResult.Matches;
         fileCount++;
@@ -103,7 +103,7 @@ static bool IsFileSection(MultipartSection section)
     return contentDisposition.FileName.HasValue || contentDisposition.FileNameStar.HasValue;
 }
 
-static async Task<(long BytesScanned, long Matches)> ScanStream(Stream stream, CancellationToken cancellationToken)
+static async Task<(long BytesScanned, long Matches)> ScanStream(Stream stream, CancellationToken ct)
 {
     var buffer = GC.AllocateUninitializedArray<byte>(BufferLength);
     long bytesScanned = 0;
@@ -111,7 +111,7 @@ static async Task<(long BytesScanned, long Matches)> ScanStream(Stream stream, C
 
     while (true)
     {
-        var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken).ConfigureAwait(false);
+        var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), ct).ConfigureAwait(false);
 
         if (bytesRead == 0)
         {

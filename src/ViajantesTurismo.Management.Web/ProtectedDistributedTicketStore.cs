@@ -118,59 +118,59 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
     /// <summary>
     /// Removes the ticket from the cache, honoring cancellation.
     /// </summary>
-    public async Task RemoveAsync(string key, CancellationToken cancellationToken)
+    public async Task RemoveAsync(string key, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
         try
         {
-            var firstFailure = await TryRemoveFromCache(key, cancellationToken).ConfigureAwait(false);
+            var firstFailure = await TryRemoveFromCache(key, ct).ConfigureAwait(false);
             if (firstFailure is null)
             {
                 return;
             }
 
-            var terminalFailure = await TryRemoveFromCache(key, cancellationToken).ConfigureAwait(false);
+            var terminalFailure = await TryRemoveFromCache(key, ct).ConfigureAwait(false);
             if (terminalFailure is not null)
             {
                 LogTicketCacheRemovalFailed(logger, CacheRemovalAttempts, terminalFailure.GetType().Name);
                 throw new InvalidOperationException("The management ticket could not be removed.");
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            throw new OperationCanceledException(ActiveRemovalCanceledMessage, cancellationToken);
+            throw new OperationCanceledException(ActiveRemovalCanceledMessage, ct);
         }
     }
 
     [LoggerMessage(LogLevel.Error, "Management ticket cache removal failed after {AttemptCount} attempts. Failure type: {FailureType}.")]
     private static partial void LogTicketCacheRemovalFailed(ILogger logger, int attemptCount, string failureType);
 
-    private async Task<Exception?> TryRemoveFromCache(string key, CancellationToken cancellationToken)
+    private async Task<Exception?> TryRemoveFromCache(string key, CancellationToken ct)
     {
         try
         {
-            await cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+            await cache.RemoveAsync(key, ct).ConfigureAwait(false);
             return null;
         }
-        catch (Exception exception) when (exception.ShouldHandleAsFailure(cancellationToken))
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             return exception;
         }
     }
 
-    private async Task<bool> TryRemoveStaleTicket(string key, CancellationToken cancellationToken)
+    private async Task<bool> TryRemoveStaleTicket(string key, CancellationToken ct)
     {
         try
         {
-            await cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+            await cache.RemoveAsync(key, ct).ConfigureAwait(false);
             return true;
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            throw new OperationCanceledException(StaleCleanupCanceledMessage, cancellationToken);
+            throw new OperationCanceledException(StaleCleanupCanceledMessage, ct);
         }
-        catch (Exception exception) when (exception.ShouldHandleAsFailure(cancellationToken))
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             return false;
         }

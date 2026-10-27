@@ -52,12 +52,12 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         string audience,
         ManagementTokenSession session,
         string sourceAccessToken,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         session.EnsureActive(_timeProvider);
         var cacheKey = GetCacheKey(audience, session);
         var sourceAccessTokenFingerprint = CreateSourceAccessTokenFingerprint(sourceAccessToken);
-        var protectedEntry = await _cache.GetAsync(cacheKey, cancellationToken);
+        var protectedEntry = await _cache.GetAsync(cacheKey, ct);
         if (protectedEntry is null)
         {
             return null;
@@ -77,7 +77,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
                 || string.Equals(accessToken, sourceAccessToken, StringComparison.Ordinal)
                 || expiresAt <= _timeProvider.GetUtcNow().Add(RefreshBeforeExpiration))
             {
-                await TryRemoveStaleEntry(cacheKey, cancellationToken);
+                await TryRemoveStaleEntry(cacheKey, ct);
                 return null;
             }
 
@@ -85,7 +85,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         }
         catch (Exception exception) when (exception is ArgumentException or CryptographicException or EndOfStreamException or FormatException or InvalidDataException or OverflowException)
         {
-            await TryRemoveStaleEntry(cacheKey, cancellationToken);
+            await TryRemoveStaleEntry(cacheKey, ct);
             return null;
         }
     }
@@ -99,7 +99,7 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         string sourceAccessToken,
         string accessToken,
         DateTimeOffset expiresAt,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceAccessToken);
         ArgumentException.ThrowIfNullOrWhiteSpace(accessToken);
@@ -120,15 +120,15 @@ internal sealed class ProtectedDistributedAudienceTokenStore
             cacheKey,
             _protector.Protect(cacheKey, stream.ToArray()),
             new DistributedCacheEntryOptions { AbsoluteExpiration = cacheExpiresAt },
-            cancellationToken);
+            ct);
     }
 
     /// <summary>
     /// Removes the cached tokens of every configured audience for the session.
     /// </summary>
-    internal Task ClearAll(ManagementTokenSession session, CancellationToken cancellationToken)
+    internal Task ClearAll(ManagementTokenSession session, CancellationToken ct)
     {
-        return Task.WhenAll(Audiences.Select(audience => _cache.RemoveAsync(GetCacheKey(audience, session), cancellationToken)));
+        return Task.WhenAll(Audiences.Select(audience => _cache.RemoveAsync(GetCacheKey(audience, session), ct)));
     }
 
     /// <summary>
@@ -153,14 +153,14 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         return SHA256.HashData(Encoding.UTF8.GetBytes(sourceAccessToken));
     }
 
-    private async Task<bool> TryRemoveStaleEntry(string cacheKey, CancellationToken cancellationToken)
+    private async Task<bool> TryRemoveStaleEntry(string cacheKey, CancellationToken ct)
     {
         try
         {
-            await _cache.RemoveAsync(cacheKey, cancellationToken);
+            await _cache.RemoveAsync(cacheKey, ct);
             return true;
         }
-        catch (Exception exception) when (exception.ShouldHandleAsFailure(cancellationToken))
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
             return false;
         }

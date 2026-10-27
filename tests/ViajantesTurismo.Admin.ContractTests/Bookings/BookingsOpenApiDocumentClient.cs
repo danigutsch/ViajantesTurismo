@@ -15,23 +15,23 @@ internal static class BookingsOpenApiDocumentClient
     /// <summary>
     /// Retrieves the subset of the canonical bookings OpenAPI contract that this consumer relies on.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token for the file read.</param>
+    /// <param name="ct">The cancellation token for the file read.</param>
     /// <returns>The mapped bookings OpenAPI contract slice.</returns>
-    public static async Task<BookingsOpenApiContractDto> GetContract(CancellationToken cancellationToken)
-        => await GetContract(GetCanonicalDocumentPath(), cancellationToken);
+    public static async Task<BookingsOpenApiContractDto> GetContract(CancellationToken ct)
+        => await GetContract(GetCanonicalDocumentPath(), ct);
 
     /// <summary>
     /// Retrieves the subset of the build-time generated bookings OpenAPI contract used for
     /// generated-vs-canonical compatibility validation.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token for the file read.</param>
+    /// <param name="ct">The cancellation token for the file read.</param>
     /// <returns>The mapped bookings OpenAPI contract slice from the generated artifact.</returns>
-    public static async Task<BookingsOpenApiContractDto> GetGeneratedContract(CancellationToken cancellationToken)
-        => await GetContract(GetGeneratedDocumentPath(), cancellationToken);
+    public static async Task<BookingsOpenApiContractDto> GetGeneratedContract(CancellationToken ct)
+        => await GetContract(GetGeneratedDocumentPath(), ct);
 
-    private static async Task<BookingsOpenApiContractDto> GetContract(string documentPath, CancellationToken cancellationToken)
+    private static async Task<BookingsOpenApiContractDto> GetContract(string documentPath, CancellationToken ct)
     {
-        var document = await ReadDocument(documentPath, cancellationToken);
+        var document = await ReadDocument(documentPath, ct);
 
         if (document?.Info is null || document.Paths is null)
         {
@@ -135,10 +135,10 @@ internal static class BookingsOpenApiDocumentClient
             completePath.Post.OperationId);
     }
 
-    private static async Task<BookingsOpenApiDocumentDto?> ReadDocument(string documentPath, CancellationToken cancellationToken)
+    private static async Task<BookingsOpenApiDocumentDto?> ReadDocument(string documentPath, CancellationToken ct)
     {
         await using var stream = File.OpenRead(documentPath);
-        return await JsonSerializer.DeserializeAsync<BookingsOpenApiDocumentDto>(stream, SerializerOptions, cancellationToken);
+        return await JsonSerializer.DeserializeAsync<BookingsOpenApiDocumentDto>(stream, SerializerOptions, ct);
     }
 
     private static string GetCanonicalDocumentPath()

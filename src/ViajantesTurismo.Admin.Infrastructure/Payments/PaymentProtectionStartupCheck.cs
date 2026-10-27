@@ -9,12 +9,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 internal sealed class PaymentProtectionStartupCheck(PaymentProtection protection, PaymentBusinessCalendar calendar) : IHostedService
 {
     /// <summary>Touches the injected services so misconfiguration fails at startup.</summary>
-    public Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken ct)
     {
         _ = protection.Enabled;
         _ = calendar;
         return Task.CompletedTask;
     }
     /// <summary>Does nothing on shutdown.</summary>
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
 }

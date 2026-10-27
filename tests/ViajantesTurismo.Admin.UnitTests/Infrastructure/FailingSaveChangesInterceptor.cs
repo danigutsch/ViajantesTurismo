@@ -12,7 +12,7 @@ internal sealed class FailingSaveChangesInterceptor : SaveChangesInterceptor
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct)
     {
         if (_hasFailed)
         {

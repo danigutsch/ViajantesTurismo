@@ -19,12 +19,12 @@ internal sealed class BlockingReadStream(byte[] prefix, byte[] remainder) : Stre
         set => throw new NotSupportedException();
     }
 
-    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken ct)
     {
-        await destination.WriteAsync(prefix, cancellationToken);
+        await destination.WriteAsync(prefix, ct);
         _ = blocked.TrySetResult();
-        await release.Task.WaitAsync(cancellationToken);
-        await destination.WriteAsync(remainder, cancellationToken);
+        await release.Task.WaitAsync(ct);
+        await destination.WriteAsync(remainder, ct);
     }
 
     /// <summary>Completes once the prefix was copied and the copy is blocked.</summary>

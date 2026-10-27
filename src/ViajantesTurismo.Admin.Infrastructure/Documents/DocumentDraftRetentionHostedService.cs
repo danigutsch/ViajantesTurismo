@@ -16,13 +16,13 @@ internal sealed class DocumentDraftRetentionHostedService(
     private const string DocumentDraftRetentionServiceName = "admin-document-draft-retention";
 
     /// <summary>Runs one purge batch and returns the number of removed drafts.</summary>
-    internal ValueTask<int> RunBatch(CancellationToken stoppingToken) => ExecuteBatch(stoppingToken);
+    internal ValueTask<int> RunBatch(CancellationToken ct) => ExecuteBatch(ct);
 
-    protected override async ValueTask<int> ExecuteBatch(CancellationToken stoppingToken)
+    protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDraftsCommandHandler>();
-        var removedCount = await handler.Handle(new PurgeExpiredDraftsCommand(), stoppingToken).ConfigureAwait(false);
+        var removedCount = await handler.Handle(new PurgeExpiredDraftsCommand(), ct).ConfigureAwait(false);
 
         return removedCount;
     }

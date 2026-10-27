@@ -15,13 +15,13 @@ internal sealed class MediaObjectReconciliationHostedService(
     private static readonly TimeSpan OrphanGracePeriod = TimeSpan.FromDays(1);
 
     /// <summary>Runs one reconciliation batch and returns the number of orphan objects deleted.</summary>
-    internal ValueTask<int> RunBatch(CancellationToken stoppingToken) => ExecuteBatch(stoppingToken);
+    internal ValueTask<int> RunBatch(CancellationToken ct) => ExecuteBatch(ct);
 
-    protected override async ValueTask<int> ExecuteBatch(CancellationToken stoppingToken)
+    protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<MediaObjectReconciliationService>();
-        var report = await service.Reconcile(deleteOrphans: true, OrphanGracePeriod, stoppingToken).ConfigureAwait(false);
+        var report = await service.Reconcile(deleteOrphans: true, OrphanGracePeriod, ct).ConfigureAwait(false);
 
         return report.DeletedOrphanObjectKeys.Count;
     }

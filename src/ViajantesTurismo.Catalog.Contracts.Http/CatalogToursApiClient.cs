@@ -347,30 +347,30 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             byte[] buffer,
             int offset,
             int count,
-            CancellationToken cancellationToken)
+            CancellationToken ct)
         {
             try
             {
-                return await source.ReadAsync(buffer.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
+                return await source.ReadAsync(buffer.AsMemory(offset, count), ct).ConfigureAwait(false);
             }
             catch (IOException exception)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                ct.ThrowIfCancellationRequested();
                 throw WrapLocalUploadReadException(exception);
             }
         }
 
         public override async ValueTask<int> ReadAsync(
             Memory<byte> buffer,
-            CancellationToken cancellationToken = default)
+            CancellationToken ct)
         {
             try
             {
-                return await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                return await source.ReadAsync(buffer, ct).ConfigureAwait(false);
             }
             catch (IOException exception)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                ct.ThrowIfCancellationRequested();
                 throw WrapLocalUploadReadException(exception);
             }
         }

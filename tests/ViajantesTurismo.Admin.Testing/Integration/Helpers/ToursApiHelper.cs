@@ -13,7 +13,7 @@ public static class ToursApiHelper
     public static async Task<HttpResponseMessage> CreateTour(
         this HttpClient client,
         CreateTourDto request,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(request);
@@ -21,17 +21,17 @@ public static class ToursApiHelper
         return await client.PostAsJsonAsync(
             new Uri(RoutePrefix, UriKind.Relative),
             request,
-            cancellationToken);
+            ct);
     }
 
     public static async Task<HttpResponseMessage> GetAllTours(
         this HttpClient client,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
         return await client.GetAsync(
             new Uri(RoutePrefix, UriKind.Relative),
-            cancellationToken);
+            ct);
     }
 }

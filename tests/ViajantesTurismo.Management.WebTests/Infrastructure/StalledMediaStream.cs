@@ -37,13 +37,13 @@ internal sealed class StalledMediaStream : Stream
 
     public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
-    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct)
     {
         if (hasRead)
         {
             try
             {
-                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

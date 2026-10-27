@@ -31,7 +31,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "tests/ViajantesTurismo.HostedTests/Management/Security/PostgreSqlManagementUserTokenStoreScenario.cs",
         "tests/ViajantesTurismo.HostedTests/Management/Security/PostgreSqlTestServerFixture.cs",
         "tests/ViajantesTurismo.HostedTests/Infrastructure/HostedTestFixture.cs",
-        "tests/ViajantesTurismo.HostedTests/Infrastructure/HostedTestCleanup.cs"
+        "tests/ViajantesTurismo.HostedTests/Infrastructure/HostedTestCleanup.cs",
     ];
 
     [Fact]

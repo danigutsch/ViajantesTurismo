@@ -40,7 +40,7 @@ internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> op
         throw new InvalidOperationException("This context is read-only. Use AdminWriteDbContext for write operations.");
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override Task<int> SaveChangesAsync(CancellationToken ct)
     {
         throw new InvalidOperationException("This context is read-only. Use AdminWriteDbContext for write operations.");
     }

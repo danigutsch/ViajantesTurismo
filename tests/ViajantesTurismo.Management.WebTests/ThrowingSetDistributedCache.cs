@@ -27,9 +27,9 @@ internal sealed class ThrowingSetDistributedCache(
     }
 
     /// <summary>Forwards to the inner cache.</summary>
-    public Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+    public Task<byte[]?> GetAsync(string key, CancellationToken ct)
     {
-        return inner.GetAsync(key, token);
+        return inner.GetAsync(key, ct);
     }
 
     /// <summary>Forwards to the inner cache.</summary>
@@ -39,9 +39,9 @@ internal sealed class ThrowingSetDistributedCache(
     }
 
     /// <summary>Forwards to the inner cache.</summary>
-    public Task RefreshAsync(string key, CancellationToken token = default)
+    public Task RefreshAsync(string key, CancellationToken ct)
     {
-        return inner.RefreshAsync(key, token);
+        return inner.RefreshAsync(key, ct);
     }
 
     /// <summary>Forwards to the inner cache.</summary>
@@ -51,9 +51,9 @@ internal sealed class ThrowingSetDistributedCache(
     }
 
     /// <summary>Forwards to the inner cache.</summary>
-    public Task RemoveAsync(string key, CancellationToken token = default)
+    public Task RemoveAsync(string key, CancellationToken ct)
     {
-        return inner.RemoveAsync(key, token);
+        return inner.RemoveAsync(key, ct);
     }
 
     /// <summary>Records options and counts the call, then throws the configured failure or sets in the inner cache.</summary>
@@ -70,12 +70,12 @@ internal sealed class ThrowingSetDistributedCache(
     }
 
     /// <summary>Records options and counts the call, then returns a faulted task or sets in the inner cache.</summary>
-    public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+    public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken ct)
     {
         LastOptions = options;
         var setCall = Interlocked.Increment(ref _setCalls);
         return shouldThrowOnSet(key, setCall)
             ? Task.FromException(_failure)
-            : inner.SetAsync(key, value, options, token);
+            : inner.SetAsync(key, value, options, ct);
     }
 }

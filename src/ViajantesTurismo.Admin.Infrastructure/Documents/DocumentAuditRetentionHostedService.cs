@@ -14,12 +14,12 @@ internal sealed class DocumentAuditRetentionHostedService(
     private const string DocumentAuditRetentionServiceName = "admin-document-audit-retention";
 
     /// <summary>Runs one purge batch and returns the number of removed audit records.</summary>
-    internal ValueTask<int> RunBatch(CancellationToken stoppingToken) => ExecuteBatch(stoppingToken);
+    internal ValueTask<int> RunBatch(CancellationToken ct) => ExecuteBatch(ct);
 
-    protected override async ValueTask<int> ExecuteBatch(CancellationToken stoppingToken)
+    protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentAuditsCommandHandler>();
-        return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(), stoppingToken).ConfigureAwait(false);
+        return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(), ct).ConfigureAwait(false);
     }
 }

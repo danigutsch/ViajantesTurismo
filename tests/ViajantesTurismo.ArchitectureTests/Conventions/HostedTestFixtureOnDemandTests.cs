@@ -107,7 +107,7 @@ public sealed class HostedTestFixtureOnDemandTests
 
         // Assert
         application.ShouldContain(
-            "startCt => StartApplication(profile, stack, startCt)",
+            "ct => StartApplication(profile, stack, ct)",
             StringComparison.Ordinal,
             "a start on the token of the test that triggered it is cancelled with that test, and the gate caches the cancellation");
         fixture.ShouldNotContain("TestContext.Current", StringComparison.Ordinal, "a start must not use the token of one test");

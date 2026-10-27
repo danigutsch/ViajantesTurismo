@@ -13,7 +13,7 @@ internal static class AdminOpenApiDocumentFactory
     /// <summary>Maps the named endpoint groups on a temporary host and returns the named OpenAPI document.</summary>
     public static async Task<OpenApiDocument> CreateDocument(
         string documentName,
-        CancellationToken cancellationToken,
+        CancellationToken ct,
         params string[] endpointMapperNames)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(documentName);
@@ -40,11 +40,11 @@ internal static class AdminOpenApiDocumentFactory
                 app);
         }
 
-        await app.StartAsync(cancellationToken);
+        await app.StartAsync(ct);
 
         using var scope = app.Services.CreateScope();
         var provider = scope.ServiceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName);
-        return await provider.GetOpenApiDocumentAsync(cancellationToken);
+        return await provider.GetOpenApiDocumentAsync(ct);
     }
 
     private static void InvokeInternalStaticMethod(
