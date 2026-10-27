@@ -111,7 +111,7 @@ Complete base/head snapshots still resolve false additions. No general MS-PL or 
 allowance is granted. Only the two named package identities receive a license metadata exception.
 
 The installed NuGet package declares MIT and repository commit
-`332cc170a82fa424e0b4f902ab9f9a876e827f38`. Aspire.Hosting 13.6.1 still references it directly;
+`332cc170a82fa424e0b4f902ab9f9a876e827f38`. Aspire.Hosting 13.6.4 still references it directly;
 AppHost, PostgreSQL, and Redis hosting packages resolve it transitively. It is not an obsolete direct
 application dependency to delete from lock files.
 
@@ -130,7 +130,7 @@ Local exact-package evidence (SHA-256):
 | `NOTICE` | `398758d9e312d3070dcb15d19fdfdc9c699635dceeedf8037c1c703405bbe19e` |
 
 Sources: the package's versioned NuGet archive and
-[Aspire 13.6.1 source](https://github.com/microsoft/aspire/blob/v13.6.1/src/Aspire.Hosting/Aspire.Hosting.csproj).
+[Aspire 13.6.4 source](https://github.com/microsoft/aspire/blob/v13.6.4/src/Aspire.Hosting/Aspire.Hosting.csproj).
 Re-review a new version's archive and notices rather than assuming the same conclusion. This
 record preserves provenance. The preview approval does not cover future versions or remove notice
 and redistribution obligations.

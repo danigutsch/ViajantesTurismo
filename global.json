@@ -5,7 +5,7 @@
     "errorMessage": "Run setup-dev.sh --install-sdk or setup-dev.ps1 -InstallSdk to install this SDK side-by-side."
   },
   "msbuild-sdks": {
-    "Aspire.AppHost.Sdk": "13.6.1"
+    "Aspire.AppHost.Sdk": "13.6.4"
   },
   "test": {
     "runner": "Microsoft.Testing.Platform"
