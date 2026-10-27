@@ -1,4 +1,5 @@
 using PandaBear.ObjectStorage;
+using System.Buffers;
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
@@ -54,7 +55,7 @@ public sealed partial class MediaImageUploadIntake(
             return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, nameof(request.MediaImageId), "Media image id is required.");
         }
 
-        using var content = new MemoryStream();
+        using var content = new MemoryStream((int)Math.Clamp(request.Length, 0, options.MaxLengthBytes));
         if (!await CopyToMemory(request.Content, content, options.MaxLengthBytes, ct).ConfigureAwait(false))
         {
             return Result.Invalid<MediaImageUploadIntakeResult>(
@@ -205,24 +206,30 @@ public sealed partial class MediaImageUploadIntake(
 
     private static async ValueTask<bool> CopyToMemory(Stream source, MemoryStream destination, long maxLengthBytes, CancellationToken ct)
     {
-        var buffer = new byte[81920];
-
-        while (true)
+        var buffer = ArrayPool<byte>.Shared.Rent(81920);
+        try
         {
-            var bytesRead = await source.ReadAsync(buffer, ct).ConfigureAwait(false);
-            if (bytesRead == 0)
+            while (true)
             {
-                destination.Position = 0;
-                return true;
-            }
+                var bytesRead = await source.ReadAsync(buffer, ct).ConfigureAwait(false);
+                if (bytesRead == 0)
+                {
+                    destination.Position = 0;
+                    return true;
+                }
 
-            if (destination.Length + bytesRead > maxLengthBytes)
-            {
-                destination.Position = 0;
-                return false;
-            }
+                if (destination.Length + bytesRead > maxLengthBytes)
+                {
+                    destination.Position = 0;
+                    return false;
+                }
 
-            await destination.WriteAsync(buffer.AsMemory(0, bytesRead), ct).ConfigureAwait(false);
+                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 
