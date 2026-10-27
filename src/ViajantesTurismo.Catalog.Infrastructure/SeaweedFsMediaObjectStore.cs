@@ -10,7 +10,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 
 internal sealed class SeaweedFsMediaObjectStore(
     IAmazonS3 client,
-    IOptions<SeaweedFsMediaObjectStorageOptions> storageOptions) : IMediaObjectStore
+    IOptions<SeaweedFsMediaObjectStorageOptions> storageOptions,
+    TimeProvider timeProvider) : IMediaObjectStore
 {
     private const string Separator = "/";
     private readonly SeaweedFsMediaObjectStorageOptions options = storageOptions.Value;
@@ -111,7 +112,7 @@ internal sealed class SeaweedFsMediaObjectStore(
             throw new ArgumentOutOfRangeException(nameof(request), "Upload lifetime must be positive and at most seven days.");
         }
 
-        var expiresAt = TimeProvider.System.GetUtcNow().Add(request.ExpiresAfter);
+        var expiresAt = timeProvider.GetUtcNow().Add(request.ExpiresAfter);
         var signingRequest = new GetPreSignedUrlRequest
         {
             BucketName = options.Bucket,

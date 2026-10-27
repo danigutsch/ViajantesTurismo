@@ -3,6 +3,7 @@ using System.Web;
 using Amazon.Runtime;
 using Amazon.S3;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -19,19 +20,18 @@ public sealed class S3MediaUploadTicketTests
         // Arrange
         using var client = new AmazonS3Client(new BasicAWSCredentials("test-access", "test-secret"),
             new AmazonS3Config { ServiceURL = "https://s3.eu-central-1.amazonaws.com", AuthenticationRegion = "eu-central-1", ForcePathStyle = true });
+        var now = new DateTimeOffset(2026, 6, 22, 12, 30, 0, TimeSpan.Zero);
         var store = new SeaweedFsMediaObjectStore(client, Options.Create(new SeaweedFsMediaObjectStorageOptions
         {
             Endpoint = new Uri("https://s3.eu-central-1.amazonaws.com"),
             Bucket = "media",
             AccessKey = "test-access",
             SecretKey = "test-secret"
-        }));
+        }), new FakeTimeProvider(now));
         var request = new MediaObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
 
         // Act
-        var startedAt = TimeProvider.System.GetUtcNow();
         var ticket = await store.CreateUploadUrl(request, TestContext.Current.CancellationToken);
-        var completedAt = TimeProvider.System.GetUtcNow();
 
         // Assert
         ticket.ObjectKey.ShouldBe(request.ObjectKey);
@@ -39,7 +39,7 @@ public sealed class S3MediaUploadTicketTests
         ticket.RequiredHeaders["Content-Length"].ShouldBe("123");
         var query = Uri.UnescapeDataString(ticket.UploadUri.Query);
         query.ShouldContain("X-Amz-SignedHeaders=content-length;content-type;host", StringComparison.Ordinal);
-        ticket.ExpiresAt.ShouldBeInRange(startedAt.Add(request.ExpiresAfter), completedAt.Add(request.ExpiresAfter));
+        ticket.ExpiresAt.ShouldBe(now.Add(request.ExpiresAfter));
         var parameters = HttpUtility.ParseQueryString(ticket.UploadUri.Query);
         var signedAtText = parameters["X-Amz-Date"];
         var lifetimeText = parameters["X-Amz-Expires"];
@@ -68,7 +68,7 @@ public sealed class S3MediaUploadTicketTests
             Bucket = "media",
             AccessKey = "test-access",
             SecretKey = "test-secret"
-        }));
+        }), TimeProvider.System);
         var request = new MediaObjectUploadRequest("pending/image.jpg", "image/jpeg", 123, TimeSpan.FromMinutes(5));
 
         // Act

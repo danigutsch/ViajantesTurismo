@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 internal static class SeaweedFsMediaObjectStoreTestFactory
 {
-    public static SeaweedFsMediaObjectStore CreateStore(FakeAmazonS3Client client, bool autoProvisionBucket = true)
+    public static SeaweedFsMediaObjectStore CreateStore(FakeAmazonS3Client client, bool autoProvisionBucket = true, TimeProvider? timeProvider = null)
     {
         return new SeaweedFsMediaObjectStore(client, Options.Create(new SeaweedFsMediaObjectStorageOptions
         {
@@ -15,6 +15,6 @@ internal static class SeaweedFsMediaObjectStoreTestFactory
             AccessKey = "access",
             SecretKey = "secret",
             AutoProvisionBucket = autoProvisionBucket
-        }));
+        }), timeProvider ?? TimeProvider.System);
     }
 }
