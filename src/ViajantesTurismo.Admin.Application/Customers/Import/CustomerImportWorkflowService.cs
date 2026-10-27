@@ -25,25 +25,37 @@ public sealed class CustomerImportWorkflowService(
     /// <param name="csvText">CSV content.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Import summary with optional conflicts.</returns>
-    public async Task<ImportResultDto> Import(string csvText, CancellationToken ct)
+    public Task<ImportResultDto> Import(string csvText, CancellationToken ct) =>
+        Import(CsvDocument.Parse(csvText), ct);
+
+    /// <summary>
+    /// Imports customers from UTF-8 CSV bytes, parsing the content once.
+    /// </summary>
+    /// <param name="utf8Csv">UTF-8 encoded CSV content without a byte order mark.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Import summary with optional conflicts.</returns>
+    public Task<ImportResultDto> Import(ReadOnlyMemory<byte> utf8Csv, CancellationToken ct) =>
+        Import(CsvDocument.ParseUtf8(utf8Csv.Span), ct);
+
+    private async Task<ImportResultDto> Import(Result<CsvDocument> parsed, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-        var conflicts = await conflictDetector.FindDatabaseEmailConflicts(csvText, ct);
+        var conflicts = await FindConflicts(parsed, ct);
         if (conflicts.Count > 0)
         {
             return new ImportResultDto(0, 0, conflicts);
         }
 
-        var summary = await AnalyzeRowsForSummary(csvText, conflictResolutions: null, today, ct);
+        var summary = await AnalyzeRowsForSummary(parsed, conflictResolutions: null, today, ct);
 
         ImportResult result;
         try
         {
-            result = await commandHandler.Handle(new CustomerImportCommand(csvText, false) { Today = today }, ct);
+            result = await Execute(parsed, today, conflictResolutions: null, ct);
         }
         catch (CustomerEmailConflictException)
         {
-            return await CreatePersistenceConflictResult(csvText, summary.SuccessCandidates, ct);
+            return await CreatePersistenceConflictResult(parsed, summary.SuccessCandidates, ct);
         }
 
         var successRows = await BuildSuccessRows(summary.SuccessCandidates, ct);
@@ -63,27 +75,43 @@ public sealed class CustomerImportWorkflowService(
     /// <param name="conflictResolutions">Conflict resolutions keyed by email.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Import summary.</returns>
-    public async Task<ImportResultDto> Commit(
+    public Task<ImportResultDto> Commit(
         string csvText,
+        IReadOnlyDictionary<string, string> conflictResolutions,
+        CancellationToken ct) =>
+        Commit(CsvDocument.Parse(csvText), conflictResolutions, ct);
+
+    /// <summary>
+    /// Commits customer import from UTF-8 CSV bytes by applying user-provided conflict resolutions, parsing the content once.
+    /// </summary>
+    /// <param name="utf8Csv">UTF-8 encoded CSV content without a byte order mark.</param>
+    /// <param name="conflictResolutions">Conflict resolutions keyed by email.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Import summary.</returns>
+    public Task<ImportResultDto> Commit(
+        ReadOnlyMemory<byte> utf8Csv,
+        IReadOnlyDictionary<string, string> conflictResolutions,
+        CancellationToken ct) =>
+        Commit(CsvDocument.ParseUtf8(utf8Csv.Span), conflictResolutions, ct);
+
+    private async Task<ImportResultDto> Commit(
+        Result<CsvDocument> parsed,
         IReadOnlyDictionary<string, string> conflictResolutions,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(conflictResolutions);
 
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-        var summary = await AnalyzeRowsForSummary(csvText, conflictResolutions, today, ct);
+        var summary = await AnalyzeRowsForSummary(parsed, conflictResolutions, today, ct);
 
         ImportResult result;
         try
         {
-            result = await commandHandler.Handle(
-                new CustomerImportCommand(csvText, false) { Today = today },
-                ct,
-                conflictResolutions);
+            result = await Execute(parsed, today, conflictResolutions, ct);
         }
         catch (CustomerEmailConflictException)
         {
-            return await CreatePersistenceConflictResult(csvText, summary.SuccessCandidates, ct);
+            return await CreatePersistenceConflictResult(parsed, summary.SuccessCandidates, ct);
         }
 
         var successRows = await BuildSuccessRows(summary.SuccessCandidates, ct);
@@ -96,12 +124,29 @@ public sealed class CustomerImportWorkflowService(
             summary.ErrorRows);
     }
 
+    private Task<IReadOnlyList<ImportConflictDto>> FindConflicts(Result<CsvDocument> parsed, CancellationToken ct) =>
+        parsed.IsFailure
+            ? Task.FromResult<IReadOnlyList<ImportConflictDto>>([])
+            : conflictDetector.FindDatabaseEmailConflicts(parsed.Value, ct);
+
+    private async Task<ImportResult> Execute(
+        Result<CsvDocument> parsed,
+        DateOnly today,
+        IReadOnlyDictionary<string, string>? conflictResolutions,
+        CancellationToken ct) =>
+        parsed.IsFailure
+            ? new ImportResult(0, 0)
+            : await commandHandler.Handle(
+                new CustomerImportCommand(string.Empty, false) { Today = today, Document = parsed.Value },
+                ct,
+                conflictResolutions);
+
     private async Task<ImportResultDto> CreatePersistenceConflictResult(
-        string csvText,
+        Result<CsvDocument> parsed,
         IReadOnlyList<ImportSuccessCandidate> successCandidates,
         CancellationToken ct)
     {
-        var conflicts = await conflictDetector.FindDatabaseEmailConflicts(csvText, ct);
+        var conflicts = await FindConflicts(parsed, ct);
         if (conflicts.Count > 0)
         {
             return new ImportResultDto(0, 0, conflicts);
@@ -149,12 +194,11 @@ public sealed class CustomerImportWorkflowService(
     }
 
     private async Task<ImportSummaryAnalysis> AnalyzeRowsForSummary(
-        string csvText,
+        Result<CsvDocument> documentResult,
         IReadOnlyDictionary<string, string>? conflictResolutions,
         DateOnly today,
         CancellationToken ct)
     {
-        var documentResult = CsvDocument.Parse(csvText);
         if (documentResult.IsFailure)
         {
             return new ImportSummaryAnalysis(

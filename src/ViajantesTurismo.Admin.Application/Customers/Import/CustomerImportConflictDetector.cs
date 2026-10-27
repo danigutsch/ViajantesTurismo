@@ -19,12 +19,19 @@ public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
     public async Task<IReadOnlyList<ImportConflictDto>> FindDatabaseEmailConflicts(string csvText, CancellationToken ct)
     {
         var documentResult = CsvDocument.Parse(csvText);
-        if (documentResult.IsFailure)
-        {
-            return [];
-        }
+        return documentResult.IsFailure ? [] : await FindDatabaseEmailConflicts(documentResult.Value, ct);
+    }
 
-        var document = documentResult.Value;
+    /// <summary>
+    /// Finds import conflicts in a document that was already parsed.
+    /// </summary>
+    /// <param name="document">Parsed CSV document to inspect.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Unique conflicts keyed by email.</returns>
+    public async Task<IReadOnlyList<ImportConflictDto>> FindDatabaseEmailConflicts(CsvDocument document, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
         var conflictLineNumbers = new HashSet<int>(
             DuplicateDetector.FindDuplicateEmailLineNumbers(document));
 

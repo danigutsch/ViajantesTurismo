@@ -38,6 +38,20 @@ public sealed class CsvDocument : IImportDocument
     }
 
     /// <summary>
+    /// Parses UTF-8 encoded CSV bytes into a document without decoding the whole content to text first.
+    /// </summary>
+    /// <param name="utf8Content">Full UTF-8 CSV content, where the first line is the header row.</param>
+    /// <param name="requiredHeaderNames">Optional list of required headers that must exist in the CSV header row.</param>
+    /// <returns>A parsed CSV document, or the same failure that <see cref="Parse"/> reports for the decoded text.</returns>
+    public static Result<CsvDocument> ParseUtf8(ReadOnlySpan<byte> utf8Content, IReadOnlyList<string>? requiredHeaderNames = null)
+    {
+        var parsed = PandaBear.Tabular.CsvDocument.ParseUtf8(utf8Content, requiredHeaderNames);
+        return parsed.IsSuccess
+            ? Result.Ok(new CsvDocument(parsed.Value))
+            : parsed.ConvertError<PandaBear.Tabular.CsvDocument, CsvDocument>();
+    }
+
+    /// <summary>
     /// Creates a <see cref="CsvDocument"/> from explicit headers and data rows.
     /// </summary>
     /// <param name="headers">The CSV header columns.</param>
