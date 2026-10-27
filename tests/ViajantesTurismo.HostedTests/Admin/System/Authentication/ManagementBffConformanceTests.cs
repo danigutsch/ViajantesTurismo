@@ -4,6 +4,7 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure;
 using ViajantesTurismo.Resources;
 
@@ -12,7 +13,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Authentication;
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
-public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixture)
+public sealed partial class ManagementBffConformanceTests(AspireSystemTestFixture fixture)
     : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     protected override bool AutomaticallySignIn => false;
@@ -46,10 +47,12 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         sessionCookie.Path.ShouldBe("/");
         var scriptReadableCookies = cookies.Where(cookie => !cookie.HttpOnly)
             .Select(cookie => $"{cookie.Name}={cookie.Value}");
-        string.Join(',', scriptReadableCookies).ShouldNotContain("eyJ", StringComparison.Ordinal);
+        var cookieLeaksJwt = JwtShape().IsMatch(string.Join(',', scriptReadableCookies));
+        cookieLeaksJwt.ShouldBeFalse();
         browserStorage.ShouldNotContain("access_token", StringComparison.OrdinalIgnoreCase);
         browserStorage.ShouldNotContain("refresh_token", StringComparison.OrdinalIgnoreCase);
-        browserStorage.ShouldNotContain("eyJ", StringComparison.Ordinal);
+        var storageLeaksJwt = JwtShape().IsMatch(browserStorage);
+        storageLeaksJwt.ShouldBeFalse();
         finalUrl.ShouldNotContain("access_token", StringComparison.OrdinalIgnoreCase);
         var finalUri = new Uri(finalUrl);
         finalUri.Host.ShouldBe(Fixture.WebAppUrl.Host);
@@ -154,4 +157,8 @@ public sealed class ManagementBffConformanceTests(AspireSystemTestFixture fixtur
         // Assert
         actorId.ShouldBe(Fixture.ConformanceUserId);
     }
+
+    // A bare "eyJ" also appears in random base64 values such as Keycloak's KC_AUTH_SESSION_HASH, so match the JWT shape.
+    [GeneratedRegex(@"eyJ[\w-]+\.[\w-]+\.[\w-]*", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+    private static partial Regex JwtShape();
 }
