@@ -117,9 +117,6 @@ internal static partial class NamingConventionTestsHelpers
     [GeneratedRegex(@"^[a-z0-9]+(?:-[a-z0-9]+)+\.feature$", RegexOptions.Compiled)]
     public static partial Regex KebabCaseFeatureFileRegex();
 
-    [GeneratedRegex(@"^[A-Z][A-Za-z0-9]+\.feature$", RegexOptions.Compiled)]
-    public static partial Regex PascalCaseFeatureFileRegex();
-
     [GeneratedRegex(@"^[A-Z][A-Za-z0-9]*(?:_[A-Za-z0-9][A-Za-z0-9]*)+$", RegexOptions.Compiled)]
     private static partial Regex XunitMethodNamingRegex();
 

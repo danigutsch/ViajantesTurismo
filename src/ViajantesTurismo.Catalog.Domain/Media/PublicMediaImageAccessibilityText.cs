@@ -88,7 +88,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     }
 
     /// <summary>
-    /// Gets the creation time of the current pending draft, or null for reviewed or legacy text.
+    /// Gets the creation time of the current pending draft, or null for reviewed text.
     /// </summary>
     public DateTimeOffset? PendingDraftCreatedAt
     {

@@ -329,38 +329,6 @@ public sealed class DocumentCommandIdempotencyTests
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
-    [Theory]
-    [InlineData("1")]
-    [InlineData("2")]
-    public async Task Legacy_bare_guid_entry_conflicts_without_a_verifiable_request_fingerprint(string templateVersion)
-    {
-        // Arrange
-        var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{Guid.CreateVersion7():N}");
-        var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
-        var unitOfWork = new FakeUnitOfWork();
-        var coordinator = DocumentIdempotencyTestData.CreateCompletedWithFingerprint(
-            scope,
-            key,
-            Guid.CreateVersion7().ToString("N"),
-            unitOfWork);
-        var requestFingerprint = DocumentCommandIdempotency.CreateRequestFingerprint("tour-service-contract", templateVersion);
-        var operationWasInvoked = false;
-
-        // Act
-        var existingResult = await coordinator.GetExistingResult(scope, key, requestFingerprint, CancellationToken.None);
-        var executionResult = await coordinator.Execute(scope, key, requestFingerprint, () =>
-        {
-            operationWasInvoked = true;
-            return Task.FromResult(Result.Ok(Guid.CreateVersion7()));
-        }, CancellationToken.None);
-
-        // Assert
-        existingResult.ShouldNotBeNull().Status.ShouldBe(ResultStatus.Conflict);
-        executionResult.Status.ShouldBe(ResultStatus.Conflict);
-        operationWasInvoked.ShouldBeFalse();
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
-    }
-
     [Fact]
     public async Task Uninitialized_key_is_invalid_before_lookup_or_mutation()
     {

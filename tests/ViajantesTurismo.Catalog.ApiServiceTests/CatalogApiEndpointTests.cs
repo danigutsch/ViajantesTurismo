@@ -1721,7 +1721,7 @@ public sealed class CatalogApiEndpointTests
         }
         else
         {
-            // Model legacy persisted scalar metadata that lacks alternative text.
+            // Model persisted scalar metadata that lacks alternative text.
             typeof(PublicMediaImage).GetProperty(nameof(PublicMediaImage.AltText)).ShouldNotBeNull().SetValue(image, string.Empty);
         }
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);

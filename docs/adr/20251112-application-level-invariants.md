@@ -279,4 +279,4 @@ Out-of-scope items (e.g., broader booking handlerization and cross-cutting pipel
 - See `docs/DOMAIN_VALIDATION.md` for validation patterns
 - Related: [ADR-001: Domain Validation with Factory Methods](20251108-domain-validation-factory-methods.md)
 - Related: [ADR-002: Result Pattern Over Exceptions](20251108-result-pattern-over-exceptions.md)
-- Examples: `INV-CUST-001` in `CustomerCreation.feature`, `INV-TOUR-001` in `TourCreation.feature`
+- Examples: `INV-CUST-001` in `customer-creation.feature`, `INV-TOUR-001` in `tour-creation.feature`

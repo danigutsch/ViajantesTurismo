@@ -8,7 +8,6 @@ metadata the code does not expose.
 | --- | --- | --- | --- | --- |
 | System overview | Curated block in `docs/architecture/generated-diagrams.json`. | `system-overview.md` | `sharedkernel-docs` through the existing diagram refresh path. | Generated from curated architecture data. |
 | Project dependencies | `*.csproj` project references. | `boundaries-and-dependencies.md` | Same generator config. | Generated. |
-| SharedKernel dependencies | `src/SharedKernel/**/*.csproj` project references. | `boundaries-and-dependencies.md` | Same generator config. | Generated. |
 | AppHost runtime wiring | `src/ViajantesTurismo.AppHost/AppHostComposition.cs`. | `runtime-wiring-and-deployment.md` | Same generator config. | Generated. |
 | CI main workflow | `.github/workflows/ci.yml` jobs and `needs`. | `ci-validation-flows.md` | Same generator config. | Generated. |
 | Supplemental workflows | `.github/workflows/*.yml` workflow names. | `ci-validation-flows.md` | Same generator config. | Generated. |

@@ -114,7 +114,7 @@ public static class ContractConstants
     public const string CustomerImportApplicationCsvContentType = "application/csv";
 
     /// <summary>
-    /// Legacy spreadsheet media type commonly used for CSV uploads.
+    /// Spreadsheet media type that browsers commonly send for CSV uploads.
     /// </summary>
     public const string CustomerImportExcelCsvContentType = "application/vnd.ms-excel";
 
