@@ -288,6 +288,62 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
+    public void Shows_the_server_field_message_next_to_the_content_key_and_links_it_from_a_focused_summary()
+    {
+        // Arrange
+        publicContentApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["key"] = ["Key is already used."] });
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("#pt-br-title").Change("Bem-vindo");
+        cut.Find("#pt-br-body").Change("Pedale conosco");
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll("#error-summary").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var fieldGroup = cut.Find("#content-key").ParentElement.ShouldNotBeNull();
+        fieldGroup.QuerySelector(".validation-message").ShouldNotBeNull().TextContent.ShouldBe("Key is already used.");
+        cut.FindAll(".alert-danger").ShouldBeEmpty();
+        var summary = cut.Find("#error-summary");
+        summary.GetAttribute("tabindex").ShouldBe("-1");
+        cut.Find("#error-summary a").GetAttribute("href").ShouldBe("#content-key");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
+    [Fact]
+    public void Truncates_hostile_server_field_text_and_never_renders_it_as_markup()
+    {
+        // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        publicContentApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["Key"] = [hostile] });
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("#pt-br-title").Change("Bem-vindo");
+        cut.Find("#pt-br-body").Change("Pedale conosco");
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".validation-message").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.FindAll("script").ShouldBeEmpty();
+        cut.Markup.ShouldNotContain("<script", StringComparison.Ordinal);
+        var fieldMessage = cut.Find("#content-key").ParentElement.ShouldNotBeNull().QuerySelector(".validation-message").ShouldNotBeNull();
+        fieldMessage.TextContent.Length.ShouldBeLessThanOrEqualTo(300);
+    }
+
+    [Fact]
     public void Shows_fallback_error_when_content_validation_has_no_messages()
     {
         // Arrange
