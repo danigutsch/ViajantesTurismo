@@ -23,7 +23,7 @@ public sealed class CompleteBookingCommandHandler(
         var tour = await tourStore.GetByBookingId(command.BookingId, ct);
         if (tour is null)
         {
-            return BookingErrors.BookingNotFound(command.BookingId);
+            return BookingErrors.BookingNotFound();
         }
 
         var result = tour.CompleteBooking(command.BookingId);

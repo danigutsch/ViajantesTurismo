@@ -7,6 +7,11 @@ namespace ViajantesTurismo.Admin.BehaviorTests.Context;
 public static class ContextHelpers
 {
     /// <summary>
+    /// Maps a scenario customer number to a stable, deterministic customer id.
+    /// </summary>
+    public static Guid CustomerGuid(int scenarioId) => new(scenarioId, 0, 0, new byte[8]);
+
+    /// <summary>
     /// Sets up a valid tour with common test values.
     /// </summary>
     public static void SetupValidTour(TourContext context)

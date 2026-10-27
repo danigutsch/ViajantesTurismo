@@ -18,7 +18,7 @@ public static class CatalogTelemetryTestsHelpers
         var listener = new ActivityListener
         {
             ShouldListenTo = source => ReferenceEquals(source, expectedSource),
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = stoppedActivities.Enqueue,
         };
 

@@ -80,14 +80,14 @@ public sealed class PaymentQueryPostgreSqlTests(PostgreSqlTestServerFixture fixt
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
-        var seeded = await scenario.SeedCustomerCredit(ct);
+        var (BookingId, ReceiptId, InstallmentId) = await scenario.SeedCustomerCredit(ct);
         await using var reader = scenario.Open();
         var originalAudits = await reader.AuditCount(ct);
 
         // Act
-        var maskedHistory = await reader.Financials.GetByBookingId(seeded.BookingId, ct);
+        var maskedHistory = await reader.Financials.GetByBookingId(BookingId, ct);
         var summary = maskedHistory.ShouldNotBeNull();
-        var sensitiveHistory = await reader.Financials.GetSensitiveDetails(seeded.BookingId, "admin", ct);
+        var sensitiveHistory = await reader.Financials.GetSensitiveDetails(BookingId, "admin", ct);
         var details = sensitiveHistory.ShouldNotBeNull();
 
         // Assert

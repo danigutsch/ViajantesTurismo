@@ -42,6 +42,6 @@ public class CsvRowParsingTests
         var row = CsvRow.Parse("John,Doe,john.doe@example.com");
 
         // Act & Assert
-        ShouldAssertionExtensions.ShouldThrow<IndexOutOfRangeException>((Func<object?>)(() => row[99]));
+        ShouldAssertionExtensions.ShouldThrow<IndexOutOfRangeException>(() => row[99]);
     }
 }

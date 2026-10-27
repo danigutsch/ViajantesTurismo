@@ -65,7 +65,7 @@ internal static class BookingEndpoints
         var booking = await queryService.GetBookingById(id, ct);
         if (booking is null)
         {
-            return BookingErrors.BookingNotFound(id).ToNotFound();
+            return BookingErrors.BookingNotFound().ToNotFound();
         }
 
         return TypedResults.Ok(booking);

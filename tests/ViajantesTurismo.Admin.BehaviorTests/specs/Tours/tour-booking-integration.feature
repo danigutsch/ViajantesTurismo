@@ -6,7 +6,7 @@ So that tour bookings are properly tracked
     Scenario: Adding a booking to a tour
         Given a tour exists
         And a customer exists
-        When I add a booking for the customer to the tour with price 1500.00
+        When I add a booking for the customer to the tour with price 2100.00
         Then the tour should have the booking
         And the booking should be in pending status
 

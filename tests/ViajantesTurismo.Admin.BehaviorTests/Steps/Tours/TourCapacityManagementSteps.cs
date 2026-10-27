@@ -55,6 +55,7 @@ public sealed class TourCapacityManagementSteps(
     public void GivenTheTourHasPendingBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
         var customers = BookingTestHelpers.CreatePendingSingleBookings(tourContext.Tour, bookingCount);
+        customers.Count.ShouldBe(bookingCount * customersPerBooking);
         foreach (var customer in customers)
         {
             customerContext.Customers.Add(customer);
@@ -66,6 +67,7 @@ public sealed class TourCapacityManagementSteps(
     public void GivenTheTourHasCancelledBookingsWithCustomersEach(int bookingCount, int customersPerBooking)
     {
         var customers = BookingTestHelpers.CreateCancelledSingleBookings(tourContext.Tour, bookingCount);
+        customers.Count.ShouldBe(bookingCount * customersPerBooking);
         foreach (var customer in customers)
         {
             customerContext.Customers.Add(customer);

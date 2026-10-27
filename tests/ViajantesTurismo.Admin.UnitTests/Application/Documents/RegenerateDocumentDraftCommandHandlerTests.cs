@@ -32,7 +32,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(Guid.CreateVersion7(), string.Empty, string.Empty, DocumentAuditTestData.CreateContext(), default(IdempotencyKey)),
+            new RegenerateDocumentDraftCommand(Guid.CreateVersion7(), string.Empty, string.Empty, DocumentAuditTestData.CreateContext(), default),
             CancellationToken.None);
 
         // Assert

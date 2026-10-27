@@ -21,7 +21,7 @@ public sealed class GeneratePaymentInstructionsCommandHandler(PaymentCommandExec
         }
         var input = command.Input with
         {
-            InstallmentIds = command.Input.InstallmentIds.Order().ToArray()
+            InstallmentIds = [.. command.Input.InstallmentIds.Order()]
         };
         var fingerprint = PaymentCommandFingerprint.Create(command.BookingId, command.ReplacesDocumentId, command.ActorId, input, PaymentFinancialContractJsonContext.Default.GeneratePaymentInstructionsDto);
         return executor.Execute("payment-instructions:generate:" + command.BookingId.ToString("N"), command.IdempotencyKey, fingerprint,

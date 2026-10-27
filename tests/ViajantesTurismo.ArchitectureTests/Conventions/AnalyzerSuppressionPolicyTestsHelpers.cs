@@ -119,9 +119,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
     public static string[] FindNoWarnEntries(string repositoryRoot, string filePath)
     {
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
-        return FindNoWarnDiagnosticEntries(XDocument.Load(filePath))
-            .Select(value => $"{relativePath}:{value}")
-            .ToArray();
+        return [.. FindNoWarnDiagnosticEntries(XDocument.Load(filePath)).Select(value => $"{relativePath}:{value}")];
     }
 
     /// <summary>Finds pragma warning suppressions the policy does not approve in the file, returned as offenses.</summary>
@@ -219,7 +217,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
         {
             var normalizedLine = string.Concat(lines[index].Where(static character => !char.IsWhiteSpace(character)));
             var commentIndex = normalizedLine.IndexOfAny(['#', ';']);
-            var setting = commentIndex < 0 ? normalizedLine : normalizedLine.Substring(0, commentIndex);
+            var setting = commentIndex < 0 ? normalizedLine : normalizedLine[..commentIndex];
             if (setting.Length >= 2 && setting[0] == '[' && setting[^1] == ']')
             {
                 currentSection = setting;
@@ -685,8 +683,8 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
             return false;
         }
 
-        var key = setting.Substring(0, separatorIndex);
-        var value = setting.Substring(separatorIndex + 1);
+        var key = setting[..separatorIndex];
+        var value = setting[(separatorIndex + 1)..];
         if (string.Equals(key, "generated_code", StringComparison.OrdinalIgnoreCase)
             && string.Equals(value, "true", StringComparison.OrdinalIgnoreCase))
         {

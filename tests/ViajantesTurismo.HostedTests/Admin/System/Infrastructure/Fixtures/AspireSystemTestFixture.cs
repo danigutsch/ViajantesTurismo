@@ -145,13 +145,13 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         await Eventually.Until(
             async ct =>
             {
-                var status = await ReadCatalogTransportMessageStatus(adminTourId, ct);
-                if (status.LastConsumeError is not null)
+                var (ProcessedAt, LastConsumeError) = await ReadCatalogTransportMessageStatus(adminTourId, ct);
+                if (LastConsumeError is not null)
                 {
-                    throw new InvalidOperationException(status.LastConsumeError);
+                    throw new InvalidOperationException(LastConsumeError);
                 }
 
-                return status.ProcessedAt is not null && status.LastConsumeError is null ? "processed" : null;
+                return ProcessedAt is not null && LastConsumeError is null ? "processed" : null;
             },
             TimeSpan.FromSeconds(30),
             ct);

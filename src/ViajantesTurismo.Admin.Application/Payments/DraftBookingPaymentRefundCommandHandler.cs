@@ -20,7 +20,7 @@ public sealed class DraftBookingPaymentRefundCommandHandler(BookingPaymentComman
         }
         input = input with
         {
-            ReversedAllocations = input.ReversedAllocations.OrderBy(item => item.TargetId).ToArray()
+            ReversedAllocations = [.. input.ReversedAllocations.OrderBy(item => item.TargetId)]
         };
         var fingerprint = PaymentCommandFingerprint.Create(command.BookingId, command.ReceiptId, command.ActorId, input, PaymentFinancialContractJsonContext.Default.CreatePaymentRefundDto);
         return executor.Execute(command.BookingId, "DraftBookingPaymentRefund", command.IdempotencyKey, fingerprint, tour =>

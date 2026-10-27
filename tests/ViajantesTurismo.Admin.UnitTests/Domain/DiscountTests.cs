@@ -27,11 +27,8 @@ public class DiscountTests
     [Fact]
     public void Negative_discount_amount_should_return_invalid_result()
     {
-        // Arrange
-        const decimal negativeAmount = -10.50m;
-
         // Act
-        var result = DiscountErrors.NegativeDiscountAmount(negativeAmount);
+        var result = DiscountErrors.NegativeDiscountAmount();
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
@@ -45,12 +42,8 @@ public class DiscountTests
     [Fact]
     public void Percentage_exceeds_maximum_should_return_invalid_result()
     {
-        // Arrange
-        const decimal amount = 150m;
-        const decimal maxPercentage = 100m;
-
         // Act
-        var result = DiscountErrors.PercentageExceedsMaximum(amount, maxPercentage);
+        var result = DiscountErrors.PercentageExceedsMaximum();
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
@@ -64,12 +57,8 @@ public class DiscountTests
     [Fact]
     public void Absolute_discount_exceeds_subtotal_should_return_invalid_result()
     {
-        // Arrange
-        const decimal amount = 1000m;
-        const decimal subtotal = 800m;
-
         // Act
-        var result = DiscountErrors.AbsoluteDiscountExceedsSubtotal(amount, subtotal);
+        var result = DiscountErrors.AbsoluteDiscountExceedsSubtotal();
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
@@ -84,11 +73,8 @@ public class DiscountTests
     [Fact]
     public void Final_price_not_positive_should_return_invalid_result()
     {
-        // Arrange
-        const decimal finalPrice = -5.00m;
-
         // Act
-        var result = DiscountErrors.FinalPriceNotPositive(finalPrice);
+        var result = DiscountErrors.FinalPriceNotPositive();
 
         // Assert
         result.IsSuccess.ShouldBeFalse();

@@ -19,12 +19,11 @@ internal static class WorkerOwnershipTestsHelpers
     {
         var sourceRoot = Path.Combine(LayerDependencyTestsHelpers.GetRepositoryRoot(), "src");
 
-        return Directory.EnumerateFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
+        return [.. Directory.EnumerateFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
             .Select(Path.GetFileNameWithoutExtension)
             .OfType<string>()
             .Where(name => name.EndsWith("Worker", StringComparison.Ordinal))
-            .Order(StringComparer.Ordinal)
-            .ToArray();
+            .Order(StringComparer.Ordinal)];
     }
 
     /// <summary>Returns the bounded context that owns the project, or null when none does.</summary>
@@ -44,14 +43,13 @@ internal static class WorkerOwnershipTestsHelpers
             LayerDependencyTestsHelpers.GetRepositoryRoot(), "src", projectName, $"{projectName}.csproj");
         var ownPrefix = $"ViajantesTurismo.{owningContext}.";
 
-        return XDocument.Load(projectPath)
+        return [.. XDocument.Load(projectPath)
             .Descendants("ProjectReference")
             .Select(reference => Path.GetFileNameWithoutExtension(
                 (reference.Attribute("Include")?.Value ?? string.Empty).Replace('\\', '/')))
             .Where(reference => !reference.StartsWith(ownPrefix, StringComparison.Ordinal)
                                 && !SharedHostProjects.Contains(reference, StringComparer.Ordinal)
                                 && !IsPublishedIntegrationEventContract(reference))
-            .Order(StringComparer.Ordinal)
-            .ToArray();
+            .Order(StringComparer.Ordinal)];
     }
 }

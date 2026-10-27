@@ -23,7 +23,7 @@ public sealed class DeleteTourCommandHandler(
         var tour = await tourStore.GetById(command.TourId, ct);
         if (tour is null)
         {
-            return TourErrors.TourNotFound(command.TourId);
+            return TourErrors.TourNotFound();
         }
 
         var deleteResult = tour.Delete();

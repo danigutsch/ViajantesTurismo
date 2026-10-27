@@ -61,9 +61,9 @@ public sealed class CatalogTourReadModelProjectionTests
         await projection.Apply(envelope, TestContext.Current.CancellationToken);
 
         // Assert
-        var update = store.PresentationUpdates.ShouldHaveSingleItem();
-        update.CatalogTourId.ShouldBe(catalogTourId);
-        update.Update.ShouldBe(new CatalogTourPresentationUpdate(
+        var (CatalogTourId, Update, StreamVersion, Position, UpdatedAt) = store.PresentationUpdates.ShouldHaveSingleItem();
+        CatalogTourId.ShouldBe(catalogTourId);
+        Update.ShouldBe(new CatalogTourPresentationUpdate(
             "Camino Norte",
             "camino-norte",
             "Ride the Camino Norte.",
@@ -71,9 +71,9 @@ public sealed class CatalogTourReadModelProjectionTests
             "Day one: depart by bicycle.",
             "Camino Norte cycling tour",
             "Cycle the Camino Norte with Viajantes Turismo."));
-        update.StreamVersion.ShouldBe(3);
-        update.Position.ShouldBe(42);
-        update.UpdatedAt.ShouldBe(recordedAt);
+        StreamVersion.ShouldBe(3);
+        Position.ShouldBe(42);
+        UpdatedAt.ShouldBe(recordedAt);
         store.PublicationChanges.ShouldBeEmpty();
     }
 
@@ -101,12 +101,12 @@ public sealed class CatalogTourReadModelProjectionTests
         await projection.Apply(envelope, TestContext.Current.CancellationToken);
 
         // Assert
-        var change = store.PublicationChanges.ShouldHaveSingleItem();
-        change.CatalogTourId.ShouldBe(catalogTourId);
-        change.IsPublished.ShouldBe(published);
-        change.StreamVersion.ShouldBe(5);
-        change.Position.ShouldBe(7);
-        change.UpdatedAt.ShouldBe(recordedAt);
+        var (CatalogTourId, IsPublished, StreamVersion, Position, UpdatedAt) = store.PublicationChanges.ShouldHaveSingleItem();
+        CatalogTourId.ShouldBe(catalogTourId);
+        IsPublished.ShouldBe(published);
+        StreamVersion.ShouldBe(5);
+        Position.ShouldBe(7);
+        UpdatedAt.ShouldBe(recordedAt);
         store.PresentationUpdates.ShouldBeEmpty();
     }
 }

@@ -25,14 +25,14 @@ public sealed class DeleteBookingCommandHandler(
         var tourId = await tourStore.GetTourIdByBookingId(command.BookingId, ct);
         if (!tourId.TryGetValue(out var owningTourId))
         {
-            return BookingErrors.BookingNotFound(command.BookingId);
+            return BookingErrors.BookingNotFound();
         }
 
         await using var capacityLease = await capacityMutationLock.Acquire(owningTourId, ct);
         var tour = await tourStore.GetById(owningTourId, ct);
         if (tour is null)
         {
-            return BookingErrors.BookingNotFound(command.BookingId);
+            return BookingErrors.BookingNotFound();
         }
 
         var result = tour.RemoveBooking(command.BookingId);

@@ -20,7 +20,7 @@ internal sealed class AdminDatabaseInitializationModuleTestScope : IDisposable
         Initializer = scope.ServiceProvider.GetRequiredService<DevelopmentDataInitializer>();
         Outbox = scope.ServiceProvider.GetRequiredService<IIntegrationEventOutbox>();
         Dispatcher = scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
-        HostedServices = serviceProvider.GetServices<IHostedService>().ToArray();
+        HostedServices = [.. serviceProvider.GetServices<IHostedService>()];
     }
 
     /// <summary>Gets the development data initializer resolved from the scope.</summary>

@@ -108,6 +108,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             DiscountType.None,
             notes: notes), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         result.IsSuccess.ShouldBeTrue();
+        result.Value.TotalPrice.ShouldBe(price);
         bookingContext.Booking = result.Value;
     }
 
@@ -120,6 +121,7 @@ public sealed class TourBookingIntegrationSteps(BookingContext bookingContext, T
             RoomType.DoubleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         result.IsSuccess.ShouldBeTrue();
+        result.Value.TotalPrice.ShouldBe(price);
         bookingContext.Booking = result.Value;
     }
 

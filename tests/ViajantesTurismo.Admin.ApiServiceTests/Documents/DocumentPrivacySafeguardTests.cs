@@ -89,11 +89,11 @@ public sealed class DocumentPrivacySafeguardTests
         using var parentActivity = telemetryCapture.StartParent();
 
         // Act
-        foreach (var route in DocumentEndpointRouteCase.All)
+        foreach (var (Method, Pattern, RequestPath) in DocumentEndpointRouteCase.All)
         {
-            using var anonymousRequest = new HttpRequestMessage(new HttpMethod(route.Method), new Uri(route.RequestPath, UriKind.Relative));
+            using var anonymousRequest = new HttpRequestMessage(new HttpMethod(Method), new Uri(RequestPath, UriKind.Relative));
             anonymousRequest.Headers.TryAddWithoutValidation("X-Synthetic-Authorization-Marker", tokenMarker);
-            if (string.Equals(route.Method, HttpMethod.Patch.Method, StringComparison.Ordinal))
+            if (string.Equals(Method, HttpMethod.Patch.Method, StringComparison.Ordinal))
             {
                 anonymousRequest.Content = new StringContent($$"""{"value":"{{bodyMarker}}"}""", Encoding.UTF8, "application/json");
             }
@@ -105,9 +105,9 @@ public sealed class DocumentPrivacySafeguardTests
             anonymousBody.ShouldNotContain(bodyMarker, StringComparison.Ordinal);
             anonymousBody.ShouldNotContain(tokenMarker, StringComparison.Ordinal);
 
-            using var guestRequest = new HttpRequestMessage(new HttpMethod(route.Method), new Uri(route.RequestPath, UriKind.Relative));
+            using var guestRequest = new HttpRequestMessage(new HttpMethod(Method), new Uri(RequestPath, UriKind.Relative));
             guestRequest.Headers.TryAddWithoutValidation("X-Synthetic-Authorization-Marker", tokenMarker);
-            if (string.Equals(route.Method, HttpMethod.Patch.Method, StringComparison.Ordinal))
+            if (string.Equals(Method, HttpMethod.Patch.Method, StringComparison.Ordinal))
             {
                 guestRequest.Content = new StringContent($$"""{"value":"{{bodyMarker}}"}""", Encoding.UTF8, "application/json");
             }
@@ -278,27 +278,27 @@ public sealed class DocumentPrivacySafeguardTests
         var outcomes = new List<(string Pattern, HttpStatusCode StatusCode, bool HasNoStoreHeaders)>();
 
         // Act
-        foreach (var route in DocumentEndpointRouteCase.All)
+        foreach (var (Method, Pattern, RequestPath) in DocumentEndpointRouteCase.All)
         {
             using var request = new HttpRequestMessage(
-                new HttpMethod(route.Method),
-                new Uri(route.RequestPath, UriKind.Relative));
-            if (route.Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal))
+                new HttpMethod(Method),
+                new Uri(RequestPath, UriKind.Relative));
+            if (Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal))
             {
                 request.Headers.TryAddWithoutValidation("Idempotency-Key", "invalid key");
             }
-            else if (route.Pattern.EndsWith("/regenerate", StringComparison.Ordinal))
+            else if (Pattern.EndsWith("/regenerate", StringComparison.Ordinal))
             {
                 request.Headers.Add("Idempotency-Key", Guid.CreateVersion7().ToString("N"));
             }
 
-            if (string.Equals(route.Method, HttpMethod.Patch.Method, StringComparison.Ordinal))
+            if (string.Equals(Method, HttpMethod.Patch.Method, StringComparison.Ordinal))
             {
                 request.Content = new StringContent("{\"value\":\"Updated\"}", Encoding.UTF8, "application/json");
             }
 
             using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
-            outcomes.Add((route.Pattern, response.StatusCode, DocumentNoStoreHeaders.ArePresent(response)));
+            outcomes.Add((Pattern, response.StatusCode, DocumentNoStoreHeaders.ArePresent(response)));
         }
 
         // Assert
@@ -308,11 +308,11 @@ public sealed class DocumentPrivacySafeguardTests
         outcomes.Where(outcome => !outcome.Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal) && !outcome.Pattern.Contains("payment-instructions", StringComparison.Ordinal))
             .All(outcome => outcome.StatusCode == HttpStatusCode.NotFound)
             .ShouldBeTrue();
-        foreach (var outcome in outcomes.Where(outcome => outcome.Pattern.Contains("payment-instructions", StringComparison.Ordinal)))
+        foreach (var (Pattern, StatusCode, HasNoStoreHeaders) in outcomes.Where(outcome => outcome.Pattern.Contains("payment-instructions", StringComparison.Ordinal)))
         {
-            var assertionTarget1 = outcome.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound or HttpStatusCode.UnsupportedMediaType;
+            var assertionTarget1 = StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound or HttpStatusCode.UnsupportedMediaType;
             assertionTarget1
-                .ShouldBeTrue($"Unexpected status for {outcome.Pattern}: {outcome.StatusCode}.");
+                .ShouldBeTrue($"Unexpected status for {Pattern}: {StatusCode}.");
         }
         outcomes.All(outcome => outcome.HasNoStoreHeaders).ShouldBeTrue();
     }

@@ -13,12 +13,12 @@ public sealed class CivilDatePostgreSqlTests(PostgreSqlTestServerFixture fixture
         await using var scenario = await CivilDatePostgreSqlScenario.Create(fixture, ct);
         await scenario.Seed(ct);
         // Act
-        var actual = await scenario.Read(ct);
+        var (BirthDate, StartDate, EndDate, BookingDate) = await scenario.Read(ct);
         // Assert
-        actual.BirthDate.ShouldBe(new DateOnly(1990, 1, 1));
-        actual.StartDate.ShouldBe(new DateOnly(2030, 2, 3));
-        actual.EndDate.ShouldBe(new DateOnly(2030, 2, 10));
-        actual.BookingDate.ShouldBe(new DateTime(2030, 2, 4, 14, 0, 0, DateTimeKind.Utc));
+        BirthDate.ShouldBe(new DateOnly(1990, 1, 1));
+        StartDate.ShouldBe(new DateOnly(2030, 2, 3));
+        EndDate.ShouldBe(new DateOnly(2030, 2, 10));
+        BookingDate.ShouldBe(new DateTime(2030, 2, 4, 14, 0, 0, DateTimeKind.Utc));
     }
 
     [Theory]

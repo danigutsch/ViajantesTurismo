@@ -19,10 +19,9 @@ internal static class RoadmapConfigSchemaTestFiles
 
     /// <summary>Reads every roadmap item JSON file, ordered by file name.</summary>
     public static string[] ReadCheckedInItems() =>
-        Directory.EnumerateFiles(Path.Combine(GetRepositoryRoot(), "roadmap", "items"), "*.json", SearchOption.TopDirectoryOnly)
+        [.. Directory.EnumerateFiles(Path.Combine(GetRepositoryRoot(), "roadmap", "items"), "*.json", SearchOption.TopDirectoryOnly)
             .Order(StringComparer.Ordinal)
-            .Select(File.ReadAllText)
-            .ToArray();
+            .Select(File.ReadAllText)];
 
     /// <summary>Reads the single open-issues reconciliation manifest, failing when there is not exactly one.</summary>
     public static string ReadCheckedInReconciliation()

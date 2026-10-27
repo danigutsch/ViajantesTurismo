@@ -424,7 +424,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
             "1");
 
         // Act
-        var result = await Scenario.GenerateWithSameKeyConcurrently(
+        var (Attempts, Replay) = await Scenario.GenerateWithSameKeyConcurrently(
             first,
             second,
             key,
@@ -438,13 +438,13 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Attempts.Count(attempt => attempt.IsSuccess).ShouldBe(1);
-        result.Attempts.ShouldHaveSingleItem(attempt => attempt.IsFailure)
+        Attempts.Count(attempt => attempt.IsSuccess).ShouldBe(1);
+        Attempts.ShouldHaveSingleItem(attempt => attempt.IsFailure)
             .Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
-        var returnedDocumentIds = result.Attempts
+        var returnedDocumentIds = Attempts
             .Where(attempt => attempt.IsSuccess)
             .Select(attempt => attempt.Value)
-            .Append(result.Replay.Value)
+            .Append(Replay.Value)
             .Distinct()
             .ToArray();
         returnedDocumentIds.ShouldHaveSingleItem();

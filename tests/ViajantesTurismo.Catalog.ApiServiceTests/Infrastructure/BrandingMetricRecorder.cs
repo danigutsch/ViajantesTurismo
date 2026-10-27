@@ -56,12 +56,11 @@ internal sealed class BrandingMetricRecorder : IDisposable
     {
         lock (measurements)
         {
-            return measurements
+            return [.. measurements
                 .Where(m => m.Instrument == instrument)
                 .SelectMany(m => m.Tags.Select(t => t.Key))
                 .Distinct()
-                .Order()
-                .ToArray();
+                .Order()];
         }
     }
 

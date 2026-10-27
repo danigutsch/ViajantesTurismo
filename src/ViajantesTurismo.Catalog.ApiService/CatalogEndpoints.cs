@@ -675,7 +675,7 @@ internal static class CatalogEndpoints
         }
 
         var canPublish = (await authorization.AuthorizeAsync(context.User, CatalogAuthorization.CatalogPublish).ConfigureAwait(false)).Succeeded;
-        var permission = await galleryGuard.Acquire(image.TourLinks.Select(link => link.CatalogTourId).ToArray(), canPublish, ct).ConfigureAwait(false);
+        var permission = await galleryGuard.Acquire([.. image.TourLinks.Select(link => link.CatalogTourId)], canPublish, ct).ConfigureAwait(false);
         if (permission.IsFailure)
         {
             return TypedResults.Forbid();
@@ -735,7 +735,7 @@ internal static class CatalogEndpoints
             }
 
             var canPublish = (await authorization.AuthorizeAsync(context.User, CatalogAuthorization.CatalogPublish).ConfigureAwait(false)).Succeeded;
-            var permission = await galleryGuard.Acquire(image.TourLinks.Select(link => link.CatalogTourId).ToArray(), canPublish, ct).ConfigureAwait(false);
+            var permission = await galleryGuard.Acquire([.. image.TourLinks.Select(link => link.CatalogTourId)], canPublish, ct).ConfigureAwait(false);
             if (permission.IsFailure)
             {
                 return TypedResults.Forbid();
@@ -890,10 +890,9 @@ internal static class CatalogEndpoints
 
     private static CatalogTourImageDto[] MapImages(IReadOnlyList<PublicMediaImage> images)
     {
-        return PublicMediaImage
-            .OrderForGallery(images.Where(image => image.HasPublicVariants).ToArray())
-            .Select(MapImage)
-            .ToArray();
+        return [.. PublicMediaImage
+            .OrderForGallery([.. images.Where(image => image.HasPublicVariants)])
+            .Select(MapImage)];
     }
 
     private static IReadOnlyList<PublicMediaImage> GetReadyImages(IReadOnlyList<PublicMediaImage> images)
@@ -921,10 +920,9 @@ internal static class CatalogEndpoints
             AltText = image.AltText,
             IsDecorative = image.IsDecorative,
             Caption = image.Caption,
-            ResponsiveVariants = image.ResponsiveVariants
+            ResponsiveVariants = [.. image.ResponsiveVariants
                 .OrderBy(variant => variant.Width)
-                .Select(MapPublicResponsiveVariant)
-                .ToArray()
+                .Select(MapPublicResponsiveVariant)]
         };
     }
 
@@ -972,7 +970,7 @@ internal static class CatalogEndpoints
         return new CatalogMediaImageDto
         {
             Id = image.Id,
-            AccessibilityTexts = image.AccessibilityTexts.Select(text => new PublicMediaAccessibilityTextDto
+            AccessibilityTexts = [.. image.AccessibilityTexts.Select(text => new PublicMediaAccessibilityTextDto
             {
                 Language = ToContractLanguage(text.Language),
                 AltText = text.AltText,
@@ -980,11 +978,10 @@ internal static class CatalogEndpoints
                 IsDecorative = text.IsDecorative,
                 RequiresHumanReview = text.RequiresHumanReview,
                 IsAiGenerated = text.IsAiGenerated
-            }).ToArray(),
-            ResponsiveVariants = image.ResponsiveVariants
+            })],
+            ResponsiveVariants = [.. image.ResponsiveVariants
                 .OrderBy(variant => variant.Width)
-                .Select(MapManagementResponsiveVariant)
-                .ToArray(),
+                .Select(MapManagementResponsiveVariant)],
             AltText = image.AltText,
             Caption = image.Caption,
             IsDecorative = image.IsDecorative,

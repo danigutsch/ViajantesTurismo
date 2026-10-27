@@ -15,7 +15,7 @@ public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
     }
 
     /// <summary>Returns a point-in-time copy of all stored tour drafts.</summary>
-    internal IReadOnlyCollection<CatalogTourDraftReadModel> GetSnapshot() => toursById.Values.ToArray();
+    internal IReadOnlyCollection<CatalogTourDraftReadModel> GetSnapshot() => [.. toursById.Values];
 
     public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
@@ -126,10 +126,9 @@ public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
     public ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        IReadOnlyList<CatalogTourDraftReadModel> tours = toursById.Values
+        IReadOnlyList<CatalogTourDraftReadModel> tours = [.. toursById.Values
             .OrderBy(tour => tour.Title)
-            .ThenBy(tour => tour.CatalogTourId)
-            .ToArray();
+            .ThenBy(tour => tour.CatalogTourId)];
 
         return ValueTask.FromResult(tours);
     }

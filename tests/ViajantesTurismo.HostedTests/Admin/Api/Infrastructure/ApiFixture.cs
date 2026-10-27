@@ -35,7 +35,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
         _app = await shared.GetApplication(HostedProfile.Admin, "api", TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
-        await WaitForBrandingProjection(_databaseConnectionString!, TestContext.Current.CancellationToken);
+        await WaitForBrandingProjection(_databaseConnectionString, TestContext.Current.CancellationToken);
         _operatorConformanceUserPassword = testConfiguration.OperatorConformanceUserPassword;
         var identityProviderEndpoint = await shared.GetIdentityProviderEndpoint(TestContext.Current.CancellationToken);
         var accessToken = await KeycloakConformanceClient.RequestAccessToken(

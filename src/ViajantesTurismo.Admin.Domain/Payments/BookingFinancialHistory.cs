@@ -82,7 +82,7 @@ public sealed partial class BookingFinancialHistory
         var updated = PaymentScheduleRevision.Restore(draft).Value.Approve(approval).ExportState();
         _state = _state with
         {
-            Schedules = _state.Schedules.Select(item => item.Id == scheduleId ? updated : item.Approval is null ? item : item with { Superseded = true }).ToArray()
+            Schedules = [.. _state.Schedules.Select(item => item.Id == scheduleId ? updated : item.Approval is null ? item : item with { Superseded = true })]
         };
         Changed(scheduleId, approval.ActorId, approval.ApprovedAt, "ScheduleApproved", approval.Reason, approval.ActorId == draft.CreatedBy);
         return Result.Ok(scheduleId);
@@ -125,7 +125,7 @@ public sealed partial class BookingFinancialHistory
         }
         _state = _state with
         {
-            Quotes = _state.Quotes.Select(item => item.Id == quoteId ? item with { Approval = Stamp(approval) } : item).ToArray()
+            Quotes = [.. _state.Quotes.Select(item => item.Id == quoteId ? item with { Approval = Stamp(approval) } : item)]
         };
         Changed(quoteId, approval.ActorId, approval.ApprovedAt, "QuoteApproved", approval.Reason, approval.ActorId == quote.CreatedBy);
         return Result.Ok(quoteId);

@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 /// <param name="provider">Service provider under test, disposed with the scenario.</param>
 internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : IDisposable
 {
-    private readonly IHostedService[] hostedServices = provider.GetServices<IHostedService>().ToArray();
+    private readonly IHostedService[] hostedServices = [.. provider.GetServices<IHostedService>()];
 
     /// <summary>Asserts the hosted service type is registered.</summary>
     public void ShouldIncludeHostedService<TService>()

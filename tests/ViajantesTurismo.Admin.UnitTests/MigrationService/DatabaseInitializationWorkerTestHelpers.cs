@@ -26,8 +26,8 @@ internal static class DatabaseInitializationWorkerTestHelpers
         var listener = new ActivityListener
         {
             ShouldListenTo = source => ReferenceEquals(source, activitySource),
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
+            Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
+            SampleUsingParentId = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = stoppedActivities.Add,
         };
 

@@ -23,7 +23,7 @@ internal sealed class FakeQueryService(GetBookingDto? booking, GetTourDto? tour 
 
     /// <summary>Returns the configured bookings, or an empty list.</summary>
     public Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct) =>
-        Task.FromResult(bookings ?? (IReadOnlyList<GetBookingDto>)[]);
+        Task.FromResult(bookings ?? []);
 
     /// <summary>Returns the configured booking when its id matches, otherwise null.</summary>
     public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct) =>
@@ -31,9 +31,9 @@ internal sealed class FakeQueryService(GetBookingDto? booking, GetTourDto? tour 
 
     /// <summary>Returns the configured bookings regardless of tour id.</summary>
     public Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct) =>
-        Task.FromResult(bookings ?? (IReadOnlyList<GetBookingDto>)[]);
+        Task.FromResult(bookings ?? []);
 
     /// <summary>Returns the configured bookings regardless of customer id.</summary>
     public Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct) =>
-        Task.FromResult(bookings ?? (IReadOnlyList<GetBookingDto>)[]);
+        Task.FromResult(bookings ?? []);
 }

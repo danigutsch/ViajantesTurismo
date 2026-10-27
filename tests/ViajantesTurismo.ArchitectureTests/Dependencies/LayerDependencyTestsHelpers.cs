@@ -48,9 +48,7 @@ internal static partial class LayerDependencyTestsHelpers
     /// <summary>Finds SharedKernel source lines that reference the product, returned as offenses.</summary>
     public static string[] FindSharedKernelProductReferences(string repositoryRoot)
     {
-        return SharedKernelSourceFiles(repositoryRoot)
-            .SelectMany(filePath => FindProductReferenceLines(repositoryRoot, filePath))
-            .ToArray();
+        return [.. SharedKernelSourceFiles(repositoryRoot).SelectMany(filePath => FindProductReferenceLines(repositoryRoot, filePath))];
     }
 
     /// <summary>Finds adapter package references in domain, application and contract projects, returned as offenses.</summary>
@@ -58,10 +56,9 @@ internal static partial class LayerDependencyTestsHelpers
     {
         var sourceRoot = Path.Combine(repositoryRoot, "src");
 
-        return Directory.EnumerateFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
+        return [.. Directory.EnumerateFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
             .Where(IsDomainApplicationOrContractProject)
-            .SelectMany(filePath => FindAdapterPackageReferences(repositoryRoot, filePath))
-            .ToArray();
+            .SelectMany(filePath => FindAdapterPackageReferences(repositoryRoot, filePath))];
     }
 
     /// <summary>Finds adapter package references in provider-neutral SharedKernel projects, returned as offenses.</summary>
@@ -69,65 +66,56 @@ internal static partial class LayerDependencyTestsHelpers
     {
         var sharedKernelRoot = Path.Combine(repositoryRoot, "src", "SharedKernel");
 
-        return Directory.EnumerateFiles(sharedKernelRoot, "*.csproj", SearchOption.AllDirectories)
+        return [.. Directory.EnumerateFiles(sharedKernelRoot, "*.csproj", SearchOption.AllDirectories)
             .Where(IsProviderNeutralSharedKernelProject)
-            .SelectMany(filePath => FindAdapterPackageReferences(repositoryRoot, filePath))
-            .ToArray();
+            .SelectMany(filePath => FindAdapterPackageReferences(repositoryRoot, filePath))];
     }
 
     /// <summary>Finds SharedKernel projects that reference Entity Framework Core without naming it as an adapter.</summary>
     public static string[] FindSharedKernelEntityFrameworkCoreAdapterNamingViolations(string repositoryRoot)
     {
-        return SharedKernelSourceProjectFiles(repositoryRoot)
+        return [.. SharedKernelSourceProjectFiles(repositoryRoot)
             .Where(ReferencesEntityFrameworkCorePackage)
             .Where(filePath => !NamesEntityFrameworkCoreAdapter(filePath))
-            .Select(filePath => Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/'))
-            .ToArray();
+            .Select(filePath => Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/'))];
     }
 
     /// <summary>Finds SharedKernel projects that use Core as a project-name segment.</summary>
     public static string[] FindSharedKernelCoreSegmentProjectViolations(string repositoryRoot)
     {
-        return SharedKernelSourceProjectFiles(repositoryRoot)
+        return [.. SharedKernelSourceProjectFiles(repositoryRoot)
             .Where(HasCoreProjectNameSegment)
             .Select(filePath =>
                 $"{Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/')}: "
-                + $"{Path.GetFileNameWithoutExtension(filePath)} uses Core as a project-name segment")
-            .ToArray();
+                + $"{Path.GetFileNameWithoutExtension(filePath)} uses Core as a project-name segment")];
     }
 
     /// <summary>Finds primary SharedKernel projects whose runtime references point to their own optional descendant submodules.</summary>
     public static string[] FindSharedKernelRuntimeReferencesToDescendantOptionalSubmodules(string repositoryRoot)
     {
-        return SharedKernelSourceProjectFiles(repositoryRoot)
+        return [.. SharedKernelSourceProjectFiles(repositoryRoot)
             .Where(IsPrimarySharedKernelProjectFile)
-            .SelectMany(filePath => FindRuntimeReferencesToDescendantOptionalSubmodules(repositoryRoot, filePath))
-            .ToArray();
+            .SelectMany(filePath => FindRuntimeReferencesToDescendantOptionalSubmodules(repositoryRoot, filePath))];
     }
 
     /// <summary>Finds SharedKernel runtime references to optional sibling submodules of the same family.</summary>
     public static string[] FindSharedKernelRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(string repositoryRoot)
     {
-        return SharedKernelSourceProjectFiles(repositoryRoot)
-            .SelectMany(filePath => FindRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(repositoryRoot, filePath))
-            .ToArray();
+        return [.. SharedKernelSourceProjectFiles(repositoryRoot).SelectMany(filePath => FindRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(repositoryRoot, filePath))];
     }
 
     /// <summary>Finds abstraction projects that reference implementation projects.</summary>
     public static string[] FindAbstractionProjectImplementationReferences(string repositoryRoot)
     {
-        return SourceProjectFiles(repositoryRoot)
+        return [.. SourceProjectFiles(repositoryRoot)
             .Where(IsAbstractionsProjectFile)
-            .SelectMany(filePath => FindImplementationReferencesFromAbstractionProject(repositoryRoot, filePath))
-            .ToArray();
+            .SelectMany(filePath => FindImplementationReferencesFromAbstractionProject(repositoryRoot, filePath))];
     }
 
     /// <summary>Finds project references that point against the allowed layer direction.</summary>
     public static string[] FindLayerProjectReferenceDirectionViolations(string repositoryRoot)
     {
-        return SourceProjectFiles(repositoryRoot)
-            .SelectMany(filePath => FindLayerProjectReferenceDirectionViolations(repositoryRoot, filePath))
-            .ToArray();
+        return [.. SourceProjectFiles(repositoryRoot).SelectMany(filePath => FindLayerProjectReferenceDirectionViolations(repositoryRoot, filePath))];
     }
 
     /// <summary>Finds references from the domain assemblies to banned framework assemblies, as "assembly references name".</summary>
@@ -188,29 +176,25 @@ internal static partial class LayerDependencyTestsHelpers
     /// <summary>Finds domain projects that reference contract projects.</summary>
     public static string[] FindDomainContractProjectReferences(string repositoryRoot)
     {
-        return SourceProjectFiles(repositoryRoot)
+        return [.. SourceProjectFiles(repositoryRoot)
             .Where(filePath => IsDomainProjectName(Path.GetFileNameWithoutExtension(filePath)))
-            .SelectMany(filePath => FindDomainContractProjectReferences(repositoryRoot, filePath))
-            .ToArray();
+            .SelectMany(filePath => FindDomainContractProjectReferences(repositoryRoot, filePath))];
     }
 
     /// <summary>Finds product contract projects not split into .Contracts.Application, .Contracts.Http or .Contracts.IntegrationEvents.</summary>
     public static string[] FindUnsplitProductContractProjects(string repositoryRoot)
     {
-        return SourceProjectFiles(repositoryRoot)
+        return [.. SourceProjectFiles(repositoryRoot)
             .Where(filePath => IsUnsplitProductContractProjectName(Path.GetFileNameWithoutExtension(filePath)))
             .Select(filePath =>
                 $"{Path.GetRelativePath(repositoryRoot, filePath).Replace(Path.DirectorySeparatorChar, '/')}: "
-                + $"{Path.GetFileNameWithoutExtension(filePath)} must use .Contracts.Application, .Contracts.Http, or .Contracts.IntegrationEvents")
-            .ToArray();
+                + $"{Path.GetFileNameWithoutExtension(filePath)} must use .Contracts.Application, .Contracts.Http, or .Contracts.IntegrationEvents")];
     }
 
     /// <summary>Finds required module boundary rules missing from their documentation files.</summary>
     public static string[] FindModuleBoundaryDocumentationRuleGaps(string repositoryRoot)
     {
-        return RequiredModuleBoundaryDocumentationSnippets()
-            .SelectMany(rule => MissingDocumentationRuleSnippets(repositoryRoot, rule.DocumentPath, rule.Snippets))
-            .ToArray();
+        return [.. RequiredModuleBoundaryDocumentationSnippets().SelectMany(rule => MissingDocumentationRuleSnippets(repositoryRoot, rule.DocumentPath, rule.Snippets))];
     }
 
     private static (string DocumentPath, string[] Snippets)[] RequiredModuleBoundaryDocumentationSnippets()

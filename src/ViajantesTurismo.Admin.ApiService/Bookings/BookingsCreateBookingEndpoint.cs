@@ -63,7 +63,7 @@ internal static class BookingsCreateBookingEndpoint
             result.Value,
             queryService,
             booking => TypedResults.Created($"/api/v1/bookings/{result.Value}", booking),
-            bookingId => BookingErrors.BookingNotFound(bookingId).ToNotFound(),
+            bookingId => BookingErrors.BookingNotFound().ToNotFound(),
             ct);
     }
 }

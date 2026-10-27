@@ -14,12 +14,12 @@ public sealed class PublicWebStartupTests
         var canonicalOrigin = string.Empty;
 
         // Act
-        var result = await PublicWebEndpointTestsHelpers.RunProductionStartup(canonicalOrigin, TestContext.Current.CancellationToken);
+        var (ExitCode, Output) = await PublicWebEndpointTestsHelpers.RunProductionStartup(canonicalOrigin, TestContext.Current.CancellationToken);
 
         // Assert
-        result.ExitCode.ShouldNotBe(0);
-        result.Output.ShouldContain("OptionsValidationException", StringComparison.Ordinal);
-        result.Output.ShouldContain(
+        ExitCode.ShouldNotBe(0);
+        Output.ShouldContain("OptionsValidationException", StringComparison.Ordinal);
+        Output.ShouldContain(
             "PublicWeb:Sitemap:CanonicalOrigin must be provided.",
             StringComparison.Ordinal);
     }
@@ -31,13 +31,13 @@ public sealed class PublicWebStartupTests
         var canonicalOrigin = "https://public.example.test/sitemap.xml";
 
         // Act
-        var result = await PublicWebEndpointTestsHelpers.RunProductionStartup(
+        var (ExitCode, Output) = await PublicWebEndpointTestsHelpers.RunProductionStartup(
             canonicalOrigin, TestContext.Current.CancellationToken);
 
         // Assert
-        result.ExitCode.ShouldNotBe(0);
-        result.Output.ShouldContain("OptionsValidationException", StringComparison.Ordinal);
-        result.Output.ShouldContain(
+        ExitCode.ShouldNotBe(0);
+        Output.ShouldContain("OptionsValidationException", StringComparison.Ordinal);
+        Output.ShouldContain(
             "PublicWeb:Sitemap:CanonicalOrigin must be an absolute HTTP or HTTPS origin without a path, query, fragment, or userinfo.",
             StringComparison.Ordinal);
     }

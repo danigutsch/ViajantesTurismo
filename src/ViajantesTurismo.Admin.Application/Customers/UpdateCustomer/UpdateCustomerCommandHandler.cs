@@ -26,7 +26,7 @@ public sealed class UpdateCustomerCommandHandler(
         var customer = await customerStore.GetById(command.CustomerId, ct);
         if (customer is null)
         {
-            return CustomerErrors.CustomerNotFound(command.CustomerId);
+            return CustomerErrors.CustomerNotFound();
         }
 
         var sanitizedEmail = StringSanitizer.Sanitize(command.ContactInfo.Email);

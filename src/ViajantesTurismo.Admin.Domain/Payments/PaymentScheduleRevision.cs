@@ -92,7 +92,7 @@ public sealed class PaymentScheduleRevision
     }
     /// <summary>Exports the revision for persistence.</summary>
     internal PaymentScheduleState ExportState() => new(Id, Number, Obligation.Amount, BookingPrice.Amount,
-        _installments.Select(item => new PaymentInstallmentState(item.Id, item.Amount.Amount, item.DueDate)).ToArray(), CreatedBy, CreatedAt,
+        [.. _installments.Select(item => new PaymentInstallmentState(item.Id, item.Amount.Amount, item.DueDate))], CreatedBy, CreatedAt,
         Approval is null ? null : new FinancialApprovalState(Approval.ActorId, Approval.ApprovedAt, Approval.Reason), Superseded);
 
     /// <summary>Rebuilds a revision from a stored snapshot, failing when it is inconsistent.</summary>

@@ -341,12 +341,12 @@ public sealed class DocumentCommandIdempotencyTests
         // Act
         var existingResult = await coordinator.GetExistingResult(
             scope,
-            default(IdempotencyKey),
+            default,
             string.Empty,
             CancellationToken.None);
         var executionResult = await coordinator.Execute(
             scope,
-            default(IdempotencyKey),
+            default,
             string.Empty,
             () =>
             {

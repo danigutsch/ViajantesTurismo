@@ -87,10 +87,10 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         var paginator = Page.Locator(".paginator");
         var paginationText = paginator.Locator(".pagination-text");
 
-        var firstPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
-        firstPage.CurrentPage.ShouldBe(1);
-        var isValid = firstPage.TotalPages >= 2;
-        isValid.ShouldBeTrue($"Expected at least 2 pages, but found {firstPage.TotalPages}.");
+        var (CurrentPage, TotalPages) = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
+        CurrentPage.ShouldBe(1);
+        var isValid = TotalPages >= 2;
+        isValid.ShouldBeTrue($"Expected at least 2 pages, but found {TotalPages}.");
 
         await customersTable.GetButton("Name").ClickAsync();
         await customersTable.GetButton("Name").ClickAsync();

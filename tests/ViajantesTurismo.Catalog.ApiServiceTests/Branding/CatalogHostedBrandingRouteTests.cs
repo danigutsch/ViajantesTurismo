@@ -86,7 +86,7 @@ public sealed class CatalogHostedBrandingRouteTests
         using var client = factory.CreateClient();
         var endpoints = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
             .Where(endpoint => endpoint.RoutePattern.RawText is { } route
-                && (route.Contains("branding", StringComparison.OrdinalIgnoreCase)))
+                && route.Contains("branding", StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
         // Act

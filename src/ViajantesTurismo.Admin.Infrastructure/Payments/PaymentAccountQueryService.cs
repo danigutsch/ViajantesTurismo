@@ -13,7 +13,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 internal sealed class PaymentAccountQueryService(IPaymentAccountStore store, IUnitOfWork unitOfWork, TimeProvider clock) : IPaymentAccountQueryService
 {
     /// <summary>Lists all payment account summaries.</summary>
-    public async Task<IReadOnlyList<GetPaymentAccountDto>> List(CancellationToken ct) => (await store.List(ct)).Select(PaymentAccountMappings.ToSummary).ToArray();
+    public async Task<IReadOnlyList<GetPaymentAccountDto>> List(CancellationToken ct) => [.. (await store.List(ct)).Select(PaymentAccountMappings.ToSummary)];
 
     /// <summary>Returns the account summary, or null when not found.</summary>
     public async Task<GetPaymentAccountDto?> GetById(Guid id, CancellationToken ct)

@@ -443,7 +443,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new UpdateDocumentFieldCommand(document.Id, "greeting", null!, DocumentAuditTestData.CreateContext()),
+            new UpdateDocumentFieldCommand(document.Id, "greeting", null, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
         // Assert

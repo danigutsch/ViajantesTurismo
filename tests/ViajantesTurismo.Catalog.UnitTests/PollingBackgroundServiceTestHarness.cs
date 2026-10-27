@@ -26,7 +26,7 @@ internal sealed class PollingBackgroundServiceTestHarness
         var listener = new ActivityListener
         {
             ShouldListenTo = static source => string.Equals(source.Name, SchedulingTelemetry.Name, StringComparison.Ordinal),
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity =>
             {
                 if (activity.TraceId == parentContext.TraceId && activity.ParentSpanId == parentContext.SpanId)

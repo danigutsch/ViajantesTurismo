@@ -29,7 +29,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithNoDiscount(int principalCustomerId)
     {
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalCustomerId),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
@@ -41,7 +41,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithPercentageDiscount(int principalCustomerId, decimal discountPercentage)
     {
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalCustomerId),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
@@ -54,7 +54,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithAbsoluteDiscount(int principalCustomerId, decimal discountAmount)
     {
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalCustomerId),
             BikeType.Regular,
             RoomType.SingleOccupancy,
             DiscountType.Absolute,
@@ -67,7 +67,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithDiscountAndReason(int principalCustomerId, decimal discountPercentage, string reason)
     {
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalCustomerId),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
@@ -81,11 +81,11 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithCompanionAndDiscount(int principalCustomerId, int companionCustomerId, decimal discountPercentage)
     {
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalCustomerId),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(companionCustomerId),
             BikeType.EBike,
             discountPercentage), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
@@ -97,7 +97,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithNegativeDiscount(int principalCustomerId, decimal discountPercentage)
     {
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalCustomerId),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.Percentage,
@@ -110,7 +110,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithInvalidAbsoluteDiscount(int principalCustomerId, decimal discountAmount)
     {
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalCustomerId),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.Absolute,
@@ -124,6 +124,9 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     public void WhenICreateABookingWithSpecificPricing(decimal basePrice, decimal roomCost, decimal bike1, decimal bike2, decimal discount)
     {
         const RoomType roomType = RoomType.DoubleOccupancy;
+        var pricing = tourContext.Tour.Pricing;
+        pricing.BasePrice.ShouldBe(basePrice);
+        pricing.RegularBikePrice.ShouldBe(bike1);
         var companionId = bike2 > 0 ? (Guid?)Guid.CreateVersion7() : null;
         var companionBikeType = bike2 > 0 ? (BikeType?)BikeType.EBike : null;
 
@@ -137,6 +140,10 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             discount), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
 
         bookingContext.BookingCreationResult = result;
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.RoomAdditionalCost.ShouldBe(roomCost);
+        result.Value.PrincipalCustomer.BikePrice.ShouldBe(bike1);
+        (result.Value.CompanionCustomer?.BikePrice ?? 0m).ShouldBe(bike2);
     }
 
     [Then(@"the booking total price should be approximately (\d+\.\d+)")]
@@ -177,6 +184,8 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
     [When(@"I attempt to apply a (\d+) absolute discount to a (\d+) booking")]
     public void WhenIAttemptToApplyAbsoluteDiscountToBooking(decimal discountAmount, decimal bookingAmount)
     {
+        var pricing = tourContext.Tour.Pricing;
+        (pricing.BasePrice + pricing.RegularBikePrice).ShouldBe(bookingAmount);
         WhenICreateABookingWithInvalidAbsoluteDiscount(1, discountAmount);
     }
 
@@ -205,6 +214,15 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
         bookingContext.BookingCreationResult.Value.IsFailure.ShouldBeTrue();
         var errorDetails = bookingContext.BookingCreationResult.Value.ErrorDetails.ShouldNotBeNull();
         errorDetails.Detail.ShouldContain("percentage", StringComparison.OrdinalIgnoreCase);
+
+        var original = bookingContext.BookingCreationResult;
+        WhenICreateABookingWithPercentageDiscount(1, maxPercentage);
+        bookingContext.BookingCreationResult.Value.ErrorDetails.ShouldNotBeNull().Detail
+            .ShouldNotContain("maximum allowed", StringComparison.OrdinalIgnoreCase);
+        WhenICreateABookingWithPercentageDiscount(1, maxPercentage + 1);
+        bookingContext.BookingCreationResult.Value.ErrorDetails.ShouldNotBeNull().Detail
+            .ShouldContain("maximum allowed", StringComparison.OrdinalIgnoreCase);
+        bookingContext.BookingCreationResult = original;
     }
 
     [When("I create a booking with principal customer 1, regular bike, single room, 15% discount, and a very long reason")]

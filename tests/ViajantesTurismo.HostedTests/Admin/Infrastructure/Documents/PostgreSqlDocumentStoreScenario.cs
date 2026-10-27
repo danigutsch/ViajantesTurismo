@@ -774,8 +774,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     }
 
     private static DocumentLineage[] CreateLineages(IEnumerable<DocumentDraft> documents) =>
-        documents
+        [.. documents
             .GroupBy(document => document.DocumentLineageId)
-            .Select(group => DocumentLineage.Restore(group))
-            .ToArray();
+            .Select(group => DocumentLineage.Restore(group))];
 }

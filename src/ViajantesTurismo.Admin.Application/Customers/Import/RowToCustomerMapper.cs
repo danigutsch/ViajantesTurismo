@@ -191,7 +191,7 @@ public static class RowToCustomerMapper
             return errors.ToResult<Address>();
         }
 
-        return Address.Create(street!, complement, neighborhood!, postalCode!, city!, state!, country!);
+        return Address.Create(street, complement, neighborhood, postalCode, city, state, country);
     }
 
     private static Result<PhysicalInfo> MapPhysicalInfo(IImportDocument document, IImportRow row)
@@ -304,7 +304,7 @@ public static class RowToCustomerMapper
             return errors.ToResult<EmergencyContact>();
         }
 
-        return EmergencyContact.Create(emergencyContactName!, emergencyContactMobile!);
+        return EmergencyContact.Create(emergencyContactName, emergencyContactMobile);
     }
 
     private static Result<MedicalInfo> MapMedicalInfo(IImportDocument document, IImportRow row)

@@ -56,7 +56,7 @@ public sealed class BrandingProjectionApplier(
 
         var (outcome, reasonCode) = decision switch
         {
-            BrandingProjectionDecision.Apply => (BrandingInboxOutcome.Applied, (string?)null),
+            BrandingProjectionDecision.Apply => (BrandingInboxOutcome.Applied, null),
             BrandingProjectionDecision.AlreadyApplied or BrandingProjectionDecision.Stale => (BrandingInboxOutcome.Stale, null),
             BrandingProjectionDecision.InvalidEnvelope => (BrandingInboxOutcome.Rejected, "invalid-envelope"),
             _ => throw new InvalidOperationException($"Unsupported Branding projection decision '{decision}'.")

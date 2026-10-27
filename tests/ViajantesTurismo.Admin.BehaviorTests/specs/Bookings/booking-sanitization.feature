@@ -20,7 +20,7 @@ So that data is clean and consistent in the system
         Then the booking notes should be null or empty
 
     Scenario: Update booking notes with only whitespace becomes null
-        Given a tour exists with a booking priced at 1500.00 and notes "Initial"
+        Given a tour exists with a booking priced at 2100.00 and notes "Initial"
         When I update the booking notes to "   " through the tour
         Then the booking notes should be null or empty
 
@@ -29,7 +29,7 @@ So that data is clean and consistent in the system
         Then the booking notes should be null or empty
 
     Scenario: Update booking notes to null
-        Given a tour exists with a booking priced at 1500.00 and notes "Initial"
+        Given a tour exists with a booking priced at 2100.00 and notes "Initial"
         When I update the booking notes to null through the tour
         Then the booking notes should be null or empty
 

@@ -28,7 +28,7 @@ public class BookingsListTests : BunitContext
         // Arrange
         // Act
         var cut = Render<BookingsList>(parameters => parameters
-            .Add(p => p.Bookings, Array.Empty<GetBookingDto>()));
+            .Add(p => p.Bookings, []));
 
         // Assert
         var alert = cut.Find(".alert.alert-info");

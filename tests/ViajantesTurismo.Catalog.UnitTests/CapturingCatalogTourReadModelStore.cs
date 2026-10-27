@@ -23,7 +23,7 @@ public sealed class CapturingCatalogTourReadModelStore : ICatalogTourReadModelSt
 
     public ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
-        IReadOnlyList<CatalogTourDraftReadModel> snapshot = drafts.ToArray();
+        IReadOnlyList<CatalogTourDraftReadModel> snapshot = [.. drafts];
         return ValueTask.FromResult(snapshot);
     }
 

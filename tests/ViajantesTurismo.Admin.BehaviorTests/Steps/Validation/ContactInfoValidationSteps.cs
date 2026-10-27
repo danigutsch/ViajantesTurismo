@@ -227,6 +227,10 @@ public sealed class ContactInfoValidationSteps(CustomerContext context)
         var assertionTarget2 = context.ContactInfoResult.ErrorDetails?.ValidationErrors?.Any(kvp =>
                 kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false;
         assertionTarget2.ShouldBeTrue($"Expected validation error for {normalizedFieldName}");
+        context.ContactInfoResult.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull()
+            .Where(kvp => kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(kvp => kvp.Value)
+            .ShouldContain(m => m.Contains(maxLength.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal));
     }
 
     [Then("I should be informed that email must be in a valid format")]

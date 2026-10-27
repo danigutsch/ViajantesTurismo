@@ -226,14 +226,14 @@ public sealed class DocumentDraft : IEntity<Guid>
     public bool RequiresPaymentInstructionWorkflow => Type == DocumentType.PaymentInstructions;
 
     /// <summary>Gets a copy of the finalized artifact content.</summary>
-    public ReadOnlyMemory<byte>? GetFinalizedArtifactContent()
+    public ReadOnlyMemory<byte>? CopyFinalizedArtifactContent()
     {
         if (_finalizedArtifactContent is null)
         {
             return null;
         }
 
-        return new ReadOnlyMemory<byte>(_finalizedArtifactContent.ToArray());
+        return new ReadOnlyMemory<byte>([.. _finalizedArtifactContent]);
     }
 
     /// <summary>Creates the initial document draft revision.</summary>
@@ -631,7 +631,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.ArtifactContentRequired();
         }
 
-        _finalizedArtifactContent = artifactContent.ToArray();
+        _finalizedArtifactContent = [.. artifactContent];
         FinalizedArtifactName = $"document-{Id:N}-r{Revision}.html";
         FinalizedAt = now;
         RetentionExpiresAt = null;

@@ -88,12 +88,12 @@ public sealed class Discount
 
         if (sanitizedAmount < 0)
         {
-            errors.Add(DiscountErrors.NegativeDiscountAmount(sanitizedAmount));
+            errors.Add(DiscountErrors.NegativeDiscountAmount());
         }
 
         if (type == DiscountType.Percentage && sanitizedAmount > AdminDomainLimits.MaxDiscountPercentage)
         {
-            errors.Add(DiscountErrors.PercentageExceedsMaximum(sanitizedAmount, AdminDomainLimits.MaxDiscountPercentage));
+            errors.Add(DiscountErrors.PercentageExceedsMaximum());
         }
 
         if (!string.IsNullOrWhiteSpace(sanitizedReason))

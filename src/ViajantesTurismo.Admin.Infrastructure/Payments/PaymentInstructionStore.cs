@@ -97,8 +97,8 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
     {
         var rows = await context.Set<PaymentAuditRow>().AsNoTracking().Where(row => row.TargetId == documentId && row.Operation.StartsWith("Instruction"))
             .OrderBy(row => row.Sequence).ToArrayAsync(ct);
-        return rows.Select(row => new PaymentInstructionAuditMetadata(documentId, checked((int)row.Revision), row.ActorId, row.OccurredAt,
-            Enum.Parse<PaymentInstructionAuditOperation>(row.Operation["Instruction".Length..]), Enum.Parse<FinancialReason>(row.Reason), row.SelfApproved)).ToArray();
+        return [.. rows.Select(row => new PaymentInstructionAuditMetadata(documentId, checked((int)row.Revision), row.ActorId, row.OccurredAt,
+            Enum.Parse<PaymentInstructionAuditOperation>(row.Operation["Instruction".Length..]), Enum.Parse<FinancialReason>(row.Reason), row.SelfApproved))];
     }
 
     /// <inheritdoc />
@@ -108,7 +108,7 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
     public async Task<byte[]?> GetArtifact(Guid documentId, CancellationToken ct)
     {
         var document = await context.DocumentDrafts.SingleOrDefaultAsync(item => item.Id == documentId, ct);
-        var ciphertext = document?.GetFinalizedArtifactContent();
+        var ciphertext = document?.CopyFinalizedArtifactContent();
         return document?.Type == DocumentType.PaymentInstructions && ciphertext is { } content
             ? protection.InstructionArtifacts.Unprotect(documentId.ToString("N"), content.ToArray()) : null;
     }

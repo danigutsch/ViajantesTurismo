@@ -271,7 +271,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         _fakeCustomersApi.LastCommitFileName.ShouldBe("customers.csv");
 
         var committedValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
-            _fakeCustomersApi.LastCommitFileContent.ToArray());
+            [.. _fakeCustomersApi.LastCommitFileContent]);
         committedValues["FirstName"].ShouldBe("IncomingFirst");
         committedValues["LastName"].ShouldBe("ExistingLast");
         committedValues["Email"].ShouldBe("a@example.com");
@@ -423,7 +423,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull());
         var firstCommitFileContent = _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull();
         var firstCommitValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
-            firstCommitFileContent.ToArray());
+            [.. firstCommitFileContent]);
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(1, 0));
 
         // Act
@@ -433,7 +433,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
             cut.Markup.ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
         var retryFileContent = _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull();
         var retryValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
-            retryFileContent.ToArray());
+            [.. retryFileContent]);
 
         // Assert
         firstCommitValues["FirstName"].ShouldBe("IncomingFirst");

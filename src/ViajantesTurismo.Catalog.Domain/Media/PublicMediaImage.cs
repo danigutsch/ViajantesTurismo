@@ -613,7 +613,7 @@ public sealed class PublicMediaImage
         {
             foreach (var error in result.ErrorDetails.ValidationErrors)
             {
-                errors[error.Key] = error.Value.ToArray();
+                errors[error.Key] = [.. error.Value];
             }
         }
     }

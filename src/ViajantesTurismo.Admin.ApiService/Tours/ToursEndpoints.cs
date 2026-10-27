@@ -51,7 +51,7 @@ internal static class ToursEndpoints
         var tourDto = await queryService.GetTourById(id, ct);
 
         return tourDto is null
-            ? TourErrors.TourNotFound(id).ToNotFound()
+            ? TourErrors.TourNotFound().ToNotFound()
             : TypedResults.Ok(tourDto);
     }
 

@@ -13,7 +13,7 @@ public sealed class CsvDocument : IImportDocument
     private CsvDocument(PandaBear.Tabular.CsvDocument document)
     {
         this.document = document;
-        rows = document.Rows.Select(row => (IImportRow)new CsvRow(row)).ToArray();
+        rows = [.. document.Rows.Select(row => (IImportRow)new CsvRow(row))];
     }
 
     /// <inheritdoc/>
@@ -64,7 +64,7 @@ public sealed class CsvDocument : IImportDocument
     {
         ArgumentNullException.ThrowIfNull(rows);
 
-        var created = PandaBear.Tabular.CsvDocument.Create(headers, rows.Select(row => row.Row).ToArray());
+        var created = PandaBear.Tabular.CsvDocument.Create(headers, [.. rows.Select(row => row.Row)]);
         return created.IsSuccess
             ? Result.Ok(new CsvDocument(created.Value))
             : created.ConvertError<PandaBear.Tabular.CsvDocument, CsvDocument>();

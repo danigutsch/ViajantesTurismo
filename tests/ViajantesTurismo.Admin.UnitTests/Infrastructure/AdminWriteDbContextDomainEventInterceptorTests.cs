@@ -103,9 +103,9 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         probe.HandledEvents.ShouldHaveCount(2);
         probe.HandledEvents[0].Handler.ShouldBeSameAs(probe.HandledEvents[1].Handler);
         probe.HandledEvents.ShouldAllSatisfy(observation => observation.CurrentContext.ShouldBeSameAs(dbContext));
-        var disposed = probe.DisposedHandlers.ShouldHaveSingleItem();
-        disposed.Handler.ShouldBeSameAs(probe.CreatedHandlers[0]);
-        disposed.CurrentContext.ShouldBeSameAs(dbContext);
+        var (Handler, CurrentContext) = probe.DisposedHandlers.ShouldHaveSingleItem();
+        Handler.ShouldBeSameAs(probe.CreatedHandlers[0]);
+        CurrentContext.ShouldBeSameAs(dbContext);
         restoredContext.ShouldBeSameAs(previousContext);
         CurrentSaveChangesDbContext.Current.ShouldBeNull();
         firstTour.GetDomainEvents().ShouldBeEmpty();
@@ -132,8 +132,8 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         exception.ShouldBeSameAs(failure);
         probe.CreatedHandlers.ShouldHaveSingleItem();
         probe.HandledEvents.ShouldHaveSingleItem();
-        var disposed = probe.DisposedHandlers.ShouldHaveSingleItem();
-        disposed.CurrentContext.ShouldBeSameAs(dbContext);
+        var (Handler, CurrentContext) = probe.DisposedHandlers.ShouldHaveSingleItem();
+        CurrentContext.ShouldBeSameAs(dbContext);
         CurrentSaveChangesDbContext.Current.ShouldBeNull();
         tour.GetDomainEvents().ShouldNotBeEmpty();
     }
@@ -156,8 +156,8 @@ public sealed class AdminWriteDbContextDomainEventInterceptorTests
         // Assert
         probe.CreatedHandlers.ShouldHaveSingleItem();
         probe.HandledEvents.ShouldHaveSingleItem();
-        var disposed = probe.DisposedHandlers.ShouldHaveSingleItem();
-        disposed.CurrentContext.ShouldBeSameAs(dbContext);
+        var (Handler, CurrentContext) = probe.DisposedHandlers.ShouldHaveSingleItem();
+        CurrentContext.ShouldBeSameAs(dbContext);
         CurrentSaveChangesDbContext.Current.ShouldBeNull();
         tour.GetDomainEvents().ShouldNotBeEmpty();
     }

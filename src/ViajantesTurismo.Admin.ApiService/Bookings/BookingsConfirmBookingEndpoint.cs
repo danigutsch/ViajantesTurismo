@@ -36,7 +36,7 @@ internal static class BookingsConfirmBookingEndpoint
             id,
             queryService,
             booking => TypedResults.Ok(booking),
-            () => BookingErrors.BookingNotFound(id).ToNotFound(),
+            () => BookingErrors.BookingNotFound().ToNotFound(),
             () => result.ToConflict(),
             ct);
     }

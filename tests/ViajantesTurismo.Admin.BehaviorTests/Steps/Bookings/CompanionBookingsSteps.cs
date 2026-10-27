@@ -21,8 +21,8 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
         @"I add a booking with principal customer (\d+) on regular bike and companion customer (\d+) on regular bike in double room")]
     public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnRegularBikeInDoubleRoom(int principalId, int companionId)
     {
-        var principalGuid = Guid.CreateVersion7();
-        var companionGuid = principalId == companionId ? principalGuid : Guid.CreateVersion7();
+        var principalGuid = ContextHelpers.CustomerGuid(principalId);
+        var companionGuid = ContextHelpers.CustomerGuid(companionId);
 
         bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             principalGuid,
@@ -37,11 +37,11 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDOnEBikeInDoubleRoom(int principalId, int companionId)
     {
         bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalId),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(companionId),
             BikeType.EBike), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
@@ -49,11 +49,11 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     public void WhenIAddABookingWithPrincipalCustomerDOnEBikeAndCompanionCustomerDOnEBikeInDoubleRoom(int principalId, int companionId)
     {
         bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalId),
             BikeType.EBike,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(companionId),
             BikeType.EBike), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
@@ -61,7 +61,7 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeWithoutCompanionInSingleRoom(int principalId)
     {
         bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalId),
             BikeType.Regular,
             RoomType.SingleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
@@ -71,18 +71,18 @@ public class CompanionBookingsSteps(TourContext tourContext, BookingContext book
     public void WhenIAddABookingWithPrincipalCustomerDOnRegularBikeAndCompanionCustomerDWithNoBikeTypeInDoubleRoom(int principalId, int companionId)
     {
         bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalId),
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None,
-            Guid.CreateVersion7()), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+            ContextHelpers.CustomerGuid(companionId)), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     [When(@"I add a booking with principal customer (\d+) with no bike type without companion in single room")]
     public void WhenIAddABookingWithPrincipalCustomerDWithNoBikeTypeWithoutCompanionInSingleRoom(int principalId)
     {
         bookingContext.BookingCreationResult = tourContext.Tour.AddBooking(new TourBookingRequest(
-            Guid.CreateVersion7(),
+            ContextHelpers.CustomerGuid(principalId),
             BikeType.None,
             RoomType.SingleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));

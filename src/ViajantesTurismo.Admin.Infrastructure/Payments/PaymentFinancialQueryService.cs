@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -44,7 +43,7 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
                 Operation = "FinancialSensitiveAccess",
                 Reason = "SensitiveAccess"
             });
-            await ((IUnitOfWork)writes).SaveEntities(ct);
+            await writes.SaveEntities(ct);
         }
         var businessDate = calendar.Today;
         if (history is null)
@@ -82,7 +81,7 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
             UnallocatedEuroCredit = history.UnallocatedEuroCredit,
             BusinessDate = businessDate,
             Overdue = history.IsOverdue(businessDate),
-            Schedules = state.Schedules.Select(item => new GetPaymentScheduleDto
+            Schedules = [.. state.Schedules.Select(item => new GetPaymentScheduleDto
             {
                 Id = item.Id,
                 Revision = item.Number,
@@ -91,16 +90,16 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
                 Status = item.Approval is null ? PaymentScheduleStatusDto.Draft : item.Superseded ? PaymentScheduleStatusDto.Superseded : PaymentScheduleStatusDto.Approved,
                 ApprovalWithdrawn = history.IsApprovalWithdrawn(item.Id),
                 Approval = Approval(item.CreatedBy, item.CreatedAt, item.Approval),
-                Installments = item.Installments.Select(installment => new GetPaymentInstallmentDto
+                Installments = [.. item.Installments.Select(installment => new GetPaymentInstallmentDto
                 {
                     Id = installment.Id,
                     EuroAmount = installment.Amount,
                     DueDate = installment.DueDate,
                     AllocatedEuro = history.GetInstallmentAllocatedEuro(installment.Id),
                     OutstandingEuro = installment.Amount - history.GetInstallmentAllocatedEuro(installment.Id)
-                }).ToArray()
-            }).ToArray(),
-            Quotes = state.Quotes.Select(item => new GetPaymentQuoteDto
+                })]
+            })],
+            Quotes = [.. state.Quotes.Select(item => new GetPaymentQuoteDto
             {
                 Id = item.Id,
                 BrlPerEuro = item.BrlPerEuro,
@@ -111,8 +110,8 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
                 ForRefund = item.ForRefund,
                 ApprovalWithdrawn = history.IsApprovalWithdrawn(item.Id),
                 Approval = Approval(item.CreatedBy, item.CreatedAt, item.Approval)
-            }).ToArray(),
-            Receipts = state.Receipts.Select(item => new GetBookingReceiptDto
+            })],
+            Receipts = [.. state.Receipts.Select(item => new GetBookingReceiptDto
             {
                 Id = item.Id,
                 SettlementCurrency = TourMapper.MapToCurrencyDto(item.Currency),
@@ -132,8 +131,8 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
                 UnallocatedCashCredit = history.UnallocatedCashCredit(item.Id),
                 RefundableCashBasis = history.GetReceiptRefundableCash(item.Id),
                 SettlementDifference = history.GetReceiptSettlementDifference(item.Id)
-            }).ToArray(),
-            Reconciliations = state.Reconciliations.Select(item => new GetReceiptReconciliationDto
+            })],
+            Reconciliations = [.. state.Reconciliations.Select(item => new GetReceiptReconciliationDto
             {
                 Id = item.Id,
                 ReceiptId = item.ReceiptId,
@@ -142,16 +141,16 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
                 InstructionId = item.InstructionId,
                 Allocations = Selections(item.Allocations),
                 Approval = Approval(item.CreatedBy, item.CreatedAt, item.Approval)
-            }).ToArray(),
-            Allocations = state.Allocations.Select(item => new GetPaymentAllocationDto
+            })],
+            Allocations = [.. state.Allocations.Select(item => new GetPaymentAllocationDto
             {
                 Id = item.Id,
                 ReceiptId = item.ReceiptId,
                 InstallmentId = item.InstallmentId,
                 OriginalEuroCredit = item.EuroAmount,
                 ActiveEuroCredit = history.GetAllocationActiveEuro(item.Id)
-            }).ToArray(),
-            Refunds = state.Refunds.Select(item => new GetPaymentRefundDto
+            })],
+            Refunds = [.. state.Refunds.Select(item => new GetPaymentRefundDto
             {
                 Id = item.Id,
                 ReceiptId = item.ReceiptId,
@@ -166,53 +165,57 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
                 Corrected = history.IsRefundCorrected(item.Id),
                 ReversedAllocations = Selections(item.ReversedAllocations),
                 Approval = Approval(item.CreatedBy, item.CreatedAt, item.Approval)
-            }).ToArray(),
-            Reversals = state.Reversals.Select(item => new GetFinancialReversalDto
-            {
-                Id = item.Id,
-                TargetId = item.ReceiptId,
-                Operation = "ReceiptReversed",
-                ApprovedBy = item.Approval.ActorId,
-                ApprovedAt = item.Approval.ApprovedAt,
-                Reason = FinancialMappings.Map(item.Approval.Reason),
-                AllocationIds = item.AllocationIds
-            })
-                .Concat(state.RefundCorrections.Select(item => new GetFinancialReversalDto
-                {
-                    Id = item.Id,
-                    TargetId = item.RefundId,
-                    Operation = "RefundRecordCorrected",
-                    ApprovedBy = item.Approval.ActorId,
-                    ApprovedAt = item.Approval.ApprovedAt,
-                    Reason = FinancialMappings.Map(item.Approval.Reason)
-                }))
-                .Concat(state.Withdrawals.Select(item => new GetFinancialReversalDto
-                {
-                    Id = item.Id,
-                    TargetId = item.TargetId,
-                    Operation = "ApprovalWithdrawn",
-                    ApprovedBy = item.Approval.ActorId,
-                    ApprovedAt = item.Approval.ApprovedAt,
-                    Reason = FinancialMappings.Map(item.Approval.Reason)
-                }))
-                .Concat(state.Releases.Select(item => new GetFinancialReversalDto
-                {
-                    Id = item.Id,
-                    TargetId = item.AllocationId,
-                    Operation = "AllocationReleased",
-                    EuroAmount = item.EuroAmount,
-                    ApprovedBy = item.Approval.ActorId,
-                    ApprovedAt = item.Approval.ApprovedAt,
-                    Reason = FinancialMappings.Map(item.Approval.Reason)
-                })).ToArray(),
-            Reviews = state.Reviews.Select(item => new GetFinancialReviewDto
+            })],
+            Reversals =
+            [
+                .. state.Reversals.Select(item => new GetFinancialReversalDto
+                            {
+                                Id = item.Id,
+                                TargetId = item.ReceiptId,
+                                Operation = "ReceiptReversed",
+                                ApprovedBy = item.Approval.ActorId,
+                                ApprovedAt = item.Approval.ApprovedAt,
+                                Reason = FinancialMappings.Map(item.Approval.Reason),
+                                AllocationIds = item.AllocationIds
+                            })
+,
+                .. state.RefundCorrections.Select(item => new GetFinancialReversalDto
+                        {
+                            Id = item.Id,
+                            TargetId = item.RefundId,
+                            Operation = "RefundRecordCorrected",
+                            ApprovedBy = item.Approval.ActorId,
+                            ApprovedAt = item.Approval.ApprovedAt,
+                            Reason = FinancialMappings.Map(item.Approval.Reason)
+                        }),
+                .. state.Withdrawals.Select(item => new GetFinancialReversalDto
+                        {
+                            Id = item.Id,
+                            TargetId = item.TargetId,
+                            Operation = "ApprovalWithdrawn",
+                            ApprovedBy = item.Approval.ActorId,
+                            ApprovedAt = item.Approval.ApprovedAt,
+                            Reason = FinancialMappings.Map(item.Approval.Reason)
+                        }),
+                .. state.Releases.Select(item => new GetFinancialReversalDto
+                        {
+                            Id = item.Id,
+                            TargetId = item.AllocationId,
+                            Operation = "AllocationReleased",
+                            EuroAmount = item.EuroAmount,
+                            ApprovedBy = item.Approval.ActorId,
+                            ApprovedAt = item.Approval.ApprovedAt,
+                            Reason = FinancialMappings.Map(item.Approval.Reason)
+                        }),
+            ],
+            Reviews = [.. state.Reviews.Select(item => new GetFinancialReviewDto
             {
                 TargetId = item.TargetId,
                 TargetRevision = item.TargetRevision,
                 ReviewerId = item.ReviewerId,
                 ReviewedAt = item.ReviewedAt,
                 ChangesRequested = item.ChangesRequested
-            }).ToArray()
+            })]
         };
     }
 
@@ -225,6 +228,6 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
         ApprovalReason = approval is null ? null : FinancialMappings.Map(approval.Reason),
         SelfApproved = approval?.ActorId == createdBy
     };
-    private static InstallmentAllocationDto[] Selections(PaymentSelectionState[] selections) => selections.Select(item => new InstallmentAllocationDto { TargetId = item.TargetId, EuroAmount = item.EuroAmount }).ToArray();
+    private static InstallmentAllocationDto[] Selections(PaymentSelectionState[] selections) => [.. selections.Select(item => new InstallmentAllocationDto { TargetId = item.TargetId, EuroAmount = item.EuroAmount })];
     private static string Display(string value, bool sensitive) => sensitive ? value : value.Length > 4 ? "…" + value[^4..] : new string('*', value.Length);
 }

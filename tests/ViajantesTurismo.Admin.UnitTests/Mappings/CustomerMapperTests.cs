@@ -46,7 +46,7 @@ public class CustomerMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => CustomerMapper.MapToBikeTypeDto(invalidValue)));
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>(() => CustomerMapper.MapToBikeTypeDto(invalidValue));
         exception.Message.ShouldContain("Invalid bike type value", StringComparison.Ordinal);
     }
 
@@ -58,7 +58,7 @@ public class CustomerMapperTests
 
         // Act
         // Assert
-        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>((Func<object?>)(() => CustomerMapper.MapToBedType(invalidValue)));
+        var exception = ShouldAssertionExtensions.ShouldThrow<ArgumentOutOfRangeException>(() => CustomerMapper.MapToBedType(invalidValue));
         exception.Message.ShouldContain("Invalid bed type value", StringComparison.Ordinal);
     }
 }

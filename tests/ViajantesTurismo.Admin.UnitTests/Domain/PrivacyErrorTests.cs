@@ -18,14 +18,14 @@ public sealed class PrivacyErrorTests
         // Act
         var errors = new[]
         {
-            CustomerErrors.CustomerNotFound(identifier),
-            BookingErrors.BookingNotFound(identifier),
-            BookingErrors.CannotModifyCancelledOrCompletedBooking(identifier, BookingStatus.Cancelled),
-            BookingErrors.PrincipalAndCompanionCannotBeSame(identifier),
-            TourErrors.BookingNotFound(identifier),
-            TourErrors.TourNotFound(identifier),
-            TourErrors.CannotRemoveNonPendingBooking(identifier, BookingStatus.Confirmed),
-            DocumentErrors.DocumentNotFound(identifier)
+            CustomerErrors.CustomerNotFound(),
+            BookingErrors.BookingNotFound(),
+            BookingErrors.CannotModifyCancelledOrCompletedBooking( BookingStatus.Cancelled),
+            BookingErrors.PrincipalAndCompanionCannotBeSame(),
+            TourErrors.BookingNotFound(),
+            TourErrors.TourNotFound(),
+            TourErrors.CannotRemoveNonPendingBooking( BookingStatus.Confirmed),
+            DocumentErrors.DocumentNotFound()
         };
 
         // Assert
@@ -44,19 +44,19 @@ public sealed class PrivacyErrorTests
         var cases = new (Result Error, string Detail, string Message)[]
         {
             (Admin.Domain.Payments.FinancialErrors.Invalid("receipt"), "Invalid payment information.", "Review the payment information."),
-            (BookingErrors.ZeroOrNegativeBasePrice(-123456m), "Base price must be greater than zero.", "Base price must be greater than zero."),
-            (BookingErrors.BasePriceExceedsMaximum(654321m, 123456m), "Base price exceeds the maximum allowed value.", "Base price exceeds the maximum allowed value."),
-            (BookingErrors.NegativeBikePrice(-123456m), "Bike price cannot be negative.", "Bike price cannot be negative."),
-            (BookingErrors.BikePriceExceedsMaximum(654321m, 123456m), "Bike price exceeds the maximum allowed value.", "Bike price exceeds the maximum allowed value."),
-            (BookingErrors.NegativeRoomCost(-123456m), "Room additional cost cannot be negative.", "Room additional cost cannot be negative."),
-            (BookingErrors.RoomCostExceedsMaximum(654321m, 123456m), "Room additional cost exceeds the maximum allowed value.", "Room additional cost exceeds the maximum allowed value."),
-            (DiscountErrors.NegativeDiscountAmount(-123456m), "Discount amount cannot be negative.", "Discount amount cannot be negative."),
-            (DiscountErrors.PercentageExceedsMaximum(654321m, 100m), "Percentage discount cannot exceed the maximum allowed value.", "Percentage discount cannot exceed the maximum allowed value."),
-            (DiscountErrors.AbsoluteDiscountExceedsSubtotal(654321m, 123456m), "Absolute discount amount cannot exceed subtotal.", "Discount amount cannot exceed subtotal."),
-            (DiscountErrors.FinalPriceNotPositive(-123456m), "Final price after discount must be greater than zero.", "Final price after discount must be greater than zero."),
-            (TourErrors.InvalidPrice("private-price", -123456m), "Tour price must be greater than or equal to zero.", "Tour price must be greater than or equal to zero."),
-            (TourErrors.PriceTooHigh("private-price", 123456m, 654321m), "Tour price exceeds the maximum allowed value.", "Tour price exceeds the maximum allowed value."),
-            (CustomerErrors.AgeTooYoung(7), "Customer must meet the minimum age requirement.", "Customer must meet the minimum age requirement.")
+            (BookingErrors.ZeroOrNegativeBasePrice(), "Base price must be greater than zero.", "Base price must be greater than zero."),
+            (BookingErrors.BasePriceExceedsMaximum(), "Base price exceeds the maximum allowed value.", "Base price exceeds the maximum allowed value."),
+            (BookingErrors.NegativeBikePrice(), "Bike price cannot be negative.", "Bike price cannot be negative."),
+            (BookingErrors.BikePriceExceedsMaximum(), "Bike price exceeds the maximum allowed value.", "Bike price exceeds the maximum allowed value."),
+            (BookingErrors.NegativeRoomCost(), "Room additional cost cannot be negative.", "Room additional cost cannot be negative."),
+            (BookingErrors.RoomCostExceedsMaximum(), "Room additional cost exceeds the maximum allowed value.", "Room additional cost exceeds the maximum allowed value."),
+            (DiscountErrors.NegativeDiscountAmount(), "Discount amount cannot be negative.", "Discount amount cannot be negative."),
+            (DiscountErrors.PercentageExceedsMaximum(), "Percentage discount cannot exceed the maximum allowed value.", "Percentage discount cannot exceed the maximum allowed value."),
+            (DiscountErrors.AbsoluteDiscountExceedsSubtotal(), "Absolute discount amount cannot exceed subtotal.", "Discount amount cannot exceed subtotal."),
+            (DiscountErrors.FinalPriceNotPositive(), "Final price after discount must be greater than zero.", "Final price after discount must be greater than zero."),
+            (TourErrors.InvalidPrice("private-price"), "Tour price must be greater than or equal to zero.", "Tour price must be greater than or equal to zero."),
+            (TourErrors.PriceTooHigh("private-price"), "Tour price exceeds the maximum allowed value.", "Tour price exceeds the maximum allowed value."),
+            (CustomerErrors.AgeTooYoung(), "Customer must meet the minimum age requirement.", "Customer must meet the minimum age requirement.")
         };
 
         // Act

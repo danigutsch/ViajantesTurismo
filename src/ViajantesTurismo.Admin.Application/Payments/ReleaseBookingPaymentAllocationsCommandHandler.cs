@@ -24,7 +24,7 @@ public sealed class ReleaseBookingPaymentAllocationsCommandHandler(BookingPaymen
         }
         input = input with
         {
-            Allocations = input.Allocations.OrderBy(item => item.TargetId).ToArray()
+            Allocations = [.. input.Allocations.OrderBy(item => item.TargetId)]
         };
         var fingerprint = PaymentCommandFingerprint.Create(command.BookingId, null, command.ActorId, input, PaymentFinancialContractJsonContext.Default.AllocatePaymentCreditDto);
         return executor.Execute(command.BookingId, "ReleaseBookingPaymentAllocations", command.IdempotencyKey, fingerprint, tour =>

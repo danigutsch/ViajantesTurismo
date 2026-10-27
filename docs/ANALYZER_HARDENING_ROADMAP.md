@@ -187,8 +187,12 @@ Objectives:
 
 Concrete Phase 1 backlog:
 
-1. Review existing `IDE*`, `CA*`, and `S*` severities for low-noise rules that can move to
-   `warning`.
+1. Done for the first batch: `IDE0004`, `IDE0034`, `IDE0042`, `IDE0047`, `IDE0051`, `IDE0057`,
+   `IDE0060`, `IDE0301`, `IDE0303`, `IDE0305`, `IDE0350`, and `IDE0370` are `warning` with zero
+   violations and no exceptions. All `CA*` rules are already `warning` through `AnalysisMode=All`, and
+   no `S*` analyzer is installed. Left as is on purpose: `IDE0008` and `IDE0058` contradict the repository's
+   `var` and fluent-call conventions. Still open: `IDE0130` (namespace versus folder), `IDE0010` and
+   `IDE0072` (populate switch), and `IDE0048` (add parentheses; overlaps with `IDE0047`).
 2. Done: `SKSTYLE001` through `SKSTYLE004` are `warning` with zero violations and no
    `SKSTYLE004` file exceptions.
 3. Done: the repository stays clean at warning severity with no `SuppressMessage` entries for

@@ -23,7 +23,7 @@ public sealed class CreateTourCommandHandler(
 
         if (await tourStore.IdentifierExists(command.Identifier, ct))
         {
-            return TourErrors.IdentifierAlreadyExists(command.Identifier).ConvertError<Guid>();
+            return TourErrors.IdentifierAlreadyExists().ConvertError<Guid>();
         }
 
         var currency = TourMapper.MapToCurrency(command.Currency);

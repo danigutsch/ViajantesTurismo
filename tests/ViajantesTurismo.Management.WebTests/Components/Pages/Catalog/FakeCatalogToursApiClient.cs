@@ -271,7 +271,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             Version = tour.Version + 1
         };
 
-        Tours = Tours.Select(current => current.Id == id ? updated : current).ToArray();
+        Tours = [.. Tours.Select(current => current.Id == id ? updated : current)];
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, updated));
     }
 
@@ -370,7 +370,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         var reviewed = AccessibilityReviewResult ?? Images.FirstOrDefault(image => image.Id == id);
         if (reviewed is not null)
         {
-            Images = Images.Select(image => image.Id == id ? reviewed : image).ToArray();
+            Images = [.. Images.Select(image => image.Id == id ? reviewed : image)];
         }
 
         return Task.FromResult(reviewed is null
@@ -427,7 +427,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
                 IsPublished = isPublished,
                 Version = tour.Version + 1
             };
-            Tours = Tours.Select(current => current.Id == id ? updated : current).ToArray();
+            Tours = [.. Tours.Select(current => current.Id == id ? updated : current)];
         }
 
         return Task.FromResult(tour is null

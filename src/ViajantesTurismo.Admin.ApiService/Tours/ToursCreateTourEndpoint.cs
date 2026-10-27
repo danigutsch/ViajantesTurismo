@@ -65,7 +65,7 @@ internal static class ToursCreateTourEndpoint
 
         if (createdTour is null)
         {
-            return TourErrors.TourNotFound(tourId).ToNotFound();
+            return TourErrors.TourNotFound().ToNotFound();
         }
 
         return TypedResults.Created($"/api/v1/tours/{tourId}", createdTour);

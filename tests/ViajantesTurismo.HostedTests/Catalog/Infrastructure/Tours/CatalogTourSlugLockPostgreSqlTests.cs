@@ -68,8 +68,8 @@ public sealed class CatalogTourSlugLockPostgreSqlTests(HostedTestFixture shared)
         using var listener = new ActivityListener
         {
             ShouldListenTo = static source => string.Equals(source.Name, "Npgsql", StringComparison.Ordinal),
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
+            Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
+            SampleUsingParentId = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = stoppedActivities.Enqueue,
         };
         ActivitySource.AddActivityListener(listener);

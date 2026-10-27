@@ -205,7 +205,7 @@ public sealed class BookingFinancialHistoryTests
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
 
         // Act
-        var frozen = scenario.Tour.CreateBookingPaymentInstruction(scenario.Booking.Id, account, installments.Select(item => item.Id).ToArray(), quote, "reference", now).Value;
+        var frozen = scenario.Tour.CreateBookingPaymentInstruction(scenario.Booking.Id, account, [.. installments.Select(item => item.Id)], quote, "reference", now).Value;
 
         // Assert
         frozen.SettlementAmount.ShouldBe(expectedTotal);

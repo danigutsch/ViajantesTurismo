@@ -25,7 +25,7 @@ public sealed class RequestDocumentChangesCommandHandler(
         if (lineage is null || document is null)
         {
             return await RecordAndReturn(
-                DocumentErrors.DocumentNotFound(command.DocumentId),
+                DocumentErrors.DocumentNotFound(),
                 command.AuditContext,
                 command.DocumentId,
                 null,

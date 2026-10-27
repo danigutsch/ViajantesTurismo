@@ -194,7 +194,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         var replaced = GetRevision(replacesDocumentId);
         if (replaced is null)
         {
-            return DocumentErrors.DocumentNotFound(replacesDocumentId).ConvertError<DocumentDraft>();
+            return DocumentErrors.DocumentNotFound().ConvertError<DocumentDraft>();
         }
 
         var revisionResult = replaced.CreateReplacement(content, HighestRevision + 1, createdAt);
@@ -285,7 +285,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         var target = GetRevision(documentId);
         if (target is null)
         {
-            return DocumentErrors.DocumentNotFound(documentId);
+            return DocumentErrors.DocumentNotFound();
         }
 
         var historyResult = CanFinalizeRevision(target.Revision);
@@ -329,7 +329,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         var revision = GetRevision(documentId);
         if (revision is null)
         {
-            return DocumentErrors.DocumentNotFound(documentId);
+            return DocumentErrors.DocumentNotFound();
         }
 
         return revision.IsFinalized
@@ -359,7 +359,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         var revision = GetRevision(documentId);
         if (revision is null)
         {
-            return DocumentErrors.DocumentNotFound(documentId);
+            return DocumentErrors.DocumentNotFound();
         }
 
         var result = operation(revision);

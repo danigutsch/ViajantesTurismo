@@ -23,7 +23,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         var images = new InMemoryPublicMediaImageStore(original);
         var mutationLock = new TestCatalogTourMutationLock();
         var observed = new ObservedCatalogTourMutationLock(mutationLock);
-        await using var held = await mutationLock.Acquire(original.TourLinks.Select(link => link.CatalogTourId).ToArray(), TestContext.Current.CancellationToken);
+        await using var held = await mutationLock.Acquire([.. original.TourLinks.Select(link => link.CatalogTourId)], TestContext.Current.CancellationToken);
         var handler = new MediaImageOriginalStoredIntegrationHandler(objects, images, observed);
         var notification = new MediaImageOriginalStoredIntegrationEvent(Guid.CreateVersion7(), TimeProvider.System.GetUtcNow(), imageId, "media/original.png", 1);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);

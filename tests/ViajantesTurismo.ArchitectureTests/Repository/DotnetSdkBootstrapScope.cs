@@ -12,7 +12,7 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
     private readonly TemporaryWorkspace _workspace = new();
     private readonly bool _powershell;
     private readonly string _repositoryRoot = RepositoryTestProcess.GetRepositoryRoot();
-    private readonly string _rid = $"{(OperatingSystem.IsMacOS() ? "osx" : "linux")}-{(RuntimeInformation.OSArchitecture switch { Architecture.X64 => "x64", Architecture.Arm64 => "arm64", Architecture.Arm => "arm", _ => throw new PlatformNotSupportedException("Unsupported SDK fixture architecture.") })}";
+    private readonly string _rid = $"{(OperatingSystem.IsMacOS() ? "osx" : "linux")}-{RuntimeInformation.OSArchitecture switch { Architecture.X64 => "x64", Architecture.Arm64 => "arm64", Architecture.Arm => "arm", _ => throw new PlatformNotSupportedException("Unsupported SDK fixture architecture.") }}";
 
     /// <summary>Builds the workspace for the bash or PowerShell bootstrap script with a pinned SDK 10.0.303 archive and fake tools.</summary>
     public DotnetSdkBootstrapScope(bool powershell)

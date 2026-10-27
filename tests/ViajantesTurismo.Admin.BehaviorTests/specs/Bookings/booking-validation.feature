@@ -29,7 +29,7 @@ So that only valid bookings are created and updated
         Then the booking notes should be "Special dietary requirements"
 
     Scenario: Update booking notes with empty string
-        Given a tour exists with a booking priced at 1500.00 and notes "Initial notes"
+        Given a tour exists with a booking priced at 2100.00 and notes "Initial notes"
         When I update the booking notes to "" through the tour
         Then the booking notes should be null or empty
 

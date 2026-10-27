@@ -27,13 +27,13 @@ public sealed class CreateBookingCommandHandler(
         var tour = await tourStore.GetById(command.TourId, ct);
         if (tour is null)
         {
-            return TourErrors.TourNotFound(command.TourId).ConvertError<Guid>();
+            return TourErrors.TourNotFound().ConvertError<Guid>();
         }
 
         var principalCustomer = await customerStore.GetById(command.PrincipalCustomerId, ct);
         if (principalCustomer is null)
         {
-            return CustomerErrors.CustomerNotFound(command.PrincipalCustomerId).ConvertError<Guid>();
+            return CustomerErrors.CustomerNotFound().ConvertError<Guid>();
         }
 
         if (command.CompanionCustomerId.HasValue)
@@ -41,7 +41,7 @@ public sealed class CreateBookingCommandHandler(
             var companionCustomer = await customerStore.GetById(command.CompanionCustomerId.Value, ct);
             if (companionCustomer is null)
             {
-                return CustomerErrors.CustomerNotFound(command.CompanionCustomerId.Value).ConvertError<Guid>();
+                return CustomerErrors.CustomerNotFound().ConvertError<Guid>();
             }
         }
 

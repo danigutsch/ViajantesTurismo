@@ -152,6 +152,10 @@ public sealed class BookingValidationSteps(
         var assertionTarget1 = errorDetails?.ValidationErrors?.Any(kvp =>
                 kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase)) ?? false;
         assertionTarget1.ShouldBeTrue($"Expected validation error for {normalizedFieldName}");
+        errorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull()
+            .Where(kvp => kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(kvp => kvp.Value)
+            .ShouldContain(m => m.Contains(maxLength.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal));
     }
 
     [When(@"I attempt to create a booking with base price (-?\d+)")]

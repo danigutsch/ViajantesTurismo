@@ -48,9 +48,9 @@ static async Task<IResult> ScanUpload(HttpRequest request, CancellationToken ct)
             continue;
         }
 
-        var scanResult = await ScanStream(section.Body, ct).ConfigureAwait(false);
-        totalBytesScanned += scanResult.BytesScanned;
-        totalMatches += scanResult.Matches;
+        var (BytesScanned, Matches) = await ScanStream(section.Body, ct).ConfigureAwait(false);
+        totalBytesScanned += BytesScanned;
+        totalMatches += Matches;
         fileCount++;
     }
 

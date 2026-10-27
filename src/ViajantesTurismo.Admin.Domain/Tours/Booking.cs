@@ -291,22 +291,22 @@ public sealed partial class Booking : IEntity<Guid>
 
         if (basePrice <= 0)
         {
-            errors.Add(BookingErrors.ZeroOrNegativeBasePrice(basePrice));
+            errors.Add(BookingErrors.ZeroOrNegativeBasePrice());
         }
 
         if (basePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(BookingErrors.BasePriceExceedsMaximum(basePrice, AdminDomainLimits.MaxPrice));
+            errors.Add(BookingErrors.BasePriceExceedsMaximum());
         }
 
         if (roomAdditionalCost < 0)
         {
-            errors.Add(BookingErrors.NegativeRoomCost(roomAdditionalCost));
+            errors.Add(BookingErrors.NegativeRoomCost());
         }
 
         if (roomAdditionalCost > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, AdminDomainLimits.MaxPrice));
+            errors.Add(BookingErrors.RoomCostExceedsMaximum());
         }
 
         if (notes?.Length > AdminDomainLimits.MaxBookingNotesLength)
@@ -316,7 +316,7 @@ public sealed partial class Booking : IEntity<Guid>
 
         if (companionCustomer is not null && principalCustomer.CustomerId == companionCustomer.CustomerId)
         {
-            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(principalCustomer.CustomerId));
+            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame());
         }
 
         if (errors.HasErrors)
@@ -328,13 +328,13 @@ public sealed partial class Booking : IEntity<Guid>
 
         if (discount.Type == DiscountType.Absolute && discount.Amount > subtotal)
         {
-            return DiscountErrors.AbsoluteDiscountExceedsSubtotal(discount.Amount, subtotal).ConvertError<Booking>();
+            return DiscountErrors.AbsoluteDiscountExceedsSubtotal().ConvertError<Booking>();
         }
 
         var finalPrice = subtotal - discount.CalculateDiscountAmount(subtotal);
         if (finalPrice <= 0)
         {
-            return DiscountErrors.FinalPriceNotPositive(finalPrice).ConvertError<Booking>();
+            return DiscountErrors.FinalPriceNotPositive().ConvertError<Booking>();
         }
 
         return Result.Ok(new Booking(tourId, basePrice, new BookingRoom(roomType, roomAdditionalCost), principalCustomer, companionCustomer,
@@ -437,18 +437,18 @@ public sealed partial class Booking : IEntity<Guid>
 
         if (!CanModifyBookedServices)
         {
-            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
         }
 
         if (discount.Type == DiscountType.Absolute && discount.Amount > Subtotal)
         {
-            return DiscountErrors.AbsoluteDiscountExceedsSubtotal(discount.Amount, Subtotal);
+            return DiscountErrors.AbsoluteDiscountExceedsSubtotal();
         }
 
         var finalPrice = Subtotal - discount.CalculateDiscountAmount(Subtotal);
         if (finalPrice <= 0)
         {
-            return DiscountErrors.FinalPriceNotPositive(finalPrice);
+            return DiscountErrors.FinalPriceNotPositive();
         }
 
         Discount = discount;
@@ -466,7 +466,7 @@ public sealed partial class Booking : IEntity<Guid>
     {
         if (!CanModifyBookedServices)
         {
-            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
         }
 
         roomAdditionalCost = NumericSanitizer.SanitizePrice(roomAdditionalCost);
@@ -480,12 +480,12 @@ public sealed partial class Booking : IEntity<Guid>
 
         if (roomAdditionalCost < 0)
         {
-            errors.Add(BookingErrors.NegativeRoomCost(roomAdditionalCost));
+            errors.Add(BookingErrors.NegativeRoomCost());
         }
 
         if (roomAdditionalCost > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(BookingErrors.RoomCostExceedsMaximum(roomAdditionalCost, AdminDomainLimits.MaxPrice));
+            errors.Add(BookingErrors.RoomCostExceedsMaximum());
         }
 
         if (roomType == RoomType.SingleOccupancy && companionCustomer is not null)
@@ -513,14 +513,14 @@ public sealed partial class Booking : IEntity<Guid>
     {
         if (!CanModifyBookedServices)
         {
-            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
         }
 
         var errors = new ValidationErrors();
 
         if (companionCustomer is not null && PrincipalCustomer.CustomerId == companionCustomer.CustomerId)
         {
-            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame(PrincipalCustomer.CustomerId));
+            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame());
         }
 
         if (RoomType == RoomType.SingleOccupancy && companionCustomer is not null)
@@ -547,7 +547,7 @@ public sealed partial class Booking : IEntity<Guid>
     {
         if (!CanModifyBookedServices)
         {
-            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Id, Status);
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
         }
 
         var errors = new ValidationErrors();

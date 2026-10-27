@@ -8,7 +8,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("I am authenticated as a tour operator")]
     public static void GivenIAmAuthenticatedAsATourOperator()
     {
-        (true).ShouldBeTrue();
+        true.ShouldBeTrue();
     }
 
     [Given("a pending booking exists")]
@@ -20,9 +20,9 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
         bookingContext.Booking = result.Value;
-        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Pending);
+        bookingContext.Booking.Status.ShouldBe(BookingStatus.Pending);
     }
 
     [Given("a confirmed booking exists")]
@@ -34,10 +34,10 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
         bookingContext.Booking = result.Value;
         tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Confirmed);
+        bookingContext.Booking.Status.ShouldBe(BookingStatus.Confirmed);
     }
 
     [Given("a confirmed booking with a companion exists")]
@@ -53,11 +53,11 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             DiscountType.None,
             companionCustomerId,
             BikeType.EBike), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
         bookingContext.Booking = result.Value;
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        (confirmResult.IsSuccess).ShouldBeTrue();
-        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Confirmed);
+        confirmResult.IsSuccess.ShouldBeTrue();
+        bookingContext.Booking.Status.ShouldBe(BookingStatus.Confirmed);
     }
 
     [Given("a cancelled booking exists")]
@@ -69,11 +69,11 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-        (addResult.IsSuccess).ShouldBeTrue();
+        addResult.IsSuccess.ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
-        (result.IsSuccess).ShouldBeTrue();
-        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Cancelled);
+        result.IsSuccess.ShouldBeTrue();
+        bookingContext.Booking.Status.ShouldBe(BookingStatus.Cancelled);
     }
 
     [Given("a completed booking exists")]
@@ -85,34 +85,34 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
             BikeType.Regular,
             RoomType.DoubleOccupancy,
             DiscountType.None), new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-        (addResult.IsSuccess).ShouldBeTrue();
+        addResult.IsSuccess.ShouldBeTrue();
         bookingContext.Booking = addResult.Value;
         var confirmResult = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        (confirmResult.IsSuccess).ShouldBeTrue();
+        confirmResult.IsSuccess.ShouldBeTrue();
         var completeResult = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
-        (completeResult.IsSuccess).ShouldBeTrue();
-        (bookingContext.Booking.Status).ShouldBe(BookingStatus.Completed);
+        completeResult.IsSuccess.ShouldBeTrue();
+        bookingContext.Booking.Status.ShouldBe(BookingStatus.Completed);
     }
 
     [When("the operator confirms the booking")]
     public void WhenTheOperatorConfirmsTheBooking()
     {
         var result = tourContext.Tour.ConfirmBooking(bookingContext.Booking.Id);
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When("the operator cancels the booking")]
     public void WhenTheOperatorCancelsTheBooking()
     {
         var result = tourContext.Tour.CancelBooking(bookingContext.Booking.Id);
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When("the operator completes the booking")]
     public void WhenTheOperatorCompletesTheBooking()
     {
         var result = tourContext.Tour.CompleteBooking(bookingContext.Booking.Id);
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When("the operator tries to confirm the booking")]
@@ -140,14 +140,14 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void WhenTheOperatorUpdatesTheNotesTo(string notes)
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, notes);
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When("the operator updates the notes to null")]
     public void WhenTheOperatorUpdatesTheNotesToNull()
     {
         var result = tourContext.Tour.UpdateBookingNotes(bookingContext.Booking.Id, null);
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [When("the operator tries to update the notes to a string longer than (.*) characters")]
@@ -194,15 +194,15 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     public void WhenTheOperatorRemovesTheBooking()
     {
         var result = tourContext.Tour.RemoveBooking(bookingContext.Booking.Id);
-        (result.IsSuccess).ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
         bookingContext.BookingOperationResult = result;
     }
 
     [Then("the removal should fail")]
     public void ThenTheRemovalShouldFail()
     {
-        (bookingContext.BookingOperationResult).ShouldNotBeNull();
-        (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeFalse();
+        bookingContext.BookingOperationResult.ShouldNotBeNull();
+        bookingContext.BookingOperationResult.Value.IsSuccess.ShouldBeFalse();
     }
 
     [Then("the operation should fail")]
@@ -214,14 +214,14 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Then("the booking should be removed successfully")]
     public void ThenTheBookingShouldBeRemovedSuccessfully()
     {
-        (bookingContext.BookingOperationResult).ShouldNotBeNull();
-        (bookingContext.BookingOperationResult.Value.IsSuccess).ShouldBeTrue();
+        bookingContext.BookingOperationResult.ShouldNotBeNull();
+        bookingContext.BookingOperationResult.Value.IsSuccess.ShouldBeTrue();
     }
 
     [Then("the booking should count as {int} participant")]
     [Then("the booking should count as {int} participants")]
     public void ThenTheBookingShouldCountAsParticipants(int participantCount)
     {
-        (bookingContext.Booking.ParticipantCount).ShouldBe(participantCount);
+        bookingContext.Booking.ParticipantCount.ShouldBe(participantCount);
     }
 }
