@@ -262,12 +262,13 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
-    public void Shows_server_validation_message_when_save_fails_validation()
+    public void Shows_fixed_copy_instead_of_server_validation_text_when_save_fails_validation()
     {
         // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
         publicContentApi.ValidationException = new ContractValidationException(
             "Validation failed",
-            new Dictionary<string, string[]> { [nameof(PublicContentVariantDto.Title)] = ["Title is required."] });
+            new Dictionary<string, string[]> { [nameof(PublicContentVariantDto.Title)] = [hostile] });
         var cut = Render<PublicContent>();
         cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
@@ -280,8 +281,10 @@ public sealed class PublicContentTests : BunitContext
         cut.Find("form").Submit();
 
         // Assert
-        cut.WaitForState(() => cut.Markup.Contains("Title is required", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
-        cut.Find(".alert-danger").TextContent.ShouldContain("Title is required", StringComparison.Ordinal);
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find(".alert-danger").TextContent.ShouldContain("couldn't save public content", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
     }
 
     [Fact]

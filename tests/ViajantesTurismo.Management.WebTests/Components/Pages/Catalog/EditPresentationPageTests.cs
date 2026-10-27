@@ -180,6 +180,52 @@ public sealed class EditPresentationPageTests : BunitContext
     }
 
     [Fact]
+    public void Shows_fixed_copy_instead_of_server_validation_text_when_presentation_save_fails_validation()
+    {
+        // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["title"] = [hostile] });
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("Catalog tour presentation could not be saved", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_fixed_copy_instead_of_server_validation_text_when_publication_fails_validation()
+    {
+        // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.PublicationValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["slug"] = [hostile] });
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Status: Draft", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("#publish").Click();
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("Catalog tour publication could not be changed", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Shows_fallback_error_when_validation_has_no_messages()
     {
         // Arrange

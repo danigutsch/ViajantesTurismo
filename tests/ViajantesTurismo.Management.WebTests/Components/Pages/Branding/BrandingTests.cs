@@ -167,19 +167,22 @@ public sealed class BrandingTests : BunitContext
     }
 
     [Fact]
-    public void Shows_the_server_validation_messages_when_branding_is_rejected()
+    public void Shows_fixed_copy_instead_of_server_validation_text_when_branding_is_rejected()
     {
         // Arrange
-        brandingApi.ValidationErrors = new Dictionary<string, string[]> { ["PrimaryColor"] = ["Use a safe color."] };
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        brandingApi.ValidationErrors = new Dictionary<string, string[]> { ["PrimaryColor"] = [hostile] };
         var cut = Render<BrandingPage>();
         cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
 
         // Act
         cut.Find("form").Submit();
-        cut.WaitForState(() => cut.Markup.Contains("Use a safe color.", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
 
         // Assert
-        cut.Find(".alert-danger").TextContent.ShouldContain("Use a safe color.", StringComparison.Ordinal);
+        cut.Find(".alert-danger").TextContent.ShouldContain("couldn't save branding", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
         brandingApi.SavedBranding.ShouldBeNull();
     }
 

@@ -21,6 +21,12 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         get; set;
     }
 
+    /// <summary>When set, publish and unpublish return a validation problem built from it.</summary>
+    public ContractValidationException? PublicationValidationException
+    {
+        get; set;
+    }
+
     /// <summary>When set, image uploads return a validation problem carrying these server-supplied errors.</summary>
     public IReadOnlyDictionary<string, string[]>? UploadValidationErrors
     {
@@ -397,6 +403,16 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         ct.ThrowIfCancellationRequested();
         LastPublicationRequest = request;
         LastPublicationState = isPublished;
+
+        if (PublicationValidationException is not null)
+        {
+            return Task.FromResult(new HttpOutcome
+            {
+                Kind = HttpOutcomeKind.ValidationProblem,
+                StatusCode = HttpStatusCode.BadRequest,
+                ValidationErrors = PublicationValidationException.ValidationErrors
+            });
+        }
 
         if (ThrowAcceptedOnPublication)
         {
