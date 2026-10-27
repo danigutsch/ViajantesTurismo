@@ -53,13 +53,14 @@
     </div>
 
     <div class="col-lg-8">
-        <EditForm Model="@_model" OnValidSubmit="@SaveContent" FormName="publicContentEditor">
+        <EditForm EditContext="@FormContext" OnValidSubmit="@SaveContent" OnInvalidSubmit="@RequestSummaryFocus" FormName="publicContentEditor">
             <DataAnnotationsValidator />
-            <ValidationSummary />
+            <FieldErrorSummary @ref="_summary" EditContext="@FormContext" Fields="@FieldIds" />
 
             <div class="mb-3">
                 <label for="content-key" class="form-label">Content key</label>
                 <InputText id="content-key" class="form-control" @bind-Value="_model.Key" placeholder="home.hero" />
+                <ValidationMessage For="() => _model.Key" />
                 <div class="form-text">Use a stable page or section key.</div>
             </div>
 
@@ -71,6 +72,7 @@
                         <option value="@language">@GetLanguageLabel(language)</option>
                     }
                 </InputSelect>
+                <ValidationMessage For="() => _model.SourceLanguage" />
             </div>
 
             <div class="row g-3">
@@ -100,6 +102,33 @@
 
 @code {
     private PublicContentDto[] _content = [];
+    private FieldErrorSummary? _summary;
+    private bool _focusSummary;
+    private EditContext? _editContext;
+
+    private static readonly IReadOnlyList<KeyValuePair<string, string>> FieldIds =
+    [
+        new("Key", "content-key"),
+        new("SourceLanguage", "source-language")
+    ];
+
+    private static readonly string[] FieldNames = [.. FieldIds.Select(field => field.Key)];
+
+    private EditContext FormContext =>
+        _editContext is not null && ReferenceEquals(_editContext.Model, _model) ? _editContext : _editContext = new EditContext(_model);
+
+    private void RequestSummaryFocus() => _focusSummary = true;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusSummary && _summary is not null)
+        {
+            _focusSummary = false;
+            await _summary.FocusAsync();
+        }
+    }
+
     private PublicContentFormModel _model = new();
     private static readonly PublicContentLanguageDto[] SupportedLanguages = Enum
         .GetValues<PublicContentLanguageDto>()
@@ -240,6 +269,7 @@
 
     private async Task SaveContent()
     {
+        EditContextValidationHelper.ApplyValidationErrors(FormContext, new Dictionary<string, string[]>());
         _saving = true;
         _errorMessage = null;
         _successMessage = null;
@@ -259,7 +289,12 @@
 
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
-                _errorMessage = UserFacingErrorMessage.ForOperation("save public content");
+                if (!EditContextValidationHelper.ApplyKnownFieldErrors(FormContext, outcome.ValidationErrors, FieldNames))
+                {
+                    _errorMessage = UserFacingErrorMessage.ForOperation("save public content");
+                }
+
+                _focusSummary = true;
                 return;
             }
 

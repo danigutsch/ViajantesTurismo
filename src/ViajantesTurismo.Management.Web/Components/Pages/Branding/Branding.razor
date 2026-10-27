@@ -30,19 +30,21 @@
 }
 else
 {
-    <EditForm Model="@_model" OnValidSubmit="@SaveBranding" FormName="brandingEditor">
+    <EditForm EditContext="@FormContext" OnValidSubmit="@SaveBranding" OnInvalidSubmit="@RequestSummaryFocus" FormName="brandingEditor">
         <DataAnnotationsValidator />
-        <ValidationSummary />
+        <FieldErrorSummary @ref="_summary" EditContext="@FormContext" Fields="@FieldIds" />
 
         <fieldset class="border rounded p-3 mb-3">
             <legend class="float-none w-auto px-2 h5">Brand</legend>
             <div class="mb-3">
                 <label for="branding-brand-name" class="form-label">Brand name</label>
                 <InputText id="branding-brand-name" class="form-control" @bind-Value="_model.BrandName" />
+                <ValidationMessage For="() => _model.BrandName" />
             </div>
             <div class="mb-3">
                 <label for="branding-logo-uri" class="form-label">Logo URI</label>
                 <InputText id="branding-logo-uri" class="form-control" @bind-Value="_model.LogoUri" />
+                <ValidationMessage For="() => _model.LogoUri" />
                 <div class="form-text">Optional. Use a root-relative path or HTTPS URI.</div>
             </div>
         </fieldset>
@@ -52,18 +54,22 @@ else
             <div class="mb-3">
                 <label for="branding-primary-color" class="form-label">Primary color</label>
                 <InputText id="branding-primary-color" class="form-control" @bind-Value="_model.PrimaryColor" />
+                <ValidationMessage For="() => _model.PrimaryColor" />
             </div>
             <div class="mb-3">
                 <label for="branding-accent-color" class="form-label">Accent color</label>
                 <InputText id="branding-accent-color" class="form-control" @bind-Value="_model.AccentColor" />
+                <ValidationMessage For="() => _model.AccentColor" />
             </div>
             <div class="mb-3">
                 <label for="branding-background-color" class="form-label">Background color</label>
                 <InputText id="branding-background-color" class="form-control" @bind-Value="_model.BackgroundColor" />
+                <ValidationMessage For="() => _model.BackgroundColor" />
             </div>
             <div class="mb-3">
                 <label for="branding-text-color" class="form-label">Text color</label>
                 <InputText id="branding-text-color" class="form-control" @bind-Value="_model.TextColor" />
+                <ValidationMessage For="() => _model.TextColor" />
             </div>
             <div class="form-text">Colors must use safe #RRGGBB hex values.</div>
         </fieldset>
@@ -78,6 +84,7 @@ else
                         <option value="@font">@font</option>
                     }
                 </InputSelect>
+                <ValidationMessage For="() => _model.HeadingFontFamily" />
             </div>
             <div class="mb-3">
                 <label for="branding-body-font" class="form-label">Body font</label>
@@ -87,6 +94,7 @@ else
                         <option value="@font">@font</option>
                     }
                 </InputSelect>
+                <ValidationMessage For="() => _model.BodyFontFamily" />
             </div>
         </fieldset>
 
@@ -98,6 +106,39 @@ else
     private static readonly IReadOnlyList<string> AllowedFontFamilies = BrandingFontFamilies.All;
 
     private BrandingFormModel _model = BrandingFormModel.Default();
+    private FieldErrorSummary? _summary;
+    private bool _focusSummary;
+    private EditContext? _editContext;
+
+    private static readonly IReadOnlyList<KeyValuePair<string, string>> FieldIds =
+    [
+        new("BrandName", "branding-brand-name"),
+        new("LogoUri", "branding-logo-uri"),
+        new("PrimaryColor", "branding-primary-color"),
+        new("AccentColor", "branding-accent-color"),
+        new("BackgroundColor", "branding-background-color"),
+        new("TextColor", "branding-text-color"),
+        new("HeadingFontFamily", "branding-heading-font"),
+        new("BodyFontFamily", "branding-body-font")
+    ];
+
+    private static readonly string[] FieldNames = [.. FieldIds.Select(field => field.Key)];
+
+    private EditContext FormContext =>
+        _editContext is not null && ReferenceEquals(_editContext.Model, _model) ? _editContext : _editContext = new EditContext(_model);
+
+    private void RequestSummaryFocus() => _focusSummary = true;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusSummary && _summary is not null)
+        {
+            _focusSummary = false;
+            await _summary.FocusAsync();
+        }
+    }
+
     private string? _entityTag;
     private bool _loading = true;
     private bool _saving;
@@ -122,6 +163,7 @@ else
 
     private async Task SaveBranding()
     {
+        EditContextValidationHelper.ApplyValidationErrors(FormContext, new Dictionary<string, string[]>());
         _saving = true;
         _errorMessage = null;
         _successMessage = null;
@@ -136,7 +178,13 @@ else
         var saved = await BrandingApi.SaveSettings(_model.ToDto(), _entityTag, CancellationToken.None);
         if (saved.Kind != HttpOutcomeKind.Succeeded)
         {
-            _errorMessage = SaveErrorMessage(saved);
+            if (saved.Kind != HttpOutcomeKind.ValidationProblem
+                || !EditContextValidationHelper.ApplyKnownFieldErrors(FormContext, saved.ValidationErrors, FieldNames))
+            {
+                _errorMessage = SaveErrorMessage(saved);
+            }
+
+            _focusSummary = true;
             _saving = false;
             return;
         }

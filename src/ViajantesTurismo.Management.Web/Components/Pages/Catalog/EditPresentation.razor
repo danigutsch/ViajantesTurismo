@@ -35,43 +35,50 @@ else if (_editContext is not null)
         <div class="alert alert-info" role="status">Unpublish this tour before editing its public presentation.</div>
     }
 
-    <EditForm EditContext="@_editContext" OnValidSubmit="@HandleSubmit" FormName="editCatalogPresentation">
+    <EditForm EditContext="@_editContext" OnValidSubmit="@HandleSubmit" OnInvalidSubmit="@RequestSummaryFocus" FormName="editCatalogPresentation">
         <DataAnnotationsValidator />
-        <ValidationSummary />
+        <FieldErrorSummary @ref="_summary" EditContext="@_editContext" Fields="@FieldIds" />
 
         <div class="mb-3">
             <label for="title" class="form-label">Public title</label>
             <InputText id="title" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Title" />
+            <ValidationMessage For="() => _model.Title" />
         </div>
 
         <div class="mb-3">
             <label for="slug" class="form-label">Public slug</label>
             <InputText id="slug" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Slug" />
+            <ValidationMessage For="() => _model.Slug" />
         </div>
 
         <div class="mb-3">
             <label for="summary" class="form-label">Summary</label>
             <InputText id="summary" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Summary" />
+            <ValidationMessage For="() => _model.Summary" />
         </div>
 
         <div class="mb-3">
             <label for="description" class="form-label">Description</label>
             <InputTextArea id="description" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Description" />
+            <ValidationMessage For="() => _model.Description" />
         </div>
 
         <div class="mb-3">
             <label for="itinerary" class="form-label">Itinerary</label>
             <InputTextArea id="itinerary" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.Itinerary" />
+            <ValidationMessage For="() => _model.Itinerary" />
         </div>
 
         <div class="mb-3">
             <label for="seoTitle" class="form-label">SEO title</label>
             <InputText id="seoTitle" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.SeoTitle" />
+            <ValidationMessage For="() => _model.SeoTitle" />
         </div>
 
         <div class="mb-3">
             <label for="seoDescription" class="form-label">SEO description</label>
             <InputTextArea id="seoDescription" class="form-control" disabled="@(_saving || _isPublished)" @bind-Value="_model.SeoDescription" />
+            <ValidationMessage For="() => _model.SeoDescription" />
         </div>
 
         <div class="mb-3">
@@ -110,6 +117,34 @@ else if (_errorMessage is not null)
 @code {
     [Parameter]
     public Guid Id { get; set; }
+
+    private FieldErrorSummary? _summary;
+    private bool _focusSummary;
+
+    private static readonly IReadOnlyList<KeyValuePair<string, string>> FieldIds =
+    [
+        new("Title", "title"),
+        new("Slug", "slug"),
+        new("Summary", "summary"),
+        new("Description", "description"),
+        new("Itinerary", "itinerary"),
+        new("SeoTitle", "seoTitle"),
+        new("SeoDescription", "seoDescription")
+    ];
+
+    private static readonly string[] FieldNames = [.. FieldIds.Select(field => field.Key)];
+
+    private void RequestSummaryFocus() => _focusSummary = true;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusSummary && _summary is not null)
+        {
+            _focusSummary = false;
+            await _summary.FocusAsync();
+        }
+    }
 
     private CatalogTourPresentationFormModel _model = new();
     private EditContext? _editContext;
@@ -156,6 +191,7 @@ else if (_errorMessage is not null)
 
     private async Task HandleSubmit()
     {
+        EditContextValidationHelper.ApplyValidationErrors(_editContext!, new Dictionary<string, string[]>());
         _saving = true;
         _successMessage = null;
         _errorMessage = null;
@@ -179,7 +215,12 @@ else if (_errorMessage is not null)
 
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
-                _errorMessage = "Catalog tour presentation could not be saved. Try again later.";
+                if (!EditContextValidationHelper.ApplyKnownFieldErrors(_editContext!, outcome.ValidationErrors, FieldNames))
+                {
+                    _errorMessage = "Catalog tour presentation could not be saved. Try again later.";
+                }
+
+                _focusSummary = true;
                 return;
             }
 
