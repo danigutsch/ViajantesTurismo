@@ -1,7 +1,7 @@
+using PandaBear.ObjectStorage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -26,7 +26,7 @@ internal static class LocalMediaObjectStorageDependencyInjection
             ServiceDescriptor.Singleton<
                 IValidateOptions<LocalMediaObjectStorageOptions>,
                 LocalMediaObjectStorageOptionsValidator>());
-        services.TryAddScoped<IMediaObjectStore, LocalMediaObjectStore>();
+        services.TryAddScoped<IObjectStore, LocalMediaObjectStore>();
         return services;
     }
 }

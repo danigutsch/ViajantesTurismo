@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using Microsoft.Extensions.Logging;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
@@ -6,7 +7,7 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// Reconciles media metadata references with object storage inventory.
 /// </summary>
 public sealed partial class MediaObjectReconciliationService(
-    IMediaObjectStore objectStore,
+    IObjectStore objectStore,
     IPublicMediaImageStore imageStore,
     TimeProvider? timeProvider = null,
     ILogger<MediaObjectReconciliationService>? logger = null)

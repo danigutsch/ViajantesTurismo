@@ -1,5 +1,5 @@
+using PandaBear.ObjectStorage;
 using ViajantesTurismo.Catalog.ApiService;
-using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
@@ -61,7 +61,7 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         var objectStore = new TestMediaObjectStore { StallReadsAfterFirstByte = stallReadsAfterFirstByte };
         await objectStore.Put(
-            new MediaObjectWriteRequest(ObjectKey, new MemoryStream(Payload), "image/jpeg", Payload.Length, "sha256:stream"),
+            new ObjectWriteRequest(ObjectKey, new MemoryStream(Payload), "image/jpeg", Payload.Length, "sha256:stream"),
             TestContext.Current.CancellationToken);
 
         return new MediaDeliveryScenario(CatalogApiTestHost.Create(tourStore, mediaStore, objectStore), objectStore, image.Id);

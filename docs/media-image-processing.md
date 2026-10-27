@@ -7,7 +7,7 @@ This page documents the Catalog media processing flow.
 ```mermaid
 sequenceDiagram
     participant Upload as Upload intake
-    participant Store as IMediaObjectStore
+    participant Store as IObjectStore
     participant Event as MediaImageOriginalStoredIntegrationEvent
     participant Handler as MediaImageOriginalStoredIntegrationHandler
     participant Images as IPublicMediaImageStore

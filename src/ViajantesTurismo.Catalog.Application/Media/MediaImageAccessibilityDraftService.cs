@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using System.Diagnostics;
 using PandaBear.AI;
 using PandaBear.Results;
@@ -11,7 +12,7 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// </summary>
 public sealed class MediaImageAccessibilityDraftService(
     IPublicMediaImageStore imageStore,
-    IMediaObjectStore objectStore,
+    IObjectStore objectStore,
     IImageTextGenerator imageTextGenerator,
     TimeProvider? timeProvider = null,
     MediaImageAccessibilityGenerationProvenance? provenance = null)
@@ -48,7 +49,7 @@ public sealed class MediaImageAccessibilityDraftService(
             return Result.NotFound<PublicMediaImage>("Media image was not found.");
         }
 
-        MediaObjectReadResult source;
+        ObjectReadResult source;
         try
         {
             source = await objectStore.OpenRead(image.SourceObjectKey, ct).ConfigureAwait(false);

@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -32,16 +33,16 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
-            new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
+            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
             TestContext.Current.CancellationToken);
         await objectStore.Put(
-            new MediaObjectWriteRequest("media/hosted-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
+            new ObjectWriteRequest("media/hosted-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
         objectStore.SetLastModified("media/hosted-orphan.jpg", TimeProvider.System.GetUtcNow().AddDays(-2));
 
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var services = new ServiceCollection();
-        services.AddScoped<IMediaObjectStore>(_ => objectStore);
+        services.AddScoped<IObjectStore>(_ => objectStore);
         services.AddScoped<IPublicMediaImageStore>(_ => imageStore);
         services.AddScoped<MediaObjectReconciliationService>();
 
@@ -53,10 +54,10 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
         var objectStore = new InMemoryMediaObjectStore();
         await objectStore.Put(
-            new MediaObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
+            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
             TestContext.Current.CancellationToken);
         await objectStore.Put(
-            new MediaObjectWriteRequest("media/recent-hosted-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
+            new ObjectWriteRequest("media/recent-hosted-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
             TestContext.Current.CancellationToken);
 
         return Create(image, objectStore);
@@ -72,7 +73,7 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
     {
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var services = new ServiceCollection();
-        services.AddScoped<IMediaObjectStore>(_ => objectStore);
+        services.AddScoped<IObjectStore>(_ => objectStore);
         services.AddScoped<IPublicMediaImageStore>(_ => imageStore);
         services.AddScoped<MediaObjectReconciliationService>();
 

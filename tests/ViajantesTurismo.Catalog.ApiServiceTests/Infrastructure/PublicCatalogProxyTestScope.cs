@@ -1,8 +1,8 @@
+using PandaBear.ObjectStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http.Resilience;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
-using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Public.Web.Components;
 
@@ -80,7 +80,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
             await media.Upsert(image, ct);
             var payload = "gallery-media"u8.ToArray();
             using var content = new MemoryStream(payload);
-            await objects.Put(new MediaObjectWriteRequest(
+            await objects.Put(new ObjectWriteRequest(
                 $"gallery/image-{imageNumber}-640.jpg", content, "image/jpeg", payload.Length, "sha256:gallery"), ct);
             imageIds.Add(image.Id);
         }

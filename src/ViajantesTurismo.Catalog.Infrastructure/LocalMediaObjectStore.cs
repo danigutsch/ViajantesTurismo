@@ -1,11 +1,11 @@
+using PandaBear.ObjectStorage;
 using Microsoft.Extensions.Options;
 using PandaBear.InputNormalization;
-using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
-internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOptions> storageOptions) : IMediaObjectStore
+internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOptions> storageOptions) : IObjectStore
 {
     private const string UriPathSeparator = "/";
     private const string TemporaryFilePrefix = ".viajantes-";
@@ -13,7 +13,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
 
     private readonly LocalMediaObjectStorageOptions options = storageOptions.Value;
 
-    public async ValueTask<MediaObjectWriteResult> Put(MediaObjectWriteRequest request, CancellationToken ct)
+    public async ValueTask<ObjectWriteResult> Put(ObjectWriteRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -62,7 +62,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             throw;
         }
 
-        return new MediaObjectWriteResult(
+        return new ObjectWriteResult(
             request.ObjectKey,
             new Uri(path),
             GetPublicUri(request.ObjectKey),
@@ -71,7 +71,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             request.Checksum);
     }
 
-    public ValueTask<MediaObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
+    public ValueTask<ObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -85,7 +85,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             Options = FileOptions.Asynchronous
         });
 
-        return ValueTask.FromResult(new MediaObjectReadResult(objectKey, stream, GetContentType(objectKey), stream.Length));
+        return ValueTask.FromResult(new ObjectReadResult(objectKey, stream, GetContentType(objectKey), stream.Length));
     }
 
     public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
@@ -116,30 +116,30 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return ValueTask.FromResult<IReadOnlyList<string>>(keys);
     }
 
-    public ValueTask<IReadOnlyList<MediaObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
+    public ValueTask<IReadOnlyList<ObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
         var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(options.RootPath));
         if (!Directory.Exists(root))
         {
-            return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>([]);
+            return ValueTask.FromResult<IReadOnlyList<ObjectInventoryItem>>([]);
         }
 
         var normalizedPrefix = NormalizePrefix(prefix);
         var objects = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
             .Where(path => !IsTemporaryArtifact(path))
-            .Select(path => new MediaObjectInventoryItem(
+            .Select(path => new ObjectInventoryItem(
                 Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/'),
                 new DateTimeOffset(File.GetLastWriteTimeUtc(path))))
             .Where(item => item.ObjectKey.StartsWith(normalizedPrefix, StringComparison.Ordinal))
             .OrderBy(item => item.ObjectKey, StringComparer.Ordinal)
             .ToArray();
 
-        return ValueTask.FromResult<IReadOnlyList<MediaObjectInventoryItem>>(objects);
+        return ValueTask.FromResult<IReadOnlyList<ObjectInventoryItem>>(objects);
     }
 
-    public ValueTask<MediaObjectUploadTicket> CreateUploadUrl(MediaObjectUploadRequest request, CancellationToken ct)
+    public ValueTask<ObjectUploadTicket> CreateUploadUrl(ObjectUploadRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();

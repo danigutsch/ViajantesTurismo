@@ -108,10 +108,10 @@ internal static class CatalogInfrastructureTestServices
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
             [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
             [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310",
-            [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Endpoint"] = "https://seaweedfs.example",
-            [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Bucket"] = "media",
-            [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:AccessKey"] = "access",
-            [$"{SeaweedFsMediaObjectStorageOptions.SectionName}:SecretKey"] = "secret"
+            [$"{MediaObjectStorageConfiguration.SectionName}:Endpoint"] = "https://seaweedfs.example",
+            [$"{MediaObjectStorageConfiguration.SectionName}:Bucket"] = "media",
+            [$"{MediaObjectStorageConfiguration.SectionName}:AccessKey"] = "access",
+            [$"{MediaObjectStorageConfiguration.SectionName}:SecretKey"] = "secret"
         });
         builder.Services.AddOpenTelemetry().WithTracing(static _ => { });
 
@@ -128,18 +128,18 @@ internal static class CatalogInfrastructureTestServices
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=viajantes;Username=test;Password=test",
             [ClamAvMalwareScannerConfigurationKeys.HostConfigurationKey] = "clamav",
             [ClamAvMalwareScannerConfigurationKeys.PortConfigurationKey] = "3310",
-            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:Endpoint"] = "https://s3.eu-central-1.amazonaws.com",
-            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:AuthenticationRegion"] = "eu-central-1",
-            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:ForcePathStyle"] = "false",
-            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:Bucket"] = "cloud-media",
-            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:AccessKey"] = "test-access",
-            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:SecretKey"] = "test-secret",
-            [$"{SeaweedFsMediaObjectStorageOptions.S3SectionName}:PublicBaseUri"] = "https://cdn.example.com/published/"
+            [$"{MediaObjectStorageConfiguration.S3SectionName}:Endpoint"] = "https://s3.eu-central-1.amazonaws.com",
+            [$"{MediaObjectStorageConfiguration.S3SectionName}:AuthenticationRegion"] = "eu-central-1",
+            [$"{MediaObjectStorageConfiguration.S3SectionName}:ForcePathStyle"] = "false",
+            [$"{MediaObjectStorageConfiguration.S3SectionName}:Bucket"] = "cloud-media",
+            [$"{MediaObjectStorageConfiguration.S3SectionName}:AccessKey"] = "test-access",
+            [$"{MediaObjectStorageConfiguration.S3SectionName}:SecretKey"] = "test-secret",
+            [$"{MediaObjectStorageConfiguration.S3SectionName}:PublicBaseUri"] = "https://cdn.example.com/published/"
         };
         if (includeSeaweedFsSection)
         {
             // An incomplete local section must not override valid production configuration.
-            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Endpoint"] = "http://seaweedfs:8333";
+            configuration[$"{MediaObjectStorageConfiguration.SectionName}:Endpoint"] = "http://seaweedfs:8333";
         }
         builder.Configuration.AddInMemoryCollection(configuration);
         builder.AddCatalogInfrastructure();
@@ -175,10 +175,10 @@ internal static class CatalogInfrastructureTestServices
         };
         if (!builder.Environment.IsDevelopment())
         {
-            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Endpoint"] = "https://seaweedfs.example";
-            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:Bucket"] = "media";
-            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:AccessKey"] = "access";
-            configuration[$"{SeaweedFsMediaObjectStorageOptions.SectionName}:SecretKey"] = "secret";
+            configuration[$"{MediaObjectStorageConfiguration.SectionName}:Endpoint"] = "https://seaweedfs.example";
+            configuration[$"{MediaObjectStorageConfiguration.SectionName}:Bucket"] = "media";
+            configuration[$"{MediaObjectStorageConfiguration.SectionName}:AccessKey"] = "access";
+            configuration[$"{MediaObjectStorageConfiguration.SectionName}:SecretKey"] = "secret";
         }
         builder.Configuration.AddInMemoryCollection(configuration);
 

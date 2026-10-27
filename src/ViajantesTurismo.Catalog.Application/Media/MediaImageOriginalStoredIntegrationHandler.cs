@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using System.Globalization;
 using PandaBear.BuildingBlocks;
 using PandaBear.ImageProcessing;
@@ -12,7 +13,7 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// Processes stored original media images into deterministic public variants.
 /// </summary>
 public sealed class MediaImageOriginalStoredIntegrationHandler(
-    IMediaObjectStore objectStore,
+    IObjectStore objectStore,
     IPublicMediaImageStore imageStore,
     ICatalogTourMutationLock mutationLock) : IIntegrationEventHandler<MediaImageOriginalStoredIntegrationEvent>
 {
@@ -99,7 +100,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
             using var content = new MemoryStream(variant.Content.ToArray());
             var objectKey = CreateVariantObjectKey(mediaImageId, processingVersion, variant);
             var stored = await objectStore.Put(
-                new MediaObjectWriteRequest(
+                new ObjectWriteRequest(
                     objectKey,
                     content,
                     GetContentType(variant.Format),

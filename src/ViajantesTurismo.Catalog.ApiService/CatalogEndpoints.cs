@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -230,7 +231,7 @@ internal static class CatalogEndpoints
         string format,
         ICatalogTourReadModelStore tourStore,
         IPublicMediaImageStore imageStore,
-        IMediaObjectStore objectStore,
+        IObjectStore objectStore,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -292,7 +293,7 @@ internal static class CatalogEndpoints
         int width,
         string format,
         IPublicMediaImageStore imageStore,
-        IMediaObjectStore objectStore,
+        IObjectStore objectStore,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -1023,8 +1024,8 @@ internal static class CatalogEndpoints
         _ => null
     };
 
-    private static async Task<MediaObjectReadResult?> TryOpenMediaObject(
-        IMediaObjectStore objectStore,
+    private static async Task<ObjectReadResult?> TryOpenMediaObject(
+        IObjectStore objectStore,
         string objectKey,
         CancellationToken ct)
     {

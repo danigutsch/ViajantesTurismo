@@ -1,3 +1,4 @@
+using PandaBear.ObjectStorage;
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,7 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 public sealed partial class MediaImageUploadIntake(
     IMediaUploadValidator validator,
     IMediaUploadScanner scanner,
-    IMediaObjectStore objectStore,
+    IObjectStore objectStore,
     IPublicMediaImageStore imageStore,
     IIntegrationEventOutbox outbox,
     IOptions<MediaUploadValidationOptions> validationOptions,
@@ -120,7 +121,7 @@ public sealed partial class MediaImageUploadIntake(
         var checksum = ComputeChecksum(content);
         content.Position = 0;
         var stored = await objectStore.Put(
-            new MediaObjectWriteRequest(objectKey, content, request.ContentType.Trim(), actualLength, checksum),
+            new ObjectWriteRequest(objectKey, content, request.ContentType.Trim(), actualLength, checksum),
             ct).ConfigureAwait(false);
         var imageResult = PublicMediaImage.Create(
             new PublicMediaImageMetadata
