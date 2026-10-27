@@ -173,7 +173,7 @@ Aspire's existing endpoint proxy balances requests between these processes. Publ
 serves read-only static server-rendered pages without interactive circuits or background jobs,
 making it the first service suitable for this local scale-out check. Its health check and waits for
 Catalog and Branding remain in place. Invalid counts fail during AppHost model composition.
-See the [Aspire replica API](https://github.com/microsoft/aspire/blob/v13.6.1/src/Aspire.Hosting/ProjectResourceBuilderExtensions.cs).
+See the [Aspire replica API](https://github.com/microsoft/aspire/blob/v13.6.4/src/Aspire.Hosting/ProjectResourceBuilderExtensions.cs).
 
 Multiple processes on one machine provide process redundancy and a way to test scale-out. They do
 not provide host or availability-zone failover: the local proxy, backend services, and databases
