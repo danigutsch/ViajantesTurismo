@@ -22,7 +22,6 @@ source is discoverable.
 ## Source-of-truth policy
 
 - **Project dependencies**: generate from `*.csproj` project references.
-- **SharedKernel dependencies**: generate from `src/SharedKernel/**/*.csproj` project references.
 - **Local Aspire runtime wiring**: generate from AppHost source for local orchestration docs only.
 - **GitHub workflow maps**: generate from `.github/workflows/*.yml`.
 - **System overview**: keep curated in `docs/architecture/generated-diagrams.json` because trust
