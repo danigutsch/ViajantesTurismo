@@ -8,6 +8,9 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 
+/// <summary>
+/// Wires the draft retention hosted service to a fake document store and fixed clock for batch tests.
+/// </summary>
 internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposable, IDisposable
 {
     private readonly ServiceProvider provider;
@@ -22,11 +25,17 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
             NullLogger<DocumentDraftRetentionHostedService>.Instance);
     }
 
+    /// <summary>
+    /// Gets the fake document store holding the seeded draft.
+    /// </summary>
     public FakeDocumentStore DocumentStore
     {
         get;
     }
 
+    /// <summary>
+    /// Creates a fixture whose fake store contains <paramref name="draft"/> and whose clock is fixed at <paramref name="now"/>.
+    /// </summary>
     public static DocumentDraftRetentionHostedServiceFixture Create(DateTimeOffset now, DocumentDraft draft)
     {
         var store = new FakeDocumentStore();
@@ -40,14 +49,23 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
         return new DocumentDraftRetentionHostedServiceFixture(provider, store);
     }
 
+    /// <summary>
+    /// Runs one purge batch on the hosted service and returns the purged count.
+    /// </summary>
     public ValueTask<int> RunBatch(CancellationToken ct) => hostedService.RunBatch(ct);
 
+    /// <summary>
+    /// Disposes the hosted service and the service provider.
+    /// </summary>
     public void Dispose()
     {
         hostedService.Dispose();
         provider.Dispose();
     }
 
+    /// <summary>
+    /// Asynchronously disposes the hosted service and the service provider.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         hostedService.Dispose();

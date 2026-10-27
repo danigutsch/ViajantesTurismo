@@ -146,6 +146,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         return Result.Ok(lineage);
     }
 
+    /// <summary>Rebuilds a lineage from its persisted revisions, ordered by revision number.</summary>
     internal static DocumentLineage Restore(IEnumerable<DocumentDraft> revisions)
     {
         ArgumentNullException.ThrowIfNull(revisions);

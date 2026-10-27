@@ -5,8 +5,10 @@ using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
 
+/// <summary>Arranges bookings and documents for document API tests.</summary>
 internal static class DocumentApiTestSetup
 {
+    /// <summary>Posts to <paramref name="route"/> with an <c>Idempotency-Key</c> header and returns the response.</summary>
     public static async Task<HttpResponseMessage> PostIdempotentCommand(
         HttpClient client,
         Uri route,
@@ -18,6 +20,7 @@ internal static class DocumentApiTestSetup
         return await client.SendAsync(request, ct);
     }
 
+    /// <summary>Creates a tour, customer and confirmed booking, then generates a contract draft and returns the booking id, client and draft.</summary>
     public static async Task<(Guid BookingId, DocumentsApiClient Client, GetDocumentDto Document)>
         CreateGeneratedDocument(ApiFixture fixture, string scenarioName, CancellationToken ct)
     {

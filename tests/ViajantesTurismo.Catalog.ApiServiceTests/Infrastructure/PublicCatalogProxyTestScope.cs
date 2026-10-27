@@ -8,6 +8,7 @@ using ViajantesTurismo.Public.Web.Components;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
+/// <summary>Hosts Catalog and Public.Web frontends in memory to test the public catalog proxy.</summary>
 internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
 {
     private readonly TestCatalogTourReadModelStore tours = new();
@@ -20,6 +21,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
     private readonly IReadOnlyDictionary<string, string?>? frontendConfiguration;
     private int catalogRequestCount;
 
+    /// <summary>Creates the Catalog host, optionally with a sensitive circuit breaker and extra configuration.</summary>
     public PublicCatalogProxyTestScope(
         bool sensitiveCircuitBreaker = false,
         IReadOnlyDictionary<string, string?>? frontendConfiguration = null,
@@ -36,8 +38,10 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
                 (_, configuration) => configuration.AddInMemoryCollection(catalogConfiguration)));
     }
 
+    /// <summary>Number of requests that reached the Catalog host.</summary>
     public int CatalogRequestCount => Volatile.Read(ref catalogRequestCount);
 
+    /// <summary>Creates a client for the given frontend replica with the given remote IP address.</summary>
     public HttpClient CreateVisitor(IPAddress address, int frontendReplica = 0)
     {
         ArgumentNullException.ThrowIfNull(address);
@@ -54,6 +58,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
         };
     }
 
+    /// <summary>Creates a client that calls the Catalog host directly from the given IP address.</summary>
     public HttpClient CreateDirectCatalogCaller(IPAddress address)
     {
         ArgumentNullException.ThrowIfNull(address);
@@ -64,6 +69,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
         };
     }
 
+    /// <summary>Seeds a published tour with the given number of ready images and returns their ids.</summary>
     public async Task<IReadOnlyList<Guid>> SeedPublishedGallery(int imageCount, CancellationToken ct)
     {
         var tourId = Guid.CreateVersion7();
@@ -88,6 +94,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
         return imageIds;
     }
 
+    /// <summary>Disposes the frontends and the Catalog host.</summary>
     public async ValueTask DisposeAsync()
     {
         foreach (var frontend in frontends)

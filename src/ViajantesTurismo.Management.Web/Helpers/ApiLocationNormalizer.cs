@@ -1,9 +1,11 @@
 namespace ViajantesTurismo.Management.Web.Helpers;
 
+/// <summary>Converts API resource locations into UI routes.</summary>
 internal static class ApiLocationNormalizer
 {
     private const string ApiVersionPrefix = "/api/v1";
 
+    /// <summary>Maps an API Location URI to a UI route by stripping the API version prefix, or returns the fallback path when the location is missing or protocol-relative.</summary>
     internal static string ToUiRoute(Uri? location, string fallbackPath, string versionedResourcePathPrefix)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fallbackPath);

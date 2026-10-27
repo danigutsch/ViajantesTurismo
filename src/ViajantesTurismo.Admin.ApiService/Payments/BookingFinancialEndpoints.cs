@@ -7,8 +7,10 @@ using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.ApiService.Payments;
 
+/// <summary>Endpoints for booking financial history, payment schedules and quotes.</summary>
 internal static class BookingFinancialEndpoints
 {
+    /// <summary>Maps the booking financial endpoints under the payment workflow policy.</summary>
     public static void MapBookingFinancialEndpoints(this WebApplication app)
     {
         var group = app.MapBookingsGroup().MapGroup("/{bookingId:guid}/finances").WithPaymentWorkflowPolicy();

@@ -21,11 +21,13 @@ internal sealed class FakeCountryService : ICountryService
 
     private readonly Task<CountryInfo[]> countries;
 
+    /// <summary>Creates the fake with the default list of ten countries.</summary>
     public FakeCountryService()
         : this(Task.FromResult(DefaultCountries.ToArray()))
     {
     }
 
+    /// <summary>Creates the fake returning the given pending or completed countries task.</summary>
     public FakeCountryService(Task<CountryInfo[]> countries)
     {
         ArgumentNullException.ThrowIfNull(countries);

@@ -7,8 +7,10 @@ using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.ApiService.Payments;
 
+/// <summary>Endpoints for generating and reviewing payment instructions.</summary>
 internal static class PaymentInstructionEndpoints
 {
+    /// <summary>Maps the payment instruction endpoints under the payment workflow policy.</summary>
     public static void MapPaymentInstructionEndpoints(this WebApplication app)
     {
         var group = app.MapDocumentsGroup().WithPaymentWorkflowPolicy();

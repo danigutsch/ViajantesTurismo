@@ -4,10 +4,13 @@ using ViajantesTurismo.Admin.Application.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
+/// <summary>Serializes tour capacity mutations with a PostgreSQL session advisory lock per tour.</summary>
+/// <param name="dataSource">The PostgreSQL data source used to open the lock session.</param>
 internal sealed class PostgreSqlTourCapacityMutationLock(NpgsqlDataSource dataSource) : ITourCapacityMutationLock
 {
     private const string LockPurpose = "admin:tour-capacity:";
 
+    /// <inheritdoc />
     public ValueTask<IAsyncDisposable> Acquire(Guid tourId, CancellationToken ct) =>
         PostgreSqlSessionAdvisoryLock.Acquire(dataSource, CreateLockKey(tourId), ct);
 

@@ -10,8 +10,10 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Builds Catalog infrastructure service providers for composition tests.</summary>
 internal static class CatalogInfrastructureTestServices
 {
+    /// <summary>Registers Catalog infrastructure in Production without media storage configuration.</summary>
     public static void AddProductionInfrastructureWithoutMediaStorage()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -28,6 +30,7 @@ internal static class CatalogInfrastructureTestServices
         builder.AddCatalogInfrastructure();
     }
 
+    /// <summary>Creates a Development scenario with ClamAV configured.</summary>
     public static CatalogInfrastructureScenario CreateScenario()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -47,6 +50,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a Development scenario with malware scanning disabled.</summary>
     public static CatalogInfrastructureScenario CreateDevelopmentScenario()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -64,6 +68,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a scenario with the outbox relay disabled, as during build-time OpenAPI generation.</summary>
     public static CatalogInfrastructureScenario CreateOpenApiBuildGenerationScenario()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -82,6 +87,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a Development scenario with ClamAV host and port configured.</summary>
     public static CatalogInfrastructureScenario CreateConfiguredDevelopmentScenario()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -100,6 +106,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a scenario configured with the SeaweedFS media storage section.</summary>
     public static CatalogInfrastructureScenario CreateSeaweedFsScenario()
     {
         var builder = Host.CreateApplicationBuilder();
@@ -120,6 +127,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a scenario configured with S3 media storage, optionally with a conflicting incomplete SeaweedFS section.</summary>
     public static CatalogInfrastructureScenario CreateS3Scenario(bool includeSeaweedFsSection)
     {
         var builder = Host.CreateApplicationBuilder();
@@ -147,6 +155,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a scenario that registers only Catalog database initialization.</summary>
     public static CatalogInfrastructureScenario CreateSeedingScenario()
     {
         var builder = Host.CreateApplicationBuilder();
@@ -160,6 +169,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a scenario for the integration event worker host; non-Development adds SeaweedFS storage settings.</summary>
     public static CatalogInfrastructureScenario CreateWorkerScenario(string environmentName = "Production")
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -187,6 +197,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a scenario for the API-hosted integration event transport.</summary>
     public static CatalogInfrastructureScenario CreateApiHostedTransportScenario()
     {
         var builder = Host.CreateApplicationBuilder();
@@ -200,6 +211,7 @@ internal static class CatalogInfrastructureTestServices
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a scenario registering Branding before Catalog infrastructure in one host.</summary>
     public static CatalogInfrastructureScenario CreateBrandingCoHostedScenario()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -220,25 +232,31 @@ internal static class CatalogInfrastructureTestServices
     }
 }
 
+/// <summary>Built Catalog infrastructure service provider with helpers to assert registrations.</summary>
+/// <param name="provider">Service provider under test, disposed with the scenario.</param>
 internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : IDisposable
 {
     private readonly IHostedService[] hostedServices = provider.GetServices<IHostedService>().ToArray();
 
+    /// <summary>Asserts the hosted service type is registered.</summary>
     public void ShouldIncludeHostedService<TService>()
     {
         ContainsHostedService<TService>().ShouldBeTrue();
     }
 
+    /// <summary>Asserts the hosted service type is not registered.</summary>
     public void ShouldNotIncludeHostedService<TService>()
     {
         ContainsHostedService<TService>().ShouldBeFalse();
     }
 
+    /// <summary>Returns whether a hosted service of exactly the given type is registered.</summary>
     public bool ContainsHostedService<TService>()
     {
         return hostedServices.Any(service => service.GetType() == typeof(TService));
     }
 
+    /// <summary>Returns whether a hosted service is the named outbox relay generic type over the given context.</summary>
     public bool ContainsHostedService<TContext>(string genericTypeName)
     {
         return hostedServices.Any(service =>
@@ -251,6 +269,7 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         });
     }
 
+    /// <summary>Resolves the required service and asserts it is not null.</summary>
     public TService ShouldResolve<TService>()
         where TService : class
     {
@@ -259,6 +278,7 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         return service;
     }
 
+    /// <summary>Asserts the service resolves to the same instance across scopes.</summary>
     public void ShouldResolveSingleton<TService>()
         where TService : class
     {
@@ -271,12 +291,14 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         ReferenceEquals(first, second).ShouldBeTrue();
     }
 
+    /// <summary>Asserts options for the context are registered.</summary>
     public void ShouldResolveDbContextOptions<TContext>()
         where TContext : DbContext
     {
         provider.GetRequiredService<DbContextOptions<TContext>>().ShouldNotBeNull();
     }
 
+    /// <summary>Returns whether sensitive data logging is enabled on the context options.</summary>
     public bool IsSensitiveDataLoggingEnabled<TContext>()
         where TContext : DbContext
     {
@@ -284,12 +306,14 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         return options.FindExtension<Microsoft.EntityFrameworkCore.Infrastructure.CoreOptionsExtension>()?.IsSensitiveDataLoggingEnabled ?? false;
     }
 
+    /// <summary>Asserts the service resolves to the implementation type.</summary>
     public void ShouldResolveAs<TService, TImplementation>()
         where TService : notnull
     {
         provider.GetRequiredService<TService>().ShouldBeOfType<TImplementation>();
     }
 
+    /// <summary>Asserts exactly one registered item of the service is of the implementation type.</summary>
     public void ShouldResolveEnumerableItemAs<TService, TImplementation>()
         where TService : notnull
     {
@@ -297,6 +321,7 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         service.ShouldBeOfType<TImplementation>();
     }
 
+    /// <summary>Returns whether the default outbox is the one keyed to the context.</summary>
     public bool DefaultOutboxBelongsTo<TContext>()
         where TContext : DbContext
     {
@@ -306,6 +331,7 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         return ReferenceEquals(defaultOutbox, contextOutbox);
     }
 
+    /// <summary>Returns the schema and table name of the context outbox message entity.</summary>
     public (string? Schema, string? Table) OutboxTable<TContext>()
         where TContext : DbContext
     {
@@ -315,6 +341,7 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         return (entityType.GetSchema(), entityType.GetTableName());
     }
 
+    /// <summary>Disposes the underlying service provider.</summary>
     public void Dispose()
     {
         provider.DisposeAsync().AsTask().GetAwaiter().GetResult();

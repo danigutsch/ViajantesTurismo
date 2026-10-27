@@ -76,8 +76,10 @@ public sealed class PaymentRecipientDetails : ValueObject
         string recipientName, string? ispb, string? branch, string? accountNumber, BrazilianAccountType accountType, string? taxId) =>
         Restore(new PaymentRecipientState(PaymentAccountKind.BrazilianBank, recipientName, null, null, PixKeyType.None, null, ispb, branch, accountNumber, accountType, taxId, Currency.Real));
 
+    /// <summary>Exports the recipient details as a persistence snapshot.</summary>
     internal PaymentRecipientState ExportState() => _state;
 
+    /// <summary>Validates untrusted persisted state and rebuilds the recipient details, failing when invalid.</summary>
     internal static Result<PaymentRecipientDetails> Restore(PaymentRecipientState? state)
     {
         if (state is null || state.SettlementCurrency is not (Currency.Euro or Currency.Real) || string.IsNullOrWhiteSpace(state.RecipientName)

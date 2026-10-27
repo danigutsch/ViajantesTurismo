@@ -5,6 +5,7 @@ using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace ViajantesTurismo.ArchitectureTests.Dependencies;
 
+/// <summary>Helpers for the layer and project dependency tests over source projects and assemblies.</summary>
 internal static partial class LayerDependencyTestsHelpers
 {
     private static readonly string[] OptionalSubmoduleSegmentNames =
@@ -25,12 +26,14 @@ internal static partial class LayerDependencyTestsHelpers
         "Web"
     ];
 
+    /// <summary>Selects the architecture types in the namespace root or its child namespaces, labelled with the description.</summary>
     public static GivenTypesConjunctionWithDescription TypesInNamespace(string namespaceRoot, string description)
     {
         var pattern = $"^{Regex.Escape(namespaceRoot)}(\\.|$)";
         return Types().That().ResideInNamespaceMatching(pattern).As(description);
     }
 
+    /// <summary>Returns the repository root: the nearest ancestor of the test output directory that holds ViajantesTurismo.slnx.</summary>
     public static string GetRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -42,6 +45,7 @@ internal static partial class LayerDependencyTestsHelpers
         return directory?.FullName ?? throw new InvalidOperationException("Could not locate repository root.");
     }
 
+    /// <summary>Finds SharedKernel source lines that reference the product, returned as offenses.</summary>
     public static string[] FindSharedKernelProductReferences(string repositoryRoot)
     {
         return SharedKernelSourceFiles(repositoryRoot)
@@ -49,6 +53,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds adapter package references in domain, application and contract projects, returned as offenses.</summary>
     public static string[] FindLayerAdapterPackageReferences(string repositoryRoot)
     {
         var sourceRoot = Path.Combine(repositoryRoot, "src");
@@ -59,6 +64,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds adapter package references in provider-neutral SharedKernel projects, returned as offenses.</summary>
     public static string[] FindProviderNeutralSharedKernelAdapterPackageReferences(string repositoryRoot)
     {
         var sharedKernelRoot = Path.Combine(repositoryRoot, "src", "SharedKernel");
@@ -69,6 +75,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds SharedKernel projects that reference Entity Framework Core without naming it as an adapter.</summary>
     public static string[] FindSharedKernelEntityFrameworkCoreAdapterNamingViolations(string repositoryRoot)
     {
         return SharedKernelSourceProjectFiles(repositoryRoot)
@@ -78,6 +85,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds SharedKernel projects that use Core as a project-name segment.</summary>
     public static string[] FindSharedKernelCoreSegmentProjectViolations(string repositoryRoot)
     {
         return SharedKernelSourceProjectFiles(repositoryRoot)
@@ -88,6 +96,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds primary SharedKernel projects whose runtime references point to their own optional descendant submodules.</summary>
     public static string[] FindSharedKernelRuntimeReferencesToDescendantOptionalSubmodules(string repositoryRoot)
     {
         return SharedKernelSourceProjectFiles(repositoryRoot)
@@ -96,6 +105,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds SharedKernel runtime references to optional sibling submodules of the same family.</summary>
     public static string[] FindSharedKernelRuntimeReferencesToSameFamilyOptionalSiblingSubmodules(string repositoryRoot)
     {
         return SharedKernelSourceProjectFiles(repositoryRoot)
@@ -103,6 +113,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds abstraction projects that reference implementation projects.</summary>
     public static string[] FindAbstractionProjectImplementationReferences(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)
@@ -111,6 +122,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds project references that point against the allowed layer direction.</summary>
     public static string[] FindLayerProjectReferenceDirectionViolations(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)
@@ -118,6 +130,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds references from the domain assemblies to banned framework assemblies, as "assembly references name".</summary>
     public static string[] FindDomainFrameworkAssemblyReferences(IEnumerable<System.Reflection.Assembly> domainAssemblies)
     {
         string[] bannedAssemblyNames =
@@ -143,6 +156,7 @@ internal static partial class LayerDependencyTestsHelpers
         ];
     }
 
+    /// <summary>Finds projects that miss the domain analyzer packages when they are domain projects, or carry them when they are not.</summary>
     public static string[] FindDomainAnalyzerActivationViolations(string repositoryRoot)
     {
         string[] domainAnalyzerPackageNames =
@@ -171,6 +185,7 @@ internal static partial class LayerDependencyTestsHelpers
         ];
     }
 
+    /// <summary>Finds domain projects that reference contract projects.</summary>
     public static string[] FindDomainContractProjectReferences(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)
@@ -179,6 +194,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds product contract projects not split into .Contracts.Application, .Contracts.Http or .Contracts.IntegrationEvents.</summary>
     public static string[] FindUnsplitProductContractProjects(string repositoryRoot)
     {
         return SourceProjectFiles(repositoryRoot)
@@ -189,6 +205,7 @@ internal static partial class LayerDependencyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds required module boundary rules missing from their documentation files.</summary>
     public static string[] FindModuleBoundaryDocumentationRuleGaps(string repositoryRoot)
     {
         return RequiredModuleBoundaryDocumentationSnippets()
@@ -464,6 +481,7 @@ internal static partial class LayerDependencyTestsHelpers
         return projectName;
     }
 
+    /// <summary>Reports whether the referencing project may not reference the referenced project under the layer direction rules.</summary>
     internal static bool IsLayerProjectReferenceDirectionViolation(
         string referencingProjectName,
         string referencedProjectName)

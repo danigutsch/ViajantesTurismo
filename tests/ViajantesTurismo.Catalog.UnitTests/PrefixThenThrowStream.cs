@@ -1,5 +1,8 @@
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Non-seekable stream that writes a prefix to the destination during <c>CopyToAsync</c> and then throws.</summary>
+/// <param name="prefix">Bytes written before the failure.</param>
+/// <param name="exception">Exception thrown after the prefix is written.</param>
 internal sealed class PrefixThenThrowStream(byte[] prefix, IOException exception) : Stream
 {
     public override bool CanRead => true;

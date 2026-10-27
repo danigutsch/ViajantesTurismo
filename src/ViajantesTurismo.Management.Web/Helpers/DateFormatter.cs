@@ -10,7 +10,9 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 /// </summary>
 internal static class DateFormatter
 {
+    /// <summary>Format string for dates without time.</summary>
     public const string DateFormat = "dd/MM/yyyy";
+    /// <summary>Format string for dates with hours and minutes.</summary>
     public const string DateTimeFormat = "dd/MM/yyyy HH:mm";
     private static CultureInfo Culture => CultureInfo.InvariantCulture;
 

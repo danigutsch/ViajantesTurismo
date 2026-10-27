@@ -4,8 +4,10 @@ using PandaBear.Branding;
 
 namespace ViajantesTurismo.Branding.Infrastructure.ModelConfigurations;
 
+/// <summary>EF Core mapping for <see cref="BrandingSettingsRecord"/>.</summary>
 internal sealed class BrandingSettingsConfiguration : IEntityTypeConfiguration<BrandingSettingsRecord>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<BrandingSettingsRecord> entity)
     {
         entity.ToTable("BrandingSettings", BrandingDbContext.SchemaName);

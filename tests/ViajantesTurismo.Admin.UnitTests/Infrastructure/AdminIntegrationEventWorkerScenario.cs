@@ -26,6 +26,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
         this.provider = provider;
     }
 
+    /// <summary>Composes the Admin integration-event worker infrastructure for production with placeholder connection strings.</summary>
     public static AdminIntegrationEventWorkerScenario ComposeWorker()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
@@ -42,6 +43,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
         return new AdminIntegrationEventWorkerScenario(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Creates a scenario whose branding projection store runs on a fresh in-memory database with worker event delivery registered.</summary>
     public static AdminIntegrationEventWorkerScenario InMemoryProjection()
     {
         var databaseName = Guid.CreateVersion7().ToString("N");
@@ -58,6 +60,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
         return new AdminIntegrationEventWorkerScenario(services.BuildServiceProvider());
     }
 
+    /// <summary>Returns the sorted display names of the registered hosted services, including generic type arguments.</summary>
     public string[] HostedServiceNames() =>
         provider.GetServices<IHostedService>()
             .Select(service => service.GetType())
@@ -67,6 +70,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
             .Order(StringComparer.Ordinal)
             .ToArray();
 
+    /// <summary>Returns the schema and table name mapped for the entity whose CLR type has the given name.</summary>
     public (string? Schema, string? Table) TableOf<TContext>(string clrTypeName)
         where TContext : DbContext
     {
@@ -105,6 +109,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
         await provider.GetRequiredService<IEventEnvelopePublisher>().Publish(envelope, ct);
     }
 
+    /// <summary>Reads the current branding projection state and the number of inbox records.</summary>
     public async Task<(BrandingProjectionState? Current, int InboxCount)> ReadProjection(CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
@@ -114,5 +119,6 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
         return (await store.GetCurrent(ct), inboxCount);
     }
 
+    /// <summary>Disposes the service provider.</summary>
     public void Dispose() => provider.Dispose();
 }

@@ -207,6 +207,9 @@ public sealed class DevelopmentDataInitializer
     private static readonly string[] BaselineCustomerNationalIds =
         Customers.Select(static customer => customer.IdentificationInfo.NationalId).ToArray();
 
+    /// <summary>Creates the initializer over the write context and time source.</summary>
+    /// <param name="dbContext">The write database context.</param>
+    /// <param name="timeProvider">The clock used for development-data timestamps.</param>
     internal DevelopmentDataInitializer(AdminWriteDbContext dbContext, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(dbContext);

@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Admin.ApiServiceTests.Payments;
 
+/// <summary>JSON request bodies for payment endpoint boundary tests.</summary>
 internal static class PaymentEndpointInputs
 {
+    /// <summary>Returns a valid account request body for the operation, defaulting to an expected-version confirmation.</summary>
     public static string Account(string operation) => operation switch
     {
         "create" => """{"label":"Checked recipient","recipient":{"kind":1,"settlementCurrency":1,"recipientName":"Checked recipient","iban":"DE89370400440532013000","bic":"COBADEFFXXX"}}""",
@@ -12,6 +14,7 @@ internal static class PaymentEndpointInputs
         _ => """{"expectedVersion":2,"confirmed":true}"""
     };
 
+    /// <summary>Returns a valid financial request body for the route template, defaulting to a reason confirmation.</summary>
     public static string ForRoute(string route) => route switch
     {
         "schedules" => """{"expectedVersion":2,"obligationEuro":100,"installments":[{"euroAmount":100,"dueDate":"2030-01-10"}]}""",

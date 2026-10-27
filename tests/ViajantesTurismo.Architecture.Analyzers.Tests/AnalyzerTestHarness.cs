@@ -5,9 +5,12 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace ViajantesTurismo.Architecture.Analyzers.Tests;
 
+/// <summary>Builds compilations and runs analyzers for architecture analyzer tests.</summary>
 internal static class AnalyzerTestHarness
 {
+    /// <summary>Assembly name of the Admin API service.</summary>
     public const string AdminApiAssemblyName = "ViajantesTurismo.Admin.ApiService";
+    /// <summary>Assembly name of the Catalog API service.</summary>
     public const string CatalogApiAssemblyName = "ViajantesTurismo.Catalog.ApiService";
 
     private const string DefaultUsings = """
@@ -22,6 +25,7 @@ internal static class AnalyzerTestHarness
 
         """;
 
+    /// <summary>Compiles test source with the shared support source and throws if it has compiler errors.</summary>
     public static CSharpCompilation CreateCompilation(
         string source,
         string assemblyName = AdminApiAssemblyName,
@@ -51,6 +55,7 @@ internal static class AnalyzerTestHarness
         return compilationWithSupport;
     }
 
+    /// <summary>Runs the production API HTTP analyzer over test source and returns its diagnostics.</summary>
     public static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnostics(
         string source,
         string assemblyName = AdminApiAssemblyName,

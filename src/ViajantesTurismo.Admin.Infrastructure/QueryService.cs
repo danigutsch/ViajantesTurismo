@@ -7,8 +7,12 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
+/// <summary>Read-side query service backed by the Admin read database context.</summary>
+/// <param name="dbContext">The Admin read database context.</param>
+/// <param name="histories">Payment history store used to attach booking financial state.</param>
 internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryStore histories) : IQueryService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct)
     {
         var tours = await dbContext.Tours
@@ -44,6 +48,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         ];
     }
 
+    /// <inheritdoc />
     public async Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct)
     {
         var tour = await dbContext.Tours
@@ -74,6 +79,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             };
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct)
     {
         var customers = await dbContext.Customers.OrderBy(c => c.PersonalInfo.FirstName).ThenBy(c => c.PersonalInfo.LastName).ToArrayAsync(ct);
@@ -92,6 +98,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         ];
     }
 
+    /// <inheritdoc />
     public async Task<CustomerDetailsDto?> GetCustomerDetailsById(Guid id, CancellationToken ct)
     {
         var customer = await dbContext.Customers.FindAsync([id], ct);
@@ -159,6 +166,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         };
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct)
     {
         var bookings = await dbContext.Tours
@@ -230,6 +238,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         ];
     }
 
+    /// <inheritdoc />
     public async Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct)
     {
         var booking = await dbContext.Tours
@@ -290,6 +299,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         };
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
     {
         var tour = await dbContext.Tours
@@ -362,6 +372,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         ];
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
     {
         var bookings = await dbContext.Tours

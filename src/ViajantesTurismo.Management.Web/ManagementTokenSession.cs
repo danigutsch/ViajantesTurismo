@@ -6,6 +6,8 @@ namespace ViajantesTurismo.Management.Web;
 /// <summary>
 /// Identifies one authenticated Management BFF login session and its absolute expiry.
 /// </summary>
+/// <param name="Id">The opaque session identifier used as the token cache key.</param>
+/// <param name="ExpiresAt">The absolute time at which the session ends.</param>
 internal readonly record struct ManagementTokenSession(string Id, DateTimeOffset ExpiresAt)
 {
     /// <summary>

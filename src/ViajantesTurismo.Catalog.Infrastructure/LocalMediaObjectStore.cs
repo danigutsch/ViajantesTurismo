@@ -5,6 +5,7 @@ using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
+/// <summary>Stores media objects as files under the configured local root, for development and tests.</summary>
 internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOptions> storageOptions) : IObjectStore
 {
     private const string UriPathSeparator = "/";
@@ -13,6 +14,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
 
     private readonly LocalMediaObjectStorageOptions options = storageOptions.Value;
 
+    /// <summary>Writes the object to a temporary file and moves it into place, replacing any existing object.</summary>
     public async ValueTask<ObjectWriteResult> Put(ObjectWriteRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -71,6 +73,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             request.Checksum);
     }
 
+    /// <summary>Opens the stored object for reading.</summary>
     public ValueTask<ObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -88,6 +91,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return ValueTask.FromResult(new ObjectReadResult(objectKey, stream, GetContentType(objectKey), stream.Length));
     }
 
+    /// <summary>Returns whether a file exists for the object key.</summary>
     public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -95,6 +99,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return ValueTask.FromResult(File.Exists(GetSafeObjectPath(objectKey)));
     }
 
+    /// <summary>Lists the keys of stored objects under the prefix as slash-delimited relative paths.</summary>
     public ValueTask<IReadOnlyList<string>> ListKeys(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -116,6 +121,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return ValueTask.FromResult<IReadOnlyList<string>>(keys);
     }
 
+    /// <summary>Lists stored objects under the prefix with their inventory metadata.</summary>
     public ValueTask<IReadOnlyList<ObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -139,6 +145,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return ValueTask.FromResult<IReadOnlyList<ObjectInventoryItem>>(objects);
     }
 
+    /// <summary>Always throws because local storage does not support direct upload tickets.</summary>
     public ValueTask<ObjectUploadTicket> CreateUploadUrl(ObjectUploadRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -147,6 +154,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         throw new NotSupportedException("Local media storage does not support direct upload tickets.");
     }
 
+    /// <summary>Builds the public URI for the object key from the configured public base URI.</summary>
     public Uri GetPublicUri(string objectKey)
     {
         _ = GetSafeObjectPath(objectKey);
@@ -164,6 +172,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             : new Uri(baseUri.OriginalString + escapedKey, UriKind.Relative);
     }
 
+    /// <summary>Deletes the stored object file if it exists.</summary>
     public ValueTask Delete(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();

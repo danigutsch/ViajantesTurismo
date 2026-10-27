@@ -5,11 +5,14 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
+/// <summary>Test data for document command idempotency over fake stores.</summary>
 internal static class DocumentIdempotencyTestData
 {
+    /// <summary>Creates idempotency over a store that starts new operations.</summary>
     internal static DocumentCommandIdempotency Create(FakeUnitOfWork unitOfWork) =>
         new(new CapturingNewIdempotencyStore(unitOfWork), unitOfWork, TimeProvider.System);
 
+    /// <summary>Creates idempotency over a completed entry whose fingerprint combines the request fingerprint and document id.</summary>
     internal static DocumentCommandIdempotency CreateCompleted(
         IdempotencyScope scope,
         IdempotencyKey key,
@@ -21,6 +24,7 @@ internal static class DocumentIdempotencyTestData
             $"{requestFingerprint}:{documentId:N}",
             unitOfWork);
 
+    /// <summary>Creates idempotency over a completed entry carrying the given result fingerprint.</summary>
     internal static DocumentCommandIdempotency CreateCompletedWithFingerprint(
         IdempotencyScope scope,
         IdempotencyKey key,
@@ -38,6 +42,7 @@ internal static class DocumentIdempotencyTestData
         return new DocumentCommandIdempotency(new ExistingIdempotencyStore(entry), unitOfWork, TimeProvider.System);
     }
 
+    /// <summary>Creates idempotency over a started entry begun the given elapsed time before the fixed clock.</summary>
     internal static DocumentCommandIdempotency CreateStarted(
         IdempotencyScope scope,
         IdempotencyKey key,

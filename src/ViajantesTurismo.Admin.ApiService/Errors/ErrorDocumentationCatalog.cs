@@ -8,10 +8,12 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiService.Errors;
 
+/// <summary>Lazily builds the error documentation entries from the centralized error providers.</summary>
 internal static class ErrorDocumentationCatalog
 {
     private static readonly Lazy<GetErrorDocumentationDto[]> EntriesCache = new(CreateEntries);
 
+    /// <summary>Returns the cached error documentation entries ordered by identifier.</summary>
     public static IReadOnlyList<GetErrorDocumentationDto> GetEntries()
     {
         return EntriesCache.Value;

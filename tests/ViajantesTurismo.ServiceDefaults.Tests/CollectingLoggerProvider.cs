@@ -3,13 +3,17 @@ using Microsoft.Extensions.Logging;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
+/// <summary>Test logger provider that collects formatted messages and exception text.</summary>
+/// <param name="messages">Queue receiving each logged message.</param>
 internal sealed class CollectingLoggerProvider(ConcurrentQueue<string> messages) : ILoggerProvider
 {
+    /// <summary>Creates a logger that writes to the shared message queue.</summary>
     public ILogger CreateLogger(string categoryName)
     {
         return new CollectingLogger(messages);
     }
 
+    /// <summary>Releases nothing; the provider owns no resources.</summary>
     public void Dispose()
     {
     }

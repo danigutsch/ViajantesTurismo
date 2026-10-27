@@ -20,6 +20,7 @@ internal sealed class BrandingStoreScenario : IDisposable
         this.provider = provider;
     }
 
+    /// <summary>Creates a scenario backed by a fresh in-memory database.</summary>
     public static BrandingStoreScenario Create()
     {
         var databaseName = Guid.CreateVersion7().ToString("N");
@@ -66,6 +67,7 @@ internal sealed class BrandingStoreScenario : IDisposable
         await dbContext.SaveChangesAsync(ct);
     }
 
+    /// <summary>Reads the persisted settings row, revisions ordered by source revision, and outbox envelopes.</summary>
     public BrandingStoreSnapshot ReadSnapshot()
     {
         using var scope = provider.CreateScope();
@@ -87,6 +89,7 @@ internal sealed class BrandingStoreScenario : IDisposable
         return new BrandingStoreSnapshot(current, revisions, outbox);
     }
 
+    /// <summary>Disposes all store scopes and the service provider.</summary>
     public void Dispose()
     {
         foreach (var scope in scopes)

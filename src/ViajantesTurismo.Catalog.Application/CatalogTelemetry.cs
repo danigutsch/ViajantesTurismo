@@ -133,10 +133,13 @@ public static class CatalogTelemetry
     /// </summary>
     public static string OutcomeError => "error";
 
+    /// <summary>Activity source for Catalog tracing.</summary>
     internal static ActivitySource ActivitySource { get; } = new(Name);
 
+    /// <summary>Meter that owns the Catalog metrics.</summary>
     internal static Meter Meter { get; } = new(Name);
 
+    /// <summary>Counter of Catalog integration events handled, skipped, or failed.</summary>
     internal static Counter<long> IntegrationEvents
     {
         get;
@@ -145,6 +148,7 @@ public static class CatalogTelemetry
         unit: "{event}",
         description: "Number of Catalog integration events handled, skipped, or failed.");
 
+    /// <summary>Counter of Catalog integration-event idempotency outcomes.</summary>
     internal static Counter<long> IdempotencyOperations
     {
         get;
@@ -153,6 +157,7 @@ public static class CatalogTelemetry
         unit: "{operation}",
         description: "Number of Catalog integration-event idempotency outcomes.");
 
+    /// <summary>Counter of Catalog tour event-stream updates.</summary>
     internal static Counter<long> TourStreamUpdates
     {
         get;
@@ -161,6 +166,7 @@ public static class CatalogTelemetry
         unit: "{operation}",
         description: "Number of Catalog tour event-stream updates.");
 
+    /// <summary>Counter of events processed by Catalog projections.</summary>
     internal static Counter<long> ProjectionEvents
     {
         get;
@@ -169,6 +175,7 @@ public static class CatalogTelemetry
         unit: "{event}",
         description: "Number of events processed by Catalog projections.");
 
+    /// <summary>Counter of Catalog projection batches processed.</summary>
     internal static Counter<long> ProjectionBatches
     {
         get;
@@ -177,6 +184,7 @@ public static class CatalogTelemetry
         unit: "{batch}",
         description: "Number of Catalog projection batches processed.");
 
+    /// <summary>Counter of Catalog media objects found, deleted, or failed during reconciliation.</summary>
     internal static Counter<long> MediaObjectReconciliationObjects
     {
         get;

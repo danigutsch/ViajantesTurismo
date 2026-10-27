@@ -9,9 +9,11 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// </summary>
 public sealed class DocumentBrandingSource(IBrandingProjectionStore projectionStore)
 {
+    /// <summary>Problem detail returned when no ready branding projection exists.</summary>
     internal const string UnavailableDetail =
         "Branding is not available for document generation yet. Retry after the Branding projection is ready.";
 
+    /// <summary>Captures the current branding snapshot, or an unavailable failure when the projection is missing or recovering.</summary>
     internal async Task<Result<DocumentBrandingSnapshotValues>> Capture(CancellationToken ct)
     {
         // A recovering projection is fenced: documents fail closed instead of capturing a stale or partial snapshot.

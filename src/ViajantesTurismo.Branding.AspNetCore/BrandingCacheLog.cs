@@ -1,5 +1,6 @@
 namespace ViajantesTurismo.Branding.AspNetCore;
 
+/// <summary>Logs public Branding cache invalidation outcomes.</summary>
 internal static partial class BrandingCacheLog
 {
     [LoggerMessage(

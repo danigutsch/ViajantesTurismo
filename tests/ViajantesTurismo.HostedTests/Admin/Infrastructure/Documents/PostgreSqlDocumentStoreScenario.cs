@@ -20,6 +20,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
+/// <summary>Runs document store behavior against a real PostgreSQL database.</summary>
 internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
 {
     private readonly PostgreSqlTestDatabase database;
@@ -31,6 +32,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         connectionString = database.ConnectionString;
     }
 
+    /// <summary>Creates a scenario over a new fixture-issued database.</summary>
     [SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
@@ -43,6 +45,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return new PostgreSqlDocumentStoreScenario(database);
     }
 
+    /// <summary>Migrates the database, seeds confirmed bookings and stores the drafts grouped into lineages.</summary>
     public async ValueTask Seed(params DocumentDraft[] documents)
     {
         await using var dbContext = CreateDbContext();
@@ -56,6 +59,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
+    /// <summary>Migrates the database, seeds confirmed bookings and stores the lineages.</summary>
     public async ValueTask Seed(params DocumentLineage[] lineages)
     {
         await using var dbContext = CreateDbContext();
@@ -69,6 +73,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
+    /// <summary>Migrates the database and stores the audit records.</summary>
     public async ValueTask SeedAudits(params DocumentAuditRecord[] records)
     {
         await using var dbContext = CreateDbContext();
@@ -82,20 +87,24 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
+    /// <summary>Migrates the database and stores one audit record.</summary>
     public ValueTask SeedAudit(DocumentAuditRecord record) => SeedAudits(record);
 
+    /// <summary>Purges drafts expired at the given time and returns how many were removed.</summary>
     public async ValueTask<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         return await new DocumentStore(dbContext).PurgeExpiredDrafts(now, ct);
     }
 
+    /// <summary>Purges expired drafts using a context with retry on failure enabled and returns how many were removed.</summary>
     public async ValueTask<int> PurgeExpiredDraftsWithRetries(DateTime now, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext(enableRetryOnFailure: true);
         return await new DocumentStore(dbContext).PurgeExpiredDrafts(now, ct);
     }
 
+    /// <summary>Installs a trigger that fails every document lineage delete.</summary>
     public async Task InstallLineageDeleteFailure(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -117,6 +126,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ct);
     }
 
+    /// <summary>Returns whether a purge invalidated a stale loaded lineage so that saving an update to it fails with a concurrency conflict.</summary>
     public async ValueTask<bool> HasPurgeInvalidatedStaleLineage(
         Guid documentId,
         DateTime now,
@@ -149,6 +159,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         }
     }
 
+    /// <summary>Loads all drafts with their fields ordered by creation time.</summary>
     public async ValueTask<DocumentDraft[]> GetDocuments(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -158,12 +169,14 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Counts the stored document lineages.</summary>
     public async ValueTask<int> GetLineageCount(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         return await dbContext.DocumentLineages.CountAsync(ct);
     }
 
+    /// <summary>Loads the draft revision with the given document id, or <see langword="null" /> when absent.</summary>
     public async ValueTask<DocumentDraft?> GetDocumentById(Guid id, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -171,24 +184,28 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return lineage?.GetRevision(id);
     }
 
+    /// <summary>Loads the lineage that contains the given document id.</summary>
     public async ValueTask<DocumentLineage?> GetLineageByDocumentId(Guid id, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         return await new DocumentStore(dbContext).GetByDocumentId(id, ct);
     }
 
+    /// <summary>Reads the audit metadata projection for a document id.</summary>
     public async ValueTask<DocumentAuditMetadata?> GetAuditMetadataById(Guid id, CancellationToken ct)
     {
         await using var dbContext = CreateReadDbContext();
         return await new DocumentQueryService(dbContext).GetAuditMetadataById(id, ct);
     }
 
+    /// <summary>Reads the document query projection for a document id.</summary>
     public async ValueTask<GetDocumentDto?> GetDocumentProjectionById(Guid id, CancellationToken ct)
     {
         await using var dbContext = CreateReadDbContext();
         return await new DocumentQueryService(dbContext).GetById(id, ct);
     }
 
+    /// <summary>Returns whether a lineage update loaded concurrently by two contexts fails with a concurrency conflict.</summary>
     public async ValueTask<bool> HasConcurrentLineageUpdateConflict(Guid documentId, DateTime now, CancellationToken ct)
     {
         await using var firstContext = CreateDbContext();
@@ -226,6 +243,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         }
     }
 
+    /// <summary>Races the initial saves of two drafts and returns the conflict each save captured, or <see langword="null" /> when it succeeded.</summary>
     public async Task<Exception?[]> SaveInitialRevisionsConcurrently(
         DocumentDraft first,
         DocumentDraft second,
@@ -256,6 +274,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await Task.WhenAll(firstSave, secondSave);
     }
 
+    /// <summary>Races two replacement revisions of one document and returns the conflict each save captured, or <see langword="null" /> when it succeeded.</summary>
     public async Task<Exception?[]> SaveReplacementRevisionsConcurrently(
         Guid documentId,
         DateTime createdAt,
@@ -276,6 +295,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await Task.WhenAll(firstSave, secondSave);
     }
 
+    /// <summary>Races two generation attempts on the same idempotency key and returns both outcomes plus the replayed result.</summary>
     public async Task<(Result<Guid>[] Attempts, Result<Guid> Replay)> GenerateWithSameKeyConcurrently(
         DocumentDraft first,
         DocumentDraft second,
@@ -349,6 +369,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return (attempts, replay);
     }
 
+    /// <summary>Reads the audit records of a booking ordered by occurrence time.</summary>
     public async Task<DocumentAuditRecord[]> GetDocumentAuditsForBooking(Guid bookingId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -358,6 +379,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Reads the stored idempotency state for the document generation scope of a booking and key, or <see langword="null" /> when absent.</summary>
     public async Task<string?> GetIdempotencyState(
         Guid bookingId,
         IdempotencyKey key,
@@ -377,6 +399,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .SingleOrDefaultAsync(ct);
     }
 
+    /// <summary>Saves two drafts as lineages to provoke a duplicate revision violation.</summary>
     public async Task SaveDuplicateRevisions(
         DocumentDraft first,
         DocumentDraft second,
@@ -389,6 +412,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    /// <summary>Saves a draft forced into an existing lineage to provoke a duplicate revision violation.</summary>
     public async Task SaveDuplicateRevision(
         Guid documentLineageId,
         DocumentDraft duplicate,
@@ -404,6 +428,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    /// <summary>Saves two drafts whose booking id is made identical to provoke a duplicate booking-and-type violation.</summary>
     public async Task SaveDuplicateBookingTypeRevision(
         DocumentDraft first,
         DocumentDraft second,
@@ -421,6 +446,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    /// <summary>Saves two tours that share one identifier to provoke a uniqueness violation.</summary>
     public async Task SaveDuplicateTourIdentifier(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -433,6 +459,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    /// <summary>Saves a document for a booking seeded with the given status, or with no booking when the status is <see langword="null" />.</summary>
     public async Task SaveDocumentForBookingStatus(
         DocumentDraft document,
         BookingStatus? bookingStatus,
@@ -449,12 +476,14 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    /// <summary>Reads one document audit record by id, or <see langword="null" /> when absent.</summary>
     public async ValueTask<DocumentAuditRecord?> GetAuditRecord(Guid id, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         return await dbContext.DocumentAuditRecords.SingleOrDefaultAsync(record => record.Id == id, ct);
     }
 
+    /// <summary>Returns the column names of the document audit table in alphabetical order.</summary>
     public async ValueTask<string[]> GetDocumentAuditColumnNames(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -470,18 +499,21 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Purges expired document audit records and returns how many were removed.</summary>
     public async ValueTask<int> PurgeExpiredAuditRecords(DateTime now, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         return await new DocumentAuditStore(dbContext).PurgeExpiredRecords(now, ct);
     }
 
+    /// <summary>Resets the mutable tables while preserving document audit records.</summary>
     public async Task ResetMutableDataPreservingDocumentAudits(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
         await PostgreSqlPublicSchemaReset.Reset(connection, ["DocumentAuditRecords"], ct);
     }
 
+    /// <summary>Overwrites the actor id of one document audit record with raw SQL.</summary>
     public async Task UpdateAuditActor(Guid id, string actorId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -490,6 +522,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ct);
     }
 
+    /// <summary>Deletes one document audit record with raw SQL.</summary>
     public async Task DeleteAuditRecord(Guid id, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -498,6 +531,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ct);
     }
 
+    /// <summary>Removes all document audit records.</summary>
     public async Task TruncateAuditRecords(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -506,6 +540,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ct);
     }
 
+    /// <summary>Overwrites a draft's branding logo URI with a raw value and asserts one row changed.</summary>
     public async ValueTask SetBrandingLogoUri(Guid documentId, string value, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -516,6 +551,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         rows.ShouldBe(1);
     }
 
+    /// <summary>Returns whether the partial retention index on unfinalized drafts exists.</summary>
     public async ValueTask<bool> HasRetentionIndex(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -533,6 +569,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return count == 1;
     }
 
+    /// <summary>Disposes the fixture-issued database.</summary>
     public async ValueTask DisposeAsync() => await database.DisposeAsync();
 
     private async Task<Exception?> CaptureConcurrentInitialSave(

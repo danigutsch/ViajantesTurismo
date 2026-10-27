@@ -7,16 +7,19 @@ internal sealed class BookingEditRedirectState : IAsyncDisposable
 {
     private CancellationTokenSource? _cancellationTokenSource;
 
+    /// <summary>Whether a redirect after a successful update is waiting to happen.</summary>
     internal bool IsPending
     {
         get; private set;
     }
 
+    /// <summary>Whether the pending redirect was cancelled by the user.</summary>
     internal bool IsCancelled
     {
         get; private set;
     }
 
+    /// <summary>Clears the pending and cancelled flags and releases the cancellation source.</summary>
     internal async Task Reset()
     {
         IsPending = false;
@@ -24,6 +27,7 @@ internal sealed class BookingEditRedirectState : IAsyncDisposable
         await DisposeCancellation();
     }
 
+    /// <summary>Starts a pending redirect and returns the token that cancels it.</summary>
     internal CancellationToken BeginPendingRedirect()
     {
         _cancellationTokenSource = new CancellationTokenSource();
@@ -32,6 +36,7 @@ internal sealed class BookingEditRedirectState : IAsyncDisposable
         return _cancellationTokenSource.Token;
     }
 
+    /// <summary>Cancels the pending redirect and marks it cancelled.</summary>
     internal async Task CancelPendingRedirect()
     {
         IsPending = false;
@@ -39,9 +44,11 @@ internal sealed class BookingEditRedirectState : IAsyncDisposable
         await DisposeCancellation();
     }
 
+    /// <summary>Returns whether navigation may proceed: a redirect is pending and the token is not cancelled.</summary>
     internal bool CanNavigate(CancellationToken cancellationToken) =>
         IsPending && !cancellationToken.IsCancellationRequested;
 
+    /// <summary>Cancels and disposes the current cancellation source, if any.</summary>
     internal async Task DisposeCancellation()
     {
         var cancellationTokenSource = _cancellationTokenSource;
@@ -55,6 +62,7 @@ internal sealed class BookingEditRedirectState : IAsyncDisposable
         cancellationTokenSource.Dispose();
     }
 
+    /// <summary>Releases the cancellation source.</summary>
     public async ValueTask DisposeAsync()
     {
         await DisposeCancellation();

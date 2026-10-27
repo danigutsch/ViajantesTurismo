@@ -9,12 +9,15 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
+/// <summary>Creates <see cref="AdminWriteDbContext" /> for EF Core design-time tooling such as migrations, without a live database.</summary>
 internal sealed class AdminWriteDbContextDesignTimeFactory : IDesignTimeDbContextFactory<AdminWriteDbContext>
 {
+    /// <summary>Initializes the factory.</summary>
     public AdminWriteDbContextDesignTimeFactory()
     {
     }
 
+    /// <summary>Builds a context against a placeholder local connection with the SharedKernel EF configurations registered.</summary>
     public AdminWriteDbContext CreateDbContext(string[] args)
     {
         var services = new ServiceCollection();

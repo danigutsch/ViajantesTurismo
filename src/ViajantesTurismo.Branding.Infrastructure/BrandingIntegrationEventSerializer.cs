@@ -5,8 +5,10 @@ using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
 
+/// <summary>Serializes Branding integration events with the source-generated JSON context.</summary>
 internal sealed class BrandingIntegrationEventSerializer : IIntegrationEventSerializer
 {
+    /// <inheritdoc />
     public string Serialize<TIntegrationEvent>(TIntegrationEvent integrationEvent)
         where TIntegrationEvent : IIntegrationEvent
     {

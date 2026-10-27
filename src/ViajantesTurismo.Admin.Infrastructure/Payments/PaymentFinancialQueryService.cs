@@ -8,9 +8,17 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
+/// <summary>Reads booking financial histories.</summary>
+/// <param name="reads">The read database context.</param>
+/// <param name="writes">The write context used for sensitive access audits.</param>
+/// <param name="histories">Decodes protected histories.</param>
+/// <param name="calendar">Supplies the business date.</param>
+/// <param name="clock">The clock for audit timestamps.</param>
 internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, AdminWriteDbContext writes, PaymentHistoryStore histories, PaymentBusinessCalendar calendar, TimeProvider clock) : IPaymentFinancialQueryService
 {
+    /// <summary>Returns the booking financial history, or null when the booking does not exist.</summary>
     public Task<GetBookingFinancialHistoryDto?> GetByBookingId(Guid bookingId, CancellationToken ct) => Read(bookingId, false, null, ct);
+    /// <summary>Returns the booking financial history and records a sensitive access audit for the actor.</summary>
     public Task<GetBookingFinancialHistoryDto?> GetSensitiveDetails(Guid bookingId, string actorId, CancellationToken ct) => Read(bookingId, true, actorId, ct);
 
     private async Task<GetBookingFinancialHistoryDto?> Read(Guid bookingId, bool sensitive, string? actorId, CancellationToken ct)

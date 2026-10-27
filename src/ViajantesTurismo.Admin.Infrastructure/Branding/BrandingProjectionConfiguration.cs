@@ -3,12 +3,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Branding;
 
+/// <summary>EF Core mapping for <see cref="BrandingProjectionRecord" /> in the branding projection schema.</summary>
 internal sealed class BrandingProjectionConfiguration : IEntityTypeConfiguration<BrandingProjectionRecord>
 {
     private const int MaxNameLength = 120;
     private const int MaxColorLength = 7;
     private const int MaxLogoUriLength = 2048;
 
+    /// <summary>Maps the settings table, required columns, length limits and the revision concurrency token.</summary>
     public void Configure(EntityTypeBuilder<BrandingProjectionRecord> entity)
     {
         entity.ToTable("settings", BrandingProjectionSchema.Name);

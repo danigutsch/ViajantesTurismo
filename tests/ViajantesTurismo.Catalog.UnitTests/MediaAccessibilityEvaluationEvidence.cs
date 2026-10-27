@@ -2,10 +2,13 @@ using System.Text.Json;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Scores candidate alt-text generation evidence against golden fixtures and a reference baseline.</summary>
 internal static class MediaAccessibilityEvaluationEvidence
 {
+    /// <summary>Gets the rubric dimensions every case must score.</summary>
     internal static string[] Dimensions { get; } = ["accessibility", "grounding", "concision", "localization", "unsupported_claims"];
 
+    /// <summary>Validates provenance, review and rubric data, and returns per-case pass results in fixture order.</summary>
     internal static IReadOnlyList<bool> Evaluate(JsonElement fixtures, JsonElement baseline, JsonElement candidate, bool allowReference = false)
     {
         if (candidate.GetProperty("fixture_version").GetString() != fixtures.GetProperty("version").GetString())

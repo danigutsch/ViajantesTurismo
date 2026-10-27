@@ -79,6 +79,7 @@ public static class BrandingInfrastructureDependencyInjection
         return services.GetRequiredService<EfBrandingSettingsStore>().Bootstrap(ct);
     }
 
+    /// <summary>Configures integration event outbox and transport schemas for Branding.</summary>
     internal static void ConfigureBrandingIntegrationEventStorage(IntegrationEventStorageOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);

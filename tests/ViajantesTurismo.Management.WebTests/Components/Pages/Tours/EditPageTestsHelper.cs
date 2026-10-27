@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
 
+/// <summary>Test data helpers for the tour edit page tests.</summary>
 internal static class EditPageTestsHelper
 {
+    /// <summary>Creates a tour through the fake API and returns it as stored.</summary>
     public static async Task<GetTourDto> CreateTestTour(FakeToursApiClient fakeToursApi)
     {
         var createDto = new CreateTourDto
@@ -26,6 +28,7 @@ internal static class EditPageTestsHelper
         return tours[0];
     }
 
+    /// <summary>Adds a tour with three current customers to the fake API and returns it.</summary>
     public static GetTourDto CreateTestTourWithBookings(FakeToursApiClient fakeToursApi)
     {
         var tour = BuildTourDto(

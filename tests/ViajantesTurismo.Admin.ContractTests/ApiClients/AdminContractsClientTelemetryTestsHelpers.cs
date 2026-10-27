@@ -4,8 +4,14 @@ using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
+/// <summary>
+/// Creates activity listeners and activities for the contracts client telemetry tests.
+/// </summary>
 internal static class AdminContractsClientTelemetryTestsHelpers
 {
+    /// <summary>
+    /// Creates a listener that records every stopped activity of the contracts client source into the given queue.
+    /// </summary>
     public static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities)
     {
         ArgumentNullException.ThrowIfNull(stoppedActivities);
@@ -21,6 +27,9 @@ internal static class AdminContractsClientTelemetryTestsHelpers
         return listener;
     }
 
+    /// <summary>
+    /// Starts a root activity that client activities in a test are expected to share a trace with.
+    /// </summary>
     public static Activity StartRootActivity()
     {
         var activity = new Activity("test.root");
@@ -28,6 +37,9 @@ internal static class AdminContractsClientTelemetryTestsHelpers
         return activity;
     }
 
+    /// <summary>
+    /// Returns the only stopped activity in the root trace with the given operation name, failing otherwise.
+    /// </summary>
     public static Activity SingleActivity(
         ConcurrentQueue<Activity> stoppedActivities,
         Activity rootActivity,

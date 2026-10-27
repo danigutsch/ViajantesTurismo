@@ -7,12 +7,16 @@ namespace ViajantesTurismo.Branding.AspNetCore;
 /// </summary>
 internal sealed class BrandingTelemetry : IDisposable
 {
+    /// <summary>Name of the Branding meter.</summary>
     public const string MeterName = "ViajantesTurismo.Branding";
 
+    /// <summary>Instrument name counting public requests by cache outcome.</summary>
     public const string CacheRequests = "branding.cache.requests";
 
+    /// <summary>Instrument name counting cache invalidations by outcome.</summary>
     public const string CacheInvalidations = "branding.cache.invalidations";
 
+    /// <summary>Instrument name of the latest observed source revision gauge.</summary>
     public const string SourceRevision = "branding.settings.source_revision";
 
     private readonly Meter meter;
@@ -23,6 +27,7 @@ internal sealed class BrandingTelemetry : IDisposable
 
     private long sourceRevision;
 
+    /// <summary>Creates the meter and its instruments from the given factory.</summary>
     public BrandingTelemetry(IMeterFactory meterFactory)
     {
         ArgumentNullException.ThrowIfNull(meterFactory);
@@ -36,15 +41,20 @@ internal sealed class BrandingTelemetry : IDisposable
             description: "Latest Branding source revision this instance committed or read.");
     }
 
+    /// <inheritdoc />
     public void Dispose() => meter.Dispose();
 
+    /// <summary>Counts a public request served from the cache.</summary>
     public void CacheHit() => cacheRequests.Add(1, new KeyValuePair<string, object?>("outcome", "hit"));
 
+    /// <summary>Counts a public request that missed the cache.</summary>
     public void CacheMiss() => cacheRequests.Add(1, new KeyValuePair<string, object?>("outcome", "miss"));
 
+    /// <summary>Counts a cache invalidation as succeeded or failed.</summary>
     public void Invalidation(bool succeeded) =>
         cacheInvalidations.Add(1, new KeyValuePair<string, object?>("outcome", succeeded ? "succeeded" : "failed"));
 
+    /// <summary>Records a revision, keeping only the highest value seen.</summary>
     public void ObserveRevision(long revision)
     {
         long current;

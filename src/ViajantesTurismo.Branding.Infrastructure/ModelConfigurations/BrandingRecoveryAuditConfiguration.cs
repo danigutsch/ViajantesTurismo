@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ViajantesTurismo.Branding.Infrastructure.ModelConfigurations;
 
+/// <summary>EF Core mapping for <see cref="BrandingRecoveryAuditRecord"/>.</summary>
 internal sealed class BrandingRecoveryAuditConfiguration : IEntityTypeConfiguration<BrandingRecoveryAuditRecord>
 {
     private const int MaxKindLength = 32;
     private const int MaxTextLength = 256;
 
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<BrandingRecoveryAuditRecord> entity)
     {
         entity.ToTable("BrandingRecoveryAudits", BrandingDbContext.SchemaName);

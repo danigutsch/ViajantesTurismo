@@ -24,6 +24,7 @@ public sealed class InstallmentAllocation : ValueObject
     /// <summary>Validates a selected allocation without silently rounding.</summary>
     public static Result<InstallmentAllocation> Create(Guid targetId, decimal euroAmount) => targetId != Guid.Empty && euroAmount > 0 && decimal.Round(euroAmount, 2) == euroAmount
         ? Result.Ok(new InstallmentAllocation(targetId, euroAmount)) : FinancialErrors.Invalid("allocation").ConvertError<InstallmentAllocation>();
+    /// <summary>Exports the selection for persistence.</summary>
     internal PaymentSelectionState ExportState() => new(TargetId, EuroAmount);
     /// <inheritdoc />
     public override string ToString() => "InstallmentAllocation [redacted]";

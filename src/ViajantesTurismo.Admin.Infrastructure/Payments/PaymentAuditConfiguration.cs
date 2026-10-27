@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
+/// <summary>Maps payment audit rows to the PaymentAudits table.</summary>
 internal sealed class PaymentAuditConfiguration : IEntityTypeConfiguration<PaymentAuditRow>
 {
+    /// <summary>Configures the key, identity sequence, length limits and resource/time index.</summary>
     public void Configure(EntityTypeBuilder<PaymentAuditRow> entity)
     {
         entity.ToTable("PaymentAudits");

@@ -12,6 +12,7 @@ internal static class BrandingOpenApiArtifactDriftGuard
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Catalog.ApiService_";
     private const string RefreshHint = "Refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target branding` when the HTTP contract changes intentionally.";
 
+    /// <summary>Creates the snapshot set that compares canonical Branding OpenAPI artifacts with the generated ones.</summary>
     public static JsonSnapshotArtifactSet CreateSnapshotSet()
     {
         var openApiDirectory = Path.Combine(

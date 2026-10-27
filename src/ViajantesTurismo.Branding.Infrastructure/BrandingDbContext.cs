@@ -11,11 +11,15 @@ public sealed class BrandingDbContext(
     DbContextOptions<BrandingDbContext> options,
     IEnumerable<IDbContextConfiguration<BrandingDbContext>>? configurations = null) : DbContext(options)
 {
+    /// <summary>Database schema that holds Branding tables.</summary>
     internal const string SchemaName = "branding";
+    /// <summary>Schema that holds the EF migrations history table.</summary>
     internal const string MigrationsHistorySchemaName = "public";
 
+    /// <summary>Current Branding settings row.</summary>
     internal DbSet<BrandingSettingsRecord> BrandingSettings => Set<BrandingSettingsRecord>();
 
+    /// <summary>Immutable history of committed Branding settings revisions.</summary>
     internal DbSet<BrandingSettingsRevisionRecord> BrandingSettingsRevisions => Set<BrandingSettingsRevisionRecord>();
 
     /// <inheritdoc />

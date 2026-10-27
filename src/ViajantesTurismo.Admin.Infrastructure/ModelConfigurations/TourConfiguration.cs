@@ -5,8 +5,10 @@ using ViajantesTurismo.Admin.Domain;
 
 namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
 
+/// <summary>Maps the tour aggregate, owned schedule, pricing and capacity, and cascading bookings.</summary>
 internal sealed class TourConfiguration : IEntityTypeConfiguration<Tour>
 {
+    /// <summary>Configures the tour key, unique identifier and name, owned value objects and bookings.</summary>
     public void Configure(EntityTypeBuilder<Tour> entity)
     {
         entity.HasKey(tour => tour.Id);

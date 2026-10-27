@@ -10,12 +10,14 @@ internal sealed class CiSelectionFixture : IDisposable
 
     private readonly string _repositoryRoot = RepositoryTestProcess.GetRepositoryRoot();
 
+    /// <summary>Creates an empty temporary directory to hold the fixture repository.</summary>
     public CiSelectionFixture()
     {
         RootPath = Path.Combine(Path.GetTempPath(), "viajantes-ci-selection", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(RootPath);
     }
 
+    /// <summary>The temporary directory that holds the fixture repository.</summary>
     public string RootPath
     {
         get;
@@ -47,6 +49,7 @@ internal sealed class CiSelectionFixture : IDisposable
             .ToDictionary(static pair => pair[0], static pair => pair[1], StringComparer.Ordinal);
     }
 
+    /// <summary>Deletes the temporary fixture repository.</summary>
     public void Dispose()
     {
         TemporaryRepositoryDirectory.Delete(RootPath);

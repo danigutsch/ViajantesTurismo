@@ -5,8 +5,10 @@ using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
 
+/// <summary>EF Core mapping for editable public content and its language variants.</summary>
 internal sealed class EditablePublicContentConfiguration : IEntityTypeConfiguration<EditablePublicContent>
 {
+    /// <summary>Maps the content table, unique key, enum conversions and owned variants.</summary>
     public void Configure(EntityTypeBuilder<EditablePublicContent> entity)
     {
         entity.ToTable("PublicContent");

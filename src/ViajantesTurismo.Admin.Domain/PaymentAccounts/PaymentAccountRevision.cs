@@ -9,6 +9,7 @@ public sealed class PaymentAccountRevision
         Recipient = details;
     }
 
+    /// <summary>Gets the persistence snapshot backing this revision.</summary>
     internal PaymentAccountRevisionState State
     {
         get;
@@ -47,6 +48,7 @@ public sealed class PaymentAccountRevision
     /// <summary>Gets whether the entering Admin also explicitly verified this revision.</summary>
     public bool IsSelfApproved => VerifiedBy is not null && string.Equals(CreatedBy, VerifiedBy, StringComparison.Ordinal);
 
+    /// <summary>Wraps an already validated persisted state and its restored recipient details as a revision.</summary>
     internal static PaymentAccountRevision FromState(PaymentAccountRevisionState state, PaymentRecipientDetails details) => new(state, details);
 
     /// <inheritdoc />

@@ -3,8 +3,10 @@ using PandaBear.AspNetCore;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+/// <summary>Builds in-memory authentication configuration for management web tests.</summary>
 internal static class ManagementAuthenticationTestConfiguration
 {
+    /// <summary>Builds configuration from the settings produced by <see cref="CreateSettings" />.</summary>
     public static IConfiguration Create(
         bool allowHttpDevelopmentAuthority = false,
         bool includeRequiredSettings = true,
@@ -26,6 +28,7 @@ internal static class ManagementAuthenticationTestConfiguration
             .Build();
     }
 
+    /// <summary>Builds the authentication settings, optionally omitting required or token exchange entries.</summary>
     public static Dictionary<string, string?> CreateSettings(
         bool allowHttpDevelopmentAuthority = false,
         bool includeRequiredSettings = true,

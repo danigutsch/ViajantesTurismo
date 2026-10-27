@@ -4,8 +4,10 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
+/// <summary>Builds valid bookings, tours with bookings and booking requests for domain unit-test setup.</summary>
 internal static class BookingDomainTestDataFactory
 {
+    /// <summary>Creates a tour and returns a single-customer booking added to it, failing setup if the add is rejected.</summary>
     public static Booking CreateSingleBooking(SingleBookingOptions? options = null, string? failureMessage = null)
     {
         var tour = EntityBuilders.BuildTour();
@@ -15,6 +17,7 @@ internal static class BookingDomainTestDataFactory
         return bookingResult.Value;
     }
 
+    /// <summary>Creates a tour and returns a double-customer booking added to it, failing setup if the add is rejected.</summary>
     public static Booking CreateDoubleBooking(DoubleBookingOptions? options = null, string? failureMessage = null)
     {
         var tour = EntityBuilders.BuildTour();
@@ -24,6 +27,7 @@ internal static class BookingDomainTestDataFactory
         return bookingResult.Value;
     }
 
+    /// <summary>Creates a tour with one single-customer booking and returns both.</summary>
     public static (Tour Tour, Booking Booking) CreateTourWithSingleBooking(SingleBookingOptions? options = null, string? failureMessage = null)
     {
         var tour = EntityBuilders.BuildTour();
@@ -33,6 +37,7 @@ internal static class BookingDomainTestDataFactory
         return (tour, bookingResult.Value);
     }
 
+    /// <summary>Creates a tour with one double-customer booking and returns both.</summary>
     public static (Tour Tour, Booking Booking) CreateTourWithDoubleBooking(DoubleBookingOptions? options = null, string? failureMessage = null)
     {
         var tour = EntityBuilders.BuildTour();
@@ -42,6 +47,7 @@ internal static class BookingDomainTestDataFactory
         return (tour, bookingResult.Value);
     }
 
+    /// <summary>Creates a valid companion booking customer with an e-bike and a fixed extra price, using a new customer id when none is given.</summary>
     public static BookingCustomer CreateValidCompanionCustomer(Guid? customerId = null)
     {
         var companionCustomerResult = BookingCustomer.Create(
@@ -53,6 +59,7 @@ internal static class BookingDomainTestDataFactory
         return companionCustomerResult.Value;
     }
 
+    /// <summary>Creates a valid single-customer booking request with a regular bike, double occupancy and no discount.</summary>
     public static TourBookingRequest CreateValidSingleRequest(Guid? customerId = null)
     {
         return TourBookingRequest.CreateSingle(
@@ -63,6 +70,7 @@ internal static class BookingDomainTestDataFactory
             notes: "Window seat preference");
     }
 
+    /// <summary>Creates a valid double-customer booking request for the given customers (new ids when omitted) and room type.</summary>
     public static TourBookingRequest CreateValidDoubleRequest(
         Guid? principalCustomerId = null,
         Guid? companionCustomerId = null,

@@ -2,8 +2,10 @@ using System.Text;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
+/// <summary>Builds mutation requests for catalog endpoints.</summary>
 internal static class CatalogApiMutationRequestFactory
 {
+    /// <summary>Creates a request with a multipart image body for image paths, otherwise an empty JSON body.</summary>
     public static HttpRequestMessage Create(string method, string path)
     {
         var request = new HttpRequestMessage(new HttpMethod(method), new Uri(path, UriKind.Relative));

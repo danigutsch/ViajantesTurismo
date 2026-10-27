@@ -3,10 +3,12 @@ using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;
 
+/// <summary>Checks tour slug uniqueness by replaying current slugs from the event store.</summary>
 internal static class CatalogTourSlugAvailability
 {
     private const int BatchSize = 512;
 
+    /// <summary>Returns whether no tour other than <paramref name="catalogTourId"/> currently uses <paramref name="slug"/>.</summary>
     public static async ValueTask<bool> IsAvailable(
         IEventStore eventStore,
         Guid catalogTourId,

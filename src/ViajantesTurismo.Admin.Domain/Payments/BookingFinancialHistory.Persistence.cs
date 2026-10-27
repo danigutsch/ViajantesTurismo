@@ -6,6 +6,7 @@ namespace ViajantesTurismo.Admin.Domain.Payments;
 
 public sealed partial class BookingFinancialHistory
 {
+    /// <summary>Rebuilds a history from a stored snapshot, failing when the snapshot is inconsistent.</summary>
     internal static Result<BookingFinancialHistory> Restore(BookingFinancialState? state)
     {
         try

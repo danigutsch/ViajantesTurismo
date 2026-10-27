@@ -6,12 +6,15 @@ using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
 
+/// <summary>Creates a <see cref="BrandingDbContext"/> for EF Core design-time tooling such as migrations.</summary>
 internal sealed class BrandingDbContextDesignTimeFactory : IDesignTimeDbContextFactory<BrandingDbContext>
 {
+    /// <summary>Initializes a new instance of the <see cref="BrandingDbContextDesignTimeFactory"/> class.</summary>
     public BrandingDbContextDesignTimeFactory()
     {
     }
 
+    /// <inheritdoc />
     public BrandingDbContext CreateDbContext(string[] args)
     {
         var services = new ServiceCollection();

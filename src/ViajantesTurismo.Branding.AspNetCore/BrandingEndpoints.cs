@@ -13,8 +13,10 @@ using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Branding.AspNetCore;
 
+/// <summary>Maps the public and management Branding HTTP endpoints.</summary>
 internal static class BrandingEndpoints
 {
+    /// <summary>Maps versioned public and management Branding routes with caching, rate limiting and authorization.</summary>
     public static IEndpointRouteBuilder MapBrandingEndpoints(this IEndpointRouteBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);

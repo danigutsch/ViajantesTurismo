@@ -37,13 +37,22 @@ internal sealed class QueryServiceReadModelScenario : IAsyncDisposable
         QueryService = new QueryService(readContext, new PaymentHistoryStore(writeContext, protection));
     }
 
+    /// <summary>
+    /// Gets the query service under test, backed by the in-memory read context.
+    /// </summary>
     public IQueryService QueryService
     {
         get;
     }
 
+    /// <summary>
+    /// Creates a scenario with fresh in-memory write and read contexts.
+    /// </summary>
     public static QueryServiceReadModelScenario Create() => new();
 
+    /// <summary>
+    /// Persists a customer, <paramref name="tour"/> and a single-customer booking, and returns the booking.
+    /// </summary>
     public async Task<Booking> AddTourWithSingleBooking(Tour tour, CancellationToken ct)
     {
         var customer = EntityIdTestData.CreateCustomer();
@@ -56,8 +65,14 @@ internal sealed class QueryServiceReadModelScenario : IAsyncDisposable
         return booking;
     }
 
+    /// <summary>
+    /// Saves pending changes on the write context.
+    /// </summary>
     public async Task Save(CancellationToken ct) => await writeContext.SaveChangesAsync(ct);
 
+    /// <summary>
+    /// Disposes the read and write contexts and the payment protection.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         await readContext.DisposeAsync();

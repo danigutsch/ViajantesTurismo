@@ -13,6 +13,7 @@ internal sealed class DocumentAuditRetentionHostedService(
 {
     private const string DocumentAuditRetentionServiceName = "admin-document-audit-retention";
 
+    /// <summary>Runs one purge batch and returns the number of removed audit records.</summary>
     internal ValueTask<int> RunBatch(CancellationToken stoppingToken) => ExecuteBatch(stoppingToken);
 
     protected override async ValueTask<int> ExecuteBatch(CancellationToken stoppingToken)

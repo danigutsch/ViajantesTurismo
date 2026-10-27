@@ -1,5 +1,6 @@
 namespace ViajantesTurismo.MigrationService;
 
+/// <summary>Source-generated log messages for the database initialization worker lifecycle.</summary>
 internal static partial class DatabaseInitializationWorkerLogger
 {
     [LoggerMessage(1, LogLevel.Information, "Starting database initialization...")]

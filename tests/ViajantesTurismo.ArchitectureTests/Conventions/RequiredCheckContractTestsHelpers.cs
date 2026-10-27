@@ -1,11 +1,13 @@
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
+/// <summary>Helpers for the tests of the required check contract between governance docs and CI workflows.</summary>
 internal static class RequiredCheckContractTestsHelpers
 {
     private const string IgnoredLabelName = "github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || ";
     private const string RerunCondition = "github.event.action != 'labeled' || github.event.label.name == 'ci:rerun'";
     private const string IgnoredLabelConcurrency = "github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && github.run_id";
 
+    /// <summary>Reads the required checks listed in the governance document as (check name, workflow path) pairs.</summary>
     public static IReadOnlyList<(string Name, string Workflow)> ReadRequiredChecks(string governancePath) =>
         File.ReadLines(governancePath)
             .Where(static line => line.StartsWith("- `", StringComparison.Ordinal)

@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 
+/// <summary>Canned JSON payloads returned by the fake payment HTTP handler.</summary>
 internal static class PaymentPageData
 {
+    /// <summary>JSON list of payment accounts in verified, draft and retired states.</summary>
     public const string Accounts = """
         [
           {
@@ -73,6 +75,7 @@ internal static class PaymentPageData
         ]
         """;
 
+    /// <summary>JSON for a single verified payment account.</summary>
     public const string Account = """
         {
           "id": "00000001-1111-1111-1111-111111111111",
@@ -98,6 +101,7 @@ internal static class PaymentPageData
         }
         """;
 
+    /// <summary>JSON for a payment recipient with its account.</summary>
     public const string Recipient = """
         {
           "account": {
@@ -132,6 +136,7 @@ internal static class PaymentPageData
         }
         """;
 
+    /// <summary>JSON for a booking financial history.</summary>
     public const string History = """
         {
           "bookingId": "00000020-1111-1111-1111-111111111111",
@@ -388,6 +393,7 @@ internal static class PaymentPageData
         }
         """;
 
+    /// <summary>JSON for a payment instruction with its document.</summary>
     public const string Instruction = """
         {
           "document": {

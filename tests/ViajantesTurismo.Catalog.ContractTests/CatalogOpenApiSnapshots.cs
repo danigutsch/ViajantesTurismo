@@ -2,17 +2,20 @@ using PandaBear.Testing.Snapshots;
 
 namespace ViajantesTurismo.Catalog.ContractTests;
 
+/// <summary>Locates the Catalog OpenAPI snapshot artifacts and compares canonical files with generated ones.</summary>
 internal static class CatalogOpenApiSnapshots
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Catalog.ApiService_";
     private const string RefreshHint = "Refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target catalog` when the HTTP contract changes intentionally.";
 
+    /// <summary>Asserts the canonical Catalog OpenAPI artifacts match the generated artifacts.</summary>
     public static void AssertCanonicalArtifactsMatchGeneratedArtifacts()
     {
         CreateSnapshotSet().AssertCanonicalArtifactsMatchGeneratedArtifacts();
     }
 
+    /// <summary>Creates the snapshot set pairing canonical artifacts with the generated v1 document.</summary>
     public static JsonSnapshotArtifactSet CreateSnapshotSet()
     {
         var openApiDirectory = GetOpenApiDirectory();

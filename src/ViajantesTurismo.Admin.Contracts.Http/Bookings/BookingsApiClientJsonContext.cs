@@ -5,6 +5,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Contracts.Http;
 
+/// <summary>Source-generated JSON serialization context for the Bookings API client.</summary>
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 [JsonSerializable(typeof(ContractValidationProblemDto))]
 [JsonSerializable(typeof(GetBookingDto))]

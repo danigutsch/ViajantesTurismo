@@ -5,6 +5,7 @@ using PandaBear.Results;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
+/// <summary>Reflection helpers for the DDD convention tests.</summary>
 internal static class DddConventionsTestsHelpers
 {
     private static readonly Type EntityInterfaceType = typeof(IEntity<>);
@@ -14,12 +15,14 @@ internal static class DddConventionsTestsHelpers
     private static readonly Type GenericResultType = typeof(Result<>);
     private static readonly Type EnumerableInterfaceType = typeof(IEnumerable<>);
 
+    /// <summary>Reports whether the type implements the generic entity interface.</summary>
     public static bool InheritsFromEntity(Type type)
     {
         return type.GetInterfaces().Any(static interfaceType =>
             interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == EntityInterfaceType);
     }
 
+    /// <summary>Reports whether the type derives, directly or indirectly, from the value object base class.</summary>
     public static bool InheritsFromValueObject(Type type)
     {
         for (var current = type.BaseType; current is not null; current = current.BaseType)
@@ -33,6 +36,7 @@ internal static class DddConventionsTestsHelpers
         return false;
     }
 
+    /// <summary>Returns the non-aggregate-root entity types that another entity in the set exposes as a property or collection.</summary>
     public static IReadOnlyCollection<Type> GetChildEntityTypes(IReadOnlyCollection<Type> entityTypes)
     {
         return
@@ -42,6 +46,7 @@ internal static class DddConventionsTestsHelpers
         ];
     }
 
+    /// <summary>Lists the public constructors and declared public methods that return a result, as "Type.Member" names.</summary>
     public static IEnumerable<string> GetPublicMutators(Type type)
     {
         var constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public)

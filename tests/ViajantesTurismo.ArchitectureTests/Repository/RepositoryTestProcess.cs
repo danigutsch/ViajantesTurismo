@@ -3,8 +3,10 @@ using System.Diagnostics;
 
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 
+/// <summary>Runs child processes and locates the repository root for repository tests.</summary>
 internal static class RepositoryTestProcess
 {
+    /// <summary>Starts a process, captures its output and exit code, and kills its process tree if <paramref name="cancellationToken"/> is canceled.</summary>
     public static async Task<ProcessResult> Run(
         string fileName,
         string workingDirectory,
@@ -83,6 +85,7 @@ internal static class RepositoryTestProcess
             await standardError);
     }
 
+    /// <summary>Walks up from the test base directory to the folder containing <c>ViajantesTurismo.slnx</c>.</summary>
     public static string GetRepositoryRoot()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
@@ -96,5 +99,9 @@ internal static class RepositoryTestProcess
         throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 
+    /// <summary>Exit code and captured output of a finished process.</summary>
+    /// <param name="ExitCode">Process exit code.</param>
+    /// <param name="StandardOutput">Full text written to standard output.</param>
+    /// <param name="StandardError">Full text written to standard error.</param>
     internal readonly record struct ProcessResult(int ExitCode, string StandardOutput, string StandardError);
 }

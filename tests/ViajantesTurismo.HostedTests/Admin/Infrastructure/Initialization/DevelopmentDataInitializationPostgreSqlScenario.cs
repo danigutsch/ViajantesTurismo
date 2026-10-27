@@ -21,6 +21,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Initialization;
 
+/// <summary>Runs development data initialization against a real PostgreSQL database.</summary>
 internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDisposable
 {
     private readonly PostgreSqlTestDatabase database;
@@ -32,6 +33,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         connectionString = database.ConnectionString;
     }
 
+    /// <summary>Creates a migrated scenario over a new fixture-issued database, disposing it if migration fails.</summary>
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
@@ -59,6 +61,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         return scenario;
     }
 
+    /// <summary>Runs the initializer with a save interceptor that fails after saving, before the commit.</summary>
     public async Task InitializeWithFailure(CancellationToken ct)
     {
         await using var provider = CreateProvider(new FailAfterSaveInterceptor());
@@ -67,6 +70,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         await initializer.Initialize(ct);
     }
 
+    /// <summary>Runs the initializer with a save interceptor that cancels after saving, before the commit.</summary>
     public async Task InitializeWithCancellation(CancellationToken ct)
     {
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -76,6 +80,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         await initializer.Initialize(cancellation.Token);
     }
 
+    /// <summary>Runs the development data initializer once.</summary>
     public async Task Initialize(CancellationToken ct)
     {
         await using var provider = CreateProvider();
@@ -84,6 +89,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         await initializer.Initialize(ct);
     }
 
+    /// <summary>Runs two initializers at once, holding both at the save barrier before letting them proceed.</summary>
     public async Task InitializeConcurrently(CancellationToken ct)
     {
         var barrier = new ConcurrentInitializationSaveBarrierInterceptor();
@@ -101,6 +107,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         await Task.WhenAll(firstInitialization, secondInitialization);
     }
 
+    /// <summary>Counts the stored tours, customers, bookings and outbox messages.</summary>
     public async ValueTask<(int Tours, int Customers, int Bookings, int Outbox)> CountData(CancellationToken ct)
     {
         await using var provider = CreateProvider();
@@ -116,6 +123,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         return (tours, customers, bookings, outbox);
     }
 
+    /// <summary>Disposes the fixture-issued database.</summary>
     public async ValueTask DisposeAsync() => await database.DisposeAsync();
 
     private async Task MigrateToLatest(CancellationToken ct)

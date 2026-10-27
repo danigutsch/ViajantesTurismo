@@ -23,6 +23,9 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
     private readonly ILogger<ProtectedDistributedTicketStore> logger;
     private readonly KeyBoundDataProtector protector;
 
+    /// <summary>
+    /// Initializes the store with its cache, data protection provider, logger and time source.
+    /// </summary>
     public ProtectedDistributedTicketStore(
         IDistributedCache cache,
         IDataProtectionProvider dataProtectionProvider,
@@ -42,6 +45,7 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
             ManagementAuthenticationDefaults.TicketStoreProtectorPurpose);
     }
 
+    /// <inheritdoc />
     public async Task<string> StoreAsync(AuthenticationTicket ticket)
     {
         ArgumentNullException.ThrowIfNull(ticket);
@@ -51,6 +55,7 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
         return key;
     }
 
+    /// <inheritdoc />
     public async Task RenewAsync(string key, AuthenticationTicket ticket)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -75,6 +80,7 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
             }).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<AuthenticationTicket?> RetrieveAsync(string key)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -103,11 +109,15 @@ internal sealed partial class ProtectedDistributedTicketStore : ITicketStore
         }
     }
 
+    /// <inheritdoc />
     public Task RemoveAsync(string key)
     {
         return RemoveAsync(key, CancellationToken.None);
     }
 
+    /// <summary>
+    /// Removes the ticket from the cache, honoring cancellation.
+    /// </summary>
     public async Task RemoveAsync(string key, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);

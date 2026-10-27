@@ -2,8 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ViajantesTurismo.MigrationService;
 
+/// <summary>Runs the migration host and maps its outcome to a process exit code.</summary>
 internal static class MigrationProcess
 {
+    /// <summary>Starts the host, runs the database initialization worker, then stops and disposes the host; returns 0 on success or 1 after reporting the collected failure(s).</summary>
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
@@ -70,6 +72,7 @@ internal static class MigrationProcess
         return 1;
     }
 
+    /// <summary>Formats a failure for the error stream as the exception type name only, never its message.</summary>
     internal static string FormatFailure(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);

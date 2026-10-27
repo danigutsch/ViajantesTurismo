@@ -11,6 +11,7 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// </summary>
 internal static class DocumentArtifactRenderer
 {
+    /// <summary>Renders the draft as deterministic HTML bytes, ordering fields by sort order.</summary>
     public static byte[] Render(DocumentDraft document)
     {
         ArgumentNullException.ThrowIfNull(document);

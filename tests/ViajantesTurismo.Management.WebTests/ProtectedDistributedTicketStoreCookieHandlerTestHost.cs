@@ -12,8 +12,10 @@ using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+/// <summary>Test host wiring the protected ticket store into cookie authentication with failing caches.</summary>
 internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDisposable
 {
+    /// <summary>Name of the test authentication cookie.</summary>
     internal const string CookieName = "management-test";
     private readonly ThrowingRemoveDistributedCache? _ticketRemovalCache;
 
@@ -25,14 +27,17 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
         _ticketRemovalCache = ticketRemovalCache;
     }
 
+    /// <summary>Cache that throws on ticket removal; throws when the host was not started with it.</summary>
     public ThrowingRemoveDistributedCache Cache => _ticketRemovalCache
         ?? throw new InvalidOperationException("The test host was not configured with a failing ticket cache.");
 
+    /// <summary>The running test host.</summary>
     public IHost Host
     {
         get;
     }
 
+    /// <summary>Starts a host whose cache throws when a ticket is removed.</summary>
     public static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> StartWithFailingTicketRemoval(CancellationToken ct)
     {
         var innerCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
@@ -41,6 +46,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
         return await Start(cache, cache, ct);
     }
 
+    /// <summary>Starts a host whose cache throws when a session revocation marker is written.</summary>
     public static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> StartWithFailingSessionRevocation(CancellationToken ct)
     {
         var innerCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
@@ -112,6 +118,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
         return new ProtectedDistributedTicketStoreCookieHandlerTestHost(host, ticketRemovalCache);
     }
 
+    /// <summary>Disposes the test host.</summary>
     public void Dispose()
     {
         Host.Dispose();

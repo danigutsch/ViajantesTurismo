@@ -2,6 +2,7 @@ using Npgsql;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 
+/// <summary>Holds an uncommitted booking cancellation so tests can observe document persistence blocking on it.</summary>
 internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncDisposable
 {
     private static readonly TimeSpan LockWaitTimeout = TimeSpan.FromSeconds(10);
@@ -18,12 +19,14 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         this.bookingId = bookingId;
     }
 
+    /// <summary>Creates the scenario from a connection string for an existing booking.</summary>
     public static Task<BookingCancellationAtDocumentPersistenceScenario> Create(
         string connectionString,
         Guid bookingId,
         CancellationToken ct) =>
         Create(NpgsqlDataSource.Create(connectionString), bookingId, ct);
 
+    /// <summary>Creates the scenario from a data source for an existing booking; disposes the data source on failure.</summary>
     internal static async Task<BookingCancellationAtDocumentPersistenceScenario> Create(
         NpgsqlDataSource dataSource,
         Guid bookingId,
@@ -53,6 +56,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         }
     }
 
+    /// <summary>Cancels the booking in an open transaction that is held until committed or rolled back.</summary>
     public async Task HoldCancellation(CancellationToken ct)
     {
         if (cancellationTransaction is not null)
@@ -90,6 +94,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         }
     }
 
+    /// <summary>Waits until at least <paramref name="expectedBlockedRequestCount"/> requests are blocked behind the held cancellation.</summary>
     public async Task WaitForBlockedDocumentPersistence(int expectedBlockedRequestCount, CancellationToken ct)
     {
         var processId = cancellationProcessId ?? throw new InvalidOperationException("The booking cancellation transaction is not active.");
@@ -139,6 +144,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         throw new TimeoutException("Document persistence did not wait for the booking cancellation transaction.");
     }
 
+    /// <summary>Commits the held cancellation.</summary>
     public async Task CommitCancellation(CancellationToken ct)
     {
         var transaction = cancellationTransaction ?? throw new InvalidOperationException("The booking cancellation transaction is not active.");
@@ -152,6 +158,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         await connection.DisposeAsync();
     }
 
+    /// <summary>Rolls back the held cancellation.</summary>
     public async Task RollbackCancellation(CancellationToken ct)
     {
         var transaction = cancellationTransaction ?? throw new InvalidOperationException("The booking cancellation transaction is not active.");
@@ -165,6 +172,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
         await connection.DisposeAsync();
     }
 
+    /// <summary>Reads the current booking status from the database.</summary>
     public async Task<string> GetBookingStatus(CancellationToken ct)
     {
         await using var command = dataSource.CreateCommand(
@@ -175,6 +183,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
             ?? throw new InvalidOperationException("The booking status was not found.");
     }
 
+    /// <summary>Rolls back any held cancellation and disposes the connection and data source.</summary>
     public async ValueTask DisposeAsync()
     {
         if (cancellationTransaction is not null)

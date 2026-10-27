@@ -3,6 +3,7 @@ using System.Text;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 
+/// <summary>Builds customer import CSV content and Playwright upload payloads for system tests.</summary>
 internal static class CustomerImportCsvHelpers
 {
     private const string CanonicalHeaders =
@@ -11,6 +12,7 @@ internal static class CustomerImportCsvHelpers
         "PostalCode,City,State,Country,WeightKg,HeightCentimeters," +
         "BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile";
 
+    /// <summary>Builds a valid canonical data row with the given email and a generated unique national id and mobile number.</summary>
     public static string BuildValidRow(string email)
     {
         var identifier = Guid.NewGuid().ToString("N");
@@ -23,12 +25,15 @@ internal static class CustomerImportCsvHelpers
         $"Carlos Silva,+5511777776666";
     }
 
+    /// <summary>Builds a CSV with the canonical header and one valid row for the given email.</summary>
     public static string BuildCanonicalCsv(string email) =>
         CanonicalHeaders + "\n" + BuildValidRow(email);
 
+    /// <summary>Returns the canonical header with <paramref name="originalHeader" /> replaced by <paramref name="replacementHeader" />.</summary>
     public static string ReplaceCanonicalHeader(string originalHeader, string replacementHeader) =>
         CanonicalHeaders.Replace(originalHeader, replacementHeader, StringComparison.Ordinal);
 
+    /// <summary>Wraps CSV text as a UTF-8 <c>text/csv</c> Playwright file payload.</summary>
     public static FilePayload ToCsvPayload(string csvContent, string fileName = "customers.csv") =>
         new()
         {

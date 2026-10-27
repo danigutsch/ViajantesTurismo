@@ -39,9 +39,11 @@ public sealed partial class BookingFinancialHistory
     /// <inheritdoc />
     public override string ToString() => "BookingFinancialHistory [redacted]";
 
+    /// <summary>Creates an empty history for a booking.</summary>
     internal static BookingFinancialHistory Create(Guid bookingId, DateTimeOffset now) =>
         new(new BookingFinancialState(1, bookingId, 0, now, [], [], [], [], [], [], [], [], [], [], []));
 
+    /// <summary>Drafts a new payment schedule revision.</summary>
     internal Result<Guid> DraftSchedule(long expectedVersion, decimal obligation, decimal bookingPrice, IReadOnlyList<PaymentInstallment> installments, string actorId, DateTimeOffset now)
     {
         var check = CanChange(expectedVersion, actorId, now);
@@ -62,6 +64,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(draft.Value.Id);
     }
 
+    /// <summary>Approves the latest drafted schedule, superseding earlier approved ones.</summary>
     internal Result<Guid> ApproveSchedule(long expectedVersion, Guid scheduleId, decimal bookingPrice, BookingStatus bookingStatus, FinancialApproval approval)
     {
         var check = CanChange(expectedVersion, approval.ActorId, approval.ApprovedAt);
@@ -85,6 +88,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(scheduleId);
     }
 
+    /// <summary>Drafts an agreed FX quote.</summary>
     internal Result<Guid> DraftQuote(long expectedVersion, AgreedFxQuote terms, bool forRefund, string actorId, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(terms);
@@ -106,6 +110,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(id);
     }
 
+    /// <summary>Approves a drafted quote.</summary>
     internal Result<Guid> ApproveQuote(long expectedVersion, Guid quoteId, FinancialApproval approval)
     {
         var check = CanChange(expectedVersion, approval.ActorId, approval.ApprovedAt);
@@ -126,6 +131,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(quoteId);
     }
 
+    /// <summary>Records a review decision on a draft.</summary>
     internal Result<Guid> Review(long expectedVersion, Guid targetId, bool changesRequested, string actorId, DateTimeOffset now)
     {
         var check = CanChange(expectedVersion, actorId, now);
@@ -151,6 +157,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(targetId);
     }
 
+    /// <summary>Withdraws the approval of a schedule or quote.</summary>
     internal Result<Guid> WithdrawApproval(long expectedVersion, Guid targetId, FinancialApproval approval)
     {
         var check = CanChange(expectedVersion, approval.ActorId, approval.ApprovedAt);
@@ -171,8 +178,11 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(targetId);
     }
 
+    /// <summary>Exports the current snapshot for persistence.</summary>
     internal BookingFinancialState ExportState() => _state;
+    /// <summary>Gets the domain events raised since they were last cleared.</summary>
     internal IReadOnlyCollection<IDomainEvent> GetDomainEvents() => _events.AsReadOnly();
+    /// <summary>Clears the raised domain events.</summary>
     internal void ClearDomainEvents() => _events.Clear();
     private bool Withdrawn(Guid id) => _state.Withdrawals.Any(item => item.TargetId == id);
     private static FinancialApprovalState Stamp(FinancialApproval approval) => new(approval.ActorId, approval.ApprovedAt, approval.Reason);

@@ -4,6 +4,8 @@ using OpenTelemetry.Logs;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
+/// <summary>Test exporter that captures exported log records as <see cref="CapturedLogRecord"/>.</summary>
+/// <param name="exportedLogs">Queue receiving each captured log record.</param>
 internal sealed class CollectingLogRecordExporter(ConcurrentQueue<CapturedLogRecord> exportedLogs) : BaseExporter<LogRecord>
 {
     public override ExportResult Export(in Batch<LogRecord> batch)

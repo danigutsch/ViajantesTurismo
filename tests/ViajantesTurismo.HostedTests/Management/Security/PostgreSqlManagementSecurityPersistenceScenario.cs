@@ -6,6 +6,7 @@ using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
+/// <summary>Provisions a PostgreSQL security database through Aspire, migrates it, and queries persisted security data.</summary>
 internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDisposable
 {
     private const string DatabaseResourceName = "managementsecurity";
@@ -21,12 +22,14 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
         this.connectionString = connectionString;
     }
 
+    /// <summary>Starts the application and returns an initialized scenario.</summary>
     public static async ValueTask<PostgreSqlManagementSecurityPersistenceScenario> Create(HostedTestFixture shared, CancellationToken ct)
     {
         var app = await StartApplication(shared, ct);
         return await Initialize(app, ct);
     }
 
+    /// <summary>Creates a database lease and starts an Aspire test application wired to it, cleaning up on failure.</summary>
     internal static async ValueTask<SecurityPersistenceApplication> StartApplication(HostedTestFixture shared, CancellationToken ct)
     {
         var database = await shared.Databases.Create(ct);
@@ -45,6 +48,7 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
         }
     }
 
+    /// <summary>Migrates the security database and returns the scenario, disposing the application on failure.</summary>
     internal static async ValueTask<PostgreSqlManagementSecurityPersistenceScenario> Initialize(
         SecurityPersistenceApplication app,
         CancellationToken ct)
@@ -66,13 +70,16 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
         }
     }
 
+    /// <summary>Returns the connection string of the security database resource.</summary>
     internal static Task<string> GetConnectionString(
         SecurityPersistenceApplication app,
         CancellationToken ct) => app.GetConnectionString(DatabaseResourceName, ct);
 
+    /// <summary>Creates a persistence test host connected to the scenario database.</summary>
     public ManagementSecurityPersistenceTestHost CreateHost(string? applicationName = null) =>
         ManagementSecurityPersistenceTestHost.Create(connectionString, applicationName);
 
+    /// <summary>Returns the number of stored data protection keys.</summary>
     public async Task<int> GetDataProtectionKeyCount(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -82,6 +89,7 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
         return Convert.ToInt32(await command.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture);
     }
 
+    /// <summary>Returns how many tickets are stored under the given key.</summary>
     public async Task<int> GetTicketCount(string ticketKey, CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -93,6 +101,7 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
         return Convert.ToInt32(await command.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture);
     }
 
+    /// <summary>Returns whether the stored ticket bytes contain the principal name in plaintext.</summary>
     public async Task<bool> TicketContainsPlaintext(
         string ticketKey,
         string principalName,
@@ -114,5 +123,6 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
         return (bool)(await command.ExecuteScalarAsync(ct) ?? false);
     }
 
+    /// <summary>Disposes the application and database.</summary>
     public ValueTask DisposeAsync() => app.DisposeAsync();
 }

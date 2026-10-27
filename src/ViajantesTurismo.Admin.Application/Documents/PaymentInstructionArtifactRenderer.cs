@@ -9,8 +9,10 @@ using RenderPrivacy = PandaBear.DocumentRendering.DocumentPrivacyClassification;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
 
+/// <summary>Renders the payment instructions artifact as HTML from the document and its protected snapshot.</summary>
 internal static class PaymentInstructionArtifactRenderer
 {
+    /// <summary>Renders payment terms, verified recipient details and installments as deterministic HTML bytes.</summary>
     public static byte[] Render(DocumentDraft document, PaymentInstructionSnapshot snapshot)
     {
         var terms = snapshot.Terms;

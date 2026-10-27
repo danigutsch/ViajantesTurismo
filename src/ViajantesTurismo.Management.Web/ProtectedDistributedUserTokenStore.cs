@@ -27,6 +27,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
     private readonly KeyBoundDataProtector _protector;
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>Creates a store that serializes session mutations with a PostgreSQL advisory lock.</summary>
     public ProtectedDistributedUserTokenStore(
         IDistributedCache cache,
         IDataProtectionProvider dataProtectionProvider,
@@ -36,6 +37,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
     {
     }
 
+    /// <summary>Creates a store that skips the advisory lock, for tests without a database.</summary>
     internal static ProtectedDistributedUserTokenStore CreateForTesting(
         IDistributedCache cache,
         IDataProtectionProvider dataProtectionProvider,
@@ -72,6 +74,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         _timeProvider = timeProvider;
     }
 
+    /// <summary>Stores the token under the request-parameter key, rejecting expired or revoked sessions and DPoP tokens.</summary>
     public async Task StoreTokenAsync(
         ClaimsPrincipal user,
         UserToken token,
@@ -106,6 +109,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         }, ct);
     }
 
+    /// <summary>Returns the stored token, or a refresh-only token derived from the default entry, or a failure when none is usable.</summary>
     public async Task<TokenResult<TokenForParameters>> GetTokenAsync(
         ClaimsPrincipal user,
         UserTokenRequestParameters? parameters = null,
@@ -154,6 +158,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         return TokenResult.Failure("No access token or refresh token is available.");
     }
 
+    /// <summary>Removes the token entry for the request parameters, dropping the cache entry when none remain.</summary>
     public async Task ClearTokenAsync(
         ClaimsPrincipal user,
         UserTokenRequestParameters? parameters = null,
@@ -194,6 +199,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         }, ct);
     }
 
+    /// <summary>Revokes the session and removes all its token entries, returning whether removal succeeded.</summary>
     internal async Task<bool> ClearAll(ClaimsPrincipal user, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(user);
@@ -210,6 +216,7 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
         }, ct);
     }
 
+    /// <summary>Runs the operation under the session lock, failing when the session is expired or revoked.</summary>
     internal async Task<T> ExecuteForActiveSession<T>(
         ClaimsPrincipal user,
         Func<CancellationToken, Task<T>> operation,

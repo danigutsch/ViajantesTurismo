@@ -11,6 +11,7 @@ internal static class ImportCustomersConflictLoader
 {
     private const string LoadFailureMessage = "Existing customer data could not be loaded.";
 
+    /// <summary>Builds one conflict state per conflict, pairing incoming file values with existing customer values loaded from the API.</summary>
     internal static async Task<IReadOnlyList<ImportCustomerConflictState>> LoadConflictStates(
         ICustomersApiClient customersApi,
         IReadOnlyList<ImportConflictDto> conflicts,

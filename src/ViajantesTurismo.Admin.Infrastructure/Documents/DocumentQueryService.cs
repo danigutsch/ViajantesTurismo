@@ -8,6 +8,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 /// <summary>Provides no-tracking Admin document read projections.</summary>
 internal sealed class DocumentQueryService(AdminReadDbContext dbContext) : IDocumentQueryService
 {
+    /// <summary>Returns the document with fields ordered by sort order, or null when not found.</summary>
     public async Task<GetDocumentDto?> GetById(Guid id, CancellationToken ct)
     {
         var document = await dbContext.DocumentDrafts
@@ -17,6 +18,7 @@ internal sealed class DocumentQueryService(AdminReadDbContext dbContext) : IDocu
         return document is null ? null : DocumentMapper.MapToGetDocumentDto(document);
     }
 
+    /// <summary>Returns the booking and revision of the document for auditing, or null when not found.</summary>
     public Task<DocumentAuditMetadata?> GetAuditMetadataById(Guid id, CancellationToken ct) =>
         dbContext.DocumentDrafts
             .AsNoTracking()

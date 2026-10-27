@@ -4,8 +4,10 @@ using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ApiService.Errors;
 
+/// <summary>Endpoints serving generated error documentation.</summary>
 internal static class ErrorDocumentationEndpoints
 {
+    /// <summary>Maps the error documentation list and lookup endpoints, requiring documentation read permission.</summary>
     public static void MapErrorDocumentationEndpoints(this WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);

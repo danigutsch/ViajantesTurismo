@@ -12,6 +12,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Catalog.InfrastructureTests.Tours;
 
+/// <summary>Catalog tour slug lock scenario backed by a leased PostgreSQL database and the Catalog event store.</summary>
 internal sealed class CatalogTourSlugLockPostgreSqlScenario : IAsyncDisposable
 {
     private readonly PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease app;
@@ -31,6 +32,7 @@ internal sealed class CatalogTourSlugLockPostgreSqlScenario : IAsyncDisposable
         this.handler = handler;
     }
 
+    /// <summary>Leases a test database, builds the Catalog infrastructure on it and initializes the event store, releasing both on failure.</summary>
     public static async ValueTask<CatalogTourSlugLockPostgreSqlScenario> Create(HostedTestFixture shared, CancellationToken ct)
     {
         var app = await shared.Databases.Create(ct);
@@ -76,12 +78,15 @@ internal sealed class CatalogTourSlugLockPostgreSqlScenario : IAsyncDisposable
         }
     }
 
+    /// <summary>Handles the admin tour created integration event with the Catalog handler.</summary>
     public ValueTask Handle(AdminTourCreatedIntegrationEvent integrationEvent, CancellationToken ct) =>
         handler.Handle(integrationEvent, ct);
 
+    /// <summary>Loads all events of the stream from the Catalog event store.</summary>
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Load(StreamId streamId, CancellationToken ct) =>
         eventStore.Load(streamId, afterRevision: null, ct);
 
+    /// <summary>Runs a parameterized text query so Npgsql tracing can be observed and returns the sentinel text.</summary>
     public async Task<string> ExecuteParameterizedTracingProbe(string sentinel, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sentinel);
@@ -97,6 +102,7 @@ internal sealed class CatalogTourSlugLockPostgreSqlScenario : IAsyncDisposable
             ?? throw new InvalidOperationException("The Npgsql tracing probe returned no text.");
     }
 
+    /// <summary>Disposes the service provider and the database lease.</summary>
     public async ValueTask DisposeAsync()
     {
         await serviceProvider.DisposeAsync();

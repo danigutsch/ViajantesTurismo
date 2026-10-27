@@ -6,8 +6,10 @@ using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Builds <c>MediaImageUploadIntake</c> instances with test doubles and default options.</summary>
 internal static class MediaImageUploadIntakeTestFactory
 {
+    /// <summary>Creates an intake with the given collaborators and options, using default outbox, logger and clock.</summary>
     public static MediaImageUploadIntake Create(
         IMediaUploadScanner scanner,
         IObjectStore objectStore,
@@ -15,6 +17,7 @@ internal static class MediaImageUploadIntakeTestFactory
         MediaUploadValidationOptions options) =>
         Create(scanner, objectStore, imageStore, null, options);
 
+    /// <summary>Creates an intake, defaulting any omitted outbox, options, logger or time provider.</summary>
     public static MediaImageUploadIntake Create(
         IMediaUploadScanner scanner,
         IObjectStore objectStore,

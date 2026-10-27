@@ -11,12 +11,14 @@ using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests.Infrastructure;
 
+/// <summary>Builds in-memory test hosts for the management web endpoints.</summary>
 internal static class ManagementWebEndpointTestHost
 {
     private const string AntiforgeryHeaderNameResponseHeader = "X-Test-Antiforgery-Header-Name";
     private const string AntiforgeryRequestTokenHeader = "X-Test-Antiforgery-Request-Token";
     private const string AntiforgeryTokenPath = "/_test/antiforgery";
 
+    /// <summary>Starts a test host whose authentication always succeeds and records challenges and sign-outs.</summary>
     public static async Task<IHost> StartWithRecordingAuthentication(
         CancellationToken ct,
         ICatalogToursApiClient? catalogToursApi = null,
@@ -66,6 +68,7 @@ internal static class ManagementWebEndpointTestHost
             .StartAsync(ct);
     }
 
+    /// <summary>Creates a POST request carrying a valid antiforgery cookie and token header.</summary>
     public static async Task<HttpRequestMessage> CreateAntiforgeryPost(HttpClient client, string path, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);

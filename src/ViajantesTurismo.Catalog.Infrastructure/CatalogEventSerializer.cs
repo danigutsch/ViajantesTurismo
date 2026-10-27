@@ -4,6 +4,7 @@ using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
+/// <summary>Serializes Catalog tour events to and from their durable JSON payloads and versioned event type names.</summary>
 internal sealed class CatalogEventSerializer : IEventSerializer
 {
     private const string CatalogTourDraftCreatedEventType = "catalog.tours.draft-created.v1";
@@ -11,6 +12,7 @@ internal sealed class CatalogEventSerializer : IEventSerializer
     private const string CatalogTourPublishedEventType = "catalog.tours.published.v1";
     private const string CatalogTourUnpublishedEventType = "catalog.tours.unpublished.v1";
 
+    /// <summary>Returns the durable event type name for a registered Catalog event.</summary>
     public string GetEventType(object eventData)
     {
         ArgumentNullException.ThrowIfNull(eventData);
@@ -25,6 +27,7 @@ internal sealed class CatalogEventSerializer : IEventSerializer
         };
     }
 
+    /// <summary>Serializes a registered Catalog event to JSON.</summary>
     public string Serialize(object eventData)
     {
         ArgumentNullException.ThrowIfNull(eventData);
@@ -39,6 +42,7 @@ internal sealed class CatalogEventSerializer : IEventSerializer
         };
     }
 
+    /// <summary>Deserializes a Catalog event from its durable event type name and JSON payload.</summary>
     public object Deserialize(string eventType, string payloadJson)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(eventType);

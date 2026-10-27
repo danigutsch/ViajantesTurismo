@@ -2,8 +2,10 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
+/// <summary>Builds document audit records for infrastructure tests.</summary>
 internal static class DocumentAuditInfrastructureTestData
 {
+    /// <summary>Creates a successful finalize audit record at the given time, with generated document and booking ids unless supplied.</summary>
     public static DocumentAuditRecord CreateRecord(
         DateTime occurredAtUtc,
         Guid? documentId = null,

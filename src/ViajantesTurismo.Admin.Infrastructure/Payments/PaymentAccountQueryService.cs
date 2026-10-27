@@ -6,16 +6,23 @@ using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
+/// <summary>Reads payment accounts and audits sensitive detail access.</summary>
+/// <param name="store">The payment account store.</param>
+/// <param name="unitOfWork">Saves the access audit row.</param>
+/// <param name="clock">The clock for audit timestamps.</param>
 internal sealed class PaymentAccountQueryService(IPaymentAccountStore store, IUnitOfWork unitOfWork, TimeProvider clock) : IPaymentAccountQueryService
 {
+    /// <summary>Lists all payment account summaries.</summary>
     public async Task<IReadOnlyList<GetPaymentAccountDto>> List(CancellationToken ct) => (await store.List(ct)).Select(PaymentAccountMappings.ToSummary).ToArray();
 
+    /// <summary>Returns the account summary, or null when not found.</summary>
     public async Task<GetPaymentAccountDto?> GetById(Guid id, CancellationToken ct)
     {
         var account = await store.GetById(id, ct);
         return account is null ? null : PaymentAccountMappings.ToSummary(account);
     }
 
+    /// <summary>Returns the decrypted recipient details after recording an audit row for the actor, or null when not found.</summary>
     public async Task<GetPaymentAccountDetailsDto?> GetSensitiveDetails(Guid id, string actorId, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actorId);

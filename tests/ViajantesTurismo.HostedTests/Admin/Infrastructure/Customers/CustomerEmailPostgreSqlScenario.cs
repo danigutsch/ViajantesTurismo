@@ -15,6 +15,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Customers;
 
+/// <summary>Runs customer email behavior against a real PostgreSQL database.</summary>
 internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
 {
     private readonly PostgreSqlTestDatabase database;
@@ -26,6 +27,7 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         connectionString = database.ConnectionString;
     }
 
+    /// <summary>Creates a scenario over a new fixture-issued database.</summary>
     [SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
@@ -38,12 +40,14 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         return new CustomerEmailPostgreSqlScenario(database);
     }
 
+    /// <summary>Applies all pending migrations.</summary>
     public async Task ApplyLatestMigration(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         await dbContext.Database.MigrateAsync(ct);
     }
 
+    /// <summary>Creates the <c>citext</c> extension when it is missing.</summary>
     public async Task CreateCustomerEmailExtension(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -53,6 +57,7 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         _ = await command.ExecuteNonQueryAsync(ct);
     }
 
+    /// <summary>Returns whether the <c>citext</c> extension is installed in the database.</summary>
     public async Task<bool> CustomerEmailExtensionExists(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -62,6 +67,7 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         return (bool)(await command.ExecuteScalarAsync(ct) ?? false);
     }
 
+    /// <summary>Migrates the database up to the named migration.</summary>
     public async Task ApplyMigration(string migration, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -69,6 +75,7 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         await migrator.MigrateAsync(migration, ct);
     }
 
+    /// <summary>Generates the SQL script of all migrations without applying it.</summary>
     public string GenerateLatestMigrationScript()
     {
         using var dbContext = CreateDbContext();
@@ -76,6 +83,7 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         return migrator.GenerateScript();
     }
 
+    /// <summary>Persists a customer built with the given email and returns it.</summary>
     public async Task<Customer> AddCustomer(string email, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -85,18 +93,21 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         return customer;
     }
 
+    /// <summary>Looks up a customer by email through the customer store.</summary>
     public async Task<Customer?> GetByEmail(string email, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         return await new CustomerStore(dbContext).GetByEmail(email, ct);
     }
 
+    /// <summary>Counts the stored customers.</summary>
     public async Task<int> CountCustomers(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         return await dbContext.Customers.CountAsync(ct);
     }
 
+    /// <summary>Disposes the fixture-issued database.</summary>
     public ValueTask DisposeAsync() => database.DisposeAsync();
 
     private AdminWriteDbContext CreateDbContext()

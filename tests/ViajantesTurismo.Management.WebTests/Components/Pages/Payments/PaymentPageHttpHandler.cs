@@ -3,20 +3,31 @@ using System.Text;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 
+/// <summary>Fake HTTP handler serving canned payment payloads and recording submitted requests.</summary>
 internal sealed class PaymentPageHttpHandler : HttpMessageHandler
 {
+    /// <summary>JSON body returned for payment account list reads.</summary>
     public string Accounts { get; set; } = "[]";
+    /// <summary>JSON body returned for recipient reads.</summary>
     public string Recipient { get; set; } = PaymentPageData.Recipient;
+    /// <summary>JSON body returned for payment instruction list reads.</summary>
     public string Instructions { get; set; } = "[]";
+    /// <summary>Status code returned for non-GET submissions.</summary>
     public HttpStatusCode SubmissionStatus { get; set; } = HttpStatusCode.OK;
+    /// <summary>Status code returned for GET reads.</summary>
     public HttpStatusCode ReadStatus { get; set; } = HttpStatusCode.OK;
+    /// <summary>Absolute paths of submitted non-GET requests.</summary>
     public List<string> Paths { get; } = [];
+    /// <summary>Idempotency keys of submitted non-GET requests.</summary>
     public List<string> Keys { get; } = [];
+    /// <summary>Request bodies of submitted non-GET requests.</summary>
     public List<string> Payloads { get; } = [];
+    /// <summary>When true, the next submission throws once and the flag resets.</summary>
     public bool FailNextSubmission
     {
         get; set;
     }
+    /// <summary>JSON body returned for booking financial history reads.</summary>
     public string FinancialHistory { get; set; } = """
         {"bookingId":"11111111-1111-1111-1111-111111111111","version":0,"obligationCurrency":1,"termsStale":true,
         "approvedObligationEuro":0,"outstandingEuro":0,"unallocatedEuroCredit":0,"businessDate":"2030-01-05","overdue":false,

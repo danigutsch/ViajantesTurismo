@@ -20,11 +20,14 @@ using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
+/// <summary>Test scope over a built service provider exposing the Admin infrastructure services; disposing it disposes the scope and the provider.</summary>
+/// <param name="serviceProvider">The built provider that owns the scope and is disposed with it.</param>
 internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider serviceProvider) : IDisposable
 {
     private readonly ServiceProvider serviceProvider = serviceProvider;
     private readonly IServiceScope scope = serviceProvider.CreateScope();
 
+    /// <summary>Gets whether the outbox relay hosted service for the Admin write context is registered.</summary>
     public bool HasOutboxRelay => HostedServices.Any(service =>
     {
         var type = service.GetType();
@@ -34,34 +37,48 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
             && type.GenericTypeArguments.Single() == typeof(AdminWriteDbContext);
     });
 
+    /// <summary>Gets the domain event dispatcher resolved from the scope.</summary>
     public IDomainEventDispatcher Dispatcher => scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
 
+    /// <summary>Gets the Admin write context resolved from the scope.</summary>
     public AdminWriteDbContext WriteContext => scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
 
+    /// <summary>Gets the unit of work resolved from the scope.</summary>
     public IUnitOfWork UnitOfWork => scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
+    /// <summary>Gets the query service resolved from the scope.</summary>
     public IQueryService QueryService => scope.ServiceProvider.GetRequiredService<IQueryService>();
 
+    /// <summary>Gets the tour store resolved from the scope.</summary>
     public ITourStore TourStore => scope.ServiceProvider.GetRequiredService<ITourStore>();
 
+    /// <summary>Gets the tour capacity mutation lock resolved from the scope.</summary>
     public ITourCapacityMutationLock TourCapacityMutationLock =>
         scope.ServiceProvider.GetRequiredService<ITourCapacityMutationLock>();
 
+    /// <summary>Gets the customer store resolved from the scope.</summary>
     public ICustomerStore CustomerStore => scope.ServiceProvider.GetRequiredService<ICustomerStore>();
 
+    /// <summary>Gets the document store resolved from the scope.</summary>
     public IDocumentStore DocumentStore => scope.ServiceProvider.GetRequiredService<IDocumentStore>();
 
+    /// <summary>Gets the integration event outbox resolved from the scope.</summary>
     public IIntegrationEventOutbox Outbox => scope.ServiceProvider.GetRequiredService<IIntegrationEventOutbox>();
 
+    /// <summary>Gets the branding projection store resolved from the scope.</summary>
     public IBrandingProjectionStore BrandingProjectionStore => scope.ServiceProvider.GetRequiredService<IBrandingProjectionStore>();
 
+    /// <summary>Gets the idempotency store, or null when none is registered.</summary>
     public IIdempotencyStore? IdempotencyStore => scope.ServiceProvider.GetService<IIdempotencyStore>();
 
+    /// <summary>Gets the DbContext option configurations registered for the Admin write context.</summary>
     public IReadOnlyList<IDbContextConfiguration<AdminWriteDbContext>> DbContextConfigurations =>
         scope.ServiceProvider.GetServices<IDbContextConfiguration<AdminWriteDbContext>>().ToArray();
 
+    /// <summary>Gets the hosted services registered in the provider.</summary>
     public IReadOnlyList<IHostedService> HostedServices => serviceProvider.GetServices<IHostedService>().ToArray();
 
+    /// <summary>Returns whether the create-tour handler is the same instance within a scope and a different instance across scopes.</summary>
     public bool CreateTourHandlerHasScopedLifetime()
     {
         using var firstScope = serviceProvider.CreateScope();
@@ -73,12 +90,14 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
         return ReferenceEquals(firstHandler, sameScopeHandler) && !ReferenceEquals(firstHandler, secondHandler);
     }
 
+    /// <summary>Returns whether sensitive data logging is enabled in the options of the given context type.</summary>
     public bool IsSensitiveDataLoggingEnabled<TContext>() where TContext : DbContext
     {
         var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<TContext>>();
         return options.FindExtension<CoreOptionsExtension>()?.IsSensitiveDataLoggingEnabled ?? false;
     }
 
+    /// <summary>Returns whether starting an activity on the named source is sampled once the tracer provider is built.</summary>
     public bool IsActivitySourceEnabled(string sourceName)
     {
         _ = serviceProvider.GetRequiredService<TracerProvider>();
@@ -87,11 +106,13 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
         return activity is not null;
     }
 
+    /// <summary>Returns whether a meter provider is registered.</summary>
     public bool HasMeterProvider()
     {
         return serviceProvider.GetService<MeterProvider>() is not null;
     }
 
+    /// <summary>Disposes the scope and the service provider.</summary>
     public void Dispose()
     {
         scope.Dispose();

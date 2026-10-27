@@ -2,8 +2,10 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
+/// <summary>Test data for document lineages.</summary>
 internal static class DocumentLineageTestData
 {
+    /// <summary>Creates draft content for the service contract template at the given version.</summary>
     public static DocumentDraftContent CreateContent(string templateVersion = "1") => new(
         "tour-service-contract",
         templateVersion,
@@ -33,6 +35,7 @@ internal static class DocumentLineageTestData
         "Inter",
         "Viajantes Turismo");
 
+    /// <summary>Creates a valid contract lineage with its creation domain events cleared.</summary>
     public static DocumentLineage Create(Guid? bookingId = null, DateTime? now = null)
     {
         var result = DocumentLineage.Create(

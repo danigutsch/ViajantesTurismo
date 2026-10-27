@@ -5,8 +5,10 @@ using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
 
+/// <summary>EF Core mapping for public media images and their owned dimensions and variants.</summary>
 internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<PublicMediaImage>
 {
+    /// <summary>Maps the image table, column limits, enum conversions and owned types.</summary>
     public void Configure(EntityTypeBuilder<PublicMediaImage> entity)
     {
         entity.ToTable("PublicMediaImages");

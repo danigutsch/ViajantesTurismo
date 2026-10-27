@@ -8,6 +8,7 @@ using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Scenario running the projection hosted service over captured stores.</summary>
 internal sealed class CatalogProjectionHostedServiceScenario : IAsyncDisposable
 {
     private readonly CapturingProjectionCheckpointStore checkpointStore;
@@ -28,6 +29,7 @@ internal sealed class CatalogProjectionHostedServiceScenario : IAsyncDisposable
             NullLogger<CatalogProjectionHostedService>.Instance);
     }
 
+    /// <summary>Creates a scenario whose event store replays one tour draft created event.</summary>
     public static CatalogProjectionHostedServiceScenario CreateWithOneEvent()
     {
         var eventStore = new CapturingEventStore();
@@ -52,12 +54,16 @@ internal sealed class CatalogProjectionHostedServiceScenario : IAsyncDisposable
         return new CatalogProjectionHostedServiceScenario(services.BuildServiceProvider(), readModelStore, checkpointStore);
     }
 
+    /// <summary>Runs one projection batch and returns its result count.</summary>
     public ValueTask<int> ExecuteBatch(CancellationToken ct) => service.RunBatch(ct);
 
+    /// <summary>Asserts a draft was projected into the read model store.</summary>
     public void ShouldHaveProjectedDraft() => readModelStore.Draft.ShouldNotBeNull();
 
+    /// <summary>Asserts a projection checkpoint was saved.</summary>
     public void ShouldHaveSavedCheckpoint() => checkpointStore.SavedCheckpoint.ShouldNotBeNull();
 
+    /// <summary>Disposes the hosted service and the service provider.</summary>
     public async ValueTask DisposeAsync()
     {
         service.Dispose();

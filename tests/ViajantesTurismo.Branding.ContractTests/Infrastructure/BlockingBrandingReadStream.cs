@@ -1,15 +1,21 @@
 namespace ViajantesTurismo.Branding.ContractTests.Infrastructure;
 
+/// <summary>
+/// Non-seekable stream whose reads block until cancelled, for testing cancellation and disposal.
+/// </summary>
+/// <param name="onReadStarted">Optional callback invoked once when the first read starts.</param>
 internal sealed class BlockingBrandingReadStream(Action? onReadStarted = null) : Stream
 {
     private readonly TaskCompletionSource _readStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Action? _onReadStarted = onReadStarted;
 
+    /// <summary>Gets whether the stream has been disposed.</summary>
     public bool IsDisposed
     {
         get; private set;
     }
 
+    /// <summary>Gets a task that completes when the first read starts.</summary>
     public Task ReadStarted => _readStarted.Task;
 
     public override bool CanRead => !IsDisposed;

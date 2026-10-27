@@ -19,6 +19,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
 
     public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
 
+    /// <summary>Creates an HTTP client for the API without the default bearer token.</summary>
     internal HttpClient CreateAnonymousClient()
     {
         ArgumentNullException.ThrowIfNull(_app);
@@ -50,11 +51,13 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
         return shared.Databases.Create(ct);
     }
 
+    /// <summary>Installs the document mutation concurrency scenario for <paramref name="documentId"/>.</summary>
     internal Task<DocumentMutationConcurrencyScenario> CreateDocumentMutationConcurrencyScenario(
         Guid documentId,
         CancellationToken ct) =>
         DocumentMutationConcurrencyScenario.Create(GetDatabaseConnectionString(), documentId, ct);
 
+    /// <summary>Creates the capacity concurrency scenario for two bookings on the same tour.</summary>
     internal Task<BookingCapacityConcurrencyScenario> CreateBookingCapacityConcurrencyScenario(
         Guid firstBookingId,
         Guid secondBookingId,
@@ -65,11 +68,13 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
             secondBookingId,
             ct);
 
+    /// <summary>Installs a database trigger that fails document audit inserts for <paramref name="bookingId"/>.</summary>
     internal Task<DocumentAuditInsertFailureScenario> CreateDocumentAuditInsertFailureScenario(
         Guid bookingId,
         CancellationToken ct) =>
         DocumentAuditInsertFailureScenario.Create(GetDatabaseConnectionString(), bookingId, ct);
 
+    /// <summary>Installs a trigger that fails completion of the idempotency key with a non-retryable error.</summary>
     internal Task<DocumentIdempotencyCompletionFailureScenario> CreateDocumentIdempotencyCompletionFailureScenario(
         string scope,
         Guid idempotencyKey,
@@ -81,6 +86,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
             failOnceWithRetryableError: false,
             ct);
 
+    /// <summary>Installs a trigger that fails completion of the idempotency key once with a retryable error.</summary>
     internal Task<DocumentIdempotencyCompletionFailureScenario> CreateDocumentIdempotencyTransientCompletionFailureScenario(
         string scope,
         Guid idempotencyKey,
@@ -92,23 +98,27 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
             failOnceWithRetryableError: true,
             ct);
 
+    /// <summary>Creates the scenario that holds a booking cancellation while document persistence waits.</summary>
     internal Task<BookingCancellationAtDocumentPersistenceScenario> CreateBookingCancellationAtDocumentPersistenceScenario(
         Guid bookingId,
         CancellationToken ct) =>
         BookingCancellationAtDocumentPersistenceScenario.Create(GetDatabaseConnectionString(), bookingId, ct);
 
+    /// <summary>Reads the document audit records for <paramref name="documentId"/>.</summary>
     internal async Task<IReadOnlyList<DocumentAuditEntry>> GetDocumentAuditMetadata(Guid documentId, CancellationToken ct)
     {
         await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
         return await DocumentAuditMetadataReader.ReadByDocumentId(dataSource, documentId, ct);
     }
 
+    /// <summary>Reads the document audit records for <paramref name="bookingId"/>.</summary>
     internal async Task<IReadOnlyList<DocumentAuditEntry>> GetDocumentAuditMetadataForBooking(Guid bookingId, CancellationToken ct)
     {
         await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
         return await DocumentAuditMetadataReader.ReadByBookingId(dataSource, bookingId, ct);
     }
 
+    /// <summary>Counts the document drafts stored for <paramref name="bookingId"/>.</summary>
     internal async Task<int> GetDocumentDraftCountForBooking(Guid bookingId, CancellationToken ct)
     {
         await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
@@ -123,6 +133,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
         return Convert.ToInt32(count, System.Globalization.CultureInfo.InvariantCulture);
     }
 
+    /// <summary>Creates an HTTP client authenticated as the operator user.</summary>
     internal async Task<HttpClient> CreateOperatorClient(CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_app);

@@ -12,6 +12,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Tours;
 
+/// <summary>Arranges an isolated PostgreSQL database for tour store tests.</summary>
 internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
 {
     private readonly PostgreSqlTestDatabase database;
@@ -23,6 +24,7 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
         connectionString = database.ConnectionString;
     }
 
+    /// <summary>Creates a scenario over a database issued by <paramref name="fixture" />.</summary>
     [SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
@@ -35,6 +37,7 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
         return new TourStorePostgreSqlScenario(database);
     }
 
+    /// <summary>Migrates the database and persists the tour.</summary>
     public async Task Seed(Tour tour, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -43,6 +46,7 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    /// <summary>Looks up the id of the tour containing the booking with <paramref name="bookingId" />.</summary>
     public async Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -50,6 +54,7 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
         return await new TourStore(dbContext, new Infrastructure.Payments.PaymentHistoryStore(dbContext, protection)).GetTourIdByBookingId(bookingId, ct);
     }
 
+    /// <summary>Disposes the test database.</summary>
     public ValueTask DisposeAsync() => database.DisposeAsync();
 
     private AdminWriteDbContext CreateDbContext()

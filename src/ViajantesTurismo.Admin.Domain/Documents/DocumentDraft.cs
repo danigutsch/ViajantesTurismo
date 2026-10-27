@@ -439,6 +439,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             DocumentLineageId));
     }
 
+    /// <summary>Creates the first revision of a draft that belongs to an existing document lineage.</summary>
     internal static Result<DocumentDraft> CreateForLineage(
         Guid documentLineageId,
         Guid bookingId,
@@ -482,6 +483,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         return result;
     }
 
+    /// <summary>Creates a validated replacement revision of this draft from new content.</summary>
     internal Result<DocumentDraft> CreateReplacement(
         DocumentDraftContent content,
         int revision,

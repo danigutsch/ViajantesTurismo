@@ -4,8 +4,10 @@ using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
 
+/// <summary>Maps the customer aggregate and its owned value objects to separate tables.</summary>
 internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 {
+    /// <summary>Configures the customer key, owned tables and unique email index.</summary>
     public void Configure(EntityTypeBuilder<Customer> entity)
     {
         entity.HasKey(customer => customer.Id);

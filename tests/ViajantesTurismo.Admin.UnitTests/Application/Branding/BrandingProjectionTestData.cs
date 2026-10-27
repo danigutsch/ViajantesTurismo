@@ -3,10 +3,13 @@ using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Branding;
 
+/// <summary>Builds branding projection events, authorizations and reseed requests for tests.</summary>
 internal static class BrandingProjectionTestData
 {
+    /// <summary>Default source epoch used by test events.</summary>
     public static readonly Guid Epoch = Guid.Parse("0199f0aa-0000-7000-8000-000000000001");
 
+    /// <summary>Builds a branding settings changed event with the given revision, defaulting epoch and event id.</summary>
     public static BrandingSettingsChangedIntegrationEvent CreateEvent(
         long revision,
         string brandName = "Viajantes",
@@ -25,6 +28,7 @@ internal static class BrandingProjectionTestData
         "system-ui",
         new Uri("/logo.svg", UriKind.Relative));
 
+    /// <summary>Builds a reseed authorization matching the given reseed event.</summary>
     public static BrandingReseedAuthorization CreateAuthorization(BrandingSettingsChangedIntegrationEvent reseed) => new(
         reseed.EventId,
         reseed.SourceEpoch,
@@ -34,6 +38,7 @@ internal static class BrandingProjectionTestData
         "operator@example.test",
         new DateTimeOffset(2026, 10, 24, 13, 0, 0, TimeSpan.Zero));
 
+    /// <summary>Builds a reseed request with the given expected and target epoch and revision.</summary>
     public static BrandingReseedRequest CreateReseedRequest(
         Guid? expectedEpoch,
         long? expectedRevision,

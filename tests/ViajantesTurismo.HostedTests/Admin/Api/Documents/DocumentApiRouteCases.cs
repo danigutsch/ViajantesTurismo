@@ -1,10 +1,12 @@
 namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
 
+/// <summary>Expected document API routes and helpers to normalize observed routes against them.</summary>
 internal static class DocumentApiRouteCases
 {
     private const string DocumentId = "00000000-0000-0000-0000-000000000001";
     private const string BookingId = "00000000-0000-0000-0000-000000000002";
 
+    /// <summary>Gets the expected HTTP method and route for each document endpoint, using fixed placeholder ids.</summary>
     public static IReadOnlyList<(string Method, string Route)> Expected
     {
         get;
@@ -22,6 +24,7 @@ internal static class DocumentApiRouteCases
         (HttpMethod.Get.Method, $"/api/v1/documents/{DocumentId}/download"),
     ];
 
+    /// <summary>Gets <see cref="Expected"/> as xunit theory data.</summary>
     public static TheoryData<string, string> All
     {
         get
@@ -36,6 +39,7 @@ internal static class DocumentApiRouteCases
         }
     }
 
+    /// <summary>Replaces the given booking and document ids in <paramref name="route"/> with the fixed placeholder ids.</summary>
     public static string Normalize(string route, Guid bookingId, params Guid[] documentIds)
     {
         var normalized = route.Replace(bookingId.ToString(), BookingId, StringComparison.OrdinalIgnoreCase);

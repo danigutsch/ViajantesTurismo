@@ -5,8 +5,10 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
+/// <summary>Maps payment instruction snapshot rows to the PaymentInstructionSnapshots table.</summary>
 internal sealed class PaymentInstructionConfiguration : IEntityTypeConfiguration<PaymentInstructionRow>
 {
+    /// <summary>Configures the document key, protected snapshot, relationships and indexes.</summary>
     public void Configure(EntityTypeBuilder<PaymentInstructionRow> entity)
     {
         entity.ToTable("PaymentInstructionSnapshots");

@@ -3,10 +3,13 @@ using Aspire.Hosting.ApplicationModel;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
+/// <summary>Helpers for tests of the AppHost performance testing resources.</summary>
 internal static class PerformanceTestingResourceTestsHelpers
 {
+    /// <summary>Environment reader stub that enables only VT_ASPIRE_ENABLE_PERFORMANCE_TESTS and returns null for every other name.</summary>
     internal static string? Enabled(string name) => name == "VT_ASPIRE_ENABLE_PERFORMANCE_TESTS" ? "1" : null;
 
+    /// <summary>Adds fake api and identity-provider container resources to the builder and returns their builders.</summary>
     internal static (IResourceBuilder<IResourceWithEndpoints> Api, IResourceBuilder<IResourceWithEndpoints> Identity) AddDependencies(
         IDistributedApplicationBuilder builder)
     {

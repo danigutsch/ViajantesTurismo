@@ -65,6 +65,7 @@ public sealed class BrandingPostgreSqlMigrationScenario(HostedTestFixture shared
         return new BrandingDbContext(options, configurations);
     }
 
+    /// <summary>Creates a Branding settings store lease backed by a new database context on the scenario database.</summary>
     internal BrandingStoreLease CreateStore()
     {
         var services = new ServiceCollection();

@@ -2,8 +2,10 @@ using System.Reflection;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Assertions for generated-identity equality semantics of entities.</summary>
 internal static class CatalogIdentityAssertions
 {
+    /// <summary>Sets the entity Id through its non-public setter using reflection.</summary>
     public static void SetId<T>(T entity, Guid id)
     {
         var idProperty = typeof(T).GetProperty("Id", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -14,6 +16,7 @@ internal static class CatalogIdentityAssertions
         nonNullIdSetter.Invoke(entity, [id]);
     }
 
+    /// <summary>Asserts equality and hash code follow the generated Id, and that an empty Id equals nothing.</summary>
     public static void AssertGeneratedIdentitySemantics<T>(T first, T second, T different)
         where T : class
     {

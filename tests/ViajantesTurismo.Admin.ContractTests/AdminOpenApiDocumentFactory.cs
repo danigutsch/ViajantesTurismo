@@ -7,8 +7,10 @@ using Microsoft.OpenApi;
 
 namespace ViajantesTurismo.Admin.ContractTests;
 
+/// <summary>Builds OpenAPI documents from the admin API service assembly.</summary>
 internal static class AdminOpenApiDocumentFactory
 {
+    /// <summary>Maps the named endpoint groups on a temporary host and returns the named OpenAPI document.</summary>
     public static async Task<OpenApiDocument> CreateDocument(
         string documentName,
         CancellationToken cancellationToken,

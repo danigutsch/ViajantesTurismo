@@ -41,11 +41,14 @@ internal sealed class BrandingProjectionPostgreSqlScenario : IAsyncDisposable
         return new EfBrandingProjectionStore(dbContext);
     }
 
+    /// <summary>Applies a branding settings event through the projection applier over a fresh store.</summary>
     public async Task Apply(BrandingSettingsChangedIntegrationEvent integrationEvent, CancellationToken ct) =>
         await new BrandingProjectionApplier(CreateStore(), TimeProvider.System).Apply(integrationEvent, ct);
 
+    /// <summary>Creates a recovery service over a fresh projection store.</summary>
     public BrandingProjectionRecoveryService CreateRecoveryService() => new(CreateStore(), TimeProvider.System);
 
+    /// <summary>Reads the recovery status and recovery audit entry count straight from PostgreSQL.</summary>
     public async Task<(string Status, long AuditEntries)> ReadRecovery(CancellationToken ct)
     {
         await using var dataSource = NpgsqlDataSource.Create(database.ConnectionString);
@@ -59,6 +62,7 @@ internal sealed class BrandingProjectionPostgreSqlScenario : IAsyncDisposable
         return (reader.GetString(0), reader.GetInt64(1));
     }
 
+    /// <summary>Reads the projected source revision, brand name and inbox message count straight from PostgreSQL.</summary>
     public async Task<(long Revision, string BrandName, long InboxMessages)> Read(CancellationToken ct)
     {
         await using var dataSource = NpgsqlDataSource.Create(database.ConnectionString);
@@ -72,6 +76,7 @@ internal sealed class BrandingProjectionPostgreSqlScenario : IAsyncDisposable
         return (reader.GetInt64(0), reader.GetString(1), reader.GetInt64(2));
     }
 
+    /// <summary>Disposes every database context created by this scenario.</summary>
     public async ValueTask DisposeAsync()
     {
         foreach (var dbContext in contexts)

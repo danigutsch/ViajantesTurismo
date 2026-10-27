@@ -5,8 +5,10 @@ using System.Diagnostics;
 
 namespace ViajantesTurismo.Public.WebTests;
 
+/// <summary>Helpers for building tours, test hosts and production startup runs in public web endpoint tests.</summary>
 internal static class PublicWebEndpointTestsHelpers
 {
+    /// <summary>Builds tour details with generated summary, description and itinerary and no images.</summary>
     public static TourDetailsDto CreateTour(string slug, string title)
     {
         return new TourDetailsDto
@@ -21,6 +23,7 @@ internal static class PublicWebEndpointTestsHelpers
         };
     }
 
+    /// <summary>Creates a test host with the catalog and branding clients replaced by fakes unless supplied, optionally setting environment, canonical sitemap origin and extra configuration.</summary>
     public static WebApplicationFactory<IPublicWebAssemblyMarker> CreateFactory(
             IPublicCatalogApiClient? catalogApiClient = null,
             IBrandingApiClient? brandingApiClient = null,
@@ -47,6 +50,7 @@ internal static class PublicWebEndpointTestsHelpers
             configuration: settings);
     }
 
+    /// <summary>Runs the public web app as a <c>Production</c> process and returns its exit code and combined output; kills it after 30 seconds.</summary>
     public static async Task<(int ExitCode, string Output)> RunProductionStartup(string canonicalOrigin, CancellationToken ct)
     {
         var startInfo = new ProcessStartInfo("dotnet")

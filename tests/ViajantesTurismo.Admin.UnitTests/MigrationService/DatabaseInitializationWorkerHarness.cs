@@ -18,6 +18,9 @@ using ViajantesTurismo.MigrationService;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
+/// <summary>
+/// Builds a database initialization worker over in-memory stores and stubbed operations for tests.
+/// </summary>
 internal sealed class DatabaseInitializationWorkerHarness : IDisposable
 {
     private readonly ActivitySource activitySource = new(DatabaseInitializationWorker.ActivitySourceName);
@@ -40,13 +43,22 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         StoreProbe = storeProbe;
     }
 
+    /// <summary>
+    /// Gets the probe recording which stores the default initialization resolved, or <see langword="null"/> for custom operations.
+    /// </summary>
     public MigrationStoreResolutionProbe? StoreProbe
     {
         get;
     }
 
+    /// <summary>
+    /// Gets the activity source passed to workers created by this harness.
+    /// </summary>
     public ActivitySource ActivitySource => activitySource;
 
+    /// <summary>
+    /// Creates a production-environment harness whose migration runs <paramref name="initializationOperation"/> and development data is a no-op.
+    /// </summary>
     public static DatabaseInitializationWorkerHarness Create(Func<CancellationToken, Task> initializationOperation)
     {
         return Create(
@@ -55,6 +67,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             static _ => Task.CompletedTask);
     }
 
+    /// <summary>
+    /// Creates a harness for <paramref name="environmentName"/> with the given migration and development data operations.
+    /// </summary>
     public static DatabaseInitializationWorkerHarness Create(
         string environmentName,
         Func<CancellationToken, Task> migrationOperation,
@@ -78,6 +93,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             (_, ct) => developmentDataOperation(ct));
     }
 
+    /// <summary>
+    /// Creates a harness for <paramref name="environmentName"/> that uses the default initialization over in-memory stores.
+    /// </summary>
     public static DatabaseInitializationWorkerHarness CreateWithDefaultInitialization(string environmentName)
     {
         var services = new ServiceCollection();
@@ -137,6 +155,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             probe);
     }
 
+    /// <summary>
+    /// Creates a worker using the harness operations and activity source.
+    /// </summary>
     public DatabaseInitializationWorker CreateWorker()
     {
         return new DatabaseInitializationWorker(
@@ -148,6 +169,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             activitySource);
     }
 
+    /// <summary>
+    /// Creates a worker with the default initialization and a null logger factory.
+    /// </summary>
     public DatabaseInitializationWorker CreateDefaultWorker()
     {
         return new DatabaseInitializationWorker(
@@ -156,6 +180,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             NullLoggerFactory.Instance);
     }
 
+    /// <summary>
+    /// Creates a worker with the default initialization and <paramref name="loggerFactory"/>.
+    /// </summary>
     public DatabaseInitializationWorker CreateDefaultWorker(ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
@@ -166,6 +193,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             loggerFactory);
     }
 
+    /// <summary>
+    /// Asserts the seeded development data exists: 5 tours, 15 customers and 10 bookings.
+    /// </summary>
     public async Task ShouldContainDevelopmentData(CancellationToken ct)
     {
         using var scope = serviceProvider.CreateScope();
@@ -179,6 +209,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         bookingCount.ShouldBe(10);
     }
 
+    /// <summary>
+    /// Asserts no tours, customers or bookings exist.
+    /// </summary>
     public async Task ShouldNotContainDevelopmentData(CancellationToken ct)
     {
         using var scope = serviceProvider.CreateScope();
@@ -192,6 +225,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         bookingCount.ShouldBe(0);
     }
 
+    /// <summary>
+    /// Disposes the service provider and the activity source.
+    /// </summary>
     public void Dispose()
     {
         try

@@ -2,8 +2,10 @@ using ViajantesTurismo.Admin.Application.Import;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
+/// <summary>Builds a valid customer import CSV row and document for mapping tests.</summary>
 internal static class MappingInputs
 {
+    /// <summary>Header names covering every column of the customer import file.</summary>
     public static readonly string[] CompleteHeaders =
     [
         "FirstName", "LastName", "Gender", "BirthDate", "Nationality", "Occupation",
@@ -49,6 +51,7 @@ internal static class MappingInputs
         ["AdditionalInfo"] = "None"
     };
 
+    /// <summary>Builds a valid CSV row with optional value overrides and optional headers, returning it with its document.</summary>
     public static (CsvDocument Document, CsvRow Row) Create(
         IReadOnlyDictionary<string, string>? overrides = null,
         IReadOnlyList<string>? headers = null)

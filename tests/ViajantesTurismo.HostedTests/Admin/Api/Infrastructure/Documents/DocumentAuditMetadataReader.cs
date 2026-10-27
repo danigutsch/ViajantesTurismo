@@ -2,8 +2,10 @@ using Npgsql;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 
+/// <summary>Reads document audit records from the database.</summary>
 internal static class DocumentAuditMetadataReader
 {
+    /// <summary>Reads audit records for a document, ordered by time then id.</summary>
     internal static async Task<IReadOnlyList<DocumentAuditEntry>> ReadByDocumentId(
         NpgsqlDataSource dataSource,
         Guid documentId,
@@ -21,6 +23,7 @@ internal static class DocumentAuditMetadataReader
         return await Read(command, ct);
     }
 
+    /// <summary>Reads audit records for a booking, ordered by time then id.</summary>
     internal static async Task<IReadOnlyList<DocumentAuditEntry>> ReadByBookingId(
         NpgsqlDataSource dataSource,
         Guid bookingId,

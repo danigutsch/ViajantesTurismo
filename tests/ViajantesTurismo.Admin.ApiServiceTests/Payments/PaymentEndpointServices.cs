@@ -5,8 +5,10 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Payments;
 
+/// <summary>Registers payment fakes for endpoint boundary tests.</summary>
 internal static class PaymentEndpointServices
 {
+    /// <summary>Replaces payment stores and services with the transaction, queries and empty stores.</summary>
     public static void Configure(IServiceCollection services, PaymentEndpointTransaction transaction, PaymentAccountQueryProbe queries)
     {
         services.RemoveAll<IPaymentTransaction>();

@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 
+/// <summary>Test data factory for document details page tests.</summary>
 internal static class DocumentDetailsTestData
 {
+    /// <summary>Builds a document DTO in the given status with one editable field unless fields are supplied; finalized-like statuses get a finalized time.</summary>
     public static GetDocumentDto Create(
         DocumentStatusDto status,
         bool hasFinalizedArtifact = false,

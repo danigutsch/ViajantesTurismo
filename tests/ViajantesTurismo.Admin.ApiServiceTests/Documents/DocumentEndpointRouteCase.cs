@@ -1,10 +1,12 @@
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 
+/// <summary>Lists every document endpoint route used by document boundary tests.</summary>
 internal static class DocumentEndpointRouteCase
 {
     private const string DocumentId = "00000000-0000-0000-0000-000000000001";
     private const string BookingId = "00000000-0000-0000-0000-000000000002";
 
+    /// <summary>Gets the HTTP method, route pattern and concrete request path of each document endpoint.</summary>
     public static IReadOnlyList<(string Method, string Pattern, string RequestPath)> All
     {
         get;

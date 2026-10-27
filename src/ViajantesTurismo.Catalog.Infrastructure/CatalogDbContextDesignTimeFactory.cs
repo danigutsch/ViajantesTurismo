@@ -6,12 +6,15 @@ using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
+/// <summary>Creates <see cref="CatalogDbContext" /> for EF Core design-time tooling such as migrations.</summary>
 internal sealed class CatalogDbContextDesignTimeFactory : IDesignTimeDbContextFactory<CatalogDbContext>
 {
+    /// <summary>Initializes a new instance of the <see cref="CatalogDbContextDesignTimeFactory" /> class.</summary>
     public CatalogDbContextDesignTimeFactory()
     {
     }
 
+    /// <inheritdoc />
     public CatalogDbContext CreateDbContext(string[] args)
     {
         var services = new ServiceCollection();

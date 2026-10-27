@@ -1,15 +1,25 @@
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
+/// <summary>
+/// Stream whose asynchronous read blocks until cancelled, used to test cancellation and disposal.
+/// </summary>
+/// <param name="onReadStarted">Optional callback invoked once when the first read starts.</param>
 internal sealed class BlockingDocumentReadStream(Action? onReadStarted = null) : Stream
 {
     private readonly TaskCompletionSource _readStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Action? _onReadStarted = onReadStarted;
 
+    /// <summary>
+    /// Gets a value indicating whether the stream has been disposed.
+    /// </summary>
     public bool IsDisposed
     {
         get; private set;
     }
 
+    /// <summary>
+    /// Gets a task that completes when the first read begins.
+    /// </summary>
     public Task ReadStarted => _readStarted.Task;
 
     public override bool CanRead => !IsDisposed;

@@ -6,20 +6,26 @@ using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
+/// <summary>Persists payment accounts as protected rows.</summary>
+/// <param name="context">The write database context.</param>
+/// <param name="protection">Protects and unprotects account state.</param>
 internal sealed class PaymentAccountStore(AdminWriteDbContext context, PaymentProtection protection) : IPaymentAccountStore
 {
+    /// <summary>Returns the account, or null when not found.</summary>
     public async Task<PaymentAccount?> GetById(Guid id, CancellationToken ct)
     {
         var row = await context.Set<PaymentAccountRow>().AsNoTracking().SingleOrDefaultAsync(row => row.Id == id, ct);
         return row is null ? null : Decode(row);
     }
 
+    /// <summary>Lists all accounts ordered by identifier.</summary>
     public async Task<IReadOnlyList<PaymentAccount>> List(CancellationToken ct)
     {
         var rows = await context.Set<PaymentAccountRow>().AsNoTracking().OrderBy(row => row.Id).ToArrayAsync(ct);
         return rows.Select(Decode).ToArray();
     }
 
+    /// <summary>Writes the account as a protected row and stages audit rows for its lifecycle events.</summary>
     public async Task Save(PaymentAccount account, CancellationToken ct)
     {
         var row = await context.Set<PaymentAccountRow>().SingleOrDefaultAsync(row => row.Id == account.Id, ct);
@@ -54,6 +60,7 @@ internal sealed class PaymentAccountStore(AdminWriteDbContext context, PaymentPr
         account.ClearDomainEvents();
     }
 
+    /// <summary>Stages an audit row for a sensitive access to the account by the actor.</summary>
     public void AuditAccess(PaymentAccount account, string actorId, DateTimeOffset now) => context.Add(new PaymentAuditRow
     {
         Id = Guid.CreateVersion7(),

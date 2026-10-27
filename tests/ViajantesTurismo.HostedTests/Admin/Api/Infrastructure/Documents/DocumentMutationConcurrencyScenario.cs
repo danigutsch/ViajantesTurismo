@@ -2,6 +2,7 @@ using Npgsql;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 
+/// <summary>Installs a trigger that suppresses updates to one document lineage, simulating a concurrent mutation, and removes it on dispose.</summary>
 internal sealed class DocumentMutationConcurrencyScenario : IAsyncDisposable
 {
     private readonly NpgsqlDataSource dataSource;
@@ -20,6 +21,7 @@ internal sealed class DocumentMutationConcurrencyScenario : IAsyncDisposable
         functionName = $"document_mutation_concurrency_function_{suffix}";
     }
 
+    /// <summary>Resolves the lineage of <paramref name="documentId"/> and installs the suppressing trigger.</summary>
     public static async Task<DocumentMutationConcurrencyScenario> Create(
         string connectionString,
         Guid documentId,
@@ -56,9 +58,11 @@ internal sealed class DocumentMutationConcurrencyScenario : IAsyncDisposable
         }
     }
 
+    /// <summary>Reads the document audit records for the scenario's document.</summary>
     public Task<IReadOnlyList<DocumentAuditEntry>> GetDocumentAuditMetadata(CancellationToken ct) =>
         DocumentAuditMetadataReader.ReadByDocumentId(dataSource, documentId, ct);
 
+    /// <summary>Drops the trigger and function and disposes the data source.</summary>
     public async ValueTask DisposeAsync()
     {
         await using var command = dataSource.CreateCommand(

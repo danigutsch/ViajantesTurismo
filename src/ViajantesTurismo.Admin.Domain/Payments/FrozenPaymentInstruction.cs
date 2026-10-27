@@ -32,6 +32,7 @@ public sealed class FrozenPaymentInstruction
     /// <summary>Gets the frozen quote's exclusive expiry, if applicable.</summary>
     public DateTimeOffset? QuoteExpiresAt => _state.Quote?.ExpiresAt;
 
+    /// <summary>Freezes the outstanding amounts of selected installments into a payment instruction.</summary>
     internal static Result<FrozenPaymentInstruction> Create(BookingFinancialHistory history, decimal bookingPrice, BookingStatus status,
         PaymentAccount account, IReadOnlyList<Guid> selectedInstallments, Guid? quoteId, string reference, DateTimeOffset now)
     {
@@ -83,6 +84,7 @@ public sealed class FrozenPaymentInstruction
             currency, quoteId, quoteState, [.. parts], cumulativeEuro, cumulativeSettlement, reference, now)));
     }
 
+    /// <summary>Checks that the frozen terms are still current for delivery at the given instant.</summary>
     internal bool CanDeliver(BookingFinancialHistory history, decimal bookingPrice, BookingStatus status, PaymentAccount account, DateTimeOffset now) =>
         now >= _state.CreatedAt && now >= history.ExportState().LastChangedAt && now.Offset == TimeSpan.Zero && account.Current.VerifiedAt is { } verifiedAt && now >= verifiedAt
         && history.BookingId == BookingId && account.Id == AccountId && account.CanDeliver(AccountRevisionId)
@@ -90,16 +92,21 @@ public sealed class FrozenPaymentInstruction
         && (Currency == Currency.Euro || _state.QuoteId is { } quoteId && history.ApprovedQuote(quoteId)?.IsTimely(now) == true)
         && _state.Installments.All(item => history.OutstandingFor(item.InstallmentId) == item.EuroAmount);
 
+    /// <summary>Checks that a payment made on the business date is on or before the earliest due date.</summary>
     internal bool IsTimelySettlement(DateOnly businessDate) => businessDate != default && businessDate <= _state.Installments.Min(item => item.DueDate);
 
+    /// <summary>Checks that a receipt matches the frozen settlement terms.</summary>
     internal bool MatchesReceipt(Guid bookingId, Currency currency, decimal gross, decimal fees, DateOnly paymentDate, DateTimeOffset? settledAt, string reference, decimal euroCredit, Guid? quoteId) =>
         bookingId == BookingId && currency == Currency && gross == SettlementAmount && fees == 0 && reference == Reference && euroCredit == EuroAmount
         && paymentDate <= _state.Installments.Min(item => item.DueDate) && quoteId == _state.QuoteId && settledAt is { } instant && instant >= _state.CreatedAt
         && (_state.Quote is null || instant >= _state.Quote.AgreedAt && instant < _state.Quote.ExpiresAt);
+    /// <summary>Checks that allocations match exactly the frozen installments and EUR amounts.</summary>
     internal bool MatchesAllocations(PaymentSelectionState[] allocations) => allocations.Length == _state.Installments.Length
         && allocations.All(item => _state.Installments.Any(installment => installment.InstallmentId == item.TargetId && installment.EuroAmount == item.EuroAmount));
 
+    /// <summary>Exports the frozen terms for persistence.</summary>
     internal PaymentInstructionTermsState ExportState() => _state;
+    /// <summary>Rebuilds an instruction from stored terms, failing when they are inconsistent.</summary>
     internal static Result<FrozenPaymentInstruction> Restore(PaymentInstructionTermsState? state)
     {
         try

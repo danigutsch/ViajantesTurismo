@@ -3,8 +3,10 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
+/// <summary>Builds document drafts, lineages and content for infrastructure tests.</summary>
 internal static class DocumentDraftInfrastructureTestData
 {
+    /// <summary>Creates draft content for the tour service contract template at the given template version.</summary>
     public static DocumentDraftContent CreateContent(string templateVersion = "1") => new(
         "tour-service-contract",
         templateVersion,
@@ -24,10 +26,12 @@ internal static class DocumentDraftInfrastructureTestData
         "system-ui, sans-serif",
         "Viajantes Turismo");
 
+    /// <summary>Creates a fixed audit context for document operations.</summary>
     public static DocumentAuditContext CreateAuditContext() => DocumentAuditContext.Create(
         "9c5ff2e6-8b35-4f78-9df3-ef15af8e92a4",
         "9a3ca841b4354928861c660a6e4e1b99").Value;
 
+    /// <summary>Creates a lineage holding one revision and no pending domain events.</summary>
     public static DocumentLineage CreateLineage(DateTime createdAt, Guid? bookingId = null)
     {
         var result = DocumentLineage.Create(
@@ -42,6 +46,7 @@ internal static class DocumentDraftInfrastructureTestData
         return result.Value;
     }
 
+    /// <summary>Creates a lineage with the given number of revisions, one minute apart, each with a distinct template version.</summary>
     public static DocumentLineage CreateLineageWithRevisions(DateTime firstCreatedAt, int revisionCount)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(revisionCount, 1);
@@ -65,6 +70,7 @@ internal static class DocumentDraftInfrastructureTestData
         return lineage;
     }
 
+    /// <summary>Creates an unfinalized contract draft with a booking reference and a personal-data greeting field.</summary>
     public static DocumentDraft CreateDraft(DateTime createdAt, Guid? bookingId = null)
     {
         var result = DocumentDraft.Create(
@@ -87,6 +93,7 @@ internal static class DocumentDraftInfrastructureTestData
         return result.Value;
     }
 
+    /// <summary>Creates a draft and moves it through review and approval to finalized.</summary>
     public static DocumentDraft CreateFinalizedDraft(DateTime createdAt, Guid? bookingId = null)
     {
         var document = CreateDraft(createdAt, bookingId);

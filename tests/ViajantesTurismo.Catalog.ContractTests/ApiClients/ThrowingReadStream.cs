@@ -1,12 +1,16 @@
 namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
+/// <summary>Non-seekable, read-only stream whose every read throws the supplied exception, for testing client behavior on request-body read failures.</summary>
+/// <param name="exception">The exception thrown by every read.</param>
 internal sealed class ThrowingReadStream(IOException exception) : Stream
 {
+    /// <summary>Number of read attempts made so far.</summary>
     public int ReadCount
     {
         get; private set;
     }
 
+    /// <summary>Whether the stream has been disposed.</summary>
     public bool IsDisposed
     {
         get; private set;
@@ -48,6 +52,7 @@ internal sealed class ThrowingReadStream(IOException exception) : Stream
 
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
+    /// <summary>Test handler that forces the request content to be read, so the failing stream throws, and otherwise returns 201 Created.</summary>
     public static HttpResponseMessage SerializeRequest(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         request.Content.ShouldNotBeNull().ReadAsByteArrayAsync(cancellationToken).GetAwaiter().GetResult();

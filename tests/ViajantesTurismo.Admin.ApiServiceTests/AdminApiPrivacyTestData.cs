@@ -2,8 +2,10 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests;
 
+/// <summary>Builds domain test data for admin API privacy tests.</summary>
 internal static class AdminApiPrivacyTestData
 {
+    /// <summary>Creates a valid tour with the given identifier, starting two months from now and lasting ten days.</summary>
     public static Tour CreateTour(string identifier)
     {
         var startDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddMonths(2);

@@ -27,10 +27,12 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
 
+/// <summary>Creates in-memory admin API hosts with test authentication, no hosted services and fake capacity locking.</summary>
 internal static class AdminApiTestHost
 {
     private const string Audience = "admin-api";
 
+    /// <summary>Creates a test host for the optional environment, applying the optional service and configuration overrides.</summary>
     public static WebApplicationFactory<AdminApiHostEntryPoint> Create(
         Action<IServiceCollection>? configureTestServices = null,
         string? environment = null,
@@ -79,6 +81,7 @@ internal static class AdminApiTestHost
         return configuration;
     }
 
+    /// <summary>Gets the hosting environment name of the factory.</summary>
     public static string GetEnvironmentName(WebApplicationFactory<AdminApiHostEntryPoint> factory)
     {
         ArgumentNullException.ThrowIfNull(factory);
@@ -86,11 +89,13 @@ internal static class AdminApiTestHost
         return factory.Services.GetRequiredService<IHostEnvironment>().EnvironmentName;
     }
 
+    /// <summary>Authenticates the client for the admin API audience with the given role.</summary>
     public static void ConfigureAuthenticatedClient(HttpClient client, string role)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, role);
     }
 
+    /// <summary>Scans empty content with the configured malware scanner and returns the result.</summary>
     public static async ValueTask<MalwareScanResult> ScanEmptyContent(
         WebApplicationFactory<AdminApiHostEntryPoint> factory,
         CancellationToken ct)
@@ -104,6 +109,7 @@ internal static class AdminApiTestHost
         return await scanner.Scan(content, length: 0, ct);
     }
 
+    /// <summary>Asserts that the services required by the mapped mutation endpoints resolve.</summary>
     public static void VerifyMappedMutationDependencies(WebApplicationFactory<AdminApiHostEntryPoint> factory)
     {
         ArgumentNullException.ThrowIfNull(factory);
@@ -128,6 +134,7 @@ internal static class AdminApiTestHost
             .ShouldBeOfType<NoOpTourCapacityMutationLock>();
     }
 
+    /// <summary>Asserts that the services required by the mapped document endpoints resolve.</summary>
     public static void VerifyMappedDocumentDependencies(WebApplicationFactory<AdminApiHostEntryPoint> factory)
     {
         ArgumentNullException.ThrowIfNull(factory);

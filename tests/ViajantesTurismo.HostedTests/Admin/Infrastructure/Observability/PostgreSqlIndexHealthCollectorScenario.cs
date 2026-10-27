@@ -68,6 +68,7 @@ public sealed class PostgreSqlIndexHealthCollectorScenario(HostedTestFixture sha
         _ = await command.ExecuteNonQueryAsync(ct);
     }
 
+    /// <summary>Runs the statement for <paramref name="operation" /> as the monitoring role; the database is expected to reject it.</summary>
     [SuppressMessage(
         "Security",
         "CA2100:Review SQL queries for security vulnerabilities",

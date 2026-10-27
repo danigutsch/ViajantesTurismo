@@ -10,6 +10,7 @@ using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
+/// <summary>Service provider hosting the management authentication services for security persistence tests.</summary>
 internal sealed class ManagementSecurityPersistenceTestHost : IAsyncDisposable
 {
     private const string PayloadProtectorPurpose = "ManagementSecurityPersistencePostgreSqlTests.Payload";
@@ -26,6 +27,7 @@ internal sealed class ManagementSecurityPersistenceTestHost : IAsyncDisposable
         ticketStore = serviceProvider.GetRequiredService<ITicketStore>();
     }
 
+    /// <summary>Builds a host with synthetic authentication settings backed by the given connection string, optionally setting the data protection application name.</summary>
     public static ManagementSecurityPersistenceTestHost Create(
         string connectionString,
         string? applicationName = null)
@@ -61,29 +63,34 @@ internal sealed class ManagementSecurityPersistenceTestHost : IAsyncDisposable
             }));
     }
 
+    /// <summary>Protects the payload with the test data protector.</summary>
     public string ProtectPayload(string payload)
     {
         ArgumentNullException.ThrowIfNull(payload);
         return payloadProtector.Protect(payload);
     }
 
+    /// <summary>Unprotects a payload previously protected by this host.</summary>
     public string UnprotectPayload(string protectedPayload)
     {
         ArgumentNullException.ThrowIfNull(protectedPayload);
         return payloadProtector.Unprotect(protectedPayload);
     }
 
+    /// <summary>Stores the authentication ticket in the ticket store and returns its key.</summary>
     public Task<string> StoreTicket(AuthenticationTicket ticket)
     {
         ArgumentNullException.ThrowIfNull(ticket);
         return ticketStore.StoreAsync(ticket);
     }
 
+    /// <summary>Retrieves the authentication ticket for the key, or null when none exists.</summary>
     public Task<AuthenticationTicket?> RetrieveTicket(string ticketKey)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticketKey);
         return ticketStore.RetrieveAsync(ticketKey);
     }
 
+    /// <summary>Disposes the underlying service provider.</summary>
     public ValueTask DisposeAsync() => serviceProvider.DisposeAsync();
 }

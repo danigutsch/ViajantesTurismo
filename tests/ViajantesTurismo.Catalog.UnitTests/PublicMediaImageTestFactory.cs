@@ -3,8 +3,10 @@ using ViajantesTurismo.Catalog.Domain.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Builds valid <c>PublicMediaImage</c> instances for tests.</summary>
 internal static class PublicMediaImageTestFactory
 {
+    /// <summary>Creates a ready image linked to the tour, generating the image identifier when omitted.</summary>
     public static PublicMediaImage CreateImage(
         Guid tourId,
         int displayOrder,
@@ -15,6 +17,7 @@ internal static class PublicMediaImageTestFactory
         return CreateImage(tourId, imageId ?? Guid.CreateVersion7(), displayOrder, isCover, altText);
     }
 
+    /// <summary>Creates a ready image with one responsive variant linked to the tour.</summary>
     public static PublicMediaImage CreateImage(
         Guid tourId,
         Guid imageId,
@@ -41,6 +44,7 @@ internal static class PublicMediaImageTestFactory
         return result.Value;
     }
 
+    /// <summary>Creates a pending image with no variants and a link to a new tour.</summary>
     public static PublicMediaImage CreatePendingImage(Guid imageId, long fileSizeBytes)
     {
         var result = PublicMediaImage.Create(
@@ -62,6 +66,7 @@ internal static class PublicMediaImageTestFactory
         return result.Value;
     }
 
+    /// <summary>Creates a ready image whose variant URI embeds the processing version.</summary>
     public static PublicMediaImage CreateReadyImageForProcessingVersion(Guid imageId, int processingVersion)
     {
         return CreateReadyImageWithVariantUri(
@@ -71,6 +76,7 @@ internal static class PublicMediaImageTestFactory
                 $"https://cdn.example/media/{imageId:N}/v{processingVersion}/640-jpeg.jpg")));
     }
 
+    /// <summary>Creates a ready image whose single variant object key is the URI path.</summary>
     public static PublicMediaImage CreateReadyImageWithVariantUri(Guid imageId, Uri variantUri)
     {
         return CreateImageWithVariants(
@@ -80,6 +86,7 @@ internal static class PublicMediaImageTestFactory
             [new MediaImageResponsiveVariant(variantUri.AbsolutePath.TrimStart('/'), 640, 427, "image/jpeg", 1024)]);
     }
 
+    /// <summary>Creates an image with the given status and variants, linked as cover to the tour.</summary>
     public static PublicMediaImage CreateImageWithVariants(
         Guid tourId,
         Guid imageId,

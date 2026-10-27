@@ -16,6 +16,8 @@ internal sealed class PageDiagnostics
     private readonly ConcurrentQueue<string> events = new();
     private readonly Stopwatch elapsed = Stopwatch.StartNew();
 
+    /// <summary>Starts recording console, page error, failed request, response and WebSocket events of the page.</summary>
+    /// <param name="page">The page to observe.</param>
     public PageDiagnostics(IPage page)
     {
         ArgumentNullException.ThrowIfNull(page);
@@ -38,6 +40,7 @@ internal sealed class PageDiagnostics
         };
     }
 
+    /// <summary>Builds a report of the page URL, the recorded events and the first 4000 characters of the page HTML.</summary>
     public async Task<string> Describe(IPage page)
     {
         ArgumentNullException.ThrowIfNull(page);

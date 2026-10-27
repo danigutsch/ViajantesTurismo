@@ -4,8 +4,10 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
+/// <summary>Appends document audit trail entries to the current <see cref="AdminWriteDbContext"/> save operation.</summary>
 internal sealed class DocumentAuditTrailSink : IAuditTrailSink<DocumentAuditRecord>
 {
+    /// <summary>Stages the entry on the ambient write context; throws when no such context is saving.</summary>
     public ValueTask Append(DocumentAuditRecord entry, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(entry);

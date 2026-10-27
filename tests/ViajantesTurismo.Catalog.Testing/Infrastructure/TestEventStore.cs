@@ -4,12 +4,14 @@ using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
+/// <summary>Thread-safe in-memory event store with global positions and optimistic stream revision checks.</summary>
 internal sealed class TestEventStore : IEventStore
 {
     private readonly Lock gate = new();
     private readonly Dictionary<StreamId, List<EventEnvelope>> streams = [];
     private long position;
 
+    /// <summary>Appends events to the stream after checking the expected revision; throws ExpectedStreamRevisionConflictException on mismatch.</summary>
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Append(
         StreamId streamId,
         ExpectedStreamRevision expectedRevision,
@@ -25,6 +27,7 @@ internal sealed class TestEventStore : IEventStore
         }
     }
 
+    /// <summary>Loads the stream's events after the given revision, or all of them when null; empty when the stream does not exist.</summary>
     public ValueTask<IReadOnlyCollection<EventEnvelope>> Load(
         StreamId streamId,
         StreamRevision? afterRevision,
@@ -46,6 +49,7 @@ internal sealed class TestEventStore : IEventStore
         }
     }
 
+    /// <summary>Loads up to the given count of events across all streams with a position greater than the given one, ordered by position.</summary>
     public ValueTask<IReadOnlyCollection<EventEnvelope>> LoadAfter(
         long position,
         int maxCount,
@@ -65,6 +69,7 @@ internal sealed class TestEventStore : IEventStore
         }
     }
 
+    /// <summary>Seeds the stream for a tour read model with created, and for published tours presentation-changed and published, events.</summary>
     public void SeedTour(CatalogTourDraftReadModel tour)
     {
         ArgumentNullException.ThrowIfNull(tour);

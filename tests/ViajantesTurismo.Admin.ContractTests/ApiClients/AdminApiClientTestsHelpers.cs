@@ -2,8 +2,14 @@ using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
+/// <summary>
+/// Builds canned tour and booking payloads for the admin API client tests.
+/// </summary>
 internal static class AdminApiClientTestsHelpers
 {
+    /// <summary>
+    /// JSON body of a single tour response with identifier TOUR-1.
+    /// </summary>
     public const string TourJson = """
         {
           "id":"11111111-1111-1111-1111-111111111111",
@@ -23,6 +29,9 @@ internal static class AdminApiClientTestsHelpers
         }
         """;
 
+    /// <summary>
+    /// JSON body of a single booking response for Ada Lovelace on TOUR-1.
+    /// </summary>
     public const string BookingJson = """
         {
           "id":"11111111-1111-1111-1111-111111111111",
@@ -47,6 +56,9 @@ internal static class AdminApiClientTestsHelpers
         }
         """;
 
+    /// <summary>
+    /// Builds a valid create-tour request matching <see cref="TourJson" />.
+    /// </summary>
     public static CreateTourDto CreateTour() =>
         new()
         {
@@ -64,6 +76,9 @@ internal static class AdminApiClientTestsHelpers
             MaxCustomers = 12
         };
 
+    /// <summary>
+    /// Builds a valid update-tour request that changes the name, prices and services.
+    /// </summary>
     public static UpdateTourDto UpdateTour() =>
         new()
         {
@@ -81,6 +96,9 @@ internal static class AdminApiClientTestsHelpers
             MaxCustomers = 12
         };
 
+    /// <summary>
+    /// Builds a valid create-booking request for a regular bike in a double-occupancy room.
+    /// </summary>
     public static CreateBookingDto CreateBooking() =>
         new()
         {
@@ -90,6 +108,9 @@ internal static class AdminApiClientTestsHelpers
             RoomType = RoomTypeDto.DoubleOccupancy
         };
 
+    /// <summary>
+    /// Builds a valid update-booking-details request for a regular bike in a double-occupancy room.
+    /// </summary>
     public static UpdateBookingDetailsDto UpdateBookingDetails() =>
         new()
         {
@@ -97,6 +118,9 @@ internal static class AdminApiClientTestsHelpers
             PrincipalBikeType = BikeTypeDto.Regular
         };
 
+    /// <summary>
+    /// Builds a 10 percent returning-customer discount request.
+    /// </summary>
     public static UpdateBookingDiscountDto UpdateBookingDiscount() =>
         new()
         {

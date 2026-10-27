@@ -5,6 +5,7 @@ namespace ViajantesTurismo.AppHost;
 /// <summary>Composes application instances against infrastructure owned by the hosted-test assembly.</summary>
 internal static class SharedProductResourceExtensions
 {
+    /// <summary>Registers the shared product resources and wires OTLP environment for every project resource.</summary>
     public static void AddSharedProductResources(this IDistributedApplicationBuilder builder, HostedProfile profile)
     {
         var admin = builder.AddConnectionString(ResourceNames.AdminDatabase);

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
+/// <summary>Log messages used to verify telemetry privacy redaction.</summary>
 internal static partial class PrivacyTestLogger
 {
     private static readonly Action<ILogger, Exception, string, Exception?> LogStructuredFailureCore =
@@ -38,6 +39,7 @@ internal static partial class PrivacyTestLogger
         string objectKey,
         string outcome);
 
+    /// <summary>Logs an error with an exception and outcome as structured values.</summary>
     public static void LogStructuredFailure(
         ILogger logger,
         Exception diagnosticFailure,
@@ -46,6 +48,7 @@ internal static partial class PrivacyTestLogger
         LogStructuredFailureCore(logger, diagnosticFailure, outcome, null);
     }
 
+    /// <summary>Logs an EF Core command-executed event with command text and parameters.</summary>
     public static void LogEntityFrameworkCommand(
         ILogger logger,
         string commandText,
@@ -55,11 +58,13 @@ internal static partial class PrivacyTestLogger
         LogEntityFrameworkCommandCore(logger, commandText, parameters, outcome, null);
     }
 
+    /// <summary>Logs an error with a mixed-case Exception.Type placeholder.</summary>
     public static void LogMixedCaseExceptionType(ILogger logger, string exceptionType, Exception? exception)
     {
         LogMixedCaseExceptionTypeCore(logger, exceptionType, exception);
     }
 
+    /// <summary>Logs an error with a mixed-case Error.Type placeholder.</summary>
     public static void LogMixedCaseErrorType(ILogger logger, string errorType)
     {
         LogMixedCaseErrorTypeCore(logger, errorType, null);

@@ -5,14 +5,17 @@ using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
+/// <summary>Helpers for result-to-HTTP response mapping tests.</summary>
 internal static class ResultExtensionsResponseMappingTestHelpers
 {
+    /// <summary>Asserts the result wraps <see cref="HttpValidationProblemDetails" /> and returns those details.</summary>
     public static HttpValidationProblemDetails AssertValidationProblemDetails(ValidationProblem result)
     {
         var valueResult = result.ShouldBeOfType<IValueHttpResult<HttpValidationProblemDetails>>(exactMatch: false);
         return valueResult.Value.ShouldBeOfType<HttpValidationProblemDetails>();
     }
 
+    /// <summary>Creates a failed <see cref="Result" /> through its non-public constructor, bypassing invariants, to test malformed input.</summary>
     public static Result CreateMalformedFailureResult(ResultStatus status, ResultError? error)
     {
         var constructor = typeof(Result).GetConstructor(
@@ -25,6 +28,7 @@ internal static class ResultExtensionsResponseMappingTestHelpers
         return (Result)constructor.Invoke([status, error]);
     }
 
+    /// <summary>Creates a failed <see cref="Result{T}" /> through its non-public constructor, bypassing invariants, to test malformed input.</summary>
     public static Result<T> CreateMalformedFailureResult<T>(ResultStatus status, T? value, ResultError? error)
         where T : notnull
     {

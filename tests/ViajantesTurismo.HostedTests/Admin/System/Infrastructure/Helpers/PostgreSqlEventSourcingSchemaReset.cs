@@ -2,6 +2,7 @@ using System.Data.Common;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 
+/// <summary>Truncates the event sourcing schema tables of a PostgreSQL database.</summary>
 internal static class PostgreSqlEventSourcingSchemaReset
 {
     private const string ResetEventSourcingTablesSql = """
@@ -20,6 +21,7 @@ internal static class PostgreSqlEventSourcingSchemaReset
                                                      END $$;
                                                      """;
 
+    /// <summary>Opens the connection when needed and truncates every table in the <c>event_sourcing</c> schema, restarting identities.</summary>
     public static async Task Reset(DbConnection connection, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(connection);

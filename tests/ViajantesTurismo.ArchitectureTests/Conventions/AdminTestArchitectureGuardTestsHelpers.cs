@@ -3,6 +3,7 @@ using PandaBear.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
+/// <summary>Helpers for the architecture guards that scan Admin test sources for banned test-authoring patterns.</summary>
 internal static partial class AdminTestArchitectureGuardTestsHelpers
 {
     private static readonly string[] CanonicalTraitNames =
@@ -29,6 +30,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         $@"(?:Trait\s*\(\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})""|const\s+string\s+\w+Name\s*=\s*""(?:{string.Join('|', CanonicalTraitNames.Select(Regex.Escape))})"")",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+    /// <summary>Finds public members that expose the service provider or scopes, returned as "path:Lline text" offenses.</summary>
     public static string[] FindGenericServiceProviderReachThrough(string filePath)
     {
         var repositoryRoot = GetRepositoryRoot();
@@ -48,6 +50,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
+    /// <summary>Finds hardcoded canonical trait names (scope, area, category, host, surface) outside raw strings, returned as offenses.</summary>
     public static string[] FindHardcodedCanonicalTraitNames(string filePath)
     {
         if (IsCanonicalTraitNamesFile(filePath))
@@ -80,6 +83,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
+    /// <summary>Finds lines that couple the SharedKernel testing code to product-specific names, returned as offenses.</summary>
     public static string[] FindProductSpecificSharedKernelTestingCoupling(string filePath)
     {
         var repositoryRoot = GetRepositoryRoot();
@@ -100,6 +104,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
+    /// <summary>Finds raw service-collection, provider or scope plumbing inside Fact and Theory method bodies, returned as offenses.</summary>
     public static string[] FindRawServiceProviderPlumbingInTestMethods(string filePath)
     {
         var repositoryRoot = GetRepositoryRoot();
@@ -148,6 +153,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
+    /// <summary>Finds serial collection definitions without a nearby SerialTestJustification attribute, returned as offenses.</summary>
     public static string[] FindUndocumentedSerialCollectionDefinitions(string filePath)
     {
         var repositoryRoot = GetRepositoryRoot();
@@ -182,6 +188,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
+    /// <summary>Returns the repository root: the nearest ancestor of the test output directory that holds ViajantesTurismo.slnx.</summary>
     public static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -200,6 +207,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
     }
 
+    /// <summary>Reports whether the path is build output, a feature-file code-behind, or other generated test source.</summary>
     public static bool IsGeneratedTestPath(string path)
     {
         var normalizedPath = path.Replace('\\', '/');

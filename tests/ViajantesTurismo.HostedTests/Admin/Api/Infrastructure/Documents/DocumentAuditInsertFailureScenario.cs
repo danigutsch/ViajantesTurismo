@@ -2,6 +2,7 @@ using Npgsql;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 
+/// <summary>Installs a database trigger that rejects document audit inserts for one booking, and removes it on dispose.</summary>
 internal sealed class DocumentAuditInsertFailureScenario : IAsyncDisposable
 {
     private readonly NpgsqlDataSource dataSource;
@@ -18,6 +19,7 @@ internal sealed class DocumentAuditInsertFailureScenario : IAsyncDisposable
         functionName = $"document_audit_insert_failure_function_{suffix}";
     }
 
+    /// <summary>Installs the failing trigger through a new data source for <paramref name="bookingId"/>.</summary>
     public static async Task<DocumentAuditInsertFailureScenario> Create(
         string connectionString,
         Guid bookingId,
@@ -38,6 +40,7 @@ internal sealed class DocumentAuditInsertFailureScenario : IAsyncDisposable
         }
     }
 
+    /// <summary>Drops the trigger and function and disposes the data source.</summary>
     public async ValueTask DisposeAsync()
     {
         await using var command = dataSource.CreateCommand(
