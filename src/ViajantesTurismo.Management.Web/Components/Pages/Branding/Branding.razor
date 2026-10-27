@@ -163,9 +163,7 @@ else
             return "Branding was changed by someone else after you opened this page. Reload the page to see the latest settings, then reapply your changes.";
         }
 
-        return outcome is { Kind: HttpOutcomeKind.ValidationProblem, ValidationErrors: { Count: > 0 } errors }
-            ? string.Join(" ", errors.SelectMany(error => error.Value))
-            : UserFacingErrorMessage.ForOperation("save branding");
+        return UserFacingErrorMessage.ForOperation("save branding");
     }
 
     private void ApplyDocument(BrandingManagementDocument document)

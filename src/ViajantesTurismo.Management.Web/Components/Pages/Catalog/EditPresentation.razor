@@ -179,9 +179,7 @@ else if (_errorMessage is not null)
 
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
-                _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
-                    ? "Catalog tour presentation could not be saved. Try again later."
-                    : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value));
+                _errorMessage = "Catalog tour presentation could not be saved. Try again later.";
                 return;
             }
 
@@ -246,9 +244,7 @@ else if (_errorMessage is not null)
 
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
-                _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
-                    ? "Catalog tour publication could not be changed. Try again later."
-                    : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value));
+                _errorMessage = "Catalog tour publication could not be changed. Try again later.";
                 return;
             }
 

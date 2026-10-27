@@ -259,9 +259,7 @@
 
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
-                _errorMessage = outcome.ValidationErrors is null or { Count: 0 }
-                    ? UserFacingErrorMessage.ForOperation("save public content")
-                    : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value));
+                _errorMessage = UserFacingErrorMessage.ForOperation("save public content");
                 return;
             }
 
