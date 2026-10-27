@@ -26,6 +26,9 @@ The CI baseline allows only these acquisition paths:
 - SHA-pinned GitHub Actions from trusted upstream repositories.
 - Locked NuGet restore from committed `packages.lock.json` files.
 - Repo-pinned `.NET` local tools restored through `dotnet tool restore`.
+- The Aspire CLI bundle (DCP and dashboard) for the AppHost, taken from the exact pinned `aspire.cli`
+  version or its SDK-paired `dnx` fallback. Update both with `aspire update`; DCP and the dashboard are
+  no longer locked per package hash in `packages.lock.json`.
 - Downloaded release binaries only when the workflow or helper script pins the exact version
   and verifies integrity before extraction or execution.
 - Playwright browser installation only from the generated `playwright.ps1` script emitted by

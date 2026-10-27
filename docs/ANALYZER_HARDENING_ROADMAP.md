@@ -92,7 +92,7 @@ reintroduced without review.
 
 | Surface | Suppression kind | Owner | Removal path |
 | --- | --- | --- | --- |
-| `Directory.Build.props` | `NoWarn`: `ASPIRE010` | Aspire orchestration dependencies | Permanent while the repository keeps orchestration dependencies lock-file managed through the pinned local-tool path; revisit if it adopts the Aspire CLI bundle |
+| `tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj` | `NoWarn`: `ASPIRE010` | Hosted test project | Permanent while the project uses `Aspire.AppHost.Sdk` for project metadata: with the CLI bundle the SDK replaces its run command with `aspire run`, which breaks `dotnet test` |
 
 The architecture-test suppression guard owns this allowlist and should fail if new broad
 suppression surfaces appear without review.

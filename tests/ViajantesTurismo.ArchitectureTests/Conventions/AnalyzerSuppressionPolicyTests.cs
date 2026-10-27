@@ -63,7 +63,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .SelectMany(path => AnalyzerSuppressionPolicyTestsHelpers.FindNoWarnEntries(repositoryRoot, path))
             .ToArray();
 
-        noWarnEntries.ShouldBeEquivalentTo("Directory.Build.props:ASPIRE010");
+        noWarnEntries.ShouldBeEquivalentTo("tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj:ASPIRE010");
     }
 
     [Fact]

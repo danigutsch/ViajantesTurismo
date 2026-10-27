@@ -128,8 +128,8 @@
       },
       "Aspire.StackExchange.Redis": {
         "type": "Transitive",
-        "resolved": "13.6.1",
-        "contentHash": "9/8ZvJvuLBBQ9ORxCKGeHkfyVD8oWL0hRPvNzHhFxbOh/yOVUy4LCSVBjrdafSEOscrpk7M+5/zlgc2mnmCjSQ==",
+        "resolved": "13.6.4",
+        "contentHash": "DvCqdDJxkQWsMxSWklp4d0b8DvcZtNj0d+Bt+h6mqrS2pB887V+ZeX3fUKA3EuSW/ghpC9yrNMa93ZxBqGHzvA==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
@@ -841,6 +841,19 @@
         "resolved": "6.0.1",
         "contentHash": "IQ4NXP/B3Ayzvw0rDQzVTYsCKyy0Jp9KI6aYcK7UnGVlR9+Awz++TIPCQtPYfLJfOpm8ajowMR09V7quD3sEHw=="
       },
+      "System.Security.Cryptography.Pkcs": {
+        "type": "Transitive",
+        "resolved": "10.0.13",
+        "contentHash": "a+EovgC1fBnwdlQ6cn3j4JFBfKqiFaFvoAhjisOoSvazLAcIznaBzPQP0oYnvccmeXfqUH1KebVZOxSeH6rMaw=="
+      },
+      "System.Security.Cryptography.Xml": {
+        "type": "Transitive",
+        "resolved": "10.0.13",
+        "contentHash": "v6/GHhLaHkuN/ISgbKzBeyC7TP7S6Qm/dVyKA+p0ay9nlJyLif+spozjAGclY/FRIv2TC+KNQCo7dSNmupvWtQ==",
+        "dependencies": {
+          "System.Security.Cryptography.Pkcs": "10.0.13"
+        }
+      },
       "System.Threading.RateLimiting": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -996,7 +1009,7 @@
       "viajantesturismo.management.web": {
         "type": "Project",
         "dependencies": {
-          "Aspire.StackExchange.Redis.OutputCaching": "[13.6.1, )",
+          "Aspire.StackExchange.Redis.OutputCaching": "[13.6.4, )",
           "Duende.AccessTokenManagement.OpenIdConnect": "[4.3.0, )",
           "Microsoft.AspNetCore.Components.QuickGrid": "[10.0.13, )",
           "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": "[10.0.13, )",
@@ -1039,12 +1052,12 @@
       },
       "Aspire.StackExchange.Redis.OutputCaching": {
         "type": "CentralTransitive",
-        "requested": "[13.6.1, )",
-        "resolved": "13.6.1",
-        "contentHash": "DQ7eXpcCvNi/CGgRpPT/6017iqvuauIgtBHp0kMajcbP7021D1DWSe6A0zLSpw7CpEg8bXBQSfDUpdr5gAw7tw==",
+        "requested": "[13.6.4, )",
+        "resolved": "13.6.4",
+        "contentHash": "ywsQGm0EnJcSuAKuFfL9B97F34sz6Cg7CKgXSizmYbms7GAbYRVuq4B9tnLhH8Z29IT4obuTA2GDa5B4RLrcwQ==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
-          "Aspire.StackExchange.Redis": "13.6.1",
+          "Aspire.StackExchange.Redis": "13.6.4",
           "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis": "10.0.12",
           "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
           "Microsoft.Extensions.Configuration.Binder": "10.0.12",
@@ -1618,21 +1631,6 @@
         "contentHash": "UQ6zCK0TPk5Bf4H4NZ1fGwzjlUMtNQLiog1jQClHXP80R+dE9OKWISvPCt8A8YJapequHfvN/FpY/pVnaKykZA==",
         "dependencies": {
           "PandaBear.SharedKernel.Results": "0.1.0-alpha.303.1"
-        }
-      },
-      "System.Security.Cryptography.Pkcs": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.13, )",
-        "resolved": "10.0.13",
-        "contentHash": "a+EovgC1fBnwdlQ6cn3j4JFBfKqiFaFvoAhjisOoSvazLAcIznaBzPQP0oYnvccmeXfqUH1KebVZOxSeH6rMaw=="
-      },
-      "System.Security.Cryptography.Xml": {
-        "type": "CentralTransitive",
-        "requested": "[10.0.13, )",
-        "resolved": "10.0.13",
-        "contentHash": "v6/GHhLaHkuN/ISgbKzBeyC7TP7S6Qm/dVyKA+p0ay9nlJyLif+spozjAGclY/FRIv2TC+KNQCo7dSNmupvWtQ==",
-        "dependencies": {
-          "System.Security.Cryptography.Pkcs": "10.0.13"
         }
       }
     }

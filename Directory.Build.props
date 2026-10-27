@@ -20,9 +20,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(IsAspireHost)' == 'true'">
-		<!-- Keep orchestration dependencies lock-file managed instead of delegating to the Aspire CLI bundle. ASPIRE010 reports that choice, so it is suppressed here. -->
-		<AspireUseCliBundle>false</AspireUseCliBundle>
-		<NoWarn>$(NoWarn);ASPIRE010</NoWarn>
+		<!-- Take DCP and the dashboard from the Aspire CLI bundle, as new Aspire AppHost templates do. The CLI version is pinned in .config/dotnet-tools.json. -->
+		<AspireUseCliBundle>true</AspireUseCliBundle>
 	</PropertyGroup>
 
 	<PropertyGroup>
