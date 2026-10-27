@@ -42,21 +42,28 @@ budgets.
 
 | Flow | Request source reads | Buffer | Passes over the buffer | Managed allocation |
 | --- | --- | --- | --- | --- |
-| Customer CSV import (`ReadCsv`) | 1 pass, 80 KiB chunks (14 reads at 1 MiB) | One `MemoryStream`, capacity 1,310,720 at 1 MiB (growth slack) | Scan, then `ReadToEnd` into a string | 510,104 B at 64 KiB; 6,927,192 B at 1 MiB (about 6.6 times the payload, transient) |
-| Media upload intake (`MediaImageUploadIntake.Accept`) | 1 pass (65 reads at 5 MiB) | One `MemoryStream`, capacity equal to length at 5 MiB, 1,310,720 at 1 MiB | 12-byte header peek, scan, decode probe, SHA-256, object store `Put`; scanner and store receive the same instance | 247,168 B at 64 KiB; 2,721,224 B at 1 MiB; 10,603,960 B at 5 MiB (about 2 times the payload) |
+| Customer CSV import (`ReadCsv`) | 1 pass, 80 KiB chunks (14 reads at 1 MiB) | One `MemoryStream`, capacity 1,310,720 at 1 MiB (growth slack) before presizing | Scan, then `ReadToEnd` into a string | 510,104 B at 64 KiB; 6,927,192 B at 1 MiB (about 6.6 times the payload, transient) |
+| Media upload intake (`MediaImageUploadIntake.Accept`) | 1 pass (65 reads at 5 MiB) | One `MemoryStream`, capacity equal to length at 5 MiB, 1,310,720 at 1 MiB before presizing | 12-byte header peek, scan, decode probe, SHA-256, object store `Put`; scanner and store receive the same instance | 247,168 B at 64 KiB; 2,721,224 B at 1 MiB; 10,603,960 B at 5 MiB (about 2 times the payload) |
 
 Findings:
 
+- Presizing the buffer to the received length and borrowing the copy buffer from `ArrayPool` removed the growth
+  slack. On a warm run the media upload at 5 MiB fell from about 10.5 MB to 5.3 MB and the CSV import at 1 MiB from
+  about 9.0 MB to 5.2 MB. The figures in the table above are the earlier measurement.
+- The dominant remaining CSV cost is parse count, not buffering. The text is parsed at least three times per import
+  request (conflict detection, workflow, command handler), about 25 MB for a 1 MiB file. Parsing from the UTF-8 bytes
+  once costs about 4.5 MB (`CsvParseBenchmarks` in the file-scanning benchmark project).
 - Both flows read the request stream exactly once and never copy the buffer a second time. The media scanner and the
   object store receive the same `MemoryStream`, positioned at zero.
 - Retained memory per request is bounded by the configured maximum: 1 MiB (CSV, plus about 2 MiB of string) and
-  `ContractConstants.MaxMediaUploadBytes` = 5 MiB (media). The extra transient allocation is `MemoryStream` growth.
+  `ContractConstants.MaxMediaUploadBytes` = 5 MiB (media). The extra transient allocation was `MemoryStream` growth.
 - The local object store writes with one `CopyToAsync` into a temporary file and moves it into place (code reading).
 - Not measured: ASP.NET Core multipart buffering before the endpoint runs, native Magick.NET memory, peak concurrent
   requests, and the SharedKernel S3 provider. Real HTTP evidence so far is only the isolated upload-scan benchmark in
   [the benchmark baselines](file-and-stream-benchmark-baselines.md).
 
-Decision: retain the current design. No pass-count or memory gap is proven for the configured maximums. Revisit
+Decision: retain the single-buffer design. The proven gap is repeated CSV parsing, not buffering, and it is tracked
+separately from the stream design. Revisit
 `PandaBear.IO.SeekableContent` for media intake if the media maximum grows, if concurrent-upload memory becomes a
 measured problem, or if a real-host measurement shows buffering before the endpoint dominates. Preserve the size
 checks, the scan-before-parse order for CSV, actual-length comparison, and cancellation in any later change.
