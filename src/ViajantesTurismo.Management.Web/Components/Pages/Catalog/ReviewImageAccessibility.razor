@@ -1,13 +1,10 @@
 @page "/catalog/tours/{Id:guid}/images/review"
-@using System.ComponentModel
 @using CatalogContractConstants = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants
-@using ViajantesTurismo.Management.Web.Services
 @using Microsoft.AspNetCore.Routing
 @using PandaBear.HttpClients
 @using ViajantesTurismo.Catalog.Contracts.Application
 @inject ICatalogToursApiClient CatalogToursApi
 @inject LinkGenerator LinkGenerator
-@inject MediaLanguageGuidance LanguageGuidance
 
 <PageTitle>Review Image Accessibility</PageTitle>
 
@@ -50,14 +47,12 @@ else
     }
     <div class="mb-3">
         <label for="altText" class="form-label">Image description</label>
-        <textarea id="altText" class="form-control" @bind="_altText" @bind:after="ResetGuidance" disabled="@_saving" rows="4" maxlength="@CatalogContractConstants.MaxAltTextLength"></textarea>
+        <textarea id="altText" class="form-control" @bind="_altText" disabled="@_saving" rows="4" maxlength="@CatalogContractConstants.MaxAltTextLength"></textarea>
     </div>
     <div class="mb-3">
         <label for="caption" class="form-label">Caption (optional)</label>
         <textarea id="caption" class="form-control" @bind="_caption" maxlength="@CatalogContractConstants.MaxCaptionLength"></textarea>
     </div>
-    <p role="status">@GuidanceMessage</p>
-    <button class="btn btn-outline-secondary mb-3" @onclick="CheckLanguage" disabled="@_saving">Check language (optional)</button>
     <div class="form-check mb-3">
         <InputCheckbox id="isDecorative" class="form-check-input" @bind-Value="_isDecorative" />
         <label for="isDecorative" class="form-check-label">This image is decorative</label>
@@ -79,36 +74,6 @@ else
     private bool _isAiGenerated;
     private string? _caption;
     private PublicContentLanguageDto _language = PublicContentLanguageDto.EnUs;
-    private string _guidance = "indeterminate";
-    private string LanguageTag => _language == PublicContentLanguageDto.PtBr ? "pt-BR" : "en-US";
-    private string GuidanceMessage => _guidance switch
-    {
-        "match" => "Detected primary language matches the declaration. You remain responsible for approval.",
-        "mismatch" => "Detected primary language differs from the declaration. Check your selection; you can still approve your text.",
-        _ => "Language is indeterminate or the local checker is unavailable. You can still approve your text."
-    };
-
-    private void ResetGuidance() => _guidance = "indeterminate";
-
-    private async Task CheckLanguage()
-    {
-        _saving = true;
-        _errorMessage = null;
-        try
-        {
-            _guidance = await LanguageGuidance.Evaluate(_altText, LanguageTag, CancellationToken.None);
-        }
-        catch (Exception exception) when (exception is InvalidOperationException or IOException or UnauthorizedAccessException or Win32Exception)
-        {
-            _guidance = "indeterminate";
-            _errorMessage = "The local language checker could not run. Ask an administrator to check its configuration. You can still approve your text.";
-        }
-        finally
-        {
-            _saving = false;
-        }
-    }
-
     private void SelectLanguage()
     {
         var text = _image?.AccessibilityTexts.FirstOrDefault(value => value.Language == _language);
@@ -116,7 +81,6 @@ else
         _caption = text?.Caption ?? (_language == PublicContentLanguageDto.EnUs ? _image?.Caption : null);
         _isDecorative = text?.IsDecorative ?? (_language == PublicContentLanguageDto.EnUs && _image?.IsDecorative == true);
         _isAiGenerated = text?.IsAiGenerated ?? (_language == PublicContentLanguageDto.EnUs && _image?.IsAiGenerated == true);
-        ResetGuidance();
     }
 
     private void SelectPendingImage(CatalogMediaImageDto[] images)

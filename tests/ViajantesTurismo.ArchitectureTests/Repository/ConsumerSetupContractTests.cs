@@ -28,7 +28,7 @@ public sealed class ConsumerSetupContractTests
         fullStep.ShouldContain("--exec \"$INSTALL_PLAYWRIGHT_DEPENDENCIES\" --exec \"$RUN_TEST_SLICES\" --root .", StringComparison.Ordinal);
         workflow.ShouldContain("dotnet tool run sharedkernel-ci -- select --selection \"${selection}\"", StringComparison.Ordinal);
         workflow.ShouldContain(
-            "dotnet tool run sharedkernel-ci -- run --slice \"${slice}\" --selection \"${selection}\" --install-playwright \\\n            --exclude-trait Requires=fasttext",
+            "dotnet tool run sharedkernel-ci -- run --slice \"${slice}\" --selection \"${selection}\" --install-playwright",
             StringComparison.Ordinal);
         workflow.ShouldContain("    paths:\n      - .devcontainer/**\n      - .github/workflows/devcontainer-smoke.yml\n      - global.json\n      - setup-dev.sh\n  schedule:", StringComparison.Ordinal);
         workflow.ShouldContain("path: TestResults/devcontainer-smoke/**", StringComparison.Ordinal);
