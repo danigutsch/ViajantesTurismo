@@ -68,7 +68,7 @@ panels.
 
 ## Dashboard strategy
 
-Dashboard assets stay backend-optional; the repository has no local Grafana path.
+Dashboard assets stay backend-optional. The local Grafana stack is opt-in (see below), not a default path.
 Grafana's current guidance supports observability-as-code through source-controlled dashboards,
 provisioning, Git Sync, CLI/API workflows, and Foundation SDK models. This repository should adopt
 that model incrementally:
