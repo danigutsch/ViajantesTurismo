@@ -25,16 +25,18 @@ public sealed class ErrorDocumentationEndpointsTests
     }
 
     [Fact]
-    public void GetErrorDocumentationByIdentifier_returns_notfound_for_unknown_identifier()
+    public void GetErrorDocumentationByIdentifier_returns_notfound_with_fixed_detail_that_does_not_echo_the_identifier()
     {
+        const string Hostile = "<script>alert(1)</script>";
         var method = EndpointsType.GetMethod("GetErrorDocumentationByIdentifier", BindingFlags.Static | BindingFlags.NonPublic);
         _ = method.ShouldNotBeNull();
 
-        var result = method.Invoke(null, ["missing-entry"]);
+        var result = method.Invoke(null, [Hostile]);
         var union = result.ShouldBeOfType<Results<Ok<GetErrorDocumentationDto>, NotFound<ProblemDetails>>>();
         var notFound = ResultUnionHelpers.GetInnerResult(union).ShouldBeOfType<NotFound<ProblemDetails>>();
         notFound.Value.ShouldNotBeNull();
         notFound.Value.Title.ShouldBe("Error Documentation Not Found");
+        notFound.Value.Detail.ShouldBe("Error documentation entry was not found.");
     }
 
     [Fact]
