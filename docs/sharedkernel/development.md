@@ -8,9 +8,10 @@ documentation configuration, CI and coverage policy, setup scripts, and compatib
 
 The published candidate is `0.1.0-alpha.303.1` at clean library revision
 [`04c5f509c63e7fc83693d47b9e1695b8baecdef8`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/04c5f509c63e7fc83693d47b9e1695b8baecdef8).
-It adds `CsvDocument.ParseUtf8` to `SharedKernel.Tabular`, which parses UTF-8 bytes without decoding the whole document. The unchanged packages, symbol archives and manifest are published in GitHub prerelease
+It adds `CsvDocument.ParseUtf8` to `SharedKernel.Tabular`, which parses UTF-8 bytes without decoding
+the whole document. The unchanged packages, symbol archives and manifest are published in GitHub prerelease
 [`v0.1.0-alpha.303.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.303.1), built by
-[CI run 40493082388](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40516756330).
+[CI run 40516756330](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40516756330).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 The previous previews `0.1.0-alpha.294.1` at revision `a2901f0188a49795e6af37c945e98f8a2b88319b`,
