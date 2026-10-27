@@ -135,56 +135,30 @@ public sealed class EfCatalogTourReadModelStoreTests
     }
 
     [Fact]
-    public async Task Draft_upsert_of_a_published_row_stays_unpublished_until_explicitly_republished()
+    public async Task Published_row_is_public_without_summary_or_stream_history()
     {
         // Arrange
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
         var sut = new EfCatalogTourReadModelStore(dbContext);
         var tourId = Guid.CreateVersion7();
-        var publishedTour = EfCatalogTourReadModelStoreTestsHelpers.CreateTour(
+        var tour = EfCatalogTourReadModelStoreTestsHelpers.CreateTour(
             tourId,
-            "Published Row Tour",
-            "published-row-tour",
+            "Published Tour",
+            "published-tour",
             isPublished: true) with
         {
-            IsPublished = true,
             StreamVersion = 1,
             Summary = string.Empty
         };
-        await sut.UpsertDraft(publishedTour, TestContext.Current.CancellationToken);
+        await sut.UpsertDraft(tour, TestContext.Current.CancellationToken);
 
         // Act
-        var beforeEdit = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
-        var publicBeforeEdit = await sut.GetPublishedTourBySlug(publishedTour.Slug, TestContext.Current.CancellationToken);
-        var edited = await sut.UpdatePresentation(
-            tourId,
-            new CatalogTourPresentationUpdate("Published Row Tour", publishedTour.Slug, "New summary", "", "", "", ""),
-            streamVersion: 2,
-            position: 2,
-            updatedAt: TimeProvider.System.GetUtcNow(),
-            ct: TestContext.Current.CancellationToken);
-        var publicBeforeRepublish = await sut.GetPublishedTourBySlug(publishedTour.Slug, TestContext.Current.CancellationToken);
-        var republished = await sut.SetPublicationStatus(
-            tourId,
-            isPublished: true,
-            streamVersion: 3,
-            position: 3,
-            updatedAt: TimeProvider.System.GetUtcNow(),
-            ct: TestContext.Current.CancellationToken);
-        var publicAfterRepublish = await sut.GetPublishedTourBySlug(publishedTour.Slug, TestContext.Current.CancellationToken);
+        var stored = await sut.GetTour(tourId, TestContext.Current.CancellationToken);
+        var published = await sut.GetPublishedTourBySlug(tour.Slug, TestContext.Current.CancellationToken);
 
         // Assert
-        beforeEdit.ShouldNotBeNull();
-        beforeEdit.IsPublished.ShouldBeFalse();
-        publicBeforeEdit.ShouldBeNull();
-        edited.ShouldNotBeNull();
-        edited.IsPublished.ShouldBeFalse();
-        publicBeforeRepublish.ShouldBeNull();
-        republished.ShouldNotBeNull();
-        republished.IsPublished.ShouldBeTrue();
-        republished.StreamVersion.ShouldBe(3);
-        publicAfterRepublish.ShouldNotBeNull();
-        publicAfterRepublish.StreamVersion.ShouldBe(3);
+        stored.ShouldNotBeNull().IsPublished.ShouldBeTrue();
+        published.ShouldNotBeNull().CatalogTourId.ShouldBe(tourId);
     }
 
     [Fact]

@@ -159,7 +159,7 @@ internal sealed class EfCatalogTourReadModelStore(
         }
 
         var tour = await dbContext.CatalogTourReadModels
-            .Where(tour => tour.IsPublished && tour.StreamVersion > 1 && tour.Summary != string.Empty)
+            .Where(tour => tour.IsPublished)
             .SingleOrDefaultAsync(tour => tour.Slug == normalizedSlug, ct)
             .ConfigureAwait(false);
 
@@ -197,7 +197,7 @@ internal sealed class EfCatalogTourReadModelStore(
             tour.Identifier,
             tour.Title,
             tour.Slug,
-            tour.IsPublished && tour.StreamVersion > 1 && !string.IsNullOrEmpty(tour.Summary),
+            tour.IsPublished,
             tour.Position,
             tour.UpdatedAt)
         {
