@@ -317,7 +317,6 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
     public void Shows_not_found_when_the_selected_image_disappears_during_approval()
     {
         // Arrange
-        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
         catalogApi.Images =
         [
             new CatalogMediaImageDto
