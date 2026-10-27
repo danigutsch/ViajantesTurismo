@@ -248,4 +248,17 @@ public class IndexPageTests : BunitContext
         // Assert
         IndexPageTestsHelper.AssertNameSortIsAscending(cut);
     }
+
+    [Fact]
+    public void Transport_failure_while_loading_shows_a_safe_error_message()
+    {
+        // Arrange
+        _fakeToursApi.SetGetToursOutcome(FakeApiClientOutcomes.TransportFailure<GetTourDto[]>());
+
+        // Act
+        var cut = Render<Index>();
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("Tours could not be loaded. Try again later."));
+    }
 }

@@ -454,4 +454,16 @@ public class DetailsPageTests : BunitContext
         cardHeader.TextContent.ShouldBe("Amazing Bike Tour 2024");
     }
 
+    [Fact]
+    public void Transport_failure_while_loading_shows_a_safe_error_message()
+    {
+        // Arrange
+        _fakeToursApi.SetGetTourByIdOutcome(FakeApiClientOutcomes.TransportFailure<GetTourDto>());
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, Guid.NewGuid()));
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("The tour could not be loaded."));
+    }
 }

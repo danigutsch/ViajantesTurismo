@@ -581,4 +581,17 @@ public sealed class DetailsPageTests : BunitContext
         var toast = cut.FindComponent<ToastNotification>();
         _ = toast.ShouldNotBeNull();
     }
+
+    [Fact]
+    public void Transport_failure_while_loading_shows_a_safe_error_message()
+    {
+        // Arrange
+        _fakeCustomersApi.SetGetCustomerByIdOutcome(FakeApiClientOutcomes.TransportFailure<CustomerDetailsDto>());
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, Guid.NewGuid()));
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("The customer could not be loaded."));
+    }
 }

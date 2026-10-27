@@ -66,4 +66,17 @@ public class IndexPageTests : BunitContext
         // Assert
         cut.Markup.ShouldContain("Jane Doe", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Transport_failure_while_loading_shows_a_safe_error_message()
+    {
+        // Arrange
+        _fakeCustomersApi.SetGetCustomersOutcome(FakeApiClientOutcomes.TransportFailure<GetCustomerDto[]>());
+
+        // Act
+        var cut = Render<Index>();
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("Customers could not be loaded. Try again later."));
+    }
 }

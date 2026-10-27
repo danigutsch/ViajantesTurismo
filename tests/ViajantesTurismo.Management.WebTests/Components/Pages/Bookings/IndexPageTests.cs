@@ -179,4 +179,18 @@ public class IndexPageTests : BunitContext
         cut.Markup.ShouldContain("Completed: 2", StringComparison.Ordinal);
         cut.Markup.ShouldContain("Cancelled: 1", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Transport_failure_while_loading_shows_a_safe_error_message()
+    {
+        // Arrange
+        _fakeBookingsApi.SetGetAllBookingsOutcome(FakeApiClientOutcomes.TransportFailure<GetBookingDto[]>());
+
+        // Act
+        var cut = Render<Index>();
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("We couldn't load bookings right now. Please try again."));
+        _failures.Reports.ShouldBeEmpty();
+    }
 }

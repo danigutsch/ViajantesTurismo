@@ -9,6 +9,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 {
     private readonly List<GetBookingDto> _bookings = [];
     private Task _bookingActionTask = Task.CompletedTask;
+    private HttpOutcome? _bookingActionOutcome;
     private HttpOutcome? _createBookingOutcome;
     private Exception? _getAllBookingsException;
     private HttpOutcome<GetBookingDto[]>? _getAllBookingsOutcome;
@@ -239,6 +240,8 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         _bookingActionTask = actionTask;
     }
 
+    public void SetBookingActionOutcome(HttpOutcome outcome) => _bookingActionOutcome = outcome;
+
     public void SetGetAllBookingsException(Exception exception) => _getAllBookingsException = exception;
 
     public void SetGetAllBookingsOutcome(HttpOutcome<GetBookingDto[]> outcome) => _getAllBookingsOutcome = outcome;
@@ -277,6 +280,11 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         ct.ThrowIfCancellationRequested();
         BookingActionCallCount++;
         await _bookingActionTask.WaitAsync(ct);
+        if (_bookingActionOutcome is not null)
+        {
+            return _bookingActionOutcome;
+        }
+
         onCompleted();
         return HttpOutcomeMapper.Succeeded(statusCode, location: null);
     }
