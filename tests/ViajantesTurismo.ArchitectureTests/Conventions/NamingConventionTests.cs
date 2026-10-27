@@ -125,7 +125,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void Behavior_feature_files_should_use_a_recognized_naming_style()
+    public void Behavior_feature_files_should_use_kebab_case()
     {
         var repositoryRoot = GetRepositoryRoot();
         var behaviorSpecsRoot = Path.Combine(
@@ -141,14 +141,13 @@ public sealed partial class NamingConventionTests
             .Where(relativePath =>
             {
                 var fileName = Path.GetFileName(relativePath);
-                return !KebabCaseFeatureFileRegex().IsMatch(fileName)
-                       && !PascalCaseFeatureFileRegex().IsMatch(fileName);
+                return !KebabCaseFeatureFileRegex().IsMatch(fileName);
             })
             .ToArray();
 
         var areDifferent4 = offendingFiles.Length != 0;
         areDifferent4.ShouldBeFalse(
-            $"Expected behavior feature files to use kebab-case or the tracked legacy PascalCase style, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingFiles)}");
+            $"Expected behavior feature files to use kebab-case, but found:{Environment.NewLine}{string.Join(Environment.NewLine, offendingFiles)}");
     }
 
     [Fact]

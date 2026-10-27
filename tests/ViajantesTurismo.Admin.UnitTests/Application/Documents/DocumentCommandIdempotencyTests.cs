@@ -332,7 +332,7 @@ public sealed class DocumentCommandIdempotencyTests
     [Theory]
     [InlineData("1")]
     [InlineData("2")]
-    public async Task Legacy_bare_guid_entry_conflicts_without_a_verifiable_request_fingerprint(string templateVersion)
+    public async Task Entry_without_a_request_fingerprint_conflicts(string templateVersion)
     {
         // Arrange
         var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{Guid.CreateVersion7():N}");
