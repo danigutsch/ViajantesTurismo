@@ -12,7 +12,9 @@ It follows these OWASP sources:
 - [OWASP Top 10:2025 A09 Security Logging and Alerting Failures](https://owasp.org/Top10/2025/A09_2025-Security_Logging_and_Alerting_Failures/)
 - [OWASP Top 10:2025 A10 Mishandling of Exceptional Conditions](https://owasp.org/Top10/2025/A10_2025-Mishandling_of_Exceptional_Conditions/)
 
-An ASVS mapping is intentionally not included because it was not verified. Add it only after each requirement is checked against the ASVS text.
+A full ASVS mapping is intentionally not included. Only requirement 16.5.1 of ASVS 5.0 (a generic message for unexpected
+or security-sensitive errors, with no stack traces, queries, keys or tokens) was checked against the ASVS text. Add other
+requirements only after each is checked the same way.
 
 Related pages: the [security baseline](security-baseline.md), the [threat model](threat-model.md), [OpenTelemetry custom telemetry](../OPEN_TELEMETRY.md),
 [API I/O and streaming contracts](../API_IO_AND_STREAMING.md), and [production readiness](../operations/production-readiness.md).
@@ -45,6 +47,15 @@ The rule is tiered. Pick the tier by what the caller knows about the failure.
   as free text because they can carry personal data.
 - The user sees the trace id so support can find the matching trace and log entries.
 
+### What domain errors may echo
+
+Domain errors, such as those in `src/ViajantesTurismo.Admin.Domain/Tours/BookingErrors.cs`, may interpolate domain enum
+member names, integers and limits that the domain computed or validated. They must not interpolate caller-supplied free
+text, file names, request identifiers or exception messages. The contract enums travel as numbers, so an unknown string
+fails in deserialization with a message that does not contain it, and an out-of-range number echoes only as an integer.
+A listing of the valid values helps the client correct the request, as RFC 9457 intends for `detail`. The decision and
+the evidence are in [ADR-043](../adr/20261028-domain-error-messages-may-echo-domain-terms.md).
+
 ## Mapping to OWASP recommendations
 
 Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exercised. Evidence lists repository paths only.
@@ -58,7 +69,7 @@ Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exerci
 | Do not send exception text or stack traces to clients | Implemented | No exception text is sent to clients; development exception pages are gated by environment in `src/ViajantesTurismo.Management.Web/Program.cs` and `src/ViajantesTurismo.Public.Web/Program.cs` |
 | Global exception handler on every service | Partial | The Admin and Catalog API hosts (the Catalog API also hosts Branding) register `AddUnhandledExceptionHandler` and `UseExceptionHandler` in their `Program.cs`; Management.Web and Public.Web keep `/Error` pages |
 | Consistent 4xx/5xx mapping and monitoring | Partial | The mapping exists; the API hosts export `unhandled_exceptions_total`, but no alert or 5xx ratio rule consumes it yet |
-| Validation text authored by us, no echo of input | Partial | One echo remains: enum states in booking errors. The documentation 404 uses a fixed detail and no longer echoes the identifier |
+| Validation text authored by us, no echo of input | Implemented | Domain errors echo only domain enum names, integers and limits, never caller-supplied text; see the rule under Tier 2 and [ADR-043](../adr/20261028-domain-error-messages-may-echo-domain-terms.md). The documentation 404 uses a fixed detail |
 | Log security events (authentication, authorization, rate limit, validation failures) | Partial | The Admin and Catalog API hosts call `AddSecurityEventTelemetry` (JWT bearer failure, challenge, forbidden, rate-limit rejection; `EventId` 4101 and 4102); validation failures are not logged as security events |
 | Handle UI-level errors without losing the session | Implemented | `src/ViajantesTurismo.Management.Web/Components/Layout/MainLayout.razor` wraps page content in the SharedKernel `RecoveryErrorBoundary`, which shows fixed recovery copy, resets on navigation and logs through `IUiFailureReporter`; `blazor-error-ui` remains as the last resort. Handled failures are logged and not counted: no counter is registered |
 | Incident response process | Partial | Notes only in `docs/operations/production-readiness.md`; `SECURITY.md` covers vulnerability reporting only |

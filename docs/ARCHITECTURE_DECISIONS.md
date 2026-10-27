@@ -82,6 +82,8 @@ Decisions about application architecture and layer responsibilities.
   Co-hosting and State Distribution
 - **[ADR-042](adr/20261024-ddd-standards-enforcement.md)** — Enforce DDD Domain Standards with
   SharedKernel Analyzers and Architecture Tests
+- **[ADR-043](adr/20261028-domain-error-messages-may-echo-domain-terms.md)** — Domain Error Messages May Echo
+  Domain Terms and Numbers, Not Free Text
 
 ### Versioning & Release
 
