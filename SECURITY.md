@@ -3,10 +3,20 @@
 ## Supported Versions
 
 This repository is under active development. Security fixes are applied to the current `main`
-branch.
+branch only.
 
-If release branches or versioned releases are introduced later, this policy should be updated to
-document which versions continue to receive security fixes.
+| Output | Supported for security fixes |
+| --- | --- |
+| Application (`main`) | Current `main` only |
+| Local or alpha/beta prerelease packages | Not backported; upgrade to the current `main` or newest prerelease |
+| Stable releases and release branches | None exist yet |
+
+Prerelease channels and the stable promotion rules are defined in
+[ADR-032](docs/adr/20260704-versioning-and-release-governance.md). Support windows for
+`PandaBear.SharedKernel.*` packages are owned by the SharedKernel repository's own security policy.
+
+When the application publishes its first stable release or creates a release branch, this policy
+must be updated to list which versions continue to receive security fixes and for how long.
 
 ## Reporting a Vulnerability
 
