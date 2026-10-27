@@ -317,6 +317,31 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
+    public void Clears_the_error_summary_when_a_new_entry_replaces_the_form_model()
+    {
+        // Arrange
+        publicContentApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["key"] = ["Key is already used."] });
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("#pt-br-title").Change("Bem-vindo");
+        cut.Find("#pt-br-body").Change("Pedale conosco");
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll("#error-summary").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Act
+        var newEntryButtons = cut.FindAll("button").Where(button => button.TextContent.Trim() == "New entry").ToList();
+        newEntryButtons.ShouldHaveSingleItem().Click();
+
+        // Assert
+        cut.FindAll("#error-summary").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Truncates_hostile_server_field_text_and_never_renders_it_as_markup()
     {
         // Arrange

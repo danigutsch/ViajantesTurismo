@@ -218,6 +218,7 @@
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } entry })
         {
             _model = PublicContentFormModel.FromDto(entry);
+            _summaryItems = [];
             return;
         }
 
@@ -330,6 +331,7 @@
     private void ResetForm()
     {
         _model = new PublicContentFormModel();
+        _summaryItems = [];
         _errorMessage = null;
         _successMessage = null;
     }
