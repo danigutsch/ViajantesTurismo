@@ -44,11 +44,11 @@ The rule is tiered. Pick the tier by what the caller knows about the failure.
 
 ## Mapping to OWASP recommendations
 
-Status as of 2026-10-27, from a read-only audit. Runtime behaviour was not exercised. Evidence lists repository paths only.
+Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exercised. Evidence lists repository paths only.
 
 | OWASP recommendation | Status | Evidence |
 | --- | --- | --- |
-| Do not log sensitive data; sanitise log content | Implemented | `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs` (`IncludeFormattedMessage=false`, `IncludeScopes=false`, `LogRecordPrivacyProcessor`, `ActivityPrivacyProcessor`, `RecordException=false`); `docs/security/security-baseline.md` forbids PII, tokens, and CSV rows in logs |
+| Do not log sensitive data; sanitize log content | Implemented | `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs` (`IncludeFormattedMessage=false`, `IncludeScopes=false`, `LogRecordPrivacyProcessor`, `ActivityPrivacyProcessor`, `RecordException=false`); `docs/security/security-baseline.md` forbids PII, tokens, and CSV rows in logs |
 | Fail closed on telemetry privacy | Implemented | `observability/otel-collector/privacy.yaml` |
 | Structured logs with stable identifiers | Implemented | `docs/OPEN_TELEMETRY.md` (stable `EventId` values and names) |
 | Rate limiting and input size limits | Implemented | `docs/security/security-baseline.md` (named rate-limit policies, import size caps) |
@@ -56,12 +56,12 @@ Status as of 2026-10-27, from a read-only audit. Runtime behaviour was not exerc
 | Global exception handler on every service | Partial | `src/ViajantesTurismo.Admin.ApiService/Program.cs` has `AddProblemDetails` and `UseExceptionHandler`; the Catalog API, which hosts Branding, has none |
 | Consistent 4xx/5xx mapping and monitoring | Partial | The mapping exists; 5xx responses are not monitored |
 | Validation text authored by us, no echo of input | Partial | Two echoes remain: the caller identifier in the documentation 404, and enum states in booking errors |
-| Log security events (authentication, authorisation, rate limit, validation failures) | Partial | No dedicated 401, 403, JWT-failure, rate-limit, or validation-failure event logging |
+| Log security events (authentication, authorization, rate limit, validation failures) | Partial | No dedicated 401, 403, JWT-failure, rate-limit, or validation-failure event logging |
 | Handle UI-level errors without losing the session | Partial | `blazor-error-ui` exists in `src/ViajantesTurismo.Management.Web/Components/Layout/MainLayout.razor`; there is no `ErrorBoundary` |
 | Incident response process | Partial | Notes only in `docs/operations/production-readiness.md`; `SECURITY.md` covers vulnerability reporting only |
-| Protect logs from tampering and unauthorised access | Partial | The observability stack under `observability/` is local-only |
+| Protect logs from tampering and unauthorized access | Partial | The observability stack under `observability/` is local-only |
 | Alert on errors and suspicious activity | Missing | `observability/` has Prometheus, Loki, Tempo, and Grafana dashboards but no alert rules; `docs/operations/production-readiness.md` says thresholds are undecided |
-| Summarise repeated errors | Missing | No aggregation of repeated errors |
+| Summarize repeated errors | Missing | No aggregation of repeated errors |
 | Never swallow exceptions silently | Missing | The malware-scanner catch in `src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` and about a dozen pages in `src/ViajantesTurismo.Management.Web/Components/Pages` catch without logging |
 | Honeytokens | Missing | Not expected now |
 
@@ -79,7 +79,7 @@ Triage uses regular telemetry only. There is no separate error-tracking system.
 Current state:
 
 - Exists today: structured logs with stable `EventId` values, the privacy processors, trace ids, and the local Prometheus, Loki, Tempo, and Grafana stack.
-- Being delivered by the in-flight pull request: the tiered user-facing rule in the web client and the `unhandled_exceptions_total` counter with its tags.
+- Being delivered in two places: the tiered user-facing rule in the web client in this repository, and the `unhandled_exceptions_total` counter, its tags, and the exception handler in SharedKernel, which this repository adopts once a prerelease candidate exists.
 - Open decisions, not yet made: the production telemetry sink, alert routing, alert thresholds (including the 5xx ratio), and the owner of triage.
   This page does not set values for them. They belong in the deployment runbook referenced from `docs/operations/production-readiness.md`.
 
