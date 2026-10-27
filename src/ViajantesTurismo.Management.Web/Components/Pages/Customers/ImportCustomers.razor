@@ -459,7 +459,6 @@
                 _state.ConflictStates = conflictStates;
                 _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
 
-                // Conflicts mean the file is not imported yet; clear upload state instead of showing it as complete.
                 _state.Upload.Reset();
                 return;
             }
@@ -530,7 +529,6 @@
                 _state.ConflictStates = conflictStates;
                 _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
 
-                // Conflicts mean the file is not imported yet; clear upload state instead of showing it as complete.
                 _state.Upload.Reset();
                 return;
             }

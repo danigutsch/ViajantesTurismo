@@ -86,7 +86,6 @@
     private readonly UploadImageFormModel _model = new();
     private const long BytesPerMebibyte = 1024 * 1024;
     private const long MaximumFileSizeInMebibytes = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxMediaUploadBytes / BytesPerMebibyte;
-    // Server validation text is remote-influenced, so only this fixed message reaches the alert and live region.
     private const string ValidationFailureMessage = "Image could not be uploaded. Check the file and try again.";
     private readonly UploadOperationState _upload = new();
     private IBrowserFile? _file;
