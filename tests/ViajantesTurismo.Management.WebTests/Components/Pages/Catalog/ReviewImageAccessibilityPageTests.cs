@@ -340,7 +340,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_server_validation_errors_when_approval_is_rejected()
+    public void Shows_fixed_copy_instead_of_server_validation_text_when_approval_is_rejected()
     {
         // Arrange
         catalogApi.Images =
@@ -353,22 +353,23 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
                 RequiresHumanReview = true
             }
         ];
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
         catalogApi.ValidationException = new ContractValidationException(
             "Validation failed.",
             new Dictionary<string, string[]>
             {
-                ["altText"] = ["Image description is required."]
+                ["altText"] = [hostile]
             });
 
         // Act
         var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
         cut.WaitForState(() => cut.FindAll("button.btn-primary").Count == 1, TimeSpan.FromSeconds(2));
         cut.Find("button.btn-primary").Click();
-        cut.WaitForState(
-            () => cut.Markup.Contains("Image description is required.", StringComparison.Ordinal),
-            TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.FindAll("[role='alert']").Count == 1, TimeSpan.FromSeconds(2));
 
         // Assert
-        cut.Find("[role='alert']").TextContent.ShouldBe("Image description is required.");
+        cut.Find("[role='alert']").TextContent.ShouldBe("Accessibility text could not be saved. Try again later.");
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
     }
 }

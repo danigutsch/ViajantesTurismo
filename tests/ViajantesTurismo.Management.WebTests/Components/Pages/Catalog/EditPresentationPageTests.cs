@@ -180,6 +180,147 @@ public sealed class EditPresentationPageTests : BunitContext
     }
 
     [Fact]
+    public void Shows_fixed_copy_instead_of_server_validation_text_when_presentation_save_fails_validation()
+    {
+        // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["unmappedField"] = [hostile] });
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("Catalog tour presentation could not be saved", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_the_server_field_message_next_to_the_matching_field_and_no_free_form_alert()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["slug"] = ["Slug is already used."] });
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".validation-message").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var fieldGroup = cut.Find("#slug").ParentElement.ShouldNotBeNull();
+        fieldGroup.QuerySelector(".validation-message").ShouldNotBeNull().TextContent.ShouldBe("Slug is already used.");
+        cut.FindAll(".alert-danger").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Truncates_hostile_server_field_text_and_never_renders_it_as_markup()
+    {
+        // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["title"] = [hostile] });
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".validation-message").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.FindAll("script").ShouldBeEmpty();
+        cut.Markup.ShouldNotContain("<script", StringComparison.Ordinal);
+        var fieldMessage = cut.Find("#title").ParentElement.ShouldNotBeNull().QuerySelector(".validation-message").ShouldNotBeNull();
+        fieldMessage.TextContent.Length.ShouldBeLessThanOrEqualTo(300);
+        cut.Markup.Length.ShouldBeLessThan(20000);
+    }
+
+    [Fact]
+    public void Falls_back_to_fixed_copy_when_the_server_field_key_is_unknown()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["notAField"] = ["Secret rule text."] });
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("Catalog tour presentation could not be saved", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret rule text.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Error_summary_links_to_the_field_and_receives_focus()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.ValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["slug"] = ["Slug is already used."] });
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll("#error-summary").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var summary = cut.Find("#error-summary");
+        summary.GetAttribute("tabindex").ShouldBe("-1");
+        summary.GetAttribute("aria-labelledby").ShouldBe("error-summary-title");
+        cut.Find("#error-summary-title").TextContent.ShouldBe("There is a problem");
+        var link = cut.Find("#error-summary a");
+        link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#slug", StringComparison.Ordinal);
+        link.TextContent.ShouldBe("Slug is already used.");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
+    [Fact]
+    public void Shows_fixed_copy_instead_of_server_validation_text_when_publication_fails_validation()
+    {
+        // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.PublicationValidationException = new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["slug"] = [hostile] });
+
+        // Act
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Status: Draft", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("#publish").Click();
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("Catalog tour publication could not be changed", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Shows_fallback_error_when_validation_has_no_messages()
     {
         // Arrange

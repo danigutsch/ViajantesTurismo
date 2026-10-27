@@ -50,7 +50,7 @@ internal static class ErrorDocumentationEndpoints
             ? TypedResults.NotFound(new ProblemDetails
             {
                 Title = "Error Documentation Not Found",
-                Detail = $"Error documentation entry '{identifier}' was not found.",
+                Detail = "Error documentation entry was not found.",
                 Status = StatusCodes.Status404NotFound,
             })
             : TypedResults.Ok(entry);

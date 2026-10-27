@@ -59,64 +59,15 @@ public class ErrorPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_development_mode_section()
+    public void Does_not_render_template_development_mode_guidance()
     {
         // Act
         var cut = Render<Error>();
 
         // Assert
-        var h3 = cut.Find("h3");
-        h3.TextContent.ShouldBe("Development Mode");
-    }
-
-    [Fact]
-    public void Renders_development_environment_warning()
-    {
-        // Act
-        var cut = Render<Error>();
-
-        // Assert
-        var paragraphs = cut.FindAll("p");
-        var warningParagraph = paragraphs.First(p => p.TextContent.Contains("Development environment shouldn't be enabled", StringComparison.Ordinal));
-
-        warningParagraph.TextContent.ShouldContain("shouldn't be enabled for deployed applications", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Renders_aspnetcore_environment_instructions()
-    {
-        // Act
-        var cut = Render<Error>();
-
-        // Assert
-        var strongs = cut.FindAll("strong");
-        strongs.ShouldContain(s => s.TextContent == "ASPNETCORE_ENVIRONMENT");
-        strongs.ShouldContain(s => s.TextContent == "Development");
-    }
-
-    [Fact]
-    public void Renders_detailed_information_warning()
-    {
-        // Act
-        var cut = Render<Error>();
-
-        // Assert
-        var markup = cut.Markup;
-        markup.ShouldContain("Swapping to", StringComparison.Ordinal);
-        markup.ShouldContain("Development", StringComparison.Ordinal);
-        markup.ShouldContain("display more detailed information", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Renders_sensitive_information_warning()
-    {
-        // Act
-        var cut = Render<Error>();
-
-        // Assert
-        var markup = cut.Markup;
-        markup.ShouldContain("sensitive information", StringComparison.Ordinal);
-        markup.ShouldContain("end users", StringComparison.Ordinal);
+        cut.FindAll("h3").ShouldBeEmpty();
+        cut.Markup.ShouldNotContain("Development", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("ASPNETCORE_ENVIRONMENT", StringComparison.Ordinal);
     }
 
     [Fact]

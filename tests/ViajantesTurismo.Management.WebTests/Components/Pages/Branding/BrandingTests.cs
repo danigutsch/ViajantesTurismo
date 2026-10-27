@@ -167,7 +167,82 @@ public sealed class BrandingTests : BunitContext
     }
 
     [Fact]
-    public void Shows_the_server_validation_messages_when_branding_is_rejected()
+    public void Shows_fixed_copy_instead_of_server_validation_text_when_branding_is_rejected()
+    {
+        // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        brandingApi.ValidationErrors = new Dictionary<string, string[]> { ["UnmappedField"] = [hostile] };
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("couldn't save branding", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+        brandingApi.SavedBranding.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Shows_the_server_field_message_next_to_the_matching_field_and_no_free_form_alert()
+    {
+        // Arrange
+        brandingApi.ValidationErrors = new Dictionary<string, string[]> { ["primaryColor"] = ["Use a safe color."] };
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".validation-message").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var fieldGroup = cut.Find("#branding-primary-color").ParentElement.ShouldNotBeNull();
+        fieldGroup.QuerySelector(".validation-message").ShouldNotBeNull().TextContent.ShouldBe("Use a safe color.");
+        cut.FindAll(".alert-danger").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Truncates_hostile_server_field_text_and_never_renders_it_as_markup()
+    {
+        // Arrange
+        var hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42 " + new string('x', 5000);
+        brandingApi.ValidationErrors = new Dictionary<string, string[]> { ["PrimaryColor"] = [hostile] };
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".validation-message").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.FindAll("script").ShouldBeEmpty();
+        cut.Markup.ShouldNotContain("<script", StringComparison.Ordinal);
+        var fieldMessage = cut.Find("#branding-primary-color").ParentElement.ShouldNotBeNull().QuerySelector(".validation-message").ShouldNotBeNull();
+        fieldMessage.TextContent.Length.ShouldBeLessThanOrEqualTo(300);
+    }
+
+    [Fact]
+    public void Falls_back_to_fixed_copy_when_the_server_field_key_is_unknown()
+    {
+        // Arrange
+        brandingApi.ValidationErrors = new Dictionary<string, string[]> { ["notAField"] = ["Secret rule text."] };
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldContain("couldn't save branding", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret rule text.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Error_summary_links_to_the_field_and_receives_focus()
     {
         // Arrange
         brandingApi.ValidationErrors = new Dictionary<string, string[]> { ["PrimaryColor"] = ["Use a safe color."] };
@@ -176,11 +251,16 @@ public sealed class BrandingTests : BunitContext
 
         // Act
         cut.Find("form").Submit();
-        cut.WaitForState(() => cut.Markup.Contains("Use a safe color.", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.FindAll("#error-summary").Count == 1, TimeSpan.FromSeconds(2));
 
         // Assert
-        cut.Find(".alert-danger").TextContent.ShouldContain("Use a safe color.", StringComparison.Ordinal);
-        brandingApi.SavedBranding.ShouldBeNull();
+        var summary = cut.Find("#error-summary");
+        summary.GetAttribute("tabindex").ShouldBe("-1");
+        summary.GetAttribute("aria-labelledby").ShouldBe("error-summary-title");
+        var link = cut.Find("#error-summary a");
+        link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#branding-primary-color", StringComparison.Ordinal);
+        link.TextContent.ShouldBe("Use a safe color.");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
     }
 
     [Fact]
