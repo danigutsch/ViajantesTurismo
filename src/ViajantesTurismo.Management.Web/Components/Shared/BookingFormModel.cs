@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using PandaBear.Blazor;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Management.Web.Components.Shared;
@@ -9,6 +10,14 @@ namespace ViajantesTurismo.Management.Web.Components.Shared;
 /// </summary>
 public class BookingFormModel : IValidatableObject
 {
+    /// <summary>Server validation fields a booking form can display, with the field message used for unusable server text.</summary>
+    public static ServerValidationOptions ServerValidation
+    {
+        get;
+    } = new(
+        typeof(BookingFormModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).Select(property => property.Name),
+        "This value is not valid. Check it and try again.");
+
     public Guid? TourId
     {
         get; set;

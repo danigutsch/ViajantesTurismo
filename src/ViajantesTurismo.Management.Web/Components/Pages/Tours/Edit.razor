@@ -221,7 +221,7 @@ Bike rental"/>
         }
         else
         {
-            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("load the tour"));
+            _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load the tour")).For(outcome.Kind);
         }
 
         _loading = false;
@@ -259,7 +259,7 @@ Bike rental"/>
             var outcome = await ToursApi.UpdateTour(Id, tour, CancellationToken.None);
             if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("update the tour"));
+                _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("update the tour")).For(outcome.Kind);
                 return;
             }
 

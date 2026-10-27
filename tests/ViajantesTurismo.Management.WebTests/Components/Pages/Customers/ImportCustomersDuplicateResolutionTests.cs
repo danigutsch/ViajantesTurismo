@@ -1,3 +1,4 @@
+using PandaBear.Blazor;
 using System.Globalization;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
@@ -8,6 +9,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
 
     public ImportCustomersDuplicateResolutionTests()
     {
+        Services.AddUiFailureReporting();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }

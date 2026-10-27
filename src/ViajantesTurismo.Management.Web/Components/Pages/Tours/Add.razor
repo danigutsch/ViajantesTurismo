@@ -4,7 +4,9 @@
 @using PandaBear.HttpClients
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
+@implements IDisposable
 @inject IToursApiClient ToursApi
+@inject IUiFailureReporter Failures
 
 <PageTitle>Add Tour</PageTitle>
 
@@ -132,6 +134,10 @@ Bike rental"/>
 
     private TourFormModel _model = new();
     private EditContext _editContext;
+    private ServerValidationBinder _binder;
+    private static readonly ServerValidationOptions ServerValidation = new(
+        typeof(TourFormModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).Select(property => property.Name),
+        "This value is not valid. Check it and try again.");
     private bool _isSubmitting;
     private bool _success;
     private string? _errorMessage;
@@ -140,7 +146,11 @@ Bike rental"/>
     public Add()
     {
         _editContext = new EditContext(_model);
+        _binder = new ServerValidationBinder(_editContext, ServerValidation);
     }
+
+    /// <inheritdoc />
+    public void Dispose() => _binder.Dispose();
 
     protected override void OnInitialized()
     {
@@ -183,8 +193,10 @@ Bike rental"/>
             var outcome = await ToursApi.CreateTour(tour, CancellationToken.None);
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem && outcome.ValidationErrors is not null)
             {
-                _errorMessage = "Please correct the highlighted fields.";
-                EditContextValidationHelper.ApplyValidationErrors(_editContext, outcome.ValidationErrors);
+                var result = _binder.Apply(outcome);
+                _errorMessage = result is { HasUnplacedErrors: false, Issues.Count: > 0 }
+                    ? "Please correct the highlighted fields."
+                    : UserFacingErrorMessage.ForOperation("create the tour");
                 return;
             }
 
@@ -197,8 +209,9 @@ Bike rental"/>
             _createdTourUrl = GetTourLocation(outcome.Location);
             _success = true;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "tours.create");
             _errorMessage = UserFacingErrorMessage.ForOperation("create the tour");
         }
         finally
@@ -211,7 +224,9 @@ Bike rental"/>
     {
         _model = new TourFormModel();
         SetDefaultSchedule();
+        _binder.Dispose();
         _editContext = new EditContext(_model);
+        _binder = new ServerValidationBinder(_editContext, ServerValidation);
         _success = false;
         _createdTourUrl = null;
         _errorMessage = null;

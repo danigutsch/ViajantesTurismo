@@ -6,6 +6,7 @@
 @using ViajantesTurismo.Management.Web.Helpers
 @using ViajantesTurismo.Management.Web.Services
 
+@inject IUiFailureReporter Failures
 @inject ICustomersApiClient CustomersApi
 
 <PageTitle>Import Customers</PageTitle>
@@ -456,7 +457,7 @@
 
             if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } result })
             {
-                _state.Upload.Fail(operationId, HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("import the customers")));
+                _state.Upload.Fail(operationId, new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("import the customers")).For(outcome.Kind));
                 return;
             }
 
@@ -484,8 +485,9 @@
         {
             _state.Upload.Cancel(operationId);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "customers.import.upload");
             _state.Upload.Fail(operationId, UserFacingErrorMessage.ForOperation("import the customers"));
         }
         finally
@@ -526,7 +528,7 @@
 
             if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } result })
             {
-                _state.Upload.Fail(operationId, HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("import the customers")));
+                _state.Upload.Fail(operationId, new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("import the customers")).For(outcome.Kind));
                 return;
             }
 
@@ -554,8 +556,9 @@
         {
             _state.Upload.Cancel(operationId);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "customers.import.complete");
             _state.Upload.Fail(operationId, UserFacingErrorMessage.ForOperation("complete the customer import"));
         }
         finally

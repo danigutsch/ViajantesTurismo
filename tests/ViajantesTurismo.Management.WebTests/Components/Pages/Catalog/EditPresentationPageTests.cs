@@ -289,8 +289,9 @@ public sealed class EditPresentationPageTests : BunitContext
         // Assert
         var summary = cut.Find("#error-summary");
         summary.GetAttribute("tabindex").ShouldBe("-1");
-        summary.GetAttribute("aria-labelledby").ShouldBe("error-summary-title");
-        cut.Find("#error-summary-title").TextContent.ShouldBe("There is a problem");
+        var heading = cut.Find("#error-summary h2");
+        summary.GetAttribute("aria-labelledby").ShouldBe(heading.Id);
+        heading.TextContent.ShouldBe("There is a problem");
         var link = cut.Find("#error-summary a");
         link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#slug", StringComparison.Ordinal);
         link.TextContent.ShouldBe("Slug is already used.");

@@ -1,3 +1,4 @@
+@inject IUiFailureReporter Failures
 @inject TimeProvider TimeProvider
 @page "/bookings/{id:guid}/edit"
 @implements IAsyncDisposable
@@ -369,13 +370,12 @@ else if (_booking is not null)
             }
             else
             {
-                _loadErrorMessage = HttpOutcomeUserMessage.For(
-                    outcome.Kind,
-                    UserFacingErrorMessage.ForOperation("load the booking"));
+                _loadErrorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load the booking")).For(outcome.Kind);
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.edit.load");
             _loadErrorMessage = UserFacingErrorMessage.ForOperation("load the booking");
         }
         finally
@@ -504,8 +504,9 @@ else if (_booking is not null)
                 await _redirectState.DisposeCancellation();
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.edit.update");
             _errorMessage = UserFacingErrorMessage.ForOperation("update the booking");
             if (mutationAttempted)
             {
@@ -646,8 +647,9 @@ else if (_booking is not null)
             _customers = [];
             _companionChoicesUnavailable = true;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.edit.load-companions");
             _customers = [];
             _companionChoicesUnavailable = true;
         }
@@ -668,8 +670,9 @@ else if (_booking is not null)
             SyncModelFromBooking();
             return true;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.edit.refresh-after-save");
             _refreshWarningMessage = "The change was saved, but we couldn't refresh the booking. Reload the page to see the latest calculated values.";
             return false;
         }
@@ -688,8 +691,9 @@ else if (_booking is not null)
 
             _booking = refreshedBooking;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.edit.reconcile");
             _refreshWarningMessage = "Some changes may have been saved, but we couldn't refresh the booking. Reload the page before making another change.";
         }
     }
@@ -713,9 +717,7 @@ else if (_booking is not null)
             var outcome = await action(CancellationToken.None);
             if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _toast?.ShowError(HttpOutcomeUserMessage.For(
-                    outcome.Kind,
-                    UserFacingErrorMessage.ForOperation(operationDescription)));
+                _toast?.ShowError(new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation(operationDescription)).For(outcome.Kind));
                 return;
             }
 
@@ -727,8 +729,9 @@ else if (_booking is not null)
             _toast?.ShowSuccess(successMessage);
             onSuccess?.Invoke();
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.edit.action");
             _toast?.ShowError(UserFacingErrorMessage.ForOperation(operationDescription));
         }
         finally
@@ -745,9 +748,7 @@ else if (_booking is not null)
             return true;
         }
 
-        _errorMessage = HttpOutcomeUserMessage.For(
-            outcome.Kind,
-            UserFacingErrorMessage.ForOperation(operationDescription));
+        _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation(operationDescription)).For(outcome.Kind);
         return false;
     }
 

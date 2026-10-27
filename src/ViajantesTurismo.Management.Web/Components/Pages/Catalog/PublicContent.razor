@@ -1,4 +1,5 @@
 @page "/catalog/content"
+@implements IDisposable
 @using System.ComponentModel.DataAnnotations
 @using ViajantesTurismo.Catalog.Contracts.Application
 @using PandaBear.HttpClients
@@ -53,9 +54,9 @@
     </div>
 
     <div class="col-lg-8">
-        <EditForm EditContext="@FormContext" OnValidSubmit="@SaveContent" OnInvalidSubmit="@RequestSummaryFocus" FormName="publicContentEditor">
+        <EditForm EditContext="@FormContext" OnValidSubmit="@SaveContent" OnInvalidSubmit="@ShowSummary" FormName="publicContentEditor">
             <DataAnnotationsValidator />
-            <FieldErrorSummary @ref="_summary" EditContext="@FormContext" Fields="@FieldIds" />
+            <ErrorSummary Title="There is a problem" Items="_summaryItems" id="error-summary" class="border border-danger rounded p-3 mb-3" />
 
             <div class="mb-3">
                 <label for="content-key" class="form-label">Content key</label>
@@ -102,8 +103,8 @@
 
 @code {
     private PublicContentDto[] _content = [];
-    private FieldErrorSummary? _summary;
-    private bool _focusSummary;
+    private IReadOnlyList<ErrorSummaryItem> _summaryItems = [];
+    private ServerValidationBinder? _binder;
     private EditContext? _editContext;
 
     private static readonly IReadOnlyList<KeyValuePair<string, string>> FieldIds =
@@ -114,20 +115,27 @@
 
     private static readonly string[] FieldNames = [.. FieldIds.Select(field => field.Key)];
 
-    private EditContext FormContext =>
-        _editContext is not null && ReferenceEquals(_editContext.Model, _model) ? _editContext : _editContext = new EditContext(_model);
+    private static readonly ServerValidationOptions ServerValidation = new(FieldNames, "This value is not valid. Check it and try again.");
 
-    private void RequestSummaryFocus() => _focusSummary = true;
-
-    /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private EditContext FormContext
     {
-        if (_focusSummary && _summary is not null)
+        get
         {
-            _focusSummary = false;
-            await _summary.FocusAsync();
+            if (_editContext is null || !ReferenceEquals(_editContext.Model, _model))
+            {
+                _binder?.Dispose();
+                _editContext = new EditContext(_model);
+                _binder = new ServerValidationBinder(_editContext, ServerValidation);
+            }
+
+            return _editContext;
         }
     }
+
+    private void ShowSummary() => _summaryItems = ValidationSummaryItems.From(FormContext, FieldIds);
+
+    /// <inheritdoc />
+    public void Dispose() => _binder?.Dispose();
 
     private PublicContentFormModel _model = new();
     private static readonly PublicContentLanguageDto[] SupportedLanguages = Enum
@@ -194,7 +202,7 @@
         }
         else
         {
-            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("load public content"));
+            _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load public content")).For(outcome.Kind);
             _content = [];
         }
 
@@ -213,10 +221,7 @@
             return;
         }
 
-        _errorMessage = HttpOutcomeUserMessage.For(
-            outcome.Kind,
-            UserFacingErrorMessage.ForOperation("load public content"),
-            "Public content entry was not found.");
+        _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load public content")).With(HttpOutcomeKind.NotFound, "Public content entry was not found.").For(outcome.Kind);
     }
 
     private void GenerateMissingDraft()
@@ -269,7 +274,7 @@
 
     private async Task SaveContent()
     {
-        EditContextValidationHelper.ApplyValidationErrors(FormContext, new Dictionary<string, string[]>());
+        _summaryItems = [];
         _saving = true;
         _errorMessage = null;
         _successMessage = null;
@@ -289,18 +294,17 @@
 
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem)
             {
-                if (!EditContextValidationHelper.ApplyKnownFieldErrors(FormContext, outcome.ValidationErrors, FieldNames))
+                if (!ShowServerFieldErrors(outcome.ValidationErrors))
                 {
                     _errorMessage = UserFacingErrorMessage.ForOperation("save public content");
                 }
 
-                _focusSummary = true;
                 return;
             }
 
             if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } saved })
             {
-                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("save public content"));
+                _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("save public content")).For(outcome.Kind);
                 return;
             }
 
@@ -312,6 +316,15 @@
         {
             _saving = false;
         }
+    }
+
+    // False when nothing could be shown on a field or some server text was withheld; the caller then shows fixed copy.
+    private bool ShowServerFieldErrors(IReadOnlyDictionary<string, string[]>? validationErrors)
+    {
+        _ = FormContext;
+        var result = _binder!.Apply(validationErrors);
+        _summaryItems = ValidationSummaryItems.From(FormContext, FieldIds);
+        return result is { HasUnplacedErrors: false, Issues.Count: > 0 };
     }
 
     private void ResetForm()

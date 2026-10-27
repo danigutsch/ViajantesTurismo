@@ -2,7 +2,7 @@ using PandaBear.AspNetCore;
 using Microsoft.AspNetCore.Components;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Management.Web.Helpers;
+using PandaBear.Blazor;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
@@ -70,7 +70,7 @@ public partial class Instructions
             }
             else
             {
-                _error = HttpOutcomeUserMessage.For(instructions.Kind, "Instruction revisions could not be loaded.");
+                _error = new HttpOutcomeMessages("Instruction revisions could not be loaded.").For(instructions.Kind);
             }
         }
         finally { _loading = false; }
@@ -185,7 +185,7 @@ public partial class Instructions
         }
         else
         {
-            _error = HttpOutcomeUserMessage.For(result.Kind, "The instruction action could not be completed. Check current terms, recipient verification and quote expiry.");
+            _error = new HttpOutcomeMessages("The instruction action could not be completed. Check current terms, recipient verification and quote expiry.").For(result.Kind);
         }
     }
 }

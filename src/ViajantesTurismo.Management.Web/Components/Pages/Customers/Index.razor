@@ -88,7 +88,7 @@ else
         }
 
         _customers = [];
-        _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Customers could not be loaded. Try again later.");
+        _errorMessage = new HttpOutcomeMessages("Customers could not be loaded. Try again later.").For(outcome.Kind);
     }
 
     private static string GetCustomerDetailsUrl(Guid customerId) => $"/customers/{customerId}";

@@ -225,6 +225,28 @@ public sealed class BrandingTests : BunitContext
     }
 
     [Fact]
+    public void Replaces_a_stack_trace_like_server_field_message_with_the_fixed_field_message()
+    {
+        // Arrange
+        brandingApi.ValidationErrors = new Dictionary<string, string[]>
+        {
+            ["PrimaryColor"] = ["System.NullReferenceException: Object reference not set\n   at Server.Internal.Handler() in /src/Secret.cs:line 42"]
+        };
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.FindAll(".validation-message").Count > 0, TimeSpan.FromSeconds(2));
+
+        // Assert
+        var fieldMessage = cut.Find("#branding-primary-color").ParentElement.ShouldNotBeNull().QuerySelector(".validation-message").ShouldNotBeNull();
+        fieldMessage.TextContent.ShouldBe("This value is not valid. Check it and try again.");
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("NullReferenceException", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Falls_back_to_fixed_copy_when_the_server_field_key_is_unknown()
     {
         // Arrange
@@ -256,7 +278,9 @@ public sealed class BrandingTests : BunitContext
         // Assert
         var summary = cut.Find("#error-summary");
         summary.GetAttribute("tabindex").ShouldBe("-1");
-        summary.GetAttribute("aria-labelledby").ShouldBe("error-summary-title");
+        var heading = cut.Find("#error-summary h2");
+        summary.GetAttribute("aria-labelledby").ShouldBe(heading.Id);
+        heading.TextContent.ShouldBe("There is a problem");
         var link = cut.Find("#error-summary a");
         link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#branding-primary-color", StringComparison.Ordinal);
         link.TextContent.ShouldBe("Use a safe color.");

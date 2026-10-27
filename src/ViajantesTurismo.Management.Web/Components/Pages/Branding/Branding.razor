@@ -1,5 +1,6 @@
 @page "/catalog/theme"
 @page "/branding"
+@implements IDisposable
 @using System.ComponentModel.DataAnnotations
 @using System.Net
 @using PandaBear.HttpClients
@@ -30,9 +31,9 @@
 }
 else
 {
-    <EditForm EditContext="@FormContext" OnValidSubmit="@SaveBranding" OnInvalidSubmit="@RequestSummaryFocus" FormName="brandingEditor">
+    <EditForm EditContext="@FormContext" OnValidSubmit="@SaveBranding" OnInvalidSubmit="@ShowSummary" FormName="brandingEditor">
         <DataAnnotationsValidator />
-        <FieldErrorSummary @ref="_summary" EditContext="@FormContext" Fields="@FieldIds" />
+        <ErrorSummary Title="There is a problem" Items="_summaryItems" id="error-summary" class="border border-danger rounded p-3 mb-3" />
 
         <fieldset class="border rounded p-3 mb-3">
             <legend class="float-none w-auto px-2 h5">Brand</legend>
@@ -106,8 +107,8 @@ else
     private static readonly IReadOnlyList<string> AllowedFontFamilies = BrandingFontFamilies.All;
 
     private BrandingFormModel _model = BrandingFormModel.Default();
-    private FieldErrorSummary? _summary;
-    private bool _focusSummary;
+    private IReadOnlyList<ErrorSummaryItem> _summaryItems = [];
+    private ServerValidationBinder? _binder;
     private EditContext? _editContext;
 
     private static readonly IReadOnlyList<KeyValuePair<string, string>> FieldIds =
@@ -124,20 +125,27 @@ else
 
     private static readonly string[] FieldNames = [.. FieldIds.Select(field => field.Key)];
 
-    private EditContext FormContext =>
-        _editContext is not null && ReferenceEquals(_editContext.Model, _model) ? _editContext : _editContext = new EditContext(_model);
+    private static readonly ServerValidationOptions ServerValidation = new(FieldNames, "This value is not valid. Check it and try again.");
 
-    private void RequestSummaryFocus() => _focusSummary = true;
-
-    /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private EditContext FormContext
     {
-        if (_focusSummary && _summary is not null)
+        get
         {
-            _focusSummary = false;
-            await _summary.FocusAsync();
+            if (_editContext is null || !ReferenceEquals(_editContext.Model, _model))
+            {
+                _binder?.Dispose();
+                _editContext = new EditContext(_model);
+                _binder = new ServerValidationBinder(_editContext, ServerValidation);
+            }
+
+            return _editContext;
         }
     }
+
+    private void ShowSummary() => _summaryItems = ValidationSummaryItems.From(FormContext, FieldIds);
+
+    /// <inheritdoc />
+    public void Dispose() => _binder?.Dispose();
 
     private string? _entityTag;
     private bool _loading = true;
@@ -163,7 +171,7 @@ else
 
     private async Task SaveBranding()
     {
-        EditContextValidationHelper.ApplyValidationErrors(FormContext, new Dictionary<string, string[]>());
+        _summaryItems = [];
         _saving = true;
         _errorMessage = null;
         _successMessage = null;
@@ -178,13 +186,11 @@ else
         var saved = await BrandingApi.SaveSettings(_model.ToDto(), _entityTag, CancellationToken.None);
         if (saved.Kind != HttpOutcomeKind.Succeeded)
         {
-            if (saved.Kind != HttpOutcomeKind.ValidationProblem
-                || !EditContextValidationHelper.ApplyKnownFieldErrors(FormContext, saved.ValidationErrors, FieldNames))
+            if (saved.Kind != HttpOutcomeKind.ValidationProblem || !ShowServerFieldErrors(saved.ValidationErrors))
             {
                 _errorMessage = SaveErrorMessage(saved);
             }
 
-            _focusSummary = true;
             _saving = false;
             return;
         }
@@ -202,6 +208,15 @@ else
         }
 
         _saving = false;
+    }
+
+    // False when nothing could be shown on a field or some server text was withheld; the caller then shows fixed copy.
+    private bool ShowServerFieldErrors(IReadOnlyDictionary<string, string[]>? validationErrors)
+    {
+        _ = FormContext;
+        var result = _binder!.Apply(validationErrors);
+        _summaryItems = ValidationSummaryItems.From(FormContext, FieldIds);
+        return result is { HasUnplacedErrors: false, Issues.Count: > 0 };
     }
 
     private static string SaveErrorMessage(HttpOutcome<BrandingManagementSettingsDto> outcome)

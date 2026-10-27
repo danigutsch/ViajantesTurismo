@@ -1,3 +1,4 @@
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
@@ -14,9 +15,11 @@ public sealed class ReviewPageTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
     private readonly CustomerCreationState _state = new();
+    private readonly RecordingUiFailureReporter _failures = new();
 
     public ReviewPageTests()
     {
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(_state);
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }
@@ -42,6 +45,7 @@ public sealed class ReviewPageTests : BunitContext
             alert.TextContent.ShouldContain("We couldn't create the customer right now. Please try again.", StringComparison.Ordinal);
             alert.TextContent.ShouldNotContain("Backend is on vacation", StringComparison.Ordinal);
         });
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "customers.create.submit")]);
     }
 
     [Fact]

@@ -3,6 +3,7 @@
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 
+@inject IUiFailureReporter Failures
 @inject CustomerCreationState State
 @inject ICustomersApiClient ApiClient
 @inject NavigationManager Navigation
@@ -272,8 +273,9 @@
 
             Navigation.NavigateTo(outcome.Location is null ? "/customers" : GetCustomerLocation(outcome.Location));
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "customers.create.submit");
             _errorMessage = UserFacingErrorMessage.ForOperation("create the customer");
         }
         finally

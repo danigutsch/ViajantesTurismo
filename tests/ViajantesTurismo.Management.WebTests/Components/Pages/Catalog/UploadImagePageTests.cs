@@ -1,3 +1,4 @@
+using PandaBear.Blazor;
 using PandaBear.HttpClients;
 using System.Globalization;
 using CatalogContractConstants = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants;
@@ -14,6 +15,7 @@ public sealed class UploadImagePageTests : BunitContext
 
     public UploadImagePageTests()
     {
+        Services.AddUiFailureReporting();
         Services.AddSingleton<ICatalogToursApiClient>(catalogApi);
     }
 

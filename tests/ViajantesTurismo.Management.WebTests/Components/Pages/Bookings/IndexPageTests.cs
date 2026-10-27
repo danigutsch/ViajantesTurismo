@@ -1,3 +1,4 @@
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Bookings.Index;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
@@ -5,9 +6,11 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 public class IndexPageTests : BunitContext
 {
     private readonly FakeBookingsApiClient _fakeBookingsApi;
+    private readonly RecordingUiFailureReporter _failures = new();
 
     public IndexPageTests()
     {
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
         JSInterop.Mode = JSRuntimeMode.Loose;
 
         _fakeBookingsApi = new FakeBookingsApiClient();
@@ -35,6 +38,7 @@ public class IndexPageTests : BunitContext
         alert.TextContent.ShouldContain("We couldn't load bookings right now. Please try again.", StringComparison.Ordinal);
         alert.TextContent.ShouldNotContain("database password leaked", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Bookings Overview", StringComparison.Ordinal);
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.index.load")]);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 @page "/bookings/{id:guid}"
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
+@inject IUiFailureReporter Failures
 @inject IBookingsApiClient BookingsApi
 @inject IDocumentsApiClient DocumentsApi
 @inject NavigationManager Navigation
@@ -202,13 +203,12 @@
             }
             else
             {
-                _loadErrorMessage = HttpOutcomeUserMessage.For(
-                    outcome.Kind,
-                    UserFacingErrorMessage.ForOperation("load the booking"));
+                _loadErrorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load the booking")).For(outcome.Kind);
             }
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.details.load");
             _loadErrorMessage = UserFacingErrorMessage.ForOperation("load the booking");
         }
         finally
@@ -241,10 +241,11 @@
                 return;
             }
 
-            _documentError = HttpOutcomeUserMessage.For(outcome.Kind, "The contract draft could not be generated.");
+            _documentError = new HttpOutcomeMessages("The contract draft could not be generated.").For(outcome.Kind);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Failures.Report(exception, "bookings.details.contract-draft");
             _documentError = "The contract draft could not be generated.";
         }
         finally

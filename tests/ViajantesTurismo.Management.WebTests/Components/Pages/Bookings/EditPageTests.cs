@@ -1,3 +1,4 @@
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
@@ -16,9 +17,11 @@ public sealed class EditPageTests : BunitContext
 
     private readonly FakeBookingsApiClient _fakeBookingsApi = new();
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();
+    private readonly RecordingUiFailureReporter _failures = new();
 
     public EditPageTests()
     {
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(TimeProvider.System);
         Services.AddSingleton<IBookingsApiClient>(_fakeBookingsApi);
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
@@ -54,6 +57,7 @@ public sealed class EditPageTests : BunitContext
         var alert = cut.Find(".alert.alert-danger");
         alert.TextContent.ShouldContain("We couldn't load the booking right now. Please try again.", StringComparison.Ordinal);
         alert.TextContent.ShouldNotContain("SQL timeout", StringComparison.Ordinal);
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.edit.load")]);
     }
 
     [Fact]

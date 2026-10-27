@@ -140,7 +140,7 @@
         {
             var outcome = await AccountsApi.List(CancellationToken.None);
             if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } accounts }) { _accounts = accounts; }
-            else { _error = HttpOutcomeUserMessage.For(outcome.Kind, "Payment accounts are unavailable. Please try again."); }
+            else { _error = new HttpOutcomeMessages("Payment accounts are unavailable. Please try again.").For(outcome.Kind); }
         }
         finally { _loading = false; }
     }
@@ -149,7 +149,7 @@
         _error = null;
         var outcome = await AccountsApi.GetSensitiveDetails(account.Id, CancellationToken.None);
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } details }) { _editing = details.Account; _model = PaymentAccountFormModel.From(details); }
-        else { _error = HttpOutcomeUserMessage.For(outcome.Kind, "Recipient details could not be loaded."); }
+        else { _error = new HttpOutcomeMessages("Recipient details could not be loaded.").For(outcome.Kind); }
     }
     private void CancelEdit() { _model = new(); _editing = null; }
     private void Select(GetPaymentAccountDto account, string action) { _selected = account; _action = action; _confirmed = false; _attested = false; }
@@ -203,7 +203,7 @@
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: not null }) { CancelEdit(); CancelAction(); await Load(); }
         else
         {
-            _error = HttpOutcomeUserMessage.For(outcome.Kind, "The account action could not be completed. Reload before confirming again.");
+            _error = new HttpOutcomeMessages("The account action could not be completed. Reload before confirming again.").For(outcome.Kind);
             if (outcome.Kind == HttpOutcomeKind.Conflict) { CancelAction(); CancelEdit(); await Load(); _error = "The account changed. Review its current revision before confirming again."; }
         }
     }

@@ -111,7 +111,7 @@
         }
 
         _customers = [];
-        _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Customers could not be loaded for companion selection.");
+        _errorMessage = new HttpOutcomeMessages("Customers could not be loaded for companion selection.").For(outcome.Kind);
     }
 
     private void HandleValidSubmit()

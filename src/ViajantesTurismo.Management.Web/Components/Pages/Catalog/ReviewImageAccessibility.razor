@@ -104,7 +104,7 @@ else
         }
         else
         {
-            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "Images could not be loaded. Try again later.");
+            _errorMessage = new HttpOutcomeMessages("Images could not be loaded. Try again later.").For(outcome.Kind);
         }
 
         _loading = false;
@@ -128,10 +128,7 @@ else
                 CancellationToken.None);
             if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } draft })
             {
-                _errorMessage = HttpOutcomeUserMessage.For(
-                    outcome.Kind,
-                    "Accessibility draft could not be generated. Try again later.",
-                    "Image was not found.");
+                _errorMessage = new HttpOutcomeMessages("Accessibility draft could not be generated. Try again later.").With(HttpOutcomeKind.NotFound, "Image was not found.").For(outcome.Kind);
                 return;
             }
 
@@ -174,10 +171,7 @@ else
 
             if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } updated })
             {
-                _errorMessage = HttpOutcomeUserMessage.For(
-                    outcome.Kind,
-                    "Accessibility text could not be saved. Try again later.",
-                    "Image was not found.");
+                _errorMessage = new HttpOutcomeMessages("Accessibility text could not be saved. Try again later.").With(HttpOutcomeKind.NotFound, "Image was not found.").For(outcome.Kind);
                 return;
             }
 
@@ -201,7 +195,7 @@ else
         }
         else
         {
-            _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, "The next image could not be loaded. Refresh the page and try again.");
+            _errorMessage = new HttpOutcomeMessages("The next image could not be loaded. Refresh the page and try again.").For(outcome.Kind);
         }
     }
 

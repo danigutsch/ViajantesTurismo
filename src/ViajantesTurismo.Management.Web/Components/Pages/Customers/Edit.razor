@@ -406,7 +406,7 @@ else
             }
             else
             {
-                _errorMessage = HttpOutcomeUserMessage.For(customerOutcome.Kind, UserFacingErrorMessage.ForOperation("load the customer"));
+                _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load the customer")).For(customerOutcome.Kind);
                 _loadFailed = true;
             }
 
@@ -461,7 +461,7 @@ else
             var outcome = await CustomersApi.UpdateCustomer(Id, customer, CancellationToken.None);
             if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _errorMessage = HttpOutcomeUserMessage.For(outcome.Kind, UserFacingErrorMessage.ForOperation("update the customer"));
+                _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("update the customer")).For(outcome.Kind);
                 return;
             }
 

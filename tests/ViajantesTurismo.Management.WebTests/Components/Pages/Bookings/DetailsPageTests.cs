@@ -1,3 +1,5 @@
+using PandaBear.Blazor;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Microsoft.AspNetCore.Components;
 using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
@@ -11,9 +13,11 @@ public sealed class DetailsPageTests : BunitContext
 {
     private readonly FakeBookingsApiClient _fakeBookingsApi = new();
     private readonly FakeDocumentsApiClient _fakeDocumentsApi = new();
+    private readonly RecordingUiFailureReporter _failures = new();
 
     public DetailsPageTests()
     {
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(TimeProvider.System);
         var authorization = AddAuthorization();
         authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
@@ -41,6 +45,7 @@ public sealed class DetailsPageTests : BunitContext
         alert.TextContent.ShouldContain("We couldn't load the booking right now. Please try again.", StringComparison.Ordinal);
         alert.TextContent.ShouldNotContain("Booking not found.", StringComparison.Ordinal);
         alert.TextContent.ShouldNotContain("connection string leaked", StringComparison.Ordinal);
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "bookings.details.load")]);
     }
 
     [Fact]
@@ -227,6 +232,7 @@ public sealed class DetailsPageTests : BunitContext
         bookingsApi.AddBooking(booking);
         context.Services.AddSingleton<IBookingsApiClient>(bookingsApi);
         context.Services.AddSingleton<IDocumentsApiClient>(new FakeDocumentsApiClient());
+        context.Services.AddUiFailureReporting();
 
         // Act
         var cut = context.Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));

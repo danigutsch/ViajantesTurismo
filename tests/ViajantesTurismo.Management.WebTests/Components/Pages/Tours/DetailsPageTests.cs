@@ -170,6 +170,49 @@ public class DetailsPageTests : BunitContext
     [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Create_booking_validation_problem_withholds_unknown_and_hostile_server_text()
+    {
+        // Arrange
+        const string Hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42";
+        var tour = BuildTourDto();
+        var customer = BuildCustomerDto();
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
+        _fakeCustomersApi.AddCustomer(customer);
+        _fakeBookingsApi.SetCreateBookingOutcome(new HttpOutcome
+        {
+            Kind = HttpOutcomeKind.ValidationProblem,
+            StatusCode = HttpStatusCode.BadRequest,
+            ValidationErrors = new Dictionary<string, string[]>
+            {
+                ["internalRuleSet"] = [Hostile],
+                [nameof(BookingFormModel.CustomerId)] = [Hostile]
+            }
+        });
+        var cut = Render<Details>(parameters => parameters.Add(p => p.Id, tour.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("button:contains('Add Booking')"));
+        await cut.InvokeAsync(() => cut.Find("button:contains('Add Booking')").Click());
+        await cut.WaitForAssertionAsync(() => cut.FindComponent<BookingCreateForm>());
+        var form = cut.FindComponent<BookingCreateForm>();
+        form.Instance.Model.CustomerId = customer.Id;
+        form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
+
+        // Act
+        await cut.InvokeAsync(() => form.Find("form").Submit());
+
+        // Assert
+        await cut.WaitForAssertionAsync(() =>
+        {
+            cut.Markup.ShouldContain("Failed to create booking. Please try again.", StringComparison.Ordinal);
+            cut.Markup.ShouldContain("This value is not valid. Check it and try again.", StringComparison.Ordinal);
+        });
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_non_success_outcome_shows_sanitized_error()
     {
         // Arrange
