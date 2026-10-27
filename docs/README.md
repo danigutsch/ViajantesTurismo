@@ -117,4 +117,5 @@ outdated behavior.
 - [SharedKernel observability/runtime grouping](SHAREDKERNEL_OBSERVABILITY_RUNTIME_GROUPING.md)
 - [Vertical slice migration plan](vertical-slice-migration-plan.md)
 - [Local tool security](local-tool-security.md)
+- [Error handling and OWASP alignment](security/error-handling-and-owasp.md)
 - [Line endings](LINE_ENDINGS.md)
