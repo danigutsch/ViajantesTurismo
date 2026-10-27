@@ -15,8 +15,8 @@ Use this project when the thing being protected is the published contract itself
 ## What does not belong here
 
 - database-backed API behavior coverage
-- request lifecycle or persistence assertions that belong in `ViajantesTurismo.Admin.IntegrationTests`
-- browser or hosted UI flows that belong in `ViajantesTurismo.Admin.SystemTests` or `ViajantesTurismo.Admin.UiIntegrationTests`
+- request lifecycle or persistence assertions that belong in the Admin API tests in `ViajantesTurismo.HostedTests`
+- browser or hosted UI flows that belong in the Admin system tests in `ViajantesTurismo.HostedTests` or `ViajantesTurismo.Admin.UiIntegrationTests`
 - broad end-to-end coverage of every Admin endpoint family in one test
 
 ## Admin seam and entrypoints

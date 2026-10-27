@@ -446,6 +446,11 @@
       "roadmapItem": "RM-202"
     },
     {
+      "issue": 1024,
+      "roadmapItem": "RM-205",
+      "closeReason": "NOT_PLANNED"
+    },
+    {
       "issue": 1034,
       "roadmapItem": "RM-214"
     },
