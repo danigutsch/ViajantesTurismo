@@ -23,7 +23,7 @@ specialized docs instead of repeating the same policy.
 | Roadmap and prioritization | [Roadmap](../roadmap/README.md) | [Roadmap maintenance workflow](../.github/workflows/roadmap-maintenance.yml) |
 | CI, release, and contribution workflow | [Contributing](../CONTRIBUTING.md) | [CI overview](ci/overview.md), [CI governance](ci/governance.md), [Pull request template](pull_request_template.md) |
 | FOSS compliance | [FOSS compliance](FOSS_COMPLIANCE.md) | [SharedKernel consumption](SHAREDKERNEL_CONSUMPTION.md), [Local tool security](local-tool-security.md) |
-| Production operations | [Production readiness and operations](operations/production-readiness.md) | [Document retention and legal-hold proposal](operations/document-retention-and-legal-hold.md), [Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md) |
+| Production operations | [Production readiness and operations](operations/production-readiness.md) | [Document retention and legal-hold policy](operations/document-retention-and-legal-hold.md), [Runtime wiring and deployment mapping](architecture/runtime-wiring-and-deployment.md) |
 
 <!-- doc-content:documentation-index-table:end -->
 
@@ -100,7 +100,7 @@ outdated behavior.
 - [Use cases, source boundaries, and first-slice status](generated-travel-documents.md)
 - [Intermediate format decision](adr/20260710-generated-travel-document-format-and-workflow.md)
 - [Review and finalization workflow](generated-travel-documents.md#manual-review-and-finalization-workflow)
-- [Retention and legal-hold proposal](operations/document-retention-and-legal-hold.md)
+- [Retention and legal-hold policy](operations/document-retention-and-legal-hold.md)
 
 ## Research and operational design
 
@@ -111,7 +111,7 @@ outdated behavior.
 ## Maintenance notes
 
 - [Production readiness and operations](operations/production-readiness.md)
-- [Document retention and legal-hold policy proposal](operations/document-retention-and-legal-hold.md)
+- [Document retention and legal-hold policy](operations/document-retention-and-legal-hold.md)
 - [Analyzer hardening roadmap](ANALYZER_HARDENING_ROADMAP.md)
 - [DDD analyzer rule catalog](DDD_ANALYZER_RULE_CATALOG.md)
 - [SharedKernel observability/runtime grouping](SHAREDKERNEL_OBSERVABILITY_RUNTIME_GROUPING.md)

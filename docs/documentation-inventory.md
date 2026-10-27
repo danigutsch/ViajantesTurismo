@@ -24,8 +24,8 @@ historical ADRs are classified separately. This is a curated disposition invento
 | CI and dependencies | [CI index](ci/overview.md), [Quality gates](ci/quality-gates.md), [Contributing](../CONTRIBUTING.md#dependency-graph-and-lock-file-maintenance) | Keep CODE_QUALITY as tool invocation/reference; link CI severity, warning exceptions, and pin review to their canonical CI guides |
 | Community and support | [Support](../SUPPORT.md), [Security disclosure](../SECURITY.md), [FOSS compliance](FOSS_COMPLIANCE.md#community-and-support-docs) | Keep public questions separate from private vulnerability reporting; community conduct remains explicitly deferred pending a maintained policy |
 | Privacy and security | [Privacy classification](privacy-classification.md), [Threat model](security/threat-model.md), [Security baseline](security/security-baseline.md) | Keep operational safeguards near workflows; do not invent a second legal or sensitive-field catalogue in feature docs |
-| Generated travel documents | [Travel document specification](generated-travel-documents.md) and [ADR-036](adr/20260710-generated-travel-document-format-and-workflow.md) | Keep use cases/current-vs-target delivery in the specification; keep format rationale in the ADR and pending legal policy in its own proposal |
-| Operations and retention | [Production readiness](operations/production-readiness.md), [Retention proposal](operations/document-retention-and-legal-hold.md) | Keep approval status explicit; technical defaults are not legal approval. Link runbooks from the operations entrypoint |
+| Generated travel documents | [Travel document specification](generated-travel-documents.md) and [ADR-036](adr/20260710-generated-travel-document-format-and-workflow.md) | Keep use cases/current-vs-target delivery in the specification; keep format rationale in the ADR and retention rules in the retention policy |
+| Operations and retention | [Production readiness](operations/production-readiness.md), [Retention policy](operations/document-retention-and-legal-hold.md) | Keep policy status explicit; the policy is not legal advice. Link runbooks from the operations entrypoint |
 | Generation and documentation governance | [Governance](DOCUMENTATION_GOVERNANCE.md), [Diagram inventory](architecture/generated-diagram-roadmap.md) | Keep source/generator/refresh ownership with outputs; manual narrative lives outside generated markers |
 | Measurements and research | [Stream baselines](file-and-stream-benchmark-baselines.md), [Metrics proposal](architecture/coupling-and-cohesion-metrics.md), [Diagnostics proposal](ci/test-diagnostics.md) | Keep measured results separate from proposed collection. Do not repeat numeric results without version/input context |
 | SharedKernel library guidance | Existing packaging and package READMEs | Keep as referenced library-owned material; this application documentation PR neither consolidates nor edits those sources |
@@ -59,7 +59,7 @@ work with its existing owner rather than treating navigation as completion.
 Document format/use-case planning can complete with the linked specification and ADR. Staff
 review/finalization implementation remains a separate feature: permissions, identity, change-request
 reasons, stale-source checks, edit constraints, and transition tests must actually pass before that
-work closes. Retention/legal-hold approval is also not granted by reorganizing its documentation.
+work closes. Reorganizing documentation does not change the retention policy.
 No duplicate follow-up issue is required by this inventory.
 
 ## Maintenance

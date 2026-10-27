@@ -97,7 +97,7 @@ remove financial and recipient attributes.
 ### Encryption configuration
 
 The rollout flag is owned by the Admin application maintainers and Operations and defaults to
-disabled. Its cleanup review is triggered after encryption, migration and retention/privacy gates
+disabled. Its cleanup review is triggered after encryption and migration
 have been verified in production; removing it must preserve all authorization and delivery checks.
 Provision these settings through the deployment's existing secret
 configuration; do not commit certificate passwords or private keys:
@@ -133,12 +133,10 @@ single Admin lifecycle, shared drafts, optional review, permissions, EUR/BRL set
 restart and key recovery in the target environment. The migration refuses rollback that would erase
 new financial records; use a reviewed forward recovery or restore procedure.
 
-The existing provisional document behavior is preserved: unfinalized drafts expire after 30 days,
-metadata audits use the existing 24-month behavior, and finalized-artifact retention remains subject
-to policy approval. Payment snapshots follow their document's provisional draft retention. The
-[production retention/privacy gate](operations/document-retention-and-legal-hold.md#production-release-gate)
-remains mandatory before production delivery involving personal data. This implementation does not
-approve retention periods or claim GDPR/LGPD compliance.
+Document retention follows the accepted
+[retention policy](operations/document-retention-and-legal-hold.md): unfinalized drafts expire after
+30 days, metadata audits after 24 months, and finalized artifacts are kept indefinitely. Payment
+snapshots follow their document's retention. This implementation makes no GDPR/LGPD compliance claim.
 
 ## Follow-ups
 

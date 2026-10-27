@@ -28,7 +28,7 @@ these source/test owners before widening the slice:
 | Draft idempotency, review/finalization commands, lineage | `Admin.Application/Documents/`; `Admin.UnitTests/Application/Documents/`; `Admin.UnitTests/Documents/DocumentLineageLifecycleTests.cs` | Do not close review/retention hardening from this plan alone; verify reviewer identity, reasons, stale-source behavior, and denied transitions against current tests |
 | Rendering | `Admin.Application/Documents/DocumentArtifactRenderer.cs` maps to semantic HTML | PDF renderer selection, tagged PDF output, and assistive-technology verification are pending; HTML structure does not prove PDF conformance |
 | Branding snapshot | `Admin.Application/Documents/DocumentBrandingSnapshotFactory.cs` currently captures values via `IBrandingApiClient` and hashes them | ADR-040's Admin-local revisioned projection and recovery fence are planned, not implemented by this document |
-| Delivery | Admin document endpoints, contract-owned client, Management download proxy | Governed object storage, retention exceptions, legal hold, and production privacy approval remain separate gates |
+| Delivery | Admin document endpoints, contract-owned client, Management download proxy | Governed object storage and legal hold are separate work; see the retention policy |
 
 Paths in this table are relative to `src/ViajantesTurismo.` or `tests/ViajantesTurismo.` as
 appropriate. Keep business document rendering separate from repository documentation generation:
@@ -243,14 +243,11 @@ authorized UI responses.
 
 ### Retention
 
-The [document retention and legal-hold policy proposal](operations/document-retention-and-legal-hold.md)
-is **pending legal review and not approved**. Current 30-day draft and 24-month audit behaviors are
-provisional technical behavior, not GDPR/LGPD minima or approved retention decisions.
-
-Unfinalized drafts currently become purge-eligible after 30 days. Finalized, superseded, and voided
-artifacts have no automatic retention expiry or deletion endpoint. No legal-hold workflow exists.
-Product and counsel must approve the lifecycle, exceptions, hold authority, and backup/replica rules
-before these defaults are treated as production policy.
+The [document retention and legal-hold policy](operations/document-retention-and-legal-hold.md)
+(`DOC-RET-1.0`) is accepted. Unfinalized drafts become purge-eligible after 30 days and audit records
+after 24 months. Finalized, superseded, and voided artifacts are kept indefinitely, with no
+automatic expiry or deletion endpoint. No legal-hold workflow exists, so finalized artifacts must not
+be deleted until it does. The policy makes no GDPR/LGPD compliance claim.
 
 ### Audit
 
