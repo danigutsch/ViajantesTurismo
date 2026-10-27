@@ -137,7 +137,7 @@ Bike rental"/>
     private ServerValidationBinder _binder;
     private static readonly ServerValidationOptions ServerValidation = new(
         typeof(TourFormModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).Select(property => property.Name),
-        "This value is not valid. Check it and try again.");
+        UserFacingErrorMessage.InvalidFieldValue);
     private bool _isSubmitting;
     private bool _success;
     private string? _errorMessage;

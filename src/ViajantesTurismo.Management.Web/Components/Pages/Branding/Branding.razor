@@ -125,7 +125,7 @@ else
 
     private static readonly string[] FieldNames = [.. FieldIds.Select(field => field.Key)];
 
-    private static readonly ServerValidationOptions ServerValidation = new(FieldNames, "This value is not valid. Check it and try again.");
+    private static readonly ServerValidationOptions ServerValidation = new(FieldNames, UserFacingErrorMessage.InvalidFieldValue);
 
     private EditContext FormContext
     {

@@ -135,7 +135,7 @@ else if (_errorMessage is not null)
 
     private static readonly string[] FieldNames = [.. FieldIds.Select(field => field.Key)];
 
-    private static readonly ServerValidationOptions ServerValidation = new(FieldNames, "This value is not valid. Check it and try again.");
+    private static readonly ServerValidationOptions ServerValidation = new(FieldNames, UserFacingErrorMessage.InvalidFieldValue);
 
     private void ShowSummary() => _summaryItems = ValidationSummaryItems.From(_editContext!, FieldIds);
 

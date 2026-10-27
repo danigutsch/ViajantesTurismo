@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using PandaBear.Blazor;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Management.Web.Helpers;
 
 namespace ViajantesTurismo.Management.Web.Components.Shared;
 
@@ -16,7 +17,7 @@ public class BookingFormModel : IValidatableObject
         get;
     } = new(
         typeof(BookingFormModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).Select(property => property.Name),
-        "This value is not valid. Check it and try again.");
+        UserFacingErrorMessage.InvalidFieldValue);
 
     public Guid? TourId
     {
