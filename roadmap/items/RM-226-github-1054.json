@@ -3,16 +3,10 @@
   "id": "RM-226",
   "title": "Enforce case-insensitive JSON source-generation contexts",
   "type": "enabler",
-  "status": "proposed",
-  "order": 418,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1054 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],

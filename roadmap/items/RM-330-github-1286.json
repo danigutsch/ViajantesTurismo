@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-330",
+  "title": "Enforce a cyclomatic complexity threshold with native analyzers",
+  "type": "issue",
+  "status": "proposed",
+  "order": 438,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1286 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "ci"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1286"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1286,
+      "nodeId": "I_kwDOQAEVW88AAAABaJGxPw"
+    }
+  }
+}

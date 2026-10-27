@@ -4,7 +4,7 @@
   "title": "Define diagram metadata conventions for trust boundaries",
   "type": "enabler",
   "status": "proposed",
-  "order": 377,
+  "order": 376,
   "theme": "repo-operations",
   "outcome": "GitHub issue #871 is canonically represented from the reconciliation manifest.",
   "scoring": {

@@ -5,7 +5,7 @@
   "title": "Approve document and audit retention and legal-hold policy",
   "type": "documentation",
   "status": "proposed",
-  "order": 358,
+  "order": 357,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1115 is canonically represented from the reconciliation manifest.",
   "scoring": {

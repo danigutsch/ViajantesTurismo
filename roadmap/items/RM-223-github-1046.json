@@ -3,16 +3,10 @@
   "id": "RM-223",
   "title": "Remove production sitemap validation retry after repository reorganization",
   "type": "issue",
-  "status": "proposed",
-  "order": 485,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1046 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 2,
-    "confidence": 0.1,
-    "effort": 2
-  },
   "blockedBy": [
     "RM-203"
   ],

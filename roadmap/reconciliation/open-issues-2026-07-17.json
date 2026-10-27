@@ -1,7 +1,7 @@
 {
   "repository": "danigutsch/ViajantesTurismo",
-  "retrievedOn": "2026-10-25",
-  "repositoryCommit": "7d094502e5dbf2f48fc03250acd76eb39e9678f0",
+  "retrievedOn": "2026-10-27",
+  "repositoryCommit": "1a2be50958553a2373b8e8aec5f930bc8f20938c",
   "source": "GitHub GraphQL repository.issues snapshot with parent, subissue, label, and blocker metadata.",
   "ruleVersion": "structural-parent-subissue-blocker-v1",
   "mechanicalPriorityOverride": {
@@ -31,7 +31,7 @@
     "Only exact GitHub blocker relationships may become canonical blockedBy and blocks links.",
     "Only an explicit closedItemTransitions entry can move an imported open item to closed support."
   ],
-  "snapshotDigest": "23ccf62903b29b5c8ee39266e7a9a5eaa42ac828ac135fbcf6ceb4882f663a3d",
+  "snapshotDigest": "9d1be22006117b3ae9af914d5f9046adbfbe735c405af30580b184f0844250c1",
   "blockerEdges": [
     {
       "blocker": 484,
@@ -103,7 +103,7 @@
       "blocker": 1022,
       "blockerState": "OPEN",
       "blocked": 1046,
-      "blockedState": "OPEN"
+      "blockedState": "CLOSED"
     },
     {
       "blocker": 1058,
@@ -183,7 +183,7 @@
       "blocker": {
         "repository": "danigutsch/PandaBear.SharedKernel",
         "issue": 24,
-        "state": "OPEN"
+        "state": "CLOSED"
       },
       "blocked": {
         "repository": "danigutsch/ViajantesTurismo",
@@ -195,7 +195,7 @@
       "blocker": {
         "repository": "danigutsch/PandaBear.SharedKernel",
         "issue": 25,
-        "state": "OPEN"
+        "state": "CLOSED"
       },
       "blocked": {
         "repository": "danigutsch/ViajantesTurismo",
@@ -354,6 +354,10 @@
       "roadmapItem": "RM-140"
     },
     {
+      "issue": 904,
+      "roadmapItem": "RM-141"
+    },
+    {
       "issue": 910,
       "roadmapItem": "RM-147"
     },
@@ -470,9 +474,17 @@
       "roadmapItem": "RM-233"
     },
     {
+      "issue": 1076,
+      "roadmapItem": "RM-234"
+    },
+    {
       "issue": 1077,
       "roadmapItem": "RM-235",
       "closeReason": "NOT_PLANNED"
+    },
+    {
+      "issue": 1078,
+      "roadmapItem": "RM-236"
     },
     {
       "issue": 1079,
@@ -567,6 +579,10 @@
       "roadmapItem": "RM-305"
     },
     {
+      "issue": 1154,
+      "roadmapItem": "RM-306"
+    },
+    {
       "issue": 1201,
       "roadmapItem": "RM-307"
     },
@@ -609,10 +625,6 @@
       "roadmapItem": "RM-016"
     },
     {
-      "issue": 1053,
-      "roadmapItem": "RM-017"
-    },
-    {
       "issue": 1060,
       "roadmapItem": "RM-009"
     },
@@ -635,18 +647,15 @@
   ],
   "unmappedStructuralRoots": [
     342,
-    476,
     588,
     682,
     696,
     789,
-    904,
     948,
     983,
     1022,
     1037,
     1070,
-    1076,
     1113,
     1131,
     1225
@@ -654,7 +663,6 @@
   "needsHuman": [
     394,
     481,
-    489,
     524,
     538,
     573,
@@ -740,19 +748,12 @@
     1038,
     1039,
     1042,
-    1046,
     1051,
     1052,
-    1054,
     1057,
     1068,
     1071,
     1072,
-    1077,
-    1078,
-    1079,
-    1080,
-    1085,
     1090,
     1093,
     1094,
@@ -764,7 +765,6 @@
     1118,
     1127,
     1130,
-    1154,
     1218,
     1219,
     1220,
@@ -773,14 +773,21 @@
     1223,
     1224,
     1226,
-    1227
+    1227,
+    1271,
+    1273,
+    1281,
+    1282,
+    1285,
+    1286,
+    1287
   ],
   "integrity": {
-    "expectedIssueCount": 153,
-    "expectedDirectCanonicalPrimaryCount": 5,
+    "expectedIssueCount": 147,
+    "expectedDirectCanonicalPrimaryCount": 4,
     "expectedChildrenOfCanonicalPrimaryCount": 10,
-    "expectedUnmappedStructuralRootCount": 16,
-    "expectedNeedsHumanCount": 122,
+    "expectedUnmappedStructuralRootCount": 13,
+    "expectedNeedsHumanCount": 120,
     "expectedBlockerEdgeCount": 24,
     "expectedExternalBlockerEdgeCount": 2,
     "dispositionsAreDisjoint": true,

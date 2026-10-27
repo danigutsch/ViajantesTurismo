@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-327",
+  "title": "test(media): prove media proxies release upstream responses on client disconnect",
+  "type": "issue",
+  "status": "proposed",
+  "order": 435,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1281 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "testing"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1281"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1281,
+      "nodeId": "I_kwDOQAEVW88AAAABaIPFHQ"
+    }
+  }
+}
