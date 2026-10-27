@@ -143,9 +143,11 @@
 
             if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _errorMessage = outcome.Kind == HttpOutcomeKind.ValidationProblem
-                    ? ValidationFailureMessage
-                    : HttpOutcomeUserMessage.For(outcome.Kind, "Image could not be uploaded. Try again later.", "Catalog tour not found.");
+                _errorMessage = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    "Image could not be uploaded. Try again later.",
+                    "Catalog tour not found.",
+                    ValidationFailureMessage);
                 _upload.Fail(operationId, _errorMessage);
                 return;
             }
