@@ -85,6 +85,40 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
+    public async Task Public_media_releases_the_upstream_response_when_the_browser_disconnects()
+    {
+        // Arrange
+        using var upstreamResponse = new ReleaseTrackingResponse();
+        var upstreamStream = new StalledMediaStream();
+        var catalogApi = new FakePublicCatalogApiClient
+        {
+            Media = new PublicMediaObjectResponse(upstreamResponse, upstreamStream, "image/jpeg")
+        };
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+        var response = await client.GetAsync(
+            new Uri("/catalog/media/6db0b8be-e4e8-4500-a398-b44e7709a640/640/jpg", UriKind.Relative),
+            HttpCompletionOption.ResponseHeadersRead,
+            TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken);
+        var firstByte = new byte[1];
+        var bytesRead = await body.ReadAsync(firstByte, TestContext.Current.CancellationToken);
+        bytesRead.ShouldBe(1);
+
+        // Act
+        response.Dispose();
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(10));
+        while (!upstreamStream.IsDisposed || !upstreamResponse.IsReleased)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
+        }
+
+        // Assert
+        upstreamStream.StalledReadWasCancelled.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Public_media_returns_non_cacheable_service_unavailable_when_catalog_cancels_upstream()
     {
         // Arrange
@@ -1141,5 +1175,4 @@ public sealed class PublicWebEndpointTests
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/plain");
         body.ShouldBe("Healthy");
     }
-
 }

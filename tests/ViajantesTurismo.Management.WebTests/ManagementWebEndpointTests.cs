@@ -120,6 +120,43 @@ public sealed class ManagementWebEndpointTests
     }
 
     [Fact]
+    public async Task Management_media_preview_releases_the_upstream_response_when_the_browser_disconnects()
+    {
+        // Arrange
+        var imageId = Guid.CreateVersion7();
+        using var upstreamResponse = new ReleaseTrackingResponse();
+        var upstreamStream = new StalledMediaStream();
+        var catalogApi = new FakeCatalogToursApiClient
+        {
+            Media = new PublicMediaObjectResponse(upstreamResponse, upstreamStream, "image/jpeg")
+        };
+        using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(
+            Xunit.TestContext.Current.CancellationToken,
+            catalogApi);
+        using var client = host.GetTestClient();
+        var response = await client.GetAsync(
+            new Uri($"/catalog/media/images/{imageId}/preview/640/jpg", UriKind.Relative),
+            HttpCompletionOption.ResponseHeadersRead,
+            Xunit.TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStreamAsync(Xunit.TestContext.Current.CancellationToken);
+        var firstByte = new byte[1];
+        var bytesRead = await body.ReadAsync(firstByte, Xunit.TestContext.Current.CancellationToken);
+        bytesRead.ShouldBe(1);
+
+        // Act
+        response.Dispose();
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Xunit.TestContext.Current.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(10));
+        while (!upstreamStream.IsDisposed || !upstreamResponse.IsReleased)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
+        }
+
+        // Assert
+        upstreamStream.StalledReadWasCancelled.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Management_media_preview_returns_non_cacheable_service_unavailable_when_catalog_request_fails()
     {
         // Arrange
