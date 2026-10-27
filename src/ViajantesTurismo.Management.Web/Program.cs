@@ -1,5 +1,6 @@
 using Duende.AccessTokenManagement.OpenIdConnect;
 using PandaBear.AspNetCore;
+using PandaBear.Blazor;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Management.Web;
@@ -18,6 +19,7 @@ builder.Services.AddManagementAuthentication(builder.Configuration, builder.Envi
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddAntiforgery();
+builder.Services.AddUiFailureReporting();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CustomerCreationState>();
