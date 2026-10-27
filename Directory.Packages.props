@@ -99,6 +99,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" Version="0.1.0-alpha.332.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AuditTrail" Version="0.1.0-alpha.332.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AuditTrail.SourceGenerator" Version="0.1.0-alpha.332.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Blazor" Version="0.1.0-alpha.332.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Branding" Version="0.1.0-alpha.332.1" />
     <PackageVersion Include="PandaBear.SharedKernel.BuildingBlocks" Version="0.1.0-alpha.332.1" />
     <PackageVersion Include="PandaBear.SharedKernel.DocumentRendering" Version="0.1.0-alpha.332.1" />

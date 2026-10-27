@@ -70,6 +70,22 @@
           "PandaBear.SharedKernel.Results": "0.1.0-alpha.332.1"
         }
       },
+      "PandaBear.SharedKernel.Blazor": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.332.1, )",
+        "resolved": "0.1.0-alpha.332.1",
+        "contentHash": "PU38PCPb5C7FbaSVrvSN4almbPbAgJSiqRiqBELZkQJ5Te9jppRpNR0siWJeRdeUUzecOwxNrnAn51UwM2lXZA==",
+        "dependencies": {
+          "Microsoft.Extensions.Compliance.Abstractions": "10.11.0",
+          "Microsoft.Extensions.Http.Resilience": "10.11.0",
+          "Microsoft.Extensions.ServiceDiscovery": "10.11.0",
+          "Microsoft.Extensions.Telemetry": "10.11.0",
+          "OpenTelemetry": "1.20.0",
+          "OpenTelemetry.Extensions.Hosting": "1.20.0",
+          "OpenTelemetry.Instrumentation.Http": "1.20.0",
+          "PandaBear.SharedKernel.HttpClients": "0.1.0-alpha.332.1"
+        }
+      },
       "PandaBear.SharedKernel.Branding": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.332.1, )",
