@@ -310,9 +310,8 @@ flowchart LR
 
 Catalog.ApiService hosts the Branding module, which uses validation from `SharedKernel.Branding` and
 owns persistence, endpoints, defaults, authorization, and cache invalidation. It keeps a separate
-`BrandingDbContext` and `branding` schema in the Catalog physical database. Existing app-specific DTO,
-client, and route types in `SharedKernel.Branding` are transitional; ADR-040 assigns them to the
-ViajantesTurismo Branding module.
+`BrandingDbContext` and `branding` schema in the Catalog physical database. DTO, client, and route
+types belong to the ViajantesTurismo Branding module.
 
 ```mermaid
 sequenceDiagram

@@ -42,10 +42,8 @@ application runs remain fail-closed when authentication configuration is missing
 dotnet tool run sharedkernel-ci -- openapi refresh
 ```
 
-ADR-040 keeps the `branding` target and the Branding-owned canonical artifact paths stable when the
-module moves into Catalog.ApiService. Before deleting the standalone project, retarget the `branding`
-OpenAPI target, filename mapping, refresh hints, and Branding drift tests to Catalog-hosted
-Branding-only generation. Preserve `branding`, `public-branding`, and Branding-only `v1` artifacts;
+ADR-040 keeps the `branding` target and the Branding-owned canonical artifact paths stable while
+Catalog.ApiService hosts the module. Generation is Catalog-hosted and Branding-only. Preserve `branding`, `public-branding`, and Branding-only `v1` artifacts;
 do not replace them with Catalog-owned or mixed-route snapshots.
 
 The Management Branding optimistic-concurrency change keeps the route and full-state PUT but adds

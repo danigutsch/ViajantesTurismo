@@ -12,7 +12,7 @@ documents a narrower safe exception.
 | --- | --- | --- | --- |
 | Catalog API `/public/catalog/tours` and `/public/catalog/tours/{slug}` | Public HTTP metadata plus server output cache | 60 seconds plus `stale-while-revalidate=300` | Catalog presentation and media writes evict `public-catalog` |
 | Catalog API `/public/catalog/content/{key}` | Public HTTP metadata plus server output cache varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Public content writes evict `public-content` |
-| Branding public settings route (standalone currently; Catalog-hosted target) | Public HTTP metadata plus host-local server output cache | 60 seconds plus `stale-while-revalidate=300` | Branding writes evict public branding cache entries in the active host |
+| Branding public settings route (Catalog-hosted) | Public HTTP metadata plus host-local server output cache | 60 seconds plus `stale-while-revalidate=300` | Branding writes evict public branding cache entries in the active host |
 | Branding management settings routes | No cache; `Cache-Control: no-store` | None | Not applicable |
 | Public Web `/`, `/group-bike-tours`, `/group-bike-tours/{slug}`, `/gallery` | Public HTTP metadata varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Server output cache is not used because Catalog API invalidation is service-local |
 

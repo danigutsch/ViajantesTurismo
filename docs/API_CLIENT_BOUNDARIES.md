@@ -19,9 +19,8 @@ project. Apps configure base addresses and keep UI fallback behavior local.
 - `PublicCatalogApiClient`
 
 Branding HTTP DTOs, typed clients, and route segments belong to ViajantesTurismo-owned Branding
-contract modules. `SharedKernel.Branding` owns only pure validation and normalization. Existing
-app-specific HTTP types in `SharedKernel.Branding` are transitional and move with the Branding module;
-they are not a reusable-library ownership precedent. `ViajantesTurismo.Catalog.ApiService` mounts the
+contract modules. `SharedKernel.Branding` owns only pure validation and normalization.
+`ViajantesTurismo.Catalog.ApiService` mounts the
 Branding routes, and Branding clients resolve to the Catalog API destination. The host owns the API
 version prefix and base-address wiring, while the Branding module owns its route segments, defaults,
 persistence behavior, authorization, and cache policy.
