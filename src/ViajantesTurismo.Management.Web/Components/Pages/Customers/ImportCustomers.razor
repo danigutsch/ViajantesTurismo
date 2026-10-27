@@ -458,12 +458,13 @@
                 _state.ConflictSourceFileBytes = fileBytes;
                 _state.ConflictStates = conflictStates;
                 _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
-            }
-            else
-            {
-                _state.Result = result;
+
+                // Conflicts mean the file is not imported yet; clear upload state instead of showing it as complete.
+                _state.Upload.Reset();
+                return;
             }
 
+            _state.Result = result;
             _state.Upload.ReportBytes(operationId, fileBytes.LongLength);
             _state.Upload.Complete(operationId);
         }
@@ -528,12 +529,13 @@
                 _state.ConflictSourceFileBytes = fileBytes;
                 _state.ConflictStates = conflictStates;
                 _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
-            }
-            else
-            {
-                _state.Result = result;
+
+                // Conflicts mean the file is not imported yet; clear upload state instead of showing it as complete.
+                _state.Upload.Reset();
+                return;
             }
 
+            _state.Result = result;
             _state.Upload.ReportBytes(operationId, fileBytes.LongLength);
             _state.Upload.Complete(operationId);
         }
