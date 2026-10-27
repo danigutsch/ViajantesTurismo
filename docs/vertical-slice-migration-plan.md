@@ -165,7 +165,7 @@ Prerequisites: Catalog HTTP snapshots and projection/storage characterization. R
 freshness, eventual consistency, object/database compensation, and ongoing upload work. Gate with
 Catalog.UnitTests, Catalog.ApiServiceTests, and Catalog.ContractTests; run InfrastructureTests,
 IntegrationTests, and BehaviorTests for the provider/event/storage seam touched. Do not combine
-Branding host cutover, worker redesign, or storage-provider replacement with these moves.
+worker redesign or storage-provider replacement with these moves.
 
 ## Public Web sequence
 
