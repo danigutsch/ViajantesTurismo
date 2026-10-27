@@ -371,4 +371,171 @@ public sealed class CustomerImportEndpointsTests
         result.IsSuccess.ShouldBeTrue();
         Encoding.UTF8.GetString(result.Value.Span).ShouldBe(text);
     }
+
+    [Fact]
+    public async Task ReadCsv_buffers_a_slow_non_seekable_source_chunk_by_chunk_and_scans_only_after_the_last_chunk()
+    {
+        // Arrange
+        var content = "firstName,lastName\nAda,Lovelace\nGrace,Hopper"u8.ToArray();
+        using var stream = new GatedChunkReadStream(content, 7);
+        var file = new StreamFormFile(stream, content.LongLength);
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var chunkReads = (content.Length + 6) / 7;
+
+        // Act
+        var read = CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+        for (var i = 0; i < chunkReads; i++)
+        {
+            await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
+            scanner.ScannedContent.ShouldBeNull();
+            stream.ReleaseRead();
+        }
+
+        await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
+        stream.ReleaseRead();
+        var result = await read;
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        Encoding.UTF8.GetString(result.Value.Span).ShouldBe(Encoding.UTF8.GetString(content));
+        scanner.ScannedContent.ShouldBe(content);
+        scanner.ScannedCapacity.ShouldBe(content.Length);
+        stream.LargestRequestedRead.ShouldBeLessThanOrEqualTo(128 * 1024);
+    }
+
+    [Fact]
+    public async Task ReadCsv_accepts_a_source_exactly_at_the_size_limit()
+    {
+        // Arrange
+        var content = new byte[ContractConstants.CustomerImportMaxFileBytes];
+        Array.Fill(content, (byte)'a');
+        using var stream = new GatedChunkReadStream(content, 64 * 1024);
+        stream.ReleaseAll();
+        var file = new StreamFormFile(stream, content.LongLength);
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Length.ShouldBe(content.Length);
+        scanner.ScannedContent.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task ReadCsv_rejects_a_source_one_byte_over_the_limit_without_scanning_even_when_the_declared_length_is_within_it()
+    {
+        // Arrange
+        var content = new byte[ContractConstants.CustomerImportMaxFileBytes + 1];
+        Array.Fill(content, (byte)'a');
+        using var stream = new GatedChunkReadStream(content, 64 * 1024);
+        stream.ReleaseAll();
+        var file = new StreamFormFile(stream, ContractConstants.CustomerImportMaxFileBytes);
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        scanner.ScannedContent.ShouldBeNull();
+        stream.BytesRead.ShouldBeLessThanOrEqualTo(ContractConstants.CustomerImportMaxFileBytes + 64 * 1024);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(1)]
+    public async Task ReadCsv_rejects_a_declared_length_that_differs_from_the_received_bytes_without_scanning(int declaredDelta)
+    {
+        // Arrange
+        var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
+        using var stream = new GatedChunkReadStream(content, 8);
+        stream.ReleaseAll();
+        var file = new StreamFormFile(stream, content.LongLength + declaredDelta);
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        scanner.ScannedContent.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task ReadCsv_cancels_a_slow_source_after_partial_data_without_scanning_and_disposes_it()
+    {
+        // Arrange
+        var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
+        using var stream = new GatedChunkReadStream(content, 8);
+        var file = new StreamFormFile(stream, content.LongLength);
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        using var requestCancellation = new CancellationTokenSource();
+
+        // Act
+        var read = CustomerImportEndpoints.ReadCsv(file, scanner, requestCancellation.Token);
+        await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
+        stream.ReleaseRead();
+        await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
+        await requestCancellation.CancelAsync();
+        Func<Task> action = async () => await read;
+
+        // Assert
+        _ = await action.ShouldThrow<OperationCanceledException>();
+        scanner.ScannedContent.ShouldBeNull();
+        stream.BytesRead.ShouldBe(8);
+        stream.IsDisposed.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("passed")]
+    [InlineData("rejected")]
+    [InlineData("unavailable")]
+    [InlineData("throws")]
+    [InlineData("over-limit")]
+    public async Task ReadCsv_disposes_the_source_stream_on_every_outcome(string outcome)
+    {
+        // Arrange
+        var content = outcome is "over-limit"
+            ? new byte[ContractConstants.CustomerImportMaxFileBytes + 1]
+            : "firstName,lastName\nAda,Lovelace"u8.ToArray();
+        using var stream = new GatedChunkReadStream(content, 64 * 1024);
+        stream.ReleaseAll();
+        var file = new StreamFormFile(stream, content.LongLength);
+        var scanner = outcome switch
+        {
+            "rejected" => new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected)),
+            "unavailable" => new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Failed)),
+            "throws" => new StubMalwareScanner(MalwareScanResult.Passed, new IOException()),
+            _ => new StubMalwareScanner(MalwareScanResult.Passed)
+        };
+
+        // Act
+        _ = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        stream.IsDisposed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ReadCsv_scans_the_raw_received_bytes_before_transcoding_and_returns_nothing_when_the_scanner_rejects()
+    {
+        // Arrange
+        var content = new byte[] { 0xFF, 0xFE }.Concat(Encoding.Unicode.GetBytes("firstName,lastName\nAda,Lovelace")).ToArray();
+        using var stream = new GatedChunkReadStream(content, 5);
+        stream.ReleaseAll();
+        var file = new StreamFormFile(stream, content.LongLength);
+        var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected));
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        scanner.ScannedContent.ShouldBe(content);
+    }
 }

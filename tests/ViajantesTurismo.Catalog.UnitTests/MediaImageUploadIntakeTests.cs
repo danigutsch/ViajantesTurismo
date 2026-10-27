@@ -700,4 +700,208 @@ public sealed class MediaImageUploadIntakeTests
         result.IsSuccess.ShouldBeTrue();
         scanner.ContentCapacity.ShouldBe(content.Length);
     }
+
+    [Fact]
+    public async Task Accept_buffers_a_slow_non_seekable_upload_chunk_by_chunk_and_scans_only_after_the_last_chunk()
+    {
+        // Arrange
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        using var stream = new GatedChunkReadStream(content, 300);
+        var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            scanner,
+            new InMemoryMediaObjectStore(),
+            new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)));
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            stream,
+            "photo.jpg",
+            "image/jpeg",
+            content.LongLength,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+        var chunkReads = (content.Length + 299) / 300;
+
+        // Act
+        var accept = intake.Accept(request, TestContext.Current.CancellationToken).AsTask();
+        for (var i = 0; i < chunkReads; i++)
+        {
+            await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
+            scanner.ScanCount.ShouldBe(0);
+            stream.ReleaseRead();
+        }
+
+        await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
+        stream.ReleaseRead();
+        var result = await accept;
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        scanner.ScanCount.ShouldBe(1);
+        scanner.ContentCapacity.ShouldBe(content.Length);
+        stream.BytesRead.ShouldBe(content.LongLength);
+        stream.LargestRequestedRead.ShouldBeLessThanOrEqualTo(128 * 1024);
+    }
+
+    [Fact]
+    public async Task Accept_accepts_a_non_seekable_upload_exactly_at_the_size_limit()
+    {
+        // Arrange
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        using var stream = new GatedChunkReadStream(content, 4096);
+        stream.ReleaseAll();
+        var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            scanner,
+            new InMemoryMediaObjectStore(),
+            new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)),
+            new MediaUploadValidationOptions { MaxLengthBytes = content.Length });
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            stream,
+            "photo.jpg",
+            "image/jpeg",
+            content.LongLength,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        scanner.ScanCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Accept_rejects_a_non_seekable_upload_one_byte_over_the_limit_without_scanning_even_when_the_declared_length_is_within_it()
+    {
+        // Arrange
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        using var stream = new GatedChunkReadStream(content, 4096);
+        stream.ReleaseAll();
+        var objectStore = new InMemoryMediaObjectStore();
+        var imageStore = new InMemoryPublicMediaImageStore(originalImage);
+        var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            scanner,
+            objectStore,
+            imageStore,
+            new MediaUploadValidationOptions { MaxLengthBytes = content.Length - 1 });
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            stream,
+            "photo.jpg",
+            "image/jpeg",
+            content.Length - 1,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        scanner.ScanCount.ShouldBe(0);
+        objectStore.ObjectKeys.ShouldBeEmpty();
+        imageStore.Current.Id.ShouldBe(originalImage.Id);
+    }
+
+    [Fact]
+    public async Task Accept_rejects_a_declared_length_smaller_than_the_received_bytes_before_scanning_or_metadata()
+    {
+        // Arrange
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        using var stream = new GatedChunkReadStream(content, 4096);
+        stream.ReleaseAll();
+        var objectStore = new InMemoryMediaObjectStore();
+        var imageStore = new InMemoryPublicMediaImageStore(originalImage);
+        var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var intake = MediaImageUploadIntakeTestFactory.Create(scanner, objectStore, imageStore);
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            stream,
+            "photo.jpg",
+            "image/jpeg",
+            content.Length - 1,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        scanner.ScanCount.ShouldBe(0);
+        objectStore.ObjectKeys.ShouldBeEmpty();
+        imageStore.Current.Id.ShouldBe(originalImage.Id);
+    }
+
+    [Fact]
+    public async Task Accept_cancels_a_slow_upload_after_partial_data_without_scanning_or_persistence()
+    {
+        // Arrange
+        var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
+        var content = CatalogTestImages.CreateJpeg(320, 160);
+        using var stream = new GatedChunkReadStream(content, 300);
+        var objectStore = new InMemoryMediaObjectStore();
+        var imageStore = new InMemoryPublicMediaImageStore(originalImage);
+        var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var intake = MediaImageUploadIntakeTestFactory.Create(scanner, objectStore, imageStore);
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            stream,
+            "photo.jpg",
+            "image/jpeg",
+            content.LongLength,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+        using var requestCancellation = new CancellationTokenSource();
+
+        // Act
+        var accept = intake.Accept(request, requestCancellation.Token).AsTask();
+        await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
+        stream.ReleaseRead();
+        await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
+        await requestCancellation.CancelAsync();
+        Func<Task> action = async () => await accept;
+
+        // Assert
+        _ = await action.ShouldThrow<OperationCanceledException>();
+        scanner.ScanCount.ShouldBe(0);
+        stream.BytesRead.ShouldBe(300);
+        objectStore.ObjectKeys.ShouldBeEmpty();
+        imageStore.Current.Id.ShouldBe(originalImage.Id);
+    }
+
+    [Fact]
+    public async Task Accept_reports_the_scanner_rejection_instead_of_a_decode_failure_when_the_content_is_malformed()
+    {
+        // Arrange
+        var content = CatalogTestImages.CreateJpeg(320, 160)[..64];
+        var scanner = new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Rejected, "malware detected"));
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            scanner,
+            new InMemoryMediaObjectStore(),
+            new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)));
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var scanErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull()["Status"];
+        scanErrors.ShouldBe(["Media upload did not pass security scanning."]);
+        scanner.ScanCount.ShouldBe(1);
+    }
 }
