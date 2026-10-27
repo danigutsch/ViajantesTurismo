@@ -4,8 +4,10 @@ using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.ApiService;
 
+/// <summary>Maps application results and booking lookups to endpoint responses.</summary>
 internal static class AdminEndpointResults
 {
+    /// <summary>On success reloads the booking; on failure maps not-found and conflict statuses.</summary>
     public static Task<TResult> MatchNotFoundConflictBookingResponse<TResult>(
         Result result,
         Guid bookingId,
@@ -20,6 +22,7 @@ internal static class AdminEndpointResults
             : GetBookingResponse(bookingId, queryService, whenFound, _ => whenNotFound(), ct);
     }
 
+    /// <summary>On success reloads the booking; on failure maps not-found, conflict and invalid statuses.</summary>
     public static Task<TResult> MatchNotFoundConflictValidationBookingResponse<TResult>(
         Result result,
         Guid bookingId,
@@ -35,6 +38,7 @@ internal static class AdminEndpointResults
             : GetBookingResponse(bookingId, queryService, whenFound, _ => whenNotFound(), ct);
     }
 
+    /// <summary>On success reloads the booking; on failure maps not-found and invalid statuses.</summary>
     public static Task<TResult> MatchNotFoundValidationBookingResponse<TResult>(
         Result result,
         Guid bookingId,
@@ -49,6 +53,7 @@ internal static class AdminEndpointResults
             : GetBookingResponse(bookingId, queryService, whenFound, _ => whenNotFound(), ct);
     }
 
+    /// <summary>Loads a booking by identifier and maps it to the found or not-found response.</summary>
     public static async Task<TResult> GetBookingResponse<TResult>(
         Guid bookingId,
         IQueryService queryService,
@@ -67,6 +72,7 @@ internal static class AdminEndpointResults
             : whenFound(booking);
     }
 
+    /// <summary>Maps a failed result with conflict or invalid status; other statuses throw.</summary>
     public static TResult MatchConflictValidationFailure<TResult>(
         Result result,
         Func<TResult> whenConflict,
@@ -80,6 +86,7 @@ internal static class AdminEndpointResults
         };
     }
 
+    /// <summary>Maps a failed result with not-found or conflict status; other statuses throw.</summary>
     public static TResult MatchNotFoundConflictFailure<TResult>(
         Result result,
         Func<TResult> whenNotFound,
@@ -93,6 +100,7 @@ internal static class AdminEndpointResults
         };
     }
 
+    /// <summary>Maps a failed result with not-found, conflict or invalid status; other statuses throw.</summary>
     public static TResult MatchNotFoundConflictValidationFailure<TResult>(
         Result result,
         Func<TResult> whenNotFound,
@@ -108,6 +116,7 @@ internal static class AdminEndpointResults
         };
     }
 
+    /// <summary>Maps a failed result with not-found or invalid status; other statuses throw.</summary>
     public static TResult MatchNotFoundValidationFailure<TResult>(
         Result result,
         Func<TResult> whenNotFound,

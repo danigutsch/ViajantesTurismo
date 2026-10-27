@@ -5,13 +5,16 @@ using ViajantesTurismo.Public.Web.Components;
 
 namespace ViajantesTurismo.Public.Web;
 
+/// <summary>Maps the Public Web endpoints: error, robots.txt, sitemap, catalog media and Razor components.</summary>
 internal static class PublicWebEndpoints
 {
     private const string RobotsTxtPath = "/robots.txt";
     private const string SitemapPath = "/sitemap.xml";
 
+    /// <summary>Endpoint name of the public media-by-rendition route.</summary>
     internal const string PublicMediaByRenditionEndpointName = "public-media-by-rendition";
 
+    /// <summary>Maps the Public Web endpoints onto the route builder.</summary>
     internal static IEndpointRouteBuilder MapPublicWebEndpoints(this IEndpointRouteBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);

@@ -28,6 +28,9 @@ internal sealed class ProtectedDistributedAudienceTokenStore
     private readonly KeyBoundDataProtector _protector;
     private readonly TimeProvider _timeProvider;
 
+    /// <summary>
+    /// Initializes the store with its cache, data protection provider and time source.
+    /// </summary>
     public ProtectedDistributedAudienceTokenStore(
         IDistributedCache cache,
         IDataProtectionProvider dataProtectionProvider,
@@ -42,6 +45,9 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         _timeProvider = timeProvider;
     }
 
+    /// <summary>
+    /// Returns the cached backend access token for the audience and session, or null when missing, expired, stale or issued for a different source token.
+    /// </summary>
     internal async Task<string?> Get(
         string audience,
         ManagementTokenSession session,
@@ -84,6 +90,9 @@ internal sealed class ProtectedDistributedAudienceTokenStore
         }
     }
 
+    /// <summary>
+    /// Encrypts and caches a backend access token for the audience and session, expiring no later than the session.
+    /// </summary>
     internal Task Store(
         string audience,
         ManagementTokenSession session,
@@ -114,11 +123,17 @@ internal sealed class ProtectedDistributedAudienceTokenStore
             cancellationToken);
     }
 
+    /// <summary>
+    /// Removes the cached tokens of every configured audience for the session.
+    /// </summary>
     internal Task ClearAll(ManagementTokenSession session, CancellationToken cancellationToken)
     {
         return Task.WhenAll(Audiences.Select(audience => _cache.RemoveAsync(GetCacheKey(audience, session), cancellationToken)));
     }
 
+    /// <summary>
+    /// Builds the cache key for an audience and session; throws when the audience is not configured.
+    /// </summary>
     internal static string GetCacheKey(string audience, ManagementTokenSession session)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(audience);

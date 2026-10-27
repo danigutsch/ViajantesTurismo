@@ -5,8 +5,13 @@ using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
+/// <summary>
+/// EF Core store for editable public content.
+/// </summary>
+/// <param name="dbContext">The Catalog context.</param>
 internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublicContentStore
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyCollection<EditablePublicContent>> ListContent(CancellationToken ct)
     {
         return await dbContext.PublicContent
@@ -15,6 +20,7 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<EditablePublicContent?> GetContent(string key, CancellationToken ct)
     {
         var sanitizedKey = StringSanitizer.Sanitize(key).ToUpperInvariant();
@@ -24,6 +30,7 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task SaveContent(EditablePublicContent content, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(content);

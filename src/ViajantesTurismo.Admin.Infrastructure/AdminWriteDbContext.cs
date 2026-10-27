@@ -13,17 +13,28 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
+/// <summary>
+/// Tracking DbContext for write operations; also the unit of work that commits aggregate changes.
+/// </summary>
+/// <param name="options">EF Core options for this context.</param>
+/// <param name="configurations">Optional extra model and convention configurations contributed by SharedKernel modules.</param>
 internal sealed class AdminWriteDbContext(
     DbContextOptions<AdminWriteDbContext> options,
     IEnumerable<IDbContextConfiguration<AdminWriteDbContext>>? configurations = null)
     : DbContext(options), IUnitOfWork
 {
+    /// <summary>Tour aggregates.</summary>
     public DbSet<Tour> Tours => Set<Tour>();
+    /// <summary>Customer aggregates.</summary>
     public DbSet<Customer> Customers => Set<Customer>();
+    /// <summary>Document lineages.</summary>
     public DbSet<DocumentLineage> DocumentLineages => Set<DocumentLineage>();
+    /// <summary>Document drafts.</summary>
     public DbSet<DocumentDraft> DocumentDrafts => Set<DocumentDraft>();
+    /// <summary>Document audit records.</summary>
     public DbSet<DocumentAuditRecord> DocumentAuditRecords => Set<DocumentAuditRecord>();
 
+    /// <summary>Saves tracked changes, translating unique-constraint and revision conflicts into domain conflict exceptions.</summary>
     public async Task SaveEntities(CancellationToken ct)
     {
         try

@@ -45,6 +45,7 @@ public static class DocumentAuditErrors
         field: "documentRevision",
         message: "The document revision is invalid.");
 
+    /// <summary>Returns a failure for audit evidence with an unsupported operation, outcome, reason, and resource combination.</summary>
     internal static Result InvalidEvidence() => Result.Invalid(
         detail: "Document audit evidence must use a supported operation, outcome, reason, and resource combination.",
         field: "auditEvidence",

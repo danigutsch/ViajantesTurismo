@@ -11,8 +11,10 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
 {
     private const int PurgeBatchSize = 500;
 
+    /// <summary>Stages a new lineage for insertion on the next save.</summary>
     public void Add(DocumentLineage lineage) => dbContext.DocumentLineages.Add(lineage);
 
+    /// <summary>Loads the lineage containing the document with all revisions and fields, or null when none.</summary>
     public async Task<DocumentLineage?> GetByDocumentId(Guid documentId, CancellationToken ct) =>
         await dbContext.DocumentLineages
             .Include(lineage => lineage.Revisions.OrderBy(revision => revision.Revision))
@@ -20,6 +22,7 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
             .AsSplitQuery()
             .SingleOrDefaultAsync(lineage => lineage.Revisions.Any(revision => revision.Id == documentId), ct);
 
+    /// <summary>Deletes one batch of expired unfinalized drafts, bumps or removes affected lineages, and returns the removed draft count.</summary>
     public async Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct) =>
         await EfCoreCommandTransactionScope.Execute(
             dbContext,

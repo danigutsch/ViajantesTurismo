@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
+/// <summary>
+/// Throws a simulated failure on the first save and lets later saves pass through.
+/// </summary>
 internal sealed class FailingSaveChangesInterceptor : SaveChangesInterceptor
 {
     private bool _hasFailed;

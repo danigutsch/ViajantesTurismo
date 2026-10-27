@@ -9,6 +9,7 @@ using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+/// <summary>Test host wiring the Keycloak audience token exchange handler to recording token endpoint and backend handlers over an in-memory token cache.</summary>
 internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
 {
     private readonly ServiceProvider _provider;
@@ -22,23 +23,28 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         Backend = backend;
     }
 
+    /// <summary>Records the requests the host's fake token endpoint received.</summary>
     public RecordingAudienceTokenEndpointHandler TokenEndpoint
     {
         get;
     }
 
+    /// <summary>Records the requests that reached the fake backend behind the exchange handler.</summary>
     public RecordingAudienceTokenBackendHandler Backend
     {
         get;
     }
 
+    /// <summary>Distributed cache backing the protected audience and user token stores.</summary>
     public IDistributedCache Cache => _provider.GetRequiredService<IDistributedCache>();
 
+    /// <summary>Creates an exchange handler for <paramref name="audience"/> acting as a default test user session.</summary>
     public KeycloakAudienceTokenExchangeHandler CreateHandler(string audience)
     {
         return CreateHandler(audience, ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-default"));
     }
 
+    /// <summary>Creates an exchange handler for <paramref name="audience"/> acting as <paramref name="user"/>.</summary>
     public KeycloakAudienceTokenExchangeHandler CreateHandler(string audience, ClaimsPrincipal user)
     {
         return new KeycloakAudienceTokenExchangeHandler(
@@ -54,6 +60,7 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         };
     }
 
+    /// <summary>Creates a host, optionally using the given cache and customizing the OpenID Connect options.</summary>
     public static AudienceTokenExchangeTestHost Create(
         IDistributedCache? cache = null,
         Action<OpenIdConnectOptions>? configureOptions = null)
@@ -96,11 +103,13 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
         return new AudienceTokenExchangeTestHost(provider, tokenEndpoint, backend);
     }
 
+    /// <summary>Returns the cache key under which the audience token for <paramref name="user"/> is stored.</summary>
     public static string GetAudienceTokenCacheKey(string audience, ClaimsPrincipal user)
     {
         return ProtectedDistributedAudienceTokenStore.GetCacheKey(audience, ManagementTokenSession.From(user));
     }
 
+    /// <summary>Stores a protected audience token entry for <paramref name="user"/>, bypassing the exchange flow.</summary>
     public Task StoreProtectedAudienceTokenEntry(
         string audience,
         ClaimsPrincipal user,
@@ -113,11 +122,13 @@ internal sealed class AudienceTokenExchangeTestHost : IAsyncDisposable
             .Store(audience, ManagementTokenSession.From(user), sourceAccessToken, accessToken, expiresAt, ct);
     }
 
+    /// <summary>Clears every stored token for the user's session, simulating session revocation.</summary>
     public Task RevokeUserTokenSession(ClaimsPrincipal user, CancellationToken ct)
     {
         return _provider.GetRequiredService<ProtectedDistributedUserTokenStore>().ClearAll(user, ct);
     }
 
+    /// <summary>Disposes the underlying service provider.</summary>
     public ValueTask DisposeAsync()
     {
         return _provider.DisposeAsync();

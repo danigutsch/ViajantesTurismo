@@ -105,6 +105,7 @@ internal static class CustomerImportEndpoints
         return TypedResults.Ok(result);
     }
 
+    /// <summary>Reads the uploaded CSV into memory within the size limit and scans it, failing closed on invalid or unscannable files.</summary>
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
@@ -187,6 +188,7 @@ internal static class CustomerImportEndpoints
         }
     }
 
+    /// <summary>Checks that the upload is a non-empty CSV within the size limit with an allowed content type; otherwise returns a problem.</summary>
     internal static bool TryValidateImportFile([NotNullWhen(true)] IFormFile? file, [NotNullWhen(false)] out ProblemDetails? problem)
     {
         if (file is null || file.Length <= 0 || file.Length > ContractConstants.CustomerImportMaxFileBytes || !IsAllowedCsv(file))

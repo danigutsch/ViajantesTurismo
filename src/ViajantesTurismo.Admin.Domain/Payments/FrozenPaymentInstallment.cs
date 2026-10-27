@@ -17,6 +17,7 @@ public sealed class FrozenPaymentInstallment : ValueObject
     public decimal SettlementAmount => _state.SettlementAmount;
     /// <summary>Gets the explicit difference from independently rounding this installment away from zero.</summary>
     public decimal RoundingAdjustment => _state.RoundingAdjustment;
+    /// <summary>Wraps a stored installment snapshot.</summary>
     internal static FrozenPaymentInstallment FromState(PaymentInstructionInstallmentState state) => new(state);
     /// <inheritdoc />
     public override string ToString() => "FrozenPaymentInstallment [redacted]";

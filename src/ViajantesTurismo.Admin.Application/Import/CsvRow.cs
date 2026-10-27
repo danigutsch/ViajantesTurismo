@@ -6,11 +6,13 @@ namespace ViajantesTurismo.Admin.Application.Import;
 /// </summary>
 public sealed class CsvRow : ValueObject, IImportRow
 {
+    /// <summary>Wraps a parsed tabular CSV row.</summary>
     internal CsvRow(PandaBear.Tabular.CsvRow row)
     {
         Row = row;
     }
 
+    /// <summary>Underlying tabular CSV row.</summary>
     internal PandaBear.Tabular.CsvRow Row
     {
         get;

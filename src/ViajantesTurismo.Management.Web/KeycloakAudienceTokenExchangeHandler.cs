@@ -20,6 +20,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
     private readonly IUserAccessor _userAccessor;
     private readonly ProtectedDistributedUserTokenStore _userTokenStore;
 
+    /// <summary>Creates a handler that exchanges the user token for the given backend audience.</summary>
     public KeycloakAudienceTokenExchangeHandler(
         string audience,
         IHttpClientFactory httpClientFactory,

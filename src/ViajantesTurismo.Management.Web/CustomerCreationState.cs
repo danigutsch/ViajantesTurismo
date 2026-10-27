@@ -3,38 +3,48 @@ using ViajantesTurismo.Management.Web.Models;
 
 namespace ViajantesTurismo.Management.Web;
 
+/// <summary>Holds wizard progress and per-step form data while a customer is being created.</summary>
 internal sealed class CustomerCreationState
 {
+    /// <summary>Current wizard step number, from 1 to 8.</summary>
     public int CurrentStep { get; private set; } = 1;
 
+    /// <summary>Step 1 data, or null until completed.</summary>
     public PersonalInfoFormModel? PersonalInfo
     {
         get; private set;
     }
+    /// <summary>Step 2 data, or null until completed.</summary>
     public IdentificationInfoFormModel? IdentificationInfo
     {
         get; private set;
     }
+    /// <summary>Step 3 data, or null until completed.</summary>
     public ContactInfoFormModel? ContactInfo
     {
         get; private set;
     }
+    /// <summary>Step 4 data, or null until completed.</summary>
     public AddressFormModel? Address
     {
         get; private set;
     }
+    /// <summary>Step 5 data, or null until completed.</summary>
     public PhysicalInfoFormModel? PhysicalInfo
     {
         get; private set;
     }
+    /// <summary>Step 6 data, or null until completed.</summary>
     public AccommodationPreferencesFormModel? AccommodationPreferences
     {
         get; private set;
     }
+    /// <summary>Step 7 data, or null until completed.</summary>
     public EmergencyContactFormModel? EmergencyContact
     {
         get; private set;
     }
+    /// <summary>Step 8 data, or null until completed.</summary>
     public MedicalInfoFormModel? MedicalInfo
     {
         get; private set;
@@ -151,6 +161,7 @@ internal sealed class CustomerCreationState
         CurrentStep = step;
     }
 
+    /// <summary>Returns whether the given step number (1-8) already has data; false for any other number.</summary>
     public bool IsStepCompleted(int step) => step switch
     {
         1 => PersonalInfo is not null,

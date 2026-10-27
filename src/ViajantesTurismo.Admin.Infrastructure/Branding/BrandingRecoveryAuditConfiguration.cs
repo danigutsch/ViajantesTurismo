@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Branding;
 
+/// <summary>EF Core mapping for <see cref="BrandingRecoveryAuditRecord" /> in the branding projection schema.</summary>
 internal sealed class BrandingRecoveryAuditConfiguration : IEntityTypeConfiguration<BrandingRecoveryAuditRecord>
 {
     private const int MaxKindLength = 32;
     private const int MaxTextLength = 256;
 
+    /// <summary>Maps the recovery audit table, key, required text columns and the kind and old epoch index.</summary>
     public void Configure(EntityTypeBuilder<BrandingRecoveryAuditRecord> entity)
     {
         entity.ToTable("recovery_audit", BrandingProjectionSchema.Name);

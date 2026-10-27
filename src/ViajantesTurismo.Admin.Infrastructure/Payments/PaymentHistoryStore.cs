@@ -7,8 +7,12 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
+/// <summary>Persists booking financial histories as protected rows.</summary>
+/// <param name="context">The write database context.</param>
+/// <param name="protection">Protects and unprotects ledger state.</param>
 internal sealed class PaymentHistoryStore(AdminWriteDbContext context, PaymentProtection protection) : IPaymentHistoryStore
 {
+    /// <summary>Writes the booking financial history as a protected row and stages audit rows for its events.</summary>
     public async Task Save(Tour tour, Guid bookingId, CancellationToken ct)
     {
         var history = tour.Bookings.Single(booking => booking.Id == bookingId).FinancialHistory
@@ -44,6 +48,7 @@ internal sealed class PaymentHistoryStore(AdminWriteDbContext context, PaymentPr
         history.ClearDomainEvents();
     }
 
+    /// <summary>Restores financial histories onto the given bookings from their stored rows.</summary>
     internal async Task Attach(IReadOnlyCollection<Booking> bookings, CancellationToken ct)
     {
         var ids = bookings.Select(booking => booking.Id).ToArray();
@@ -54,6 +59,7 @@ internal sealed class PaymentHistoryStore(AdminWriteDbContext context, PaymentPr
         }
     }
 
+    /// <summary>Decrypts and validates a history row, throwing when it does not match the row.</summary>
     internal BookingFinancialHistory Decode(PaymentHistoryRow row)
     {
         var plaintext = protection.Ledgers.Unprotect(row.BookingId.ToString("N"), row.ProtectedState);

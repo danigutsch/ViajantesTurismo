@@ -22,10 +22,13 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     protected Uri ApiBaseUri => ApiClient.BaseAddress ?? throw new InvalidOperationException("API client base address is not configured.");
 
+    /// <summary>Creates the booking workflow bound to the current page and navigation.</summary>
     private protected BookingWorkflow BookingWorkflow => new(Page, NavigateTo);
 
+    /// <summary>Creates the management sign-in workflow bound to the current page.</summary>
     private protected ManagementLoginWorkflow ManagementLogin => new(Page);
 
+    /// <summary>Creates the UI feedback assertions bound to the current page.</summary>
     private protected UiFeedbackAssertions UiFeedback => new(Page);
 
     protected virtual bool AutomaticallySignIn => true;

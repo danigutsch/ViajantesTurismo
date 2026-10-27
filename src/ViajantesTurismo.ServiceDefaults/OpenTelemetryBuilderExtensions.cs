@@ -2,12 +2,14 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 namespace ViajantesTurismo.ServiceDefaults;
 
+/// <summary>OpenTelemetry registration helpers for SharedKernel, Catalog, and Branding telemetry.</summary>
 internal static class OpenTelemetryBuilderExtensions
 {
     private const string CatalogTelemetryName = "ViajantesTurismo.Catalog";
     private const string BrandingTelemetryName = "ViajantesTurismo.Branding";
     private const string SharedKernelNpgsqlEventSourcingName = "SharedKernel.EventSourcing.Npgsql";
 
+    /// <summary>Adds the SharedKernel mediator meter.</summary>
     public static MeterProviderBuilder AddSharedKernelMediatorMetrics(this MeterProviderBuilder metrics)
     {
         ArgumentNullException.ThrowIfNull(metrics);
@@ -15,6 +17,7 @@ internal static class OpenTelemetryBuilderExtensions
         return metrics.AddMeter(PandaBear.Mediator.MediatorTelemetry.Name);
     }
 
+    /// <summary>Adds the SharedKernel mediator activity source.</summary>
     public static TracerProviderBuilder AddSharedKernelMediatorTracing(this TracerProviderBuilder tracing)
     {
         ArgumentNullException.ThrowIfNull(tracing);
@@ -22,6 +25,7 @@ internal static class OpenTelemetryBuilderExtensions
         return tracing.AddSource(PandaBear.Mediator.MediatorTelemetry.Name);
     }
 
+    /// <summary>Adds the SharedKernel event-sourcing provider meter.</summary>
     public static MeterProviderBuilder AddSharedKernelProviderMetrics(this MeterProviderBuilder metrics)
     {
         ArgumentNullException.ThrowIfNull(metrics);
@@ -29,6 +33,7 @@ internal static class OpenTelemetryBuilderExtensions
         return metrics.AddMeter(SharedKernelNpgsqlEventSourcingName);
     }
 
+    /// <summary>Adds the SharedKernel event-sourcing provider activity source.</summary>
     public static TracerProviderBuilder AddSharedKernelProviderTracing(this TracerProviderBuilder tracing)
     {
         ArgumentNullException.ThrowIfNull(tracing);
@@ -36,6 +41,7 @@ internal static class OpenTelemetryBuilderExtensions
         return tracing.AddSource(SharedKernelNpgsqlEventSourcingName);
     }
 
+    /// <summary>Adds the Catalog meter.</summary>
     public static MeterProviderBuilder AddCatalogMetrics(this MeterProviderBuilder metrics)
     {
         ArgumentNullException.ThrowIfNull(metrics);
@@ -43,6 +49,7 @@ internal static class OpenTelemetryBuilderExtensions
         return metrics.AddMeter(CatalogTelemetryName);
     }
 
+    /// <summary>Adds the Branding meter.</summary>
     public static MeterProviderBuilder AddBrandingMetrics(this MeterProviderBuilder metrics)
     {
         ArgumentNullException.ThrowIfNull(metrics);
@@ -50,6 +57,7 @@ internal static class OpenTelemetryBuilderExtensions
         return metrics.AddMeter(BrandingTelemetryName);
     }
 
+    /// <summary>Adds the Catalog activity source.</summary>
     public static TracerProviderBuilder AddCatalogTracing(this TracerProviderBuilder tracing)
     {
         ArgumentNullException.ThrowIfNull(tracing);

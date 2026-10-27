@@ -12,8 +12,10 @@ using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
+/// <summary>Builds Admin write context test scopes over in-memory databases.</summary>
 internal static class AdminWriteDbContextTestFactory
 {
+    /// <summary>Builds a scope using the given domain event dispatcher, the outbox and any additional interceptors.</summary>
     public static AdminWriteDbContextTestScope CreateWithDomainEventDispatcher(
         IDomainEventDispatcher dispatcher,
         params IInterceptor[] additionalInterceptors)
@@ -50,6 +52,7 @@ internal static class AdminWriteDbContextTestFactory
         }
     }
 
+    /// <summary>Builds a validated scope using the generated integration event dispatcher, optionally registering a lifecycle probe handler.</summary>
     public static AdminWriteDbContextTestScope CreateWithGeneratedIntegrationEventDispatcher(
         DomainEventDispatchLifecycleProbe? probe = null,
         params IInterceptor[] additionalInterceptors)

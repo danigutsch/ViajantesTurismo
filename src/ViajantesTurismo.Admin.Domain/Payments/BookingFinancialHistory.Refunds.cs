@@ -5,6 +5,7 @@ namespace ViajantesTurismo.Admin.Domain.Payments;
 
 public sealed partial class BookingFinancialHistory
 {
+    /// <summary>Drafts a refund of a receipt.</summary>
     internal Result<Guid> DraftRefund(long expectedVersion, Guid receiptId, decimal originalCashBasis, decimal euroCreditReversed, decimal euroCashPayable,
         Guid? refundQuoteId, IReadOnlyList<InstallmentAllocation> reversedAllocations, string reference, DateTimeOffset performedAt, string actorId, DateTimeOffset now, decimal? actualSettlement = null)
     {
@@ -63,6 +64,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(draft.Id);
     }
 
+    /// <summary>Approves a drafted refund.</summary>
     internal Result<Guid> ApproveRefund(long expectedVersion, Guid refundId, FinancialApproval approval)
     {
         var check = CanChange(expectedVersion, approval.ActorId, approval.ApprovedAt);
@@ -88,6 +90,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(refundId);
     }
 
+    /// <summary>Approves a correction of an approved refund.</summary>
     internal Result<Guid> CorrectRefund(long expectedVersion, Guid refundId, FinancialApproval approval)
     {
         var check = CanChange(expectedVersion, approval.ActorId, approval.ApprovedAt);

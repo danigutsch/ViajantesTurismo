@@ -13,8 +13,10 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Messaging;
 
+/// <summary>Runs messaging schema migrations against a real PostgreSQL database.</summary>
 internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
 {
+    /// <summary>Name of the first Admin migration.</summary>
     public const string InitialMigration = "20260724210254_InitialAdmin";
 
     private readonly PostgreSqlTestDatabase database;
@@ -26,6 +28,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         connectionString = database.ConnectionString;
     }
 
+    /// <summary>Creates a scenario over a new fixture-issued database.</summary>
     [SuppressMessage(
         "Reliability",
         "CA2000:Dispose objects before losing scope",
@@ -38,6 +41,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         return new AdminMessagingMigrationScenario(database);
     }
 
+    /// <summary>Migrates the database up to <see cref="InitialMigration" />.</summary>
     public async Task ApplyInitialMigration(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -45,6 +49,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         await migrator.MigrateAsync(InitialMigration, ct);
     }
 
+    /// <summary>Reverts the database to before any migration.</summary>
     public async Task RemoveAllMigrations(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -52,6 +57,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         await migrator.MigrateAsync(Migration.InitialDatabase, ct);
     }
 
+    /// <summary>Inserts one completed idempotency row with raw SQL.</summary>
     public async Task InsertIdempotencyRow(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -68,12 +74,15 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         _ = await command.ExecuteNonQueryAsync(ct);
     }
 
+    /// <summary>Returns whether the messaging idempotency keys table exists.</summary>
     public Task<bool> IdempotencyTableExists(CancellationToken ct) =>
         RelationExists("messaging.idempotency_keys", ct);
 
+    /// <summary>Returns whether the messaging outbox messages table exists.</summary>
     public Task<bool> OutboxTableExists(CancellationToken ct) =>
         RelationExists("messaging.outbox_messages", ct);
 
+    /// <summary>Returns whether the <c>citext</c> extension is installed in the database.</summary>
     public async Task<bool> CustomerEmailExtensionExists(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -83,6 +92,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         return (bool)(await command.ExecuteScalarAsync(ct) ?? false);
     }
 
+    /// <summary>Counts the rows in the idempotency keys table.</summary>
     public async Task<int> IdempotencyRowCount(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -92,6 +102,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         return Convert.ToInt32(await command.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture);
     }
 
+    /// <summary>Reads the applied migration ids in order.</summary>
     public async Task<string[]> GetMigrationHistory(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -108,6 +119,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         return [.. migrations];
     }
 
+    /// <summary>Disposes the fixture-issued database.</summary>
     public ValueTask DisposeAsync() => database.DisposeAsync();
 
     private async Task<bool> RelationExists(string relationName, CancellationToken ct)

@@ -5,6 +5,7 @@ namespace ViajantesTurismo.Admin.Domain.Payments;
 
 public sealed partial class BookingFinancialHistory
 {
+    /// <summary>Records a payment receipt, optionally with proposed allocations.</summary>
     internal Result<Guid> RecordReceipt(long expectedVersion, ReceiptSettlement settlement, DateOnly paymentDate, DateTimeOffset? settledAt,
         PaymentMethod method, string reference, IReadOnlyList<InstallmentAllocation> proposedAllocations, string actorId, DateTimeOffset now, DateOnly businessDate)
     {
@@ -32,6 +33,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(id);
     }
 
+    /// <summary>Drafts a reconciliation that converts a receipt into EUR credit.</summary>
     internal Result<Guid> DraftReconciliation(long expectedVersion, Guid receiptId, decimal euroCredit, Guid? quoteId,
         IReadOnlyList<InstallmentAllocation> allocations, string actorId, DateTimeOffset now, Guid? instructionId = null)
     {
@@ -66,6 +68,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(id);
     }
 
+    /// <summary>Approves a drafted reconciliation and credits the receipt.</summary>
     internal Result<Guid> ApproveReconciliation(long expectedVersion, Guid reconciliationId, FinancialApproval approval, FrozenPaymentInstruction? frozenTerms = null, DateOnly? settlementBusinessDate = null)
     {
         var check = CanChange(expectedVersion, approval.ActorId, approval.ApprovedAt);
@@ -101,6 +104,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(reconciliationId);
     }
 
+    /// <summary>Allocates unallocated receipt credit to installments.</summary>
     internal Result<Guid> Allocate(long expectedVersion, Guid receiptId, IReadOnlyList<InstallmentAllocation> allocations, FinancialApproval approval)
     {
         ArgumentNullException.ThrowIfNull(allocations);
@@ -125,6 +129,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(receiptId);
     }
 
+    /// <summary>Releases earlier allocations back to unallocated credit.</summary>
     internal Result<Guid> ReleaseAllocations(long expectedVersion, IReadOnlyList<InstallmentAllocation> releases, FinancialApproval approval)
     {
         ArgumentNullException.ThrowIfNull(releases);
@@ -149,6 +154,7 @@ public sealed partial class BookingFinancialHistory
         return Result.Ok(BookingId);
     }
 
+    /// <summary>Reverses a receipt and the allocations it funded.</summary>
     internal Result<Guid> ReverseReceipt(long expectedVersion, Guid receiptId, FinancialApproval approval)
     {
         var check = CanChange(expectedVersion, approval.ActorId, approval.ApprovedAt);

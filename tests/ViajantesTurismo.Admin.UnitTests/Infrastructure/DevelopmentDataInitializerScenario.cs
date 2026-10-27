@@ -9,6 +9,7 @@ using ViajantesTurismo.Admin.UnitTests.Domain;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
+/// <summary>In-memory scenario that arranges and inspects database state around the development data initializer.</summary>
 internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
 {
     private static readonly DateTimeOffset CurrentTime = new(2026, 7, 20, 12, 0, 0, TimeSpan.Zero);
@@ -29,6 +30,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
 
     private AdminWriteDbContext DbContext => provider.GetRequiredService<AdminWriteDbContext>();
 
+    /// <summary>Creates a scenario with an in-memory write context and a fixed clock.</summary>
     public static DevelopmentDataInitializerScenario Create()
     {
         var services = new ServiceCollection();
@@ -46,8 +48,10 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         return new DevelopmentDataInitializerScenario(services.BuildServiceProvider());
     }
 
+    /// <summary>Runs the development data initializer.</summary>
     public Task Initialize(CancellationToken ct) => initializer.Initialize(ct);
 
+    /// <summary>Adds a tour that is not part of the development seed.</summary>
     public async Task AddExistingTour(CancellationToken ct)
     {
         var tour = Tour.Create(new TourDefinition(
@@ -61,6 +65,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         await DbContext.SaveChangesAsync(ct);
     }
 
+    /// <summary>Removes all bookings and tours and every customer but the first, leaving a partial seed.</summary>
     public async Task KeepOnlyOneBaselineCustomer(CancellationToken ct)
     {
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
@@ -74,6 +79,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Adds a customer that is not part of the development seed.</summary>
     public async Task AddUnrecognizedCustomer(CancellationToken ct)
     {
         DbContext.Customers.Add(EntityIdTestData.CreateCustomer());
@@ -81,6 +87,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Asserts the full development seed: 5 tours, 15 customers, 10 bookings and no documents.</summary>
     public async Task ShouldContainDevelopmentData(CancellationToken ct)
     {
         var tourCount = await DbContext.Tours.CountAsync(ct);
@@ -98,6 +105,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         documentAuditCount.ShouldBe(0);
     }
 
+    /// <summary>Asserts the seeded tour identifiers and the booking statuses of each tour.</summary>
     public async Task ShouldContainExpectedBookingStatuses(CancellationToken ct)
     {
         var tours = await DbContext.Tours
@@ -113,6 +121,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         tours[4].Bookings.Select(static booking => booking.Status).Order().ToArray().ShouldBe(NatureBookingStatuses);
     }
 
+    /// <summary>Asserts the expected tour count with no customers or bookings.</summary>
     public async Task ShouldContainOnlyTours(int expectedTourCount, CancellationToken ct)
     {
         var tourCount = await DbContext.Tours.CountAsync(ct);
@@ -124,6 +133,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         bookingCount.ShouldBe(0);
     }
 
+    /// <summary>Asserts there are no tours, customers or bookings.</summary>
     public async Task ShouldNotContainDevelopmentData(CancellationToken ct)
     {
         var tourCount = await DbContext.Tours.CountAsync(ct);
@@ -135,6 +145,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         bookingCount.ShouldBe(0);
     }
 
+    /// <summary>Removes all bookings and customers, leaving only tours.</summary>
     public async Task KeepOnlyBaselineTours(CancellationToken ct)
     {
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
@@ -146,6 +157,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Raises the base price of the first tour by one.</summary>
     public async Task AlterBaselineTourPrice(CancellationToken ct)
     {
         var tour = await DbContext.Tours.OrderBy(static item => item.Identifier).FirstAsync(ct);
@@ -155,6 +167,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Removes all bookings, leaving a partial seed.</summary>
     public async Task RemoveBaselineBookings(CancellationToken ct)
     {
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
@@ -164,6 +177,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Sets every booking status to pending.</summary>
     public async Task ResetBaselineBookingsToPendingCheckpoint(CancellationToken ct)
     {
         var bookings = await DbContext.Set<Booking>().ToArrayAsync(ct);
@@ -178,6 +192,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Replaces one seeded booking with a different pending booking for the same customer.</summary>
     public async Task ReplaceBaselineBookingWithArbitraryPendingBooking(CancellationToken ct)
     {
         var tours = await DbContext.Tours
@@ -206,6 +221,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Applies a manual percentage discount to the first seeded booking.</summary>
     public async Task UpdateFirstBaselineBookingDiscount(CancellationToken ct)
     {
         var tours = await DbContext.Tours
@@ -227,6 +243,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Raises the base price of the first booking by one.</summary>
     public async Task AlterPendingBookingBasePrice(CancellationToken ct)
     {
         var booking = await DbContext.Set<Booking>().OrderBy(static item => item.Id).FirstAsync(ct);
@@ -237,6 +254,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         DbContext.ChangeTracker.Clear();
     }
 
+    /// <summary>Asserts that all 10 bookings are pending.</summary>
     public async Task ShouldContainPendingBookingCheckpoint(CancellationToken ct)
     {
         DbContext.ChangeTracker.Clear();
@@ -248,6 +266,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         bookings.Count(static booking => booking.Status == BookingStatus.Pending).ShouldBe(10);
     }
 
+    /// <summary>Asserts the status, payment status and paid ratio of each seeded booking by customer.</summary>
     public async Task ShouldContainExpectedDevelopmentBookingStates(CancellationToken ct)
     {
         DbContext.ChangeTracker.Clear();
@@ -285,6 +304,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
         actual.ShouldBe(expected);
     }
 
+    /// <summary>Returns the status, payment and discount state of every booking ordered by id.</summary>
     public async Task<(
         Guid BookingId,
         BookingStatus Status,
@@ -314,18 +334,21 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
             .ToArray();
     }
 
+    /// <summary>Returns the tour ids in ascending order.</summary>
     public async Task<Guid[]> GetTourIds(CancellationToken ct) =>
         await DbContext.Tours
             .OrderBy(static tour => tour.Id)
             .Select(static tour => tour.Id)
             .ToArrayAsync(ct);
 
+    /// <summary>Returns the customer ids in ascending order.</summary>
     public async Task<Guid[]> GetCustomerIds(CancellationToken ct) =>
         await DbContext.Customers
             .OrderBy(static customer => customer.Id)
             .Select(static customer => customer.Id)
             .ToArrayAsync(ct);
 
+    /// <summary>Disposes the service provider.</summary>
     public async ValueTask DisposeAsync()
     {
         await provider.DisposeAsync();

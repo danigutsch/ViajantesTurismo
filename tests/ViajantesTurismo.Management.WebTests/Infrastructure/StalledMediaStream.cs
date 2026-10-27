@@ -5,11 +5,13 @@ internal sealed class StalledMediaStream : Stream
 {
     private bool hasRead;
 
+    /// <summary>True once the stream has been disposed.</summary>
     public bool IsDisposed
     {
         get; private set;
     }
 
+    /// <summary>True when the stalled read was cancelled.</summary>
     public bool StalledReadWasCancelled
     {
         get; private set;

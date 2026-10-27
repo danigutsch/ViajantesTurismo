@@ -135,6 +135,7 @@ public sealed class DocumentField
         return Result.Ok();
     }
 
+    /// <summary>Copies this field for a new revision, carrying over the previous staff override only when the field is editable and its value is unchanged.</summary>
     internal DocumentField CopyForOwnership(int sortOrder, DocumentField? previous = null)
     {
         var copy = new DocumentField(FieldId, Label, Value, PrivacyClassification, IsEditable)

@@ -9,6 +9,7 @@ using ViajantesTurismo.Admin.Testing.Behavior;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Temporal;
 
+/// <summary>Arranges a PostgreSQL database for verifying that civil dates survive timezone changes and migrations.</summary>
 internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
 {
     private readonly PostgreSqlTestDatabase database;
@@ -18,6 +19,7 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
         this.database = database;
     }
 
+    /// <summary>Creates a scenario over a database issued by <paramref name="fixture" />.</summary>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
         Justification = "The returned scenario owns and disposes the fixture-issued database.")]
     public static async Task<CivilDatePostgreSqlScenario> Create(PostgreSqlTestServerFixture fixture, CancellationToken ct)
@@ -26,6 +28,7 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
         return new CivilDatePostgreSqlScenario(database);
     }
 
+    /// <summary>Migrates the database and seeds one customer born 1990-01-01 and one tour from 2030-02-03 to 2030-02-10 with a booking.</summary>
     public async Task Seed(CancellationToken ct)
     {
         await using var context = CreateContext();
@@ -47,6 +50,7 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
         await context.SaveEntities(ct);
     }
 
+    /// <summary>Migrates forward, or back to the initial migration when <paramref name="forward" /> is false, with the session time zone set to <paramref name="timeZone" />.</summary>
     public async Task Migrate(bool forward, string timeZone, CancellationToken ct)
     {
         await using var context = CreateContext();
@@ -56,6 +60,7 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
             forward ? null : "20260724210254_InitialAdmin", ct);
     }
 
+    /// <summary>Overwrites tour and birth dates with timestamptz values near midnight UTC.</summary>
     public async Task SetTimestampDates(CancellationToken ct)
     {
         await using var context = CreateContext();
@@ -66,6 +71,7 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
             """, ct);
     }
 
+    /// <summary>Reads back the customer birth date, tour start and end dates, and the booking date.</summary>
     public async Task<(DateOnly BirthDate, DateOnly StartDate, DateOnly EndDate,
         DateTime BookingDate)> Read(CancellationToken ct)
     {
@@ -78,6 +84,7 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
             booking.BookingDate);
     }
 
+    /// <summary>Disposes the test database.</summary>
     public ValueTask DisposeAsync() => database.DisposeAsync();
 
     private AdminWriteDbContext CreateContext()

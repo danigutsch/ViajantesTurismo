@@ -3,12 +3,16 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+/// <summary>Token endpoint handler that records form requests and returns a configurable response.</summary>
 internal sealed class RecordingAudienceTokenEndpointHandler : HttpMessageHandler
 {
+    /// <summary>Parsed form fields of each token request.</summary>
     public List<IReadOnlyDictionary<string, string>> Requests { get; } = [];
 
+    /// <summary>Authorization headers sent by the client on each token request, null when absent.</summary>
     public List<string?> ClientAuthorizationHeaders { get; } = [];
 
+    /// <summary>Builds the response for a token request; defaults to a successful token for the requested audience.</summary>
     public Func<IReadOnlyDictionary<string, string>, HttpResponseMessage> ResponseFactory { get; set; } = CreateSuccessResponse;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

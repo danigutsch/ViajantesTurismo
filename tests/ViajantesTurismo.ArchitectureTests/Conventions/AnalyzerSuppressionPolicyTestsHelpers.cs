@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
+/// <summary>Helpers that scan repository sources and project files for analyzer suppressions the policy forbids.</summary>
 internal static class AnalyzerSuppressionPolicyTestsHelpers
 {
     private const string ApprovedGeneratedCodeSection = "[**/Migrations/*.cs]";
@@ -18,11 +19,13 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
         SourceCodeKind.Regular,
         ["NET10_0"]);
 
+    /// <summary>Enumerates files matching the search pattern under the repository root, skipping ignored directories.</summary>
     public static IEnumerable<string> EnumerateRepositoryFiles(string repositoryRoot, string searchPattern)
     {
         return EnumerateRepositoryFiles(new DirectoryInfo(repositoryRoot), searchPattern);
     }
 
+    /// <summary>Reports whether the path is inside bin, obj, .git or .nuget, or is a feature-file code-behind.</summary>
     public static bool IsIgnoredPath(string path)
     {
         return ContainsDirectorySegment(path, "bin")
@@ -32,6 +35,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
             || path.EndsWith(".feature.cs", StringComparison.Ordinal);
     }
 
+    /// <summary>Reports whether the path is a migration designer or model snapshot file.</summary>
     public static bool IsGeneratedSource(string repositoryRoot, string path)
     {
         var relativePath = Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
@@ -41,6 +45,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
                 || relativePath.EndsWith("ModelSnapshot.cs", StringComparison.Ordinal));
     }
 
+    /// <summary>Reports whether an Api service source file is generated and therefore not an approved production API source.</summary>
     public static bool IsUnapprovedProductionApiGeneratedSource(string relativePath, string source)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
@@ -64,6 +69,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
             || ContainsGeneratedCodeAttribute(source);
     }
 
+    /// <summary>Reports whether the source uses the framework SuppressMessage attribute, including via aliases, global usings or disabled branches.</summary>
     public static bool ContainsFrameworkSuppressMessageAttribute(string source)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -109,6 +115,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
                 .Any(static trivia => ContainsFrameworkSuppressMessageAttribute(trivia.ToString()));
     }
 
+    /// <summary>Finds NoWarn entries in the project or props file, returned as "path:value".</summary>
     public static string[] FindNoWarnEntries(string repositoryRoot, string filePath)
     {
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
@@ -117,12 +124,14 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
             .ToArray();
     }
 
+    /// <summary>Finds pragma warning suppressions the policy does not approve in the file, returned as offenses.</summary>
     public static string[] FindUnapprovedPragmaWarningSuppressions(string repositoryRoot, string filePath)
     {
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
         return FindUnapprovedPragmaWarningSuppressionsInSource(File.ReadAllText(filePath), relativePath);
     }
 
+    /// <summary>Finds pragma warning suppressions the policy does not approve in the source text, reported against the display path.</summary>
     public static string[] FindUnapprovedPragmaWarningSuppressionsInSource(string source, string displayPath)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source, RepositoryParseOptions);
@@ -187,6 +196,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
         return [.. violations];
     }
 
+    /// <summary>Finds broad VTARCH001 suppressions in the analyzer configuration or project file, returned as offenses.</summary>
     public static string[] FindBroadProductionHttpSuppressions(string repositoryRoot, string filePath)
     {
         var text = File.ReadAllText(filePath);
@@ -194,6 +204,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
         return FindBroadProductionHttpSuppressionsInSource(text, relativePath);
     }
 
+    /// <summary>Finds broad VTARCH001 suppressions in the configuration text, reported against the display path.</summary>
     public static string[] FindBroadProductionHttpSuppressionsInSource(string text, string displayPath)
     {
         var violations = FindNoWarnDiagnosticEntries(text)
@@ -224,6 +235,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
         return [.. violations];
     }
 
+    /// <summary>Finds pragma directives, including those in disabled branches, that disable VTARCH001 in the file.</summary>
     public static string[] FindProductionHttpPragmaSuppressions(string repositoryRoot, string filePath)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath), RepositoryParseOptions);
@@ -245,12 +257,14 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
         return [.. suppressions];
     }
 
+    /// <summary>Finds SuppressMessage suppressions of the production HTTP analyzer in the file.</summary>
     public static string[] FindProductionHttpSuppressMessageSuppressions(string repositoryRoot, string filePath)
     {
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
         return FindProductionHttpSuppressMessageSuppressionsInSource(File.ReadAllText(filePath), relativePath);
     }
 
+    /// <summary>Finds SuppressMessage suppressions of the production HTTP analyzer in the source text, reported against the display path.</summary>
     public static string[] FindProductionHttpSuppressMessageSuppressionsInSource(string source, string displayPath)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source, RepositoryParseOptions);
@@ -300,17 +314,20 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
         return [.. violations];
     }
 
+    /// <summary>Reports whether the project file at the path enables the production HTTP analyzer.</summary>
     public static bool EnablesProductionHttpAnalyzer(string filePath)
     {
         return EnablesProductionHttpAnalyzer(XDocument.Load(filePath));
     }
 
+    /// <summary>Reports whether the project XML enables the production HTTP analyzer.</summary>
     public static bool EnablesProductionHttpAnalyzerInProject(string projectXml)
     {
         ArgumentNullException.ThrowIfNull(projectXml);
         return EnablesProductionHttpAnalyzer(XDocument.Parse(projectXml));
     }
 
+    /// <summary>Returns the repository root: the nearest ancestor of the test output directory that holds ViajantesTurismo.slnx.</summary>
     public static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);

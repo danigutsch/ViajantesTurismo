@@ -5,6 +5,8 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Customers;
 /// </summary>
 internal enum ImportConflictFieldSource
 {
+    /// <summary>Keep the value already stored for the customer.</summary>
     Existing,
+    /// <summary>Use the value from the imported file.</summary>
     Incoming,
 }

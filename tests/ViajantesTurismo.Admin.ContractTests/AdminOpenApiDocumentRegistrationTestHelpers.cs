@@ -2,8 +2,10 @@ using Microsoft.OpenApi;
 
 namespace ViajantesTurismo.Admin.ContractTests;
 
+/// <summary>Helpers for asserting OpenAPI document registration.</summary>
 internal static class AdminOpenApiDocumentRegistrationTestHelpers
 {
+    /// <summary>Returns the multipart/form-data request schema of the POST operation at the path or throws if missing.</summary>
     public static OpenApiSchema GetMultipartSchema(OpenApiDocument document, string path)
     {
         var operations = document.Paths.TryGetValue(path, out var candidate) && candidate.Operations is not null

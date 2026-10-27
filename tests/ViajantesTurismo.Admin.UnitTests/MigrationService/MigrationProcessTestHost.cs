@@ -8,6 +8,9 @@ using ViajantesTurismo.MigrationService;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
+/// <summary>
+/// Test host that runs the migration worker and records lifecycle calls, tokens and optional simulated failures.
+/// </summary>
 internal sealed class MigrationProcessTestHost : IHost
 {
     private readonly bool cancelDuringInitialization;
@@ -20,6 +23,9 @@ internal sealed class MigrationProcessTestHost : IHost
     private readonly Exception? stopFailure;
     private readonly List<string> lifecycleEvents = [];
 
+    /// <summary>
+    /// Creates a host whose worker runs <paramref name="initializationOperation"/>, optionally cancelling during initialization or failing on start, stop or dispose.
+    /// </summary>
     public MigrationProcessTestHost(
         Func<CancellationToken, Task> initializationOperation,
         bool cancelDuringInitialization = false,
@@ -51,47 +57,80 @@ internal sealed class MigrationProcessTestHost : IHost
         provider = services.BuildServiceProvider();
     }
 
+    /// <summary>
+    /// Gets the host service provider.
+    /// </summary>
     public IServiceProvider Services => provider;
 
+    /// <summary>
+    /// Gets the token cancelled when the application is asked to stop.
+    /// </summary>
     public CancellationToken ApplicationStopping => applicationStopping;
 
+    /// <summary>
+    /// Gets whether <see cref="Dispose"/> was called.
+    /// </summary>
     public bool DisposeCalled
     {
         get; private set;
     }
 
+    /// <summary>
+    /// Gets whether the initialization operation ran.
+    /// </summary>
     public bool InitializationCalled
     {
         get; private set;
     }
 
+    /// <summary>
+    /// Gets the token passed to the initialization operation.
+    /// </summary>
     public CancellationToken InitializationToken
     {
         get; private set;
     }
 
+    /// <summary>
+    /// Gets whether <see cref="StartAsync"/> was called.
+    /// </summary>
     public bool StartCalled
     {
         get; private set;
     }
 
+    /// <summary>
+    /// Gets whether <see cref="StopAsync"/> was called.
+    /// </summary>
     public bool StopCalled
     {
         get; private set;
     }
 
+    /// <summary>
+    /// Gets the ordered lifecycle events recorded (Start, Initialize, Stop, Dispose).
+    /// </summary>
     public IReadOnlyList<string> LifecycleEvents => lifecycleEvents;
 
+    /// <summary>
+    /// Gets the token passed to <see cref="StartAsync"/>.
+    /// </summary>
     public CancellationToken StartToken
     {
         get; private set;
     }
 
+    /// <summary>
+    /// Gets the token passed to <see cref="StopAsync"/>.
+    /// </summary>
     public CancellationToken StopToken
     {
         get; private set;
     }
 
+    /// <summary>
+    /// Records the start and completes, or faults with the configured start failure.
+    /// </summary>
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
         StartCalled = true;
@@ -101,6 +140,9 @@ internal sealed class MigrationProcessTestHost : IHost
         return startFailure is null ? Task.CompletedTask : Task.FromException(startFailure);
     }
 
+    /// <summary>
+    /// Records the stop and completes, or faults with the configured stop failure.
+    /// </summary>
     public Task StopAsync(CancellationToken cancellationToken = default)
     {
         StopCalled = true;
@@ -110,6 +152,9 @@ internal sealed class MigrationProcessTestHost : IHost
         return stopFailure is null ? Task.CompletedTask : Task.FromException(stopFailure);
     }
 
+    /// <summary>
+    /// Disposes the host once, then throws the configured dispose failure if any.
+    /// </summary>
     [SuppressMessage(
         "Major Code Smell",
         "S3877:Exceptions should not be thrown from unexpected methods",

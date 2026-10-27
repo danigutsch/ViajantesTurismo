@@ -3,8 +3,10 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
+/// <summary>Test data for document drafts.</summary>
 internal static class DocumentDraftTestData
 {
+    /// <summary>Creates valid branding settings for the Viajantes brand.</summary>
     public static BrandingSettingsDto CreateBrandingSettings() => new()
     {
         BrandName = "Viajantes",
@@ -16,6 +18,7 @@ internal static class DocumentDraftTestData
         BodyFontFamily = "Inter"
     };
 
+    /// <summary>Creates a valid draft with a customer-facing contract fixture created at the given time.</summary>
     public static DocumentDraft Create(
         DateTime createdAt,
         Uri? brandingLogoUri = null,

@@ -6,8 +6,10 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+/// <summary>Builds OpenID Connect token validated contexts for event tests.</summary>
 internal static class ManagementOpenIdConnectEventsTestContext
 {
+    /// <summary>Creates a context with a token endpoint response built from the given values.</summary>
     public static TokenValidatedContext Create(
         ClaimsPrincipal? principal = null,
         string? accessToken = "access-token",
@@ -37,6 +39,7 @@ internal static class ManagementOpenIdConnectEventsTestContext
         };
     }
 
+    /// <summary>Creates a context whose token endpoint response is null.</summary>
     public static TokenValidatedContext CreateWithoutTokenResponse()
     {
         var context = Create();

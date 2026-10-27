@@ -19,9 +19,11 @@ using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.ApiService;
 
+/// <summary>Maps the Catalog management and public HTTP endpoints.</summary>
 internal static class CatalogEndpoints
 {
 
+    /// <summary>Maps all Catalog endpoints on the versioned API group.</summary>
     internal static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);

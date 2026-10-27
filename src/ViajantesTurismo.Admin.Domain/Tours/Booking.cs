@@ -205,6 +205,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>Gets whether deleting the booking would erase financial history.</summary>
     public bool HasFinancialHistory => FinancialHistory is not null;
 
+    /// <summary>Attaches loaded financial history to this booking; throws when the history belongs to another booking.</summary>
     internal void RestoreFinancialHistory(BookingFinancialHistory history)
     {
         if (history.BookingId != Id)

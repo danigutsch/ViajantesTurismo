@@ -18,8 +18,10 @@ public sealed class CatalogDbContext(
     /// </summary>
     public DbSet<EditablePublicContent> PublicContent => Set<EditablePublicContent>();
 
+    /// <summary>Gets the Catalog tour read model rows.</summary>
     internal DbSet<CatalogTourReadModelEntity> CatalogTourReadModels => Set<CatalogTourReadModelEntity>();
 
+    /// <summary>Gets the public media images with their variants, tour links and accessibility texts.</summary>
     internal DbSet<PublicMediaImage> PublicMediaImages => Set<PublicMediaImage>();
 
     /// <inheritdoc />

@@ -5,6 +5,9 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
 /// <summary>Write-side tour setup for document command handler tests.</summary>
+/// <param name="TourStore">Store holding the tour.</param>
+/// <param name="TourId">Id of the tour.</param>
+/// <param name="BookingId">Id of the single booking on the tour.</param>
 internal sealed record DocumentTourTestData(FakeTourStore TourStore, Guid TourId, Guid BookingId)
 {
     /// <summary>Creates a tour store holding one tour with a single booking in the given status.</summary>

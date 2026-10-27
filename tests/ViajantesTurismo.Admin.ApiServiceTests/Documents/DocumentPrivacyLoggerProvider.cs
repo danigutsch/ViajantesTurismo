@@ -3,14 +3,18 @@ using Microsoft.Extensions.Logging;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 
+/// <summary>Logger provider that captures messages, structured values and exceptions for privacy assertions.</summary>
 internal sealed class DocumentPrivacyLoggerProvider : ILoggerProvider
 {
     private readonly ConcurrentQueue<string> messages = new();
 
+    /// <summary>Gets a snapshot of every captured log text.</summary>
     public IReadOnlyCollection<string> Messages => messages.ToArray();
 
+    /// <summary>Creates a logger that writes into the shared message queue.</summary>
     public ILogger CreateLogger(string categoryName) => new CapturingLogger(messages);
 
+    /// <summary>Releases nothing; the provider owns no disposable resources.</summary>
     public void Dispose()
     {
     }

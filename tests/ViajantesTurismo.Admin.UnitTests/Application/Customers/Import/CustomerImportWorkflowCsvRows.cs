@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
+/// <summary>Builds customer import workflow CSV rows for tests.</summary>
 internal static class CustomerImportWorkflowCsvRows
 {
+    /// <summary>Builds one valid CSV row with the given names and email.</summary>
     public static string Build(string firstName, string lastName, string email)
     {
         return $"{firstName},{lastName},Male,1990-01-01,Brazilian,Engineer,A12345678,BR," +

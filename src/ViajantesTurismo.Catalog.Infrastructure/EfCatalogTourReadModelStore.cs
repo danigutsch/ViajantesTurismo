@@ -6,11 +6,16 @@ using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
+/// <summary>
+/// EF Core store for the Catalog tour read model, applying projection events idempotently by stream position.
+/// </summary>
+/// <param name="dbContext">The Catalog context.</param>
 internal sealed class EfCatalogTourReadModelStore(
     CatalogDbContext dbContext) : ICatalogTourReadModelStore
 {
     private const int MaxProjectionSaveAttempts = 3;
 
+    /// <inheritdoc />
     public async ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(tour);
@@ -36,6 +41,7 @@ internal sealed class EfCatalogTourReadModelStore(
         await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async ValueTask<CatalogTourDraftReadModel?> UpdatePresentation(
         Guid catalogTourId,
         CatalogTourPresentationUpdate update,
@@ -90,6 +96,7 @@ internal sealed class EfCatalogTourReadModelStore(
         throw new DbUpdateConcurrencyException("Catalog tour presentation projection remained stale after retries.");
     }
 
+    /// <inheritdoc />
     public async ValueTask<CatalogTourDraftReadModel?> SetPublicationStatus(
         Guid catalogTourId,
         bool isPublished,
@@ -129,6 +136,7 @@ internal sealed class EfCatalogTourReadModelStore(
         throw new DbUpdateConcurrencyException("Catalog tour publication projection remained stale after retries.");
     }
 
+    /// <inheritdoc />
     public async ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
         return await dbContext.CatalogTourReadModels
@@ -139,6 +147,7 @@ internal sealed class EfCatalogTourReadModelStore(
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct)
     {
         var tour = await dbContext.CatalogTourReadModels
@@ -149,6 +158,7 @@ internal sealed class EfCatalogTourReadModelStore(
         return tour is null ? null : ToReadModel(tour);
     }
 
+    /// <inheritdoc />
     public async ValueTask<CatalogTourDraftReadModel?> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(slug);

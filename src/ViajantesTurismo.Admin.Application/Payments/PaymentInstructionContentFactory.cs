@@ -6,8 +6,10 @@ using ViajantesTurismo.Admin.Domain.Payments;
 
 namespace ViajantesTurismo.Admin.Application.Payments;
 
+/// <summary>Builds draft content for payment instruction documents.</summary>
 internal static class PaymentInstructionContentFactory
 {
+    /// <summary>Creates draft content that holds no sensitive payment payload, only a placeholder field and branding.</summary>
     public static Result<DocumentDraftContent> Create(FrozenPaymentInstruction terms, DocumentBrandingSnapshotValues branding)
     {
         // Ordinary document fields contain no sensitive snapshot payload. Financial fields are rendered only from protected typed snapshots.

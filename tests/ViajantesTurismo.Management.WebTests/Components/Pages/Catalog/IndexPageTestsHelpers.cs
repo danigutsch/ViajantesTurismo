@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
+/// <summary>Test data helpers for the catalog index page tests.</summary>
 internal static class IndexPageTestsHelpers
 {
+    /// <summary>Builds a catalog tour DTO with derived text fields and the given publish state.</summary>
     public static CatalogTourDto CreateTour(string identifier, string title, string slug, bool isPublished)
     {
         return new CatalogTourDto

@@ -2,8 +2,10 @@ using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
+/// <summary>Helpers for tests that pin the AppHost orchestration source text.</summary>
 internal static partial class AppHostOrchestrationTestsHelpers
 {
+    /// <summary>Returns the repository root: the nearest ancestor of the test output directory that holds ViajantesTurismo.slnx.</summary>
     public static string GetRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

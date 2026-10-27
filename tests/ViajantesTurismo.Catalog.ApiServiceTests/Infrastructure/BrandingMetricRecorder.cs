@@ -8,6 +8,7 @@ internal sealed class BrandingMetricRecorder : IDisposable
     private readonly MeterListener listener = new();
     private readonly List<(string Instrument, long Value, KeyValuePair<string, object?>[] Tags)> measurements = [];
 
+    /// <summary>Starts listening to instruments whose meter is scoped by the given meter factory.</summary>
     public BrandingMetricRecorder(IMeterFactory meterFactory)
     {
         listener.InstrumentPublished = (instrument, meterListener) =>
@@ -27,8 +28,10 @@ internal sealed class BrandingMetricRecorder : IDisposable
         listener.Start();
     }
 
+    /// <summary>Records current values of observable instruments.</summary>
     public void Observe() => listener.RecordObservableInstruments();
 
+    /// <summary>Sums the recorded values of the instrument whose tag matches the given name and value.</summary>
     public long Sum(string instrument, string tagName, string tagValue)
     {
         lock (measurements)
@@ -39,6 +42,7 @@ internal sealed class BrandingMetricRecorder : IDisposable
         }
     }
 
+    /// <summary>Returns the most recent recorded value of the instrument.</summary>
     public long Last(string instrument)
     {
         lock (measurements)
@@ -47,6 +51,7 @@ internal sealed class BrandingMetricRecorder : IDisposable
         }
     }
 
+    /// <summary>Returns the distinct, sorted tag names recorded for the instrument.</summary>
     public string[] TagNames(string instrument)
     {
         lock (measurements)
@@ -60,5 +65,6 @@ internal sealed class BrandingMetricRecorder : IDisposable
         }
     }
 
+    /// <summary>Stops listening to instruments.</summary>
     public void Dispose() => listener.Dispose();
 }

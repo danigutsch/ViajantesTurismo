@@ -9,8 +9,10 @@ public sealed record CustomerImportFieldMapping(CustomerImportField Field, strin
     public bool IsAutoMatched => MatchedCsvHeader is not null;
 }
 
+/// <summary>Matches CSV headers to customer import fields and rewrites the header row to canonical field names.</summary>
 internal static class CustomerImportHeaderMatcher
 {
+    /// <summary>All customer import fields with their display names and whether each is required.</summary>
     public static IReadOnlyList<CustomerImportField> Fields
     {
         get;
@@ -47,6 +49,7 @@ internal static class CustomerImportHeaderMatcher
         new(CustomerImportFieldNames.AdditionalInfo, "Additional Info", false),
     ];
 
+    /// <summary>Matches each import field to a CSV header by case-insensitive name, leaving unmatched fields without a header.</summary>
     public static IReadOnlyList<CustomerImportFieldMapping> AutoMatch(IReadOnlyList<string> csvHeaders)
     {
         return Fields
@@ -60,6 +63,7 @@ internal static class CustomerImportHeaderMatcher
             .AsReadOnly();
     }
 
+    /// <summary>Rewrites the CSV header row using automatic and user mappings, with user mappings taking precedence.</summary>
     public static byte[] ApplyMapping(
         byte[] fileBytes,
         IReadOnlyList<CustomerImportFieldMapping> autoMappings,

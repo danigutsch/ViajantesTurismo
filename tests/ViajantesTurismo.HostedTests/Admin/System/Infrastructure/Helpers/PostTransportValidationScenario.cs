@@ -6,12 +6,16 @@ using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 
+/// <summary>Drives the Admin to Catalog tour transport validation scenario through both APIs.</summary>
+/// <param name="adminApi">The authenticated Admin API client.</param>
+/// <param name="catalogTours">The Catalog tours API client.</param>
 internal sealed class PostTransportValidationScenario(
     HttpClient adminApi,
     ICatalogToursApiClient catalogTours)
 {
     private static readonly TimeSpan ProjectionTimeout = TimeSpan.FromSeconds(45);
 
+    /// <summary>Creates an admin tour with the given identifier and name.</summary>
     public async Task<GetTourDto> CreateAdminTour(string identifier, string name)
     {
         return await adminApi.CreateTour(new CreateTourOptions
@@ -21,6 +25,7 @@ internal sealed class PostTransportValidationScenario(
         });
     }
 
+    /// <summary>Waits until the admin tour is projected into the Catalog, tolerating transient server errors.</summary>
     public async Task<CatalogTourDto> WaitForCatalogTour(Guid adminTourId, CancellationToken ct)
     {
         return await Eventually.Until(
@@ -43,6 +48,7 @@ internal sealed class PostTransportValidationScenario(
             ct);
     }
 
+    /// <summary>Sets the Catalog presentation of the tour, publishes it and returns the reloaded published tour.</summary>
     public async Task<CatalogTourDto> PublishCatalogTour(CatalogTourDto tour, string title, string slug, CancellationToken ct)
     {
         var publishedOutcome = await catalogTours.UpdatePresentation(

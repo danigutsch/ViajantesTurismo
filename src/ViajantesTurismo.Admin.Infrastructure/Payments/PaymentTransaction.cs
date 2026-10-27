@@ -7,8 +7,11 @@ using ViajantesTurismo.Admin.Application.Payments;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
+/// <summary>Runs payment mutations in a database transaction guarded by PostgreSQL advisory locks.</summary>
+/// <param name="context">The Admin write database context.</param>
 internal sealed class PaymentTransaction(AdminWriteDbContext context) : IPaymentTransaction
 {
+    /// <inheritdoc />
     public async Task<Result<Guid>> Execute(IReadOnlyList<string> lockNames, Func<Task<Result<Guid>>> mutation, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(lockNames);

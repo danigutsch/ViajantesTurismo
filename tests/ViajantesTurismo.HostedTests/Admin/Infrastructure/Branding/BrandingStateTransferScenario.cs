@@ -29,6 +29,7 @@ internal sealed class BrandingStateTransferScenario : IAsyncDisposable
         this.adminWorkerHost = adminWorkerHost;
     }
 
+    /// <summary>Builds, prepares the databases of, and starts the Branding producer host and the Admin worker host.</summary>
     public static async Task<BrandingStateTransferScenario> Start(
         PostgreSqlTestDatabase catalogDatabase,
         PostgreSqlTestDatabase adminDatabase,
@@ -63,12 +64,14 @@ internal sealed class BrandingStateTransferScenario : IAsyncDisposable
         return new BrandingStateTransferScenario(brandingHost, adminWorkerHost);
     }
 
+    /// <summary>Saves branding settings through the Branding producer host's settings store.</summary>
     public async Task Save(BrandingSettings settings, CancellationToken ct)
     {
         await using var scope = brandingHost.Services.CreateAsyncScope();
         await scope.ServiceProvider.GetRequiredService<IBrandingSettingsStore>().SaveSettings(settings, ct);
     }
 
+    /// <summary>Polls the Admin projection until its source revision reaches the given revision or the timeout elapses, returning the last state read.</summary>
     public async Task<BrandingProjectionState?> WaitForProjectionRevision(long revision, TimeSpan timeout, CancellationToken ct)
     {
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -89,6 +92,7 @@ internal sealed class BrandingStateTransferScenario : IAsyncDisposable
         return current;
     }
 
+    /// <summary>Captures the document branding snapshot from the Admin worker's current projection.</summary>
     public async Task<PandaBear.Results.Result<DocumentBrandingSnapshotValues>> CaptureDocumentBranding(CancellationToken ct)
     {
         await using var scope = adminWorkerHost.Services.CreateAsyncScope();
@@ -96,6 +100,7 @@ internal sealed class BrandingStateTransferScenario : IAsyncDisposable
         return await source.Capture(ct);
     }
 
+    /// <summary>Stops both hosts and releases them.</summary>
     public async ValueTask DisposeAsync()
     {
         await adminWorkerHost.StopAsync(CancellationToken.None);

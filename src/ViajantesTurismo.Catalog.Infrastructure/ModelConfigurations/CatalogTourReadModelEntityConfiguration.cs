@@ -4,8 +4,10 @@ using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
 
+/// <summary>EF Core mapping for the catalog tour read model.</summary>
 internal sealed class CatalogTourReadModelEntityConfiguration : IEntityTypeConfiguration<CatalogTourReadModelEntity>
 {
+    /// <summary>Maps the table, unique indexes, column limits and concurrency tokens.</summary>
     public void Configure(EntityTypeBuilder<CatalogTourReadModelEntity> entity)
     {
         entity.ToTable("CatalogTourReadModels");

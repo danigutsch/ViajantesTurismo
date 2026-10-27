@@ -3,8 +3,10 @@ using PandaBear.ImageProcessing;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
+/// <summary>Validates <see cref="MediaUploadValidationOptions"/>, requiring positive limits within the web defaults and at least one allowed content type.</summary>
 internal sealed class MediaUploadValidationOptionsValidator : IValidateOptions<MediaUploadValidationOptions>
 {
+    /// <inheritdoc />
     public ValidateOptionsResult Validate(string? name, MediaUploadValidationOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);

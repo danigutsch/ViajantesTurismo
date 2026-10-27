@@ -1,5 +1,6 @@
 namespace ViajantesTurismo.Catalog.ApiService;
 
+/// <summary>Source-generated log messages for public cache invalidation and tour projection.</summary>
 internal static partial class CatalogCacheLog
 {
     [LoggerMessage(

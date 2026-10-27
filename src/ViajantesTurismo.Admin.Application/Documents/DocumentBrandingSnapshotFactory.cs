@@ -11,6 +11,7 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// </summary>
 internal static class DocumentBrandingSnapshotFactory
 {
+    /// <summary>Builds snapshot values from the current branding projection, hashing them into a version.</summary>
     public static DocumentBrandingSnapshotValues FromProjection(BrandingProjectionState projection)
     {
         ArgumentNullException.ThrowIfNull(projection);

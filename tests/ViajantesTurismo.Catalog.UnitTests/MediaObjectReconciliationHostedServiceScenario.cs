@@ -7,6 +7,7 @@ using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Arranges a reconciliation hosted service over in-memory stores for batch tests.</summary>
 internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDisposable
 {
     private readonly ServiceProvider provider;
@@ -23,11 +24,13 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
             NullLogger<MediaObjectReconciliationHostedService>.Instance);
     }
 
+    /// <summary>Gets the in-memory object store the scenario runs against.</summary>
     public InMemoryMediaObjectStore ObjectStore
     {
         get;
     }
 
+    /// <summary>Creates a scenario whose store holds an unreferenced object last modified two days ago.</summary>
     public static async Task<MediaObjectReconciliationHostedServiceScenario> CreateWithOldOrphan()
     {
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
@@ -49,6 +52,7 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
         return new MediaObjectReconciliationHostedServiceScenario(services.BuildServiceProvider(), objectStore);
     }
 
+    /// <summary>Creates a scenario whose store holds an unreferenced object that was just written.</summary>
     public static async Task<MediaObjectReconciliationHostedServiceScenario> CreateWithRecentOrphan()
     {
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
@@ -63,6 +67,7 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
         return Create(image, objectStore);
     }
 
+    /// <summary>Creates a scenario where the pending image's source object is absent from the store.</summary>
     public static MediaObjectReconciliationHostedServiceScenario CreateWithMissingObject()
     {
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
@@ -80,8 +85,10 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
         return new MediaObjectReconciliationHostedServiceScenario(services.BuildServiceProvider(), objectStore);
     }
 
+    /// <summary>Runs one reconciliation batch and returns its result.</summary>
     public ValueTask<int> ExecuteBatch(CancellationToken ct) => service.RunBatch(ct);
 
+    /// <summary>Disposes the hosted service and its service provider.</summary>
     public async ValueTask DisposeAsync()
     {
         service.Dispose();

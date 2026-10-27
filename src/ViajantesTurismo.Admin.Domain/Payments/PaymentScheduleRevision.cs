@@ -65,6 +65,7 @@ public sealed class PaymentScheduleRevision
     /// <summary>Gets whether creator and approver are the same Admin.</summary>
     public bool SelfApproved => Approval?.ActorId == CreatedBy;
 
+    /// <summary>Validates and creates a draft schedule revision.</summary>
     internal static Result<PaymentScheduleRevision> Create(int number, decimal obligation, decimal bookingPrice, IReadOnlyList<PaymentInstallment> installments, string actorId, DateTimeOffset now)
     {
         var money = PaymentMoney.Create(obligation, Currency.Euro);
@@ -89,10 +90,12 @@ public sealed class PaymentScheduleRevision
         return sum == obligation ? Result.Ok(new PaymentScheduleRevision(Guid.CreateVersion7(), number, money.Value, price.Value, [.. installments], actorId, now, null, false))
             : FinancialErrors.Invalid("installments").ConvertError<PaymentScheduleRevision>();
     }
+    /// <summary>Exports the revision for persistence.</summary>
     internal PaymentScheduleState ExportState() => new(Id, Number, Obligation.Amount, BookingPrice.Amount,
         _installments.Select(item => new PaymentInstallmentState(item.Id, item.Amount.Amount, item.DueDate)).ToArray(), CreatedBy, CreatedAt,
         Approval is null ? null : new FinancialApprovalState(Approval.ActorId, Approval.ApprovedAt, Approval.Reason), Superseded);
 
+    /// <summary>Rebuilds a revision from a stored snapshot, failing when it is inconsistent.</summary>
     internal static Result<PaymentScheduleRevision> Restore(PaymentScheduleState state)
     {
         if (state.Id == Guid.Empty || state.Installments is null || state.Installments.Any(item => item is null || item.Id == Guid.Empty))
@@ -128,6 +131,8 @@ public sealed class PaymentScheduleRevision
         return Result.Ok(new PaymentScheduleRevision(state.Id, state.Number, value.Obligation, value.BookingPrice, [.. installments], state.CreatedBy, state.CreatedAt, approval, state.Superseded));
     }
 
+    /// <summary>Returns this revision with the given approval.</summary>
     internal PaymentScheduleRevision Approve(FinancialApproval approval) => new(Id, Number, Obligation, BookingPrice, _installments, CreatedBy, CreatedAt, approval, false);
+    /// <summary>Returns this revision marked as superseded.</summary>
     internal PaymentScheduleRevision Supersede() => new(Id, Number, Obligation, BookingPrice, _installments, CreatedBy, CreatedAt, Approval, true);
 }

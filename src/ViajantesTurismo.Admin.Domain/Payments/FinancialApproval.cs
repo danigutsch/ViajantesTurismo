@@ -31,6 +31,7 @@ public sealed class FinancialApproval : ValueObject
     public static Result<FinancialApproval> Create(string actorId, DateTimeOffset now, FinancialReason reason, bool confirmed) =>
         confirmed && ValidActor(actorId) && now != default && now.Offset == TimeSpan.Zero && reason != FinancialReason.None && Enum.IsDefined(reason)
             ? Result.Ok(new FinancialApproval(actorId, now, reason)) : FinancialErrors.Invalid("approval").ConvertError<FinancialApproval>();
+    /// <summary>Checks that an actor identifier is non-blank, at most 256 characters and free of control characters.</summary>
     internal static bool ValidActor(string? actorId) => !string.IsNullOrWhiteSpace(actorId) && actorId.Length <= 256 && !actorId.Any(char.IsControl);
     /// <inheritdoc />
     protected override IEnumerable<object?> GetEqualityComponents()

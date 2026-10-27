@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+/// <summary>Loopback Kestrel server whose <c>/token</c> endpoint answers 307 to <c>/redirect-target</c> and records both request bodies.</summary>
 internal sealed class RedirectingTokenExchangeTestServer : IAsyncDisposable
 {
     private readonly WebApplication _application;
@@ -26,15 +27,19 @@ internal sealed class RedirectingTokenExchangeTestServer : IAsyncDisposable
         _tokenRequestBodies = tokenRequestBodies;
     }
 
+    /// <summary>Absolute URI of the <c>/token</c> endpoint on the bound loopback port.</summary>
     public Uri TokenEndpoint
     {
         get;
     }
 
+    /// <summary>Bodies received by <c>/redirect-target</c>, in arrival order.</summary>
     public IReadOnlyList<string> RedirectRequestBodies => _redirectRequestBodies.ToArray();
 
+    /// <summary>Bodies received by <c>/token</c>, in arrival order.</summary>
     public IReadOnlyList<string> TokenRequestBodies => _tokenRequestBodies.ToArray();
 
+    /// <summary>Starts the server on an ephemeral loopback port and returns it once listening.</summary>
     public static async Task<RedirectingTokenExchangeTestServer> Start(CancellationToken ct)
     {
         var builder = WebApplication.CreateBuilder();
@@ -68,6 +73,7 @@ internal sealed class RedirectingTokenExchangeTestServer : IAsyncDisposable
             tokenRequestBodies);
     }
 
+    /// <summary>Stops and disposes the underlying web application.</summary>
     public ValueTask DisposeAsync()
     {
         return _application.DisposeAsync();

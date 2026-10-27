@@ -7,6 +7,7 @@ namespace ViajantesTurismo.Management.Web.Helpers;
 /// </summary>
 internal static class BookingPriceCalculator
 {
+    /// <summary>Sums base price, single-room supplement and bike prices for the principal and companion.</summary>
     public static decimal CalculateSubtotal(
         RoomTypeDto roomType,
         BikeTypeDto principalBikeType,
@@ -37,6 +38,7 @@ internal static class BookingPriceCalculator
         return basePrice + roomCost + principalBikeCost + companionBikeCost;
     }
 
+    /// <summary>Computes the discount from a percentage or absolute amount; returns zero for no discount or non-positive amounts.</summary>
     public static decimal CalculateDiscountAmount(
         DiscountTypeDto discountType,
         decimal discountAmount,
@@ -55,6 +57,7 @@ internal static class BookingPriceCalculator
         };
     }
 
+    /// <summary>Subtracts the discount from the subtotal, never going below zero.</summary>
     public static decimal CalculateFinalTotal(decimal subtotal, decimal discountAmount)
     {
         return Math.Max(0, subtotal - discountAmount);

@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Architecture.Analyzers.Tests;
 
+/// <summary>Support source compiled alongside analyzer test inputs.</summary>
 internal static class AnalyzerTestSupport
 {
+    /// <summary>C# source of the support types referenced by analyzer test inputs.</summary>
     public const string Source = """
         using System;
         using System.Net.Http;

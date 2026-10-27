@@ -14,8 +14,11 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 /// </summary>
 internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> options) : DbContext(options)
 {
+    /// <summary>Tours queried without tracking.</summary>
     public DbSet<Tour> Tours => Set<Tour>();
+    /// <summary>Customers queried without tracking.</summary>
     public DbSet<Customer> Customers => Set<Customer>();
+    /// <summary>Document drafts queried without tracking.</summary>
     public DbSet<DocumentDraft> DocumentDrafts => Set<DocumentDraft>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -4,14 +4,17 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
+/// <summary>Helpers for the naming convention tests over types, test methods and feature files.</summary>
 internal static partial class NamingConventionTestsHelpers
 {
+    /// <summary>Reports whether the namespace starts with any of the solution root namespaces.</summary>
     public static bool IsWithinSolution(string? @namespace, IReadOnlyCollection<string> solutionRootNamespaces)
     {
         return @namespace is not null
             && solutionRootNamespaces.Any(root => @namespace.StartsWith(root, StringComparison.Ordinal));
     }
 
+    /// <summary>Finds Fact and Theory methods whose names do not follow the Subject_Behavior pattern, returned as "path:Lline name".</summary>
     public static string[] FindOffendingXunitMethods(string repositoryRoot, string filePath)
     {
         var root = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath), path: filePath).GetRoot();
@@ -60,6 +63,7 @@ internal static partial class NamingConventionTestsHelpers
             or "Xunit.TheoryAttribute";
     }
 
+    /// <summary>Finds assertions that wrap a method call directly in Assert.Equal, Null, NotNull, True or False, returned as offenses.</summary>
     public static string[] FindOffendingAssertionMethodCalls(string repositoryRoot, string filePath)
     {
         var lines = File.ReadAllLines(filePath);
@@ -78,8 +82,10 @@ internal static partial class NamingConventionTestsHelpers
         return [.. offendingAssertions];
     }
 
+    /// <summary>Reports whether the type is a static class, which the runtime marks abstract and sealed.</summary>
     public static bool IsStaticClass(Type type) => type is { IsAbstract: true, IsSealed: true };
 
+    /// <summary>Returns the repository root: the nearest ancestor of the test output directory that holds ViajantesTurismo.slnx.</summary>
     public static string GetRepositoryRoot()
     {
         var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -98,6 +104,7 @@ internal static partial class NamingConventionTestsHelpers
         throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
     }
 
+    /// <summary>Reports whether the path is build output, a feature-file code-behind, or other generated test source.</summary>
     public static bool IsGeneratedTestPath(string path)
     {
         var normalizedPath = path.Replace('\\', '/');

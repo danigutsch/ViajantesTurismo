@@ -4,8 +4,10 @@ using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
+/// <summary>Builds catalog tour, presentation and public-content fixtures for API caching tests.</summary>
 internal static class CatalogApiCachingTestData
 {
+    /// <summary>Creates a published tour draft read model with the given title and slug.</summary>
     public static CatalogTourDraftReadModel CreatePublishedTour(Guid tourId, string title, string slug)
     {
         return new CatalogTourDraftReadModel(
@@ -23,6 +25,7 @@ internal static class CatalogApiCachingTestData
         };
     }
 
+    /// <summary>Creates a tour presentation upsert request with expected version 3.</summary>
     public static UpsertCatalogTourPresentationRequest CreatePresentationRequest(string title, string slug)
     {
         return new UpsertCatalogTourPresentationRequest
@@ -34,6 +37,7 @@ internal static class CatalogApiCachingTestData
         };
     }
 
+    /// <summary>Creates a valid tour presentation update; throws when creation fails.</summary>
     public static CatalogTourPresentationUpdate CreatePresentationUpdate(string title, string slug)
     {
         var update = CatalogTourPresentationUpdate.Create(
@@ -52,6 +56,7 @@ internal static class CatalogApiCachingTestData
         return update.Value;
     }
 
+    /// <summary>Creates and publishes home hero content with English and Portuguese variants; throws on failure.</summary>
     public static EditablePublicContent CreatePublishedContent(string title)
     {
         var enUs = PublicContentVariant.Create(
@@ -95,6 +100,7 @@ internal static class CatalogApiCachingTestData
         return content.Value;
     }
 
+    /// <summary>Creates an upsert request with English and Portuguese variants for the given title.</summary>
     public static UpsertPublicContentRequest CreateContentRequest(string title)
     {
         return new UpsertPublicContentRequest

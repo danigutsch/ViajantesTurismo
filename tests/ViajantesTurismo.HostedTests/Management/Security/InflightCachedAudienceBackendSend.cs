@@ -4,6 +4,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
+/// <summary>Arranges a backend send in flight while a concurrent sign-out is blocked on its cache removal.</summary>
 internal sealed class InflightCachedAudienceBackendSend : IAsyncDisposable
 {
     private readonly BlockingFirstRemoveDistributedCache cache;
@@ -23,8 +24,10 @@ internal sealed class InflightCachedAudienceBackendSend : IAsyncDisposable
         this.signOut = signOut;
     }
 
+    /// <summary>Authorization headers recorded by the backend for each send.</summary>
     public IReadOnlyList<string?> AuthorizationHeaders => exchange.AuthorizationHeaders;
 
+    /// <summary>Stores an audience token, starts a held backend send, then starts a sign-out that is blocked on cache removal.</summary>
     public static async Task<InflightCachedAudienceBackendSend> Start(
         PostgreSqlManagementUserTokenStoreScenario scenario,
         ClaimsPrincipal user,
@@ -54,28 +57,33 @@ internal sealed class InflightCachedAudienceBackendSend : IAsyncDisposable
         return new InflightCachedAudienceBackendSend(cache, exchange, firstResponse, signOut);
     }
 
+    /// <summary>Completes once the sign-out has reached its first cache removal.</summary>
     public Task WaitForSignOutToReachRemove(CancellationToken ct)
     {
         return cache.WaitForFirstRemove(ct);
     }
 
+    /// <summary>Releases the blocked removal and waits for the sign-out to finish.</summary>
     public async Task CompleteSignOut(CancellationToken ct)
     {
         cache.ReleaseFirstRemove();
         await signOut.WaitAsync(ct);
     }
 
+    /// <summary>Sends a new backend request after sign-out using the given source access token.</summary>
     public Task<HttpResponseMessage> SendAfterSignOut(string sourceAccessToken, CancellationToken ct)
     {
         return exchange.Send(new Uri("https://admin.example.test/later"), sourceAccessToken, ct);
     }
 
+    /// <summary>Releases the held backend send and returns the first response.</summary>
     public async Task<HttpResponseMessage> CompleteFirstBackendSend(CancellationToken ct)
     {
         exchange.ReleaseBackendSend();
         return await firstResponse.WaitAsync(ct);
     }
 
+    /// <summary>Releases all held operations and awaits the pending send and sign-out before disposing the exchange scope.</summary>
     public async ValueTask DisposeAsync()
     {
         cache.ReleaseFirstRemove();

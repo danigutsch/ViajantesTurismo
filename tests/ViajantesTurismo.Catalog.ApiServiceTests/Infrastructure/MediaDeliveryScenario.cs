@@ -7,8 +7,10 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 /// <summary>A published tour with one reviewed 640 px JPEG rendition served from an observable object store.</summary>
 internal sealed class MediaDeliveryScenario : IAsyncDisposable
 {
+    /// <summary>Object key of the stored rendition.</summary>
     public const string ObjectKey = "stream-640.jpg";
 
+    /// <summary>Bytes stored under <see cref="ObjectKey" />.</summary>
     public static readonly byte[] Payload = "streamed-media-payload"u8.ToArray();
 
     private readonly Guid imageId;
@@ -20,20 +22,24 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
         this.imageId = imageId;
     }
 
+    /// <summary>The host serving the scenario.</summary>
     public WebApplicationFactory<CatalogApiHostEntryPoint> Factory
     {
         get;
     }
 
+    /// <summary>The object store backing the rendition.</summary>
     public TestMediaObjectStore ObjectStore
     {
         get;
     }
 
+    /// <summary>Returns the public or management media route for the 640 px JPEG rendition.</summary>
     public string Route(bool isPublic) => isPublic
         ? $"/api/v1/public/catalog/media/{imageId}/640/jpg"
         : $"/api/v1/catalog/media/images/{imageId}/preview/640/jpg";
 
+    /// <summary>Seeds the tour, image and object, optionally stalling reads after the first byte, and returns the scenario.</summary>
     public static async Task<MediaDeliveryScenario> Create(bool stallReadsAfterFirstByte = false)
     {
         var tourId = Guid.CreateVersion7();
@@ -67,5 +73,6 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
         return new MediaDeliveryScenario(CatalogApiTestHost.Create(tourStore, mediaStore, objectStore), objectStore, image.Id);
     }
 
+    /// <summary>Disposes the host.</summary>
     public ValueTask DisposeAsync() => Factory.DisposeAsync();
 }

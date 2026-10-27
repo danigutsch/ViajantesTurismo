@@ -54,11 +54,13 @@ public static class MediaAccessibilityTelemetry
         PublicationBlockers.Add(1, new KeyValuePair<string, object?>("catalog.outcome", missingAltText ? "missing_alt" : "unreviewed"));
     }
 
+    /// <summary>Records the start of an accessibility draft attempt for the given language.</summary>
     internal static void RecordAttempt(PublicContentLanguage language)
     {
         Attempts.Add(1, Tags("started", language));
     }
 
+    /// <summary>Records an attempt outcome and its duration since the given <see cref="Stopwatch"/> timestamp.</summary>
     internal static void RecordCompletion(string outcome, PublicContentLanguage language, long started)
     {
         var tags = Tags(outcome, language);

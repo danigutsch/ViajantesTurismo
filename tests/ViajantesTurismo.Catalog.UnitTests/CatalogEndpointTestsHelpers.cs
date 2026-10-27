@@ -11,8 +11,10 @@ using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Helpers for Catalog endpoint tests.</summary>
 internal static class CatalogEndpointTestsHelpers
 {
+    /// <summary>Creates a test-server factory using the given read-model store, a stub media image store, JWT auth, and malware scanning disabled.</summary>
     public static WebApplicationFactory<ICatalogApiAssemblyMarker> CreateFactory(ICatalogTourReadModelStore store)
     {
         return WebApplicationTestHost.Create<ICatalogApiAssemblyMarker>(
@@ -34,6 +36,7 @@ internal static class CatalogEndpointTestsHelpers
             });
     }
 
+    /// <summary>Creates an unpublished draft tour read model with the identifier used for the slug.</summary>
     public static CatalogTourDraftReadModel CreateTour(string identifier, string title)
     {
         return new CatalogTourDraftReadModel(

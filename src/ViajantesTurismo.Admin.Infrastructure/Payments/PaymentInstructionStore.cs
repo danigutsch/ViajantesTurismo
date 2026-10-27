@@ -8,11 +8,16 @@ using ViajantesTurismo.Admin.Domain.Payments;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
+/// <summary>Stores protected payment instruction snapshots, audit rows and artifacts through the write context.</summary>
+/// <param name="context">The Admin write database context.</param>
+/// <param name="protection">Provides the data protectors for snapshots and artifacts.</param>
 internal sealed class PaymentInstructionStore(AdminWriteDbContext context, PaymentProtection protection) : IPaymentInstructionStore
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Guid>> GetDocumentIds(Guid bookingId, CancellationToken ct) => await context.Set<PaymentInstructionRow>().AsNoTracking()
         .Where(row => row.BookingId == bookingId).OrderByDescending(row => row.Revision).Select(row => row.DocumentId).ToArrayAsync(ct);
 
+    /// <inheritdoc />
     public async Task<PaymentInstructionSnapshot?> GetSnapshot(Guid documentId, CancellationToken ct)
     {
         var row = await context.Set<PaymentInstructionRow>().AsNoTracking().SingleOrDefaultAsync(item => item.DocumentId == documentId, ct);
@@ -46,6 +51,7 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
         finally { CryptographicOperations.ZeroMemory(plaintext); }
     }
 
+    /// <inheritdoc />
     public Task SaveSnapshot(DocumentDraft document, FrozenPaymentInstruction terms, PaymentAccount account, string actorId, DateTimeOffset now, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -72,6 +78,7 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
     public void AddAudit(Guid bookingId, PaymentInstructionAuditMetadata metadata) => context.Add(new PaymentAuditRow
     {
         Id = Guid.CreateVersion7(),
@@ -85,6 +92,7 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
         SelfApproved = metadata.SelfApproved
     });
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<PaymentInstructionAuditMetadata>> GetAudits(Guid documentId, CancellationToken ct)
     {
         var rows = await context.Set<PaymentAuditRow>().AsNoTracking().Where(row => row.TargetId == documentId && row.Operation.StartsWith("Instruction"))
@@ -93,8 +101,10 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
             Enum.Parse<PaymentInstructionAuditOperation>(row.Operation["Instruction".Length..]), Enum.Parse<FinancialReason>(row.Reason), row.SelfApproved)).ToArray();
     }
 
+    /// <inheritdoc />
     public byte[] ProtectArtifact(Guid documentId, byte[] artifact) => protection.InstructionArtifacts.Protect(documentId.ToString("N"), artifact);
 
+    /// <inheritdoc />
     public async Task<byte[]?> GetArtifact(Guid documentId, CancellationToken ct)
     {
         var document = await context.DocumentDrafts.SingleOrDefaultAsync(item => item.Id == documentId, ct);

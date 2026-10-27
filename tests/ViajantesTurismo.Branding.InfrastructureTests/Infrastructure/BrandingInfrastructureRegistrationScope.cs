@@ -10,6 +10,7 @@ using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Branding.InfrastructureTests.Infrastructure;
 
+/// <summary>Builds the Branding infrastructure registrations in a host so tests can inspect them.</summary>
 internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
 {
     private readonly ServiceProvider services;
@@ -19,6 +20,7 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
         this.services = services;
     }
 
+    /// <summary>Creates a scope for the given host environment, optionally registering the outbox relay.</summary>
     public static BrandingInfrastructureRegistrationScope Create(
         string environmentName = "Production",
         bool addOutboxRelay = true)
@@ -34,17 +36,20 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
         return new BrandingInfrastructureRegistrationScope(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Resolves the Branding settings store.</summary>
     public IBrandingSettingsStore GetBrandingSettingsStore()
     {
         return services.GetRequiredService<IBrandingSettingsStore>();
     }
 
+    /// <summary>Returns whether EF sensitive data logging is enabled for the Branding context.</summary>
     public bool IsSensitiveDataLoggingEnabled()
     {
         var options = services.GetRequiredService<DbContextOptions<BrandingDbContext>>();
         return options.FindExtension<CoreOptionsExtension>()?.IsSensitiveDataLoggingEnabled ?? false;
     }
 
+    /// <summary>Returns whether the named activity source produces activities under the configured tracer.</summary>
     public bool IsActivitySourceEnabled(string sourceName)
     {
         _ = services.GetRequiredService<TracerProvider>();
@@ -53,11 +58,13 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
         return activity is not null;
     }
 
+    /// <summary>Returns whether a meter provider is registered.</summary>
     public bool HasMeterProvider()
     {
         return services.GetService<MeterProvider>() is not null;
     }
 
+    /// <summary>Reports which outbox, transport and serializer registrations exist for the Branding context, with their table schemas.</summary>
     public (
         bool HasOutbox,
         bool HasTransportPublisher,
@@ -93,6 +100,7 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
             transport?.IsTableExcludedFromMigrations() ?? false);
     }
 
+    /// <summary>Disposes the underlying service provider.</summary>
     public void Dispose()
     {
         services.Dispose();

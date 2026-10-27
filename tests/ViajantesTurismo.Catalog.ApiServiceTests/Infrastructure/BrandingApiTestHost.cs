@@ -16,21 +16,26 @@ internal static class BrandingApiTestHost
     private const string UntrustedIssuer = "https://untrusted.test";
     private const string WrongAudience = "wrong-audience";
 
+    /// <summary>Creates an authenticated host for the optional environment with empty in-memory Branding settings.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(string? environment = null) =>
         Create(environment, null, null, null, authenticateClient: true);
 
+    /// <summary>Creates an authenticated host using the given Branding settings store.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(TestBrandingSettingsStore store) =>
         Create(null, store, null, null, authenticateClient: true);
 
+    /// <summary>Creates an authenticated host using the given stores and optional logger.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestBrandingSettingsStore store,
         RecordingOutputCacheStore outputCacheStore,
         CollectingLogger<BrandingAspNetCoreMarker>? logger = null) =>
         Create(null, store, outputCacheStore, logger, authenticateClient: true);
 
+    /// <summary>Creates an anonymous host using the given Branding settings store.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous(TestBrandingSettingsStore store) =>
         Create(null, store, null, null, authenticateClient: false);
 
+    /// <summary>Creates an anonymous host with seeded Branding settings.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous() =>
         Create(null, TestBrandingSettingsStore.Seeded(), null, null, authenticateClient: false);
 
@@ -60,15 +65,19 @@ internal static class BrandingApiTestHost
         }));
     }
 
+    /// <summary>Configures the client with a token for the Branding audience and the given role.</summary>
     public static void ConfigureAuthenticatedClient(HttpClient client, string role) =>
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, role);
 
+    /// <summary>Configures the client with a token from an untrusted issuer.</summary>
     public static void ConfigureClientWithUntrustedIssuer(HttpClient client) =>
         ApiTestAuthentication.ConfigureClient(client, Audience, UntrustedIssuer, AdministratorRole);
 
+    /// <summary>Configures the client with an administrator token for the wrong audience.</summary>
     public static void ConfigureClientWithWrongAudience(HttpClient client) =>
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, WrongAudience, AdministratorRole);
 
+    /// <summary>Verifies the services needed by the mapped mutation endpoints resolve from the host.</summary>
     public static void VerifyMappedMutationDependencies(WebApplicationFactory<CatalogApiHostEntryPoint> factory)
     {
         ArgumentNullException.ThrowIfNull(factory);

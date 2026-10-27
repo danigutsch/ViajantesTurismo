@@ -183,8 +183,10 @@ public sealed class PaymentAccount : IAggregateRoot<Guid>
     /// <inheritdoc />
     public override string ToString() => "PaymentAccount [redacted]";
 
+    /// <summary>Exports the account as a persistence snapshot.</summary>
     internal PaymentAccountState ExportState() => new(1, Id, Version, Label, Status, _revisions.Select(revision => revision.State).ToArray(), [.. _reviews]);
 
+    /// <summary>Validates untrusted persisted state and rebuilds the account, failing when the state is inconsistent.</summary>
     internal static Result<PaymentAccount> Restore(PaymentAccountState? state)
     {
         if (state is null || state.SchemaVersion != 1 || state.Id == Guid.Empty || state.Version < 1 || !ValidLabel(state.Label)

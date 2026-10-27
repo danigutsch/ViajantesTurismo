@@ -34,5 +34,6 @@ public sealed class PaymentInstallment
         return money.IsFailure || amount <= 0 || dueDate == default
             ? FinancialErrors.Invalid("installment").ConvertError<PaymentInstallment>() : Result.Ok(new PaymentInstallment(Guid.CreateVersion7(), money.Value, dueDate));
     }
+    /// <summary>Rebuilds an installment from stored values without regenerating its identifier.</summary>
     internal static PaymentInstallment Restore(Guid id, PaymentMoney money, DateOnly dueDate) => new(id, money, dueDate);
 }

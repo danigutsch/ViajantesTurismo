@@ -7,8 +7,10 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiService.Bookings;
 
+/// <summary>Endpoint for cancelling a booking.</summary>
 internal static class BookingsCancelBookingEndpoint
 {
+    /// <summary>Maps the endpoint for cancelling a booking onto the bookings group.</summary>
     public static void MapCancelBookingEndpoint(this RouteGroupBuilder bookingsGroup)
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);

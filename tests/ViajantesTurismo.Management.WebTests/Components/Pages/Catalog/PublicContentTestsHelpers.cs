@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
+/// <summary>Test data helpers for public content page tests.</summary>
 internal static class PublicContentTestsHelpers
 {
+    /// <summary>Builds a review-required content entry with an en-US variant and a pt-BR variant that needs human review.</summary>
     public static PublicContentDto CreateContent(string key)
     {
         var content = new PublicContentDto

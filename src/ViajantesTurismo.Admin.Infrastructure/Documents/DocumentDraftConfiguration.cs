@@ -11,6 +11,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 /// </summary>
 internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<DocumentDraft>
 {
+    /// <summary>Maps document drafts, branding snapshot columns, revision indexes and owned fields.</summary>
     public void Configure(EntityTypeBuilder<DocumentDraft> entity)
     {
         entity.HasKey(document => document.Id);

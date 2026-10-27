@@ -9,8 +9,10 @@ using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
+/// <summary>Registers the AI text generation services Catalog uses for image accessibility text.</summary>
 internal static class CatalogAiTextGenerationDependencyInjection
 {
+    /// <summary>Registers the LiteLLM image text generator, its options, and generation provenance.</summary>
     internal static TApplicationBuilder AddCatalogAiTextGeneration<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {

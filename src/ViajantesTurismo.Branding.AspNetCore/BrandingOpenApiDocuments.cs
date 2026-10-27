@@ -3,10 +3,13 @@ using PandaBear.OpenApi;
 
 namespace ViajantesTurismo.Branding.AspNetCore;
 
+/// <summary>Registers Branding OpenAPI documents.</summary>
 internal static class BrandingOpenApiDocuments
 {
+    /// <summary>API version served by the Branding endpoints.</summary>
     public static ApiVersionDefinition CurrentApiVersion { get; } = new(new ApiVersion(1));
 
+    /// <summary>Adds the Branding boundary OpenAPI documents.</summary>
     public static void AddBrandingOpenApiDocuments(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

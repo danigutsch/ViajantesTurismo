@@ -3,8 +3,10 @@ using ViajantesTurismo.Management.Web.Models;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
+/// <summary>Test helper that populates a customer creation state.</summary>
 internal static class CustomerCreationStateTestHelper
 {
+    /// <summary>Fills every wizard step of the state with sample data; flags toggle optional socials, companion and medical details.</summary>
     internal static void SeedCompletedState(
         CustomerCreationState state,
         bool includeOptionalSocials = true,

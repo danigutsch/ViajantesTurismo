@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
+/// <summary>Helpers that find SharedKernel tool command lines in repository scripts and workflows and parse them.</summary>
 internal static partial class SharedKernelToolCallerTestsHelpers
 {
     private const string Placeholder = "placeholder";
@@ -62,6 +63,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
     /// </summary>
     public const string CommandWithoutDiagramDirective = "sharedkernel-codefix";
 
+    /// <summary>Finds every SharedKernel tool command line in the text and JSON caller files under the repository root.</summary>
     public static IReadOnlyList<ToolCommandLine> FindCommandLines(string root)
     {
         List<ToolCommandLine> lines = [];
@@ -86,6 +88,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
         return lines;
     }
 
+    /// <summary>Runs the tool with the [diagram] directive and returns the parse errors it prints, or null when the command line parses.</summary>
     public static async Task<string?> ParseWithDiagramDirective(string root, ToolCommandLine line, CancellationToken cancellationToken)
     {
         var startInfo = new ProcessStartInfo("dotnet")

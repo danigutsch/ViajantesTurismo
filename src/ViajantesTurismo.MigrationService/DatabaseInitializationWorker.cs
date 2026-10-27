@@ -9,9 +9,11 @@ using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.MigrationService;
 
+/// <summary>Runs database migrations and, in development, seeds development data.</summary>
 internal sealed class DatabaseInitializationWorker
 {
     private const string ActivityOperationName = "DatabaseInitialization";
+    /// <summary>Name of the activity source that traces database initialization.</summary>
     public const string ActivitySourceName = "ViajantesTurismo.MigrationService.DatabaseInitializationWorker";
     private static readonly ActivitySource DefaultActivitySource = new(
         ActivitySourceName,
@@ -23,6 +25,7 @@ internal sealed class DatabaseInitializationWorker
     private readonly Func<IServiceProvider, CancellationToken, Task> migrationOperation;
     private readonly IServiceScopeFactory scopeFactory;
 
+    /// <summary>Creates the worker with the default migration and development data operations.</summary>
     public DatabaseInitializationWorker(
         IServiceScopeFactory scopeFactory,
         IHostEnvironment environment,
@@ -37,6 +40,7 @@ internal sealed class DatabaseInitializationWorker
     {
     }
 
+    /// <summary>Creates the worker with explicit operations and an optional activity source.</summary>
     internal DatabaseInitializationWorker(
         IServiceScopeFactory scopeFactory,
         IHostEnvironment environment,
@@ -59,6 +63,7 @@ internal sealed class DatabaseInitializationWorker
         this.activitySource = activitySource ?? DefaultActivitySource;
     }
 
+    /// <summary>Runs the migration and, in development, the development data operation inside a traced scope.</summary>
     internal async Task Run(CancellationToken ct)
     {
         using var activity = activitySource.StartActivity(ActivityOperationName, ActivityKind.Producer, parentContext: default);

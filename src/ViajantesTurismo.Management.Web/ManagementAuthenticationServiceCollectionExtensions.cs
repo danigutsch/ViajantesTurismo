@@ -18,6 +18,9 @@ namespace ViajantesTurismo.Management.Web;
 /// </summary>
 internal static class ManagementAuthenticationServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registers cookie, OIDC, data protection and token exchange services for the Management Web BFF.
+    /// </summary>
     internal static void AddManagementAuthentication(
         this IServiceCollection services,
         IConfiguration configuration,

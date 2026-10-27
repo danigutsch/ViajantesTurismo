@@ -7,8 +7,10 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiService.Bookings;
 
+/// <summary>Endpoint for updating the details of a booking.</summary>
 internal static class BookingsUpdateBookingDetailsEndpoint
 {
+    /// <summary>Maps the endpoint for updating the details of a booking onto the bookings group.</summary>
     public static void MapUpdateBookingDetailsEndpoint(this RouteGroupBuilder bookingsGroup)
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);

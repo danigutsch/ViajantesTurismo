@@ -124,6 +124,7 @@ public sealed partial class Tour
         return Pricing.Currency == Currency.Euro && booking?.FinancialHistory is { } history && instruction.CanDeliver(history, booking.TotalPrice, booking.Status, account, now);
     }
 
+    /// <summary>Attaches loaded financial history to the matching booking of this tour; throws when no booking matches.</summary>
     internal void RestoreBookingFinancialHistory(BookingFinancialHistory history)
     {
         var booking = _bookings.SingleOrDefault(item => item.Id == history.BookingId)

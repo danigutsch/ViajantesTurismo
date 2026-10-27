@@ -60,6 +60,7 @@ public sealed class HostedTestFixture : IAsyncLifetime
     public string WorkDirectory { get; } = Path.Combine(Path.GetTempPath(), $"vt-hosted-{Guid.NewGuid():N}");
     public string SeaweedAccessKey { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(24));
     public string SeaweedSecretKey { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+    /// <summary>Gets the pool of PostgreSQL test databases.</summary>
     internal PostgreSqlTestDatabasePool Databases => databases;
     private string RealmImportDirectory => Path.Combine(WorkDirectory, "keycloak");
 

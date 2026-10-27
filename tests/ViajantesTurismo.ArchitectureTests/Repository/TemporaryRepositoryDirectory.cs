@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 
+/// <summary>Deletes temporary repository paths, clearing read-only attributes first.</summary>
 internal static class TemporaryRepositoryDirectory
 {
+    /// <summary>Deletes the directory tree at <paramref name="path"/> if it exists, making files writable first.</summary>
     public static void Delete(string path)
     {
         if (!Directory.Exists(path))
@@ -23,6 +25,7 @@ internal static class TemporaryRepositoryDirectory
         Directory.Delete(path, recursive: true);
     }
 
+    /// <summary>Deletes the file at <paramref name="path"/>, clearing its read-only attribute if present.</summary>
     public static void DeleteFile(string path)
     {
         if (File.Exists(path))

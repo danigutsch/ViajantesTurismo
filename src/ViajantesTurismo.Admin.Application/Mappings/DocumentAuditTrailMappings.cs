@@ -3,8 +3,10 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Mappings;
 
+/// <summary>Maps document lifecycle domain events to audit records.</summary>
 internal static class DocumentAuditTrailMappings
 {
+    /// <summary>Maps a lifecycle event to a succeeded audit record stamped in UTC.</summary>
     [AuditTrailMapping]
     public static DocumentAuditRecord Map(DocumentLifecycleAuditDomainEvent domainEvent, DateTimeOffset occurredAt)
     {

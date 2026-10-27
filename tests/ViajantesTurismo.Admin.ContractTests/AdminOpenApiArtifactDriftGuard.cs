@@ -24,6 +24,7 @@ internal static class AdminOpenApiArtifactDriftGuard
     private static string GetOpenApiDirectory()
         => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts.Http", "OpenApi");
 
+    /// <summary>Creates the snapshot set comparing canonical and generated Admin OpenAPI artifacts.</summary>
     public static JsonSnapshotArtifactSet CreateSnapshotSet()
     {
         var openApiDirectory = GetOpenApiDirectory();

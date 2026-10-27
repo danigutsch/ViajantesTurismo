@@ -6,16 +6,21 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
 
+/// <summary>Arranges an isolated PostgreSQL database with ephemeral payment protection and a controllable clock for payment tests.</summary>
 internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
 {
     private readonly PostgreSqlTestDatabase _database;
     private readonly PaymentProtection _protection = new(new EphemeralDataProtectionProvider());
+    /// <summary>Controllable clock starting at 2030-01-05 12:00 UTC.</summary>
     public FakeTimeProvider Clock { get; } = new(new DateTimeOffset(2030, 1, 5, 12, 0, 0, TimeSpan.Zero));
     private PostgreSqlPaymentScenario(PostgreSqlTestDatabase database) => _database = database;
 
+    /// <summary>Creates a scenario over a database issued by <paramref name="fixture" />.</summary>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The scenario owns and disposes its fixture-issued test database.")]
     public static async Task<PostgreSqlPaymentScenario> Create(PostgreSqlTestServerFixture fixture, CancellationToken ct) => new(await fixture.CreateDatabase(ct));
+    /// <summary>Opens a payment test session against the scenario database.</summary>
     public PaymentTestSession Open() => PaymentTestSession.Create(_database.ConnectionString, _protection, Clock);
+    /// <summary>Seeds a tour with an approved schedule and a 120 euro receipt against a 100 euro installment, leaving 20 euro of customer credit, and returns the booking, receipt and installment ids.</summary>
     public async Task<(Guid BookingId, Guid ReceiptId, Guid InstallmentId)> SeedCustomerCredit(CancellationToken ct)
     {
         var now = Clock.GetUtcNow();
@@ -37,6 +42,7 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
         await session.Seed(tour, ct);
         return (booking.Id, receipt, installment.Id);
     }
+    /// <summary>Disposes payment protection and the test database.</summary>
     public async ValueTask DisposeAsync()
     {
         _protection.Dispose();

@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 
+/// <summary>Polling helper that waits for an asynchronous condition in system tests.</summary>
 internal static class Eventually
 {
+    /// <summary>Polls the probe every 250 ms until it returns a non-null result, throwing <see cref="TimeoutException" /> after the timeout.</summary>
     public static async Task<T> Until<T>(Func<CancellationToken, Task<T?>> probe, TimeSpan timeout, CancellationToken ct)
         where T : class
     {

@@ -6,8 +6,13 @@ using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
+/// <summary>
+/// EF Core store for public media images, sanitizing text fields on write and read.
+/// </summary>
+/// <param name="dbContext">The Catalog context.</param>
 internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPublicMediaImageStore
 {
+    /// <inheritdoc />
     public async ValueTask Upsert(PublicMediaImage image, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(image);
@@ -61,6 +66,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         }
     }
 
+    /// <inheritdoc />
     public async ValueTask<PublicMediaImage?> GetImage(Guid imageId, CancellationToken ct)
     {
         var image = await dbContext.PublicMediaImages
@@ -75,6 +81,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         return image is null ? null : ToReturnedImage(image, catalogTourId: null);
     }
 
+    /// <inheritdoc />
     public async ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct)
     {
         var images = await dbContext.PublicMediaImages
@@ -96,6 +103,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         ];
     }
 
+    /// <inheritdoc />
     public async ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct)
@@ -128,6 +136,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             ]);
     }
 
+    /// <inheritdoc />
     public async ValueTask<IReadOnlyList<string>> ListReferencedObjectKeys(CancellationToken ct)
     {
         var sourceKeys = await dbContext.PublicMediaImages

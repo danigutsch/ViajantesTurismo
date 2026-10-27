@@ -14,6 +14,7 @@ public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
         get; set;
     }
 
+    /// <summary>Returns a point-in-time copy of all stored tour drafts.</summary>
     internal IReadOnlyCollection<CatalogTourDraftReadModel> GetSnapshot() => toursById.Values.ToArray();
 
     public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)

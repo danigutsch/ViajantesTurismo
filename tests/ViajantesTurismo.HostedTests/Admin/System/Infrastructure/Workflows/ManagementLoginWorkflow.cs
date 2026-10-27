@@ -1,11 +1,14 @@
 using Microsoft.Playwright;
 namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
 
+/// <summary>Signs the conformance user in to the management web app through the Keycloak login page.</summary>
+/// <param name="page">The page used for the sign-in.</param>
 internal sealed class ManagementLoginWorkflow(IPage page)
 {
     private const string ConformanceUsername = "conformance";
     private const int MaxLoginNavigationAttempts = 5;
 
+    /// <summary>Signs in with the given password, retrying up to five times on transient network changes and timeouts, and waits until the browser returns to the management web host.</summary>
     public async Task SignIn(Uri managementWebUrl, string password)
     {
         ArgumentNullException.ThrowIfNull(managementWebUrl);

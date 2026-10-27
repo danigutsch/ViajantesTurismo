@@ -6,8 +6,10 @@ using ViajantesTurismo.ServiceDefaults;
 
 namespace ViajantesTurismo.DatabaseObservability;
 
+/// <summary>Configures the database observability host.</summary>
 internal static class DatabaseObservabilityHostConfiguration
 {
+    /// <summary>Adds service defaults and, when enabled, PostgreSQL index-health monitoring for the Admin and Catalog databases.</summary>
     public static void Configure(IHostApplicationBuilder builder)
     {
         builder.AddServiceDefaults();

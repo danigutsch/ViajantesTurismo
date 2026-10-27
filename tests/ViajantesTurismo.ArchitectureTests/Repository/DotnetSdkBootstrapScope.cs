@@ -6,6 +6,7 @@ using System.Text.Json;
 
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 
+/// <summary>A temporary workspace with fake dotnet, curl and download metadata that runs the SDK bootstrap script (bash or PowerShell) against a pinned global.json.</summary>
 internal sealed class DotnetSdkBootstrapScope : IDisposable
 {
     private readonly TemporaryWorkspace _workspace = new();
@@ -13,6 +14,7 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
     private readonly string _repositoryRoot = RepositoryTestProcess.GetRepositoryRoot();
     private readonly string _rid = $"{(OperatingSystem.IsMacOS() ? "osx" : "linux")}-{(RuntimeInformation.OSArchitecture switch { Architecture.X64 => "x64", Architecture.Arm64 => "arm64", Architecture.Arm => "arm", _ => throw new PlatformNotSupportedException("Unsupported SDK fixture architecture.") })}";
 
+    /// <summary>Builds the workspace for the bash or PowerShell bootstrap script with a pinned SDK 10.0.303 archive and fake tools.</summary>
     public DotnetSdkBootstrapScope(bool powershell)
     {
         _powershell = powershell;
@@ -73,18 +75,24 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
         WriteMetadata();
     }
 
+    /// <summary>Returns the path inside the workspace.</summary>
     public string PathFor(string path) => Path.Combine(_workspace.RootPath, path);
 
+    /// <summary>Reports whether the file exists in the workspace.</summary>
     public bool FileExists(string path) => _workspace.FileExists(path);
 
+    /// <summary>Makes the fake dotnet report the version as the installed SDK.</summary>
     public void SetInstalledVersion(string version) =>
         _workspace.WriteFile("sdks.txt", $"{version} [{PathFor("install/sdk")}]\n");
 
+    /// <summary>Writes alternate.json, which pins SDK 10.0.304.</summary>
     public void WriteAlternateGlobalJson() =>
         _workspace.WriteFile("alternate.json", "{\"sdk\":{\"version\":\"10.0.304\",\"rollForward\":\"disable\"}}");
 
+    /// <summary>Replaces the SDK archive with content that is not an archive.</summary>
     public void CorruptArchive() => _workspace.WriteFile("sdk.tar.gz", "not an SDK archive");
 
+    /// <summary>Adds a fake cp that rejects --update with an argument, as older coreutils do.</summary>
     public void UseCopyWithoutUpdateArgument()
     {
         _workspace.WriteFile("bin/cp", """
@@ -106,6 +114,7 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
         }
     }
 
+    /// <summary>Writes the release metadata for the archive, using an invalid hash when requested.</summary>
     public void WriteMetadata(bool invalidHash = false)
     {
         var hash = invalidHash ? new string('0', 128) : Convert.ToHexString(SHA512.HashData(File.ReadAllBytes(PathFor("sdk.tar.gz"))));
@@ -138,6 +147,7 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
         _workspace.WriteFile("metadata.json", JsonSerializer.Serialize(metadata));
     }
 
+    /// <summary>Runs the bootstrap script with the fake tools first on PATH, optionally installing, and returns its process result.</summary>
     public Task<RepositoryTestProcess.ProcessResult> Run(bool install, CancellationToken ct, string globalJson = "global.json")
     {
         var subject = Path.Combine(_repositoryRoot, "scripts", _powershell ? "ensure-dotnet-sdk.ps1" : "ensure-dotnet-sdk.sh");
@@ -175,5 +185,6 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
         return RepositoryTestProcess.Run(_powershell ? "pwsh" : "bash", _workspace.RootPath, arguments, ct, environment);
     }
 
+    /// <summary>Deletes the workspace.</summary>
     public void Dispose() => _workspace.Dispose();
 }

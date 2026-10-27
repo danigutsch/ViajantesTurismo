@@ -9,12 +9,21 @@ using ViajantesTurismo.Management.Web.Components;
 
 namespace ViajantesTurismo.Management.Web;
 
+/// <summary>
+/// Maps Management Web minimal API endpoints such as login, logout, robots.txt and media previews.
+/// </summary>
 internal static class ManagementWebEndpoints
 {
     private const string ManagementRobotsTxt = "User-agent: *\nDisallow: /";
 
+    /// <summary>
+    /// Endpoint name of the media preview by rendition route.
+    /// </summary>
     internal const string MediaPreviewByRenditionEndpointName = "management-media-preview-by-rendition";
 
+    /// <summary>
+    /// Maps the Management Web endpoints onto the route builder.
+    /// </summary>
     internal static IEndpointRouteBuilder MapManagementWebEndpoints(this IEndpointRouteBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);

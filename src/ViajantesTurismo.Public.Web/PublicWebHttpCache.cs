@@ -2,14 +2,19 @@ using PandaBear.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Public.Web;
 
+/// <summary>Applies HTTP cache headers for Public Web pages and responses.</summary>
 internal static class PublicWebHttpCache
 {
+    /// <summary>How long published content may be served from shared caches.</summary>
     public static readonly TimeSpan PublishedContentFreshness = TimeSpan.FromSeconds(60);
 
+    /// <summary>Query key carrying the requested culture.</summary>
     public const string CultureQueryKey = "culture";
 
+    /// <summary>Legacy query key alias for the requested culture.</summary>
     public const string LanguageQueryKey = "language";
 
+    /// <summary>Adds middleware that normalizes the culture query alias and sets cache headers on public pages.</summary>
     public static IApplicationBuilder UsePublicWebCacheHeaders(this IApplicationBuilder app)
     {
         ArgumentNullException.ThrowIfNull(app);
@@ -41,11 +46,13 @@ internal static class PublicWebHttpCache
         });
     }
 
+    /// <summary>Marks the response as not cacheable.</summary>
     public static void SetNoStore(HttpContext httpContext)
     {
         HttpCacheHeaders.SetNoStore(httpContext);
     }
 
+    /// <summary>Sets a 503 status with no-store caching when the response has not started.</summary>
     public static void SetServiceUnavailableNoStore(HttpContext? httpContext)
     {
         if (httpContext is null || httpContext.Response.HasStarted)
@@ -57,6 +64,7 @@ internal static class PublicWebHttpCache
         SetNoStore(httpContext);
     }
 
+    /// <summary>Marks the response as publicly cacheable for the published content freshness window.</summary>
     public static void SetPublishedContent(HttpContext httpContext)
     {
         HttpCacheHeaders.SetPublic(httpContext, PublishedContentFreshness);

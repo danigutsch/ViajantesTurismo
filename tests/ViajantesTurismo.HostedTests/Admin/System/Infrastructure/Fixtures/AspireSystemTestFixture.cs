@@ -20,19 +20,24 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
 
     public string ConformanceUserPassword { get; private set; } = string.Empty;
 
+    /// <summary>Gets the identity provider endpoint; throws when the fixture is not initialized.</summary>
     internal Uri IdentityProviderEndpoint => _identityProviderEndpoint ?? throw new InvalidOperationException("Fixture is not initialized.");
 
+    /// <summary>Gets the identity provider realm name used by the system stack.</summary>
     internal string IdentityProviderRealm => shared.Realm("system");
 
+    /// <summary>Gets the identifier of the conformance user in the system stack realm.</summary>
     internal string ConformanceUserId => shared.ConformanceUserId("system");
 
     /// <inheritdoc />
     public Task<HttpClient> CreateApiClient(CancellationToken ct) =>
         CreateAuthenticatedResourceClient(ResourceNames.Api, ApiAudienceNames.Admin, ct);
 
+    /// <summary>Creates an authenticated HTTP client for the Catalog API resource.</summary>
     internal Task<HttpClient> CreateCatalogApiClient(CancellationToken ct) =>
         CreateAuthenticatedResourceClient(ResourceNames.CatalogApi, ApiAudienceNames.Catalog, ct);
 
+    /// <summary>Creates an HTTP client for the named Aspire resource; throws when the fixture is not initialized.</summary>
     internal HttpClient CreateResourceClient(string resourceName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(resourceName);
@@ -69,6 +74,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>Resets the Admin and Catalog databases (including event sourcing tables) to an empty baseline, keeping the document audit records.</summary>
     internal async Task ResetToKnownBaseline(CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_databaseConnectionString);
@@ -81,6 +87,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         await PostgreSqlEventSourcingSchemaReset.Reset(catalogConnection, ct);
     }
 
+    /// <summary>Gets the actor id of the latest rejected not-found document read audit record, or <see langword="null" /> when none exists.</summary>
     internal async Task<string?> GetRejectedDocumentReadAuditActor(Guid documentId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_databaseConnectionString);
@@ -103,6 +110,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         return await command.ExecuteScalarAsync(ct) as string;
     }
 
+    /// <summary>Clears the processing state of the Catalog transport message for the admin tour so it is consumed again, and asserts exactly one row was reset.</summary>
     internal async Task RequeueCatalogTransportMessageForAdminTour(Guid adminTourId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_databaseConnectionString);
@@ -131,6 +139,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         affectedRows.ShouldBe(1);
     }
 
+    /// <summary>Waits up to 30 seconds until the Catalog transport message for the admin tour is processed, failing fast on a recorded consume error.</summary>
     internal async Task WaitForCatalogTransportMessageProcessed(Guid adminTourId, CancellationToken ct)
     {
         await Eventually.Until(
@@ -148,6 +157,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
             ct);
     }
 
+    /// <summary>Counts the events in the Catalog tour event stream of the admin tour.</summary>
     internal async Task<int> CountCatalogTourEvents(Guid adminTourId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_catalogDatabaseConnectionString);

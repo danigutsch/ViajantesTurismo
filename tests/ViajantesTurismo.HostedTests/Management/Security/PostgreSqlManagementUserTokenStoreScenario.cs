@@ -12,6 +12,7 @@ using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
+/// <summary>Provisions a PostgreSQL-backed distributed cache and builds user and audience token stores for tests.</summary>
 [SuppressMessage(
     "Usage",
     "CA2213:Disposable fields should be disposed",
@@ -29,15 +30,18 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
     private readonly PostgreSqlTestServerFixture _fixture;
     private ServiceProvider? _serviceProvider;
 
+    /// <summary>Creates a scenario that obtains its databases from the given fixture.</summary>
     internal PostgreSqlManagementUserTokenStoreScenario(PostgreSqlTestServerFixture fixture)
     {
         _fixture = fixture;
     }
 
+    /// <summary>Cache that blocks the first write; throws when the scenario has not started.</summary>
     public BlockingFirstSetDistributedCache BlockingCache => _blockingCache is not null
         ? _blockingCache
         : throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
 
+    /// <summary>Creates the database, data source and PostgreSQL distributed cache for the scenario.</summary>
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
@@ -83,12 +87,14 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         }
     }
 
+    /// <summary>Creates a user token store over the scenario cache.</summary>
     public ProtectedDistributedUserTokenStore CreateStore()
     {
         var cache = _cache ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
         return CreateStore(cache);
     }
 
+    /// <summary>Creates a user token store over the given cache.</summary>
     public ProtectedDistributedUserTokenStore CreateStore(IDistributedCache cache)
     {
         ArgumentNullException.ThrowIfNull(cache);
@@ -101,6 +107,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         return new ProtectedDistributedUserTokenStore(cache, dataProtectionProvider, TimeProvider.System, dataSource);
     }
 
+    /// <summary>Creates an audience token store over the scenario cache.</summary>
     public ProtectedDistributedAudienceTokenStore CreateAudienceTokenStore()
     {
         var cache = _cache ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
@@ -110,6 +117,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         return new ProtectedDistributedAudienceTokenStore(cache, dataProtectionProvider, TimeProvider.System);
     }
 
+    /// <summary>Creates a cache that blocks the first read of the user token entry for the session.</summary>
     public BlockingFirstGetDistributedCache CreateBlockingFirstGetCache(string sessionId)
     {
         var cache = _cache ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
@@ -117,12 +125,14 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         return new BlockingFirstGetDistributedCache(cache, cacheKey);
     }
 
+    /// <summary>Creates a cache that blocks the first removal.</summary>
     public BlockingFirstRemoveDistributedCache CreateBlockingFirstRemoveCache()
     {
         var cache = _cache ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
         return new BlockingFirstRemoveDistributedCache(cache);
     }
 
+    /// <summary>Creates a principal carrying the session id and a session expiry claim.</summary>
     public static ClaimsPrincipal CreateUser(string sessionId)
     {
         var identity = new ClaimsIdentity(
@@ -137,6 +147,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         return new ClaimsPrincipal(identity);
     }
 
+    /// <summary>Creates a user token that expires in five minutes.</summary>
     public static UserToken CreateToken(string accessToken)
     {
         return new UserToken
@@ -149,6 +160,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         };
     }
 
+    /// <summary>Writes an undecodable cache entry for the session.</summary>
     public Task SetCorruptEntry(string sessionId, CancellationToken ct)
     {
         var cache = _cache ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
@@ -160,6 +172,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
             ct);
     }
 
+    /// <summary>Polls until a PostgreSQL advisory lock is waiting, throwing TimeoutException after ten seconds.</summary>
     public async Task WaitForWaitingAdvisoryLock(CancellationToken ct)
     {
         var dataSource = _dataSource ?? throw new InvalidOperationException("The PostgreSQL user-token-store test scenario has not started.");
@@ -199,6 +212,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         throw new TimeoutException("The second user-token mutation did not wait for the PostgreSQL advisory lock.");
     }
 
+    /// <summary>Waits for a blocked advisory lock, then releases the held first write.</summary>
     public async Task ReleaseFirstSetAfterWaitingForLock(BlockingFirstSetDistributedCache cache, CancellationToken ct)
     {
         try
@@ -211,6 +225,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         }
     }
 
+    /// <summary>Waits for a blocked advisory lock, releases the held first removal, then awaits the removal.</summary>
     public async Task ReleaseFirstRemoveAfterWaitingForLock(
         BlockingFirstRemoveDistributedCache cache,
         Task remove,
@@ -228,6 +243,7 @@ internal sealed class PostgreSqlManagementUserTokenStoreScenario : IAsyncDisposa
         await remove;
     }
 
+    /// <summary>Releases the provider, data source and database, clearing all fields.</summary>
     public async ValueTask DisposeAsync()
     {
         var serviceProvider = _serviceProvider;

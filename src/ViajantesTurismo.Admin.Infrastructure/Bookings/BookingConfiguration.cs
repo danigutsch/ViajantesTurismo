@@ -5,8 +5,10 @@ using ViajantesTurismo.Admin.Domain;
 
 namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
 
+/// <summary>EF Core mapping for the <see cref="Booking" /> entity and its owned customer and discount values.</summary>
 internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {
+    /// <summary>Maps keys, required columns, enum conversions, ignored computed properties and owned types.</summary>
     public void Configure(EntityTypeBuilder<Booking> entity)
     {
         entity.HasKey(booking => booking.Id);

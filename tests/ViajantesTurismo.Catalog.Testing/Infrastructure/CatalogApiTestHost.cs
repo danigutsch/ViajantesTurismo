@@ -17,6 +17,7 @@ using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
+/// <summary>Builds in-memory Catalog API test hosts with fake stores and test JWT authentication.</summary>
 internal static class CatalogApiTestHost
 {
     private const string Audience = "catalog-api";
@@ -26,11 +27,13 @@ internal static class CatalogApiTestHost
     private const string WrongAudience = "wrong-audience";
     private const string MediaObjectStorageSectionName = "Catalog:MediaObjectStorage:SeaweedFs";
 
+    /// <summary>Creates an authenticated host for the given environment (Development by default) with empty fake stores.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(string? environment = null)
     {
         return Create(environment, null, null, null, null, null);
     }
 
+    /// <summary>Creates an authenticated host backed by the given tour and public content stores.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestCatalogTourReadModelStore tourStore,
         TestPublicContentStore publicContentStore)
@@ -38,6 +41,7 @@ internal static class CatalogApiTestHost
         return Create(null, tourStore, publicContentStore, null, null, null);
     }
 
+    /// <summary>Creates an authenticated host backed by the given tour, public content and media image stores.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestCatalogTourReadModelStore tourStore,
         TestPublicContentStore publicContentStore,
@@ -46,6 +50,7 @@ internal static class CatalogApiTestHost
         return Create(null, tourStore, publicContentStore, mediaStore, null, null);
     }
 
+    /// <summary>Creates an authenticated host backed by the given tour and public content stores and event store.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestCatalogTourReadModelStore tourStore,
         TestPublicContentStore publicContentStore,
@@ -54,6 +59,7 @@ internal static class CatalogApiTestHost
         return Create(null, tourStore, publicContentStore, null, null, null, eventStore: eventStore);
     }
 
+    /// <summary>Creates an authenticated host backed by the given tour and media image stores and media object store.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestCatalogTourReadModelStore tourStore,
         TestPublicMediaImageStore mediaStore,
@@ -62,6 +68,7 @@ internal static class CatalogApiTestHost
         return Create(null, tourStore, null, mediaStore, objectStore, null);
     }
 
+    /// <summary>Creates an authenticated host backed by the given media stores and a replacement image text generator.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestPublicMediaImageStore mediaStore,
         TestMediaObjectStore objectStore,
@@ -70,6 +77,7 @@ internal static class CatalogApiTestHost
         return Create(null, null, null, mediaStore, objectStore, imageTextGenerator);
     }
 
+    /// <summary>Creates an authenticated host backed by the given tour and media image stores and event store.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestCatalogTourReadModelStore tourStore,
         TestPublicMediaImageStore mediaStore,
@@ -78,6 +86,7 @@ internal static class CatalogApiTestHost
         return Create(null, tourStore, null, mediaStore, null, null, eventStore: eventStore);
     }
 
+    /// <summary>Creates a host whose clients carry no authentication token.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous()
     {
         return Create(null, null, null, null, null, null, authenticateClient: false);
@@ -89,6 +98,7 @@ internal static class CatalogApiTestHost
         return Create(environment, null, null, null, null, null, authenticateClient: false, configureClient: client => ConfigureBrandingClient(client, AdministratorRole));
     }
 
+    /// <summary>Creates a Development host that keeps the production service composition, with only health checks, hosted services and authentication replaced.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateProductionComposition()
     {
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
@@ -113,31 +123,37 @@ internal static class CatalogApiTestHost
             });
     }
 
+    /// <summary>Gives the client an Administrator token for the Catalog audience.</summary>
     public static void ConfigureAuthenticatedClient(HttpClient client)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, AdministratorRole);
     }
 
+    /// <summary>Gives the client a token for the Catalog audience with the given role.</summary>
     public static void ConfigureAuthenticatedClient(HttpClient client, string role)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, role);
     }
 
+    /// <summary>Gives the client a token for the Branding audience with the given role.</summary>
     public static void ConfigureBrandingClient(HttpClient client, string role)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, BrandingAudience, role);
     }
 
+    /// <summary>Gives the client an Administrator token from an issuer the host does not trust.</summary>
     public static void ConfigureClientWithUntrustedIssuer(HttpClient client)
     {
         ApiTestAuthentication.ConfigureClient(client, Audience, UntrustedIssuer, AdministratorRole);
     }
 
+    /// <summary>Gives the client an Administrator token for an audience the host does not accept.</summary>
     public static void ConfigureClientWithWrongAudience(HttpClient client)
     {
         ApiTestAuthentication.ConfigureAuthenticatedClient(client, WrongAudience, AdministratorRole);
     }
 
+    /// <summary>Resolves the services required by the mapped mutation endpoints, failing if any is not registered.</summary>
     public static void VerifyMappedMutationDependencies(WebApplicationFactory<CatalogApiHostEntryPoint> factory)
     {
         ArgumentNullException.ThrowIfNull(factory);

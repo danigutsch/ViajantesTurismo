@@ -2,8 +2,10 @@ using ViajantesTurismo.Admin.Domain.Payments;
 
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
+/// <summary>Builds a booking financial state exercising reconciliation, quote, refund, release, review, withdrawal and reversal.</summary>
 internal static class PaymentStoredStateScenario
 {
+    /// <summary>Runs the full financial flow and returns the exported stored state.</summary>
     public static BookingFinancialState Create()
     {
         var scenario = new PaymentScenario();

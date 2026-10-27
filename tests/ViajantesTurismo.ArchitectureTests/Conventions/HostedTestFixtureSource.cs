@@ -3,6 +3,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 /// <summary>Reads and slices the hosted-test fixture source for the text-level pins of its on-demand design.</summary>
 internal static class HostedTestFixtureSource
 {
+    /// <summary>Reads the HostedTestFixture source file with normalized line endings.</summary>
     public static string Read()
     {
         var path = Path.Combine(
@@ -18,6 +19,7 @@ internal static class HostedTestFixtureSource
     /// <summary>Reads the fixture with every whitespace run collapsed, so a statement can be pinned across line breaks.</summary>
     public static string ReadNormalized() => string.Join(' ', Read().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
+    /// <summary>Counts the non-overlapping occurrences of the token in the source.</summary>
     public static int Count(string source, string token) => source.Split(token, StringSplitOptions.None).Length - 1;
 
     /// <summary>Returns the braced body of the member whose declaration starts with <paramref name="signature"/>.</summary>

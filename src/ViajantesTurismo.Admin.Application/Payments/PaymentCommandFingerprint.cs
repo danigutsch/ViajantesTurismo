@@ -11,6 +11,7 @@ namespace ViajantesTurismo.Admin.Application.Payments;
 /// <summary>Fingerprints meaningful typed inputs with canonical decimal numbers and no retained financial payload.</summary>
 internal static class PaymentCommandFingerprint
 {
+    /// <summary>Creates an idempotency fingerprint from booking, optional target, actor and canonicalized input.</summary>
     public static string Create<T>(Guid bookingId, Guid? targetId, string actorId, T input, JsonTypeInfo<T> type)
     {
         var bytes = JsonSerializer.SerializeToUtf8Bytes(input, type);

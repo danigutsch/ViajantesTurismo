@@ -3,92 +3,110 @@ using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
+/// <summary>In-memory <see cref="IPublicCatalogApiClient"/> fake with per-endpoint failure, cancellation and delay switches.</summary>
 internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 {
     private readonly List<TourSummaryDto> tours = [];
     private readonly List<TourDetailsDto> tourDetails = [];
     private readonly ConcurrentDictionary<string, PublicContentVariantDto> contentByKeyAndCulture = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>When true, the tour list returns a transport failure.</summary>
     public bool FailListRequests
     {
         get; set;
     }
 
+    /// <summary>When true, the tour list throws <see cref="OperationCanceledException"/>.</summary>
     public bool ThrowOperationCanceledExceptionOnListRequests
     {
         get; set;
     }
 
+    /// <summary>When true, media requests throw <see cref="OperationCanceledException"/>.</summary>
     public bool ThrowOperationCanceledExceptionOnMediaRequests
     {
         get; set;
     }
 
+    /// <summary>When true, media requests throw <see cref="HttpRequestException"/>.</summary>
     public bool FailMediaRequests
     {
         get; set;
     }
 
+    /// <summary>When true, tour detail requests return a transport failure.</summary>
     public bool FailDetailsRequests
     {
         get; set;
     }
 
+    /// <summary>When true, tour detail requests throw <see cref="OperationCanceledException"/>.</summary>
     public bool ThrowOperationCanceledExceptionOnDetailsRequests
     {
         get; set;
     }
 
+    /// <summary>When true, content requests return a transport failure.</summary>
     public bool FailContentRequests
     {
         get; set;
     }
 
+    /// <summary>When true, content requests throw <see cref="OperationCanceledException"/>.</summary>
     public bool ThrowOperationCanceledExceptionOnContentRequests
     {
         get; set;
     }
 
+    /// <summary>Delay applied to tour list requests before responding.</summary>
     public TimeSpan ListDelay
     {
         get; set;
     }
 
+    /// <summary>Delay applied to content requests before responding.</summary>
     public TimeSpan ContentDelay
     {
         get; set;
     }
 
+    /// <summary>Completed when a tour list request starts, if set.</summary>
     public TaskCompletionSource<object?>? ListStarted
     {
         get; set;
     }
 
+    /// <summary>Completed when a content request starts, if set.</summary>
     public TaskCompletionSource<object?>? ContentStarted
     {
         get; set;
     }
 
+    /// <summary>Response returned by media requests; null simulates a missing object.</summary>
     public PublicMediaObjectResponse? Media
     {
         get; set;
     }
 
+    /// <summary>Id of the latest media request.</summary>
     public Guid? LastMediaId
     {
         get; private set;
     }
 
+    /// <summary>Width of the latest media request.</summary>
     public int? LastMediaWidth
     {
         get; private set;
     }
 
+    /// <summary>Format of the latest media request.</summary>
     public string? LastMediaFormat
     {
         get; private set;
     }
 
+    /// <summary>Adds a tour to both the details store and the summary list.</summary>
     public void AddTour(TourDetailsDto tour)
     {
         ArgumentNullException.ThrowIfNull(tour);
@@ -104,6 +122,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         });
     }
 
+    /// <summary>Adds a tour to the summary list only.</summary>
     public void AddTour(TourSummaryDto tour)
     {
         ArgumentNullException.ThrowIfNull(tour);
@@ -111,11 +130,13 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         tours.Add(tour);
     }
 
+    /// <summary>Adds content for <c>home.hero</c> in the given culture.</summary>
     public void AddContent(string culture, PublicContentVariantDto content)
     {
         AddContent("home.hero", culture, content);
     }
 
+    /// <summary>Adds content for the given key and culture; keys compare case-insensitively.</summary>
     public void AddContent(string key, string culture, PublicContentVariantDto content)
     {
         ArgumentNullException.ThrowIfNull(content);
@@ -125,6 +146,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         contentByKeyAndCulture[CreateContentKey(key, culture)] = content;
     }
 
+    /// <summary>Returns the tour summaries, honoring delay, cancellation and failure switches.</summary>
     public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -145,6 +167,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tours.ToArray());
     }
 
+    /// <summary>Returns the tour with the given slug, not found if absent, honoring the failure switches.</summary>
     public Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -165,6 +188,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour));
     }
 
+    /// <summary>Returns content for the key and culture (<c>en-US</c> when blank), not found if absent, honoring the failure switches.</summary>
     public async Task<HttpOutcome<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -192,6 +216,7 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, content);
     }
 
+    /// <summary>Records the requested id, width and format, then returns <see cref="Media"/> or throws per the failure switches.</summary>
     public Task<PublicMediaObjectResponse?> GetPublicMedia(Guid id, int width, string format, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();

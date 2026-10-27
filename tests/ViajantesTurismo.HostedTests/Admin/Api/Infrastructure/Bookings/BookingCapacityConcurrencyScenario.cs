@@ -5,6 +5,7 @@ using Npgsql;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Bookings;
 
+/// <summary>Holds row locks on two bookings so tests can observe concurrent confirmations queueing on the tour capacity lock.</summary>
 internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
 {
     private static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(10);
@@ -29,6 +30,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
         this.tourCapacityLockKey = tourCapacityLockKey;
     }
 
+    /// <summary>Creates the scenario from a connection string, requiring both bookings to belong to one tour.</summary>
     public static async Task<BookingCapacityConcurrencyScenario> Create(
         string connectionString,
         Guid firstBookingId,
@@ -42,6 +44,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
             ct);
     }
 
+    /// <summary>Creates the scenario from a data source, requiring both bookings to belong to one tour; disposes the data source on failure.</summary>
     internal static async Task<BookingCapacityConcurrencyScenario> Create(
         NpgsqlDataSource dataSource,
         Guid firstBookingId,
@@ -81,6 +84,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
         }
     }
 
+    /// <summary>Opens a transaction that locks both booking rows until released.</summary>
     public async Task HoldBookingWrites(CancellationToken ct)
     {
         if (blockingTransaction is not null)
@@ -123,11 +127,13 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
         }
     }
 
+    /// <summary>Waits until two other requests are blocked on the held writes or the tour capacity lock.</summary>
     public async Task WaitForConcurrentRequests(CancellationToken ct)
     {
         await WaitForRequests(2, ct);
     }
 
+    /// <summary>Waits until one other request is blocked on the held writes or the tour capacity lock.</summary>
     public async Task WaitForBookingWrite(CancellationToken ct)
     {
         await WaitForRequests(1, ct);
@@ -204,6 +210,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
         throw new TimeoutException("Concurrent booking confirmations did not reach the persistence barrier.");
     }
 
+    /// <summary>Rolls back the holding transaction and releases the booking rows.</summary>
     public async Task ReleaseBookingWrites(CancellationToken ct)
     {
         var transaction = blockingTransaction
@@ -219,6 +226,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
         await connection.DisposeAsync();
     }
 
+    /// <summary>Rolls back any held transaction and disposes the connection and data source.</summary>
     public async ValueTask DisposeAsync()
     {
         if (blockingTransaction is not null)

@@ -9,8 +9,10 @@ using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
 
+/// <summary>Wires protected distributed token stores over an in-memory cache for tests.</summary>
 internal sealed class ProtectedDistributedUserTokenStoreTestContext
 {
+    /// <summary>Creates the context, defaulting to an in-memory cache.</summary>
     public ProtectedDistributedUserTokenStoreTestContext(IDistributedCache? cache = null)
     {
         Cache = cache ?? new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
@@ -19,21 +21,25 @@ internal sealed class ProtectedDistributedUserTokenStoreTestContext
         Store = ProtectedDistributedUserTokenStore.CreateForTesting(Cache, dataProtectionProvider, TimeProvider.System);
     }
 
+    /// <summary>Cache backing the stores.</summary>
     public IDistributedCache Cache
     {
         get;
     }
 
+    /// <summary>Audience token store under test.</summary>
     public ProtectedDistributedAudienceTokenStore AudienceTokenStore
     {
         get;
     }
 
+    /// <summary>User token store under test.</summary>
     public ProtectedDistributedUserTokenStore Store
     {
         get;
     }
 
+    /// <summary>Creates a principal carrying the session id and session expiry claims.</summary>
     public static ClaimsPrincipal CreateUser(string sessionId, DateTimeOffset? sessionExpiresAt = null)
     {
         var identity = new ClaimsIdentity(
@@ -48,6 +54,7 @@ internal sealed class ProtectedDistributedUserTokenStoreTestContext
         return new ClaimsPrincipal(identity);
     }
 
+    /// <summary>Creates a bearer user token with the given access token expiring in five minutes.</summary>
     public static UserToken CreateToken(string accessToken)
     {
         return new UserToken
@@ -60,6 +67,7 @@ internal sealed class ProtectedDistributedUserTokenStoreTestContext
         };
     }
 
+    /// <summary>Returns the cache key used for the given session id.</summary>
     public static string GetCacheKey(string sessionId)
     {
         return string.Concat(ManagementAuthenticationDefaults.UserTokenStoreKeyPrefix, sessionId);

@@ -7,6 +7,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 /// <summary>Configures document lineage aggregate persistence.</summary>
 internal sealed class DocumentLineageConfiguration : IEntityTypeConfiguration<DocumentLineage>
 {
+    /// <summary>Maps the lineage keys, concurrency token, unique booking/type index and revisions relationship.</summary>
     public void Configure(EntityTypeBuilder<DocumentLineage> entity)
     {
         entity.HasKey(lineage => lineage.Id);

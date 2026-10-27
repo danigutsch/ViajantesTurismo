@@ -8,11 +8,16 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
 
+/// <summary>EF Core store for Branding settings, revisions, and source recovery.</summary>
+/// <param name="dbContext">The Branding database context.</param>
+/// <param name="outbox">The outbox that receives Branding integration events.</param>
+/// <param name="timeProvider">The clock used for commit and audit timestamps.</param>
 internal sealed class EfBrandingSettingsStore(
     BrandingDbContext dbContext,
     [FromKeyedServices(typeof(BrandingDbContext))] IIntegrationEventOutbox outbox,
     TimeProvider timeProvider) : IBrandingSettingsStore, IBrandingSettingsRevisionStore, IBrandingSourceRecovery
 {
+    /// <inheritdoc />
     public async Task<BrandingSettings?> GetSettings(CancellationToken ct)
     {
         var entity = await Load(ct).ConfigureAwait(false);
@@ -20,9 +25,11 @@ internal sealed class EfBrandingSettingsStore(
         return entity?.ToSettings(BrandingFontFamilies.All);
     }
 
+    /// <inheritdoc />
     public async Task<BrandingSettingsSnapshot?> GetCurrent(CancellationToken ct) =>
         ToSnapshot(await Load(ct).ConfigureAwait(false));
 
+    /// <inheritdoc />
     public async Task<BrandingSettingsSnapshot?> SaveIfMatch(
         BrandingSettings settings,
         Func<BrandingSettingsSnapshot?, bool> precondition,
@@ -110,6 +117,7 @@ internal sealed class EfBrandingSettingsStore(
         }
     }
 
+    /// <inheritdoc />
     public async Task<BrandingReseedPublication> RepublishCurrent(
         string reason,
         string incidentReference,
@@ -126,6 +134,7 @@ internal sealed class EfBrandingSettingsStore(
         return publication;
     }
 
+    /// <inheritdoc />
     public async Task<BrandingReseedPublication> RotateEpoch(
         string reason,
         string incidentReference,

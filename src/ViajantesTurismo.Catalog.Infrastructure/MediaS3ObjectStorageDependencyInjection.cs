@@ -5,8 +5,10 @@ using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
+/// <summary>Registers S3-backed media object storage.</summary>
 internal static class MediaS3ObjectStorageDependencyInjection
 {
+    /// <summary>Adds the S3 object store bound to the given configuration section, limited to the catalog media object key length.</summary>
     public static IServiceCollection AddMediaS3ObjectStorage(this IServiceCollection services, IConfiguration configuration, string sectionName = MediaObjectStorageConfiguration.SectionName)
     {
         ArgumentNullException.ThrowIfNull(services);

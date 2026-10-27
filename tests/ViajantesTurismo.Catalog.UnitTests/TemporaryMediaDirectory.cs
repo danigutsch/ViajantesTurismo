@@ -1,5 +1,6 @@
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Temporary directory under the system temp path that is deleted recursively on dispose.</summary>
 internal sealed class TemporaryMediaDirectory : IDisposable
 {
     private TemporaryMediaDirectory(string path)
@@ -7,11 +8,13 @@ internal sealed class TemporaryMediaDirectory : IDisposable
         Path = path;
     }
 
+    /// <summary>Gets the absolute path of the directory.</summary>
     public string Path
     {
         get;
     }
 
+    /// <summary>Creates a uniquely named directory and returns the wrapper.</summary>
     public static TemporaryMediaDirectory Create()
     {
         var path = System.IO.Path.Combine(
@@ -22,6 +25,7 @@ internal sealed class TemporaryMediaDirectory : IDisposable
         return new TemporaryMediaDirectory(path);
     }
 
+    /// <summary>Deletes the directory and its contents if it still exists.</summary>
     public void Dispose()
     {
         if (Directory.Exists(Path))

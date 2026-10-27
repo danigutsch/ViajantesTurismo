@@ -4,6 +4,7 @@ using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>In-memory object store fake that validates keys, records calls and can inject delete and open failures.</summary>
 internal sealed class InMemoryMediaObjectStore : IObjectStore
 {
     private readonly Dictionary<string, StoredMediaObject> objects = [];
@@ -12,13 +13,16 @@ internal sealed class InMemoryMediaObjectStore : IObjectStore
 
     private const int MaxObjectKeyLength = CatalogDomainLimits.MaxMediaObjectKeyLength;
 
+    /// <summary>Gets the keys of all objects currently stored.</summary>
     public IReadOnlyCollection<string> ObjectKeys => objects.Keys;
 
+    /// <summary>Gets how many times <c>Exists</c> has been called.</summary>
     public int ExistsCallCount
     {
         get; private set;
     }
 
+    /// <summary>Buffers the request content and stores it under its object key with the current UTC time.</summary>
     public async ValueTask<ObjectWriteResult> Put(ObjectWriteRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -42,6 +46,7 @@ internal sealed class InMemoryMediaObjectStore : IObjectStore
             request.Checksum);
     }
 
+    /// <summary>Returns a copy of the stored content, throwing the injected exception once if one was queued.</summary>
     public async ValueTask<ObjectReadResult> OpenRead(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -67,6 +72,7 @@ internal sealed class InMemoryMediaObjectStore : IObjectStore
             request.Checksum);
     }
 
+    /// <summary>Reports whether an object exists for the key and counts the call.</summary>
     public ValueTask<bool> Exists(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -76,6 +82,7 @@ internal sealed class InMemoryMediaObjectStore : IObjectStore
         return ValueTask.FromResult(objects.ContainsKey(objectKey));
     }
 
+    /// <summary>Lists stored keys starting with the prefix in ordinal order.</summary>
     public ValueTask<IReadOnlyList<string>> ListKeys(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -85,6 +92,7 @@ internal sealed class InMemoryMediaObjectStore : IObjectStore
             [.. objects.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).Order(StringComparer.Ordinal)]);
     }
 
+    /// <summary>Lists stored objects with their last-modified times for the prefix, ordered by key.</summary>
     public ValueTask<IReadOnlyList<ObjectInventoryItem>> ListObjects(string prefix, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -96,17 +104,20 @@ internal sealed class InMemoryMediaObjectStore : IObjectStore
                 .OrderBy(item => item.ObjectKey, StringComparer.Ordinal)]);
     }
 
+    /// <summary>Not supported by this fake; always throws <see cref="NotSupportedException" />.</summary>
     public ValueTask<ObjectUploadTicket> CreateUploadUrl(ObjectUploadRequest request, CancellationToken ct)
     {
         throw new NotSupportedException();
     }
 
+    /// <summary>Returns a deterministic CDN-style public URI for the key.</summary>
     public Uri GetPublicUri(string objectKey)
     {
         ValidateObjectKey(objectKey);
         return new Uri($"https://cdn.example/{objectKey}");
     }
 
+    /// <summary>Removes the object, or throws <see cref="IOException" /> once if the key was marked with <c>FailNextDelete</c>.</summary>
     public ValueTask Delete(string objectKey, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -121,6 +132,7 @@ internal sealed class InMemoryMediaObjectStore : IObjectStore
         return ValueTask.CompletedTask;
     }
 
+    /// <summary>Overrides the last-modified time of a stored object, for orphan age scenarios.</summary>
     public void SetLastModified(string objectKey, DateTimeOffset lastModifiedAt)
     {
         ValidateObjectKey(objectKey);
@@ -130,12 +142,14 @@ internal sealed class InMemoryMediaObjectStore : IObjectStore
         };
     }
 
+    /// <summary>Makes the next delete of the key throw <see cref="IOException" />.</summary>
     public void FailNextDelete(string objectKey)
     {
         ValidateObjectKey(objectKey);
         failingDeletes.Add(objectKey);
     }
 
+    /// <summary>Makes the next <c>OpenRead</c> call throw the given exception.</summary>
     public void FailNextOpen(Exception exception)
     {
         openReadException = exception;

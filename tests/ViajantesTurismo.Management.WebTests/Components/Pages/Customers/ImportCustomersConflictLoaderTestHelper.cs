@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+/// <summary>Test data helper for the import conflict loader tests.</summary>
 internal static class ImportCustomersConflictLoaderTestHelper
 {
+    /// <summary>Builds complete existing-customer details with the given id, email and last name.</summary>
     public static CustomerDetailsDto BuildCustomerDetails(Guid customerId, string email, string lastName)
     {
         return new CustomerDetailsDto

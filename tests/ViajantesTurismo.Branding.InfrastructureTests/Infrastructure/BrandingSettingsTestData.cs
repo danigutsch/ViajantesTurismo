@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Branding.InfrastructureTests.Infrastructure;
 
+/// <summary>Valid Branding settings fixtures for infrastructure tests.</summary>
 internal static class BrandingSettingsTestData
 {
+    /// <summary>Creates a valid settings DTO with the given brand name.</summary>
     public static BrandingSettingsDto CreateDto(string brandName = "Viajantes") => new()
     {
         BrandName = brandName,
@@ -14,6 +16,7 @@ internal static class BrandingSettingsTestData
         LogoUri = "https://cdn.example.test/logo.svg"
     };
 
+    /// <summary>Creates valid domain settings with the given brand name.</summary>
     public static BrandingSettings CreateSettings(string brandName = "Viajantes") =>
         BrandingSettings.Create(CreateDto(brandName), Branding.Infrastructure.BrandingDefaults.AllowedFonts).Value;
 }

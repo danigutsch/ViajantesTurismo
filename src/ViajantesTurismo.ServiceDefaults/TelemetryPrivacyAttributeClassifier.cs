@@ -1,5 +1,6 @@
 namespace ViajantesTurismo.ServiceDefaults;
 
+/// <summary>Classifies telemetry attribute names that may carry sensitive data.</summary>
 internal static class TelemetryPrivacyAttributeClassifier
 {
     private static HashSet<string> SensitiveAttributeNames
@@ -77,6 +78,7 @@ internal static class TelemetryPrivacyAttributeClassifier
         "messaging.message.id"
     };
 
+    /// <summary>Returns whether the attribute name is sensitive and must not be exported.</summary>
     public static bool IsSensitive(string name)
     {
         return name.StartsWith("payment", StringComparison.OrdinalIgnoreCase)

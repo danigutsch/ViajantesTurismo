@@ -3,12 +3,15 @@ using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Payments;
 
+/// <summary>Query service exposing one verified EUR account and counting sensitive-detail reads.</summary>
 internal sealed class PaymentAccountQueryProbe : IPaymentAccountQueryService
 {
+    /// <summary>Gets how many times sensitive account details were read.</summary>
     public int SensitiveReads
     {
         get; private set;
     }
+    /// <summary>Gets the single verified account served by this probe.</summary>
     public GetPaymentAccountDto Account
     {
         get;
@@ -33,8 +36,11 @@ internal sealed class PaymentAccountQueryProbe : IPaymentAccountQueryService
         ReviewOutcome = PaymentAccountReviewOutcomeDto.None,
         RequiresAttention = false
     };
+    /// <summary>Returns the single account.</summary>
     public Task<IReadOnlyList<GetPaymentAccountDto>> List(CancellationToken ct) => Task.FromResult<IReadOnlyList<GetPaymentAccountDto>>([Account]);
+    /// <summary>Returns the account when the id matches, otherwise null.</summary>
     public Task<GetPaymentAccountDto?> GetById(Guid id, CancellationToken ct) => Task.FromResult(id == Account.Id ? Account : null);
+    /// <summary>Returns recipient details and counts the read when the id matches, otherwise null.</summary>
     public Task<GetPaymentAccountDetailsDto?> GetSensitiveDetails(Guid id, string actorId, CancellationToken ct)
     {
         if (id != Account.Id)

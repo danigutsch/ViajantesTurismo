@@ -12,6 +12,7 @@ public sealed class ManagementSecurityDbContext(DbContextOptions<ManagementSecur
     /// <inheritdoc />
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
+    /// <summary>Persisted management authentication cookie tickets.</summary>
     internal DbSet<ManagementCookieTicketCacheEntry> TicketCacheEntries => Set<ManagementCookieTicketCacheEntry>();
 
     /// <inheritdoc />

@@ -5,18 +5,22 @@ using PandaBear.Scheduling;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Polling background service whose batch signals start and then blocks until cancelled.</summary>
 internal sealed class PollingBackgroundServiceTestHarness
     : PollingBackgroundService
 {
     private readonly TaskCompletionSource started = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+    /// <summary>Creates the harness with a one-minute interval and a null logger.</summary>
     public PollingBackgroundServiceTestHarness()
         : base(NullLogger.Instance, "privacy-test-poller", TimeSpan.FromMinutes(1))
     {
     }
 
+    /// <summary>Gets a task that completes when the first batch has started.</summary>
     public Task Started => started.Task;
 
+    /// <summary>Creates and registers a listener that collects stopped scheduling activities that are children of the given parent context.</summary>
     public static ActivityListener CreateActivityListener(ConcurrentQueue<Activity> stoppedActivities, ActivityContext parentContext)
     {
         var listener = new ActivityListener

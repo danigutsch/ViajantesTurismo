@@ -1,7 +1,9 @@
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+/// <summary>Helpers for duplicate-resolution import tests.</summary>
 internal static class ImportCustomersDuplicateResolutionTestHelper
 {
+    /// <summary>Parses a CSV with one header row and one data row into a header-to-value map; throws InvalidDataException otherwise.</summary>
     public static IReadOnlyDictionary<string, string> ParseSingleDataRow(byte[] fileContent)
     {
         var csv = System.Text.Encoding.UTF8.GetString(fileContent);
@@ -25,6 +27,7 @@ internal static class ImportCustomersDuplicateResolutionTestHelper
             .ToDictionary(StringComparer.Ordinal);
     }
 
+    /// <summary>Adds a customer and its full details to the fake API under a new id.</summary>
     public static void SeedExistingCustomer(FakeCustomersApiClient fakeCustomersApi, string email, string firstName, string lastName)
     {
         var customerId = Guid.NewGuid();

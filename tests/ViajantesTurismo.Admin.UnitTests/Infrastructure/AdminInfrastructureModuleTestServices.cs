@@ -13,8 +13,10 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
+/// <summary>Builds Admin infrastructure test scopes with different module compositions.</summary>
 internal static class AdminInfrastructureModuleTestServices
 {
+    /// <summary>Composes the application only, with a capturing audit sink and no outbox.</summary>
     public static AdminInfrastructureModuleTestScope CreateWithoutOutbox()
     {
         var builder = Host.CreateApplicationBuilder();
@@ -24,6 +26,7 @@ internal static class AdminInfrastructureModuleTestServices
         return CreateScope(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Composes the write context with the integration event contract and outbox module.</summary>
     public static AdminInfrastructureModuleTestScope CreateWithOutboxModule()
     {
         var builder = CreateApplicationBuilderWithWriteContext();
@@ -33,6 +36,7 @@ internal static class AdminInfrastructureModuleTestServices
         return CreateScope(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Composes the write context with domain event dispatch, the integration event contract and the outbox.</summary>
     public static AdminInfrastructureModuleTestScope CreateWithWriteContext()
     {
         var builder = CreateApplicationBuilderWithWriteContext();
@@ -43,6 +47,7 @@ internal static class AdminInfrastructureModuleTestServices
         return CreateScope(builder.Services.BuildServiceProvider());
     }
 
+    /// <summary>Composes only the outbox module around the given outbox instance.</summary>
     public static AdminInfrastructureModuleTestScope CreateWithOutbox(IIntegrationEventOutbox outbox)
     {
         var services = new ServiceCollection();
@@ -52,6 +57,7 @@ internal static class AdminInfrastructureModuleTestServices
         return CreateScope(services.BuildServiceProvider());
     }
 
+    /// <summary>Composes the application and the full infrastructure module for the given environment, validating the provider on build.</summary>
     public static AdminInfrastructureModuleTestScope CreateWithInfrastructureModule(string environmentName = "Production")
     {
         var builder = CreateConfiguredApplicationBuilder(environmentName);
@@ -61,6 +67,7 @@ internal static class AdminInfrastructureModuleTestServices
         return CreateScope(BuildValidatedServiceProvider(builder.Services));
     }
 
+    /// <summary>Composes the application and infrastructure without runtime background services, as at OpenAPI build-time generation.</summary>
     public static AdminInfrastructureModuleTestScope CreateWithOpenApiBuildGenerationInfrastructureModule()
     {
         var builder = CreateConfiguredApplicationBuilder();
@@ -70,6 +77,7 @@ internal static class AdminInfrastructureModuleTestServices
         return CreateScope(BuildValidatedServiceProvider(builder.Services));
     }
 
+    /// <summary>Composes the development database initialization module and returns its scope.</summary>
     public static AdminDatabaseInitializationModuleTestScope CreateWithDatabaseInitializationModule()
     {
         var builder = CreateConfiguredApplicationBuilder(Environments.Development);

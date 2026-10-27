@@ -2,6 +2,7 @@ using Npgsql;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 
+/// <summary>Installs a trigger that fails completion of one idempotency key, always or once with a retryable error, and removes it on dispose.</summary>
 internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDisposable
 {
     private readonly NpgsqlDataSource dataSource;
@@ -28,6 +29,7 @@ internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDispo
         sequenceName = $"doc_idem_failure_sequence_{suffix}";
     }
 
+    /// <summary>Installs the failing trigger through a new data source; disposes it if installation fails.</summary>
     public static async Task<DocumentIdempotencyCompletionFailureScenario> Create(
         string connectionString,
         string scope,
@@ -54,6 +56,7 @@ internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDispo
         }
     }
 
+    /// <summary>Reads the stored state of the idempotency key, or null when no row exists.</summary>
     internal async Task<string?> GetIdempotencyState(CancellationToken ct)
     {
         await using var command = dataSource.CreateCommand(
@@ -69,6 +72,7 @@ internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDispo
         return state?.ToString();
     }
 
+    /// <summary>Drops the trigger, function and sequence and disposes the data source.</summary>
     public async ValueTask DisposeAsync()
     {
         await using var command = dataSource.CreateCommand(

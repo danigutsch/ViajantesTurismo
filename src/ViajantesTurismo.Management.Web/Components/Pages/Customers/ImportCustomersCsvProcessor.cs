@@ -14,6 +14,7 @@ internal static class ImportCustomersCsvProcessor
         IReadOnlyDictionary<string, ImportConflictFieldSource> FieldSelections,
         IReadOnlyDictionary<string, string> ExistingValues);
 
+    /// <summary>Builds up to the given number of preview rows from the pending CSV using the effective column mappings.</summary>
     internal static IReadOnlyList<IReadOnlyDictionary<string, string>> BuildPreviewRows(
         byte[] pendingFileBytes,
         IReadOnlyList<string> csvHeaders,
@@ -46,6 +47,7 @@ internal static class ImportCustomersCsvProcessor
         return result.AsReadOnly();
     }
 
+    /// <summary>Parses the mapped CSV into field values keyed by email address.</summary>
     internal static Dictionary<string, Dictionary<string, string>> ParseMappedRowsByEmail(byte[] mappedFileBytes)
     {
         var text = Encoding.UTF8.GetString(mappedFileBytes);
@@ -89,6 +91,7 @@ internal static class ImportCustomersCsvProcessor
         return result;
     }
 
+    /// <summary>Rewrites the mapped CSV so rows with a mixed decision hold the per-field merged values.</summary>
     internal static byte[] ApplyMixedFieldSelections(
         byte[] mappedFileBytes,
         IReadOnlyList<ImportCustomerConflictState> conflictStates)
@@ -127,6 +130,7 @@ internal static class ImportCustomersCsvProcessor
         return Encoding.UTF8.GetBytes(string.Join("\n", outputLines));
     }
 
+    /// <summary>Builds created, updated, skipped and failed counts from the import result and conflict decisions.</summary>
     internal static ImportCustomersSummaryCounts BuildImportSummary(
         ImportResultDto? result,
         IReadOnlyList<ImportCustomerConflictState> conflictStates)
@@ -150,6 +154,7 @@ internal static class ImportCustomersCsvProcessor
             result.ErrorCount);
     }
 
+    /// <summary>Builds a CSV data URI of the error rows, or null when there are none.</summary>
     internal static string? BuildErrorReportDataUri(IReadOnlyList<ImportErrorRowDto> errorRows)
     {
         if (errorRows.Count == 0)

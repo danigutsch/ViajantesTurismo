@@ -8,6 +8,7 @@ using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.InfrastructureTests.Media;
 
+/// <summary>Gallery placement scenario backed by a leased PostgreSQL test database.</summary>
 internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
 {
     private readonly PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease app;
@@ -23,6 +24,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
         this.serviceProvider = serviceProvider;
     }
 
+    /// <summary>Leases a test database and builds the scenario with the integration event services registered.</summary>
     public static async ValueTask<GalleryPlacementPostgreSqlScenario> Create(HostedTestFixture shared, CancellationToken ct)
     {
         var app = await shared.Databases.Create(ct);
@@ -36,11 +38,13 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
         return new GalleryPlacementPostgreSqlScenario(app, connectionString, serviceProvider);
     }
 
+    /// <summary>Creates a PostgreSQL tour mutation lock on the scenario data source.</summary>
     public ICatalogTourMutationLock CreateMutationLock()
     {
         return new PostgreSqlCatalogTourMutationLock(mutationDataSource);
     }
 
+    /// <summary>Polls until a session is waiting on a PostgreSQL advisory transaction lock.</summary>
     public async Task WaitForBlockedMutation(CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
@@ -63,6 +67,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
         }
     }
 
+    /// <summary>Creates a Catalog database context on the scenario database.</summary>
     public CatalogDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<CatalogDbContext>()
@@ -73,12 +78,14 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
         return new CatalogDbContext(options, configurations);
     }
 
+    /// <summary>Applies all pending Catalog migrations to the scenario database.</summary>
     public async ValueTask MigrateToLatest(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         await dbContext.Database.MigrateAsync(ct);
     }
 
+    /// <summary>Gets the names of the unique gallery indexes on the public media image tour links table, ordered by name.</summary>
     public async ValueTask<IReadOnlyList<string>> GetGalleryIndexNames(CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -94,6 +101,7 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Disposes the service provider, the data source and the database lease.</summary>
     public async ValueTask DisposeAsync()
     {
         await serviceProvider.DisposeAsync();

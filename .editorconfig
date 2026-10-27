@@ -138,9 +138,7 @@ dotnet_diagnostic.SKSTYLE001.severity = suggestion
 dotnet_diagnostic.SKSTYLE002.severity = suggestion
 dotnet_diagnostic.SKSTYLE003.severity = suggestion
 dotnet_diagnostic.SKSTYLE004.severity = suggestion
-# SKSTYLE017 (internal XML docs) arrived with SharedKernel 0.1.0-alpha.294.1 with a backlog of about 750 findings.
-# Staged rollout, owner: repository maintainers; raise to warning once the internal surface is documented.
-dotnet_diagnostic.SKSTYLE017.severity = suggestion
+dotnet_diagnostic.SKSTYLE017.severity = warning
 dotnet_diagnostic.SKTEST001.severity = warning
 dotnet_diagnostic.SKTEST002.severity = warning
 dotnet_diagnostic.SKTEST003.severity = warning

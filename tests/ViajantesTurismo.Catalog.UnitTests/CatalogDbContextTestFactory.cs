@@ -7,13 +7,16 @@ using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
+/// <summary>Creates in-memory <see cref="CatalogDbContext"/> instances for tests.</summary>
 internal static class CatalogDbContextTestFactory
 {
+    /// <summary>Creates a context over a new, uniquely named in-memory database.</summary>
     public static CatalogDbContext Create()
     {
         return Create(Guid.NewGuid().ToString("N"), new InMemoryDatabaseRoot());
     }
 
+    /// <summary>Creates a context over the named in-memory database within the shared root.</summary>
     public static CatalogDbContext Create(string databaseName, InMemoryDatabaseRoot databaseRoot)
     {
         var services = new ServiceCollection();

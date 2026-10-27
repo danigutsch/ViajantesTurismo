@@ -7,8 +7,10 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiService.Bookings;
 
+/// <summary>Endpoint for completing a booking.</summary>
 internal static class BookingsCompleteBookingEndpoint
 {
+    /// <summary>Maps the endpoint for completing a booking onto the bookings group.</summary>
     public static void MapCompleteBookingEndpoint(this RouteGroupBuilder bookingsGroup)
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);

@@ -4,8 +4,10 @@ using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 
 namespace ViajantesTurismo.Admin.ApiService.Bookings;
 
+/// <summary>Endpoint for deleting a booking.</summary>
 internal static class BookingsDeleteBookingEndpoint
 {
+    /// <summary>Maps the endpoint for deleting a booking onto the bookings group.</summary>
     public static void MapDeleteBookingEndpoint(this RouteGroupBuilder bookingsGroup)
     {
         ArgumentNullException.ThrowIfNull(bookingsGroup);

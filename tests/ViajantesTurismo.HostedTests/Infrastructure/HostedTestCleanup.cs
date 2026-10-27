@@ -3,8 +3,10 @@ using System.Runtime.ExceptionServices;
 
 namespace ViajantesTurismo.HostedTests.Infrastructure;
 
+/// <summary>Cleanup helper for hosted tests.</summary>
 internal static class HostedTestCleanup
 {
+    /// <summary>Disposes every resource even if some fail, then rethrows the single failure or an <see cref="AggregateException" /> of all failures including the operation failure.</summary>
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",

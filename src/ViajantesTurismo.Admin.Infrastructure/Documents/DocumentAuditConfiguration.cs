@@ -7,6 +7,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 /// <summary>Configures persistence for immutable document audit metadata.</summary>
 internal sealed class DocumentAuditConfiguration : IEntityTypeConfiguration<DocumentAuditRecord>
 {
+    /// <summary>Maps document audit records, their enum conversions, length limits and retention index.</summary>
     public void Configure(EntityTypeBuilder<DocumentAuditRecord> entity)
     {
         entity.HasKey(record => record.Id);
