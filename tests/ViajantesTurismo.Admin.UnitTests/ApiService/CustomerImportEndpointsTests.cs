@@ -1,5 +1,6 @@
 using PandaBear.Testing.AspNetCore;
 using System.Net;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -165,7 +166,7 @@ public sealed class CustomerImportEndpointsTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(expectedCsv);
+        Encoding.UTF8.GetString(result.Value.Span).ShouldBe(expectedCsv);
         scanner.ScannedContent.ShouldBe(System.Text.Encoding.UTF8.GetBytes(expectedCsv));
     }
 
@@ -368,6 +369,6 @@ public sealed class CustomerImportEndpointsTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(text);
+        Encoding.UTF8.GetString(result.Value.Span).ShouldBe(text);
     }
 }

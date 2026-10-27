@@ -107,12 +107,12 @@ internal static class CustomerImportEndpoints
         return TypedResults.Ok(result);
     }
 
-    /// <summary>Reads the uploaded CSV into memory within the size limit and scans it, failing closed on invalid or unscannable files.</summary>
+    /// <summary>Reads the uploaded CSV into memory within the size limit and scans it, returning UTF-8 bytes, failing closed on invalid or unscannable files.</summary>
     [SuppressMessage(
         "Design",
         "CA1031:Do not catch general exception types",
         Justification = "Untrusted uploads must fail closed when a scanner implementation cannot make a decision.")]
-    internal static async Task<Result<string>> ReadCsv(IFormFile file, IMalwareScanner scanner, CancellationToken ct)
+    internal static async Task<Result<ReadOnlyMemory<byte>>> ReadCsv(IFormFile file, IMalwareScanner scanner, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(file);
         ArgumentNullException.ThrowIfNull(scanner);
@@ -122,7 +122,7 @@ internal static class CustomerImportEndpoints
         if (!await CopyToMemory(source, content, ContractConstants.CustomerImportMaxFileBytes, ct).ConfigureAwait(false)
             || content.Length != file.Length)
         {
-            return Result.Invalid<string>(
+            return Result.Invalid<ReadOnlyMemory<byte>>(
                 "Invalid customer import file.",
                 nameof(file),
                 "Upload a CSV file that meets the documented import requirements.");
@@ -140,41 +140,43 @@ internal static class CustomerImportEndpoints
         }
         catch (Exception)
         {
-            return Result.Unavailable<string>(ScannerUnavailableMessage);
+            return Result.Unavailable<ReadOnlyMemory<byte>>(ScannerUnavailableMessage);
         }
 
         if (scanResult.Status is MalwareScanStatus.Rejected)
         {
-            return Result.Invalid<string>(InvalidScannerResultMessage, nameof(file), InvalidScannerResultMessage);
+            return Result.Invalid<ReadOnlyMemory<byte>>(InvalidScannerResultMessage, nameof(file), InvalidScannerResultMessage);
         }
 
         if (scanResult.Status is not (MalwareScanStatus.Passed or MalwareScanStatus.Disabled))
         {
-            return Result.Unavailable<string>(ScannerUnavailableMessage);
+            return Result.Unavailable<ReadOnlyMemory<byte>>(ScannerUnavailableMessage);
         }
 
-        return Result.Ok(await DecodeText(content, ct).ConfigureAwait(false));
+        return Result.Ok(await Utf8Content(content, ct).ConfigureAwait(false));
     }
 
-    private static async ValueTask<string> DecodeText(MemoryStream content, CancellationToken ct)
+    /// <summary>Returns the content as UTF-8 bytes without a byte order mark, transcoding UTF-16 input.</summary>
+    private static async ValueTask<ReadOnlyMemory<byte>> Utf8Content(MemoryStream content, CancellationToken ct)
     {
         var bytes = content.GetBuffer().AsMemory(0, (int)content.Length);
         var preamble = Encoding.UTF8.Preamble;
         if (bytes.Span.StartsWith(preamble))
         {
-            bytes = bytes[preamble.Length..];
+            return bytes[preamble.Length..];
         }
-        else if (bytes.Span.StartsWith<byte>([0xFE, 0xFF]) || bytes.Span.StartsWith<byte>([0xFF, 0xFE]))
+
+        if (bytes.Span.StartsWith<byte>([0xFE, 0xFF]) || bytes.Span.StartsWith<byte>([0xFF, 0xFE]))
         {
             content.Position = 0;
             using var reader = new StreamReader(content, leaveOpen: true);
-            return await reader.ReadToEndAsync(ct).ConfigureAwait(false);
+            return Encoding.UTF8.GetBytes(await reader.ReadToEndAsync(ct).ConfigureAwait(false));
         }
 
-        return Encoding.UTF8.GetString(bytes.Span);
+        return bytes;
     }
 
-    private static ProblemHttpResult CreateScanProblem(Result<string> result)
+    private static ProblemHttpResult CreateScanProblem(Result<ReadOnlyMemory<byte>> result)
     {
 
         var isInvalid = result.Status is ResultStatus.Invalid;

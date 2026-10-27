@@ -37,13 +37,18 @@ public sealed class CustomerImportCommandHandler(
         ct.ThrowIfCancellationRequested();
 
         var today = command.Today ?? DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
-        var documentResult = CsvDocument.Parse(command.CsvContent);
-        if (documentResult.IsFailure)
+        var document = command.Document;
+        if (document is null)
         {
-            return new ImportResult(0, 0);
+            var documentResult = CsvDocument.Parse(command.CsvContent);
+            if (documentResult.IsFailure)
+            {
+                return new ImportResult(0, 0);
+            }
+
+            document = documentResult.Value;
         }
 
-        var document = documentResult.Value;
         var duplicateLineNumbers = new HashSet<int>(DuplicateDetector.FindDuplicateEmailLineNumbers(document));
 
         var customersToCreate = new List<Customer>();
