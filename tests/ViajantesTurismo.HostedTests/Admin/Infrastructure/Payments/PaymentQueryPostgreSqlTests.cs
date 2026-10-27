@@ -80,14 +80,14 @@ public sealed class PaymentQueryPostgreSqlTests(PostgreSqlTestServerFixture fixt
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
-        var (BookingId, ReceiptId, InstallmentId) = await scenario.SeedCustomerCredit(ct);
+        var (bookingId, _, _) = await scenario.SeedCustomerCredit(ct);
         await using var reader = scenario.Open();
         var originalAudits = await reader.AuditCount(ct);
 
         // Act
-        var maskedHistory = await reader.Financials.GetByBookingId(BookingId, ct);
+        var maskedHistory = await reader.Financials.GetByBookingId(bookingId, ct);
         var summary = maskedHistory.ShouldNotBeNull();
-        var sensitiveHistory = await reader.Financials.GetSensitiveDetails(BookingId, "admin", ct);
+        var sensitiveHistory = await reader.Financials.GetSensitiveDetails(bookingId, "admin", ct);
         var details = sensitiveHistory.ShouldNotBeNull();
 
         // Assert
@@ -98,5 +98,25 @@ public sealed class PaymentQueryPostgreSqlTests(PostgreSqlTestServerFixture fixt
         await using var restarted = scenario.Open();
         var persistedAudits = await restarted.AuditCount(ct);
         persistedAudits.ShouldBe(originalAudits + 1);
+    }
+
+    [Fact]
+    public async Task Financial_history_maps_every_kind_of_correction_into_reversals()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
+        var bookingId = await scenario.SeedFinancialCorrections(ct);
+        await using var reader = scenario.Open();
+
+        // Act
+        var history = await reader.Financials.GetByBookingId(bookingId, ct);
+
+        // Assert
+        var reversals = history.ShouldNotBeNull().Reversals;
+        string[] operations = [.. reversals.Select(reversal => reversal.Operation).Order(StringComparer.Ordinal)];
+        operations.ShouldBe(["AllocationReleased", "ApprovalWithdrawn", "ReceiptReversed", "RefundRecordCorrected"]);
+        reversals.Select(reversal => reversal.ApprovedBy).Distinct().ShouldHaveSingleItem().ShouldBe("owner");
+        reversals.ShouldHaveSingleItem(reversal => reversal.Operation == "AllocationReleased").EuroAmount.ShouldBe(5m);
     }
 }
