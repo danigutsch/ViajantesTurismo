@@ -13,7 +13,7 @@
 
 @if (!_success && _upload.Status is not UploadOperationStatus.None)
 {
-    <section class="alert alert-light border" aria-label="Catalog image upload status">
+    <section class="alert alert-light border" aria-label="Catalog image upload status" tabindex="-1" @ref="_statusRegion">
         <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">@_upload.Announcement</div>
         <div data-upload-status>@GetUploadStatusText()</div>
         @if (_upload.IsDeterminate)
@@ -80,6 +80,19 @@
 </EditForm>
 
 @code {
+    private ElementReference _statusRegion;
+    private bool _focusStatusRegion;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusStatusRegion)
+        {
+            _focusStatusRegion = false;
+            await _statusRegion.FocusAsync();
+        }
+    }
+
     [Parameter]
     public Guid Id { get; set; }
 
@@ -211,6 +224,7 @@
         }
 
         await uploadCancellation.CancelAsync();
+        _focusStatusRegion = true;
     }
 
     private string GetSubmitButtonLabel()

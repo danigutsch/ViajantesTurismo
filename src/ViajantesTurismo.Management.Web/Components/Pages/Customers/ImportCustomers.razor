@@ -22,7 +22,7 @@
 
     @if (_state.Upload.Status is not UploadOperationStatus.None)
     {
-        <section class="alert alert-light border" aria-label="Customer import upload status">
+        <section class="alert alert-light border" aria-label="Customer import upload status" tabindex="-1" @ref="_statusRegion">
             <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">@_state.Upload.Announcement</div>
             <div data-upload-status>@GetUploadStatusText()</div>
             @if (_state.Upload.IsDeterminate)
@@ -372,6 +372,19 @@
 </div>
 
 @code {
+    private ElementReference _statusRegion;
+    private bool _focusStatusRegion;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusStatusRegion)
+        {
+            _focusStatusRegion = false;
+            await _statusRegion.FocusAsync();
+        }
+    }
+
     private const long MaxFileSizeBytes = ContractConstants.CustomerImportMaxFileBytes;
     private const long BytesPerMebibyte = 1024 * 1024;
     private const long MaxFileSizeInMebibytes = MaxFileSizeBytes / BytesPerMebibyte;
@@ -651,6 +664,7 @@
         }
 
         await uploadCancellation.CancelAsync();
+        _focusStatusRegion = true;
     }
 
     private string GetImportButtonLabel()
