@@ -4,16 +4,10 @@
   "parent": "RM-234",
   "title": "Compile all changed buildable projects in fork PRs",
   "type": "enabler",
-  "status": "proposed",
-  "order": 424,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1079 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],

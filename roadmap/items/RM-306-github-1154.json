@@ -4,16 +4,10 @@
   "parent": "RM-141",
   "title": "Standardize endpoint I/O and streaming contracts",
   "type": "enabler",
-  "status": "proposed",
-  "order": 430,
+  "status": "done",
+  "triage": "untriaged",
   "theme": "repo-operations",
   "outcome": "GitHub issue #1154 is canonically represented from the reconciliation manifest.",
-  "scoring": {
-    "reach": 1,
-    "impact": 1,
-    "confidence": 0.1,
-    "effort": 3
-  },
   "blockedBy": [],
   "blocks": [],
   "dependencies": [],

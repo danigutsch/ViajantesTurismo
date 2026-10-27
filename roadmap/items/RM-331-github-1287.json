@@ -1,0 +1,35 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-331",
+  "title": "Split BookingFinancialHistory.RestoreValidated below the complexity threshold",
+  "type": "issue",
+  "status": "proposed",
+  "order": 439,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1287 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "refactor"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1287"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1287,
+      "nodeId": "I_kwDOQAEVW88AAAABaJJ9Zw"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-329",
+  "title": "Remove remaining Sonar configuration, documentation and remote settings",
+  "type": "issue",
+  "status": "proposed",
+  "order": 437,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1285 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "area: tooling",
+    "ci"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1285"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1285,
+      "nodeId": "I_kwDOQAEVW88AAAABaJGwOw"
+    }
+  }
+}

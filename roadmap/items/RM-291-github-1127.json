@@ -4,7 +4,7 @@
   "title": "Diagnose PostgreSQL test leaks and add a reusable test host",
   "type": "enabler",
   "status": "proposed",
-  "order": 428,
+  "order": 422,
   "theme": "repo-operations",
   "outcome": "GitHub issue #1127 is canonically represented from the reconciliation manifest.",
   "scoring": {

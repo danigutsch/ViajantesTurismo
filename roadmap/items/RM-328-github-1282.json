@@ -1,0 +1,36 @@
+{
+  "$schema": "../schema/roadmap-item.schema.json",
+  "id": "RM-328",
+  "title": "research(infra): evaluate HTTP/2 and HTTP/3 for media delivery (low priority)",
+  "type": "issue",
+  "status": "proposed",
+  "order": 436,
+  "theme": "repo-operations",
+  "outcome": "GitHub issue #1282 is canonically represented from the reconciliation manifest.",
+  "scoring": {
+    "reach": 1,
+    "impact": 1,
+    "confidence": 0.1,
+    "effort": 3
+  },
+  "blockedBy": [],
+  "blocks": [],
+  "dependencies": [],
+  "tags": [],
+  "labels": [
+    "infrastructure",
+    "research"
+  ],
+  "sources": [
+    {
+      "kind": "github-issue",
+      "reference": "#1282"
+    }
+  ],
+  "integrations": {
+    "github": {
+      "issue": 1282,
+      "nodeId": "I_kwDOQAEVW88AAAABaIS1nA"
+    }
+  }
+}

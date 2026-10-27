@@ -5,7 +5,7 @@
   "title": "Epic: establish a governed database migration lifecycle",
   "type": "epic",
   "status": "proposed",
-  "order": 486,
+  "order": 482,
   "theme": "repo-operations",
   "outcome": "Production schema changes use reviewed immutable PostgreSQL artifacts with a least-privileged, auditable deployment stage.",
   "scoring": {

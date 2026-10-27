@@ -5,7 +5,7 @@
   "title": "Define Aspire integration strategy for platform services",
   "type": "enabler",
   "status": "proposed",
-  "order": 388,
+  "order": 387,
   "theme": "repo-operations",
   "outcome": "GitHub issue #898 is canonically represented from the reconciliation manifest.",
   "scoring": {
