@@ -23,15 +23,18 @@ The rule is tiered. Pick the tier by what the caller knows about the failure.
 
 ### Tier 1: validation errors with a known field
 
-- Field-keyed validation errors go to the `EditContext` through `ValidationMessageStore` (see `EditContextValidationHelper`).
-- The form shows an error summary that links to each invalid field and receives focus when it appears, following the
+- Field-keyed validation errors go to the `EditContext` through `ValidationMessageStore`, applied by the SharedKernel
+  `ServerValidationBinder` with a list of known fields and a length cap per message.
+- The form shows an `ErrorSummary` that links to each invalid field and receives focus when it appears, following the
   [GOV.UK error summary pattern](https://design-system.service.gov.uk/components/error-summary/).
 - Messages are authored by our own validators, have a bounded length, and never echo user input or file names.
 
 ### Tier 2: everything else
 
-- Any failure without a known field, and every non-validation failure, shows fixed copy chosen by the caller (`HttpOutcomeUserMessage`,
-  `UserFacingErrorMessage`).
+- Any failure without a known field, and every non-validation failure, shows fixed copy chosen by the caller
+  (`HttpOutcomeMessages` from SharedKernel, with the copy strings from `UserFacingErrorMessage`).
+- Unhandled faults in a page are caught by the `RecoveryErrorBoundary` in the layout and logged through
+  `IUiFailureReporter`, which records the exception type and trace id only.
 - Server validation text is never joined into a free-form message.
 - The RFC 9457 `detail` member exists so the client can help the user correct the problem. Clients must not parse it.
 - Users never see a stack trace, exception text, or implementation details.
@@ -55,14 +58,14 @@ Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exerci
 | Do not send exception text or stack traces to clients | Implemented | No exception text is sent to clients; development exception pages are gated by environment in `src/ViajantesTurismo.Management.Web/Program.cs` and `src/ViajantesTurismo.Public.Web/Program.cs` |
 | Global exception handler on every service | Partial | The Admin and Catalog API hosts (the Catalog API also hosts Branding) register `AddUnhandledExceptionHandler` and `UseExceptionHandler` in their `Program.cs`; Management.Web and Public.Web keep `/Error` pages |
 | Consistent 4xx/5xx mapping and monitoring | Partial | The mapping exists; the API hosts export `unhandled_exceptions_total`, but no alert or 5xx ratio rule consumes it yet |
-| Validation text authored by us, no echo of input | Partial | Two echoes remain: the caller identifier in the documentation 404, and enum states in booking errors |
+| Validation text authored by us, no echo of input | Partial | One echo remains: enum states in booking errors. The documentation 404 uses a fixed detail and no longer echoes the identifier |
 | Log security events (authentication, authorization, rate limit, validation failures) | Partial | The Admin and Catalog API hosts call `AddSecurityEventTelemetry` (JWT bearer failure, challenge, forbidden, rate-limit rejection; `EventId` 4101 and 4102); validation failures are not logged as security events |
-| Handle UI-level errors without losing the session | Partial | `blazor-error-ui` exists in `src/ViajantesTurismo.Management.Web/Components/Layout/MainLayout.razor`; there is no `ErrorBoundary` |
+| Handle UI-level errors without losing the session | Implemented | `src/ViajantesTurismo.Management.Web/Components/Layout/MainLayout.razor` wraps page content in the SharedKernel `RecoveryErrorBoundary`, which shows fixed recovery copy, resets on navigation and logs through `IUiFailureReporter`; `blazor-error-ui` remains as the last resort. Handled failures are logged and not counted: no counter is registered |
 | Incident response process | Partial | Notes only in `docs/operations/production-readiness.md`; `SECURITY.md` covers vulnerability reporting only |
 | Protect logs from tampering and unauthorized access | Partial | The observability stack under `observability/` is local-only |
 | Alert on errors and suspicious activity | Missing | The signals now exist (`unhandled_exceptions_total`, `authentication_events_total`, `rate_limit_rejections_total`), but `observability/` has no alert rules; `docs/operations/production-readiness.md` says thresholds are undecided |
 | Summarize repeated errors | Missing | No aggregation of repeated errors |
-| Never swallow exceptions silently | Partial | The malware-scanner catch in `src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` now logs `EventId` 1 `CustomerImportScannerFailed` with the failure type and still fails closed; about a dozen pages in `src/ViajantesTurismo.Management.Web/Components/Pages` still catch without logging |
+| Never swallow exceptions silently | Partial | The malware-scanner catch in `src/ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` now logs `EventId` 1 `CustomerImportScannerFailed` with the failure type and still fails closed; the Management.Web pages that catch `Exception` report through `IUiFailureReporter` (`EventId` 7001, exception type and trace id only) and still show fixed copy |
 | Honeytokens | Missing | Not expected now |
 
 ## Triage flow for new and unknown errors
