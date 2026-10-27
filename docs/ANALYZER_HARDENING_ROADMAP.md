@@ -364,6 +364,9 @@ When adopting or tightening analyzer rules:
 - `Directory.Build.props`
 - `docs/CODING_GUIDELINES.md`
 - `docs/CODE_QUALITY.md`
+
+In the PandaBear.SharedKernel repository:
+
 - `src/SharedKernel/SharedKernel.Style.Analyzers/README.md`
 - `src/SharedKernel/SharedKernel.Style.CodeFixes/README.md`
 - `src/SharedKernel/SharedKernel.Aspire.Analyzers/README.md`

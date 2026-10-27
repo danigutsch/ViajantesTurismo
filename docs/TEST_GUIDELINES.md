@@ -343,7 +343,7 @@ Benefits: Standard pattern, clear flow, helps identify tests doing too much.
 ### Assertion readability
 
 Use the repository-owned assertion package across maintained tests:
-`tests/SharedKernel.Testing.Assertions` / `PandaBear.Testing.Assertions`. Wrapper-first is
+`PandaBear.Testing.Assertions`. Wrapper-first is
 the policy for maintained test code. If a test project does not already reference the package,
 add the project reference and a global `<Using Include="PandaBear.Testing.Assertions" />`
 (or a file `using`) rather than adding direct `Xunit.Assert` calls. `SKTEST006` reports direct
@@ -353,7 +353,8 @@ Use extension-style wrapper APIs when they exist, such as `actual.ShouldBe(expec
 `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
 `text.ShouldContain(expected, StringComparison.Ordinal)`, and
 `action.ShouldThrow<InvalidOperationException>()`. Use `Should*` assertion extensions exclusively.
-The sole `Xunit.Assert` implementation boundary is `src/SharedKernel/SharedKernel.Testing.Assertions`,
+The sole `Xunit.Assert` implementation boundary is the `PandaBear.Testing.Assertions` package
+(`src/SharedKernel/SharedKernel.Testing.Assertions` in the PandaBear.SharedKernel repository),
 where wrappers delegate to xUnit. Add new extension wrappers only for assertion patterns with repeated
 callers; do not introduce an external fluent assertion package.
 

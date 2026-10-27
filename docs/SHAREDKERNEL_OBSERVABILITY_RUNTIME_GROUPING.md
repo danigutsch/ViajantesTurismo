@@ -5,6 +5,8 @@ Repository inventory for the SharedKernel observability/runtime grouping work.
 This document reviews the current repository for reusable observability, logging, runtime,
 and startup configuration code that could live in logical `SharedKernel.*` packages.
 
+Paths under `src/SharedKernel/` refer to the PandaBear.SharedKernel repository, not this one.
+
 This is a documentation-only grouping pass. It does **not** propose immediate refactoring of
 all listed code. The goal is to separate:
 
