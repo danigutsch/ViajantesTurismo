@@ -20,8 +20,8 @@ Current evidence:
 - [LocalMediaObjectStore](../../src/ViajantesTurismo.Catalog.Infrastructure/LocalMediaObjectStore.cs)
   writes through a temporary file and replaces an existing destination; reads infer content type
   from the key and do not return a persisted application checksum.
-- [SeaweedFsMediaObjectStore](../../src/ViajantesTurismo.Catalog.Infrastructure/SeaweedFsMediaObjectStore.cs)
-  sends content headers and optional checksum metadata; Put does not assert create-only semantics.
+- [S3ObjectStore](https://github.com/danigutsch/PandaBear.SharedKernel/blob/main/src/SharedKernel/SharedKernel.ObjectStorage.S3/S3ObjectStore.cs)
+  (SharedKernel) sends content headers and optional checksum metadata; Put does not assert create-only semantics.
 - [Reconciliation](../../src/ViajantesTurismo.Catalog.Application/Media/MediaObjectReconciliationService.cs)
   compares referenced keys with inventory and supports optional orphan deletion with a grace period.
   Its scan is not a cross-store transaction or proof that a concurrent upload is inactive.
@@ -111,8 +111,8 @@ Existing coverage to preserve:
 
 - [Local object store tests](../../tests/ViajantesTurismo.HostedTests/Catalog/Infrastructure/LocalMediaObjectStoreTests.cs):
   existing-reader stability across replacements.
-- [SeaweedFS adapter tests](../../tests/ViajantesTurismo.Catalog.UnitTests/SeaweedFsMediaObjectStoreTests.cs):
-  checksum metadata, not-found, pagination, key safety, and provisioning behavior.
+- [S3 adapter tests](https://github.com/danigutsch/PandaBear.SharedKernel/blob/main/tests/SharedKernel.ObjectStorage.S3.Tests/S3ObjectStoreTests.cs)
+  (SharedKernel): checksum metadata, not-found, pagination, key safety, and provisioning behavior.
 - [Reconciliation tests](../../tests/ViajantesTurismo.Catalog.UnitTests/MediaObjectReconciliationServiceTests.cs):
   missing/orphan reports, explicit deletion, grace, and retryable failures.
 
