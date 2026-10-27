@@ -27,7 +27,7 @@ internal static class BrandingEndpoints
             .WithNoStoreResponses();
 
         publicBranding.MapGet("/", GetPublicSettings)
-            .CacheOutput(policy => policy.Expire(BrandingHttpCache.PublicFreshness).Tag(BrandingHttpCache.PublicBrandingTag))
+            .CacheOutput(policy => policy.AddPolicy<BrandingCacheTelemetryPolicy>().Expire(BrandingHttpCache.PublicFreshness).Tag(BrandingHttpCache.PublicBrandingTag))
             .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);
         managementBranding.MapGet("/", GetManagementSettings)
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
@@ -57,9 +57,11 @@ internal static class BrandingEndpoints
 
     private static async Task<IResult> GetPublicSettings(
         IBrandingSettingsStore store,
+        BrandingTelemetry telemetry,
         HttpContext httpContext,
         CancellationToken ct)
     {
+        telemetry.CacheMiss();
         var settings = await GetSettingsOrDefault(store, ct).ConfigureAwait(false);
         BrandingHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(ToDto(settings));
@@ -67,6 +69,7 @@ internal static class BrandingEndpoints
 
     private static async Task<IResult> GetManagementSettings(
         IBrandingSettingsRevisionStore store,
+        BrandingTelemetry telemetry,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -78,6 +81,7 @@ internal static class BrandingEndpoints
                 statusCode: StatusCodes.Status503ServiceUnavailable);
         }
 
+        telemetry.ObserveRevision(current.SourceRevision);
         httpContext.Response.Headers.ETag = BrandingEntityTags.Format(current.SourceEpoch, current.SourceRevision);
         return TypedResults.Ok(ToManagementDto(current));
     }
@@ -86,6 +90,7 @@ internal static class BrandingEndpoints
         BrandingSettingsDto request,
         IBrandingSettingsRevisionStore store,
         IOutputCacheStore outputCacheStore,
+        BrandingTelemetry telemetry,
         ILogger<BrandingAspNetCoreMarker> logger,
         HttpContext httpContext,
         CancellationToken ct)
@@ -131,7 +136,8 @@ internal static class BrandingEndpoints
                 "Branding settings changed after they were loaded. Reload them and reapply your changes.");
         }
 
-        await InvalidatePublicBrandingCache(outputCacheStore, logger).ConfigureAwait(false);
+        telemetry.ObserveRevision(saved.SourceRevision);
+        await InvalidatePublicBrandingCache(outputCacheStore, telemetry, logger).ConfigureAwait(false);
         return TypedResults.Ok(ToManagementDto(saved));
     }
 
@@ -194,17 +200,22 @@ internal static class BrandingEndpoints
         return await store.GetSettings(ct).ConfigureAwait(false) ?? BrandingDefaults.CreateSettings();
     }
 
-    private static async Task InvalidatePublicBrandingCache(IOutputCacheStore outputCacheStore, ILogger logger)
+    private static async Task InvalidatePublicBrandingCache(
+        IOutputCacheStore outputCacheStore,
+        BrandingTelemetry telemetry,
+        ILogger logger)
     {
         try
         {
             await outputCacheStore
                 .EvictByTagAsync(BrandingHttpCache.PublicBrandingTag, CancellationToken.None)
                 .ConfigureAwait(false);
+            telemetry.Invalidation(succeeded: true);
             logger.PublicCacheAreaInvalidated(BrandingHttpCache.PublicBrandingArea);
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(CancellationToken.None))
         {
+            telemetry.Invalidation(succeeded: false);
             logger.PublicCacheAreaInvalidationFailed(
                 BrandingHttpCache.PublicBrandingArea,
                 exception.GetType().Name);

@@ -20,6 +20,11 @@ internal sealed class TestBrandingSettingsStore : IBrandingSettingsStore, IBrand
         get; private set;
     }
 
+    public int ReadCount
+    {
+        get; private set;
+    }
+
     public Exception? SaveException
     {
         get; set;
@@ -28,6 +33,7 @@ internal sealed class TestBrandingSettingsStore : IBrandingSettingsStore, IBrand
     public Task<BrandingSettings?> GetSettings(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ReadCount++;
         return Task.FromResult(settings);
     }
 

@@ -28,6 +28,9 @@ internal static class BrandingApiTestHost
         CollectingLogger<BrandingAspNetCoreMarker>? logger = null) =>
         Create(null, store, outputCacheStore, logger, authenticateClient: true);
 
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous(TestBrandingSettingsStore store) =>
+        Create(null, store, null, null, authenticateClient: false);
+
     public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous() =>
         Create(null, TestBrandingSettingsStore.Seeded(), null, null, authenticateClient: false);
 

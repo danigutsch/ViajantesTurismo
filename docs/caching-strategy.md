@@ -36,6 +36,25 @@ The accepted Branding window does not justify Redis or another distributed cache
 measured multi-instance invalidation, scale, or stricter freshness requirements show that host-local
 output caching cannot meet the contract.
 
+### Branding cache freshness
+
+The public Branding cache is disposable and never authoritative; the committed Branding row, source
+revision, and revision history are. The accepted bound is 60 seconds fresh plus 300 seconds stale.
+
+- Eviction runs after the commit and is best-effort. A failed eviction is logged with the cache area and
+    failure type only, and the committed `PUT` still returns success without a second revision.
+- Each Catalog instance holds its own output cache, so a write evicts only the instance that handled
+    it. Another instance can serve the previous settings until its entry expires, which the 60-second
+    freshness window bounds. Persistence and Management reads stay current throughout.
+- Concurrent cold public reads coalesce into a single load through ASP.NET Core output caching. No extra
+    stampede protection is added.
+- Restarting an instance empties its cache; the next read repopulates it from persistence.
+
+Public cache staleness is separate from Admin projection lag. Admin document generation reads its
+versioned Branding projection, which the integration-event worker updates, and never reads this cache.
+Cache freshness is observed from the public response headers and eviction logs; projection lag is
+observed from the Admin projection watermark and health.
+
 ## Observability and checks
 
 Catalog cache invalidation emits fixed-area logs: `public-catalog` and `public-content`. Branding
