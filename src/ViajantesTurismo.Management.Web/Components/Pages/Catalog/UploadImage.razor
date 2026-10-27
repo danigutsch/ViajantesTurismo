@@ -86,6 +86,7 @@
     private readonly UploadImageFormModel _model = new();
     private const long BytesPerMebibyte = 1024 * 1024;
     private const long MaximumFileSizeInMebibytes = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxMediaUploadBytes / BytesPerMebibyte;
+    private const string ValidationFailureMessage = "Image could not be uploaded. Check the file and try again.";
     private readonly UploadOperationState _upload = new();
     private IBrowserFile? _file;
     private bool _success;
@@ -142,11 +143,11 @@
 
             if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _errorMessage = outcome.Kind == HttpOutcomeKind.ValidationProblem
-                    ? outcome.ValidationErrors is null or { Count: 0 }
-                        ? "Image could not be uploaded. Check the file and try again."
-                        : string.Join(" ", outcome.ValidationErrors.SelectMany(error => error.Value))
-                    : HttpOutcomeUserMessage.For(outcome.Kind, "Image could not be uploaded. Try again later.", "Catalog tour not found.");
+                _errorMessage = HttpOutcomeUserMessage.For(
+                    outcome.Kind,
+                    "Image could not be uploaded. Try again later.",
+                    "Catalog tour not found.",
+                    ValidationFailureMessage);
                 _upload.Fail(operationId, _errorMessage);
                 return;
             }
@@ -160,16 +161,14 @@
         {
             _upload.Cancel(operationId);
         }
-        catch (ContractValidationException exception)
+        catch (ContractValidationException)
         {
             if (!_upload.IsCurrentActive(operationId))
             {
                 return;
             }
 
-            _errorMessage = exception.ValidationErrors.Count == 0
-                ? "Image could not be uploaded. Check the file and try again."
-                : string.Join(" ", exception.ValidationErrors.SelectMany(error => error.Value));
+            _errorMessage = ValidationFailureMessage;
             _upload.Fail(operationId, _errorMessage);
         }
         catch (HttpRequestException)
