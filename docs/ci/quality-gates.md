@@ -1,6 +1,6 @@
 # Quality gates
 
-The repository owns build analysis and coverage checks in source control. No SonarCloud
+The repository owns build analysis and coverage checks in source control. No hosted analysis
 account, scanner, connected-mode configuration, or analysis token is required.
 
 ## Build analysis
@@ -10,10 +10,15 @@ The pinned .NET SDK 10.0.402 supplies analyzers with `AnalysisLevel=latest`,
 SharedKernel analyzers, architecture tests, test checks, dependency review, and secret
 scanning remain independent gates. `.editorconfig` owns scoped severity policy.
 
-This is not exact Sonar rule or finding parity. The removed explicit rules are `S2326`,
-`S2094`, `S1186`, `S4136`, `S4144`, and `S4035`. Sonar cognitive-complexity and duplication
-metrics and its high-impact issue classification are not reproduced. Review those concerns
-explicitly rather than interpreting a passing build as equivalent hosted analysis.
+Cyclomatic complexity is limited by `CA1502`: `CodeMetricsConfig.txt` sets the threshold (50) and
+`.editorconfig` enables the rule as a warning, so an over-limit method fails the build. A method above the
+limit needs a path-scoped `.editorconfig` exception that names its owner and the issue that removes it;
+`BookingFinancialHistory.Persistence.cs` is the only one today. Lower the threshold as exceptions are
+refactored; never raise it.
+
+Cognitive complexity and duplicate-code detection are intentionally not enforced: no .NET analyzer provides
+them, and an external tool would add a supply-chain dependency for a signal that review and the complexity
+limit already cover. Review those concerns explicitly rather than reading a passing build as proof of them.
 
 ## Coverage collection
 
@@ -72,12 +77,10 @@ source, test, collector, or configuration changes.
 
 ## Branch protection
 
-The required workflow check is `Quality Gate`. After its concrete check passed, the required
-`SonarCloud` status was replaced in branch protection and ruleset `14460324`, allowing the
-replacement workflow to merge. Both settings were read back and verified on October 20, 2026.
-`Build and Test`, `Lint`, `Dependency Review`, and `Secret Scan` remain required. Strict up-to-date checks, GitHub Actions check attribution
-(app `15368`), signed commits, additional review requirements, and the no-bypass policy remain
-in force.
+The required workflow check is `Quality Gate`, with `Build and Test`, `Lint`, `Dependency Review`, and
+`Secret Scan`. Strict up-to-date checks, GitHub Actions check attribution (app `15368`), signed commits,
+additional review requirements, and the no-bypass policy remain in force. Branch protection and ruleset
+`14460324` were read back and verified on October 20, 2026.
 
 Workflow changes do not update remote protection automatically. For any future replacement:
 
@@ -85,6 +88,3 @@ Workflow changes do not update remote protection automatically. For any future r
 2. Read both branch protection and every active ruleset targeting `main`.
 3. Replace only the retired status, preserving check attribution and all other protection settings.
 4. Read back both settings and confirm the pull request still requires the intended checks.
-
-SonarCloud account state and removal of obsolete remote secrets or variables have not been
-verified. Those are separate administrative cleanup tasks; current CI does not require them.

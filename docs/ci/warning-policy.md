@@ -25,13 +25,9 @@ a blocker; an unknown or incomplete analysis is not evidence of success.
 | Lint | Nonzero required Markdown, links, JSON, Gherkin, shell, workflow, encoding, and generated-document checks | Optional spelling suggestions are advisory; unrelated existing debt needs an explicit baseline before it can be budgeted | Documentation/workflow owners fix their files; repository maintainers own Lint and Actionlint configuration |
 | Tests | Failed tests, test-host crashes, missing expected test execution, and unreliable/corrupt results | Diagnostic log noise is advisory only after proving successful execution; flaky tests require owned remediation, not repeated reruns as acceptance | Suite owner fixes behavior; CI maintainers own Build and Test aggregation and result collection |
 | Coverage | Changed-code coverage below the configured 80% combined executable-line/condition threshold, malformed evidence, or missing required instrumentation | Whole-tree trends are advisory; targeted exclusions require evidence and review | Application/test owners add meaningful coverage; CI maintainers own Quality Gate and evidence validation |
-| Sonar, if reintroduced | Hosted quality-gate failures, actionable security/correctness/reliability failures, and unexpected scanner parse failures | Medium-impact maintainability findings stay visible and non-blocking unless the hosted gate fails; do not blanket-promote them | CI maintainers must define scanner-health and hosted-gate checks before adoption; Sonar is not part of current CI |
 
-Current Sonar retirement and the limits of replacement analysis are documented in
-[quality gates](quality-gates.md). Its older warning-policy issue predates that change.
-Do not imply the local build reproduces Sonar cognitive-complexity, duplication, or impact metrics.
-The conditional Sonar row preserves the requested maintainability distinction without reinstating
-an account, scanner, secrets, or remote check.
+Complexity limits and the analysis gaps of the local build are documented in
+[quality gates](quality-gates.md); do not imply the build measures duplication or cognitive complexity.
 
 Do not bypass required failures with `continue-on-error`, ignored exit codes, broad catch wrappers,
 or unconditional successful aggregate checks. Optional advisory steps must be explicitly identified
