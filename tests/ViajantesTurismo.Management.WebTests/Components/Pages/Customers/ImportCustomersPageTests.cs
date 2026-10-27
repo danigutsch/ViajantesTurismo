@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.ContractConstants;
 
@@ -384,5 +385,104 @@ public sealed class ImportCustomersPageTests : BunitContext
         retryToken.IsCancellationRequested.ShouldBeFalse();
         retryToken.ShouldNotBe(firstToken);
         cut.Markup.ShouldContain("Import complete", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Cancel_while_conflict_states_are_loading_ends_canceled_and_skips_duplicate_resolution()
+    {
+        // Arrange
+        var loadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var loadCompletion = new TaskCompletionSource<IReadOnlyList<GetCustomerDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        _fakeCustomersApi.SetGetCustomersHandler((_, _) =>
+        {
+            loadStarted.TrySetResult();
+            return loadCompletion.Task;
+        });
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+
+        // Act
+        var importTask = ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+        await loadStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        await cut.Find("button[aria-label='Cancel upload of customers.csv']").ClickAsync();
+        loadCompletion.TrySetResult([]);
+        await importTask;
+
+        // Assert
+        cut.Find("[data-upload-status]").TextContent.ShouldContain("Canceled", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Resolve Duplicates", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Conflict_result_does_not_show_a_completed_upload_for_the_file()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+
+        // Act
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+
+        // Assert
+        cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Complete: customers.csv", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("customers.csv complete.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Column_mappings_survive_retry_import_after_a_failed_attempt()
+    {
+        // Arrange
+        var sentFiles = new List<string>();
+        _fakeCustomersApi.SetImportCustomersHandler((content, _, progress, _) =>
+        {
+            sentFiles.Add(Encoding.UTF8.GetString(content));
+            if (sentFiles.Count == 1)
+            {
+                throw new HttpRequestException("Transient failure.");
+            }
+
+            progress?.Report(content.LongLength);
+            return Task.FromResult(new ImportResultDto(1, 0));
+        });
+        var cut = Render<ImportCustomers>();
+        var csv = CustomerImportCsvTestData.AllCanonicalHeaders + ",Mail\n" + CustomerImportCsvTestData.AllCanonicalValues + ",mapped@example.com";
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText(csv, "customers.csv"));
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+        await cut.Find("select[data-field='Email']").ChangeAsync("Mail");
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+
+        // Act
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Retry Import").ClickAsync();
+
+        // Assert
+        sentFiles.Count.ShouldBe(2);
+        sentFiles[0].ShouldContain("mapped@example.com", StringComparison.Ordinal);
+        sentFiles[1].ShouldBe(sentFiles[0]);
+        cut.Markup.ShouldContain("Import complete", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Column_mappings_survive_retry_with_current_file()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 1));
+        var cut = Render<ImportCustomers>();
+        var csv = CustomerImportCsvTestData.AllCanonicalHeaders + ",Mail\n" + CustomerImportCsvTestData.AllCanonicalValues + ",mapped@example.com";
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText(csv, "customers.csv"));
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+        await cut.Find("select[data-field='Email']").ChangeAsync("Mail");
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Confirm Import");
+        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
+
+        // Act
+        await cut.Find("button[data-action='retry-current-file']").ClickAsync();
+
+        // Assert
+        var selectedOption = cut.Find("select[data-field='Email']").QuerySelector("option[selected]").ShouldNotBeNull();
+        selectedOption.GetAttribute("value").ShouldBe("Mail");
     }
 }

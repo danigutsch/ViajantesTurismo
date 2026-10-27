@@ -1,3 +1,4 @@
+using PandaBear.HttpClients;
 using System.Globalization;
 using CatalogContractConstants = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants;
 using CatalogImageUploadFileReader = ViajantesTurismo.Management.Web.Components.Pages.Catalog.CatalogImageUploadFileReader;
@@ -262,5 +263,92 @@ public sealed class UploadImagePageTests : BunitContext
         cut.Find("#altText").GetAttribute("value").ShouldBe("Cyclists on a mountain pass.");
         cut.Find("#caption").GetAttribute("value").ShouldBe("Mountain pass");
         cut.Find("[role='status']").TextContent.ShouldContain("Image uploaded and awaiting processing", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Many_byte_progress_updates_produce_only_a_few_polite_announcements()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestCompletion = new TaskCompletionSource<CatalogMediaImageDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        IProgress<long>? reportedProgress = null;
+        catalogApi.UploadTourImageHandler = (_, _, progress, _) =>
+        {
+            reportedProgress = progress;
+            requestStarted.TrySetResult();
+            return requestCompletion.Task;
+        };
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var file = new RecordingBrowserFile(new byte[200]);
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
+        await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
+        var announcements = new HashSet<string>(StringComparer.Ordinal);
+
+        // Act
+        var uploadTask = cut.Find("form").SubmitAsync();
+        await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        var progress = reportedProgress.ShouldNotBeNull();
+        for (var transferred = 1L; transferred < file.Size; transferred++)
+        {
+            progress.Report(transferred);
+            var expected = transferred.ToString(CultureInfo.InvariantCulture);
+            await cut.WaitForAssertionAsync(() => cut.Find("progress[value]").GetAttribute("value").ShouldBe(expected));
+            announcements.Add(cut.Find("[role='status'][aria-live='polite']").TextContent);
+        }
+
+        // Assert
+        announcements.Count.ShouldBeLessThanOrEqualTo(10);
+
+        requestCompletion.TrySetResult(new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(),
+            AltText = "Cyclists on a mountain pass.",
+            ResponsiveVariants = []
+        });
+        await uploadTask;
+    }
+
+    [Fact]
+    public async Task Validation_problem_text_from_the_server_is_not_rendered_in_the_alert_or_live_region()
+    {
+        // Arrange
+        const string Hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42";
+        catalogApi.UploadValidationErrors = new Dictionary<string, string[]> { ["file"] = [Hostile, "System.NullReferenceException: Object reference"] };
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var file = new RecordingBrowserFile();
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
+        await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
+
+        // Act
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        cut.Find("[role='alert']").TextContent.ShouldBe("Image could not be uploaded. Check the file and try again.");
+        cut.Find("[data-upload-status]").TextContent.ShouldContain("Image could not be uploaded. Check the file and try again.", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("script", StringComparison.OrdinalIgnoreCase);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("NullReferenceException", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Validation_exception_text_from_the_server_is_not_rendered_in_the_alert_or_live_region()
+    {
+        // Arrange
+        const string Hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42";
+        catalogApi.UploadTourImageHandler = (_, _, _, _) => throw new ContractValidationException(
+            "Validation failed",
+            new Dictionary<string, string[]> { ["file"] = [Hostile] });
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var file = new RecordingBrowserFile();
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
+        await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
+
+        // Act
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        cut.Find("[role='alert']").TextContent.ShouldBe("Image could not be uploaded. Check the file and try again.");
+        cut.Markup.ShouldNotContain("script", StringComparison.OrdinalIgnoreCase);
+        cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
     }
 }

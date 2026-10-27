@@ -21,6 +21,12 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         get; set;
     }
 
+    /// <summary>When set, image uploads return a validation problem carrying these server-supplied errors.</summary>
+    public IReadOnlyDictionary<string, string[]>? UploadValidationErrors
+    {
+        get; set;
+    }
+
     /// <summary>When true, presentation updates return a conflict outcome.</summary>
     public bool ThrowConflictOnUpdate
     {
@@ -291,6 +297,16 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         LastUploadCancellationToken = ct;
         UploadTourImageCallCount++;
         ct.ThrowIfCancellationRequested();
+
+        if (UploadValidationErrors is not null)
+        {
+            return new HttpOutcome<CatalogMediaImageDto>
+            {
+                Kind = HttpOutcomeKind.ValidationProblem,
+                StatusCode = HttpStatusCode.BadRequest,
+                ValidationErrors = UploadValidationErrors
+            };
+        }
 
         LastUploadedTourId = id;
         LastUploadedFileName = request.FileName;
