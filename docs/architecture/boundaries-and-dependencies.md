@@ -225,8 +225,9 @@ flowchart TB
 
 Module rules:
 
-- Treat `src/SharedKernel` as the seed of a future standalone reusable-library repository. SharedKernel
-  modules should remain movable without bounded-context code, app configuration, or host assumptions.
+- SharedKernel lives in the standalone `PandaBear.SharedKernel` repository and is consumed as
+  `PandaBear.SharedKernel.*` packages. SharedKernel modules must stay free of bounded-context code,
+  app configuration, and host assumptions.
 - Put reusable domain primitives in `SharedKernel.Domain` or `SharedKernel.BuildingBlocks`.
 - Put reusable contracts for dispatching in mediator or integration-event modules.
 - Put provider-specific persistence in provider modules such as

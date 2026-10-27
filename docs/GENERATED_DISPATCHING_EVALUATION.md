@@ -37,7 +37,7 @@ Current dispatching is centered on `SharedKernel.Mediator` and already provides:
 - generator and packed-consumer tests owned by SharedKernel CI; application tests cover dispatch
   composition and consumer behavior
 
-Relevant sources in the standalone library (not application-local paths):
+Relevant sources in the PandaBear.SharedKernel repository (not application-local paths):
 
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/AppMediatorEmitter.cs`
 - `src/SharedKernel/SharedKernel.Mediator.SourceGenerator/GeneratedDispatchEmitter.cs`
