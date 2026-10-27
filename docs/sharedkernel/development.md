@@ -6,16 +6,19 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.332.1` at clean library revision
-[`51f88513f0d13013e7b764b593b2462d560b359f`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/51f88513f0d13013e7b764b593b2462d560b359f).
-It adds the opt-in unhandled-exception and security-event telemetry to `SharedKernel.AspNetCore`, the
-`SharedKernel.Blazor` helper package, the `SharedKernel.IO.Analyzers` package, and `AddTelemetryPrivacy`. The
-unchanged packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.332.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.332.1), built by
-[CI run 40568279722](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40568279722).
+The published candidate is `0.1.0-alpha.334.1` at clean library revision
+[`13737c2e30542e994515ca31126cfd25fa43cb80`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/13737c2e30542e994515ca31126cfd25fa43cb80).
+It makes `SKSTYLE002` and `SKSTYLE003` skip overrides and interface implementations, and `SKSTYLE002` skip
+lambda discards (`_`). Otherwise it equals `0.1.0-alpha.332.1`, which added the opt-in unhandled-exception and
+security-event telemetry to `SharedKernel.AspNetCore`, the `SharedKernel.Blazor` helper package, the
+`SharedKernel.IO.Analyzers` package, and `AddTelemetryPrivacy`. The unchanged packages, symbol archives and
+manifest are published in GitHub prerelease
+[`v0.1.0-alpha.334.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.334.1), built by
+[CI run 40577467820](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40577467820).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.303.1` at revision `04c5f509c63e7fc83693d47b9e1695b8baecdef8`,
+The previous previews `0.1.0-alpha.332.1` at revision `51f88513f0d13013e7b764b593b2462d560b359f`,
+`0.1.0-alpha.303.1` at revision `04c5f509c63e7fc83693d47b9e1695b8baecdef8`,
 `0.1.0-alpha.294.1` at revision `a2901f0188a49795e6af37c945e98f8a2b88319b`,
 `0.1.0-alpha.236.1` at revision `cc42e587d482ded854840cb8afae1f7baac6c6c2`,
 `0.1.0-alpha.222.1` at revision `37c1642dd2193d9684c45757c27710dc3dff5b30`,
