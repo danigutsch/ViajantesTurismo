@@ -20,7 +20,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(IsAspireHost)' == 'true'">
-		<!-- Keep orchestration dependencies lock-file managed while CLI bundle delegation is preview. -->
+		<!-- Keep orchestration dependencies lock-file managed instead of delegating to the Aspire CLI bundle. ASPIRE010 reports that choice, so it is suppressed here. -->
 		<AspireUseCliBundle>false</AspireUseCliBundle>
 		<NoWarn>$(NoWarn);ASPIRE010</NoWarn>
 	</PropertyGroup>

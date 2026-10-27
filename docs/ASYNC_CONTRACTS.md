@@ -29,7 +29,7 @@ Current integration-event handlers:
 
 ## Tooling decision
 
-Use a hand-authored AsyncAPI JSON artifact for now.
+Use a hand-authored AsyncAPI JSON artifact.
 
 Rejected for this slice:
 

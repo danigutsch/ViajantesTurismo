@@ -66,10 +66,10 @@ Avoid these patterns in CI unless a follow-up issue explicitly approves them:
 
 - Publisher provenance stronger than upstream checksums for downloaded release binaries remains
   desirable, but current upstreams do not offer a simple repository-wide replacement path.
-- Action-source governance beyond SHA pinning and CODEOWNERS review remains deferred until the
+- Action-source governance beyond SHA pinning and CODEOWNERS review is out of scope unless the
   repository has a concrete need for stronger organization-level policy enforcement.
-- Additional automation for action-pin freshness or download provenance auditing remains deferred
-  until maintenance cost is justified by real drift or incident pressure.
+- Additional automation for action-pin freshness or download provenance auditing is out of scope
+  unless real drift or incident pressure justifies the maintenance cost.
 
 ## SHA pinning policy
 

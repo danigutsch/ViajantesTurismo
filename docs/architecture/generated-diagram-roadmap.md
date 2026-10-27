@@ -28,9 +28,9 @@ dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated
 
 Refresh with `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`.
 
-## Deferred mediator diagram research
+## Mediator diagrams
 
-Mediator diagrams stay deferred because the current source generator output does not yet expose a
+Mediator diagrams are not generated because the current source generator output does not yet expose a
 stable, docs-oriented topology for request/handler, pipeline behavior, notification, and stream paths.
 Generating those diagrams from naming conventions alone would make the documentation look more certain
 than the source model.
@@ -38,5 +38,5 @@ than the source model.
 ## Code-generation research result
 
 Use the existing .NET local documentation tool for generated Markdown. Do not add Python, npm, MSBuild
-targets, or new scripts for this roadmap. Roslyn or mediator-generator changes should wait until the
-runtime metadata is stable enough to produce source-backed diagrams without guessing.
+targets, or new scripts for this roadmap. Roslyn or mediator-generator changes are out of scope unless the
+runtime metadata can produce source-backed diagrams without guessing.

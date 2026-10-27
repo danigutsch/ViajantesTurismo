@@ -199,9 +199,9 @@ Minimum requirements:
 
 The first slice currently emits a deterministic, semantic HTML artifact payload with an opaque `.html`
 object name. The renderer is isolated from draft state so a PDF renderer can replace this payload without
-changing review, finalization, retention, or revision behavior. No PDF library is bundled until a renderer
-is selected and its accessibility boundary is tested. Additional templates should wait until the first path
-proves storage, audit, review, and regeneration behavior.
+changing review, finalization, retention, or revision behavior. No PDF library is bundled; selecting a renderer is a separate decision that must test its
+accessibility boundary. Add templates only after the first path proves storage, audit, review, and
+regeneration behavior.
 
 ## Manual review and finalization workflow
 
