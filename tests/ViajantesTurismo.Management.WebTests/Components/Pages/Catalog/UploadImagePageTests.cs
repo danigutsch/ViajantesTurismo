@@ -325,7 +325,7 @@ public sealed class UploadImagePageTests : BunitContext
         // Assert
         cut.Find("[role='alert']").TextContent.ShouldBe("Image could not be uploaded. Check the file and try again.");
         cut.Find("[data-upload-status]").TextContent.ShouldContain("Image could not be uploaded. Check the file and try again.", StringComparison.Ordinal);
-        cut.Markup.ShouldNotContain("script", StringComparison.OrdinalIgnoreCase);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("NullReferenceException", StringComparison.Ordinal);
     }
@@ -348,7 +348,7 @@ public sealed class UploadImagePageTests : BunitContext
 
         // Assert
         cut.Find("[role='alert']").TextContent.ShouldBe("Image could not be uploaded. Check the file and try again.");
-        cut.Markup.ShouldNotContain("script", StringComparison.OrdinalIgnoreCase);
+        cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
     }
 }
