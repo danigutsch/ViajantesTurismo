@@ -27,6 +27,7 @@ public static class BrandingModule
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        builder.Services.AddSingleton<BrandingTelemetry>();
         builder.Services.AddBrandingSecurityBaseline(builder.Configuration);
         builder.Services.AddBrandingOpenApiDocuments();
         builder.AddBrandingInfrastructure(addOutboxRelay);

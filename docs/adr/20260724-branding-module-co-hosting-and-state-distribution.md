@@ -199,6 +199,13 @@ is deployed or production-ready.
 - Management reads and writes are uncached. Branding writes evict the host-local public Branding output cache.
   No Redis or other distributed cache is added without evidence of a stricter freshness, scale, or
   multi-instance invalidation requirement.
+- Consequences of the 60-second fresh and 300-second stale bound: each Catalog instance holds its own public
+  Branding output cache and a write evicts only the instance that handled it, so another instance can serve
+  the previous settings until its entry expires. Eviction runs after the commit and is best-effort; a failed
+  eviction never fails the committed `PUT` or creates a second revision. Concurrent cold reads coalesce into
+  one load through output caching, and a restart only empties the disposable cache. Public cache staleness is
+  separate from Admin projection lag. The `ViajantesTurismo.Branding` meter exposes hit, miss, and
+  invalidation counts tagged with `outcome` only, plus the latest source revision, and never Branding values.
 - Ordinary production API-to-API HTTP is prohibited for Branding state sharing. gRPC is reserved for a future
   demonstrated synchronous seam that cannot use local state or asynchronous transfer; this decision creates
   no such seam.

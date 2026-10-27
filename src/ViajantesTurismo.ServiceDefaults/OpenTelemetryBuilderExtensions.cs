@@ -5,6 +5,7 @@ namespace ViajantesTurismo.ServiceDefaults;
 internal static class OpenTelemetryBuilderExtensions
 {
     private const string CatalogTelemetryName = "ViajantesTurismo.Catalog";
+    private const string BrandingTelemetryName = "ViajantesTurismo.Branding";
     private const string SharedKernelNpgsqlEventSourcingName = "SharedKernel.EventSourcing.Npgsql";
 
     public static MeterProviderBuilder AddSharedKernelMediatorMetrics(this MeterProviderBuilder metrics)
@@ -40,6 +41,13 @@ internal static class OpenTelemetryBuilderExtensions
         ArgumentNullException.ThrowIfNull(metrics);
 
         return metrics.AddMeter(CatalogTelemetryName);
+    }
+
+    public static MeterProviderBuilder AddBrandingMetrics(this MeterProviderBuilder metrics)
+    {
+        ArgumentNullException.ThrowIfNull(metrics);
+
+        return metrics.AddMeter(BrandingTelemetryName);
     }
 
     public static TracerProviderBuilder AddCatalogTracing(this TracerProviderBuilder tracing)
