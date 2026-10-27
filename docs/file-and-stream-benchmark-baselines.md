@@ -79,3 +79,12 @@ Security defaults:
 - local k6 receives a minimal process environment plus explicit `-e` values only
 - remote k6 modules, external upload targets, custom outputs, `--http-debug`, and host environment
   forwarding require explicit review or opt-in
+
+## Recorded smoke result
+
+`sharedkernel-k6 run --scenario file-upload-scan` (smoke profile, 1 virtual user, 20 seconds, 256 KiB payload,
+local k6, loopback) on 2026-10-27: 7,844 requests at about 392 requests per second, about 103 MB/s sent, 0 failed
+requests and 15,687 of 15,687 checks passed. `http_req_duration` averaged 2.29 ms with a p95 of 2.81 ms and a
+maximum of 11.43 ms. This measures the isolated benchmark host scan endpoint, not the production import or media
+flows, and records no memory. Pass counts for those flows are in
+[API endpoint I/O and streaming contracts](API_IO_AND_STREAMING.md#upload-and-import-pass-trace).
