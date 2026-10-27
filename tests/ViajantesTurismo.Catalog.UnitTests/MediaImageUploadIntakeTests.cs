@@ -672,4 +672,32 @@ public sealed class MediaImageUploadIntakeTests
         stream.BytesRead.ShouldBe(content.LongLength);
         scanner.ScanCount.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task Accept_sizes_the_buffer_to_the_received_upload_without_growth_slack()
+    {
+        // Arrange
+        var content = new byte[200_000];
+        CatalogTestImages.CreateJpeg(640, 320).CopyTo(content, 0);
+        var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var intake = MediaImageUploadIntakeTestFactory.Create(
+            scanner,
+            new InMemoryMediaObjectStore(),
+            new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)));
+        var request = new MediaImageUploadIntakeRequest(
+            Guid.CreateVersion7(),
+            new MemoryStream(content),
+            "photo.jpg",
+            "image/jpeg",
+            content.Length,
+            "Cyclists in the mountains",
+            [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+
+        // Act
+        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        scanner.ContentCapacity.ShouldBe(content.Length);
+    }
 }

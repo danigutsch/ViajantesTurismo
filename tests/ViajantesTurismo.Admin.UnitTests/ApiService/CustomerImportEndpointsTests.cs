@@ -319,4 +319,55 @@ public sealed class CustomerImportEndpointsTests
         stream.BytesRead.ShouldBe(content.LongLength);
         scanner.ScannedContent.ShouldNotBeNull();
     }
+
+    [Fact]
+    public async Task ReadCsv_sizes_the_buffer_to_the_received_file_without_growth_slack()
+    {
+        // Arrange
+        var content = new byte[100_000];
+        Array.Fill(content, (byte)'a');
+        using var stream = new MemoryStream(content);
+        var file = new FormFile(stream, 0, content.LongLength, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        scanner.ScannedCapacity.ShouldBe(content.Length);
+    }
+
+    [Theory]
+    [InlineData("utf8")]
+    [InlineData("utf8-bom")]
+    [InlineData("utf16-bom")]
+    public async Task ReadCsv_decodes_the_received_text_and_drops_the_byte_order_mark(string encoding)
+    {
+        // Arrange
+        const string text = "firstName,lastName\nJosé,Müller";
+        var content = encoding switch
+        {
+            "utf8" => System.Text.Encoding.UTF8.GetBytes(text),
+            "utf8-bom" => [.. System.Text.Encoding.UTF8.GetPreamble(), .. System.Text.Encoding.UTF8.GetBytes(text)],
+            _ => [.. System.Text.Encoding.Unicode.GetPreamble(), .. System.Text.Encoding.Unicode.GetBytes(text)]
+        };
+        using var stream = new MemoryStream(content);
+        var file = new FormFile(stream, 0, content.LongLength, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+
+        // Act
+        var result = await CustomerImportEndpoints.ReadCsv(file, new StubMalwareScanner(MalwareScanResult.Passed), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(text);
+    }
 }

@@ -1,4 +1,6 @@
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -115,7 +117,7 @@ internal static class CustomerImportEndpoints
         ArgumentNullException.ThrowIfNull(file);
         ArgumentNullException.ThrowIfNull(scanner);
 
-        using var content = new MemoryStream();
+        using var content = new MemoryStream((int)Math.Clamp(file.Length, 0, ContractConstants.CustomerImportMaxFileBytes));
         await using var source = file.OpenReadStream();
         if (!await CopyToMemory(source, content, ContractConstants.CustomerImportMaxFileBytes, ct).ConfigureAwait(false)
             || content.Length != file.Length)
@@ -151,9 +153,25 @@ internal static class CustomerImportEndpoints
             return Result.Unavailable<string>(ScannerUnavailableMessage);
         }
 
-        content.Position = 0;
-        using var reader = new StreamReader(content, leaveOpen: true);
-        return Result.Ok(await reader.ReadToEndAsync(ct).ConfigureAwait(false));
+        return Result.Ok(await DecodeText(content, ct).ConfigureAwait(false));
+    }
+
+    private static async ValueTask<string> DecodeText(MemoryStream content, CancellationToken ct)
+    {
+        var bytes = content.GetBuffer().AsMemory(0, (int)content.Length);
+        var preamble = Encoding.UTF8.Preamble;
+        if (bytes.Span.StartsWith(preamble))
+        {
+            bytes = bytes[preamble.Length..];
+        }
+        else if (bytes.Span.StartsWith<byte>([0xFE, 0xFF]) || bytes.Span.StartsWith<byte>([0xFF, 0xFE]))
+        {
+            content.Position = 0;
+            using var reader = new StreamReader(content, leaveOpen: true);
+            return await reader.ReadToEndAsync(ct).ConfigureAwait(false);
+        }
+
+        return Encoding.UTF8.GetString(bytes.Span);
     }
 
     private static ProblemHttpResult CreateScanProblem(Result<string> result)
@@ -168,23 +186,30 @@ internal static class CustomerImportEndpoints
 
     private static async ValueTask<bool> CopyToMemory(Stream source, MemoryStream destination, long maximumLength, CancellationToken ct)
     {
-        var buffer = new byte[81920];
-        while (true)
+        var buffer = ArrayPool<byte>.Shared.Rent(81920);
+        try
         {
-            var bytesRead = await source.ReadAsync(buffer, ct).ConfigureAwait(false);
-            if (bytesRead == 0)
+            while (true)
             {
-                destination.Position = 0;
-                return true;
-            }
+                var bytesRead = await source.ReadAsync(buffer, ct).ConfigureAwait(false);
+                if (bytesRead == 0)
+                {
+                    destination.Position = 0;
+                    return true;
+                }
 
-            if (destination.Length + bytesRead > maximumLength)
-            {
-                destination.Position = 0;
-                return false;
-            }
+                if (destination.Length + bytesRead > maximumLength)
+                {
+                    destination.Position = 0;
+                    return false;
+                }
 
-            await destination.WriteAsync(buffer.AsMemory(0, bytesRead), ct).ConfigureAwait(false);
+                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 

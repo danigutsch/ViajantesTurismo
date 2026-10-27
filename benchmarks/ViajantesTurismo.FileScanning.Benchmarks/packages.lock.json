@@ -32,6 +32,15 @@
         "resolved": "0.1.0-alpha.294.1",
         "contentHash": "2UuZiH79HyitZMVbdv1OPU8cNBigZPofhVQK8sEQ58+EJX7CRjBL+xQ1XBV7uZ7fmuJdvjuKfhDFOWZJH3PDrA=="
       },
+      "PandaBear.SharedKernel.Tabular": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.294.1, )",
+        "resolved": "0.1.0-alpha.294.1",
+        "contentHash": "ODw9E3tRmOTCz/s1yjbgtEQ/NiFu8dIYKxsSQDl5zvs8yAccjwZ7phoQ10G76QrFPqYueibfHzEJiUcyW4j0ng==",
+        "dependencies": {
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.294.1"
+        }
+      },
       "BenchmarkDotNet.Annotations": {
         "type": "Transitive",
         "resolved": "0.15.8",
@@ -186,6 +195,12 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
           "Microsoft.Extensions.Primitives": "10.0.13"
         }
+      },
+      "PandaBear.SharedKernel.Results": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.294.1, )",
+        "resolved": "0.1.0-alpha.294.1",
+        "contentHash": "jrubMLRfii2zOquwESmAf39AXeIFJzWavj8KtLgC5zigOupsRW7NJJxDQW4b4NsPqHNOYwRP3mzNnlv62iz7+A=="
       }
     }
   }
