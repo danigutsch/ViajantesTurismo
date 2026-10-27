@@ -2,12 +2,6 @@
   "version": 2,
   "dependencies": {
     "net10.0": {
-      "Aspire.Dashboard.Sdk.linux-x64": {
-        "type": "Direct",
-        "requested": "[13.6.1, )",
-        "resolved": "13.6.1",
-        "contentHash": "7SleuF3C/vACKF1eN++e31c+LhkbQ9pTbHtlMbHIoN/rNoVaMuyKWT1yhuDBdof+Y8zi5+c2gYtm9tjABBbAcQ=="
-      },
       "Aspire.Hosting.AppHost": {
         "type": "Direct",
         "requested": "[13.6.1, )",
@@ -46,12 +40,6 @@
           "System.IO.Hashing": "10.0.12",
           "YamlDotNet": "18.1.0"
         }
-      },
-      "Aspire.Hosting.Orchestration.linux-x64": {
-        "type": "Direct",
-        "requested": "[13.6.1, )",
-        "resolved": "13.6.1",
-        "contentHash": "3egUoP8xlZngXNOb7FdPNDD5K+0d6NfS7YUo8D77/rnZTAMBosBNmNiBorG9XR5n4D49Rep70r8yqXkI2PEgng=="
       },
       "Aspire.Hosting.PostgreSQL": {
         "type": "Direct",
@@ -1644,9 +1632,7 @@
       "viajantesturismo.apphost": {
         "type": "Project",
         "dependencies": {
-          "Aspire.Dashboard.Sdk.linux-x64": "[13.6.1, )",
           "Aspire.Hosting.AppHost": "[13.6.1, )",
-          "Aspire.Hosting.Orchestration.linux-x64": "[13.6.1, )",
           "Aspire.Hosting.PostgreSQL": "[13.6.1, )",
           "Aspire.Hosting.Redis": "[13.6.1, )",
           "PandaBear.SharedKernel.Aspire.Hosting.ClamAv": "[0.1.0-alpha.303.1, )",
