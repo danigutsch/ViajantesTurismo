@@ -6,15 +6,17 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.303.1` at clean library revision
-[`04c5f509c63e7fc83693d47b9e1695b8baecdef8`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/04c5f509c63e7fc83693d47b9e1695b8baecdef8).
-It adds `CsvDocument.ParseUtf8` to `SharedKernel.Tabular`, which parses UTF-8 bytes without decoding
-the whole document. The unchanged packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.303.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.303.1), built by
-[CI run 40516756330](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40516756330).
+The published candidate is `0.1.0-alpha.332.1` at clean library revision
+[`51f88513f0d13013e7b764b593b2462d560b359f`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/51f88513f0d13013e7b764b593b2462d560b359f).
+It adds the opt-in unhandled-exception and security-event telemetry to `SharedKernel.AspNetCore`, the
+`SharedKernel.Blazor` helper package, the `SharedKernel.IO.Analyzers` package, and `AddTelemetryPrivacy`. The
+unchanged packages, symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.332.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.332.1), built by
+[CI run 40568279722](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40568279722).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.294.1` at revision `a2901f0188a49795e6af37c945e98f8a2b88319b`,
+The previous previews `0.1.0-alpha.303.1` at revision `04c5f509c63e7fc83693d47b9e1695b8baecdef8`,
+`0.1.0-alpha.294.1` at revision `a2901f0188a49795e6af37c945e98f8a2b88319b`,
 `0.1.0-alpha.236.1` at revision `cc42e587d482ded854840cb8afae1f7baac6c6c2`,
 `0.1.0-alpha.222.1` at revision `37c1642dd2193d9684c45757c27710dc3dff5b30`,
 `0.1.0-alpha.214.1` at revision `e5293567c645b1ae8b4557ed75bd82689eaa7c8b`,
