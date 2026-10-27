@@ -30,9 +30,8 @@ public static class BookingErrors
     /// <summary>
     /// Indicates that the base price is zero or negative.
     /// </summary>
-    /// <param name="price">The invalid base price value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result ZeroOrNegativeBasePrice(decimal price) =>
+    public static Result ZeroOrNegativeBasePrice() =>
         Result.Invalid(
             detail: "Base price must be greater than zero.",
             field: "basePrice",
@@ -41,10 +40,8 @@ public static class BookingErrors
     /// <summary>
     /// Indicates that the base price exceeds the maximum allowed value.
     /// </summary>
-    /// <param name="price">The invalid base price value.</param>
-    /// <param name="maxPrice">The maximum allowed base price.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result BasePriceExceedsMaximum(decimal price, decimal maxPrice) =>
+    public static Result BasePriceExceedsMaximum() =>
         Result.Invalid(
             detail: "Base price exceeds the maximum allowed value.",
             field: "basePrice",
@@ -65,16 +62,14 @@ public static class BookingErrors
     /// <summary>
     /// Indicates that a booking with the specified ID was not found.
     /// </summary>
-    /// <param name="id">The ID of the booking that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result BookingNotFound(Guid id) => Result.NotFound(detail: "Booking was not found.");
+    public static Result BookingNotFound() => Result.NotFound(detail: "Booking was not found.");
 
     /// <summary>
     /// Indicates that the bike price is negative.
     /// </summary>
-    /// <param name="price">The invalid bike price value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result NegativeBikePrice(decimal price) =>
+    public static Result NegativeBikePrice() =>
         Result.Invalid(
             detail: "Bike price cannot be negative.",
             field: "bikePrice",
@@ -83,10 +78,8 @@ public static class BookingErrors
     /// <summary>
     /// Indicates that the bike price exceeds the maximum allowed value.
     /// </summary>
-    /// <param name="price">The invalid bike price value.</param>
-    /// <param name="maxPrice">The maximum allowed bike price.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result BikePriceExceedsMaximum(decimal price, decimal maxPrice) =>
+    public static Result BikePriceExceedsMaximum() =>
         Result.Invalid(
             detail: "Bike price exceeds the maximum allowed value.",
             field: "bikePrice",
@@ -95,9 +88,8 @@ public static class BookingErrors
     /// <summary>
     /// Indicates that the room additional cost is negative.
     /// </summary>
-    /// <param name="cost">The invalid room cost value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result NegativeRoomCost(decimal cost) =>
+    public static Result NegativeRoomCost() =>
         Result.Invalid(
             detail: "Room additional cost cannot be negative.",
             field: "roomAdditionalCost",
@@ -106,10 +98,8 @@ public static class BookingErrors
     /// <summary>
     /// Indicates that the room additional cost exceeds the maximum allowed value.
     /// </summary>
-    /// <param name="cost">The invalid room cost value.</param>
-    /// <param name="maxCost">The maximum allowed room cost.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result RoomCostExceedsMaximum(decimal cost, decimal maxCost) =>
+    public static Result RoomCostExceedsMaximum() =>
         Result.Invalid(
             detail: "Room additional cost exceeds the maximum allowed value.",
             field: "roomAdditionalCost",
@@ -150,19 +140,17 @@ public static class BookingErrors
     /// <summary>
     /// Indicates that a cancelled or completed booking cannot be modified.
     /// </summary>
-    /// <param name="bookingId">The booking ID.</param>
     /// <param name="status">The current booking status.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result CannotModifyCancelledOrCompletedBooking(Guid bookingId, BookingStatus status) =>
+    public static Result CannotModifyCancelledOrCompletedBooking(BookingStatus status) =>
         Result.Conflict(
             detail: $"This booking is {status} and cannot be modified.");
 
     /// <summary>
     /// Indicates that the principal and companion customers cannot be the same person.
     /// </summary>
-    /// <param name="customerId">The customer ID that was used for both principal and companion.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result PrincipalAndCompanionCannotBeSame(Guid customerId) =>
+    public static Result PrincipalAndCompanionCannotBeSame() =>
         Result.Invalid(
             detail: "Principal and companion customers cannot be the same person.",
             field: "companionCustomerId",

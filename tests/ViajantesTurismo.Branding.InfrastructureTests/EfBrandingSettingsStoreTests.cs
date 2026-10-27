@@ -42,16 +42,16 @@ public sealed class EfBrandingSettingsStoreTests
         using var services = BrandingInfrastructureRegistrationScope.Create();
 
         // Act
-        var registrations = services.GetMessagingRegistrations();
+        var (HasOutbox, HasTransportPublisher, HasSerializer, OutboxRelayCount, OutboxSchema, TransportSchema, TransportExcludedFromMigrations) = services.GetMessagingRegistrations();
 
         // Assert
-        registrations.HasOutbox.ShouldBeTrue();
-        registrations.HasTransportPublisher.ShouldBeTrue();
-        registrations.HasSerializer.ShouldBeTrue();
-        registrations.OutboxRelayCount.ShouldBe(1);
-        registrations.OutboxSchema.ShouldBe("branding");
-        registrations.TransportSchema.ShouldBe("messaging");
-        registrations.TransportExcludedFromMigrations.ShouldBeTrue();
+        HasOutbox.ShouldBeTrue();
+        HasTransportPublisher.ShouldBeTrue();
+        HasSerializer.ShouldBeTrue();
+        OutboxRelayCount.ShouldBe(1);
+        OutboxSchema.ShouldBe("branding");
+        TransportSchema.ShouldBe("messaging");
+        TransportExcludedFromMigrations.ShouldBeTrue();
     }
 
     [Fact]
@@ -61,13 +61,13 @@ public sealed class EfBrandingSettingsStoreTests
         using var services = BrandingInfrastructureRegistrationScope.Create(addOutboxRelay: false);
 
         // Act
-        var registrations = services.GetMessagingRegistrations();
+        var (HasOutbox, HasTransportPublisher, HasSerializer, OutboxRelayCount, OutboxSchema, TransportSchema, TransportExcludedFromMigrations) = services.GetMessagingRegistrations();
 
         // Assert
-        registrations.HasOutbox.ShouldBeTrue();
-        registrations.HasTransportPublisher.ShouldBeTrue();
-        registrations.HasSerializer.ShouldBeTrue();
-        registrations.OutboxRelayCount.ShouldBe(0);
+        HasOutbox.ShouldBeTrue();
+        HasTransportPublisher.ShouldBeTrue();
+        HasSerializer.ShouldBeTrue();
+        OutboxRelayCount.ShouldBe(0);
     }
 
     [Fact]

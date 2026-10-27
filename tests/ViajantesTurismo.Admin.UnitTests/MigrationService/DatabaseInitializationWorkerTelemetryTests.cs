@@ -70,7 +70,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         var worker = harness.CreateWorker();
 
         // Act
-        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None)));
+        var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None));
 
         // Assert
         exception.Message.ShouldBe("boom");
@@ -105,7 +105,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         var worker = harness.CreateWorker();
 
         // Act
-        await ShouldAssertionExtensions.ShouldThrow<OperationCanceledException>((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, cancellation.Token)));
+        await ShouldAssertionExtensions.ShouldThrow<OperationCanceledException>(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, cancellation.Token));
 
         // Assert
         var activity = stoppedActivities.ShouldHaveSingleItem();
@@ -129,7 +129,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         var worker = harness.CreateWorker();
 
         // Act
-        _ = await ShouldAssertionExtensions.ShouldThrow<OperationCanceledException>((Func<Task>)(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None)));
+        _ = await ShouldAssertionExtensions.ShouldThrow<OperationCanceledException>(() => DatabaseInitializationWorkerTestHelpers.ExecuteWorker(worker, CancellationToken.None));
 
         // Assert
         var activity = stoppedActivities.ShouldHaveSingleItem();

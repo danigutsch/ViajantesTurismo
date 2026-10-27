@@ -31,7 +31,7 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok();
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => successfulResult.ToValidationProblem()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => successfulResult.ToValidationProblem());
 
         // Assert
         exception.Message.ShouldBe("Cannot convert a successful result to a ValidationProblem.");
@@ -44,7 +44,7 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result);
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => resultWithUnknownStatus.ToValidationProblem()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => resultWithUnknownStatus.ToValidationProblem());
 
         // Assert
         exception.Message.ShouldBe("Only results with status 'Invalid' can be converted to a ValidationProblem.");
@@ -57,7 +57,7 @@ public class ResultExtensionsResponseMappingTests
         var malformedInvalidResult = CreateMalformedFailureResult(ResultStatus.Invalid, null);
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => malformedInvalidResult.ToValidationProblem()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
 
         // Assert
         exception.Message.ShouldBe("Error details are required to convert to a ValidationProblem.");
@@ -70,7 +70,7 @@ public class ResultExtensionsResponseMappingTests
         var malformedInvalidResult = CreateMalformedFailureResult(ResultStatus.Invalid, new ResultError("Validation failed."));
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => malformedInvalidResult.ToValidationProblem()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
 
         // Assert
         exception.Message.ShouldBe("Validation errors are required to convert to a ValidationProblem.");
@@ -100,7 +100,7 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok("done");
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => successfulResult.ToValidationProblem()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => successfulResult.ToValidationProblem());
 
         // Assert
         exception.Message.ShouldBe("Cannot convert a successful result to a ValidationProblem.");
@@ -113,7 +113,7 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result<string>);
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => resultWithUnknownStatus.ToValidationProblem()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => resultWithUnknownStatus.ToValidationProblem());
 
         // Assert
         exception.Message.ShouldBe("Only results with status 'Invalid' can be converted to a ValidationProblem.");
@@ -126,7 +126,7 @@ public class ResultExtensionsResponseMappingTests
         var malformedInvalidResult = CreateMalformedFailureResult<string>(ResultStatus.Invalid, null, null);
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => malformedInvalidResult.ToValidationProblem()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
 
         // Assert
         exception.Message.ShouldBe("Error details are required to convert to a ValidationProblem.");
@@ -139,7 +139,7 @@ public class ResultExtensionsResponseMappingTests
         var malformedInvalidResult = CreateMalformedFailureResult<string>(ResultStatus.Invalid, null, new ResultError("Validation failed."));
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => malformedInvalidResult.ToValidationProblem()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => malformedInvalidResult.ToValidationProblem());
 
         // Assert
         exception.Message.ShouldBe("Validation errors are required to convert to a ValidationProblem.");
@@ -169,7 +169,7 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok();
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => successfulResult.ToNotFound()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => successfulResult.ToNotFound());
 
         // Assert
         exception.Message.ShouldBe("Cannot convert a successful result to NotFound.");
@@ -182,7 +182,7 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result);
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => resultWithUnknownStatus.ToNotFound()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => resultWithUnknownStatus.ToNotFound());
 
         // Assert
         exception.Message.ShouldBe("Only results with status 'NotFound' can be converted to NotFound.");
@@ -212,7 +212,7 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok("done");
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => successfulResult.ToNotFound()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => successfulResult.ToNotFound());
 
         // Assert
         exception.Message.ShouldBe("Cannot convert a successful result to NotFound.");
@@ -225,7 +225,7 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result<string>);
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => resultWithUnknownStatus.ToNotFound()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => resultWithUnknownStatus.ToNotFound());
 
         // Assert
         exception.Message.ShouldBe("Only results with status 'NotFound' can be converted to NotFound.");
@@ -255,7 +255,7 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok();
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => successfulResult.ToConflict()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => successfulResult.ToConflict());
 
         // Assert
         exception.Message.ShouldBe("Cannot convert a successful result to Conflict.");
@@ -268,7 +268,7 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result);
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => resultWithUnknownStatus.ToConflict()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => resultWithUnknownStatus.ToConflict());
 
         // Assert
         exception.Message.ShouldBe("Only results with status 'Conflict' can be converted to Conflict.");
@@ -298,7 +298,7 @@ public class ResultExtensionsResponseMappingTests
         var successfulResult = Result.Ok("done");
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => successfulResult.ToConflict()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => successfulResult.ToConflict());
 
         // Assert
         exception.Message.ShouldBe("Cannot convert a successful result to Conflict.");
@@ -311,7 +311,7 @@ public class ResultExtensionsResponseMappingTests
         var resultWithUnknownStatus = default(Result<string>);
 
         // Act
-        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>((Func<object?>)(() => resultWithUnknownStatus.ToConflict()));
+        var exception = ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(() => resultWithUnknownStatus.ToConflict());
 
         // Assert
         exception.Message.ShouldBe("Only results with status 'Conflict' can be converted to Conflict.");

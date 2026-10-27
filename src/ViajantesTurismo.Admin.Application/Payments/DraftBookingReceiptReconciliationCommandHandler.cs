@@ -20,7 +20,7 @@ public sealed class DraftBookingReceiptReconciliationCommandHandler(BookingPayme
         }
         input = input with
         {
-            Allocations = input.Allocations.OrderBy(item => item.TargetId).ToArray()
+            Allocations = [.. input.Allocations.OrderBy(item => item.TargetId)]
         };
         var fingerprint = PaymentCommandFingerprint.Create(command.BookingId, command.ReceiptId, command.ActorId, input, PaymentFinancialContractJsonContext.Default.CreateReceiptReconciliationDto);
         return executor.Execute(command.BookingId, "DraftBookingReceiptReconciliation", command.IdempotencyKey, fingerprint, tour =>

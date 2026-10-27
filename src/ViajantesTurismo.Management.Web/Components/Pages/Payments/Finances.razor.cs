@@ -128,14 +128,14 @@ public partial class Finances
         _confirmed = false;
     }
     private static DateTimeOffset Utc(DateTime? value) => value is { } date ? new(DateTime.SpecifyKind(date, DateTimeKind.Utc)) : default;
-    private static InstallmentAllocationDto[] Selections(IEnumerable<PaymentAllocationFormRow> rows) => rows.Select(row => new InstallmentAllocationDto { TargetId = row.TargetId, EuroAmount = row.EuroAmount }).ToArray();
+    private static InstallmentAllocationDto[] Selections(IEnumerable<PaymentAllocationFormRow> rows) => [.. rows.Select(row => new InstallmentAllocationDto { TargetId = row.TargetId, EuroAmount = row.EuroAmount })];
     private async Task SaveSchedule()
     {
         var input = new CreatePaymentScheduleDto
         {
             ExpectedVersion = Version,
             ObligationEuro = _schedule.ObligationEuro,
-            Installments = _schedule.Installments.Select(row => new PaymentInstallmentDto { EuroAmount = row.EuroAmount, DueDate = row.DueDate }).ToArray()
+            Installments = [.. _schedule.Installments.Select(row => new PaymentInstallmentDto { EuroAmount = row.EuroAmount, DueDate = row.DueDate })]
         };
         await Submit("saving schedule draft", (key, ct) => PaymentsApi.DraftSchedule(BookingId, input, key, ct));
     }

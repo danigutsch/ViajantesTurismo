@@ -81,11 +81,11 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await createdBookingRow.First.WaitForAsync();
 
         var bookingHref = await createdBookingRow.First.GetLink("View").GetAttributeAsync("href");
-        _ = (bookingHref).ShouldNotBeNull();
+        _ = bookingHref.ShouldNotBeNull();
 
         var bookingHrefSegments = bookingHref.Split('/');
         var bookingIdText = bookingHrefSegments[^1];
-        (Guid.TryParse(bookingIdText, out var bookingId)).ShouldBeTrue();
+        Guid.TryParse(bookingIdText, out var bookingId).ShouldBeTrue();
 
         return bookingId;
     }

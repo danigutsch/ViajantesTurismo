@@ -24,7 +24,7 @@ and ensure all booking modifications flow through the Tour aggregate root.
         @Invariant:INV-TOUR-014
         @happy_path
         Scenario: Create booking through Tour aggregate
-            When I add a booking for the customer to the tour with price 1500.00
+            When I add a booking for the customer to the tour with price 2100.00
             Then the tour should have the booking
             And the booking should be in pending status
 
@@ -38,7 +38,7 @@ and ensure all booking modifications flow through the Tour aggregate root.
         @Invariant:INV-TOUR-014
         @happy_path
         Scenario: Manage complete booking lifecycle through Tour
-            When I add a booking for the customer to the tour with price 1500.00
+            When I add a booking for the customer to the tour with price 2100.00
             And I confirm the booking through the tour
             And I update the booking notes to "VIP customer" through the tour
             Then the booking status should be "Confirmed"
@@ -49,8 +49,8 @@ and ensure all booking modifications flow through the Tour aggregate root.
         @Invariant:INV-TOUR-014
         @happy_path
         Scenario: Tour tracks multiple bookings
-            When I add a booking for the customer to the tour with price 1500.00
-            And I add a booking for the customer to the tour with price 2000.00
+            When I add a booking for the customer to the tour with price 2100.00
+            And I add a booking for the customer to the tour with price 2100.00
             Then the tour should have 2 bookings
 
         @Invariant:INV-TOUR-014

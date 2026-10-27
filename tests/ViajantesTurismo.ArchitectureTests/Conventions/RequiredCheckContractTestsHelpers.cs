@@ -9,11 +9,10 @@ internal static class RequiredCheckContractTestsHelpers
 
     /// <summary>Reads the required checks listed in the governance document as (check name, workflow path) pairs.</summary>
     public static IReadOnlyList<(string Name, string Workflow)> ReadRequiredChecks(string governancePath) =>
-        File.ReadLines(governancePath)
+        [.. File.ReadLines(governancePath)
             .Where(static line => line.StartsWith("- `", StringComparison.Ordinal)
                 && line.Contains("` (from `.github/workflows/", StringComparison.Ordinal))
-            .Select(static line => (line.Split('`')[1], line.Split('`')[3]))
-            .ToArray();
+            .Select(static line => (line.Split('`')[1], line.Split('`')[3]))];
 
     /// <summary>
     /// Returns why the workflow job that reports a required check breaks the ignored-label contract, or null.

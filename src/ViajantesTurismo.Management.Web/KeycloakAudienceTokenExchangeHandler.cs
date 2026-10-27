@@ -65,7 +65,7 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
         }
         else
         {
-            var exchangedToken = await ExchangeAccessToken(sourceAccessToken, ct);
+            var (AccessToken, ExpiresAt) = await ExchangeAccessToken(sourceAccessToken, ct);
             accessToken = await _userTokenStore.ExecuteForActiveSession(
                 user,
                 async ct =>
@@ -80,10 +80,10 @@ internal sealed class KeycloakAudienceTokenExchangeHandler : DelegatingHandler
                         _audience,
                         session,
                         sourceAccessToken,
-                        exchangedToken.AccessToken,
-                        exchangedToken.ExpiresAt,
+                        AccessToken,
+                        ExpiresAt,
                         ct);
-                    return exchangedToken.AccessToken;
+                    return AccessToken;
                 },
                 ct);
         }

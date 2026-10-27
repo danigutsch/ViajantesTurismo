@@ -51,7 +51,7 @@ public sealed partial class BookingFinancialHistory
             return FinancialErrors.Invalid("actualRefundSettlement").ConvertError<Guid>();
         }
         var draft = new PaymentRefundState(Guid.CreateVersion7(), receiptId, originalCashBasis, euroCreditReversed, euroCashPayable, actual,
-            actual - originalCashBasis, refundQuoteId, reversedAllocations.Select(item => item.ExportState()).ToArray(), reference, performedAt, actorId, now, null);
+            actual - originalCashBasis, refundQuoteId, [.. reversedAllocations.Select(item => item.ExportState())], reference, performedAt, actorId, now, null);
         if (!RefundFits(draft))
         {
             return FinancialErrors.Invalid("refundBalance").ConvertError<Guid>();
@@ -84,7 +84,7 @@ public sealed partial class BookingFinancialHistory
         }
         _state = _state with
         {
-            Refunds = _state.Refunds.Select(item => item.Id == refundId ? item with { Approval = Stamp(approval) } : item).ToArray()
+            Refunds = [.. _state.Refunds.Select(item => item.Id == refundId ? item with { Approval = Stamp(approval) } : item)]
         };
         Changed(refundId, approval.ActorId, approval.ApprovedAt, "RefundApproved", approval.Reason, draft.CreatedBy == approval.ActorId);
         return Result.Ok(refundId);

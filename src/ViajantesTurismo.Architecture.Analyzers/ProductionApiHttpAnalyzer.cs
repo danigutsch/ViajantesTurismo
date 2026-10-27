@@ -47,7 +47,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     {
         get;
     } =
-        ImmutableArray.Create(ProductionApiHttpRule);
+        [ProductionApiHttpRule];
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)

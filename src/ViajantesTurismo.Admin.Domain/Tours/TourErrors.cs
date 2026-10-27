@@ -10,17 +10,15 @@ public static class TourErrors
     /// <summary>
     /// Indicates that a booking was not found in the tour.
     /// </summary>
-    /// <param name="bookingId">The ID of the booking that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result BookingNotFound(Guid bookingId) => Result.NotFound(
+    public static Result BookingNotFound() => Result.NotFound(
         detail: "Booking was not found in this tour.");
 
     /// <summary>
     /// Indicates that a tour with the specified identifier already exists.
     /// </summary>
-    /// <param name="identifier">The identifier that already exists.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result IdentifierAlreadyExists(string identifier) => Result.Conflict(
+    public static Result IdentifierAlreadyExists() => Result.Conflict(
         detail: "A tour with this identifier already exists.");
 
     /// <summary>
@@ -78,9 +76,8 @@ public static class TourErrors
     /// Indicates that a price value is invalid (negative).
     /// </summary>
     /// <param name="priceType">The type of price (e.g., "Base price", "Single room supplement").</param>
-    /// <param name="value">The invalid price value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result InvalidPrice(string priceType, decimal value) => Result.Invalid(
+    public static Result InvalidPrice(string priceType) => Result.Invalid(
         detail: $"{GetSafePriceType(priceType)} must be greater than or equal to zero.",
         field: "price",
         message: $"{GetSafePriceType(priceType)} must be greater than or equal to zero.");
@@ -89,10 +86,8 @@ public static class TourErrors
     /// Indicates that a price value exceeds the maximum allowed value.
     /// </summary>
     /// <param name="priceType">The type of price (e.g., "Base price", "Single room supplement").</param>
-    /// <param name="maxPrice">The maximum allowed price.</param>
-    /// <param name="value">The actual price value.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result PriceTooHigh(string priceType, decimal maxPrice, decimal value) => Result.Invalid(
+    public static Result PriceTooHigh(string priceType) => Result.Invalid(
         detail: $"{GetSafePriceType(priceType)} exceeds the maximum allowed value.",
         field: "price",
         message: $"{GetSafePriceType(priceType)} exceeds the maximum allowed value.");
@@ -100,9 +95,8 @@ public static class TourErrors
     /// <summary>
     /// Indicates that a tour with the specified ID was not found.
     /// </summary>
-    /// <param name="id">The ID of the tour that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result TourNotFound(Guid id) => Result.NotFound(detail: "Tour was not found.");
+    public static Result TourNotFound() => Result.NotFound(detail: "Tour was not found.");
 
     /// <summary>
     /// Indicates that the principal customer and companion cannot be the same person.
@@ -170,10 +164,9 @@ public static class TourErrors
     /// <summary>
     /// Indicates that only pending bookings can be removed.
     /// </summary>
-    /// <param name="bookingId">The booking ID.</param>
     /// <param name="currentStatus">The current booking status.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result CannotRemoveNonPendingBooking(Guid bookingId, BookingStatus currentStatus) => Result.Conflict(
+    public static Result CannotRemoveNonPendingBooking(BookingStatus currentStatus) => Result.Conflict(
         $"Booking has status {currentStatus} and cannot be removed. Only pending bookings can be removed.");
 
     /// <summary>

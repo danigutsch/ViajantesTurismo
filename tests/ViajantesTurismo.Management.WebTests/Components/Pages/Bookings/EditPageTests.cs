@@ -909,7 +909,7 @@ public sealed class EditPageTests : BunitContext
 
         // Act — click the Confirm Booking button
         var confirmButton = cut.FindAll(ButtonSelector).First(b => b.TextContent.Contains("Confirm Booking", StringComparison.Ordinal));
-        await cut.InvokeAsync((Action)(() => confirmButton.Click()));
+        await cut.InvokeAsync(() => confirmButton.Click());
 
         // Assert — status badge should now show Confirmed
         var statusBadge = cut.FindComponent<BookingStatusBadge>();
@@ -928,7 +928,7 @@ public sealed class EditPageTests : BunitContext
 
         // Act — click the Complete Booking button
         var completeButton = cut.FindAll(ButtonSelector).First(b => b.TextContent.Contains("Complete Booking", StringComparison.Ordinal));
-        await cut.InvokeAsync((Action)(() => completeButton.Click()));
+        await cut.InvokeAsync(() => completeButton.Click());
 
         // Assert — status badge should now show Completed
         var statusBadge = cut.FindComponent<BookingStatusBadge>();
@@ -1062,7 +1062,7 @@ public sealed class EditPageTests : BunitContext
 
         // Act
         var cancelButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains(CancelBookingText, StringComparison.Ordinal));
-        await cut.InvokeAsync((Action)(() => cancelButton.Click()));
+        await cut.InvokeAsync(() => cancelButton.Click());
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -1090,11 +1090,11 @@ public sealed class EditPageTests : BunitContext
 
         // Act
         var cancelButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains(CancelBookingText, StringComparison.Ordinal));
-        await cut.InvokeAsync((Action)(() => cancelButton.Click()));
+        await cut.InvokeAsync(() => cancelButton.Click());
         await cut.WaitForAssertionAsync(() => cut.Find(VisibleModalSelector));
 
         var noButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Trim() == "No");
-        await cut.InvokeAsync((Action)(() => noButton.Click()));
+        await cut.InvokeAsync(() => noButton.Click());
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -1121,11 +1121,11 @@ public sealed class EditPageTests : BunitContext
 
         // Act
         var cancelButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains(CancelBookingText, StringComparison.Ordinal));
-        await cut.InvokeAsync((Action)(() => cancelButton.Click()));
+        await cut.InvokeAsync(() => cancelButton.Click());
         await cut.WaitForAssertionAsync(() => cut.Find(VisibleModalSelector));
 
         var confirmButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains("Yes, Cancel", StringComparison.Ordinal));
-        await cut.InvokeAsync((Action)(() => confirmButton.Click()));
+        await cut.InvokeAsync(() => confirmButton.Click());
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -1162,7 +1162,7 @@ public sealed class EditPageTests : BunitContext
 
         // Act
         var deleteButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains(DeleteBookingText, StringComparison.Ordinal));
-        await cut.InvokeAsync((Action)(() => deleteButton.Click()));
+        await cut.InvokeAsync(() => deleteButton.Click());
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -1191,11 +1191,11 @@ public sealed class EditPageTests : BunitContext
 
         // Act
         var deleteButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains(DeleteBookingText, StringComparison.Ordinal));
-        await cut.InvokeAsync((Action)(() => deleteButton.Click()));
+        await cut.InvokeAsync(() => deleteButton.Click());
         await cut.WaitForAssertionAsync(() => cut.Find(VisibleModalSelector));
 
         var noButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Trim() == "No");
-        await cut.InvokeAsync((Action)(() => noButton.Click()));
+        await cut.InvokeAsync(() => noButton.Click());
 
         // Assert
         await cut.WaitForAssertionAsync(() =>
@@ -1347,7 +1347,7 @@ public sealed class EditPageTests : BunitContext
         var confirmButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains("Confirm Booking", StringComparison.Ordinal));
 
         // Act
-        await cut.InvokeAsync((Action)(() => confirmButton.Click()));
+        await cut.InvokeAsync(() => confirmButton.Click());
 
         // Assert
         await cut.WaitForAssertionAsync(() => cut.Find(".toast-body").TextContent.ShouldContain(
@@ -1369,7 +1369,7 @@ public sealed class EditPageTests : BunitContext
         var confirmButton = cut.FindAll(ButtonSelector).First(button => button.TextContent.Contains("Confirm Booking", StringComparison.Ordinal));
 
         // Act
-        await cut.InvokeAsync((Action)(() => confirmButton.Click()));
+        await cut.InvokeAsync(() => confirmButton.Click());
 
         // Assert
         await cut.WaitForAssertionAsync(() => cut.Find(".toast-body").TextContent.ShouldContain(

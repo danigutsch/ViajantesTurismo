@@ -26,7 +26,7 @@ public sealed class FinalizeDocumentCommandHandler(
         if (lineage is null || document is null)
         {
             return await RecordAndReturn(
-                DocumentErrors.DocumentNotFound(command.DocumentId),
+                DocumentErrors.DocumentNotFound(),
                 auditContext,
                 command.DocumentId,
                 null,

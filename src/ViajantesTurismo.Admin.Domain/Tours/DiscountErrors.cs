@@ -21,9 +21,8 @@ public static class DiscountErrors
     /// <summary>
     /// Indicates that the discount amount is negative.
     /// </summary>
-    /// <param name="amount">The invalid discount amount.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result NegativeDiscountAmount(decimal amount) =>
+    public static Result NegativeDiscountAmount() =>
         Result.Invalid(
             detail: "Discount amount cannot be negative.",
             field: "discountAmount",
@@ -32,10 +31,8 @@ public static class DiscountErrors
     /// <summary>
     /// Indicates that a percentage discount exceeds the maximum allowed value.
     /// </summary>
-    /// <param name="amount">The invalid percentage amount.</param>
-    /// <param name="maxPercentage">The maximum allowed percentage.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result PercentageExceedsMaximum(decimal amount, decimal maxPercentage) =>
+    public static Result PercentageExceedsMaximum() =>
         Result.Invalid(
             detail: "Percentage discount cannot exceed the maximum allowed value.",
             field: "discountAmount",
@@ -44,10 +41,8 @@ public static class DiscountErrors
     /// <summary>
     /// Indicates that an absolute discount amount exceeds the subtotal.
     /// </summary>
-    /// <param name="amount">The discount amount.</param>
-    /// <param name="subtotal">The subtotal before discount.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result AbsoluteDiscountExceedsSubtotal(decimal amount, decimal subtotal) =>
+    public static Result AbsoluteDiscountExceedsSubtotal() =>
         Result.Invalid(
             detail: "Absolute discount amount cannot exceed subtotal.",
             field: "discountAmount",
@@ -56,9 +51,8 @@ public static class DiscountErrors
     /// <summary>
     /// Indicates that the final price after discount would be zero or negative.
     /// </summary>
-    /// <param name="finalPrice">The calculated final price.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result FinalPriceNotPositive(decimal finalPrice) =>
+    public static Result FinalPriceNotPositive() =>
         Result.Invalid(
             detail: "Final price after discount must be greater than zero.",
             field: "discount",

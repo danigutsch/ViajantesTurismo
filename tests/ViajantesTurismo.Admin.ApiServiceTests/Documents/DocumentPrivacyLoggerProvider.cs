@@ -9,7 +9,7 @@ internal sealed class DocumentPrivacyLoggerProvider : ILoggerProvider
     private readonly ConcurrentQueue<string> messages = new();
 
     /// <summary>Gets a snapshot of every captured log text.</summary>
-    public IReadOnlyCollection<string> Messages => messages.ToArray();
+    public IReadOnlyCollection<string> Messages => [.. messages];
 
     /// <summary>Creates a logger that writes into the shared message queue.</summary>
     public ILogger CreateLogger(string categoryName) => new CapturingLogger(messages);

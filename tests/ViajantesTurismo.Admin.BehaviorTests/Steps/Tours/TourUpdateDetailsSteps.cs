@@ -82,7 +82,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Pricing.RegularBikePrice,
             tourContext.Tour.Pricing.EBikePrice,
             tourContext.Tour.Pricing.Currency,
-            tourContext.Tour.IncludedServices.ToList(),
+            [.. tourContext.Tour.IncludedServices],
             tourContext.Tour.Capacity.MinCustomers,
             tourContext.Tour.Capacity.MaxCustomers);
 
@@ -104,7 +104,7 @@ public sealed class TourUpdateDetailsSteps(TourContext tourContext)
             tourContext.Tour.Pricing.RegularBikePrice,
             tourContext.Tour.Pricing.EBikePrice,
             tourContext.Tour.Pricing.Currency,
-            tourContext.Tour.IncludedServices.ToList(),
+            [.. tourContext.Tour.IncludedServices],
             tourContext.Tour.Capacity.MinCustomers,
             tourContext.Tour.Capacity.MaxCustomers);
 

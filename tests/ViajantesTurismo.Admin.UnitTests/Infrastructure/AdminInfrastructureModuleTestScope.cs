@@ -73,10 +73,10 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
 
     /// <summary>Gets the DbContext option configurations registered for the Admin write context.</summary>
     public IReadOnlyList<IDbContextConfiguration<AdminWriteDbContext>> DbContextConfigurations =>
-        scope.ServiceProvider.GetServices<IDbContextConfiguration<AdminWriteDbContext>>().ToArray();
+        [.. scope.ServiceProvider.GetServices<IDbContextConfiguration<AdminWriteDbContext>>()];
 
     /// <summary>Gets the hosted services registered in the provider.</summary>
-    public IReadOnlyList<IHostedService> HostedServices => serviceProvider.GetServices<IHostedService>().ToArray();
+    public IReadOnlyList<IHostedService> HostedServices => [.. serviceProvider.GetServices<IHostedService>()];
 
     /// <summary>Returns whether the create-tour handler is the same instance within a scope and a different instance across scopes.</summary>
     public bool CreateTourHandlerHasScopedLifetime()

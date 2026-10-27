@@ -27,7 +27,7 @@ public sealed partial class BookingFinancialHistory
         _state = _state with
         {
             Receipts = [.. _state.Receipts, new PaymentReceiptState(id, settlement.Gross.Currency, settlement.Gross.Amount, settlement.Fees.Amount,
-            paymentDate, settledAt, method, reference, actorId, now, proposedAllocations.Select(item => item.ExportState()).ToArray())]
+            paymentDate, settledAt, method, reference, actorId, now, [.. proposedAllocations.Select(item => item.ExportState())])]
         };
         Changed(id, actorId, now, "ReceiptRecordedPending", FinancialReason.ReceiptRecorded, false);
         return Result.Ok(id);
@@ -53,7 +53,7 @@ public sealed partial class BookingFinancialHistory
             return FinancialErrors.Invalid("reconciliation").ConvertError<Guid>();
         }
         var prospective = new ReceiptReconciliationState(Guid.CreateVersion7(), receiptId, euroCredit, quoteId, instructionId,
-            allocations.Select(item => item.ExportState()).ToArray(), actorId, now, null);
+            [.. allocations.Select(item => item.ExportState())], actorId, now, null);
         if (!CreditFits(receipt, prospective))
         {
             return FinancialErrors.Invalid("remainingCashCredit").ConvertError<Guid>();
@@ -62,7 +62,7 @@ public sealed partial class BookingFinancialHistory
         _state = _state with
         {
             Reconciliations = [.. _state.Reconciliations, new ReceiptReconciliationState(id, receiptId, euroCredit, quoteId, instructionId,
-            allocations.Select(item => item.ExportState()).ToArray(), actorId, now, null)]
+            [.. allocations.Select(item => item.ExportState())], actorId, now, null)]
         };
         Changed(id, actorId, now, "ReconciliationDrafted", FinancialReason.DraftSaved, false);
         return Result.Ok(id);
@@ -91,7 +91,7 @@ public sealed partial class BookingFinancialHistory
         }
         _state = _state with
         {
-            Reconciliations = _state.Reconciliations.Select(item => item.Id == reconciliationId ? item with { Approval = Stamp(approval) } : item).ToArray()
+            Reconciliations = [.. _state.Reconciliations.Select(item => item.Id == reconciliationId ? item with { Approval = Stamp(approval) } : item)]
         };
         foreach (var item in selected)
         {
@@ -168,7 +168,7 @@ public sealed partial class BookingFinancialHistory
             return FinancialErrors.Unavailable().ConvertError<Guid>();
         }
         var reversal = new PaymentReceiptReversalState(Guid.CreateVersion7(), receiptId,
-            _state.Allocations.Where(item => item.ReceiptId == receiptId).Select(item => item.Id).ToArray(), Stamp(approval));
+            [.. _state.Allocations.Where(item => item.ReceiptId == receiptId).Select(item => item.Id)], Stamp(approval));
         _state = _state with
         {
             Reversals = [.. _state.Reversals, reversal]
@@ -253,7 +253,7 @@ public sealed partial class BookingFinancialHistory
         - _state.Releases.Where(item => item.AllocationId == allocation.Id).Sum(item => item.EuroAmount)
         - ActiveRefunds().SelectMany(item => item.ReversedAllocations).Where(item => item.TargetId == allocation.Id).Sum(item => item.EuroAmount);
     private decimal PaidToInstallment(Guid installmentId) => _state.Allocations.Where(item => item.InstallmentId == installmentId).Sum(NetAllocation);
-    private decimal AvailableCredit(Guid receiptId) => Reversed(receiptId) ? 0 : (ApprovedEuro(receiptId))
+    private decimal AvailableCredit(Guid receiptId) => Reversed(receiptId) ? 0 : ApprovedEuro(receiptId)
         - ActiveRefunds().Where(item => item.ReceiptId == receiptId).Sum(item => item.EuroCreditReversed)
         - _state.Allocations.Where(item => item.ReceiptId == receiptId).Sum(NetAllocation);
     private bool SelectionsFit(IReadOnlyList<InstallmentAllocation> allocations, decimal available)

@@ -28,14 +28,14 @@ public sealed class UpdateBookingDetailsCommandHandler(
         var tourId = await tourStore.GetTourIdByBookingId(command.BookingId, ct);
         if (!tourId.TryGetValue(out var owningTourId))
         {
-            return BookingErrors.BookingNotFound(command.BookingId);
+            return BookingErrors.BookingNotFound();
         }
 
         await using var capacityLease = await capacityMutationLock.Acquire(owningTourId, ct);
         var tour = await tourStore.GetById(owningTourId, ct);
         if (tour is null)
         {
-            return BookingErrors.BookingNotFound(command.BookingId);
+            return BookingErrors.BookingNotFound();
         }
 
         if (command.CompanionCustomerId.HasValue)
@@ -43,7 +43,7 @@ public sealed class UpdateBookingDetailsCommandHandler(
             var companion = await customerStore.GetById(command.CompanionCustomerId.Value, ct);
             if (companion is null)
             {
-                return CustomerErrors.CustomerNotFound(command.CompanionCustomerId.Value);
+                return CustomerErrors.CustomerNotFound();
             }
         }
 

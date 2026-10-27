@@ -141,7 +141,7 @@ public sealed partial class Tour
         var booking = _bookings.SingleOrDefault(item => item.Id == bookingId);
         if (booking is null)
         {
-            return BookingErrors.BookingNotFound(bookingId).ConvertError<Guid>();
+            return BookingErrors.BookingNotFound().ConvertError<Guid>();
         }
         var history = booking.FinancialHistory ?? BookingFinancialHistory.Create(booking.Id, now);
         var result = operation(booking, history);

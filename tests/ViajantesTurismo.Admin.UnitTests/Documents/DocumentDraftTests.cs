@@ -20,8 +20,8 @@ public sealed class DocumentDraftTests
         // Act
         var finalize = draft.Finalize(artifact, createdAt);
         artifact[0] = 0;
-        var finalizedArtifact = draft.GetFinalizedArtifactContent();
-        var secondFinalizedArtifact = draft.GetFinalizedArtifactContent();
+        var finalizedArtifact = draft.CopyFinalizedArtifactContent();
+        var secondFinalizedArtifact = draft.CopyFinalizedArtifactContent();
 
         // Assert
         beginReview.IsSuccess.ShouldBeTrue();
@@ -80,7 +80,7 @@ public sealed class DocumentDraftTests
         finalize.IsSuccess.ShouldBeTrue();
         result.IsSuccess.ShouldBeTrue();
         draft.Status.ShouldBe(DocumentStatus.Voided);
-        draft.GetFinalizedArtifactContent().ShouldNotBeNull();
+        draft.CopyFinalizedArtifactContent().ShouldNotBeNull();
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public sealed class DocumentDraftTests
         approve.IsSuccess.ShouldBeTrue();
         result.IsFailure.ShouldBeTrue();
         draft.Status.ShouldBe(DocumentStatus.Approved);
-        draft.GetFinalizedArtifactContent().ShouldBeNull();
+        draft.CopyFinalizedArtifactContent().ShouldBeNull();
     }
 
     [Fact]

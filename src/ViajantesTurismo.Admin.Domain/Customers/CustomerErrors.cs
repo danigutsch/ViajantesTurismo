@@ -411,9 +411,8 @@ public static class CustomerErrors
     /// <summary>
     /// Indicates that a customer with the specified ID was not found.
     /// </summary>
-    /// <param name="id">The ID of the customer that was not found.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result CustomerNotFound(Guid id) => Result.NotFound(detail: "Customer was not found.");
+    public static Result CustomerNotFound() => Result.NotFound(detail: "Customer was not found.");
 
     /// <summary>
     /// Indicates that the email format is invalid.
@@ -436,9 +435,8 @@ public static class CustomerErrors
     /// <summary>
     /// Indicates that the customer is too young (minimum age is 10 years).
     /// </summary>
-    /// <param name="age">The calculated age of the customer.</param>
     /// <returns>A Result representing the error.</returns>
-    public static Result AgeTooYoung(int age) => Result.Invalid(
+    public static Result AgeTooYoung() => Result.Invalid(
         detail: "Customer must meet the minimum age requirement.",
         field: "BirthDate",
         message: "Customer must meet the minimum age requirement.");

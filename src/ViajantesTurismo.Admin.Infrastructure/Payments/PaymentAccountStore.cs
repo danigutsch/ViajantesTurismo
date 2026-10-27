@@ -22,7 +22,7 @@ internal sealed class PaymentAccountStore(AdminWriteDbContext context, PaymentPr
     public async Task<IReadOnlyList<PaymentAccount>> List(CancellationToken ct)
     {
         var rows = await context.Set<PaymentAccountRow>().AsNoTracking().OrderBy(row => row.Id).ToArrayAsync(ct);
-        return rows.Select(Decode).ToArray();
+        return [.. rows.Select(Decode)];
     }
 
     /// <summary>Writes the account as a protected row and stages audit rows for its lifecycle events.</summary>

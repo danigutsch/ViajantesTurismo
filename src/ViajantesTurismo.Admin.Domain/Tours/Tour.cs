@@ -831,7 +831,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
 
         if (!booking.IsPending)
         {
-            return TourErrors.CannotRemoveNonPendingBooking(bookingId, booking.Status);
+            return TourErrors.CannotRemoveNonPendingBooking(booking.Status);
         }
 
         _bookings.Remove(booking);

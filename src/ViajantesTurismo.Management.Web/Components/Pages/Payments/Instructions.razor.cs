@@ -122,7 +122,7 @@ public partial class Instructions
             AccountId = account.Id,
             ExpectedAccountVersion = account.Version,
             QuoteId = _quoteId,
-            InstallmentIds = _selectedInstallments.Order().ToArray(),
+            InstallmentIds = [.. _selectedInstallments.Order()],
             ExpectedDocumentVersion = _regenerate?.DocumentVersion
         };
         var sourceId = _regenerate?.Document.Id;

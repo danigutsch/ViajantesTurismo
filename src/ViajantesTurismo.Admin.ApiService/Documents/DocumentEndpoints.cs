@@ -137,7 +137,7 @@ internal static class DocumentEndpoints
 
         var document = await queryService.GetById(result.Value, ct);
         return document is null
-            ? ToError(DocumentErrors.DocumentNotFound(result.Value))
+            ? ToError(DocumentErrors.DocumentNotFound())
             : TypedResults.Created($"/api/v1/documents/{document.Id}", document);
     }
 
@@ -161,7 +161,7 @@ internal static class DocumentEndpoints
                 DocumentAuditOutcome.Rejected,
                 DocumentAuditReasonCode.DocumentNotFound,
                 ct);
-            return auditResult.IsFailure ? ToError(auditResult) : ToError(DocumentErrors.DocumentNotFound(id));
+            return auditResult.IsFailure ? ToError(auditResult) : ToError(DocumentErrors.DocumentNotFound());
         }
 
         var successfulAudit = await documentAuditWriter.Add(
@@ -308,7 +308,7 @@ internal static class DocumentEndpoints
         }
 
         var document = await queryService.GetById(result.Value, ct);
-        return document is null ? ToError(DocumentErrors.DocumentNotFound(result.Value)) : TypedResults.Ok(document);
+        return document is null ? ToError(DocumentErrors.DocumentNotFound()) : TypedResults.Ok(document);
     }
 
     private static async Task<IResult> Void(
@@ -391,7 +391,7 @@ internal static class DocumentEndpoints
         }
 
         var document = await queryService.GetById(documentId, ct);
-        return document is null ? ToError(DocumentErrors.DocumentNotFound(documentId)) : TypedResults.Ok(document);
+        return document is null ? ToError(DocumentErrors.DocumentNotFound()) : TypedResults.Ok(document);
     }
 
     private sealed record DocumentCommandAuditMetadata(

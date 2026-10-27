@@ -25,12 +25,12 @@ public sealed class UpdateTourCommandHandler(
         var tour = await tourStore.GetById(command.TourId, ct);
         if (tour is null)
         {
-            return TourErrors.TourNotFound(command.TourId);
+            return TourErrors.TourNotFound();
         }
 
         if (await tourStore.IdentifierExistsExcluding(command.Identifier, command.TourId, ct))
         {
-            return TourErrors.IdentifierAlreadyExists(command.Identifier);
+            return TourErrors.IdentifierAlreadyExists();
         }
 
         var reviseResult = tour.Revise(new TourDefinition(

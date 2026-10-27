@@ -168,8 +168,8 @@ public sealed class CatalogTelemetryTests
             "Andes 2026");
 
         // Act
-        var action = (Func<Task>)(async () =>
-            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken));
+        var action = async () =>
+            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
         var exception = await action.ShouldThrow<InvalidOperationException>();
 
         // Assert
@@ -205,8 +205,8 @@ public sealed class CatalogTelemetryTests
             "Andes 2026");
 
         // Act
-        var action = (Func<Task>)(async () =>
-            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken));
+        var action = async () =>
+            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
         var exception = await action.ShouldThrow<OperationCanceledException>();
 
         // Assert
@@ -248,8 +248,8 @@ public sealed class CatalogTelemetryTests
             "Andes 2026");
 
         // Act
-        var action = (Func<Task>)(async () =>
-            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken));
+        var action = async () =>
+            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
         var exception = await action.ShouldThrow<OperationCanceledException>();
 
         // Assert
@@ -282,8 +282,8 @@ public sealed class CatalogTelemetryTests
             "Andes 2026");
 
         // Act
-        var action = (Func<Task>)(async () =>
-            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken));
+        var action = async () =>
+            await handler.Handle(integrationEvent, TestContext.Current.CancellationToken);
         var exception = await action.ShouldThrow<OperationCanceledException>();
 
         // Assert
@@ -422,8 +422,8 @@ public sealed class CatalogTelemetryTests
         await cancellation.CancelAsync();
 
         // Act
-        var action = (Func<Task>)(async () =>
-            await handler.Handle(integrationEvent, cancellation.Token));
+        var action = async () =>
+            await handler.Handle(integrationEvent, cancellation.Token);
         await action.ShouldThrow<OperationCanceledException>();
 
         // Assert
@@ -460,8 +460,8 @@ public sealed class CatalogTelemetryTests
         await cancellation.CancelAsync();
 
         // Act
-        var action = (Func<Task>)(async () =>
-            await handler.Handle(integrationEvent, cancellation.Token));
+        var action = async () =>
+            await handler.Handle(integrationEvent, cancellation.Token);
         await action.ShouldThrow<OperationCanceledException>();
 
         // Assert
@@ -493,8 +493,8 @@ public sealed class CatalogTelemetryTests
         await cancellation.CancelAsync();
 
         // Act
-        var action = (Func<Task>)(async () =>
-            await handler.Handle(integrationEvent, cancellation.Token));
+        var action = async () =>
+            await handler.Handle(integrationEvent, cancellation.Token);
         await action.ShouldThrow<OperationCanceledException>();
 
         // Assert

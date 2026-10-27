@@ -34,7 +34,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new GenerateContractDraftCommand(Guid.CreateVersion7(), string.Empty, string.Empty, DocumentAuditTestData.CreateContext(), default(IdempotencyKey)),
+            new GenerateContractDraftCommand(Guid.CreateVersion7(), string.Empty, string.Empty, DocumentAuditTestData.CreateContext(), default),
             CancellationToken.None);
 
         // Assert

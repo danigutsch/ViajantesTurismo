@@ -13,7 +13,7 @@ public sealed class TestPublicContentStore : IPublicContentStore
     {
         ct.ThrowIfCancellationRequested();
 
-        return Task.FromResult<IReadOnlyCollection<EditablePublicContent>>(contentByKey.Values.ToArray());
+        return Task.FromResult<IReadOnlyCollection<EditablePublicContent>>([.. contentByKey.Values]);
     }
 
     public Task<EditablePublicContent?> GetContent(string key, CancellationToken ct)

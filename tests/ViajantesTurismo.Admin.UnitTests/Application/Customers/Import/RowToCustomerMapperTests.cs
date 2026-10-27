@@ -151,7 +151,7 @@ public class RowToCustomerMapperTests
     public void MapCustomer_when_required_header_is_missing_returns_header_validation_failure()
     {
         // Arrange
-        var (document, row) = MappingInputs.Create(headers: MappingInputs.CompleteHeaders.Where(header => header != "FirstName").ToArray());
+        var (document, row) = MappingInputs.Create(headers: [.. MappingInputs.CompleteHeaders.Where(header => header != "FirstName")]);
         const string expectedMessage = "Required header 'FirstName' is missing.";
 
         // Act

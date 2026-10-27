@@ -33,7 +33,7 @@ public static partial class ListInteractionTestHelpers
 
         var sortedTexts = descending
             ? visibleTexts.OrderByDescending(text => text, StringComparer.OrdinalIgnoreCase).ToArray()
-            : visibleTexts.OrderBy(text => text, StringComparer.OrdinalIgnoreCase).ToArray();
+            : [.. visibleTexts.OrderBy(text => text, StringComparer.OrdinalIgnoreCase)];
 
         visibleTexts.ShouldBe(sortedTexts);
     }

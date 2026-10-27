@@ -26,7 +26,7 @@ internal static class ErrorDocumentationCatalog
         AddAssemblyEntries(typeof(TourErrors).Assembly, entries);
         AddAssemblyEntries(typeof(IQueryService).Assembly, entries);
 
-        return entries.Values.OrderBy(static entry => entry.Identifier, StringComparer.Ordinal).ToArray();
+        return [.. entries.Values.OrderBy(static entry => entry.Identifier, StringComparer.Ordinal)];
     }
 
     private static void AddAssemblyEntries(Assembly assembly, Dictionary<string, GetErrorDocumentationDto> entries)

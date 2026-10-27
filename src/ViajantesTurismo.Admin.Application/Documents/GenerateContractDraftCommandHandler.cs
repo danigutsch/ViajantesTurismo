@@ -34,7 +34,7 @@ public sealed class GenerateContractDraftCommandHandler(
         if (booking is null)
         {
             return await RecordAndReturn(
-                BookingErrors.BookingNotFound(command.BookingId).ConvertError<Guid>(),
+                BookingErrors.BookingNotFound().ConvertError<Guid>(),
                 command.AuditContext,
                 null,
                 command.BookingId,
@@ -47,7 +47,7 @@ public sealed class GenerateContractDraftCommandHandler(
         if (tourAggregate is null)
         {
             return await RecordAndReturn(
-                BookingErrors.BookingNotFound(booking.Id).ConvertError<Guid>(),
+                BookingErrors.BookingNotFound().ConvertError<Guid>(),
                 command.AuditContext,
                 null,
                 booking.Id,
@@ -73,7 +73,7 @@ public sealed class GenerateContractDraftCommandHandler(
         if (tour is null)
         {
             return await RecordAndReturn(
-                TourErrors.TourNotFound(booking.TourId).ConvertError<Guid>(),
+                TourErrors.TourNotFound().ConvertError<Guid>(),
                 command.AuditContext,
                 null,
                 booking.Id,
@@ -101,8 +101,7 @@ public sealed class GenerateContractDraftCommandHandler(
             tour,
             command.TemplateId,
             command.TemplateVersion,
-            branding,
-            now);
+            branding);
         if (contentResult.IsFailure)
         {
             return await RecordAndReturn(

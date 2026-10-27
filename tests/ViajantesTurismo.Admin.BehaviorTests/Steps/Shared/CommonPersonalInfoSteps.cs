@@ -119,6 +119,9 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.PersonalInfoResult.IsFailure.ShouldBeTrue();
         var assertionTarget2 = context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("FirstName") ?? false;
         assertionTarget2.ShouldBeTrue("Expected validation error for FirstName");
+        var expected = maxLength.ToString(CultureInfo.InvariantCulture);
+        var messages = context.PersonalInfoResult.ErrorDetails?.ValidationErrors?["FirstName"] ?? [];
+        messages.ShouldContain(m => m.Contains(expected, StringComparison.Ordinal));
     }
 
     [Then("the personal info should contain the provided data")]
@@ -257,6 +260,9 @@ public sealed class CommonPersonalInfoSteps(CustomerContext context)
         context.PersonalInfoResult.IsFailure.ShouldBeTrue();
         var assertionTarget4 = context.PersonalInfoResult.ErrorDetails?.ValidationErrors?.ContainsKey("LastName") ?? false;
         assertionTarget4.ShouldBeTrue("Expected validation error for LastName");
+        var expected = maxLength.ToString(CultureInfo.InvariantCulture);
+        var messages = context.PersonalInfoResult.ErrorDetails?.ValidationErrors?["LastName"] ?? [];
+        messages.ShouldContain(m => m.Contains(expected, StringComparison.Ordinal));
     }
 
     [Given(@"I have personal information with gender ""(.*)""")]

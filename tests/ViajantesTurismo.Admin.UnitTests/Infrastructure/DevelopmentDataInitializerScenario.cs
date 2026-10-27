@@ -322,7 +322,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
             .OrderBy(static booking => booking.Id)
             .ToArrayAsync(ct);
 
-        return bookings
+        return [.. bookings
             .Select(static booking => (
                 booking.Id,
                 booking.Status,
@@ -330,8 +330,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
                 booking.AmountPaid,
                 booking.Discount.Type,
                 booking.Discount.Amount,
-                booking.Discount.Reason))
-            .ToArray();
+                booking.Discount.Reason))];
     }
 
     /// <summary>Returns the tour ids in ascending order.</summary>

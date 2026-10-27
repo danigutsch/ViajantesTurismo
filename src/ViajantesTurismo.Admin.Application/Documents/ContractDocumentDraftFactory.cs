@@ -23,8 +23,7 @@ internal static class ContractDocumentDraftFactory
         GetTourDto tour,
         string templateId,
         string templateVersion,
-        DocumentBrandingSnapshotValues branding,
-        DateTime now)
+        DocumentBrandingSnapshotValues branding)
     {
         ArgumentNullException.ThrowIfNull(booking);
         ArgumentNullException.ThrowIfNull(tour);
@@ -73,9 +72,9 @@ internal static class ContractDocumentDraftFactory
             ("support-contact", "Support contact", "Contact Viajantes Turismo support for assistance.", DocumentPrivacyClassification.Public, true),
         };
         var fields = new List<DocumentField>(definitions.Length);
-        foreach (var definition in definitions)
+        foreach (var (FieldId, Label, Value, Classification, IsEditable) in definitions)
         {
-            var fieldResult = DocumentField.Create(definition.FieldId, definition.Label, definition.Value, definition.Classification, definition.IsEditable);
+            var fieldResult = DocumentField.Create(FieldId, Label, Value, Classification, IsEditable);
             if (fieldResult.IsFailure)
             {
                 return fieldResult.ConvertError<DocumentField, IReadOnlyList<DocumentField>>();

@@ -16,10 +16,10 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
-        var source = await scenario.SeedCustomerCredit(ct);
+        var (BookingId, ReceiptId, InstallmentId) = await scenario.SeedCustomerCredit(ct);
         await using var first = scenario.Open();
         await using var second = scenario.Open();
-        var history = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var history = await first.Financials.GetByBookingId(BookingId, ct);
         history.ShouldNotBeNull();
         var input = new CreateBookingReceiptDto
         {
@@ -31,10 +31,10 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             SettledAt = scenario.Clock.GetUtcNow(),
             Method = PaymentMethodDto.BankTransfer,
             Reference = "receipt-race",
-            ProposedAllocations = [new InstallmentAllocationDto { TargetId = source.InstallmentId, EuroAmount = 100m }]
+            ProposedAllocations = [new InstallmentAllocationDto { TargetId = InstallmentId, EuroAmount = 100m }]
         };
-        var one = new RecordBookingReceiptCommand(source.BookingId, input, "first", "record-first");
-        var two = new RecordBookingReceiptCommand(source.BookingId, input, "second", "record-second");
+        var one = new RecordBookingReceiptCommand(BookingId, input, "first", "record-first");
+        var two = new RecordBookingReceiptCommand(BookingId, input, "second", "record-second");
 
         // Act
         var results = await Task.WhenAll(first.RecordBookingReceipt.Handle(one, ct), second.RecordBookingReceipt.Handle(two, ct));
@@ -42,7 +42,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         results.Count(result => result.IsSuccess).ShouldBe(1);
         results.Count(result => result.IsFailure).ShouldBe(1);
-        var current = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var current = await first.Financials.GetByBookingId(BookingId, ct);
         current.ShouldNotBeNull();
         current.Version.ShouldBe(history.Version + 1);
         current.Receipts.Count.ShouldBe(history.Receipts.Count + 1);
@@ -141,20 +141,20 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
-        var source = await scenario.SeedCustomerCredit(ct);
+        var (BookingId, ReceiptId, InstallmentId) = await scenario.SeedCustomerCredit(ct);
         await using var first = scenario.Open();
         await using var second = scenario.Open();
-        var history = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var history = await first.Financials.GetByBookingId(BookingId, ct);
         history.ShouldNotBeNull();
         var input = new AllocatePaymentCreditDto
         {
             ExpectedVersion = history.Version,
             Confirmed = true,
             Reason = FinancialReasonDto.AllocationSelected,
-            Allocations = [new InstallmentAllocationDto { TargetId = source.InstallmentId, EuroAmount = 100m }]
+            Allocations = [new InstallmentAllocationDto { TargetId = InstallmentId, EuroAmount = 100m }]
         };
-        var one = new AllocateBookingPaymentCommand(source.BookingId, source.ReceiptId, input, "first", "allocate-first");
-        var two = new AllocateBookingPaymentCommand(source.BookingId, source.ReceiptId, input, "second", "allocate-second");
+        var one = new AllocateBookingPaymentCommand(BookingId, ReceiptId, input, "first", "allocate-first");
+        var two = new AllocateBookingPaymentCommand(BookingId, ReceiptId, input, "second", "allocate-second");
 
         // Act
         var results = await Task.WhenAll(first.AllocateBookingPayment.Handle(one, ct), second.AllocateBookingPayment.Handle(two, ct));
@@ -162,7 +162,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         results.Count(result => result.IsSuccess).ShouldBe(1);
         results.Count(result => result.IsFailure).ShouldBe(1);
-        var current = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var current = await first.Financials.GetByBookingId(BookingId, ct);
         current.ShouldNotBeNull();
         current.OutstandingEuro.ShouldBe(0m);
         current.Allocations.Sum(item => item.ActiveEuroCredit).ShouldBe(100m);
@@ -175,10 +175,10 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
-        var source = await scenario.SeedCustomerCredit(ct);
+        var (BookingId, ReceiptId, InstallmentId) = await scenario.SeedCustomerCredit(ct);
         await using var first = scenario.Open();
         await using var second = scenario.Open();
-        var history = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var history = await first.Financials.GetByBookingId(BookingId, ct);
         history.ShouldNotBeNull();
         var input = new CreatePaymentRefundDto
         {
@@ -191,29 +191,29 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             PerformedAt = scenario.Clock.GetUtcNow(),
             ReversedAllocations = []
         };
-        var draftOne = await first.DraftBookingPaymentRefund.Handle(new DraftBookingPaymentRefundCommand(source.BookingId, source.ReceiptId, input, "first", "refund-draft-one"), ct);
+        var draftOne = await first.DraftBookingPaymentRefund.Handle(new DraftBookingPaymentRefundCommand(BookingId, ReceiptId, input, "first", "refund-draft-one"), ct);
         draftOne.IsSuccess.ShouldBeTrue();
-        var refreshed = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var refreshed = await first.Financials.GetByBookingId(BookingId, ct);
         refreshed.ShouldNotBeNull();
-        var draftTwo = await second.DraftBookingPaymentRefund.Handle(new DraftBookingPaymentRefundCommand(source.BookingId, source.ReceiptId,
+        var draftTwo = await second.DraftBookingPaymentRefund.Handle(new DraftBookingPaymentRefundCommand(BookingId, ReceiptId,
             input with
             {
                 ExpectedVersion = refreshed.Version,
                 Reference = "second-performed"
             }, "second", "refund-draft-two"), ct);
         draftTwo.IsSuccess.ShouldBeTrue();
-        var latest = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var latest = await first.Financials.GetByBookingId(BookingId, ct);
         latest.ShouldNotBeNull();
         var approval = new ApproveFinancialRecordDto { ExpectedVersion = latest.Version, Confirmed = true, Reason = FinancialReasonDto.RefundPerformed };
 
         // Act
-        var results = await Task.WhenAll(first.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(source.BookingId, draftOne.Value, approval, "first", "refund-approve-one"), ct),
-            second.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(source.BookingId, draftTwo.Value, approval, "second", "refund-approve-two"), ct));
+        var results = await Task.WhenAll(first.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(BookingId, draftOne.Value, approval, "first", "refund-approve-one"), ct),
+            second.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(BookingId, draftTwo.Value, approval, "second", "refund-approve-two"), ct));
 
         // Assert
         results.Count(result => result.IsSuccess).ShouldBe(1);
         results.Count(result => result.IsFailure).ShouldBe(1);
-        var current = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var current = await first.Financials.GetByBookingId(BookingId, ct);
         current.ShouldNotBeNull();
         current.Refunds.Count(item => item.Approval.ApprovedAt is not null).ShouldBe(1);
         current.Receipts.ShouldHaveSingleItem().RefundableCashBasis.ShouldBe(0m);
@@ -262,14 +262,14 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
-        var source = await scenario.SeedCustomerCredit(ct);
+        var (BookingId, ReceiptId, InstallmentId) = await scenario.SeedCustomerCredit(ct);
         await using var first = scenario.Open();
         await using var second = scenario.Open();
         var now = scenario.Clock.GetUtcNow();
         var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         await first.SeedAccount(account, ct);
-        var history = await first.Financials.GetByBookingId(source.BookingId, ct);
+        var history = await first.Financials.GetByBookingId(BookingId, ct);
         history.ShouldNotBeNull();
         var input = new GeneratePaymentInstructionsDto
         {
@@ -277,11 +277,11 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             AccountId = account.Id,
             ExpectedAccountVersion = account.Version,
             QuoteId = null,
-            InstallmentIds = [source.InstallmentId]
+            InstallmentIds = [InstallmentId]
         };
 
         // Act
-        var generation = first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(source.BookingId, null, input, "first", "generation-race"), ct);
+        var generation = first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(BookingId, null, input, "first", "generation-race"), ct);
         var retirement = second.RetirePaymentAccount.Handle(new RetirePaymentAccountCommand(account.Id,
             new RetirePaymentAccountDto { ExpectedVersion = account.Version, Confirmed = true, Reason = PaymentAccountReasonDto.NoLongerUsed }, "second", "retirement-race"), ct);
         await Task.WhenAll(generation, retirement);
@@ -302,7 +302,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
                 new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = instruction.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionApproved }, "first", "approve-retired-source"), ct);
             approval.IsFailure.ShouldBeTrue();
         }
-        var blocked = await first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(source.BookingId, null,
+        var blocked = await first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(BookingId, null,
             input with
             {
                 ExpectedAccountVersion = retired.Version

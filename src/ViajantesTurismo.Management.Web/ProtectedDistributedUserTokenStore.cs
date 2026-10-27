@@ -96,8 +96,8 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
                 throw new InvalidOperationException("The management token session has been revoked.");
             }
 
-            var read = await ReadEntries(session, ct);
-            var entries = read.Entries ?? new Dictionary<string, UserToken>(StringComparer.Ordinal);
+            var (Entries, CorruptProtectedEntries) = await ReadEntries(session, ct);
+            var entries = Entries ?? new Dictionary<string, UserToken>(StringComparer.Ordinal);
             var parameterKey = GetParameterKey(parameters);
             if (!entries.ContainsKey(parameterKey) && entries.Count >= MaximumTokenEntries)
             {
@@ -129,14 +129,14 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
             return TokenResult.Failure("No access token or refresh token is available.");
         }
 
-        var read = await ReadEntries(session, ct);
-        if (read.CorruptProtectedEntries is not null)
+        var (Entries, CorruptProtectedEntries) = await ReadEntries(session, ct);
+        if (CorruptProtectedEntries is not null)
         {
-            await TryRemoveStaleEntry(session, read.CorruptProtectedEntries, ct);
+            await TryRemoveStaleEntry(session, CorruptProtectedEntries, ct);
             return TokenResult.Failure("No access token or refresh token is available.");
         }
 
-        var entries = read.Entries;
+        var entries = Entries;
         if (entries is null)
         {
             return TokenResult.Failure("No access token or refresh token is available.");
@@ -175,14 +175,14 @@ internal sealed class ProtectedDistributedUserTokenStore : IUserTokenStore
 
         await ExecuteSessionMutation(session, async () =>
         {
-            var read = await ReadEntries(session, ct);
-            if (read.CorruptProtectedEntries is not null)
+            var (Entries, CorruptProtectedEntries) = await ReadEntries(session, ct);
+            if (CorruptProtectedEntries is not null)
             {
-                await TryRemoveStaleEntryWithinMutation(session, read.CorruptProtectedEntries, ct);
+                await TryRemoveStaleEntryWithinMutation(session, CorruptProtectedEntries, ct);
                 return;
             }
 
-            var entries = read.Entries;
+            var entries = Entries;
             if (entries is null)
             {
                 return;

@@ -69,9 +69,7 @@ public sealed class IndexPageTests : BunitContext
     public void Renders_paginator_when_more_than_ten_catalog_tours_exist()
     {
         // Arrange
-        catalogApi.Tours = Enumerable.Range(1, 11)
-            .Select(index => IndexPageTestsHelpers.CreateTour($"TOUR-{index:00}", $"Tour {index:00}", $"tour-{index:00}", isPublished: index % 2 == 0))
-            .ToArray();
+        catalogApi.Tours = [.. Enumerable.Range(1, 11).Select(index => IndexPageTestsHelpers.CreateTour($"TOUR-{index:00}", $"Tour {index:00}", $"tour-{index:00}", isPublished: index % 2 == 0))];
 
         // Act
         var cut = Render<Index>();

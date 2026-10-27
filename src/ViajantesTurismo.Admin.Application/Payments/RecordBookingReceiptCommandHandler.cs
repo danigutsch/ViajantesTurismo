@@ -20,7 +20,7 @@ public sealed class RecordBookingReceiptCommandHandler(BookingPaymentCommandExec
         }
         input = input with
         {
-            ProposedAllocations = input.ProposedAllocations.OrderBy(item => item.TargetId).ToArray()
+            ProposedAllocations = [.. input.ProposedAllocations.OrderBy(item => item.TargetId)]
         };
         if (!Enum.IsDefined(input.SettlementCurrency) || !Enum.IsDefined(input.Method))
         {

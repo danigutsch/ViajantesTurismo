@@ -80,12 +80,12 @@ public sealed class BookingCustomer
 
         if (bikePrice < 0)
         {
-            errors.Add(BookingErrors.NegativeBikePrice(bikePrice));
+            errors.Add(BookingErrors.NegativeBikePrice());
         }
 
         if (bikePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(BookingErrors.BikePriceExceedsMaximum(bikePrice, AdminDomainLimits.MaxPrice));
+            errors.Add(BookingErrors.BikePriceExceedsMaximum());
         }
 
         if (errors.HasErrors)

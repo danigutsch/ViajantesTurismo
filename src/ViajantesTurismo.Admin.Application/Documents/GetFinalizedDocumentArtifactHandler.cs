@@ -16,7 +16,7 @@ public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentS
         var document = lineage?.GetRevision(query.DocumentId);
         if (document is null)
         {
-            return DocumentErrors.DocumentNotFound(query.DocumentId).ConvertError<FinalizedDocumentArtifact>();
+            return DocumentErrors.DocumentNotFound().ConvertError<FinalizedDocumentArtifact>();
         }
 
         if (document.RequiresPaymentInstructionWorkflow)
@@ -24,7 +24,7 @@ public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentS
             return paymentInstructions is not null ? await paymentInstructions.Download(query.DocumentId, query.ActorId, ct)
                 : DocumentErrors.FinalizedArtifactNotAvailable().ConvertError<FinalizedDocumentArtifact>();
         }
-        var artifactContent = document.GetFinalizedArtifactContent();
+        var artifactContent = document.CopyFinalizedArtifactContent();
         if (!document.HasAvailableFinalizedArtifact || artifactContent is null || document.FinalizedArtifactName is null)
         {
             return DocumentErrors.FinalizedArtifactNotAvailable().ConvertError<FinalizedDocumentArtifact>();

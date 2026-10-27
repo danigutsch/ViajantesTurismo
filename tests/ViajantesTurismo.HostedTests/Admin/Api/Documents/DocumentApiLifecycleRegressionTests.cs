@@ -48,18 +48,18 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "approve-gate",
             cancellationToken);
 
         // Act
         using var response = await fixture.Client.PostAsync(
-            new Uri($"/api/v1/documents/{setup.Document.Id}/approve", UriKind.Relative),
+            new Uri($"/api/v1/documents/{Document.Id}/approve", UriKind.Relative),
             null,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        var persisted = await Client.GetDocumentById(Document.Id, cancellationToken).RequireSucceededValue();
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
@@ -76,19 +76,19 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "finalize-gate",
             cancellationToken);
-        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.BeginReview(Document.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         using var response = await fixture.Client.PostAsync(
-            new Uri($"/api/v1/documents/{setup.Document.Id}/finalize", UriKind.Relative),
+            new Uri($"/api/v1/documents/{Document.Id}/finalize", UriKind.Relative),
             null,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        var persisted = await Client.GetDocumentById(Document.Id, cancellationToken).RequireSucceededValue();
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
@@ -105,20 +105,20 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "void-gate",
             cancellationToken);
-        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.BeginReview(Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Approve(Document.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         using var response = await fixture.Client.PostAsync(
-            new Uri($"/api/v1/documents/{setup.Document.Id}/void", UriKind.Relative),
+            new Uri($"/api/v1/documents/{Document.Id}/void", UriKind.Relative),
             null,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        var persisted = await Client.GetDocumentById(Document.Id, cancellationToken).RequireSucceededValue();
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
@@ -135,28 +135,28 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "approval-revocation",
             cancellationToken);
-        var editableField = setup.Document.Fields.First(field => field.IsEditable);
-        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        var editableField = Document.Fields.First(field => field.IsEditable);
+        _ = await Client.BeginReview(Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Approve(Document.Id, cancellationToken).RequireSucceededValue();
 
         // Act
-        var updated = await setup.Client.UpdateField(
-            setup.Document.Id,
+        var updated = await Client.UpdateField(
+            Document.Id,
             editableField.FieldId,
             new UpdateDocumentFieldDto { Value = "Approval must be renewed" },
             cancellationToken).RequireSucceededValue();
         using var rejectedFinalize = await fixture.Client.PostAsync(
-            new Uri($"/api/v1/documents/{setup.Document.Id}/finalize", UriKind.Relative),
+            new Uri($"/api/v1/documents/{Document.Id}/finalize", UriKind.Relative),
             null,
             cancellationToken);
-        var afterRejectedFinalize = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var finalized = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        var afterRejectedFinalize = await Client.GetDocumentById(Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Approve(Document.Id, cancellationToken).RequireSucceededValue();
+        var finalized = await Client.Finalize(Document.Id, cancellationToken).RequireSucceededValue();
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         updated.Status.ShouldBe(DocumentStatusDto.InReview);
@@ -179,11 +179,11 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "field-boundary",
             cancellationToken);
-        var originalFields = setup.Document.Fields
+        var originalFields = Document.Fields
             .Select(field => (field.FieldId, field.RenderedValue))
             .ToArray();
         using var protectedContent = new StringContent(
@@ -197,15 +197,15 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
 
         // Act
         using var protectedResponse = await fixture.Client.PatchAsync(
-            new Uri($"/api/v1/documents/{setup.Document.Id}/fields/booking-reference", UriKind.Relative),
+            new Uri($"/api/v1/documents/{Document.Id}/fields/booking-reference", UriKind.Relative),
             protectedContent,
             cancellationToken);
         using var unknownResponse = await fixture.Client.PatchAsync(
-            new Uri($"/api/v1/documents/{setup.Document.Id}/fields/missing-field", UriKind.Relative),
+            new Uri($"/api/v1/documents/{Document.Id}/fields/missing-field", UriKind.Relative),
             unknownContent,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        var persisted = await Client.GetDocumentById(Document.Id, cancellationToken).RequireSucceededValue();
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         protectedResponse.StatusCode.ShouldBe(HttpStatusCode.Conflict);
@@ -223,11 +223,11 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "override-limit",
             cancellationToken);
-        var fieldId = setup.Document.Fields.First(field => field.IsEditable).FieldId;
+        var fieldId = Document.Fields.First(field => field.IsEditable).FieldId;
         var acceptedValue = new string('a', ContractConstants.MaxDocumentFieldValueLength);
         var rejectedValue = acceptedValue + "b";
         using var rejectedContent = new StringContent(
@@ -236,17 +236,17 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
             "application/json");
 
         // Act
-        var accepted = await setup.Client.UpdateField(
-            setup.Document.Id,
+        var accepted = await Client.UpdateField(
+            Document.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = acceptedValue },
             cancellationToken).RequireSucceededValue();
         using var rejectedResponse = await fixture.Client.PatchAsync(
-            new Uri($"/api/v1/documents/{setup.Document.Id}/fields/{fieldId}", UriKind.Relative),
+            new Uri($"/api/v1/documents/{Document.Id}/fields/{fieldId}", UriKind.Relative),
             rejectedContent,
             cancellationToken);
-        var persisted = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        var persisted = await Client.GetDocumentById(Document.Id, cancellationToken).RequireSucceededValue();
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         accepted.Status.ShouldBe(DocumentStatusDto.InReview);
@@ -265,11 +265,11 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "provenance-boundary",
             cancellationToken);
-        var editableField = setup.Document.Fields.First(field => field.IsEditable);
+        var editableField = Document.Fields.First(field => field.IsEditable);
         using var content = new StringContent(
             """
             {
@@ -286,17 +286,17 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
 
         // Act
         using var response = await fixture.Client.PatchAsync(
-            new Uri($"/api/v1/documents/{setup.Document.Id}/fields/{editableField.FieldId}", UriKind.Relative),
+            new Uri($"/api/v1/documents/{Document.Id}/fields/{editableField.FieldId}", UriKind.Relative),
             content,
             cancellationToken);
         var updated = await response.Content.ReadFromJsonAsync<GetDocumentDto>(cancellationToken);
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var document = updated.ShouldNotBeNull();
-        document.TemplateId.ShouldBe(setup.Document.TemplateId);
-        document.SourceVersion.ShouldBe(setup.Document.SourceVersion);
+        document.TemplateId.ShouldBe(Document.TemplateId);
+        document.SourceVersion.ShouldBe(Document.SourceVersion);
         var field = document.Fields.ShouldHaveSingleItem(item => item.FieldId == editableField.FieldId);
         field.RenderedValue.ShouldBe("Trusted update");
         field.IsEditable.ShouldBeTrue();
@@ -310,23 +310,23 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "markup-encoding",
             cancellationToken);
-        var fieldId = setup.Document.Fields.First(field => field.IsEditable).FieldId;
+        var fieldId = Document.Fields.First(field => field.IsEditable).FieldId;
         const string maliciousValue = "<script>alert(1)</script><img src=x onerror=alert(2)>";
 
         // Act
-        _ = await setup.Client.UpdateField(
-            setup.Document.Id,
+        _ = await Client.UpdateField(
+            Document.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = maliciousValue },
             cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var artifact = await setup.Client.DownloadFinalizedArtifact(setup.Document.Id, cancellationToken);
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        _ = await Client.Approve(Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Finalize(Document.Id, cancellationToken).RequireSucceededValue();
+        var artifact = await Client.DownloadFinalizedArtifact(Document.Id, cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         var downloaded = artifact.ShouldNotBeNull();
@@ -348,34 +348,34 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "sealed-predecessor",
             cancellationToken);
-        var fieldId = setup.Document.Fields.First(field => field.IsEditable).FieldId;
+        var fieldId = Document.Fields.First(field => field.IsEditable).FieldId;
         const string firstValue = "Sealed revision one";
         const string secondValue = "Editable revision two";
-        _ = await setup.Client.UpdateField(
-            setup.Document.Id,
+        _ = await Client.UpdateField(
+            Document.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = firstValue },
             cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var artifactBeforeRegeneration = await setup.Client.DownloadFinalizedArtifact(
-            setup.Document.Id,
+        _ = await Client.Approve(Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Finalize(Document.Id, cancellationToken).RequireSucceededValue();
+        var artifactBeforeRegeneration = await Client.DownloadFinalizedArtifact(
+            Document.Id,
             cancellationToken);
 
         // Act
-        var replacement = await setup.Client.Regenerate(setup.Document.Id, Guid.CreateVersion7().ToString("N"), cancellationToken).RequireSucceededValue();
-        var updatedReplacement = await setup.Client.UpdateField(
+        var replacement = await Client.Regenerate(Document.Id, Guid.CreateVersion7().ToString("N"), cancellationToken).RequireSucceededValue();
+        var updatedReplacement = await Client.UpdateField(
             replacement.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = secondValue },
             cancellationToken).RequireSucceededValue();
-        var predecessor = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var artifactAfterRegeneration = await setup.Client.DownloadFinalizedArtifact(
-            setup.Document.Id,
+        var predecessor = await Client.GetDocumentById(Document.Id, cancellationToken).RequireSucceededValue();
+        var artifactAfterRegeneration = await Client.DownloadFinalizedArtifact(
+            Document.Id,
             cancellationToken);
         var replacementAudits = await fixture.GetDocumentAuditMetadata(replacement.Id, cancellationToken);
 
@@ -388,7 +388,7 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
         original.Fields.ShouldHaveSingleItem(field => field.FieldId == fieldId)
             .RenderedValue.ShouldBe(firstValue);
         replacement.Revision.ShouldBe(2);
-        replacement.ReplacesDocumentId.ShouldBe(setup.Document.Id);
+        replacement.ReplacesDocumentId.ShouldBe(Document.Id);
         updatedReplacement.Fields.ShouldHaveSingleItem(field => field.FieldId == fieldId)
             .RenderedValue.ShouldBe(secondValue);
         replacementAudits.ShouldHaveSingleItem(entry => entry.Operation == "Regenerate")
@@ -400,21 +400,21 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "replacement-rollback",
             cancellationToken);
-        _ = await setup.Client.BeginReview(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var replacement = await setup.Client.Regenerate(setup.Document.Id, Guid.CreateVersion7().ToString("N"), cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.BeginReview(replacement.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Approve(replacement.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.BeginReview(Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Approve(Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Finalize(Document.Id, cancellationToken).RequireSucceededValue();
+        var replacement = await Client.Regenerate(Document.Id, Guid.CreateVersion7().ToString("N"), cancellationToken).RequireSucceededValue();
+        _ = await Client.BeginReview(replacement.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Approve(replacement.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         HttpResponseMessage failedResponse;
         await using (var scenario = await fixture.CreateDocumentAuditInsertFailureScenario(
-            setup.BookingId,
+            BookingId,
             cancellationToken))
         {
             failedResponse = await fixture.Client.PostAsync(
@@ -424,9 +424,9 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
         }
 
         using var response = failedResponse;
-        var predecessor = await setup.Client.GetDocumentById(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        var persistedReplacement = await setup.Client.GetDocumentById(replacement.Id, cancellationToken).RequireSucceededValue();
-        var artifact = await setup.Client.DownloadFinalizedArtifact(setup.Document.Id, cancellationToken);
+        var predecessor = await Client.GetDocumentById(Document.Id, cancellationToken).RequireSucceededValue();
+        var persistedReplacement = await Client.GetDocumentById(replacement.Id, cancellationToken).RequireSucceededValue();
+        var artifact = await Client.DownloadFinalizedArtifact(Document.Id, cancellationToken);
         var replacementAudits = await fixture.GetDocumentAuditMetadata(replacement.Id, cancellationToken);
 
         // Assert
@@ -447,35 +447,35 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        var setup = await DocumentApiTestSetup.CreateGeneratedDocument(
+        var (BookingId, Client, Document) = await DocumentApiTestSetup.CreateGeneratedDocument(
             fixture,
             "download-fail-closed",
             cancellationToken);
-        var fieldId = setup.Document.Fields.First(field => field.IsEditable).FieldId;
+        var fieldId = Document.Fields.First(field => field.IsEditable).FieldId;
         const string uniqueMarker = "secret-download-marker-72f4c3";
-        _ = await setup.Client.UpdateField(
-            setup.Document.Id,
+        _ = await Client.UpdateField(
+            Document.Id,
             fieldId,
             new UpdateDocumentFieldDto { Value = uniqueMarker },
             cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Approve(setup.Document.Id, cancellationToken).RequireSucceededValue();
-        _ = await setup.Client.Finalize(setup.Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Approve(Document.Id, cancellationToken).RequireSucceededValue();
+        _ = await Client.Finalize(Document.Id, cancellationToken).RequireSucceededValue();
 
         // Act
         HttpResponseMessage failedResponse;
         string responseBody;
         await using (var scenario = await fixture.CreateDocumentAuditInsertFailureScenario(
-            setup.BookingId,
+            BookingId,
             cancellationToken))
         {
             failedResponse = await fixture.Client.GetAsync(
-                new Uri($"/api/v1/documents/{setup.Document.Id}/download", UriKind.Relative),
+                new Uri($"/api/v1/documents/{Document.Id}/download", UriKind.Relative),
                 cancellationToken);
             responseBody = await failedResponse.Content.ReadAsStringAsync(cancellationToken);
         }
 
         using var response = failedResponse;
-        var audits = await fixture.GetDocumentAuditMetadata(setup.Document.Id, cancellationToken);
+        var audits = await fixture.GetDocumentAuditMetadata(Document.Id, cancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);

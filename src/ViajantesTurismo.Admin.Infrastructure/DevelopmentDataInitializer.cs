@@ -202,10 +202,10 @@ public sealed class DevelopmentDataInitializer
     ];
 
     private static readonly string[] BaselineTourIdentifiers =
-        Tours.Select(static tour => tour.Identifier).ToArray();
+        [.. Tours.Select(static tour => tour.Identifier)];
 
     private static readonly string[] BaselineCustomerNationalIds =
-        Customers.Select(static customer => customer.IdentificationInfo.NationalId).ToArray();
+        [.. Customers.Select(static customer => customer.IdentificationInfo.NationalId)];
 
     /// <summary>Creates the initializer over the write context and time source.</summary>
     /// <param name="dbContext">The write database context.</param>
@@ -296,12 +296,11 @@ public sealed class DevelopmentDataInitializer
         Customer[] baselineCustomers;
         if (hasNoCustomers)
         {
-            baselineCustomers = Customers
+            baselineCustomers = [.. Customers
                 .Select(static customer => Customer.Create(
                     CustomerMapper.MapToDefinition(customer),
                     DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime)).Value)
-                .OrderBy(static customer => customer.Id)
-                .ToArray();
+                .OrderBy(static customer => customer.Id)];
         }
         else
         {
@@ -602,15 +601,6 @@ public sealed class DevelopmentDataInitializer
     }
 
     private static void EnsureSeedOperationSucceeded(Result result)
-    {
-        if (result.IsFailure)
-        {
-            throw new InvalidOperationException("A baseline booking operation failed.");
-        }
-    }
-
-    private static void EnsureSeedOperationSucceeded<T>(Result<T> result)
-        where T : notnull
     {
         if (result.IsFailure)
         {

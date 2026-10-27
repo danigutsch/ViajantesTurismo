@@ -585,10 +585,4 @@ public static class DtoBuilders
         var suffix = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
         return $"{prefix}{suffix}";
     }
-
-    private static string UniqueReferenceNumber(string prefix = "REF")
-    {
-        var suffix = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
-        return $"{prefix}-{suffix}";
-    }
 }

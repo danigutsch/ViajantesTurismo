@@ -137,7 +137,7 @@ public sealed class PersonalInfo
             var age = CalculateAge(birthDate, today);
             if (age < 10)
             {
-                errors.Add(AgeTooYoung(age));
+                errors.Add(AgeTooYoung());
             }
         }
 

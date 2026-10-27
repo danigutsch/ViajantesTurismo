@@ -68,7 +68,7 @@ public sealed class CapturingEventStore(int appendFailures = 0) : IEventStore
         ExpectedRevision = expectedRevision;
         appendedEvents.AddRange(events);
         var revision = expectedRevision.Value ?? 0;
-        IReadOnlyCollection<EventEnvelope> envelopes = events
+        IReadOnlyCollection<EventEnvelope> envelopes = [.. events
             .Select((domainEvent, index) => new EventEnvelope(
                 streamId,
                 index + 1,
@@ -76,8 +76,7 @@ public sealed class CapturingEventStore(int appendFailures = 0) : IEventStore
                 Guid.CreateVersion7(),
                 domainEvent.GetType().FullName ?? domainEvent.GetType().Name,
                 domainEvent,
-                TimeProvider.System.GetUtcNow()))
-            .ToArray();
+                TimeProvider.System.GetUtcNow()))];
         appendedEnvelopes.AddRange(envelopes);
         OnAppend?.Invoke();
 

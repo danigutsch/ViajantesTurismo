@@ -28,7 +28,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         var image = await imageStore.GetImage(notification.MediaImageId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Media image metadata must exist before processing starts.");
 
-        await using var mutationLease = await mutationLock.Acquire(image.TourLinks.Select(link => link.CatalogTourId).ToArray(), ct).ConfigureAwait(false);
+        await using var mutationLease = await mutationLock.Acquire([.. image.TourLinks.Select(link => link.CatalogTourId)], ct).ConfigureAwait(false);
         image = await imageStore.GetImage(notification.MediaImageId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Media image metadata must exist before processing starts.");
 

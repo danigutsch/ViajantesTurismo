@@ -59,7 +59,7 @@ internal sealed class PaymentKeyRingScenario : IDisposable
         Directory.CreateDirectory(Keys);
     }
     /// <summary>Reads the XML key documents currently persisted in the key directory.</summary>
-    public string[] ReadKeyDocuments() => Directory.GetFiles(Keys, "*.xml").Select(File.ReadAllText).ToArray();
+    public string[] ReadKeyDocuments() => [.. Directory.GetFiles(Keys, "*.xml").Select(File.ReadAllText)];
     /// <summary>Deletes the temporary directory with its keys and certificates.</summary>
     public void Dispose() => Directory.Delete(_directory, true);
 }

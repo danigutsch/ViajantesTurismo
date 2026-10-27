@@ -33,7 +33,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Finalized);
-        var finalizedArtifact = document.GetFinalizedArtifactContent().ShouldNotBeNull();
+        var finalizedArtifact = document.CopyFinalizedArtifactContent().ShouldNotBeNull();
         var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
         html.ShouldBeWellFormedHtmlDocument();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
@@ -77,7 +77,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        document.GetFinalizedArtifactContent().ShouldNotBeNull().Length.ShouldBeLessThanOrEqualTo(MeasuredBoundBytes);
+        document.CopyFinalizedArtifactContent().ShouldNotBeNull().Length.ShouldBeLessThanOrEqualTo(MeasuredBoundBytes);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        var finalizedArtifact = document.GetFinalizedArtifactContent().ShouldNotBeNull();
+        var finalizedArtifact = document.CopyFinalizedArtifactContent().ShouldNotBeNull();
         var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
         html.ShouldNotContain("<img", StringComparison.Ordinal);
         html.ShouldNotContain("branding.example.test", StringComparison.Ordinal);
@@ -156,7 +156,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         // Assert
         result.IsFailure.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Approved);
-        document.GetFinalizedArtifactContent().ShouldBeNull();
+        document.CopyFinalizedArtifactContent().ShouldBeNull();
         store.LastLoadedLineage.ShouldBeNull();
         auditStore.Records.ShouldBeEmpty();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
@@ -199,7 +199,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        var finalizedArtifact = document.GetFinalizedArtifactContent().ShouldNotBeNull();
+        var finalizedArtifact = document.CopyFinalizedArtifactContent().ShouldNotBeNull();
         var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
         var firstIndex = html.IndexOf("Template first", StringComparison.Ordinal);
         var secondIndex = html.IndexOf("Template second", StringComparison.Ordinal);

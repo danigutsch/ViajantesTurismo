@@ -34,13 +34,13 @@ internal sealed class AdminWriteDbContextTestScope : IAsyncDisposable
         var entries = context.ChangeTracker.Entries()
             .Where(entry => entry.Entity is IIntegrationEventOutboxMessage)
             .ToArray();
-        return entries.Select(entry =>
+        return [.. entries.Select(entry =>
         {
             entry.State.ShouldBe(EntityState.Unchanged);
             var message = (IIntegrationEventOutboxMessage)entry.Entity;
             entry.State = EntityState.Detached;
             return context.Find(entry.Metadata.ClrType, message.Id).ShouldBeAssignableTo<EventEnvelope>();
-        }).ToArray();
+        })];
     }
 
     /// <summary>Disposes the current scope, starts a new one and returns its write context.</summary>

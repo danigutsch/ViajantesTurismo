@@ -87,38 +87,38 @@ public sealed class TourPricing : ValueObject
 
         if (basePrice <= 0)
         {
-            errors.Add(TourErrors.InvalidPrice("Base price", basePrice));
+            errors.Add(TourErrors.InvalidPrice("Base price"));
         }
         else if (basePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Base price", AdminDomainLimits.MaxPrice, basePrice));
+            errors.Add(TourErrors.PriceTooHigh("Base price"));
         }
 
         if (singleRoomSupplementPrice <= 0)
         {
-            errors.Add(TourErrors.InvalidPrice("Single room supplement price", singleRoomSupplementPrice));
+            errors.Add(TourErrors.InvalidPrice("Single room supplement price"));
         }
         else if (singleRoomSupplementPrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Single room supplement price", AdminDomainLimits.MaxPrice, singleRoomSupplementPrice));
+            errors.Add(TourErrors.PriceTooHigh("Single room supplement price"));
         }
 
         if (regularBikePrice <= 0)
         {
-            errors.Add(TourErrors.InvalidPrice("Regular bike price", regularBikePrice));
+            errors.Add(TourErrors.InvalidPrice("Regular bike price"));
         }
         else if (regularBikePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("Regular bike price", AdminDomainLimits.MaxPrice, regularBikePrice));
+            errors.Add(TourErrors.PriceTooHigh("Regular bike price"));
         }
 
         if (eBikePrice <= 0)
         {
-            errors.Add(TourErrors.InvalidPrice("E-bike price", eBikePrice));
+            errors.Add(TourErrors.InvalidPrice("E-bike price"));
         }
         else if (eBikePrice > AdminDomainLimits.MaxPrice)
         {
-            errors.Add(TourErrors.PriceTooHigh("E-bike price", AdminDomainLimits.MaxPrice, eBikePrice));
+            errors.Add(TourErrors.PriceTooHigh("E-bike price"));
         }
 
         if (errors.HasErrors)

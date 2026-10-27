@@ -33,7 +33,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
         if (lineage is null || current is null)
         {
             return await RecordAndReturn(
-                DocumentErrors.DocumentNotFound(command.DocumentId).ConvertError<Guid>(),
+                DocumentErrors.DocumentNotFound().ConvertError<Guid>(),
                 command.AuditContext,
                 command.DocumentId,
                 null,
@@ -51,7 +51,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
         if (booking is null)
         {
             return await RecordAndReturn(
-                BookingErrors.BookingNotFound(current.BookingId).ConvertError<Guid>(),
+                BookingErrors.BookingNotFound().ConvertError<Guid>(),
                 command.AuditContext,
                 current.Id,
                 current.BookingId,
@@ -64,7 +64,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
         if (tourAggregate is null)
         {
             return await RecordAndReturn(
-                BookingErrors.BookingNotFound(booking.Id).ConvertError<Guid>(),
+                BookingErrors.BookingNotFound().ConvertError<Guid>(),
                 command.AuditContext,
                 current.Id,
                 current.BookingId,
@@ -90,7 +90,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
         if (tour is null)
         {
             return await RecordAndReturn(
-                TourErrors.TourNotFound(booking.TourId).ConvertError<Guid>(),
+                TourErrors.TourNotFound().ConvertError<Guid>(),
                 command.AuditContext,
                 current.Id,
                 current.BookingId,
@@ -118,8 +118,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
             tour,
             command.TemplateId,
             command.TemplateVersion,
-            branding,
-            now);
+            branding);
         if (contentResult.IsFailure)
         {
             return await RecordAndReturn(

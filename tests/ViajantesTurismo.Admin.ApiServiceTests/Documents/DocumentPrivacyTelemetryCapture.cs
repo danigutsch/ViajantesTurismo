@@ -22,8 +22,8 @@ internal sealed class DocumentPrivacyTelemetryCapture : IDisposable
                 ReferenceEquals(source, parentSource)
                 || source.Name.StartsWith("Microsoft.AspNetCore", StringComparison.Ordinal)
                 || source.Name.StartsWith("System.Net.Http", StringComparison.Ordinal),
-            Sample = static (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            SampleUsingParentId = static (ref ActivityCreationOptions<string> _) => ActivitySamplingResult.AllDataAndRecorded,
+            Sample = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
+            SampleUsingParentId = static (ref _) => ActivitySamplingResult.AllDataAndRecorded,
             ActivityStopped = activity => stoppedActivities.Enqueue(activity),
         };
         ActivitySource.AddActivityListener(listener);

@@ -70,7 +70,7 @@ internal static class CustomerEndpoints
         var customerDto = await queryService.GetCustomerDetailsById(id, ct);
 
         return customerDto is null
-            ? CustomerErrors.CustomerNotFound(id).ToNotFound()
+            ? CustomerErrors.CustomerNotFound().ToNotFound()
             : TypedResults.Ok(customerDto);
     }
 
@@ -108,7 +108,7 @@ internal static class CustomerEndpoints
 
         if (customerDto is null)
         {
-            return CustomerErrors.CustomerNotFound(result.Value).ToNotFound();
+            return CustomerErrors.CustomerNotFound().ToNotFound();
         }
 
         var getCustomerDto = new GetCustomerDto

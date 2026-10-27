@@ -10,7 +10,7 @@ public sealed class BookingCustomerEntitySteps(BookingContext bookingContext)
         decimal bikePrice)
     {
         var type = Enum.Parse<BikeType>(bikeType);
-        bookingContext.BookingCustomerResult = BookingCustomer.Create(Guid.CreateVersion7(), type, bikePrice);
+        bookingContext.BookingCustomerResult = BookingCustomer.Create(ContextHelpers.CustomerGuid(customerId), type, bikePrice);
     }
 
     [When("I try to create a booking customer with bike price (.*)")]

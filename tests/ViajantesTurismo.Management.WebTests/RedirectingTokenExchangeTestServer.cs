@@ -34,10 +34,10 @@ internal sealed class RedirectingTokenExchangeTestServer : IAsyncDisposable
     }
 
     /// <summary>Bodies received by <c>/redirect-target</c>, in arrival order.</summary>
-    public IReadOnlyList<string> RedirectRequestBodies => _redirectRequestBodies.ToArray();
+    public IReadOnlyList<string> RedirectRequestBodies => [.. _redirectRequestBodies];
 
     /// <summary>Bodies received by <c>/token</c>, in arrival order.</summary>
-    public IReadOnlyList<string> TokenRequestBodies => _tokenRequestBodies.ToArray();
+    public IReadOnlyList<string> TokenRequestBodies => [.. _tokenRequestBodies];
 
     /// <summary>Starts the server on an ephemeral loopback port and returns it once listening.</summary>
     public static async Task<RedirectingTokenExchangeTestServer> Start(CancellationToken ct)

@@ -249,7 +249,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
                 ApprovalReason = approval is null ? null : FinancialReasonDto.InstructionApproved,
                 SelfApproved = approval?.SelfApproved ?? false
             },
-            Reviews = audits.Where(item => item.Operation is PaymentInstructionAuditOperation.ReviewAccepted or PaymentInstructionAuditOperation.ReviewChangesRequested)
+            Reviews = [.. audits.Where(item => item.Operation is PaymentInstructionAuditOperation.ReviewAccepted or PaymentInstructionAuditOperation.ReviewChangesRequested)
                 .Select(item => new GetFinancialReviewDto
                 {
                     TargetId = documentId,
@@ -257,7 +257,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
                     ReviewerId = item.ActorId,
                     ReviewedAt = item.OccurredAt,
                     ChangesRequested = item.Operation == PaymentInstructionAuditOperation.ReviewChangesRequested
-                }).ToArray()
+                })]
         };
     }
 
