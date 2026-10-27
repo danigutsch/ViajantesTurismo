@@ -55,3 +55,20 @@ build with warnings as errors:
 Catalog.ApiService hosts the Branding routes, so Branding HTTP clients and contracts resolve to the Catalog
 API destination. Do not add this reference to `Directory.Build.props`, tests, AppHost, tools, frontends, or
 external-provider projects.
+
+## `VTARCH002`: integration event names
+
+`VTARCH002` reports a concrete class, record, or struct that implements
+`PandaBear.Messaging.IntegrationEvents.IIntegrationEvent` and whose name does not end with
+`IntegrationEvent`. Abstract types and interfaces are not reported. The analyzer is referenced by the
+`*.Contracts.IntegrationEvents` projects, where the events are declared.
+
+## `VTARCH003`: domain error class names
+
+`VTARCH003` reports a top-level static class in a `*.Domain` assembly whose public methods all return
+`PandaBear.Results.Result` or `Result<T>` and whose name does not end with `Errors`. A static class that
+mixes result-returning methods with other return types, or has no public methods, is not an error class
+and is not reported. The analyzer is referenced by the `*.Domain` projects.
+
+Both rules are enabled project by project with the same `OutputItemType="Analyzer"` project reference as
+`VTARCH001`, never centrally.

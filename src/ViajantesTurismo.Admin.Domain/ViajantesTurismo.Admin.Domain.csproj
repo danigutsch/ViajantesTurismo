@@ -19,4 +19,11 @@
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.Architecture.Analyzers\ViajantesTurismo.Architecture.Analyzers.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"
+                          PrivateAssets="all" />
+    </ItemGroup>
 </Project>

@@ -994,6 +994,15 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         var allowedAnalyzerProjectFiles = productionApiProjects.ToHashSet(StringComparer.Ordinal);
         allowedAnalyzerProjectFiles.Add(analyzerProjectPath);
         allowedAnalyzerProjectFiles.Add(analyzerTestsProjectPath);
+        var namingConventionProjects = allProjectFiles
+            .Where(path => path.StartsWith(Path.Combine(repositoryRoot, "src") + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            .Where(path => path.EndsWith(".Domain.csproj", StringComparison.Ordinal)
+                || path.EndsWith(".Contracts.IntegrationEvents.csproj", StringComparison.Ordinal))
+            .ToArray();
+        allowedAnalyzerProjectFiles.UnionWith(namingConventionProjects);
+        var namingConventionAnalyzerReferences = namingConventionProjects
+            .Where(path => File.ReadAllText(path).Contains("ViajantesTurismo.Architecture.Analyzers", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
         var enabledProductionProjects = productionApiProjects
             .Where(AnalyzerSuppressionPolicyTestsHelpers.EnablesProductionHttpAnalyzer)
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
@@ -1004,6 +1013,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             .ToArray();
         var enabledNonProductionProjects = allProjectFiles
             .Where(path => !productionApiProjectSet.Contains(path))
+            .Where(path => !namingConventionProjects.Contains(path))
             .Where(AnalyzerSuppressionPolicyTestsHelpers.EnablesProductionHttpAnalyzer)
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
             .ToArray();
@@ -1026,6 +1036,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         productionApiProjects.Length.ShouldBe(2);
         enabledProductionProjects.Length.ShouldBe(productionApiProjects.Length);
         productionAnalyzerReferences.Length.ShouldBe(productionApiProjects.Length);
+        namingConventionProjects.Length.ShouldBe(5);
+        namingConventionAnalyzerReferences.Length.ShouldBe(namingConventionProjects.Length);
         enabledNonProductionProjects.ShouldBeEmpty();
         unauthorizedAnalyzerProjectReferences.ShouldBeEmpty();
         centralAnalyzerEnablement.ShouldBeEmpty();

@@ -5,3 +5,9 @@ ViajantesTurismo.Architecture.Analyzers.ProductionApiHttpAnalyzer
 ViajantesTurismo.Architecture.Analyzers.ProductionApiHttpAnalyzer.ProductionApiHttpAnalyzer() -> void
 override ViajantesTurismo.Architecture.Analyzers.ProductionApiHttpAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
 override ViajantesTurismo.Architecture.Analyzers.ProductionApiHttpAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+const ViajantesTurismo.Architecture.Analyzers.ArchitectureDiagnosticIds.ErrorClassName = "VTARCH003" -> string!
+const ViajantesTurismo.Architecture.Analyzers.ArchitectureDiagnosticIds.IntegrationEventName = "VTARCH002" -> string!
+ViajantesTurismo.Architecture.Analyzers.NamingConventionAnalyzer
+ViajantesTurismo.Architecture.Analyzers.NamingConventionAnalyzer.NamingConventionAnalyzer() -> void
+override ViajantesTurismo.Architecture.Analyzers.NamingConventionAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override ViajantesTurismo.Architecture.Analyzers.NamingConventionAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
