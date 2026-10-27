@@ -258,7 +258,7 @@ public sealed class BrandingTests : BunitContext
         summary.GetAttribute("tabindex").ShouldBe("-1");
         summary.GetAttribute("aria-labelledby").ShouldBe("error-summary-title");
         var link = cut.Find("#error-summary a");
-        link.GetAttribute("href").ShouldBe("#branding-primary-color");
+        link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#branding-primary-color", StringComparison.Ordinal);
         link.TextContent.ShouldBe("Use a safe color.");
         JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
     }

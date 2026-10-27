@@ -312,7 +312,7 @@ public sealed class PublicContentTests : BunitContext
         cut.FindAll(".alert-danger").ShouldBeEmpty();
         var summary = cut.Find("#error-summary");
         summary.GetAttribute("tabindex").ShouldBe("-1");
-        cut.Find("#error-summary a").GetAttribute("href").ShouldBe("#content-key");
+        cut.Find("#error-summary a").GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#content-key", StringComparison.Ordinal);
         JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
     }
 

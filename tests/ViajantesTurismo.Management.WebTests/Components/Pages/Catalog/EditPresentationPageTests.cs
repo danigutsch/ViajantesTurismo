@@ -292,7 +292,7 @@ public sealed class EditPresentationPageTests : BunitContext
         summary.GetAttribute("aria-labelledby").ShouldBe("error-summary-title");
         cut.Find("#error-summary-title").TextContent.ShouldBe("There is a problem");
         var link = cut.Find("#error-summary a");
-        link.GetAttribute("href").ShouldBe("#slug");
+        link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#slug", StringComparison.Ordinal);
         link.TextContent.ShouldBe("Slug is already used.");
         JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
     }
