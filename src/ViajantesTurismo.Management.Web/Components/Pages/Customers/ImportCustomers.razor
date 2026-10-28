@@ -412,7 +412,7 @@
         catch (IOException exception)
         {
             Failures.Report(exception, "customers.import.read");
-            _state.ValidationError = $"The file could not be read. Check that it is no larger than {MaxFileSizeInMebibytes} MiB and try again.";
+            _state.ValidationError = "The file could not be read. Please try again.";
             return;
         }
 
