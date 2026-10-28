@@ -319,7 +319,7 @@
         }
     }
 
-    // False when nothing could be shown on a field or some server text was withheld; the caller then shows fixed copy.
+    /// <summary>False when nothing could be shown on a field or some server text was withheld; the caller then shows fixed copy.</summary>
     private bool ShowServerFieldErrors(IReadOnlyDictionary<string, string[]>? validationErrors)
     {
         _ = FormContext;

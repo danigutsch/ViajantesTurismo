@@ -60,7 +60,7 @@
 
     private string CurrentPath() => new Uri(Navigation.Uri).AbsolutePath;
 
-    // A failed page must not hide the next one: leave the failed state when the path changes, not on fragment or query changes.
+    /// <summary>A failed page must not hide the next one: leaves the failed state when the path changes, not on fragment or query changes.</summary>
     private void RecoverOnNavigation(object? sender, LocationChangedEventArgs args)
     {
         var path = CurrentPath();

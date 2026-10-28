@@ -58,6 +58,9 @@
     private string SearchTerm { get; set; } = string.Empty;
     private bool _isOpen;
 
+    /// <summary>Delay before closing the dropdown on blur, to allow click events on dropdown items to fire.</summary>
+    private const int ItemClickGraceMilliseconds = 200;
+
     private GetCustomerDto? SelectedCustomer =>
         Value.HasValue ? Customers.FirstOrDefault(c => c.Id == Value.Value) : null;
 
@@ -67,7 +70,7 @@
         {
             if (string.IsNullOrWhiteSpace(SearchTerm))
             {
-                return Customers.Take(10); // Show first 10 when no search
+                return Customers.Take(10);
             }
 
             var searchLower = SearchTerm.ToLowerInvariant();
@@ -116,8 +119,7 @@
 
     private async Task OnBlur()
     {
-        // Delay to allow click events on dropdown items to fire
-        await Task.Delay(200);
+        await Task.Delay(ItemClickGraceMilliseconds);
         _isOpen = false;
     }
 
