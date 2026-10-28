@@ -27,7 +27,7 @@ proxy endpoints that forward them.
 
 | Flow | Direction | Bound | Why buffered | Decision |
 | --- | --- | --- | --- | --- |
-| Customer CSV import (`CustomerImportEndpoints.ReadCsv`) | Browser to API | `ContractConstants.CustomerImportMaxFileBytes` = 1 MiB, enforced while copying; oversize and cancellation tested. Three passes: copy to a `MemoryStream`, malware scan, `ReadToEnd` into a string | Malware scanning needs a seekable stream and the parser needs the whole text | Keep buffering. A 1 MiB file bounds the request at about 1 MiB of bytes plus about 2 MiB of string. |
+| Customer CSV import (`CustomerImportEndpoints.ReadCsv`) | Browser to API | `ContractConstants.CustomerImportMaxFileBytes` = 1 MiB, enforced while reading; oversize and cancellation tested. Three passes: bounded `SeekableContent` read, malware scan, `ReadToEnd` into a string | Malware scanning needs a seekable stream and the parser needs the whole text | Keep buffering. A 1 MiB file bounds the request at about 1 MiB of bytes plus about 2 MiB of string. |
 | Finalized document download (`DocumentEndpoints`, `DocumentsApiClient`, Management Web proxy) | API to browser | Rendered HTML artifact held as `ReadOnlyMemory<byte>`, copied once by `ToArray()` in the endpoint and once by `ReadAsByteArrayAsync` in the client. Measured 49,481 bytes with the three staff-editable fields at 4,000 `<` characters each (the largest escaping); `FinalizeDocumentCommandHandlerTests` fails above 64 KiB. Non-editable fields such as tour name and included services are not at their maximum in this measurement | Artifact is stored and audited as one value | Keep buffering. Revisit if the template gains unbounded content. |
 
 Any change to these flows must keep malware scanning, the size limit, authorization, audit, privacy, and
@@ -115,16 +115,52 @@ on both routes (production validation rejects length 0 earlier). The counters in
 has no Magick.NET decode, real scanner, object store or validator. The CSV import cannot take this path as is,
 because its result outlives the stream and is built from `GetBuffer()`.
 
-Decision: do not adopt `PandaBear.IO.SeekableContent` as it works today. Its `Create` always copies, and the framework
-already buffers each multipart file section, so the stream is seekable and a lease would add a third copy. The
-direct-read result points to a change in the primitive instead: let `Create` pass a seekable source through after one
-bounded counting pass, and let both server intakes (media upload and CSV import) use it in place of their duplicate
-private `CopyToMemory` loops. Only the media upload gains from skipping the copy, because the CSV result must outlive
-the stream. The proven gap in the CSV flow was repeated parsing, not buffering. The revisit conditions for the
-single-buffer design were checked against the measurement above: the media maximum is unchanged at 5 MiB, concurrent
-memory scales linearly and is moderate at 1 to 16 uploads in flight with no errors, and the pre-handler share is
-mostly transfer rather than an isolated buffering cost. Preserve the size checks, the scan-before-parse order for CSV,
-actual-length comparison, cancellation, and the non-seekable path in any later change.
+Decision: adopt `PandaBear.IO.SeekableContent` for both server intakes. The first version of the primitive always copied, which
+would have added a third copy of a stream the framework already buffers, so it was not adopted. The pinned version passes a
+seekable source at position zero through after one bounded counting pass and spools anything else: a non-seekable source, or a
+seekable one at a non-zero position, goes to memory up to a threshold and then to a private temporary file. The lease never
+disposes the source, so the endpoint keeps owning and disposing `IFormFile.OpenReadStream()`.
+
+- Media upload (`MediaImageUploadIntake.Accept`) leases the content with a 1 MiB spool threshold
+  (`SpoolMemoryThresholdBytes`), against the 5 MiB maximum. A seekable upload is never copied. `Scan` and `ReadHeaderBytes`
+  take `Stream`. Oversize input maps to the same invalid result as before, the validator runs before the scan, and every pass
+  rewinds explicitly. The scanner, decode probe, hash and object store all receive the caller's stream instance.
+- Customer CSV import (`CustomerImportEndpoints.ReadCsv`) uses the same lease with a threshold equal to the 1 MiB file maximum.
+  The scanner sees the raw bytes first; only after it approves is one array of the content allocated, so the result outlives
+  the stream and scan-before-parse is preserved. The CSV flow gains consolidation (one tested bounded read instead of a private
+  copy loop) but no allocation saving: it still allocates one content-sized array. The proven gap in the CSV flow remains
+  repeated parsing, not buffering.
+- Both private `CopyToMemory` loops are gone. Declared-versus-received length, the size limit, cancellation, fail-closed
+  scanner handling and the non-seekable path keep their tests.
+
+Measurement of the adopted pattern: the benchmark host gained a third mode, `VT_UPLOAD_MODE=seekable`
+(`POST /upload/scan-seekable`), which uses the real `SeekableContent` from the pinned package. It runs next to `buffered`, which
+still mirrors the old copy into a presized `MemoryStream`, and a `GET /diagnostics` route reports the process allocation, GC
+collection counts and total GC pause. Each cell below is the median of three runs of a 15 second window after a 3 second
+warm-up, 5 MiB payload, against a fresh host per run, with `buffered` and `seekable` alternating on the same 16-logical-core
+shared WSL2 machine, k6 v2.2.0 on loopback; 0 failed requests in all 18 runs. Counters are deltas over the 15 second window;
+peak RSS is the process high-water mark and includes startup and warm-up.
+
+| In flight (VUs) | Mode | Allocated | Gen2 collections | GC pause | Peak RSS | Requests per second | p95 latency |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | buffered (old) | 1.81 GB | 170 | 0.10 s | 115 MB | 21.7 | 51 ms |
+| 1 | seekable (new) | 0.13 GB | 0 | 0.01 s | 104 MB | 18.7 | 61 ms |
+| 16 | buffered (old) | 7.70 GB | 84 | 2.00 s | 315 MB | 93.2 | 294 ms |
+| 16 | seekable (new) | 0.31 GB | 1 | 0.09 s | 153 MB | 95.8 | 312 ms |
+| 64 | buffered (old) | 10.21 GB | 53 | 2.34 s | 900 MB | 122.8 | 1,090 ms |
+| 64 | seekable (new) | 0.67 GB | 1 | 0.20 s | 220 MB | 135.8 | 811 ms |
+
+At 1 VU the new pattern was slower in the median (18.7 against 21.7 requests per second, p95 61 against 51 ms) because of the
+extra counting pass; at 16 and 64 VUs throughput and latency were within noise or better. The absolute numbers differ from the
+earlier direct-read experiment because the runs are different and shorter, but the direction and size of the effect agree.
+These are indicative single-machine scratch results on a shared host, not production budgets. The host has no Magick.NET decode,
+real scanner, object store, validator, rate limiter or authentication, so the real endpoint will show a smaller relative gain.
+Not measured: native Magick.NET memory, what `new MagickImage(stream)` buffers internally, and the SharedKernel S3 provider.
+
+The regression guard for the media gap is a unit test that runs the intake over a 4 MiB seekable stream and asserts the managed
+allocation on the calling thread stays far below the payload. Before the change that run allocated 4,211,544 bytes. Preserve the
+size checks, the scan-before-parse order for CSV, actual-length comparison, cancellation, and the non-seekable path in any later
+change.
 
 ## Upload disconnect, slow clients, and timeouts
 

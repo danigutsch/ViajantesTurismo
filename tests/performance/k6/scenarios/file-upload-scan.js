@@ -90,7 +90,11 @@ function getUploadRoute() {
     return '/upload/scan-buffered';
   }
 
-  throw new Error(`Unsupported VT_UPLOAD_MODE '${mode}'. Supported modes: streaming, buffered.`);
+  if (mode === 'seekable') {
+    return '/upload/scan-seekable';
+  }
+
+  throw new Error(`Unsupported VT_UPLOAD_MODE '${mode}'. Supported modes: streaming, buffered, seekable.`);
 }
 
 function createOptions() {
