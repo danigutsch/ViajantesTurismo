@@ -361,7 +361,7 @@ else if (_booking is not null)
             if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } booking })
             {
                 _booking = booking;
-                SyncModelFromBooking();
+                SyncModelFromBooking(booking);
                 await LoadCompanionChoices();
             }
             else if (outcome.Kind == HttpOutcomeKind.NotFound)
@@ -580,23 +580,18 @@ else if (_booking is not null)
             onSuccess: () => Navigation.NavigateTo("/bookings"));
     }
 
-    private void SyncModelFromBooking()
+    private void SyncModelFromBooking(GetBookingDto booking)
     {
-        if (_booking is null)
-        {
-            return;
-        }
-
-        _model.RoomType = _booking.RoomType;
-        _model.PrincipalBikeType = _booking.PrincipalBikeType;
-        _model.TourId = _booking.TourId;
-        _model.CustomerId = _booking.CustomerId;
-        _model.CompanionId = _booking.CompanionId;
-        _model.CompanionBikeType = _booking.CompanionBikeType;
-        _model.Notes = _booking.Notes;
-        _model.DiscountType = _booking.DiscountType;
-        _model.DiscountAmount = _booking.DiscountAmount;
-        _model.DiscountReason = _booking.DiscountReason ?? string.Empty;
+        _model.RoomType = booking.RoomType;
+        _model.PrincipalBikeType = booking.PrincipalBikeType;
+        _model.TourId = booking.TourId;
+        _model.CustomerId = booking.CustomerId;
+        _model.CompanionId = booking.CompanionId;
+        _model.CompanionBikeType = booking.CompanionBikeType;
+        _model.Notes = booking.Notes;
+        _model.DiscountType = booking.DiscountType;
+        _model.DiscountAmount = booking.DiscountAmount;
+        _model.DiscountReason = booking.DiscountReason ?? string.Empty;
     }
 
     private void OnRoomTypeChanged()
@@ -660,7 +655,7 @@ else if (_booking is not null)
             }
 
             _booking = refreshedBooking;
-            SyncModelFromBooking();
+            SyncModelFromBooking(refreshedBooking);
             return true;
         }
         catch (Exception exception)

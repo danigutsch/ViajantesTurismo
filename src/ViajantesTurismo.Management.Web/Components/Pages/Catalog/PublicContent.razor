@@ -362,12 +362,6 @@
             }
         }
 
-        if (_model.Variants.Any(variant => string.IsNullOrWhiteSpace(variant.Title) || string.IsNullOrWhiteSpace(variant.Body)))
-        {
-            _errorMessage = "Enter title and body for every supported language before saving.";
-            return false;
-        }
-
         if (_model.Variants.Any(variant => variant.GeneratedDraft && !variant.RequiresHumanReview && !variant.HumanReviewConfirmed))
         {
             _errorMessage = "Confirm human review before clearing a generated draft review flag.";
