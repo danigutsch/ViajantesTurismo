@@ -104,15 +104,24 @@ Findings:
 - The stock benchmark host measures only the Kestrel streaming floor because it does not mirror the production intake
   shape.
 
-Decision: retain the single-buffer design. The proven gap is repeated CSV parsing, not buffering, and it is tracked
-separately from the stream design. Revisit
-`PandaBear.IO.SeekableContent` for media intake if the media maximum grows, if concurrent-upload memory becomes a
-measured problem, or if a real-host measurement shows buffering before the endpoint dominates. These conditions were
-checked against the measurement above: the media maximum is unchanged at 5 MiB, concurrent memory scales linearly and
-is moderate at 1 to 16 uploads in flight with no errors, so it is not shown to be a problem at realistic concurrency
-given the rate limits, and the pre-handler share is mostly transfer rather than an isolated buffering cost. The
-decision stands. Preserve the size
-checks, the scan-before-parse order for CSV, actual-length comparison, and cancellation in any later change.
+Direct-read experiment (same scratch host, 5 MiB, three repeats per cell, medians, 0 errors): reading from the
+buffered `IFormFile` stream (counting pass, rewind, scan, rewind, hash) instead of copying into a `MemoryStream` cut
+allocation from 5.95 GB to 0.34 GB at 16 uploads in flight and from 7.91 GB to 0.49 GB at 64. Gen2 collections fell
+from 96 to 4 and from 94 to 8, GC pause from 2.8 s to 0.13 s and from 3.8 s to 0.32 s, and peak memory above idle
+from 232 to 54 MB and from 452 to 125 MB. At 1 VU the direct route was slower in the median (13.0 against 18.9
+requests per second) with overlapping ranges; at 4, 16 and 64 VUs latency and throughput were better or within noise.
+Exact-limit input was accepted, limit plus one byte was rejected without scanning, and an empty file reached the scan
+on both routes (production validation rejects length 0 earlier). The counters include startup and warm-up. The host
+has no Magick.NET decode, real scanner, object store or validator. The CSV import cannot take this path as is,
+because its result outlives the stream and is built from `GetBuffer()`.
+
+Decision: do not adopt `PandaBear.IO.SeekableContent`. The framework already buffers each multipart file section, so
+the stream is seekable and a lease would add a third copy. The proven gap in the CSV flow was repeated parsing, not
+buffering. The experiment shows a separate, measured gain for media upload from removing the second copy, tracked as
+its own change. The revisit conditions for the single-buffer design were checked against the measurement above: the
+media maximum is unchanged at 5 MiB, concurrent memory scales linearly and is moderate at 1 to 16 uploads in flight
+with no errors, and the pre-handler share is mostly transfer rather than an isolated buffering cost. Preserve the
+size checks, the scan-before-parse order for CSV, actual-length comparison, and cancellation in any later change.
 
 ## Decisions not taken
 
