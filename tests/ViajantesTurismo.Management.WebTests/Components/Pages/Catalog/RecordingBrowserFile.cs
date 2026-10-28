@@ -2,7 +2,8 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
 /// <summary>Browser file stub that serves fixed bytes and records the maximum allowed size requested on open.</summary>
 /// <param name="fileContent">File bytes to serve; the single byte 0x01 when null.</param>
-internal sealed class RecordingBrowserFile(byte[]? fileContent = null) : IBrowserFile
+/// <param name="openFailure">Exception thrown when the file is opened for reading; none when null.</param>
+internal sealed class RecordingBrowserFile(byte[]? fileContent = null, Exception? openFailure = null) : IBrowserFile
 {
     private readonly byte[] _fileContent = fileContent ?? [0x01];
 
@@ -29,6 +30,11 @@ internal sealed class RecordingBrowserFile(byte[]? fileContent = null) : IBrowse
     {
         cancellationToken.ThrowIfCancellationRequested();
         MaximumAllowedSize = maxAllowedSize;
+        if (openFailure is not null)
+        {
+            throw openFailure;
+        }
+
         return new MemoryStream(_fileContent, writable: false);
     }
 }

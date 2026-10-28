@@ -15,6 +15,12 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
         get; set;
     }
 
+    /// <summary>When true, a save returns a transport failure.</summary>
+    public bool ThrowOnSaveContent
+    {
+        get; set;
+    }
+
     /// <summary>When set, a save returns a validation-problem outcome carrying its errors.</summary>
     public ContractValidationException? ValidationException
     {
@@ -62,6 +68,15 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
     public Task<HttpOutcome<PublicContentDto>> SaveContent(string key, UpsertPublicContentRequest request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+
+        if (ThrowOnSaveContent)
+        {
+            return Task.FromResult(new HttpOutcome<PublicContentDto>
+            {
+                Kind = HttpOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
+            });
+        }
 
         if (ValidationException is not null)
         {

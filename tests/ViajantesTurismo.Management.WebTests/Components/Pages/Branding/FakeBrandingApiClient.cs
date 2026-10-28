@@ -40,6 +40,12 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
         get; set;
     }
 
+    /// <summary>When true, reads after a successful save return an empty-body outcome.</summary>
+    public bool ReturnEmptyGetResponseAfterSave
+    {
+        get; set;
+    }
+
     /// <summary>When true, saves return an empty-body outcome.</summary>
     public bool ReturnEmptySaveResponse
     {
@@ -68,7 +74,7 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
     public Task<HttpOutcome<BrandingManagementDocument>> GetSettings(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (ReturnEmptyGetResponse)
+        if (ReturnEmptyGetResponse || (ReturnEmptyGetResponseAfterSave && SavedBranding is not null))
         {
             return Task.FromResult(HttpOutcomeMapper.Status<BrandingManagementDocument>(HttpOutcomeKind.EmptyBody, HttpStatusCode.OK));
         }
