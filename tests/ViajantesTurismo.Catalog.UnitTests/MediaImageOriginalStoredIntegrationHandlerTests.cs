@@ -98,6 +98,49 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
     }
 
     [Fact]
+    public async Task Handle_stores_each_variant_from_a_read_only_stream_with_matching_bytes_and_length()
+    {
+        // Arrange
+        var mediaImageId = Guid.CreateVersion7();
+        var content = CatalogTestImages.CreateJpeg(640, 320);
+        var inner = new InMemoryMediaObjectStore();
+        await inner.Put(
+            new ObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
+            TestContext.Current.CancellationToken);
+        var objectStore = new PutRecordingObjectStore(inner);
+        var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length));
+        var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore, new TestCatalogTourMutationLock());
+        var notification = new MediaImageOriginalStoredIntegrationEvent(
+            Guid.CreateVersion7(),
+            TimeProvider.System.GetUtcNow(),
+            mediaImageId,
+            "uploads/original.jpg",
+            1);
+
+        // Act
+        await handler.Handle(notification, TestContext.Current.CancellationToken);
+
+        // Assert
+        objectStore.Puts.Count.ShouldBe(8);
+        foreach (var put in objectStore.Puts)
+        {
+            put.CanWrite.ShouldBeFalse();
+            put.Position.ShouldBe(0);
+            put.Bytes.Length.ShouldBe((int)put.DeclaredLength);
+            using var stored = await inner.OpenRead(put.ObjectKey, TestContext.Current.CancellationToken);
+            using var storedBytes = new MemoryStream();
+            await stored.Content.CopyToAsync(storedBytes, TestContext.Current.CancellationToken);
+            storedBytes.ToArray().ShouldBe(put.Bytes);
+        }
+
+        foreach (var variant in imageStore.Current.ResponsiveVariants)
+        {
+            var put = objectStore.Puts.Where(candidate => candidate.ObjectKey == variant.ObjectKey).ShouldHaveSingleItem();
+            variant.FileSizeBytes.ShouldBe(put.DeclaredLength);
+        }
+    }
+
+    [Fact]
     public async Task Handle_reprocesses_ready_image_when_processing_version_changes()
     {
         // Arrange
