@@ -124,15 +124,15 @@
       },
       "PandaBear.SharedKernel.Aspire.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.368.1, )",
-        "resolved": "0.1.0-alpha.368.1",
-        "contentHash": "/y3yXLhMcCH0ozMTwzvoep8WQpDxp5OCQDcAnpcwXoO/KaxqTlhwV2oP0xTUKqmvUTFs11WJ4PAETtVohGWIPA=="
+        "requested": "[0.1.0-alpha.372.1, )",
+        "resolved": "0.1.0-alpha.372.1",
+        "contentHash": "zfjsTDbqrrrqwT0bHZ9WYPXNGGpYhEfRBPrk4nbiQEZFokC2hADw/KXfdvUjGbkg7ZBO0Mo9nwteEfPcpLyTxQ=="
       },
       "PandaBear.SharedKernel.Aspire.Hosting.ClamAv": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.368.1, )",
-        "resolved": "0.1.0-alpha.368.1",
-        "contentHash": "D03XIljcxFy1zkzGzRKvcedwr+aZxxIw3ehabMs9LwI55FbUGWwn+ujwpRq6fKGqIUZUp1eMedB34CjJctEE4g==",
+        "requested": "[0.1.0-alpha.372.1, )",
+        "resolved": "0.1.0-alpha.372.1",
+        "contentHash": "sEyI20OdQVsjK4G8feki3s/8Xj8h5B0ARNppScPLhqZLTOp3/ONeM0G4i8LxtvsA6SH1pvzPbEPknU+2VTRU8Q==",
         "dependencies": {
           "Aspire.Hosting": "13.6.1",
           "Google.Protobuf": "3.36.1",
@@ -155,9 +155,9 @@
       },
       "PandaBear.SharedKernel.Aspire.Hosting.Grafana": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.368.1, )",
-        "resolved": "0.1.0-alpha.368.1",
-        "contentHash": "lJdrhXg7nsjaf7z03nAF6g6nSSqS2mEqZcWWLfC/2aWEKUU0TG6siVsEwS/fSdhdGNX4R0BVdRnk/z/lL0OAzg==",
+        "requested": "[0.1.0-alpha.372.1, )",
+        "resolved": "0.1.0-alpha.372.1",
+        "contentHash": "Dy3FgiTnWnJMMpCi3W702qivZmkSghZCwZStWVjDidlBY21QKOVxu40sNxxq6tso+fbNvrseeKYw0oA6KyQ4rA==",
         "dependencies": {
           "Aspire.Hosting": "13.6.1",
           "CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector": "13.6.0",
@@ -181,9 +181,9 @@
       },
       "PandaBear.SharedKernel.Aspire.Hosting.K6": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.368.1, )",
-        "resolved": "0.1.0-alpha.368.1",
-        "contentHash": "wjiCf1qSxA9ZOY7FbIk22gBjT+bc2M8O7tSpC0YAZpEp1JzjfzlTpN5Y9lnFBjbqeAMw/hvyufEviW6SohZshQ==",
+        "requested": "[0.1.0-alpha.372.1, )",
+        "resolved": "0.1.0-alpha.372.1",
+        "contentHash": "8px69O5xoyeQVBGiiZtAhSjiibbsxuHE3pds6+v0mRy/4LBieSOlUNBm5z0NXEMErLDkLFFK7coWlSqyYD8Nng==",
         "dependencies": {
           "Aspire.Hosting": "13.6.1",
           "CommunityToolkit.Aspire.Hosting.k6": "13.6.0",
@@ -207,9 +207,9 @@
       },
       "PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.368.1, )",
-        "resolved": "0.1.0-alpha.368.1",
-        "contentHash": "4fAX4g8mo2Udbe8DIegJqtdblJTxfssqS5l3RBNW9b0MzKbBqag59KUd69+OwhknKQDDj/AA9e4O/V9mzT4adg==",
+        "requested": "[0.1.0-alpha.372.1, )",
+        "resolved": "0.1.0-alpha.372.1",
+        "contentHash": "idjvI/p4sBrfEZxh7wuJkkgKqzeGONGnxY4UPlRRNLaj2CqS/zL42gVCz366s20yctNuXC2TG3ogrQQAqMf2AA==",
         "dependencies": {
           "Aspire.Hosting": "13.6.1",
           "Google.Protobuf": "3.36.1",
@@ -232,15 +232,15 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.368.1, )",
-        "resolved": "0.1.0-alpha.368.1",
-        "contentHash": "SEtB53n1a+atNtBALtBSJVJr5Pcd2rBW16iwx8dEK1do4OmiPWTj1SciHlSWbZhIscM6lW1k0/3VJDRZPje41g=="
+        "requested": "[0.1.0-alpha.372.1, )",
+        "resolved": "0.1.0-alpha.372.1",
+        "contentHash": "ulPwkQsTh9WbIGwWOVL0ti598mYYZTs1gmWfmXjisPaho2oG3z28ANWHwxektyo3Ye0Mbha4J92x6cuCmAsZDA=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.368.1, )",
-        "resolved": "0.1.0-alpha.368.1",
-        "contentHash": "l8PdXYa480TlKwOAZkWmGFjewnKi1BaJC7EZE0TbLuHJescRPZloTe8Rf4py1lh54MxP4+jthqAxSxsvSAy11g=="
+        "requested": "[0.1.0-alpha.372.1, )",
+        "resolved": "0.1.0-alpha.372.1",
+        "contentHash": "800yUhVrf/ukFZ+CuepFcMBs+OOtKK7wn519CKCbkE+F0CT9IGZcJbXbCruqoMgoDCbNQneqaA68JzRdOlv/ow=="
       },
       "AspNetCore.HealthChecks.NpgSql": {
         "type": "Transitive",
