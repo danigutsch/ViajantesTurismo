@@ -1,9 +1,11 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
+[TestScope(TestScope.System)]
 public class NotFoundErrorTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

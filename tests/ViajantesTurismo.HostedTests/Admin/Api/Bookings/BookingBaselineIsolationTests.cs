@@ -1,10 +1,11 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+[TestScope(TestScope.Integration)]
 public sealed class BookingBaselineIsolationTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]

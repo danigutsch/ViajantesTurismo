@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using ViajantesTurismo.Catalog.Contracts.Http;
@@ -6,7 +7,7 @@ namespace ViajantesTurismo.Management.WebBrowserTests;
 
 /// <summary>Browser keyboard journey for cancelling a held Catalog image upload.</summary>
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "browser")]
+[TestScope(TestScope.System)]
 public sealed class UploadImageKeyboardCancelTests : ManagementWebBrowserTestBase
 {
     private readonly FakeCatalogBrowserApiClient catalog = new(CatalogTourBrowserData.DraftTour());

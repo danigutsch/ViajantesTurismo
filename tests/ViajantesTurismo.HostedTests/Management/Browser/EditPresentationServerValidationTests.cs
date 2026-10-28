@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using ViajantesTurismo.Catalog.Contracts.Http;
@@ -6,7 +7,7 @@ namespace ViajantesTurismo.Management.WebBrowserTests;
 
 /// <summary>Browser journey for a server validation problem on the Catalog presentation form.</summary>
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "browser")]
+[TestScope(TestScope.System)]
 public sealed class EditPresentationServerValidationTests : ManagementWebBrowserTestBase
 {
     private const string StackTraceText = "at Server.Internal.Handler() in /src/Secret.cs:line 42";

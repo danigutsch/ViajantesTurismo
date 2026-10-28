@@ -4,6 +4,7 @@ using PandaBear.Testing;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Tours;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[TestScope(TestScope.Integration)]
 public sealed class PostgreSqlTourCapacityMutationLockTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {
     [Fact]

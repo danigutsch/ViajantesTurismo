@@ -11,8 +11,8 @@ using PandaBear.Testing;
 namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[TestScope(TestScope.Integration)]
 public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]

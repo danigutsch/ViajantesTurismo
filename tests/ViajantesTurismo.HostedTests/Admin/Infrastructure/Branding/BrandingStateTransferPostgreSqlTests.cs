@@ -5,6 +5,7 @@ using ViajantesTurismo.Resources;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Branding;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[TestScope(TestScope.Integration)]
 public sealed class BrandingStateTransferPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {
     [Fact]

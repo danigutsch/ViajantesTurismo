@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using System.Net;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
@@ -9,7 +10,7 @@ using PandaBear.HttpClients;
 namespace ViajantesTurismo.Admin.IntegrationTests.ApiClients;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[TestScope(TestScope.Integration)]
 public sealed class AdminApiClientIntegrationTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]

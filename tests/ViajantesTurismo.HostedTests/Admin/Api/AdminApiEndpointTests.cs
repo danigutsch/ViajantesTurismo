@@ -1,9 +1,10 @@
+using PandaBear.Testing;
 using System.Net;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 namespace ViajantesTurismo.Admin.IntegrationTests;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[TestScope(TestScope.Integration)]
 public sealed class AdminApiEndpointTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]

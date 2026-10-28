@@ -4,8 +4,8 @@ using PandaBear.Testing;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 
-[Trait(TestTraitNames.ScopeName, TestTraits.DatabaseIntegrationScope)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[TestScope(TestScope.Integration)]
 public sealed class BookingCancellationAtDocumentPersistenceScenarioTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]

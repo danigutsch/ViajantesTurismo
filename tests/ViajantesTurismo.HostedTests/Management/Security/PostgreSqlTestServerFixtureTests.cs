@@ -1,9 +1,10 @@
+using PandaBear.Testing;
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.DatabaseIntegrationScope)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[TestScope(TestScope.Integration)]
 public sealed class PostgreSqlTestServerFixtureTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {
     [Fact]

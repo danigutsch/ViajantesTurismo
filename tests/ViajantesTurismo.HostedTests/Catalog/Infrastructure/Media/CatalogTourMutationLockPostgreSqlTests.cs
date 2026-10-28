@@ -4,6 +4,7 @@ namespace ViajantesTurismo.Catalog.InfrastructureTests.Media;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[TestScope(TestScope.Integration)]
 public sealed class CatalogTourMutationLockPostgreSqlTests(HostedTestFixture shared) : IAsyncLifetime
 {
     private GalleryPlacementPostgreSqlScenario? scenario;

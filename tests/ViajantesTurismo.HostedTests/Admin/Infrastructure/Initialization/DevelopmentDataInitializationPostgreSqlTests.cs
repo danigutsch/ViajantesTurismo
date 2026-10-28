@@ -4,6 +4,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Initialization;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.DatabaseInitializationCapability)]
+[TestScope(TestScope.Integration)]
 public sealed class DevelopmentDataInitializationPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
     private DevelopmentDataInitializationPostgreSqlScenario? scenario;

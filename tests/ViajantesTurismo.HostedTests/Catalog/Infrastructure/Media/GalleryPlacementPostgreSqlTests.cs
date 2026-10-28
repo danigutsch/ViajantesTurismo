@@ -6,6 +6,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 namespace ViajantesTurismo.Catalog.InfrastructureTests.Media;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[TestScope(TestScope.Integration)]
 public sealed class GalleryPlacementPostgreSqlTests(HostedTestFixture shared) : IAsyncLifetime
 {
     private GalleryPlacementPostgreSqlScenario? scenario;

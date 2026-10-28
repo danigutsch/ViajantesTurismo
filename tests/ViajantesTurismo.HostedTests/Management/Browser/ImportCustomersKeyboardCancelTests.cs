@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Management.WebBrowserTests;
 
 /// <summary>Browser keyboard journey for cancelling a held customer import.</summary>
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "browser")]
+[TestScope(TestScope.System)]
 public sealed class ImportCustomersKeyboardCancelTests : ManagementWebBrowserTestBase
 {
     private readonly FakeCustomersApiClient customers = new();

@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -5,6 +6,7 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 using PandaBear.Testing.Playwright;
 namespace ViajantesTurismo.Admin.SystemTests.Customers;
 
+[TestScope(TestScope.System)]
 public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const float WizardStepTransitionTimeoutMilliseconds = 15000;

@@ -18,6 +18,7 @@ namespace ViajantesTurismo.Catalog.IntegrationTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 [Trait(TestTraitNames.AreaName, TestTraits.MediaInfrastructureArea)]
+[TestScope(TestScope.Integration)]
 public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContainerFixture fixture)
     : IClassFixture<MediaInfrastructureContainerFixture>
 {

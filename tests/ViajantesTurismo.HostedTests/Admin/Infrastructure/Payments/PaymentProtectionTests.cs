@@ -6,6 +6,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, SharedKernelTestTraitNames.UnitScope)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[TestScope(TestScope.Integration)]
 public sealed class PaymentProtectionTests
 {
     [Fact]

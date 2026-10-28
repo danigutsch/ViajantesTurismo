@@ -1,10 +1,11 @@
+using PandaBear.Testing;
 using System.Net;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[TestScope(TestScope.Integration)]
 public sealed class CustomerApiAuthorizationTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]

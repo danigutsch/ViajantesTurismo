@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Duende.AccessTokenManagement;
 using Duende.AccessTokenManagement.OpenIdConnect;
 using System.Net;
@@ -5,9 +6,9 @@ using System.Net;
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.DatabaseIntegrationScope)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[TestScope(TestScope.Integration)]
 public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
     private readonly PostgreSqlManagementUserTokenStoreScenario _scenario = new(fixture);
