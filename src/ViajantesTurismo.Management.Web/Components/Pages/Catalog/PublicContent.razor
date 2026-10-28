@@ -225,7 +225,11 @@
         _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load public content")).With(HttpOutcomeKind.NotFound, "Public content entry was not found.").For(outcome.Kind);
     }
 
-    /// <summary>Rejects a source language with no variant, and more than one blank target, which cannot occur until a third language is added to <see cref="PublicContentLanguageDto"/>.</summary>
+    /// <summary>
+    /// Generates the missing-language draft after checking its preconditions. A source language with no variant is reachable
+    /// today, when the loaded entry has no supported source language. The check for more than one blank target is a defensive
+    /// guard that cannot occur until a third language is added to <see cref="PublicContentLanguageDto"/>.
+    /// </summary>
     private void GenerateMissingDraft()
     {
         _errorMessage = null;
