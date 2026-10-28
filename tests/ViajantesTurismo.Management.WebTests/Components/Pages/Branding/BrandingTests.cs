@@ -151,6 +151,24 @@ public sealed class BrandingTests : BunitContext
     }
 
     [Fact]
+    public void Does_not_save_without_an_entity_tag_after_the_initial_load_failed()
+    {
+        // Arrange
+        brandingApi.ReturnEmptyGetResponse = true;
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Markup.Contains("couldn't load branding", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+        cut.WaitForState(() => cut.Markup.Contains("couldn't save branding", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Assert
+        brandingApi.SavedEntityTag.ShouldBeNull();
+        brandingApi.SavedBranding.ShouldBeNull();
+        cut.Find(".alert-danger").TextContent.ShouldBe("We couldn't save branding right now. Please try again.");
+    }
+
+    [Fact]
     public void Shows_error_when_saved_branding_response_is_empty()
     {
         // Arrange
