@@ -19,6 +19,9 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     private int? _getBookingByIdOutcomeCall;
     private Exception? _updateBookingNotesException;
     private HttpOutcome? _updateBookingNotesOutcome;
+    private HttpOutcome? _updateBookingDetailsOutcome;
+    private HttpOutcome? _updateBookingDiscountOutcome;
+    private Task? _updateBookingNotesGate;
     private decimal? _updatedDetailsTotalPrice;
 
     public int BookingActionCallCount
@@ -141,6 +144,11 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         ct.ThrowIfCancellationRequested();
         UpdateBookingDiscountCallCount++;
 
+        if (_updateBookingDiscountOutcome is not null)
+        {
+            return Task.FromResult(_updateBookingDiscountOutcome);
+        }
+
         var index = _bookings.FindIndex(booking => booking.Id == id);
         if (index >= 0)
         {
@@ -163,6 +171,11 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         UpdateBookingDetailsCallCount++;
         LastUpdatedDetails = dto;
 
+        if (_updateBookingDetailsOutcome is not null)
+        {
+            return Task.FromResult(_updateBookingDetailsOutcome);
+        }
+
         var index = _bookings.FindIndex(booking => booking.Id == id);
         if (index >= 0)
         {
@@ -183,11 +196,16 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, location: null));
     }
 
-    public Task<HttpOutcome> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
+    public async Task<HttpOutcome> UpdateBookingNotes(Guid id, UpdateBookingNotesDto dto, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
         UpdateBookingNotesCallCount++;
+
+        if (_updateBookingNotesGate is not null)
+        {
+            await _updateBookingNotesGate;
+        }
 
         if (_updateBookingNotesException is not null)
         {
@@ -196,7 +214,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
         if (_updateBookingNotesOutcome is not null)
         {
-            return Task.FromResult(_updateBookingNotesOutcome);
+            return _updateBookingNotesOutcome;
         }
 
         var index = _bookings.FindIndex(booking => booking.Id == id);
@@ -208,7 +226,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             };
         }
 
-        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, location: null));
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, location: null);
     }
 
     public Task<HttpOutcome> CancelBooking(Guid id, CancellationToken ct) =>
@@ -269,6 +287,12 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public void SetUpdateBookingNotesException(Exception exception) => _updateBookingNotesException = exception;
 
     public void SetUpdateBookingNotesOutcome(HttpOutcome outcome) => _updateBookingNotesOutcome = outcome;
+
+    public void SetUpdateBookingDetailsOutcome(HttpOutcome outcome) => _updateBookingDetailsOutcome = outcome;
+
+    public void SetUpdateBookingDiscountOutcome(HttpOutcome outcome) => _updateBookingDiscountOutcome = outcome;
+
+    public void SetUpdateBookingNotesGate(Task gate) => _updateBookingNotesGate = gate;
 
     public void SetUpdatedDetailsTotalPrice(decimal totalPrice) => _updatedDetailsTotalPrice = totalPrice;
 

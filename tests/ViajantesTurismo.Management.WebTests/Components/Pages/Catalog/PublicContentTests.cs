@@ -84,6 +84,26 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
+    public void Asks_for_a_supported_source_language_when_the_loaded_entry_has_none()
+    {
+        // Arrange
+        var content = PublicContentTestsHelpers.CreateContent("home.hero");
+        content.SourceLanguage = PublicContentLanguageDto.None;
+        publicContentApi.Content = [content];
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("home.hero", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("button.list-group-item").Click();
+        cut.WaitForState(() => cut.Find("#content-key").GetAttribute("value") == "home.hero", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("button.btn-outline-primary").Click();
+
+        // Assert
+        cut.Markup.ShouldContain("Select a supported source language before generating a draft.", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Starter draft copied from source content", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Does_not_overwrite_target_language_when_target_already_has_content()
     {
         // Arrange

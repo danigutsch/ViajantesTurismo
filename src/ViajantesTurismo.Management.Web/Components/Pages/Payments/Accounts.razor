@@ -168,6 +168,7 @@
             await Complete(await _submission.Submit("saving the recipient draft", (key, ct) => AccountsApi.Create(input, key, ct), CancellationToken.None));
         }
     }
+    /// <summary>Only <see cref="Select"/> sets the action, always to one of the four handled literals; an unknown action submits nothing.</summary>
     private async Task Confirm()
     {
         if (_selected is not { } selected || !_confirmed) { return; }

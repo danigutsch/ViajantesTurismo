@@ -225,6 +225,11 @@
         _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load public content")).With(HttpOutcomeKind.NotFound, "Public content entry was not found.").For(outcome.Kind);
     }
 
+    /// <summary>
+    /// Generates the missing-language draft after checking its preconditions. A source language with no variant is reachable
+    /// today, when the loaded entry has no supported source language. The check for more than one blank target is a defensive
+    /// guard that cannot occur until a third language is added to <see cref="PublicContentLanguageDto"/>.
+    /// </summary>
     private void GenerateMissingDraft()
     {
         _errorMessage = null;
@@ -395,6 +400,7 @@
             }
         }
 
+        /// <summary>Tolerates a payload whose variant list deserialized to null, leaving the empty form variants in place.</summary>
         public static PublicContentFormModel FromDto(PublicContentDto content)
         {
             var model = new PublicContentFormModel
@@ -506,6 +512,7 @@
         }
     }
 
+    /// <summary>Falls back to the enum name for a language that has no display label yet, so a newly added language still renders.</summary>
     private static string GetLanguageLabel(PublicContentLanguageDto language)
     {
         return language switch
