@@ -24,6 +24,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         get; private set;
     }
     private ImportResultDto? _commitImportResult;
+    private HttpOutcome<ImportResultDto>? _commitImportOutcome;
     private Exception? _createCustomerException;
     private HttpOutcome? _createCustomerOutcome;
     private Exception? _getCustomerByIdException;
@@ -194,6 +195,11 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
         ct.ThrowIfCancellationRequested();
 
+        if (_commitImportOutcome is not null)
+        {
+            return _commitImportOutcome;
+        }
+
         if (_commitImportResult is not null)
         {
             progress?.Report(fileContent.LongLength);
@@ -233,6 +239,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         Func<byte[], string, IReadOnlyDictionary<string, string>, IProgress<long>?, CancellationToken, Task<ImportResultDto>> handler) => _commitImportHandler = handler;
 
     public void SetCommitImportResult(ImportResultDto result) => _commitImportResult = result;
+
+    public void SetCommitImportOutcome(HttpOutcome<ImportResultDto> outcome) => _commitImportOutcome = outcome;
 
     public void SetImportCustomersException(Exception exception) => _importCustomersException = exception;
 

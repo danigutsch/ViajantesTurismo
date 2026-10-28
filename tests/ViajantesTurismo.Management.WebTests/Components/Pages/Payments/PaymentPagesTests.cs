@@ -567,4 +567,45 @@ public sealed class PaymentPagesTests : BunitContext
         payload.RootElement.GetProperty("euroCredit").GetDecimal().ShouldBe(50m);
         payload.RootElement.TryGetProperty("confirmed", out _).ShouldBeFalse();
     }
+
+    [Fact]
+    public void Failed_recipient_detail_read_shows_fixed_copy_and_keeps_the_edit_form_closed()
+    {
+        // Arrange
+        Handler.Accounts = PaymentPageData.Accounts;
+        var page = Render<Accounts>();
+        page.WaitForAssertion(() => page.FindAll("tbody tr").Count.ShouldBe(3));
+        Handler.ReadStatus = HttpStatusCode.Forbidden;
+
+        // Act
+        page.FindAll("button").First(item => item.TextContent == "Edit recipient").Click();
+
+        // Assert
+        page.WaitForAssertion(() => page.Find("[role=alert]").TextContent.ShouldContain("Recipient details could not be loaded.", StringComparison.Ordinal));
+        page.Markup.ShouldNotContain("New unverified recipient revision", StringComparison.Ordinal);
+        Handler.Keys.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Failed_sensitive_evidence_read_shows_fixed_copy_and_keeps_the_loaded_history()
+    {
+        // Arrange
+        var booking = BuildBookingDto() with
+        {
+            Currency = CurrencyDto.Euro,
+            FinancialVersion = 4
+        };
+        _bookings.AddBooking(booking);
+        var page = Render<Finances>(parameters => parameters.Add(value => value.BookingId, booking.Id));
+        page.WaitForAssertion(() => page.Find("#schedule-obligation"));
+        Handler.ReadStatus = HttpStatusCode.Forbidden;
+
+        // Act
+        page.FindAll("button").First(item => item.TextContent.Contains("View sensitive evidence references", StringComparison.Ordinal)).Click();
+
+        // Assert
+        page.WaitForAssertion(() => page.Find("[role=alert]").TextContent.ShouldContain("Sensitive evidence could not be loaded.", StringComparison.Ordinal));
+        page.Find("#schedule-obligation").ShouldNotBeNull();
+        Handler.Keys.Count.ShouldBe(0);
+    }
 }

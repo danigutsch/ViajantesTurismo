@@ -302,4 +302,43 @@ public sealed class BrandingTests : BunitContext
         // Assert
         cut.Find(".alert-danger").TextContent.ShouldContain("couldn't save branding", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Invalid_submit_shows_a_focused_error_summary_linking_to_the_field_without_saving()
+    {
+        // Arrange
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+        cut.Find("#branding-brand-name").Change(string.Empty);
+
+        // Act
+        cut.Find("form").Submit();
+
+        // Assert
+        var summary = cut.Find("#error-summary");
+        summary.GetAttribute("tabindex").ShouldBe("-1");
+        var link = cut.Find("#error-summary a");
+        link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#branding-brand-name", StringComparison.Ordinal);
+        brandingApi.SavedEntityTag.ShouldBeNull();
+        brandingApi.SavedBranding.ShouldBeNull();
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
+    [Fact]
+    public void Shows_fixed_save_error_and_no_success_when_the_read_after_a_successful_save_fails()
+    {
+        // Arrange
+        brandingApi.ReturnEmptyGetResponseAfterSave = true;
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+        cut.Find("#branding-brand-name").Change("Camino Riders");
+
+        // Act
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find(".alert-danger").TextContent.ShouldBe("We couldn't save branding right now. Please try again.");
+        cut.Markup.ShouldNotContain("Branding saved", StringComparison.Ordinal);
+    }
 }
