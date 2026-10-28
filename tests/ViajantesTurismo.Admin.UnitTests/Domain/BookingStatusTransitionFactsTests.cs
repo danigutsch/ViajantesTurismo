@@ -1,7 +1,6 @@
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
 public sealed class BookingStatusTransitionFactsTests
 {
     [Fact]

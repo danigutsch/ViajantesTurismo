@@ -5,7 +5,6 @@ using ViajantesTurismo.Admin.Domain.Shared;
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "unit")]
 public class RowToCustomerMapperTests
 {
     [Theory]

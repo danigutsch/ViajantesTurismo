@@ -5,7 +5,6 @@ using ViajantesTurismo.Management.Security;
 namespace ViajantesTurismo.Admin.UnitTests.ManagementSecurity;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class ManagementSecurityDbContextFactoryTests
 {
     [Fact]

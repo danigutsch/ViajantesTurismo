@@ -1,11 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, "unit")]
 public sealed class CatalogDbContextDesignTimeFactoryTests
 {
     [Fact]

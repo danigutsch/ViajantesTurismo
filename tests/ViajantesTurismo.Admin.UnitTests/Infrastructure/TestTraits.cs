@@ -21,11 +21,6 @@ internal static class TestTraits
     public const string SecurityCategory = PandaBear.Testing.TestTraitValues.SecurityCategory;
 
     /// <summary>
-    /// Trait value for the unit test scope.
-    /// </summary>
-    public const string UnitScope = "unit";
-
-    /// <summary>
     /// Trait value for the integration event relay capability.
     /// </summary>
     public const string IntegrationEventRelayCapability = "integration-event-relay";

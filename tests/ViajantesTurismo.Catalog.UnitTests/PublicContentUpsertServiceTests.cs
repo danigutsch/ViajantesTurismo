@@ -6,7 +6,6 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
 public sealed class PublicContentUpsertServiceTests
 {
     [Fact]

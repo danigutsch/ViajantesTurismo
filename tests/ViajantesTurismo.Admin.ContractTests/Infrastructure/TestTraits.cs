@@ -9,8 +9,6 @@ internal static class TestTraits
     public const string AsyncApiSurface = "asyncapi";
     /// <summary>Trait value for the contract category.</summary>
     public const string ContractCategory = "contract";
-    /// <summary>Trait value for the contract scope.</summary>
-    public const string ContractScope = "contract";
     /// <summary>Trait value for drift-guard tests.</summary>
     public const string DriftGuardCategory = "drift-guard";
     /// <summary>Trait value for the integration-event transport capability.</summary>

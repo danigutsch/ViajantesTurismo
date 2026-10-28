@@ -1,4 +1,6 @@
 using TestTraits = ViajantesTurismo.Admin.ContractTests.Infrastructure.TestTraits;
+using PandaBear.Testing;
 
-[assembly: Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ContractScope)]
+
+[assembly: TestScope(TestScope.Contract)]
 [assembly: Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AdminArea)]

@@ -6,11 +6,6 @@ namespace ViajantesTurismo.ArchitectureTests;
 public static class TestTraits
 {
     /// <summary>
-    /// Scope value for architecture tests.
-    /// </summary>
-    public const string ArchitectureScope = "architecture";
-
-    /// <summary>
     /// Surface value for solution-wide architecture tests.
     /// </summary>
     public const string SolutionSurface = "solution";

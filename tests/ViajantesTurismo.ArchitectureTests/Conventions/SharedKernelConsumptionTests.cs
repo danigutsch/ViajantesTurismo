@@ -3,7 +3,6 @@ using System.Text.Json;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, TestTraits.ArchitectureScope)]
 public static class SharedKernelConsumptionTests
 {
     [Fact]

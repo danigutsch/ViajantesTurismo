@@ -4,7 +4,6 @@ using ViajantesTurismo.Catalog.Domain.PublicContent;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
 [Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class PublicMediaImageTests
 {

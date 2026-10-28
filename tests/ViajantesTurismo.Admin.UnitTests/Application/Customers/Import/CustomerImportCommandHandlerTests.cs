@@ -4,7 +4,6 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "unit")]
 public sealed class CustomerImportCommandHandlerTests
 {
     private readonly FakeUnitOfWork _uow;

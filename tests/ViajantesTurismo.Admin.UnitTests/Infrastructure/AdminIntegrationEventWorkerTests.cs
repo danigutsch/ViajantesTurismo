@@ -6,7 +6,6 @@ using ViajantesTurismo.Admin.UnitTests.Application.Branding;
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
-[Trait(SharedKernelTestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class AdminIntegrationEventWorkerTests
 {
     [Fact]

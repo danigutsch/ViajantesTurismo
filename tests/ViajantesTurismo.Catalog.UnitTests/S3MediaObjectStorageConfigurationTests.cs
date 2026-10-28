@@ -2,11 +2,9 @@ using PandaBear.ObjectStorage;
 using PandaBear.ObjectStorage.S3;
 using Amazon.S3;
 using Microsoft.Extensions.Options;
-using PandaBear.Testing;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernelTestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
 public sealed class S3MediaObjectStorageConfigurationTests
 {
     [Theory]

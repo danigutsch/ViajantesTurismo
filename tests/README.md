@@ -142,65 +142,78 @@ fixture contract as a repository-wide test abstraction.
 
 ## Tagging Model
 
-Keep tags orthogonal and stable across host-model migration.
+Keep tags orthogonal and stable across host-model migration. Decision record:
+[ADR-044](../docs/adr/20261028-test-seam-taxonomy-and-typed-scope-attribute.md).
 
-Use constants, not string literals, when constants exist. Repository-wide names live in
-`SharedKernel.Testing.TestTraitNames`; cross-project values live in
-`SharedKernel.Testing.TestTraitValues`; SharedKernel package taxonomy lives in
-`SharedKernel.Testing.SharedKernelTestTraitNames`; project-specific values stay in the owning
-project's `TestTraits` type. `SKTEST009` enforces this conservatively.
+`Scope` is mandatory: every test declares exactly one. Express it with the typed attribute from
+`PandaBear.SharedKernel.Testing.Xunit`, at assembly level for a homogeneous project and per class for a mixed one:
 
-### Scope
+```csharp
+[assembly: TestScope(TestScope.Unit)]
 
-- `Scope=unit`
-- `Scope=behavior`
-- `Scope=component`
-- `Scope=contract`
-- `Scope=ui-integration`
-- `Scope=integration`
-- `Scope=system`
-- `Scope=architecture`
+[TestScope(TestScope.Integration)]
+[TestHost(TestHost.TestServer)]
+public class BookingEndpointTests { }
+```
 
-### Surface
+`SKTEST018` reports a missing, unknown, or conflicting scope. A literal `[Trait("Scope", ...)]` is still accepted, but
+do not add constants for seam values. Optional traits use the typed attributes `TestHost`, `TestFocus`, `TestPriority`,
+`TestArea`, and `TestSurface`. `Area` and `Surface` values are string constants defined once, with no `SharedKernel` or
+`ViajantesTurismo` prefix in the constant name.
 
-- `Surface=domain`
-- `Surface=application`
-- `Surface=api`
-- `Surface=web`
-- `Surface=workflow`
-- `Surface=solution`
+### Scope taxonomy
 
-### Area
+| `Scope` | What is real | What is faked | Host |
+| --- | --- | --- | --- |
+| `unit` | One type or small group of types | Every collaborator that does I/O | In process |
+| `behavior` | Domain and application rules in a stakeholder-readable scenario | Persistence and transport | In process |
+| `component` | A UI component or service rendered or run in isolation | Backend calls, browser | In process |
+| `contract` | A published boundary artifact (OpenAPI, payload shape, client contract) | Business behavior | In process |
+| `ui-integration` | Pages or composed UI rendered without a browser | External backends | In process or test server |
+| `integration` | A real boundary: request pipeline, database, broker, or storage | Services outside the boundary | Test server or Aspire |
+| `system` | The whole running application through an external entrypoint | Nothing | Aspire, browser |
+| `architecture` | Compiled assemblies and source structure | Nothing | In process |
 
-- `Area=bookings`
-- `Area=customers`
-- `Area=tours`
-- `Area=payments`
-- `Area=shared`
+Tie-breaks:
 
-### Intent
+- A test that starts a database container is `integration`.
+- A test that drives a browser is `system`, with `Host=browser`.
+- An in-process `TestServer` test is `integration`, unless it only renders components, which is `ui-integration`.
+- A bUnit test of one component is `component`; of a routed page composition, `ui-integration`.
+- When two values fit, pick the one with the more real collaborators.
 
-- `Category=smoke`
-- `Category=regression`
-- `Category=happy-path`
-- `Category=edge-case`
+Legacy values map as: `api-integration` and `database-integration` to `integration`; `web-integration` to
+`ui-integration` or `integration` by class; `Unit` to `unit`; `browser` to `system`.
 
-### Capability and component
+### Project and folder mapping
 
-SharedKernel package tests may additionally use:
+| Project or folder | `Scope` | Tagged at |
+| --- | --- | --- |
+| `*.UnitTests` | `unit` | assembly |
+| `*.BehaviorTests` | `behavior` | assembly |
+| `*.ContractTests` | `contract` | assembly |
+| `ArchitectureTests`, `Architecture.Analyzers.Tests` | `architecture` | assembly |
+| `ServiceDefaults.Tests` | `integration` | assembly |
+| `*.ApiServiceTests` | `integration` | assembly |
+| `Branding.InfrastructureTests` | `integration` | assembly |
+| `Admin.UiIntegrationTests` | `ui-integration` | assembly |
+| `Management.WebTests` `Components/` | `component` | class |
+| `Management.WebTests` `Services/` and host tests | `unit`, or `integration` for test-host classes | class |
+| `Public.WebTests` | `ui-integration` for bUnit classes, `integration` for endpoint and host classes | class |
+| `HostedTests` `Admin/Api`, `*/Infrastructure`, `Catalog/Media`, `Management/Security` | `integration` | folder base class or class |
+| `HostedTests` `Admin/System`, `Management/Browser` | `system` | folder base class or class |
 
-- `TestComponent=<package-or-module>`
-- `TestCapability=<capability>`
-- `TestTheory=<law-or-spec-classification>`
+Mixed projects are tagged per class using the rows above; a class that spans two seams is split.
 
-Use these only when they improve filtering or reporting; do not replace scope, area, or category
-with overloaded values.
+### Optional traits
 
-### Host
+- `Host`: `in-process`, `test-server`, `aspire`, `browser`
+- `Focus`: `core-behavior`, `domain-rule`, `edge-case`, `regression`, `security`, `drift-guard`, `migration`
+- `Priority`: `smoke`, `critical`
+- `Area` and `Surface`: repository-specific constants
 
-- `Host=in-memory`
-- `Host=aspire`
-- `Host=browser`
+Legacy `Category` values map to these (`smoke` and `critical` to `Priority`; `regression`, `drift-guard`, `edge-case`,
+and `happy-path` to `Focus`). Migrate when a test is touched, not in one sweep.
 
 ## Rules
 

@@ -4,7 +4,6 @@ using ViajantesTurismo.Admin.Domain.Payments;
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 [Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class PaymentReconciliationTests
 {

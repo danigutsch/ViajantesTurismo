@@ -3,7 +3,6 @@ using ViajantesTurismo.Admin.Application.Branding;
 namespace ViajantesTurismo.Admin.UnitTests.Application.Branding;
 
 [Trait(PandaBear.Testing.SharedKernelTestTraitNames.CategoryName, Infrastructure.TestTraits.CoreBehaviorCategory)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.ScopeName, Infrastructure.TestTraits.UnitScope)]
 public sealed class BrandingProjectionApplierTests
 {
     [Fact]

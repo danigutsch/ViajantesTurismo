@@ -4,7 +4,6 @@ using ViajantesTurismo.Admin.ApiService;
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class AdminAuthorizationTests
 {
     [Fact]
