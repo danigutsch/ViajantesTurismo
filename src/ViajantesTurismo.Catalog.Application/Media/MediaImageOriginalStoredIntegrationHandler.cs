@@ -1,5 +1,6 @@
 using PandaBear.ObjectStorage;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using PandaBear.BuildingBlocks;
 using PandaBear.ImageProcessing;
 using PandaBear.Messaging.IntegrationEvents;
@@ -97,10 +98,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 continue;
             }
 
-            // Wrap the processor's array without copying; object stores only read the stream during Put.
-            using var content = System.Runtime.InteropServices.MemoryMarshal.TryGetArray(variant.Content, out var segment) && segment.Array is not null
-                ? new MemoryStream(segment.Array, segment.Offset, segment.Count, writable: false)
-                : new MemoryStream(variant.Content.ToArray());
+            using var content = OpenReadOnlyStream(variant.Content);
             var objectKey = CreateVariantObjectKey(mediaImageId, processingVersion, variant);
             var stored = await objectStore.Put(
                 new ObjectWriteRequest(
@@ -169,6 +167,12 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
             new("1920-jpeg", ImageOutputFormat.Jpeg, 1920, 82),
         ];
     }
+
+    /// <summary>Wraps the processor's array without copying; object stores only read the stream during Put.</summary>
+    private static MemoryStream OpenReadOnlyStream(ReadOnlyMemory<byte> bytes) =>
+        MemoryMarshal.TryGetArray(bytes, out var segment) && segment.Array is not null
+            ? new MemoryStream(segment.Array, segment.Offset, segment.Count, writable: false)
+            : new MemoryStream(bytes.ToArray());
 
     private static string CreateVariantObjectKey(Guid mediaImageId, int processingVersion, ProcessedImageVariant variant)
         => string.Create(

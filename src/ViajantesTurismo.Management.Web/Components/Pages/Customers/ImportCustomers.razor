@@ -610,14 +610,18 @@
         await using var stream = file.OpenReadStream(MaxFileSizeBytes);
         var fileBytes = new byte[file.Size];
         await stream.ReadExactlyAsync(fileBytes);
+        await EnsureNoBytesRemain(stream);
 
-        // The browser stream is capped at Size; any extra byte means the declared size was wrong.
+        return fileBytes;
+    }
+
+    /// <summary>The browser stream is capped at the declared size, so any extra byte means the declared size was wrong.</summary>
+    private static async Task EnsureNoBytesRemain(Stream stream)
+    {
         if (await stream.ReadAsync(new byte[1]) > 0)
         {
             throw new IOException("The file stream is longer than the declared file size.");
         }
-
-        return fileBytes;
     }
 
     private void SetPendingFile(string fileName, byte[] fileBytes)
