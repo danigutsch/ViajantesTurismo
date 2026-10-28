@@ -6,36 +6,22 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.339.1` at clean library revision
-[`7c62d629ac152de5993653bbcabf7430c40cfd35`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/7c62d629ac152de5993653bbcabf7430c40cfd35).
-It makes `AddUiFailureReporting()` in `SharedKernel.Blazor` register the metrics services it needs, so callers no
-longer add `AddMetrics()` first. Otherwise it equals `0.1.0-alpha.336.1`. The unchanged packages, symbol archives and manifest are
+The published candidate is `0.1.0-alpha.359.1` at clean library revision
+[`7893ca689c8aa10602cb8accb66f83a7ac2f6525`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/7893ca689c8aa10602cb8accb66f83a7ac2f6525).
+It adds the typed trait attributes `TestScope`, `TestHost`, `TestFocus`, `TestPriority`, `TestArea` and `TestSurface` in
+`SharedKernel.Testing.Xunit`, the `SKTEST018` rule that requires a valid test scope with its code fix, and teaches `SKTEST009` that
+`TestScope` is the canonical form of a literal `Scope` trait. The unchanged packages, symbol archives and manifest are
 published in GitHub prerelease
-[`v0.1.0-alpha.339.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.339.1), built by
-[CI run 40663717062](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40663717062).
+[`v0.1.0-alpha.359.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.359.1), built by
+[CI run 40684462993](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40684462993).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.336.1` at revision `529f0cc4e2df034a1718e2ff8e71fc38d59fc587`,
-`0.1.0-alpha.334.1` at revision `13737c2e30542e994515ca31126cfd25fa43cb80`,
-`0.1.0-alpha.332.1` at revision `51f88513f0d13013e7b764b593b2462d560b359f`,
-`0.1.0-alpha.303.1` at revision `04c5f509c63e7fc83693d47b9e1695b8baecdef8`,
-`0.1.0-alpha.294.1` at revision `a2901f0188a49795e6af37c945e98f8a2b88319b`,
-`0.1.0-alpha.236.1` at revision `cc42e587d482ded854840cb8afae1f7baac6c6c2`,
-`0.1.0-alpha.222.1` at revision `37c1642dd2193d9684c45757c27710dc3dff5b30`,
-`0.1.0-alpha.214.1` at revision `e5293567c645b1ae8b4557ed75bd82689eaa7c8b`,
-`0.1.0-alpha.210.1` at revision `768d4c3994ff6a88dbdd25ab713e13f72e762fad`,
-`0.1.0-alpha.209.1` at revision `19d4092bb862664545eb489d66620efa01a49590`,
-`0.1.0-alpha.191.1` at revision `96c6684921e227441da56d8883c2a59bba29b09e`,
-`0.1.0-alpha.187.1` at revision `12864e0bc2a490d5343f5a11ff7876919ea6c190`,
-`0.1.0-alpha.171.1` at revision `753f94c9a8dfd09084cb3b0e6d49739c0a16cac1`,
-`0.1.0-alpha.169.1` at revision `72625116fe443f123bf07f64c02aeb20c1456efd`,
-`0.1.0-alpha.167.1` at revision `301f7fcce859e4bb5237b2e4a9abaefc71b4b90a`,
-`0.1.0-alpha.161.1` at revision `b40822b58c9f6c1797dbea6de1e2a12319906b5b`,
-`0.1.0-alpha.159.1` at revision `afaaa2994edd43e82cb4b3ff622cd7ef17fa0f4d`,
-`0.1.0-alpha.144.1` at revision `ee4126348011b2ddf60d3e580428867689c412dd`,
-`0.1.0-alpha.133.1` at revision `078adf2b2b158f38a211f48274af548d12a85752`,
-`0.1.0-alpha.112.1` at revision `e4d13f63ff872a86478a16e5a3c3ce1ecba0fcb1` and `0.1.0-alpha.94.1` at
-revision `d08008cd3e8901c304377edcc4683de7c3a85ecb` remain published. Their application validation is
+`SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
+`warning` once all test projects are tagged.
+
+The previous previews `0.1.0-alpha.339.1` at revision `7c62d629ac152de5993653bbcabf7430c40cfd35` and
+`0.1.0-alpha.336.1` at revision `529f0cc4e2df034a1718e2ff8e71fc38d59fc587` remain published. The releases of earlier previews were
+removed from the library repository while their tags stay, so they cannot be staged again; their application validation is
 historical evidence.
 
 The former candidate `1.2.0-alpha.20261023.1` at library revision

@@ -11,6 +11,10 @@
 		<PackageReference Include="PandaBear.SharedKernel.Testing.Analyzers" PrivateAssets="all" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(OutputType)' == 'Exe'">
+		<PackageReference Include="PandaBear.SharedKernel.Testing.Xunit" />
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
 		<Content Include="$(MSBuildThisFileDirectory)testconfig.json"
 			Link="testconfig.json"
