@@ -16,7 +16,6 @@ public sealed class DetailsPageTests : BunitContext
 
     public DetailsPageTests()
     {
-        Services.AddMetrics();
         Services.AddUiFailureReporting();
         var authorization = AddAuthorization();
         authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
@@ -64,7 +63,6 @@ public sealed class DetailsPageTests : BunitContext
         authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Admin");
         staticContext.Services.AddSingleton<IDocumentsApiClient>(new FakeDocumentsApiClient());
-        staticContext.Services.AddMetrics();
         staticContext.Services.AddUiFailureReporting();
         staticContext.SetRendererInfo(new RendererInfo("Static", false));
         var documentId = Guid.CreateVersion7();
@@ -88,7 +86,6 @@ public sealed class DetailsPageTests : BunitContext
         authorization.SetAuthorized("operator@example.test", AuthorizationState.Authorized);
         authorization.SetRoles("Operator");
         context.Services.AddSingleton<IDocumentsApiClient>(new FakeDocumentsApiClient());
-        context.Services.AddMetrics();
         context.Services.AddUiFailureReporting();
         context.SetRendererInfo(new RendererInfo("Server", true));
         var documentId = Guid.CreateVersion7();

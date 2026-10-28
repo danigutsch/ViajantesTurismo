@@ -49,7 +49,6 @@ internal sealed class ManagementWebBrowserHost : IAsyncDisposable
         builder.Services.AddAuthorization();
         builder.Services.AddAntiforgery();
         builder.Services.AddCascadingAuthenticationState();
-        builder.Services.AddMetrics();
         builder.Services.AddUiFailureReporting();
         builder.Services.AddRazorComponents().AddInteractiveServerComponents();
         builder.Services.AddScoped<CustomerCreationState>();
