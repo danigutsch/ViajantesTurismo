@@ -119,6 +119,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.ImageProcessing" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.InputNormalization" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.IntegrationTesting" Version="0.1.0-alpha.339.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.IO.Analyzers" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning.ClamAv" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning.ClamAv.Testing" Version="0.1.0-alpha.339.1" />
