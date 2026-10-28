@@ -7,6 +7,8 @@ Minimal Kestrel-only host for real multipart upload scanning benchmarks.
 - `GET /health`: readiness probe for wrappers and k6 setup.
 - `POST /upload/scan`: reads multipart file section `file`, scans every byte in the request stream,
   and returns `files=<count>;bytes=<bytes>;matches=<matches>` as `text/plain`.
+- `POST /upload/scan-buffered`: production-shaped intake (`IFormFile`, presized `MemoryStream`, one scan, one SHA-256);
+  same response plus `;sha256=<hash>`. Select it in k6 with `VT_UPLOAD_MODE=buffered`.
 
 ## Run
 

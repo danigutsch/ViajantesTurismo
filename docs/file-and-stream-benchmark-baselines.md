@@ -16,6 +16,21 @@ smaller isolated host and still uses a real Kestrel socket with an ephemeral por
 The host binds loopback by default; explicit Docker mode uses `0.0.0.0` only so the pinned k6 container can
 reach the host through `host.docker.internal`.
 
+## Upload host modes
+
+The benchmark host exposes two routes that share a base response shape (`files=<count>;bytes=<bytes>;matches=<matches>`):
+
+- `POST /upload/scan` (streaming, the default): reads the multipart body with `MultipartReader` and scans the
+  request stream once without buffering. It measures only the Kestrel streaming floor and does not mirror production.
+- `POST /upload/scan-buffered` (buffered): mirrors the production intake shape. It binds `IFormFile`, copies into a
+  presized `MemoryStream` with a bounded loop that counts received bytes against the limit, scans once, hashes once
+  with SHA-256, and appends `;sha256=<hash>` to the response. It still has no decode, object store, real scanner, rate
+  limiter, or authentication.
+
+Select the route in the k6 scenario with `VT_UPLOAD_MODE=streaming|buffered`.
+Concurrency findings from a production-shaped scratch host are in
+[the upload trace](API_IO_AND_STREAMING.md#upload-and-import-pass-trace).
+
 ## Benchmark matrix
 
 | Benchmark | Input size | File generation method | Expected metrics | Cleanup rule |
@@ -68,6 +83,7 @@ Useful overrides:
 - `VT_K6_VUS=<count>`
 - `VT_K6_DURATION=<duration>`
 - `VT_UPLOAD_PAYLOAD_BYTES=<bytes>`
+- `VT_UPLOAD_MODE=streaming|buffered` (raw k6 usage; default `streaming`)
 - `--container` and `--image <ref@sha256:digest>` options of `sharedkernel-k6 run`
 
 Security defaults:
@@ -85,6 +101,6 @@ Security defaults:
 `sharedkernel-k6 run --scenario file-upload-scan` (smoke profile, 1 virtual user, 20 seconds, 256 KiB payload,
 local k6, loopback) on 2026-10-27: 7,844 requests at about 392 requests per second, about 103 MB/s sent, 0 failed
 requests and 15,687 of 15,687 checks passed. `http_req_duration` averaged 2.29 ms with a p95 of 2.81 ms and a
-maximum of 11.43 ms. This measures the isolated benchmark host scan endpoint, not the production import or media
+maximum of 11.43 ms. This measures the isolated benchmark host streaming endpoint, not the production import or media
 flows, and records no memory. Pass counts for those flows are in
 [API endpoint I/O and streaming contracts](API_IO_AND_STREAMING.md#upload-and-import-pass-trace).

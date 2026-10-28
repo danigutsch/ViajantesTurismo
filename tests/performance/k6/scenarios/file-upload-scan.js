@@ -62,7 +62,7 @@ export function setup() {
 }
 
 export default function (data) {
-  const response = http.post(`${data.baseUrl}/upload/scan`, {
+  const response = http.post(`${data.baseUrl}${getUploadRoute()}`, {
     file: http.file(payload, `file-upload-${payloadBytes}.bin`, 'application/octet-stream'),
   }, {
     tags: createTags('file_upload_scan', 'upload-scan'),
@@ -77,6 +77,20 @@ export default function (data) {
   if (accepted) {
     uploadBytes.add(payloadBytes, { endpoint: 'upload-scan' });
   }
+}
+
+function getUploadRoute() {
+  const mode = (__ENV.VT_UPLOAD_MODE || 'streaming').trim().toLowerCase();
+
+  if (mode === 'streaming') {
+    return '/upload/scan';
+  }
+
+  if (mode === 'buffered') {
+    return '/upload/scan-buffered';
+  }
+
+  throw new Error(`Unsupported VT_UPLOAD_MODE '${mode}'. Supported modes: streaming, buffered.`);
 }
 
 function createOptions() {

@@ -1,4 +1,6 @@
+using System.Buffers;
 using System.Globalization;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.WebUtilities;
@@ -6,6 +8,7 @@ using Microsoft.Net.Http.Headers;
 
 const byte TargetByte = 0x5A;
 const int BufferLength = 64 * 1024;
+const int CopyBufferLength = 80 * 1024;
 const long MaxPayloadBytes = 16_777_216;
 const long MaxMultipartOverheadBytes = 1_048_576;
 const long MaxRequestBodyBytes = MaxPayloadBytes + MaxMultipartOverheadBytes;
@@ -23,6 +26,7 @@ var app = builder.Build();
 
 app.MapGet("/health", static () => Results.Text("ok", "text/plain"));
 app.MapPost("/upload/scan", ScanUpload);
+app.MapPost("/upload/scan-buffered", ScanBufferedUpload).DisableAntiforgery();
 
 app.Lifetime.ApplicationStarted.Register(() => WriteReadyFile(app, Environment.GetEnvironmentVariable(ReadyFileVariable)));
 
@@ -61,6 +65,59 @@ static async Task<IResult> ScanUpload(HttpRequest request, CancellationToken ct)
 
     return Results.Text(
         string.Create(CultureInfo.InvariantCulture, $"files={fileCount};bytes={totalBytesScanned};matches={totalMatches}"),
+        "text/plain");
+}
+
+// Mirrors the production intake shape: IFormFile binding, one presized MemoryStream filled by a bounded copy loop,
+// one scan pass and one SHA-256 pass. It has no decode, object store, scanner, rate limiter, or authentication.
+static async Task<IResult> ScanBufferedUpload(IFormFile? file, CancellationToken ct)
+{
+    if (file is null || file.Length is <= 0 or > MaxPayloadBytes)
+    {
+        return Results.BadRequest("A multipart file section named file within the size limit is required.");
+    }
+
+    var buffer = new MemoryStream(checked((int)file.Length));
+    await using var bufferScope = buffer.ConfigureAwait(false);
+    var rented = ArrayPool<byte>.Shared.Rent(CopyBufferLength);
+
+    try
+    {
+        var source = file.OpenReadStream();
+        await using var sourceScope = source.ConfigureAwait(false);
+        long received = 0;
+        int bytesRead;
+
+        while ((bytesRead = await source.ReadAsync(rented.AsMemory(0, CopyBufferLength), ct).ConfigureAwait(false)) > 0)
+        {
+            received += bytesRead;
+
+            if (received > MaxPayloadBytes)
+            {
+                return Results.BadRequest("The file exceeds the size limit.");
+            }
+
+            await buffer.WriteAsync(rented.AsMemory(0, bytesRead), ct).ConfigureAwait(false);
+        }
+
+        if (received != file.Length)
+        {
+            return Results.BadRequest("The received length does not match the declared length.");
+        }
+    }
+    finally
+    {
+        ArrayPool<byte>.Shared.Return(rented);
+    }
+
+    buffer.Position = 0;
+    var (bytesScanned, matches) = await ScanStream(buffer, ct).ConfigureAwait(false);
+
+    buffer.Position = 0;
+    var hash = Convert.ToHexString(await SHA256.HashDataAsync(buffer, ct).ConfigureAwait(false));
+
+    return Results.Text(
+        string.Create(CultureInfo.InvariantCulture, $"files=1;bytes={bytesScanned};matches={matches};sha256={hash}"),
         "text/plain");
 }
 
