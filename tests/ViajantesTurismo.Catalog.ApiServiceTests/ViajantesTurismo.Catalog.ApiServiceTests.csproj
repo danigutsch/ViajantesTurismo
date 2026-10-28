@@ -39,6 +39,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Testing\ViajantesTurismo.Catalog.Testing.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.UploadWire.Testing\ViajantesTurismo.UploadWire.Testing.csproj" />
     </ItemGroup>
 
 </Project>
