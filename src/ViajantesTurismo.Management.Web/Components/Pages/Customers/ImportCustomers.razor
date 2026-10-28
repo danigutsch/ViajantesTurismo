@@ -404,7 +404,18 @@
             return;
         }
 
-        var fileBytes = await ReadFileBytes(file);
+        byte[] fileBytes;
+        try
+        {
+            fileBytes = await ReadFileBytes(file);
+        }
+        catch (IOException exception)
+        {
+            Failures.Report(exception, "customers.import.read");
+            _state.ValidationError = $"The file could not be read. Check that it is no larger than {MaxFileSizeInMebibytes} MiB and try again.";
+            return;
+        }
+
         SetPendingFile(file.Name, fileBytes);
     }
 
@@ -596,10 +607,17 @@
 
     private static async Task<byte[]> ReadFileBytes(IBrowserFile file)
     {
-        using var ms = new MemoryStream();
         await using var stream = file.OpenReadStream(MaxFileSizeBytes);
-        await stream.CopyToAsync(ms);
-        return ms.ToArray();
+        var fileBytes = new byte[file.Size];
+        await stream.ReadExactlyAsync(fileBytes);
+
+        // The browser stream is capped at Size; any extra byte means the declared size was wrong.
+        if (await stream.ReadAsync(new byte[1]) > 0)
+        {
+            throw new IOException("The file stream is longer than the declared file size.");
+        }
+
+        return fileBytes;
     }
 
     private void SetPendingFile(string fileName, byte[] fileBytes)
