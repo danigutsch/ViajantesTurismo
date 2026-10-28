@@ -6,7 +6,6 @@ using ViajantesTurismo.Admin.Contracts.Application;
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
 public sealed class PaymentCommandFingerprintTests
 {
     [Fact]

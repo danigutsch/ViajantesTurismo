@@ -11,7 +11,6 @@ using ViajantesTurismo.Catalog.Application;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernelTestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 [Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaAccessibilityEvaluationTests

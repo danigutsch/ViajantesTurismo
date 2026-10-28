@@ -9,7 +9,6 @@ using ViajantesTurismo.Catalog.Domain.PublicContent;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernelTestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 [Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaImageAccessibilityDraftServiceTests

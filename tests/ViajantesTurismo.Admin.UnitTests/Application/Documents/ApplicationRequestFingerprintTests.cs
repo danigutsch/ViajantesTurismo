@@ -2,7 +2,6 @@ using ViajantesTurismo.Admin.Application.Idempotency;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
 public sealed class ApplicationRequestFingerprintTests
 {
     [Theory]

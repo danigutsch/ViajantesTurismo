@@ -2,7 +2,6 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.ContractTests.Infrastructure;
 
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ContractScope)]
 public sealed class HostedProfileArgumentsTests
 {
     [Fact]

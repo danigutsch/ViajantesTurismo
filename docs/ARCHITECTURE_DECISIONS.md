@@ -84,6 +84,8 @@ Decisions about application architecture and layer responsibilities.
   SharedKernel Analyzers and Architecture Tests
 - **[ADR-043](adr/20261028-domain-error-messages-may-echo-domain-terms.md)** — Domain Error Messages May Echo
   Domain Terms and Numbers, Not Free Text
+- **[ADR-044](adr/20261028-test-seam-taxonomy-and-typed-scope-attribute.md)** — Test Seam Taxonomy and Typed
+  Scope Attribute
 
 ### Versioning & Release
 

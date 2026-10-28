@@ -7,7 +7,6 @@ using ViajantesTurismo.Catalog.Infrastructure;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernelTestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 public sealed class EfPublicMediaImageStoreTests
 {

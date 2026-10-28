@@ -8,7 +8,6 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "unit")]
 public sealed class UpdateBookingDetailsCommandHandlerTests
 {
     [Theory]

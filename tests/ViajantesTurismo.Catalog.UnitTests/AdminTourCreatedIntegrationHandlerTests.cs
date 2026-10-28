@@ -14,7 +14,6 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
 {
     [Fact]
     [Trait(TestTraitNames.CategoryName, "Regression")]
-    [Trait(TestTraitNames.ScopeName, SharedKernelTestTraitNames.UnitScope)]
     public async Task Handle_uses_controlled_lease_and_completion_instants()
     {
         // Arrange

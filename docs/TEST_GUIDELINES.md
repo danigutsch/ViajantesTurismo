@@ -50,18 +50,24 @@ and return documented outcomes; they should not duplicate HTTP parsing. See
 
 When tags or traits are used, keep them orthogonal:
 
-- `Scope`: unit, behavior, component, contract, ui-integration, integration, system, architecture
+- `Scope` (mandatory, exactly one): unit, behavior, component, contract, ui-integration, integration, system, architecture
+- `Host`: in-process, test-server, aspire, browser
+- `Focus`: core-behavior, domain-rule, edge-case, regression, security, drift-guard, migration
+- `Priority`: smoke, critical
 - `Surface`: domain, application, api, web, workflow, solution
 - `Area`: bookings, customers, tours, payments, shared
-- `Category`: smoke, regression, happy-path, edge-case
-- `Host`: in-memory, aspire, browser
+
+Declare `Scope` with `[TestScope(...)]` (assembly level for a homogeneous project, per class for a mixed one).
+`SKTEST018` enforces it. The taxonomy, tie-breaks, and project mapping are in `tests/README.md`; the decision is
+[ADR-044](adr/20261028-test-seam-taxonomy-and-typed-scope-attribute.md). The legacy `Category` trait migrates to
+`Focus` and `Priority` when a test is touched.
 
 Use constants instead of hardcoded trait strings when a constant exists:
 
 - shared trait names: `PandaBear.Testing.TestTraitNames`
 - shared cross-project values: `PandaBear.Testing.TestTraitValues`
 - SharedKernel package taxonomy: `PandaBear.Testing.SharedKernelTestTraitNames`
-- project-specific values: the owning test project's `TestTraits` type
+- `Area` and `Surface` values: constants defined once; seam values use the typed attributes, not constants
 
 `SKTEST009` reports `Trait` string literals when a canonical constant can be identified safely.
 
