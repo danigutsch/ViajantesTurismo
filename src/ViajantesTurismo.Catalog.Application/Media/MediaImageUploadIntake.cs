@@ -1,10 +1,10 @@
 using PandaBear.ObjectStorage;
-using System.Buffers;
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PandaBear.ImageProcessing;
+using PandaBear.IO;
 using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using PandaBear.Results;
@@ -34,6 +34,13 @@ public sealed partial class MediaImageUploadIntake(
 
     private const string GalleryPlacementConflictMessage = "The tour gallery changed while this upload was processing. Retry the upload.";
 
+    /// <summary>
+    /// Largest content a non-seekable upload may hold in memory before it spools to a private temporary file. A seekable upload is
+    /// read in place and never reaches this limit. One mebibyte keeps a slow or non-seekable request well below the five mebibyte
+    /// upload maximum, so concurrent requests do not each pin a large-object-heap buffer.
+    /// </summary>
+    internal const int SpoolMemoryThresholdBytes = 1024 * 1024;
+
     private static readonly IReadOnlyList<ImageVariantRequest> ProbeVariants = [new("probe-webp", ImageOutputFormat.WebP, 1, 80, 1)];
 
     private readonly MediaUploadValidationOptions options = validationOptions.Value;
@@ -55,8 +62,12 @@ public sealed partial class MediaImageUploadIntake(
             return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, nameof(request.MediaImageId), "Media image id is required.");
         }
 
-        using var content = new MemoryStream((int)Math.Clamp(request.Length, 0, options.MaxLengthBytes));
-        if (!await CopyToMemory(request.Content, content, options.MaxLengthBytes, ct).ConfigureAwait(false))
+        SeekableContent lease;
+        try
+        {
+            lease = await SeekableContent.Create(request.Content, options.MaxLengthBytes, SpoolMemoryThresholdBytes, ct).ConfigureAwait(false);
+        }
+        catch (InvalidDataException)
         {
             return Result.Invalid<MediaImageUploadIntakeResult>(
                 InvalidUploadMessage,
@@ -64,6 +75,8 @@ public sealed partial class MediaImageUploadIntake(
                 $"Upload length must be between 1 and {options.MaxLengthBytes} bytes.");
         }
 
+        await using var ownedLease = lease.ConfigureAwait(false);
+        var content = lease.Content;
         var actualLength = content.Length;
         var validationErrors = validator.Validate(new MediaUploadValidationRequest(
             request.FileName,
@@ -170,7 +183,7 @@ public sealed partial class MediaImageUploadIntake(
         return Result.Ok(new MediaImageUploadIntakeResult(image, originalStoredEvent, scanResult.Status));
     }
 
-    private async ValueTask<MediaUploadScanResult> Scan(string objectKey, MemoryStream content, string contentType, long length, CancellationToken ct)
+    private async ValueTask<MediaUploadScanResult> Scan(string objectKey, Stream content, string contentType, long length, CancellationToken ct)
     {
         try
         {
@@ -204,41 +217,12 @@ public sealed partial class MediaImageUploadIntake(
             ct => objectStore.Delete(objectKey, ct),
             ct);
 
-    private static async ValueTask<bool> CopyToMemory(Stream source, MemoryStream destination, long maxLengthBytes, CancellationToken ct)
-    {
-        var buffer = ArrayPool<byte>.Shared.Rent(81920);
-        try
-        {
-            while (true)
-            {
-                var bytesRead = await source.ReadAsync(buffer, ct).ConfigureAwait(false);
-                if (bytesRead == 0)
-                {
-                    destination.Position = 0;
-                    return true;
-                }
-
-                if (destination.Length + bytesRead > maxLengthBytes)
-                {
-                    destination.Position = 0;
-                    return false;
-                }
-
-                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), ct).ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(buffer);
-        }
-    }
-
-    private static ReadOnlyMemory<byte> ReadHeaderBytes(MemoryStream content)
+    private static ReadOnlyMemory<byte> ReadHeaderBytes(Stream content)
     {
         content.Position = 0;
         var headerLength = (int)Math.Min(content.Length, 12);
         var header = new byte[headerLength];
-        _ = content.Read(header);
+        content.ReadExactly(header);
         content.Position = 0;
 
         return header;

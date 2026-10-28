@@ -13,12 +13,6 @@ internal sealed class StubMediaUploadScanner(MediaUploadScanResult result, Excep
         get; private set;
     }
 
-    /// <summary>Gets the capacity of the scanned content when it is a <see cref="MemoryStream"/>, or null.</summary>
-    public int? ContentCapacity
-    {
-        get; private set;
-    }
-
     /// <summary>Gets how many scans were requested.</summary>
     public int ScanCount
     {
@@ -30,7 +24,6 @@ internal sealed class StubMediaUploadScanner(MediaUploadScanResult result, Excep
     {
         ct.ThrowIfCancellationRequested();
         LastRequest = request;
-        ContentCapacity = (request.Content as MemoryStream)?.Capacity;
         ScanCount++;
 
         return exception is null ? ValueTask.FromResult(result) : throw exception;
