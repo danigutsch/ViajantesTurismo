@@ -6,20 +6,20 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.359.1` at clean library revision
-[`7893ca689c8aa10602cb8accb66f83a7ac2f6525`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/7893ca689c8aa10602cb8accb66f83a7ac2f6525).
-It adds the typed trait attributes `TestScope`, `TestHost`, `TestFocus`, `TestPriority`, `TestArea` and `TestSurface` in
-`SharedKernel.Testing.Xunit`, the `SKTEST018` rule that requires a valid test scope with its code fix, and teaches `SKTEST009` that
-`TestScope` is the canonical form of a literal `Scope` trait. The unchanged packages, symbol archives and manifest are
-published in GitHub prerelease
-[`v0.1.0-alpha.359.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.359.1), built by
-[CI run 40684462993](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40684462993).
+The published candidate is `0.1.0-alpha.368.1` at clean library revision
+[`4d54ab830508be0d4d3189d86858e909c6ed8641`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/4d54ab830508be0d4d3189d86858e909c6ed8641).
+It makes the PostgreSQL transport consumer persist only the exception type in `LastConsumeError`, because exception messages can
+embed payload or personal data, and log each failed or poisoned consume attempt with its exception, consumer name, message id and
+attempt number. The unchanged packages, symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.368.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.368.1), built by
+[CI run 40718259006](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40718259006).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.339.1` at revision `7c62d629ac152de5993653bbcabf7430c40cfd35` and
+The previous previews `0.1.0-alpha.359.1` at revision `7893ca689c8aa10602cb8accb66f83a7ac2f6525`,
+`0.1.0-alpha.339.1` at revision `7c62d629ac152de5993653bbcabf7430c40cfd35` and
 `0.1.0-alpha.336.1` at revision `529f0cc4e2df034a1718e2ff8e71fc38d59fc587` remain published. The releases of earlier previews were
 removed from the library repository while their tags stay, so they cannot be staged again; their application validation is
 historical evidence.

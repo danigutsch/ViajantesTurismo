@@ -139,7 +139,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         affectedRows.ShouldBe(1);
     }
 
-    /// <summary>Waits up to 30 seconds until the Catalog transport message for the admin tour is processed, failing fast on a recorded consume error.</summary>
+    /// <summary>Waits up to 30 seconds until the Catalog transport message for the admin tour is processed, failing fast on a recorded consume error type.</summary>
     internal async Task WaitForCatalogTransportMessageProcessed(Guid adminTourId, CancellationToken ct)
     {
         await Eventually.Until(
@@ -148,7 +148,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
                 var (ProcessedAt, LastConsumeError) = await ReadCatalogTransportMessageStatus(adminTourId, ct);
                 if (LastConsumeError is not null)
                 {
-                    throw new InvalidOperationException(LastConsumeError);
+                    throw new InvalidOperationException($"Catalog transport consume failed with {LastConsumeError}; see the consumer logs.");
                 }
 
                 return ProcessedAt is not null && LastConsumeError is null ? "processed" : null;
