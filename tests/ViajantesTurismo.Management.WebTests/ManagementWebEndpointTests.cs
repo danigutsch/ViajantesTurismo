@@ -144,6 +144,7 @@ public sealed class ManagementWebEndpointTests
         bytesRead.ShouldBe(1);
 
         // Act
+        await upstreamStream.StalledReadStarted.WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
         response.Dispose();
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Xunit.TestContext.Current.CancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(10));
