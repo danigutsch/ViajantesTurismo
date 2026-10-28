@@ -74,6 +74,7 @@ dotnet_diagnostic.IDE0301.severity = warning
 dotnet_diagnostic.IDE0303.severity = warning
 dotnet_diagnostic.IDE0350.severity = warning
 dotnet_diagnostic.IDE0370.severity = warning
+dotnet_diagnostic.IDE0130.severity = warning
 dotnet_style_prefer_simplified_boolean_expressions = true:warning
 dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
 dotnet_style_prefer_conditional_expression_over_return = true:suggestion
@@ -323,6 +324,18 @@ dotnet_diagnostic.SKSTYLE004.severity = warning
 # Owner: behavior-test maintainers. Remove when unused binding types can be internalized safely.
 [tests/ViajantesTurismo.Admin.BehaviorTests/**.cs]
 dotnet_diagnostic.CA1812.severity = none
+
+# Contract projects keep one flat namespace per project, whatever their folders, so clients import a single namespace.
+# This is the standard IDE0130 folder-matching option, not a severity change.
+# Owner: API contract maintainers.
+[src/ViajantesTurismo.*.Contracts.{Application,Http}/**.cs]
+dotnet_style_namespace_match_folder = false
+
+# HostedTests merged several test projects and keeps their original namespaces, such as ViajantesTurismo.Admin.SystemTests,
+# so filters, documentation, and partially qualified references stay stable (see tests/ViajantesTurismo.HostedTests/Admin/System/README.md).
+# Owner: hosted test maintainers.
+[tests/ViajantesTurismo.HostedTests/**.cs]
+dotnet_style_namespace_match_folder = false
 
 # HTTP contract contexts read external API payloads, so they must keep case-insensitive property names (SKSTYLE015).
 # Owner: API contract maintainers. Persistence, fingerprint, integration-event, and server binding contexts stay out of

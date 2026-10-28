@@ -108,6 +108,7 @@ The matrix below focuses on the high-value rules and families that matter to rep
 | CancellationToken name | `SKSTYLE002` require `ct` | `SharedKernel.Style.Analyzers` | Adopted | `warning` | None; the analyzer skips overrides, interface implementations, and lambda discards (`_`) | Keep active |
 | CancellationToken defaults | `SKSTYLE003` forbid `CancellationToken ct = default` | `SharedKernel.Style.Analyzers` | Adopted | `warning` | None; the analyzer skips overrides and interface implementations that inherit the default | Keep active |
 | One top-level type per file | `SKSTYLE004` | `SharedKernel.Style.Analyzers` | Adopted | `warning` | None | Keep active |
+| Namespace matches folder | `IDE0130` | Built-in .NET analyzers | Adopted | `warning` | No severity exception; `dotnet_style_namespace_match_folder = false` declares the flat namespaces of `*.Contracts.Application` and `*.Contracts.Http` and the documented legacy namespaces of `HostedTests` | Keep active |
 | Domain event suffix | `SKSTYLE008` | `SharedKernel.Style.Analyzers` | Adopted | package default `warning` | Applies only to `IDomainEvent` implementations | Keep active and use rename code fix when safe |
 | Aspire image pins | `SKASPIRE001` require tag and verified digest together | `SharedKernel.Aspire.Analyzers` | Adopted | package default `warning` | Code fix inserts uncompilable placeholders only; placeholders must be replaced before commit/build | Keep active and resolve with registry-verified tag and digest values only |
 | Test pragma suppressions | `SKTEST001` | `SharedKernel.Testing.Analyzers` | Adopted | package default `warning` | Test-only by design | Keep active and narrow |
@@ -191,8 +192,9 @@ Concrete Phase 1 backlog:
    `IDE0060`, `IDE0301`, `IDE0303`, `IDE0305`, `IDE0350`, and `IDE0370` are `warning` with zero
    violations and no exceptions. All `CA*` rules are already `warning` through `AnalysisMode=All`, and
    no `S*` analyzer is installed. Left as is on purpose: `IDE0008` and `IDE0058` contradict the repository's
-   `var` and fluent-call conventions. Still open: `IDE0130` (namespace versus folder), `IDE0010` and
-   `IDE0072` (populate switch), and `IDE0048` (add parentheses; overlaps with `IDE0047`).
+   `var` and fluent-call conventions. `IDE0130` (namespace versus folder) is `warning` with a
+   folder-matching option for the flat-namespace projects. Still open: `IDE0010` and `IDE0072` (populate switch),
+   and `IDE0048` (add parentheses; overlaps with `IDE0047`).
 2. Done: `SKSTYLE001` through `SKSTYLE004` are `warning` with zero violations and no
    `SKSTYLE004` file exceptions.
 3. Done: the repository stays clean at warning severity with no `SuppressMessage` entries for
