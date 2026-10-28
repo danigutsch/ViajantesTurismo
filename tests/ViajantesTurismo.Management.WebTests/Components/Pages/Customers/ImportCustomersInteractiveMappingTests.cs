@@ -9,7 +9,6 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
 
     public ImportCustomersInteractiveMappingTests()
     {
-        Services.AddMetrics();
         Services.AddUiFailureReporting();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);

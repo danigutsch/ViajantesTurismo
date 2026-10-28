@@ -6,17 +6,17 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.336.1` at clean library revision
-[`529f0cc4e2df034a1718e2ff8e71fc38d59fc587`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/529f0cc4e2df034a1718e2ff8e71fc38d59fc587).
-It makes `SharedKernel.Blazor` count handled UI failures itself: `UiFailureReporter` takes an `IMeterFactory` and
-increments `handled_ui_failures_total` on the `PandaBear.Blazor` meter. `IHandledFailureCounter` and its counter-failure
-event were removed. Otherwise it equals `0.1.0-alpha.334.1`. The unchanged packages, symbol archives and manifest are published in
-GitHub prerelease
-[`v0.1.0-alpha.336.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.336.1), built by
-[CI run 40601834900](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40601834900).
+The published candidate is `0.1.0-alpha.339.1` at clean library revision
+[`7c62d629ac152de5993653bbcabf7430c40cfd35`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/7c62d629ac152de5993653bbcabf7430c40cfd35).
+It makes `AddUiFailureReporting()` in `SharedKernel.Blazor` register the metrics services it needs, so callers no
+longer add `AddMetrics()` first. Otherwise it equals `0.1.0-alpha.336.1`. The unchanged packages, symbol archives and manifest are
+published in GitHub prerelease
+[`v0.1.0-alpha.339.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.339.1), built by
+[CI run 40663717062](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/40663717062).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
-The previous previews `0.1.0-alpha.334.1` at revision `13737c2e30542e994515ca31126cfd25fa43cb80`,
+The previous previews `0.1.0-alpha.336.1` at revision `529f0cc4e2df034a1718e2ff8e71fc38d59fc587`,
+`0.1.0-alpha.334.1` at revision `13737c2e30542e994515ca31126cfd25fa43cb80`,
 `0.1.0-alpha.332.1` at revision `51f88513f0d13013e7b764b593b2462d560b359f`,
 `0.1.0-alpha.303.1` at revision `04c5f509c63e7fc83693d47b9e1695b8baecdef8`,
 `0.1.0-alpha.294.1` at revision `a2901f0188a49795e6af37c945e98f8a2b88319b`,

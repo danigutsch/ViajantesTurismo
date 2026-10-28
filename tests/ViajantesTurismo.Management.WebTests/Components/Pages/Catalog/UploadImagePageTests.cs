@@ -15,7 +15,6 @@ public sealed class UploadImagePageTests : BunitContext
 
     public UploadImagePageTests()
     {
-        Services.AddMetrics();
         Services.AddUiFailureReporting();
         Services.AddSingleton<ICatalogToursApiClient>(catalogApi);
     }
