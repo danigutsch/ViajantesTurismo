@@ -106,6 +106,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.Documentation" Version="0.1.0-alpha.339.1" />
         <PackageVersion Include="PandaBear.SharedKernel.Domain" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Domain.Analyzers" Version="0.1.0-alpha.339.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.IO.Analyzers" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Domain.CodeFixes" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Domain.EntityFrameworkCore" Version="0.1.0-alpha.339.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Domain.SourceGenerator" Version="0.1.0-alpha.339.1" />

@@ -62,6 +62,12 @@
         "resolved": "0.1.0-alpha.339.1",
         "contentHash": "7HYQtvI7LJr6G+CHPjdcWKxBJOwkZIPNfSIOF/3JpfLGFDmFZela/ySuC+pp6/FxQtGE44SGbeU1lm0GuMBKrw=="
       },
+      "PandaBear.SharedKernel.IO.Analyzers": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.339.1, )",
+        "resolved": "0.1.0-alpha.339.1",
+        "contentHash": "gStVGjmyHQRaRuSdOhBAJ88xX0clNxbGGPtwdARTDWwyAcpExrLdd7BBKnuF7m2Ioqtt2v42TBTkVkRoN/Kadw=="
+      },
       "PandaBear.SharedKernel.OpenApi": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.339.1, )",

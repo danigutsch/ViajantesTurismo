@@ -84,6 +84,12 @@
         "resolved": "0.1.0-alpha.339.1",
         "contentHash": "mZJ+z/hQfI3+kOjFJDkJIzVmiUoPlkK9gWTEXVGSQ+w9WZVBk7ieNqsHiyCeL0K/XPLN+o00KgLcoPvY7X8JVg=="
       },
+      "PandaBear.SharedKernel.IO.Analyzers": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.339.1, )",
+        "resolved": "0.1.0-alpha.339.1",
+        "contentHash": "gStVGjmyHQRaRuSdOhBAJ88xX0clNxbGGPtwdARTDWwyAcpExrLdd7BBKnuF7m2Ioqtt2v42TBTkVkRoN/Kadw=="
+      },
       "PandaBear.SharedKernel.MalwareScanning": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.339.1, )",
