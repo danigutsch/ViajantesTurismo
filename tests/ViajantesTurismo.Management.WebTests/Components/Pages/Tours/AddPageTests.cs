@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -5,6 +6,7 @@ using Add = ViajantesTurismo.Management.Web.Components.Pages.Tours.Add;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
 
+[TestScope(TestScope.Component)]
 public class AddPageTests : BunitContext
 {
     private readonly FakeToursApiClient _fakeToursApi;
@@ -20,7 +22,6 @@ public class AddPageTests : BunitContext
 
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
     public void Defaults_schedule_dates_from_the_controlled_utc_business_date()
     {
         // Arrange
@@ -175,7 +176,6 @@ public class AddPageTests : BunitContext
     }
 
     [Theory]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     [InlineData("/api/v1/route")]
@@ -294,7 +294,6 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Validation_problem_outcome_shows_server_validation_errors()

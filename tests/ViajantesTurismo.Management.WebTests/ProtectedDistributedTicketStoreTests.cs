@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
 namespace ViajantesTurismo.Management.WebTests;
 
@@ -5,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// Verifies protected server-side authentication ticket storage.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Unit)]
 public sealed class ProtectedDistributedTicketStoreTests
 {
     [Theory]

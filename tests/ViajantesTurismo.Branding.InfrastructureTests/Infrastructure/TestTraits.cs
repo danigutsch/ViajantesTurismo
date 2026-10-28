@@ -7,8 +7,6 @@ internal static class TestTraits
     public const string EndpointCategory = PandaBear.Testing.TestTraitValues.EndpointCategory;
     /// <summary>Trait value for security tests.</summary>
     public const string SecurityCategory = PandaBear.Testing.TestTraitValues.SecurityCategory;
-    /// <summary>Trait value for API integration tests.</summary>
-    public const string ApiIntegrationScope = PandaBear.Testing.TestTraitValues.ApiIntegrationScope;
     /// <summary>Trait value for the Branding area.</summary>
     public const string BrandingArea = "branding";
     /// <summary>Trait value for tests that use a test server host.</summary>

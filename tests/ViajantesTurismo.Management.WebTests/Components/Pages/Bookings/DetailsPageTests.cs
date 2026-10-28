@@ -8,7 +8,7 @@ using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(SharedKernelTestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class DetailsPageTests : BunitContext
 {
     private readonly FakeBookingsApiClient _fakeBookingsApi = new();
@@ -27,7 +27,6 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void API_failure_shows_a_sanitized_unavailable_message_instead_of_not_found()
@@ -66,7 +65,6 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Booking_details_show_room_and_bike_selections_semantically()

@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using System.Net;
 using Microsoft.Extensions.Hosting;
 using PandaBear.AspNetCore;
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// Verifies Management Web authentication startup configuration.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Integration)]
 public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
 {
     [Fact]

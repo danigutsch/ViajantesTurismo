@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
@@ -6,8 +7,8 @@ using ViajantesTurismo.Management.WebTests.Infrastructure;
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[TestScope(TestScope.Component)]
 public sealed class EditPageSaveFailureTests : BunitContext
 {
     private const string UpdateFailedMessage = "We couldn't update the booking right now. Please try again.";

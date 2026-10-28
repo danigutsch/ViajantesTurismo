@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using System.Security.Claims;
 using ViajantesTurismo.Management.Web;
 
@@ -7,7 +8,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// Verifies OIDC sign-in creates trusted token-session claims.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Unit)]
 public sealed class ManagementOpenIdConnectEventsTests
 {
     [Fact]

@@ -1,10 +1,11 @@
+using PandaBear.Testing;
 using System.Text;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Unit)]
 public sealed class ImportCustomersCsvProcessorTests
 {
     [Fact]

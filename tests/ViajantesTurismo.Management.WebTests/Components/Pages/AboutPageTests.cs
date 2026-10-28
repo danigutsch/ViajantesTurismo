@@ -1,13 +1,14 @@
+using PandaBear.Testing;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Management.Web.Components.Pages;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages;
 
+[TestScope(TestScope.Component)]
 public sealed class AboutPageTests : BunitContext
 {
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, PandaBear.Testing.SharedKernelTestTraitNames.UnitScope)]
     public void Displays_the_effective_host_environment()
     {
         // Arrange

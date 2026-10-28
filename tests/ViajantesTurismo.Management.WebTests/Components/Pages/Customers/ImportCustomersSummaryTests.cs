@@ -1,6 +1,8 @@
+using PandaBear.Testing;
 using PandaBear.Blazor;
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+[TestScope(TestScope.Component)]
 public sealed class ImportCustomersSummaryTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();

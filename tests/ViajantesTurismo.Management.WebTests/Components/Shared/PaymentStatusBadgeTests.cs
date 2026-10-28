@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Helpers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 
+[TestScope(TestScope.Component)]
 public sealed class PaymentStatusBadgeTests : BunitContext
 {
     [Theory]

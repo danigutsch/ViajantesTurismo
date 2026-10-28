@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components.Layout;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Layout;
 
+[TestScope(TestScope.Component)]
 public class NavMenuTests : BunitContext
 {
     [Fact]

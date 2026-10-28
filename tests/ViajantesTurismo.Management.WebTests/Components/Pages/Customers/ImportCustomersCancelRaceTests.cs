@@ -1,9 +1,10 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class ImportCustomersCancelRaceTests : BunitContext
 {
     private const string CanceledStatus = "Canceled: customers.csv. Confirm the import to retry.";

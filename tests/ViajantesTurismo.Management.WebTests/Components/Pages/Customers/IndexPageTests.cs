@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Customers.Index;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+[TestScope(TestScope.Component)]
 public class IndexPageTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi;

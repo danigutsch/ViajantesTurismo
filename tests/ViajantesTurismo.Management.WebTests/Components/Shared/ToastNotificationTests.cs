@@ -1,5 +1,7 @@
+using PandaBear.Testing;
 namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 
+[TestScope(TestScope.Component)]
 public sealed class ToastNotificationTests : BunitContext
 {
     [Fact]

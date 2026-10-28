@@ -1,8 +1,10 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Bookings.Index;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
+[TestScope(TestScope.Component)]
 public class IndexPageTests : BunitContext
 {
     private readonly FakeBookingsApiClient _fakeBookingsApi;
@@ -21,7 +23,6 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Load_failure_shows_a_sanitized_error_instead_of_an_empty_state()

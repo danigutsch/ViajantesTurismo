@@ -12,7 +12,7 @@ using ViajantesTurismo.Management.WebTests.Infrastructure;
 namespace ViajantesTurismo.Management.WebTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Integration)]
 public sealed class ManagementWebEndpointTests
 {
     [Theory]

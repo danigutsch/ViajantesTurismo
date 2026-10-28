@@ -7,7 +7,7 @@ using ViajantesTurismo.Management.Web.Components.Pages.Payments;
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(SharedKernelTestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class PaymentPagesTests : BunitContext
 {
     private PaymentPageHttpHandler Handler => Services.GetRequiredService<PaymentPageHttpHandler>();

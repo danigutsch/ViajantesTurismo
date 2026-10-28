@@ -1,8 +1,10 @@
+using PandaBear.Testing;
 using PandaBear.Blazor;
 using System.Globalization;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+[TestScope(TestScope.Component)]
 public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
 {
     private readonly FakeCustomersApiClient _fakeCustomersApi = new();

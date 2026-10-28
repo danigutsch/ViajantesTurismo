@@ -9,7 +9,7 @@ using ViajantesTurismo.Management.Web.Components.Pages.Documents;
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(SharedKernelTestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class DetailsPageTests : BunitContext
 {
     private readonly FakeDocumentsApiClient documentsApiClient = new();

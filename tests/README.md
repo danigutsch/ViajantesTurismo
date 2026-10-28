@@ -179,11 +179,12 @@ Tie-breaks:
 - A test that starts a database container is `integration`.
 - A test that drives a browser is `system`, with `Host=browser`.
 - An in-process `TestServer` test is `integration`, unless it only renders components, which is `ui-integration`.
-- A bUnit test of one component is `component`; of a routed page composition, `ui-integration`.
+- A bUnit render of a component or page against faked backends is `component`. `ui-integration` is reserved for composed UI
+  hosted through a test server without a browser.
 - When two values fit, pick the one with the more real collaborators.
 
 Legacy values map as: `api-integration` and `database-integration` to `integration`; `web-integration` to
-`ui-integration` or `integration` by class; `Unit` to `unit`; `browser` to `system`.
+`component` or `integration` by class; `Unit` to `unit`; `browser` to `system`.
 
 ### Project and folder mapping
 
@@ -197,9 +198,11 @@ Legacy values map as: `api-integration` and `database-integration` to `integrati
 | `*.ApiServiceTests` | `integration` | assembly |
 | `Branding.InfrastructureTests` | `integration` | assembly |
 | `Admin.UiIntegrationTests` | `ui-integration` | assembly |
-| `Management.WebTests` `Components/` | `component` | class |
-| `Management.WebTests` `Services/` and host tests | `unit`, or `integration` for test-host classes | class |
-| `Public.WebTests` | `ui-integration` for bUnit classes, `integration` for endpoint and host classes | class |
+| `Management.WebTests` bUnit classes under `Components/` | `component` | class |
+| `Management.WebTests` non-bUnit classes under `Components/`, `Services/`, `Infrastructure/` and plain handler or store classes | `unit` | class |
+| `Management.WebTests` classes that start a `TestServer` or `ManagementWebEndpointTestHost` | `integration` | class |
+| `Public.WebTests` bUnit classes | `component` | class |
+| `Public.WebTests` endpoint, caching, header, and startup classes | `integration` | class |
 | `HostedTests` `Admin/Api`, `*/Infrastructure`, `Catalog/Media`, `Management/Security` | `integration` | folder base class or class |
 | `HostedTests` `Admin/System`, `Management/Browser` | `system` | folder base class or class |
 

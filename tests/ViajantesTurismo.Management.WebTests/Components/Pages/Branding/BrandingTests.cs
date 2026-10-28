@@ -1,8 +1,10 @@
+using PandaBear.Testing;
 using BrandingPage = ViajantesTurismo.Management.Web.Components.Pages.Branding.Branding;
 using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Branding;
 
+[TestScope(TestScope.Component)]
 public sealed class BrandingTests : BunitContext
 {
     private readonly FakeBrandingApiClient brandingApi = new();

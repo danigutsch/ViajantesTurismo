@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+[TestScope(TestScope.Unit)]
 public sealed class ImportCustomersWorkflowStateTests
 {
     [Fact]

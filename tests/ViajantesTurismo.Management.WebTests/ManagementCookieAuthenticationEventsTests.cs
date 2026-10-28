@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Duende.AccessTokenManagement;
 using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
@@ -13,7 +14,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// Verifies sign-out removes protected user and exchanged-audience tokens for the current session.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Unit)]
 public sealed class ManagementCookieAuthenticationEventsTests
 {
     [Fact]

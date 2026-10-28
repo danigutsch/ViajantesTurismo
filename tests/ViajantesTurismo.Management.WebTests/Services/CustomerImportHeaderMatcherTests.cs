@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using System.Text;
 
 namespace ViajantesTurismo.Management.WebTests.Services;
 
+[TestScope(TestScope.Unit)]
 public sealed class CustomerImportHeaderMatcherTests
 {
     [Fact]

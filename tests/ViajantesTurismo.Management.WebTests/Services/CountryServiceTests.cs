@@ -1,5 +1,7 @@
+using PandaBear.Testing;
 namespace ViajantesTurismo.Management.WebTests.Services;
 
+[TestScope(TestScope.Unit)]
 public sealed class CountryServiceTests : IDisposable
 {
     private readonly string _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

@@ -1,8 +1,10 @@
+using PandaBear.Testing;
 using PandaBear.HttpClients;
 using Edit = ViajantesTurismo.Management.Web.Components.Pages.Tours.Edit;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
 
+[TestScope(TestScope.Component)]
 public class EditPageTests : BunitContext
 {
     private readonly FakeToursApiClient _fakeToursApi;

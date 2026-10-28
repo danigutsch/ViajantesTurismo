@@ -9,7 +9,6 @@ using ViajantesTurismo.Catalog.Contracts.Application;
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-[Trait(TestTraitNames.ScopeName, TestTraitValues.ApiIntegrationScope)]
 public sealed class CatalogGalleryPublicationBoundaryTests
 {
     [Theory]

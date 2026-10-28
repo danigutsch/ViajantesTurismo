@@ -10,7 +10,6 @@ using ViajantesTurismo.Resources;
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ApiIntegrationScope)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class ServiceDefaultsHealthEndpointTests

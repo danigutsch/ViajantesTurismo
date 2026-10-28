@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using System.Net;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,7 @@ using ReviewImageAccessibility = ViajantesTurismo.Management.Web.Components.Page
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class ReviewImageAccessibilityPageTests : BunitContext
 {
     private readonly FakeCatalogToursApiClient catalogApi = new();

@@ -1,8 +1,10 @@
+using PandaBear.Testing;
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+[TestScope(TestScope.Component)]
 public sealed class CreateRedirectPageTests : BunitContext
 {
     [Fact]

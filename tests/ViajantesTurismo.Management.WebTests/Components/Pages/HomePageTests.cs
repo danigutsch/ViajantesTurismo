@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages;
 
+[TestScope(TestScope.Component)]
 public class HomePageTests : BunitContext
 {
     [Fact]

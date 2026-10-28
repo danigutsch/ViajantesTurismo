@@ -1,10 +1,11 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class ImportCustomersForgedEventTests : BunitContext
 {
     private const string RequiredFieldsMessage = "All required fields must be mapped before importing.";

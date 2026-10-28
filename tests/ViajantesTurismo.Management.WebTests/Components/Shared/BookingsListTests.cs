@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 
+[TestScope(TestScope.Component)]
 public class BookingsListTests : BunitContext
 {
     public BookingsListTests()

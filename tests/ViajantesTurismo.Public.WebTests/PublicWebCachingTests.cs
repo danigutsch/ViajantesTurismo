@@ -5,6 +5,7 @@ namespace ViajantesTurismo.Public.WebTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[TestScope(TestScope.Integration)]
 public sealed class PublicWebCachingTests
 {
     [Theory]

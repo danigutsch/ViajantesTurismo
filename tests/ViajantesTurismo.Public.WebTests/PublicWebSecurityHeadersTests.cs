@@ -4,6 +4,7 @@ namespace ViajantesTurismo.Public.WebTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[TestScope(TestScope.Integration)]
 public sealed class PublicWebSecurityHeadersTests
 {
     [Fact]
