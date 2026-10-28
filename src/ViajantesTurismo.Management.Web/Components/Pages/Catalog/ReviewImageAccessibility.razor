@@ -110,6 +110,7 @@ else
         _loading = false;
     }
 
+    /// <summary>Ignores a stale click: Blazor Server can deliver an event after an approval cleared the pending image but before the re-render removed the buttons.</summary>
     private async Task GenerateDraft()
     {
         if (_image is null)
@@ -141,6 +142,7 @@ else
         }
     }
 
+    /// <summary>Ignores a stale click: Blazor Server can deliver an event after an approval cleared the pending image but before the re-render removed the buttons.</summary>
     private async Task Approve()
     {
         if (_image is null)
