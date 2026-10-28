@@ -114,7 +114,8 @@ public static class ServiceDefaultsExtensions
             .AddBrandingMetrics()
             .AddSharedKernelMediatorMetrics()
             .AddSharedKernelProviderMetrics()
-            .AddSharedKernelAspNetCoreMetrics();
+            .AddSharedKernelAspNetCoreMetrics()
+            .AddSharedKernelBlazorMetrics();
     }
 
     private static void ConfigureOpenTelemetryTracing(TracerProviderBuilder tracing, string applicationName)

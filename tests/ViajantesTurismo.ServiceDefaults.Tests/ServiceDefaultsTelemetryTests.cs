@@ -127,6 +127,36 @@ public sealed class ServiceDefaultsTelemetryTests
     }
 
     [Fact]
+    public void Add_service_defaults_exports_the_handled_ui_failure_metric()
+    {
+        // Arrange
+        const string blazorMeterName = "PandaBear.Blazor";
+        const string handledUiFailuresCounter = "handled_ui_failures_total";
+        var exportedMetricNames = new ConcurrentQueue<string>();
+        using var meter = new Meter(blazorMeterName);
+        var counter = meter.CreateCounter<long>(handledUiFailuresCounter);
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+
+        builder.AddServiceDefaults();
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
+            });
+
+        using var host = builder.Build();
+        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
+
+        // Act
+        counter.Add(1);
+        meterProvider.ForceFlush();
+
+        // Assert
+        exportedMetricNames.ShouldContain(handledUiFailuresCounter, StringComparer.Ordinal);
+    }
+
+    [Fact]
     public void Add_service_defaults_exports_mediator_custom_tracing_and_metrics()
     {
         // Arrange

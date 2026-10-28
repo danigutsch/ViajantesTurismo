@@ -13,6 +13,7 @@ each surface is registered, and how to verify the emitted signals locally.
 | Meter | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, idempotency, stream update, and projection metrics. |
 | Meter | `ViajantesTurismo.Branding` | `src/ViajantesTurismo.Branding.AspNetCore/BrandingTelemetry.cs` | Emits `branding.cache.requests` and `branding.cache.invalidations` tagged with `outcome` only, plus the `branding.settings.source_revision` gauge. No Branding values are recorded. |
 | Meter | `PandaBear.AspNetCore` | `PandaBear.SharedKernel.AspNetCore` (`AspNetCoreTelemetry.MeterName`) | Emits `unhandled_exceptions_total`, `authentication_events_total` and `rate_limit_rejections_total` from the Admin and Catalog API hosts. Log `EventId` values 4001, 4101 and 4102 carry bounded fields only; no exception text, token or claim. |
+| Meter | `PandaBear.Blazor` | `PandaBear.SharedKernel.Blazor` (`UiFailureReporter.MeterName`) | Emits `handled_ui_failures_total` tagged `error_type` and `operation` from Management.Web. Log `EventId` 7001 carries the operation, exception type and trace id only. |
 | ActivitySource | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store append/load/checkpoint spans. |
 | Meter | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store duration, count, and conflict metrics. |
 | ActivitySource | `ViajantesTurismo.MigrationService.DatabaseInitializationWorker` | `src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs` | Emits the `DatabaseInitialization` span around migrations and Development-only atomic data initialization. |
@@ -143,6 +144,7 @@ debug, or other providers unless those providers enforce the same privacy bounda
     - `AddCatalogMetrics()` -> `metrics.AddMeter(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
     - `AddBrandingMetrics()` -> `metrics.AddMeter("ViajantesTurismo.Branding")`
     - `AddSharedKernelAspNetCoreMetrics()` -> `metrics.AddMeter("PandaBear.AspNetCore")`
+    - `AddSharedKernelBlazorMetrics()` -> `metrics.AddMeter("PandaBear.Blazor")`
     - `AddSharedKernelProviderMetrics()` -> `metrics.AddMeter("SharedKernel.EventSourcing.Npgsql")`
 - Tracing registration:
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`

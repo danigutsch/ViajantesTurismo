@@ -7,6 +7,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
 
     public ImportCustomersSummaryTests()
     {
+        Services.AddMetrics();
         Services.AddUiFailureReporting();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
