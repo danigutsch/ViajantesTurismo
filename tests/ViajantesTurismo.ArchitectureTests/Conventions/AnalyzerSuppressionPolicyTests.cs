@@ -119,13 +119,15 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             "custom-config:.editorconfig:SKTEST004",
             "custom-config:.editorconfig:SKTEST005",
             "custom-config:.editorconfig:SKTEST006",
+            "custom-config:.editorconfig:SKTEST018",
             "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs:none",
             "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.HostedTests/Catalog/Infrastructure/Tours/CatalogTourSlugLockPostgreSqlTests.cs:none",
             "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.Catalog.UnitTests/PollingBackgroundServiceTestHarness.cs:none",
             "import:tests/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))",
             "package:Directory.Build.props:PandaBear.SharedKernel.Style.Analyzers",
             "package:Directory.Build.props:PandaBear.SharedKernel.Style.CodeFixes",
-            "package:tests/Directory.Build.props:PandaBear.SharedKernel.Testing.Analyzers"
+            "package:tests/Directory.Build.props:PandaBear.SharedKernel.Testing.Analyzers",
+            "package:tests/Directory.Build.props:PandaBear.SharedKernel.Testing.Xunit"
         ];
         var buildFiles = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "Directory.Build.props")
             .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "Directory.Build.targets"))
