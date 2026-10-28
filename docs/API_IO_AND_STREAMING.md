@@ -68,6 +68,25 @@ separately from the stream design. Revisit
 measured problem, or if a real-host measurement shows buffering before the endpoint dominates. Preserve the size
 checks, the scan-before-parse order for CSV, actual-length comparison, and cancellation in any later change.
 
+## Upload disconnect, slow clients, and timeouts
+
+`CustomerImportUploadOverKestrelTests` (Admin) and `MediaUploadOverKestrelTests` (Catalog) drive the customer import
+(`/customers/import`, `/customers/import/commit`) and tour image upload endpoints over real HTTP on a loopback Kestrel
+server, not TestServer, with fake scanners and stores.
+
+| Behavior | Observed contract |
+| --- | --- |
+| Client aborts mid-body | The request ends before the endpoint body runs: either the request token fires or the framework answers the incomplete multipart body with `400`, and which one is visible first is a race. The scanner is never called and nothing is persisted. The framework reads the form before the endpoint body, so the endpoint never starts |
+| Slow client, small chunks | Completes; the scanner receives the exact bytes once, only after the last chunk was sent. Body reads are at most 81,920 bytes |
+| Request over the `RequestSizeLimit` | `413` from Kestrel before the body is read; no scan, nothing persisted |
+| File over the file limit but within the request limit | `400`; no scan, nothing persisted |
+| Stalled client below a minimum body data rate | `408` from Kestrel; no scan, nothing persisted |
+
+Timeouts: the Admin and Catalog API hosts configure no `MinRequestBodyDataRate`, `RequestHeadersTimeout`, or
+`KeepAliveTimeout` (only `UseKestrelHttpsConfiguration`), so Kestrel framework defaults apply. The `408` test sets
+`MinRequestBodyDataRate` on the test server only, to prove the endpoints abort the read and never scan when a rate is
+enforced. It does not claim production configures one.
+
 ## Decisions not taken
 
 No `IAsyncEnumerable<T>` endpoint, SSE endpoint, WebSocket protocol, SignalR hub, gRPC streaming, or
