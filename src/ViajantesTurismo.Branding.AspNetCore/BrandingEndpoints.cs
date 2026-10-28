@@ -239,9 +239,9 @@ internal static class BrandingEndpoints
         };
     }
 
+    /// <summary>ProblemHttpResult avoids adding a new published 400 response while preserving the validation payload.</summary>
     private static ProblemHttpResult ToValidationProblem(ResultError error)
     {
-        // ProblemHttpResult avoids adding a new published 400 response while preserving the validation payload.
         var validationProblem = TypedResults.ValidationProblem(ToValidationProblemDictionary(error.ValidationErrors), detail: error.Detail);
         return TypedResults.Problem(validationProblem.ProblemDetails);
     }

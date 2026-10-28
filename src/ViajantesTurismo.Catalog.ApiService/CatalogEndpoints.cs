@@ -809,9 +809,9 @@ internal static class CatalogEndpoints
         };
     }
 
+    /// <summary>Typed NotFound results infer a new 404 response; removing it retains the existing published OpenAPI response set.</summary>
     private static RouteHandlerBuilder RemoveInferredResponseMetadata(this RouteHandlerBuilder routeHandlerBuilder, int statusCode)
     {
-        // Typed NotFound results infer a new 404 response; retain the existing published OpenAPI response set.
         routeHandlerBuilder.Finally(endpointBuilder =>
         {
             for (var index = endpointBuilder.Metadata.Count - 1; index >= 0; index--)

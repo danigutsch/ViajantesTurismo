@@ -108,7 +108,6 @@ internal sealed class EfBrandingSettingsStore(
         }
         catch (DbUpdateConcurrencyException)
         {
-            // Another bootstrapper started revisions first; that single revision 1 stands.
             dbContext.ChangeTracker.Clear();
             if (await Load(ct).ConfigureAwait(false) is not { IsRevisioned: true })
             {
@@ -167,6 +166,10 @@ internal sealed class EfBrandingSettingsStore(
     private Task<BrandingSettingsRecord?> Load(CancellationToken ct) =>
         dbContext.BrandingSettings.SingleOrDefaultAsync(settings => settings.Id == BrandingSettingsRecord.SettingsId, ct);
 
+    /// <summary>
+    /// Two writers creating the first row, or the same revision, collide on a key: same outcome as a stale revision.
+    /// Every other persistence failure propagates unchanged.
+    /// </summary>
     private async Task CommitRevision(BrandingSettingsRecord current, CancellationToken ct)
     {
         var committedAt = timeProvider.GetUtcNow();
@@ -180,8 +183,6 @@ internal sealed class EfBrandingSettingsStore(
         catch (DbUpdateException exception) when (exception is not DbUpdateConcurrencyException
                                                   && exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
-            // Two writers creating the first row, or the same revision, collide on a key: same outcome as a
-            // stale revision. Every other persistence failure propagates unchanged.
             throw new DbUpdateConcurrencyException("Branding settings changed by another writer.", exception);
         }
     }
