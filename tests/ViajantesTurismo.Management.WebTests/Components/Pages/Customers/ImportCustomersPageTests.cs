@@ -364,7 +364,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => cut.Find("progress[value]").GetAttribute("value").ShouldBe(transferredBytes.ToString(CultureInfo.InvariantCulture)));
         cut.Find("progress[value]").GetAttribute("max").ShouldBe(totalBytes.ToString(CultureInfo.InvariantCulture));
-        var liveRegion = cut.Find("[role='status'].visually-hidden");
+        cut.Find("[role='status'].visually-hidden").ShouldNotBeNull();
 
         // Act
         progress.Report(totalBytes);

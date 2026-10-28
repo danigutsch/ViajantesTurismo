@@ -236,7 +236,7 @@ public sealed class UploadImagePageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => cut.Find("progress[value]").GetAttribute("value").ShouldBe(25L.ToString(CultureInfo.InvariantCulture)));
         cut.Find("progress[value]").GetAttribute("max").ShouldBe(file.Size.ToString(CultureInfo.InvariantCulture));
-        var liveRegion = cut.Find("[role='status'].visually-hidden");
+        cut.Find("[role='status'].visually-hidden").ShouldNotBeNull();
 
         // Act
         progress.Report(file.Size);
