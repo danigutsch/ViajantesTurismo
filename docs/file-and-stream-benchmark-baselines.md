@@ -18,7 +18,7 @@ reach the host through `host.docker.internal`.
 
 ## Upload host modes
 
-The benchmark host exposes two routes with the same response contract (`files=<count>;bytes=<bytes>;matches=<matches>`):
+The benchmark host exposes two routes that share a base response shape (`files=<count>;bytes=<bytes>;matches=<matches>`):
 
 - `POST /upload/scan` (streaming, the default): reads the multipart body with `MultipartReader` and scans the
   request stream once without buffering. It measures only the Kestrel streaming floor and does not mirror production.
