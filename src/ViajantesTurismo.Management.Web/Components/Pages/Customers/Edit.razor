@@ -472,14 +472,10 @@ else
             StateHasChanged();
             try
             {
-                await Task.Delay(3000, token);
-                if (_pendingRedirect && !token.IsCancellationRequested)
+                if (await RedirectDelay.Elapsed(3000, token) && _pendingRedirect)
                 {
                     Navigation.NavigateTo($"/customers/{Id}");
                 }
-            }
-            catch (TaskCanceledException)
-            {
             }
             finally
             {
