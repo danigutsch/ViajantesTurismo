@@ -97,7 +97,10 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 continue;
             }
 
-            using var content = new MemoryStream(variant.Content.ToArray());
+            // Wrap the processor's array without copying; object stores only read the stream during Put.
+            using var content = System.Runtime.InteropServices.MemoryMarshal.TryGetArray(variant.Content, out var segment) && segment.Array is not null
+                ? new MemoryStream(segment.Array, segment.Offset, segment.Count, writable: false)
+                : new MemoryStream(variant.Content.ToArray());
             var objectKey = CreateVariantObjectKey(mediaImageId, processingVersion, variant);
             var stored = await objectStore.Put(
                 new ObjectWriteRequest(
