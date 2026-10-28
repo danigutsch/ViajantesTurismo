@@ -885,6 +885,12 @@
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
+      "viajantesturismo.uploadwire.testing": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Mvc.Testing": "[10.0.13, )"
+        }
+      },
       "Aspire.Npgsql": {
         "type": "CentralTransitive",
         "requested": "[13.6.4, )",
