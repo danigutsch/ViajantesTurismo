@@ -18,7 +18,8 @@ The pin records Linux/Windows package consumption, NativeAOT and stable promotio
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.359.1` at revision `7893ca689c8aa10602cb8accb66f83a7ac2f6525`, `0.1.0-alpha.339.1` at revision `7c62d629ac152de5993653bbcabf7430c40cfd35` and
+The previous previews `0.1.0-alpha.359.1` at revision `7893ca689c8aa10602cb8accb66f83a7ac2f6525`,
+`0.1.0-alpha.339.1` at revision `7c62d629ac152de5993653bbcabf7430c40cfd35` and
 `0.1.0-alpha.336.1` at revision `529f0cc4e2df034a1718e2ff8e71fc38d59fc587` remain published. The releases of earlier previews were
 removed from the library repository while their tags stay, so they cannot be staged again; their application validation is
 historical evidence.
