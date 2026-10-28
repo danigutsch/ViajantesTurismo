@@ -25,7 +25,6 @@ internal sealed class FakeCatalogBrowserApiClient(CatalogTourDto tour) : ICatalo
     public Task UploadStarted => uploadStarted.Task;
 
     /// <summary>Gets a task that completes with the upload's token once the held upload observed cancellation.</summary>
-    /// <inheritdoc />
     public Task<CancellationToken> UploadCanceled => uploadCanceled.Task;
 
     /// <inheritdoc />
