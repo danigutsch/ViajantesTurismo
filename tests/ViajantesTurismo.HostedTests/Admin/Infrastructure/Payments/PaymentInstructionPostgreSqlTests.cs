@@ -10,6 +10,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[TestScope(TestScope.Integration)]
 public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {
     [Theory]

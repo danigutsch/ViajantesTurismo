@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -9,9 +10,9 @@ using TestTraits = ViajantesTurismo.Admin.SystemTests.Infrastructure.TestTraits;
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.MigrationCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.SharedArea)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[TestScope(TestScope.System)]
 public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const string AddTourTitle = "Add Tour";

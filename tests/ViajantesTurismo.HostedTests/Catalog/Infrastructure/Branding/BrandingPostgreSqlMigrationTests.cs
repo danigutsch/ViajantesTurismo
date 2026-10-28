@@ -5,8 +5,8 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Branding;
 
-[Trait(TestTraitNames.ScopeName, TestTraits.DatabaseIntegrationScope)]
 [Trait(TestTraitNames.AreaName, TestTraits.BrandingArea)]
+[TestScope(TestScope.Integration)]
 public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigrationScenario scenario)
     : IClassFixture<BrandingPostgreSqlMigrationScenario>
 {

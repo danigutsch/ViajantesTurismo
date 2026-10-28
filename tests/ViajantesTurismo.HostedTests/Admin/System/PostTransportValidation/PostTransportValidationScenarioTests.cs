@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 using System.Net;
 using ViajantesTurismo.Catalog.Contracts.Application;
@@ -7,6 +8,7 @@ namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
 
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
+[TestScope(TestScope.System)]
 public sealed class PostTransportValidationScenarioTests
 {
     [Fact]

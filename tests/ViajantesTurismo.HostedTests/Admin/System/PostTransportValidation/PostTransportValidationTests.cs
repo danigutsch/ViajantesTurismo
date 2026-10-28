@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -10,11 +11,11 @@ namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
 
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
 [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.CatalogSurface)]
 [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.PublicWebSurface)]
+[TestScope(TestScope.System)]
 public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

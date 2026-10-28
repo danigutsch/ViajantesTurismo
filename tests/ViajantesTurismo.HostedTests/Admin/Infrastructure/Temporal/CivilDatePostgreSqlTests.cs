@@ -3,6 +3,7 @@ using PandaBear.Testing;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Temporal;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[TestScope(TestScope.Integration)]
 public sealed class CivilDatePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {
     [Fact]

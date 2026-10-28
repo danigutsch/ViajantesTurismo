@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -7,6 +8,7 @@ using System.Globalization;
 
 namespace ViajantesTurismo.Admin.SystemTests.Tours;
 
+[TestScope(TestScope.System)]
 public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

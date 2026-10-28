@@ -5,7 +5,7 @@ using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.InfrastructureTests;
 
-[Trait(TestTraitNames.ScopeName, "integration")]
+[TestScope(TestScope.Integration)]
 public sealed class LocalMediaObjectStoreTests
 {
     [Theory]

@@ -1,10 +1,11 @@
+using PandaBear.Testing;
 using System.Net;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 using ViajantesTurismo.Admin.Testing;
 namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
+[TestScope(TestScope.Integration)]
 public sealed class DocumentApiAuthorizationTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Theory]

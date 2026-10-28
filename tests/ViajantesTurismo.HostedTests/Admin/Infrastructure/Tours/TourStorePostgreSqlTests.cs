@@ -4,6 +4,7 @@ using ViajantesTurismo.Admin.Testing.Behavior;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Tours;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[TestScope(TestScope.Integration)]
 public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
     private TourStorePostgreSqlScenario? scenario;

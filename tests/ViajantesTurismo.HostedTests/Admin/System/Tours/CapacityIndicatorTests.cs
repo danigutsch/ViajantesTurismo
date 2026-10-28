@@ -1,9 +1,11 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.Admin.SystemTests.Tours;
 
+[TestScope(TestScope.System)]
 public class CapacityIndicatorTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

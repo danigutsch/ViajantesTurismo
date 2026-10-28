@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -8,6 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
+[TestScope(TestScope.System)]
 public class BookingDeleteAndDialogTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

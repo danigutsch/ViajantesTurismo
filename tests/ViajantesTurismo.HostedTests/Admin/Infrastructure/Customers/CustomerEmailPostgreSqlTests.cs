@@ -6,6 +6,7 @@ using ViajantesTurismo.Admin.Application.Customers;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Customers;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[TestScope(TestScope.Integration)]
 public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
     private CustomerEmailPostgreSqlScenario? scenario;

@@ -5,6 +5,7 @@ using PandaBear.Testing;
 namespace ViajantesTurismo.Admin.Infrastructure.Tests;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, "unit")]
+[TestScope(TestScope.Integration)]
 public sealed class AdminWriteDbContextDesignTimeFactoryTests
 {
     [Fact]

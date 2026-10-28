@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using ViajantesTurismo.Branding.Contracts.Http;
@@ -6,7 +7,7 @@ namespace ViajantesTurismo.Management.WebBrowserTests;
 
 /// <summary>Browser journey for a server validation problem on the Branding form.</summary>
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, "browser")]
+[TestScope(TestScope.System)]
 public sealed class BrandingServerValidationTests : ManagementWebBrowserTestBase
 {
     private const string HostileMessage = "<script>window.injectedByServerMessage = true;</script> Brand name is not accepted.";

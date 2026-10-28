@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
@@ -6,8 +7,8 @@ namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 /// Verifies DCP isolation when multiple test AppHosts start concurrently.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[TestScope(TestScope.Integration)]
 public sealed class ConcurrentAspireTestApplicationTests(HostedTestFixture shared)
 {
     [Fact]

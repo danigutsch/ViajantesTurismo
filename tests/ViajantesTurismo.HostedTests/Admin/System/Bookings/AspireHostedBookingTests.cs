@@ -1,9 +1,11 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Admin.SystemTests.Bookings;
 
+[TestScope(TestScope.System)]
 public class AspireHostedBookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

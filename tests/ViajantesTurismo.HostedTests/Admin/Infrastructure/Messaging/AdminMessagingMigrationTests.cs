@@ -4,6 +4,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Messaging;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.MessagingMigrationCapability)]
+[TestScope(TestScope.Integration)]
 public sealed class AdminMessagingMigrationTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
     private AdminMessagingMigrationScenario? scenario;

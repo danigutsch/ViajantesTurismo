@@ -6,6 +6,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[TestScope(TestScope.Integration)]
 public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
     private PostgreSqlDocumentStoreScenario? scenario;

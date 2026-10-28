@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -11,6 +12,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Shared;
 /// <summary>
 /// E2E smoke tests for list sorting and pagination behavior using owned setup data.
 /// </summary>
+[TestScope(TestScope.System)]
 public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     private const string DescendingSortSelector = "th[aria-sort='descending']";

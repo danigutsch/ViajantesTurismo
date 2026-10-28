@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -10,10 +11,10 @@ using ViajantesTurismo.Admin.SystemTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.SystemTests.Documents;
 
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.SystemScope)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
 [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
 [Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[TestScope(TestScope.System)]
 public sealed class DocumentLifecycleTests(AspireSystemTestFixture fixture)
     : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {

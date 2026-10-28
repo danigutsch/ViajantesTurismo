@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using System.Net;
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -7,8 +8,8 @@ using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+[TestScope(TestScope.Integration)]
 public sealed class BookingCapacityConcurrencyTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]

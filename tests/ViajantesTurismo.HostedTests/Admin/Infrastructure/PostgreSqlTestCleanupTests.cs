@@ -5,6 +5,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Tests;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.DatabaseInitializationCapability)]
+[TestScope(TestScope.Integration)]
 public sealed class PostgreSqlTestCleanupTests
 {
     [Fact]

@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
 namespace ViajantesTurismo.Admin.SystemTests.Shared;
 
+[TestScope(TestScope.System)]
 public class NotFoundPageTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

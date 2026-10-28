@@ -11,11 +11,6 @@ public static class TestTraits
     public const string MigrationCategory = "migration";
 
     /// <summary>
-    /// Scope value for system tests.
-    /// </summary>
-    public const string SystemScope = "system";
-
-    /// <summary>
     /// Area value for shared system test coverage.
     /// </summary>
     public const string SharedArea = "shared";

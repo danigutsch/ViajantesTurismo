@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using System.Net;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
@@ -6,8 +7,8 @@ using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.IntegrationScope)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+[TestScope(TestScope.Integration)]
 public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]

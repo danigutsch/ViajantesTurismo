@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
 using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
@@ -9,6 +10,7 @@ namespace ViajantesTurismo.Admin.SystemTests.Customers;
 /// <summary>
 /// E2E tests for the CSV customer import wizard.
 /// </summary>
+[TestScope(TestScope.System)]
 public partial class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]

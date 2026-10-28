@@ -7,9 +7,9 @@ using PandaBear.Testing;
 namespace ViajantesTurismo.Management.WebIntegrationTests;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-[Trait(SharedKernelTestTraitNames.ScopeName, TestTraits.DatabaseIntegrationScope)]
 [Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
 [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[TestScope(TestScope.Integration)]
 public sealed class ManagementSecurityPersistencePostgreSqlTests(HostedTestFixture shared)
 {
     [Fact]
