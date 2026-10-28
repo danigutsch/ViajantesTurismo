@@ -232,6 +232,7 @@ public sealed class DetailsPageTests : BunitContext
         bookingsApi.AddBooking(booking);
         context.Services.AddSingleton<IBookingsApiClient>(bookingsApi);
         context.Services.AddSingleton<IDocumentsApiClient>(new FakeDocumentsApiClient());
+        context.Services.AddMetrics();
         context.Services.AddUiFailureReporting();
 
         // Act

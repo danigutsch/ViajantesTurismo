@@ -7,6 +7,7 @@ public sealed class MainLayoutInteractivityTests : BunitContext
 {
     public MainLayoutInteractivityTests()
     {
+        Services.AddMetrics();
         Services.AddUiFailureReporting();
     }
 
