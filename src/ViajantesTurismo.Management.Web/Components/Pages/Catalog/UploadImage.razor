@@ -242,7 +242,6 @@
         UploadOperationStatus.Retrying => $"Retrying: {_upload.FileName}",
         UploadOperationStatus.Uploading => $"Uploading {_upload.FileName}: {_upload.BytesTransferred} of {_upload.TotalBytes} bytes.",
         UploadOperationStatus.Processing => $"Server processing {_upload.FileName}: scanning, validating, decoding, and storing the image. Progress is indeterminate.",
-        UploadOperationStatus.Complete => $"Complete: {_upload.FileName}",
         UploadOperationStatus.Canceled => $"Canceled: {_upload.FileName}. Retry when ready.",
         UploadOperationStatus.Failed => $"Failed: {_upload.FailureMessage}",
         _ => string.Empty,
