@@ -255,7 +255,7 @@ dotnet test --project tests/ViajantesTurismo.HostedTests --filter-class "Viajant
 # Run all tests in a namespace
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"
 
-# Exclude slow tests by trait
+# Exclude browser-driven system tests by seam
 dotnet test --project tests/ViajantesTurismo.HostedTests --filter-not-trait "Scope=system"
 ```
 
