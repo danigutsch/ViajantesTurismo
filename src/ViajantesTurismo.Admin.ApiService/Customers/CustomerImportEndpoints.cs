@@ -1,10 +1,10 @@
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using PandaBear.IO;
 using PandaBear.MalwareScanning;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Customers.Import;
@@ -20,6 +20,12 @@ internal static class CustomerImportEndpoints
 {
     private const string InvalidScannerResultMessage = "Customer import file did not pass malware scanning.";
     private const string ScannerUnavailableMessage = "Customer import scanner is unavailable.";
+
+    /// <summary>
+    /// Largest import content held in memory before a non-seekable upload spools to a private temporary file. It equals the
+    /// one mebibyte import maximum, so any accepted non-seekable upload stays in memory; a seekable upload is read in place.
+    /// </summary>
+    private const int SpoolMemoryThresholdBytes = (int)ContractConstants.CustomerImportMaxFileBytes;
 
     /// <summary>
     /// Maps all customer import endpoints to the application.
@@ -120,18 +126,28 @@ internal static class CustomerImportEndpoints
         ArgumentNullException.ThrowIfNull(scanner);
         ArgumentNullException.ThrowIfNull(logger);
 
-        using var content = new MemoryStream((int)Math.Clamp(file.Length, 0, ContractConstants.CustomerImportMaxFileBytes));
         await using var source = file.OpenReadStream();
-        if (!await CopyToMemory(source, content, ContractConstants.CustomerImportMaxFileBytes, ct).ConfigureAwait(false)
-            || content.Length != file.Length)
+        SeekableContent lease;
+        try
         {
-            return Result.Invalid<ReadOnlyMemory<byte>>(
-                "Invalid customer import file.",
-                nameof(file),
-                "Upload a CSV file that meets the documented import requirements.");
+            lease = await SeekableContent.Create(
+                source,
+                ContractConstants.CustomerImportMaxFileBytes,
+                SpoolMemoryThresholdBytes,
+                ct).ConfigureAwait(false);
+        }
+        catch (InvalidDataException)
+        {
+            return InvalidFile(nameof(file));
         }
 
-        content.Position = 0;
+        await using var ownedLease = lease.ConfigureAwait(false);
+        var content = lease.Content;
+        if (content.Length != file.Length)
+        {
+            return InvalidFile(nameof(file));
+        }
+
         MalwareScanResult scanResult;
         try
         {
@@ -161,16 +177,18 @@ internal static class CustomerImportEndpoints
     }
 
     /// <summary>Returns the content as UTF-8 bytes without a byte order mark, transcoding UTF-16 input.</summary>
-    private static async ValueTask<ReadOnlyMemory<byte>> Utf8Content(MemoryStream content, CancellationToken ct)
+    private static async ValueTask<ReadOnlyMemory<byte>> Utf8Content(Stream content, CancellationToken ct)
     {
-        var bytes = content.GetBuffer().AsMemory(0, (int)content.Length);
+        content.Position = 0;
+        var bytes = new byte[(int)content.Length];
+        await content.ReadExactlyAsync(bytes, ct).ConfigureAwait(false);
         var preamble = Encoding.UTF8.Preamble;
-        if (bytes.Span.StartsWith(preamble))
+        if (bytes.AsSpan().StartsWith(preamble))
         {
-            return bytes[preamble.Length..];
+            return bytes.AsMemory(preamble.Length);
         }
 
-        if (bytes.Span.StartsWith<byte>([0xFE, 0xFF]) || bytes.Span.StartsWith<byte>([0xFF, 0xFE]))
+        if (bytes.AsSpan().StartsWith<byte>([0xFE, 0xFF]) || bytes.AsSpan().StartsWith<byte>([0xFF, 0xFE]))
         {
             content.Position = 0;
             using var reader = new StreamReader(content, leaveOpen: true);
@@ -180,6 +198,12 @@ internal static class CustomerImportEndpoints
         return bytes;
     }
 
+    private static Result<ReadOnlyMemory<byte>> InvalidFile(string field) =>
+        Result.Invalid<ReadOnlyMemory<byte>>(
+            "Invalid customer import file.",
+            field,
+            "Upload a CSV file that meets the documented import requirements.");
+
     private static ProblemHttpResult CreateScanProblem(Result<ReadOnlyMemory<byte>> result)
     {
 
@@ -188,35 +212,6 @@ internal static class CustomerImportEndpoints
             detail: result.ErrorDetails?.Detail ?? ScannerUnavailableMessage,
             title: isInvalid ? "Invalid customer import file." : "Customer import scanner unavailable.",
             statusCode: isInvalid ? StatusCodes.Status400BadRequest : StatusCodes.Status503ServiceUnavailable);
-    }
-
-    private static async ValueTask<bool> CopyToMemory(Stream source, MemoryStream destination, long maximumLength, CancellationToken ct)
-    {
-        var buffer = ArrayPool<byte>.Shared.Rent(81920);
-        try
-        {
-            while (true)
-            {
-                var bytesRead = await source.ReadAsync(buffer, ct).ConfigureAwait(false);
-                if (bytesRead == 0)
-                {
-                    destination.Position = 0;
-                    return true;
-                }
-
-                if (destination.Length + bytesRead > maximumLength)
-                {
-                    destination.Position = 0;
-                    return false;
-                }
-
-                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), ct).ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(buffer);
-        }
     }
 
     /// <summary>Checks that the upload is a non-empty CSV within the size limit with an allowed content type; otherwise returns a problem.</summary>

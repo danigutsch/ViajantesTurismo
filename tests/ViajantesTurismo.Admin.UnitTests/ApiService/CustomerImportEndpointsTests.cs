@@ -330,7 +330,7 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
-    public async Task ReadCsv_reads_the_received_file_once_before_scanning()
+    public async Task ReadCsv_scans_the_received_file_and_returns_its_bytes_from_a_seekable_stream()
     {
         // Arrange
         var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
@@ -348,30 +348,38 @@ public sealed class CustomerImportEndpointsTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        stream.BytesRead.ShouldBe(content.LongLength);
-        scanner.ScannedContent.ShouldNotBeNull();
+        scanner.ScannedContent.ShouldBe(content);
+        result.Value.ToArray().ShouldBe(content);
     }
 
     [Fact]
-    public async Task ReadCsv_sizes_the_buffer_to_the_received_file_without_growth_slack()
+    public async Task ReadCsv_allocates_one_array_of_the_content_for_a_large_seekable_file()
     {
         // Arrange
-        var content = new byte[100_000];
+        var content = new byte[ContractConstants.CustomerImportMaxFileBytes];
         Array.Fill(content, (byte)'a');
-        using var stream = new MemoryStream(content);
-        var file = new FormFile(stream, 0, content.LongLength, "file", "customers.csv")
+        var scanner = new StubMalwareScanner(MalwareScanResult.Passed, captureContent: false);
+        var warmUp = new FormFile(new MemoryStream(content), 0, content.LongLength, "file", "customers.csv")
         {
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var measured = new FormFile(new MemoryStream(content), 0, content.LongLength, "file", "customers.csv")
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = ContractConstants.CustomerImportTextCsvContentType
+        };
+        _ = await CustomerImportEndpoints.ReadCsv(warmUp, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var result = await CustomerImportEndpoints.ReadCsv(measured, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        scanner.ScannedCapacity.ShouldBe(content.Length);
+        result.Value.Length.ShouldBe(content.Length);
+        allocated.ShouldBeLessThan(content.Length * 3 / 2);
     }
 
     [Theory]
@@ -430,7 +438,6 @@ public sealed class CustomerImportEndpointsTests
         result.IsSuccess.ShouldBeTrue();
         Encoding.UTF8.GetString(result.Value.Span).ShouldBe(Encoding.UTF8.GetString(content));
         scanner.ScannedContent.ShouldBe(content);
-        scanner.ScannedCapacity.ShouldBe(content.Length);
         stream.LargestRequestedRead.ShouldBeLessThanOrEqualTo(128 * 1024);
     }
 

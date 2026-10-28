@@ -9,6 +9,9 @@ Minimal Kestrel-only host for real multipart upload scanning benchmarks.
   and returns `files=<count>;bytes=<bytes>;matches=<matches>` as `text/plain`.
 - `POST /upload/scan-buffered`: production-shaped intake (`IFormFile`, presized `MemoryStream`, one scan, one SHA-256);
   same response plus `;sha256=<hash>`. Select it in k6 with `VT_UPLOAD_MODE=buffered`.
+- `POST /upload/scan-seekable`: the adopted intake shape (`IFormFile`, `PandaBear.IO.SeekableContent` pass-through, one scan, one
+  SHA-256); same response as buffered. Select it with `VT_UPLOAD_MODE=seekable`.
+- `GET /diagnostics`: process allocation, GC collection counts and total GC pause, for deltas around a run.
 
 ## Run
 

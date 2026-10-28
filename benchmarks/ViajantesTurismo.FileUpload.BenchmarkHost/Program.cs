@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
+using PandaBear.IO;
 
 const byte TargetByte = 0x5A;
 const int BufferLength = 64 * 1024;
 const int CopyBufferLength = 80 * 1024;
+const int SpoolMemoryThresholdBytes = 1024 * 1024;
 const long MaxPayloadBytes = 16_777_216;
 const long MaxMultipartOverheadBytes = 1_048_576;
 const long MaxRequestBodyBytes = MaxPayloadBytes + MaxMultipartOverheadBytes;
@@ -27,6 +29,12 @@ var app = builder.Build();
 app.MapGet("/health", static () => Results.Text("ok", "text/plain"));
 app.MapPost("/upload/scan", ScanUpload);
 app.MapPost("/upload/scan-buffered", ScanBufferedUpload).DisableAntiforgery();
+app.MapPost("/upload/scan-seekable", ScanSeekableUpload).DisableAntiforgery();
+app.MapGet("/diagnostics", static () => Results.Text(
+    string.Create(
+        CultureInfo.InvariantCulture,
+        $"allocated_bytes={GC.GetTotalAllocatedBytes()};gen0={GC.CollectionCount(0)};gen1={GC.CollectionCount(1)};gen2={GC.CollectionCount(2)};pause_ms={GC.GetTotalPauseDuration().TotalMilliseconds:F1}"),
+    "text/plain"));
 
 app.Lifetime.ApplicationStarted.Register(() => WriteReadyFile(app, Environment.GetEnvironmentVariable(ReadyFileVariable)));
 
@@ -115,6 +123,46 @@ static async Task<IResult> ScanBufferedUpload(IFormFile? file, CancellationToken
 
     buffer.Position = 0;
     var hash = Convert.ToHexString(await SHA256.HashDataAsync(buffer, ct).ConfigureAwait(false));
+
+    return Results.Text(
+        string.Create(CultureInfo.InvariantCulture, $"files=1;bytes={bytesScanned};matches={matches};sha256={hash}"),
+        "text/plain");
+}
+
+// Mirrors the adopted production intake shape: IFormFile binding, SeekableContent counting pass (the buffered IFormFile stream is
+// passed through uncopied), one scan pass and one SHA-256 pass. It has no decode, object store, real scanner, rate limiter, or authentication.
+static async Task<IResult> ScanSeekableUpload(IFormFile? file, CancellationToken ct)
+{
+    if (file is null || file.Length is <= 0 or > MaxPayloadBytes)
+    {
+        return Results.BadRequest("A multipart file section named file within the size limit is required.");
+    }
+
+    var source = file.OpenReadStream();
+    await using var sourceScope = source.ConfigureAwait(false);
+    SeekableContent lease;
+
+    try
+    {
+        lease = await SeekableContent.Create(source, MaxPayloadBytes, SpoolMemoryThresholdBytes, ct).ConfigureAwait(false);
+    }
+    catch (InvalidDataException)
+    {
+        return Results.BadRequest("The file exceeds the size limit or its received length does not match.");
+    }
+
+    await using var leaseScope = lease.ConfigureAwait(false);
+    var content = lease.Content;
+
+    if (content.Length != file.Length)
+    {
+        return Results.BadRequest("The received length does not match the declared length.");
+    }
+
+    var (bytesScanned, matches) = await ScanStream(content, ct).ConfigureAwait(false);
+
+    content.Position = 0;
+    var hash = Convert.ToHexString(await SHA256.HashDataAsync(content, ct).ConfigureAwait(false));
 
     return Results.Text(
         string.Create(CultureInfo.InvariantCulture, $"files=1;bytes={bytesScanned};matches={matches};sha256={hash}"),

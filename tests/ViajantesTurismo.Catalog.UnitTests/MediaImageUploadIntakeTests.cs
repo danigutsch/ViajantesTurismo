@@ -643,7 +643,7 @@ public sealed class MediaImageUploadIntakeTests
     }
 
     [Fact]
-    public async Task Accept_reads_the_incoming_stream_once_before_bounded_processing()
+    public async Task Accept_passes_a_seekable_upload_through_to_the_scanner_and_the_store_from_position_zero()
     {
         // Arrange
         var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
@@ -651,9 +651,10 @@ public sealed class MediaImageUploadIntakeTests
         using var stream = new GatedCountingReadStream(content);
         stream.Release();
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var objectStore = new DiscardingMediaObjectStore();
         var intake = MediaImageUploadIntakeTestFactory.Create(
             scanner,
-            new InMemoryMediaObjectStore(),
+            objectStore,
             new InMemoryPublicMediaImageStore(originalImage));
         var request = new MediaImageUploadIntakeRequest(
             Guid.CreateVersion7(),
@@ -669,36 +670,50 @@ public sealed class MediaImageUploadIntakeTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        stream.BytesRead.ShouldBe(content.LongLength);
         scanner.ScanCount.ShouldBe(1);
+        scanner.LastRequest.ShouldNotBeNull().Content.ShouldBeSameAs(stream);
+        objectStore.LastWriteStartPosition.ShouldBe(0);
+        objectStore.LastWriteBytes.ShouldBe(content.LongLength);
+        objectStore.LastWriteDeclaredLength.ShouldBe(content.LongLength);
+        stream.CanRead.ShouldBeTrue();
     }
 
     [Fact]
-    public async Task Accept_sizes_the_buffer_to_the_received_upload_without_growth_slack()
+    public async Task Accept_does_not_allocate_a_payload_sized_buffer_for_a_large_seekable_upload()
     {
         // Arrange
-        var content = new byte[200_000];
+        const int payloadBytes = 4 * 1024 * 1024;
+        var content = new byte[payloadBytes];
         CatalogTestImages.CreateJpeg(640, 320).CopyTo(content, 0);
-        var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var objectStore = new DiscardingMediaObjectStore();
         var intake = MediaImageUploadIntakeTestFactory.Create(
-            scanner,
-            new InMemoryMediaObjectStore(),
+            new StubMediaUploadScanner(MediaUploadScanResult.Passed),
+            objectStore,
             new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)));
-        var request = new MediaImageUploadIntakeRequest(
+        var warmUp = new MediaImageUploadIntakeRequest(
             Guid.CreateVersion7(),
             new MemoryStream(content),
             "photo.jpg",
             "image/jpeg",
-            content.Length,
+            payloadBytes,
             "Cyclists in the mountains",
             [new MediaImageTourLink(Guid.CreateVersion7(), 0, true)]);
+        var measured = warmUp with
+        {
+            MediaImageId = Guid.CreateVersion7(),
+            Content = new MemoryStream(content)
+        };
+        _ = await intake.Accept(warmUp, TestContext.Current.CancellationToken);
 
         // Act
-        var result = await intake.Accept(request, TestContext.Current.CancellationToken);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        var result = await intake.Accept(measured, TestContext.Current.CancellationToken);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        scanner.ContentCapacity.ShouldBe(content.Length);
+        objectStore.LastWriteBytes.ShouldBe(payloadBytes);
+        allocated.ShouldBeLessThan(payloadBytes / 4);
     }
 
     [Fact]
@@ -738,7 +753,7 @@ public sealed class MediaImageUploadIntakeTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         scanner.ScanCount.ShouldBe(1);
-        scanner.ContentCapacity.ShouldBe(content.Length);
+        scanner.LastRequest.ShouldNotBeNull().Content.ShouldNotBeSameAs(stream);
         stream.BytesRead.ShouldBe(content.LongLength);
         stream.LargestRequestedRead.ShouldBeLessThanOrEqualTo(128 * 1024);
     }

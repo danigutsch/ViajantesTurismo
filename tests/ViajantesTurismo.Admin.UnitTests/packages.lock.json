@@ -846,6 +846,7 @@
           "PandaBear.SharedKernel.AspNetCore": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.359.1, )",
+          "PandaBear.SharedKernel.IO": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.MalwareScanning": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.MalwareScanning.ClamAv": "[0.1.0-alpha.359.1, )",

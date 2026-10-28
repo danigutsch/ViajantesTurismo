@@ -18,7 +18,7 @@ reach the host through `host.docker.internal`.
 
 ## Upload host modes
 
-The benchmark host exposes two routes that share a base response shape (`files=<count>;bytes=<bytes>;matches=<matches>`):
+The benchmark host exposes three routes that share a base response shape (`files=<count>;bytes=<bytes>;matches=<matches>`):
 
 - `POST /upload/scan` (streaming, the default): reads the multipart body with `MultipartReader` and scans the
   request stream once without buffering. It measures only the Kestrel streaming floor and does not mirror production.
@@ -27,7 +27,14 @@ The benchmark host exposes two routes that share a base response shape (`files=<
   with SHA-256, and appends `;sha256=<hash>` to the response. It still has no decode, object store, real scanner, rate
   limiter, or authentication.
 
-Select the route in the k6 scenario with `VT_UPLOAD_MODE=streaming|buffered`.
+- `POST /upload/scan-seekable` (seekable): mirrors the adopted production intake. It binds `IFormFile`, leases the content
+  with `PandaBear.IO.SeekableContent` (one counting pass, then the buffered form stream is passed through uncopied), scans
+  once, hashes once, and returns the same response as `buffered`.
+
+`GET /diagnostics` returns the process allocation, GC collection counts and total GC pause as text, so a wrapper can take a
+delta around a k6 run.
+
+Select the route in the k6 scenario with `VT_UPLOAD_MODE=streaming|buffered|seekable`.
 Concurrency findings from a production-shaped scratch host are in
 [the upload trace](API_IO_AND_STREAMING.md#upload-and-import-pass-trace).
 
