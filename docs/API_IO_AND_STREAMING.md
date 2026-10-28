@@ -58,14 +58,60 @@ Findings:
 - Retained memory per request is bounded by the configured maximum: 1 MiB (CSV, plus about 2 MiB of string) and
   `ContractConstants.MaxMediaUploadBytes` = 5 MiB (media). The extra transient allocation was `MemoryStream` growth.
 - The local object store writes with one `CopyToAsync` into a temporary file and moves it into place (code reading).
-- Not measured: ASP.NET Core multipart buffering before the endpoint runs, native Magick.NET memory, peak concurrent
-  requests, and the SharedKernel S3 provider. Real HTTP evidence so far is only the isolated upload-scan benchmark in
-  [the benchmark baselines](file-and-stream-benchmark-baselines.md).
+- Not measured here: native Magick.NET memory and the SharedKernel S3 provider. Concurrent-request memory and
+  pre-handler time are covered in the next section.
+
+### Concurrency measurement on a production-shaped scratch host
+
+A throwaway Kestrel host approximated the media intake: `IFormFile` binding, a presized `MemoryStream` filled by an
+80 KiB `ArrayPool` copy loop, one scan pass and one SHA-256 pass. It is not the real application: there is no
+Magick.NET decode, no object store, and no real scanner. k6 v2.2.0 and the host ran on the same WSL2 machine (16
+logical cores, 24 GB, .NET SDK 10.0.402) over loopback. Each cell is one run of a 15 second window after a 3 second
+warm-up, against a fresh host per level, so the figures are indicative only. Peak RSS delta is the peak resident set
+size above the idle host.
+
+| Upload size | In flight (VUs) | p95 latency | Peak RSS delta | Notes |
+| --- | --- | --- | --- | --- |
+| 5 MiB | 1 | 46 ms | 10 MiB | 0 errors |
+| 5 MiB | 4 | 151 ms | 38 MiB | 0 errors |
+| 5 MiB | 16 | 269 ms | 192 MiB | GC pause about 12% of wall time |
+| 5 MiB | 64 | 931 ms | 535 MiB | GC pause about 19% of wall time |
+| 1 MiB | 1 / 4 / 16 / 64 | 11 / 24 / 67 / 182 ms | 8 / 77 / 121 / 216 MiB | GC pause about 23% of wall time at 64 |
+
+Findings:
+
+- Memory scales roughly linearly with uploads in flight: about 8.4 to 12 MiB per in-flight 5 MiB upload, which is 1.7
+  to 2.4 times the documented one-buffer bound. Nearly all collections were gen2 because the buffers live on the large
+  object heap. No run produced an error or an out-of-memory condition.
+- Time before the handler runs (body receive plus form buffering) was 83 to 88 percent of request time. The
+  unbuffered stock benchmark host has similar latency (p50 32 ms against 38 ms at 5 MiB, 1 VU), so this is mostly
+  transfer time and not an isolated buffering cost.
+- `IFormFile.OpenReadStream()` returned a seekable `ReferenceReadStream`, so the framework has already buffered the
+  file and the intake copy into a `MemoryStream` is a second copy.
+- Neither measurement host has a rate limiter or authentication, so the runs were unthrottled and represent an upper
+  bound on raw capacity, not production behavior.
+- The production endpoints are bounded only by per-IP fixed-window rate limits: the media upload shares the Catalog
+  mutation policy of 20 requests per minute (`CatalogSecurityBaseline.cs`) and the CSV import uses 5 requests per
+  minute (`AdminSecurityBaseline.cs`). These cap the request rate per client IP, not concurrent in-flight requests.
+  Both endpoints also require authorization, which limits who can upload but does not bound concurrency. Request sizes
+  are capped by `RequestSizeLimitAttribute` (5 MiB plus 16,384 bytes for media, `CustomerImportMaxRequestBytes` for
+  import).
+- No concurrency limiter, `MaxConcurrentConnections`, `FormOptions` or `MultipartBodyLengthLimit` override, or
+  container memory limit was found in the repository. Realistic production concurrency is an estimate, not a
+  measurement.
+- Limits of the measurement: one run per cell, an approximation host, loopback with the load generator on the same
+  machine, and no `dotnet-counters` collection.
+- The stock benchmark host measures only the Kestrel streaming floor because it does not mirror the production intake
+  shape.
 
 Decision: retain the single-buffer design. The proven gap is repeated CSV parsing, not buffering, and it is tracked
 separately from the stream design. Revisit
 `PandaBear.IO.SeekableContent` for media intake if the media maximum grows, if concurrent-upload memory becomes a
-measured problem, or if a real-host measurement shows buffering before the endpoint dominates. Preserve the size
+measured problem, or if a real-host measurement shows buffering before the endpoint dominates. These conditions were
+checked against the measurement above: the media maximum is unchanged at 5 MiB, concurrent memory scales linearly and
+is moderate at 1 to 16 uploads in flight with no errors, so it is not shown to be a problem at realistic concurrency
+given the rate limits, and the pre-handler share is mostly transfer rather than an isolated buffering cost. The
+decision stands. Preserve the size
 checks, the scan-before-parse order for CSV, actual-length comparison, and cancellation in any later change.
 
 ## Decisions not taken
