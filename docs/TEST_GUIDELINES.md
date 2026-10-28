@@ -233,9 +233,12 @@ See [xUnit v3 MTP docs](https://xunit.net/docs/getting-started/v3/microsoft-test
 | `--filter-not-class`     | Exclude a class                                   | `--filter-not-class "SlowTests"`                              |
 | `--filter-namespace`     | Run all tests in a namespace                      | `--filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"` |
 | `--filter-not-namespace` | Exclude a namespace                               | `--filter-not-namespace "ViajantesTurismo.Admin.SystemTests"` |
-| `--filter-trait`         | Run tests matching a trait                        | `--filter-trait "Category=Fast"`                              |
-| `--filter-not-trait`     | Exclude tests with a trait                        | `--filter-not-trait "Category=Slow"`                          |
+| `--filter-trait`         | Run tests matching a trait, such as a seam        | `--filter-trait "Scope=unit"`                                 |
+| `--filter-not-trait`     | Exclude tests with a trait                        | `--filter-not-trait "Scope=system"`                           |
 
+> **Seams:** select a lane by seam with `--filter-trait "Scope=<value>"` (see `tests/README.md`) instead of by project,
+> folder, or namespace name.
+>
 > **Multiple values:** pass several quoted values to one switch instead of repeating it:
 > `--filter-class "Ns.Tests.FooTests" "Ns.Tests.BarTests"` runs both classes.
 
@@ -253,7 +256,7 @@ dotnet test --project tests/ViajantesTurismo.HostedTests --filter-class "Viajant
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"
 
 # Exclude slow tests by trait
-dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-not-trait "Category=Slow"
+dotnet test --project tests/ViajantesTurismo.HostedTests --filter-not-trait "Scope=system"
 ```
 
 #### Useful MTP platform options
