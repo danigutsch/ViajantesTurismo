@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
@@ -215,6 +216,38 @@ public sealed class EditPageSaveFailureTests : BunitContext
         fakeBookingsApi.LastUpdatedDetails.ShouldNotBeNull().CompanionCustomerId.ShouldBe(companion.Id);
         await cut.Find(".alert.alert-info button").ClickAsync();
         await submitTask;
+    }
+
+    [Fact]
+    public async Task Confirming_a_status_action_while_a_save_is_in_flight_does_not_run_the_action()
+    {
+        // Arrange
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed, notes: "Original notes");
+        fakeBookingsApi.AddBooking(booking);
+        fakeBookingsApi.SetUpdateBookingNotesGate(gate.Task);
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find(".card.border-danger"));
+        var cancelButton = cut.FindAll(".card.border-danger button")
+            .ShouldHaveSingleItem(button => button.TextContent.Contains("Cancel Booking", StringComparison.Ordinal));
+        var cancelClick = Task.Run(async () => await cancelButton.ClickAsync(new MouseEventArgs()), Xunit.TestContext.Current.CancellationToken);
+        await cut.WaitForAssertionAsync(() => cut.Find(".modal.show"));
+        await cut.Find("#notes").ChangeAsync(new ChangeEventArgs { Value = "Updated notes" });
+        var submit = cut.Find("form").SubmitAsync();
+        await cut.WaitForAssertionAsync(() => fakeBookingsApi.UpdateBookingNotesCallCount.ShouldBe(1));
+
+        // Act
+        var confirmButton = cut.FindAll(".modal.show button")
+            .ShouldHaveSingleItem(button => button.TextContent.Contains("Yes, Cancel", StringComparison.Ordinal));
+        await confirmButton.ClickAsync(new MouseEventArgs());
+        await cancelClick;
+        gate.SetResult();
+        await cut.WaitForAssertionAsync(() => cut.Find(".alert.alert-info button"));
+        await cut.Find(".alert.alert-info button").ClickAsync();
+        await submit;
+
+        // Assert
+        fakeBookingsApi.BookingActionCallCount.ShouldBe(0);
     }
 
     [Fact]
