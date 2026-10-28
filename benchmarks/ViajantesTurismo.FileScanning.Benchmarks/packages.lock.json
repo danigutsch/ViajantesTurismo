@@ -22,23 +22,23 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.359.1, )",
-        "resolved": "0.1.0-alpha.359.1",
-        "contentHash": "+4Mzk7Pkn6SdShjrlp4L71dz3VjRyYgJQn1J/9zgfwBqMDDLAQ7c/cHvKdP7bgsntozIXvhzet4TXGmoM+JeiA=="
+        "requested": "[0.1.0-alpha.368.1, )",
+        "resolved": "0.1.0-alpha.368.1",
+        "contentHash": "SEtB53n1a+atNtBALtBSJVJr5Pcd2rBW16iwx8dEK1do4OmiPWTj1SciHlSWbZhIscM6lW1k0/3VJDRZPje41g=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.359.1, )",
-        "resolved": "0.1.0-alpha.359.1",
-        "contentHash": "DZ5NksTnXx8USucWWlJWqLjUfmi8f/TVCm8SdNTHf91iWg7QPmMEMQvQFNXbwxCjJoo1LmEKv6yE4UVasU5yig=="
+        "requested": "[0.1.0-alpha.368.1, )",
+        "resolved": "0.1.0-alpha.368.1",
+        "contentHash": "l8PdXYa480TlKwOAZkWmGFjewnKi1BaJC7EZE0TbLuHJescRPZloTe8Rf4py1lh54MxP4+jthqAxSxsvSAy11g=="
       },
       "PandaBear.SharedKernel.Tabular": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.359.1, )",
-        "resolved": "0.1.0-alpha.359.1",
-        "contentHash": "mc039PdLFK2neIkA0qd+ouwrxDFNjmWchpK8LcG4zN9Ct6zQs1PlgMlgC1hRgKapFHjjdHcOBjH5NJxibHU9PQ==",
+        "requested": "[0.1.0-alpha.368.1, )",
+        "resolved": "0.1.0-alpha.368.1",
+        "contentHash": "CrJwZ6vd5S9cGi8ErafJXO1Cx5LlC47dv4tjRxU99IwKfQTpow93zqD9mMUqN/kNA/Lq/OgG1LQEygJlEbjeMQ==",
         "dependencies": {
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.359.1"
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.368.1"
         }
       },
       "BenchmarkDotNet.Annotations": {
@@ -198,9 +198,9 @@
       },
       "PandaBear.SharedKernel.Results": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.359.1, )",
-        "resolved": "0.1.0-alpha.359.1",
-        "contentHash": "Q8DHSsTUgrz47h4QmkrHxARM8QtevttFwY5O++a5M1XUpfHvKFFJR0GSWreklR7pb71Q4DYgc1v6a0xD5VyRiA=="
+        "requested": "[0.1.0-alpha.368.1, )",
+        "resolved": "0.1.0-alpha.368.1",
+        "contentHash": "YYySVz6nQAo6HZcKSdc0tSeUaGS5jMXIWY1rCBV/2cA+Im3tQCy1eKAc1JhUOq3oZxoSL7vmyb8gD7T/1sy0ZQ=="
       }
     }
   }
