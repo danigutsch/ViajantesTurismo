@@ -9,7 +9,6 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
 
     public ImportCustomersDuplicateResolutionTests()
     {
-        Services.AddMetrics();
         Services.AddUiFailureReporting();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);

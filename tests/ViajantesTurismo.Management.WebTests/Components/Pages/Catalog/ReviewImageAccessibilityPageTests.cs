@@ -372,4 +372,79 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
         cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Shows_not_found_copy_and_keeps_the_current_text_when_the_draft_cannot_be_generated()
+    {
+        // Arrange
+        catalogApi.Images =
+        [
+            new CatalogMediaImageDto
+            {
+                Id = Guid.CreateVersion7(),
+                AltText = "Cyclists crossing a mountain pass.",
+                ResponsiveVariants = [],
+                RequiresHumanReview = true
+            }
+        ];
+        catalogApi.Draft = null;
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        cut.WaitForState(() => cut.FindAll("button.btn-outline-primary").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("button.btn-outline-primary").Click();
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll("[role='alert']").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find("[role='alert']").TextContent.ShouldBe("Image was not found.");
+        cut.Find("#altText").GetAttribute("value").ShouldBe("Cyclists crossing a mountain pass.");
+    }
+
+    [Theory]
+    [InlineData("image/avif", "avif")]
+    [InlineData("image/png", "png")]
+    [InlineData("image/webp", "webp")]
+    [InlineData(" IMAGE/JPEG ", "jpg")]
+    public void Previews_each_supported_image_type_with_its_rendition_format(string contentType, string expectedFormat)
+    {
+        // Arrange
+        var image = new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(),
+            AltText = "Cyclists crossing a mountain pass.",
+            ResponsiveVariants = [new CatalogMediaImageVariantDto { Width = 320, Height = 200, ContentType = contentType, FileSizeBytes = 320 }],
+            RequiresHumanReview = true
+        };
+        catalogApi.Images = [image];
+
+        // Act
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll("img").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find("img").GetAttribute("src").ShouldBe($"/catalog/media/images/{image.Id}/preview/320/{expectedFormat}");
+    }
+
+    [Fact]
+    public void Omits_the_preview_for_an_unsupported_image_type()
+    {
+        // Arrange
+        catalogApi.Images =
+        [
+            new CatalogMediaImageDto
+            {
+                Id = Guid.CreateVersion7(),
+                AltText = "Cyclists crossing a mountain pass.",
+                ResponsiveVariants = [new CatalogMediaImageVariantDto { Width = 320, Height = 200, ContentType = "image/gif", FileSizeBytes = 320 }],
+                RequiresHumanReview = true
+            }
+        ];
+
+        // Act
+        var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll("#altText").Count == 1, TimeSpan.FromSeconds(2));
+        cut.FindAll("img").ShouldBeEmpty();
+    }
 }

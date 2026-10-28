@@ -402,4 +402,66 @@ public sealed class EditPresentationPageTests : BunitContext
         catalogApi.LastPublicationRequest.ShouldNotBeNull();
         catalogApi.LastPublicationRequest.ExpectedVersion.ShouldBe(tour.Version);
     }
+
+    [Fact]
+    public void Invalid_submit_shows_a_focused_error_summary_linking_to_the_field_without_saving()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("#title").Change(string.Empty);
+
+        // Act
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.Find("#error-summary").GetAttribute("tabindex").ShouldBe("-1");
+        var link = cut.Find("#error-summary a");
+        link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#title", StringComparison.Ordinal);
+        catalogApi.LastPresentationRequest.ShouldBeNull();
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
+    [Fact]
+    public void Shows_fixed_copy_when_the_presentation_save_fails_in_transport()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.FailTransportOnUpdate = true;
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Draft Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find(".alert-danger").TextContent.ShouldBe("Catalog tour presentation could not be saved. Try again later.");
+        cut.Markup.ShouldNotContain("HTTP transport failed", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Catalog presentation updated", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Shows_fixed_copy_and_keeps_the_draft_status_when_publishing_fails_in_transport()
+    {
+        // Arrange
+        var tour = IndexPageTestsHelpers.CreateTour("TOUR-1", "Draft Tour", "draft-tour", isPublished: false);
+        catalogApi.Tours = [tour];
+        catalogApi.FailTransportOnPublication = true;
+        var cut = Render<EditPresentation>(parameters => parameters.Add(component => component.Id, tour.Id));
+        cut.WaitForState(() => cut.Markup.Contains("Status: Draft", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#publish").Click();
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find(".alert-danger").TextContent.ShouldBe("Catalog tour publication could not be changed. Reload the tour and try again.");
+        cut.Markup.ShouldNotContain("HTTP transport failed", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Status: Draft", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Catalog tour published", StringComparison.Ordinal);
+    }
 }

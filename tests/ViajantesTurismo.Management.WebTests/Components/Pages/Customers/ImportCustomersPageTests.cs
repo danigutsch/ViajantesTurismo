@@ -1,3 +1,4 @@
+using PandaBear.HttpClients;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using System.Globalization;
 using System.Text;
@@ -518,5 +519,78 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Assert
         var selectedOption = cut.Find("select[data-field='Email']").QuerySelector("option[selected]").ShouldNotBeNull();
         selectedOption.GetAttribute("value").ShouldBe("Mail");
+    }
+
+    [Fact]
+    public void Shows_fixed_failure_copy_when_the_import_is_rejected_by_the_server()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersOutcome(new HttpOutcome<ImportResultDto>
+        {
+            Kind = HttpOutcomeKind.TransportFailure,
+            Message = "Connection refused by 10.0.0.7"
+        });
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata");
+
+        // Act
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
+
+        // Assert
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.ShouldContain("We couldn't import the customers right now. Please try again.", StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("10.0.0.7", StringComparison.Ordinal);
+        });
+        _failures.Reports.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Shows_fixed_failure_copy_when_committing_resolutions_is_rejected_by_the_server()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        _fakeCustomersApi.SetCommitImportOutcome(new HttpOutcome<ImportResultDto>
+        {
+            Kind = HttpOutcomeKind.TransportFailure,
+            Message = "Connection refused by 10.0.0.7"
+        });
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.Find("button[data-action='keep']").Click();
+
+        // Act
+        cut.Find("button[data-action='confirm-import']").Click();
+
+        // Assert
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.ShouldContain("We couldn't import the customers right now. Please try again.", StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("10.0.0.7", StringComparison.Ordinal);
+        });
+        _failures.Reports.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Reports_the_complete_operation_and_shows_fixed_copy_when_committing_resolutions_throws()
+    {
+        // Arrange
+        _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
+        _fakeCustomersApi.SetCommitImportHandler((_, _, _, _, _) => throw new InvalidOperationException("Connection refused by 10.0.0.7"));
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal));
+        cut.Find("button[data-action='keep']").Click();
+
+        // Act
+        cut.Find("button[data-action='confirm-import']").Click();
+
+        // Assert
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.ShouldContain("We couldn't complete the customer import right now. Please try again.", StringComparison.Ordinal);
+            cut.Markup.ShouldNotContain("10.0.0.7", StringComparison.Ordinal);
+        });
+        _failures.Reports.ShouldBe([(nameof(InvalidOperationException), "customers.import.complete")]);
     }
 }

@@ -39,6 +39,18 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         get; set;
     }
 
+    /// <summary>When true, presentation updates return a transport failure outcome.</summary>
+    public bool FailTransportOnUpdate
+    {
+        get; set;
+    }
+
+    /// <summary>When true, publish and unpublish return a transport failure outcome.</summary>
+    public bool FailTransportOnPublication
+    {
+        get; set;
+    }
+
     /// <summary>When true, presentation updates return an unexpected 202 Accepted outcome.</summary>
     public bool ThrowAcceptedOnUpdate
     {
@@ -243,6 +255,11 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         }
 
         LastPresentationRequest = request;
+        if (FailTransportOnUpdate)
+        {
+            return Task.FromResult(TransportFailure<CatalogTourDto>());
+        }
+
         if (ThrowAcceptedOnUpdate)
         {
             return Task.FromResult(HttpOutcomeMapper.Status<CatalogTourDto>(HttpOutcomeKind.UnexpectedStatus, HttpStatusCode.Accepted));
@@ -411,6 +428,15 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
                 Kind = HttpOutcomeKind.ValidationProblem,
                 StatusCode = HttpStatusCode.BadRequest,
                 ValidationErrors = PublicationValidationException.ValidationErrors
+            });
+        }
+
+        if (FailTransportOnPublication)
+        {
+            return Task.FromResult(new HttpOutcome
+            {
+                Kind = HttpOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
             });
         }
 

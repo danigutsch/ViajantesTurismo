@@ -389,4 +389,81 @@ public sealed class PublicContentTests : BunitContext
         cut.Find(".alert-danger").TextContent.ShouldContain("couldn't save public content", StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Invalid_submit_shows_a_focused_error_summary_linking_to_the_content_key_without_saving()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.Find("#error-summary").GetAttribute("tabindex").ShouldBe("-1");
+        var link = cut.Find("#error-summary a");
+        link.GetAttribute("href").ShouldNotBeNull().ShouldEndWith("#content-key", StringComparison.Ordinal);
+        publicContentApi.SavedRequest.ShouldBeNull();
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
+    [Fact]
+    public void Shows_not_found_copy_when_the_selected_entry_no_longer_exists()
+    {
+        // Arrange
+        publicContentApi.Content = [PublicContentTestsHelpers.CreateContent("home.hero")];
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("home.hero", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        publicContentApi.Content = [];
+
+        // Act
+        cut.Find("button.list-group-item").Click();
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldBe("Public content entry was not found.");
+        string.IsNullOrEmpty(cut.Find("#content-key").GetAttribute("value")).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Rejects_an_edited_language_with_a_title_but_no_body_without_saving()
+    {
+        // Arrange
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("#pt-br-title").Change("Bem-vindo");
+
+        // Act
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.Find(".alert-danger").TextContent.ShouldBe("Enter both title and body for each edited language.");
+        publicContentApi.SavedRequest.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Shows_fixed_copy_and_no_success_when_saving_fails_in_transport()
+    {
+        // Arrange
+        publicContentApi.ThrowOnSaveContent = true;
+        var cut = Render<PublicContent>();
+        cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("#content-key").Change("home.hero");
+        cut.Find("#en-us-title").Change("Welcome");
+        cut.Find("#en-us-body").Change("Ride with us");
+        cut.Find("#pt-br-title").Change("Bem-vindo");
+        cut.Find("#pt-br-body").Change("Pedale conosco");
+
+        // Act
+        cut.Find("form").Submit();
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find(".alert-danger").TextContent.ShouldBe("We couldn't save public content right now. Please try again.");
+        cut.Markup.ShouldNotContain("HTTP transport failed", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("Public content saved", StringComparison.Ordinal);
+        publicContentApi.SavedRequest.ShouldBeNull();
+    }
 }

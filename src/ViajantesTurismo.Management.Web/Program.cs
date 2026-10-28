@@ -19,7 +19,6 @@ builder.Services.AddManagementAuthentication(builder.Configuration, builder.Envi
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddAntiforgery();
-builder.Services.AddMetrics();
 builder.Services.AddUiFailureReporting();
 builder.Services.AddCascadingAuthenticationState();
 

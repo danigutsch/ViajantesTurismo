@@ -162,4 +162,20 @@ public sealed class MainLayoutTests : BunitContext
         _ = dismissLink.ShouldNotBeNull();
         dismissLink.TextContent.ShouldBe("🗙");
     }
+
+    [Fact]
+    public void Keeps_the_failed_state_when_only_the_query_or_fragment_changes()
+    {
+        // Arrange
+        var cut = Render<MainLayout>(parameters => parameters.Add<ThrowingContent>(layout => layout.Body));
+        cut.Render(parameters => parameters.Add(layout => layout.Body, "Healthy page"));
+
+        // Act
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/?tab=2#section");
+
+        // Assert
+        cut.FindAll("article.content [role=alert]").Count.ShouldBe(1);
+        cut.Find("article.content").TextContent.ShouldNotContain("Healthy page", StringComparison.Ordinal);
+        reporter.Reports.ShouldBe([(nameof(InvalidOperationException), "management.layout.content")]);
+    }
 }

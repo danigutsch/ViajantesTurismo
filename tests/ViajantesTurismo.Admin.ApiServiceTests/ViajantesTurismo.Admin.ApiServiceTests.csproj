@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Using Include="System.Net" />
+        <Using Include="Microsoft.AspNetCore.Hosting" />
         <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="PandaBear.Testing.Assertions" />
@@ -33,6 +34,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj" />
+        <ProjectReference Include="..\ViajantesTurismo.UploadWire.Testing\ViajantesTurismo.UploadWire.Testing.csproj" />
     </ItemGroup>
 
 </Project>

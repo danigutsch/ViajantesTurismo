@@ -1,4 +1,5 @@
 using PandaBear.Blazor;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using PandaBear.HttpClients;
 using System.Globalization;
 using CatalogContractConstants = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants;
@@ -12,11 +13,12 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 public sealed class UploadImagePageTests : BunitContext
 {
     private readonly FakeCatalogToursApiClient catalogApi = new();
+    private readonly RecordingUiFailureReporter failures = new();
 
     public UploadImagePageTests()
     {
-        Services.AddMetrics();
         Services.AddUiFailureReporting();
+        Services.AddSingleton<IUiFailureReporter>(failures);
         Services.AddSingleton<ICatalogToursApiClient>(catalogApi);
     }
 
@@ -381,5 +383,27 @@ public sealed class UploadImagePageTests : BunitContext
         cut.Find("[role='alert']").TextContent.ShouldBe("Image could not be uploaded. Check the file and try again.");
         cut.Markup.ShouldNotContain("alert(1)", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Secret.cs", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Unreadable_image_reports_the_read_fault_and_shows_fixed_copy_without_the_exception_text()
+    {
+        // Arrange
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var file = new RecordingBrowserFile(openFailure: new IOException("disk path /srv/private/tour-image.jpg"));
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
+        await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
+
+        // Act
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        var expectedLimitInMebibytes = CatalogContractConstants.MaxMediaUploadBytes / (1024 * 1024);
+        var expectedMessage = $"Image could not be read. Check that it is no larger than {expectedLimitInMebibytes} MiB and try again.";
+        cut.Find("[role='alert']").TextContent.ShouldBe(expectedMessage);
+        cut.Find("[data-upload-status]").TextContent.ShouldContain(expectedMessage, StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("/srv/private", StringComparison.Ordinal);
+        failures.Reports.ShouldBe([(nameof(IOException), "catalog.upload-image.read")]);
+        catalogApi.UploadTourImageCallCount.ShouldBe(0);
     }
 }
