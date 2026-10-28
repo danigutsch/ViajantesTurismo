@@ -106,6 +106,7 @@ public sealed class PublicWebEndpointTests
         bytesRead.ShouldBe(1);
 
         // Act
+        await upstreamStream.StalledReadStarted.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         response.Dispose();
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(10));
