@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Catalog.Index;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
+[TestScope(TestScope.Component)]
 public sealed class IndexPageTests : BunitContext
 {
     private readonly FakeCatalogToursApiClient catalogApi = new();

@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Tours.Index;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
 
+[TestScope(TestScope.Component)]
 public class IndexPageTests : BunitContext
 {
     private readonly FakeToursApiClient _fakeToursApi;
@@ -150,7 +152,6 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Renders_available_spots_from_the_read_model_fact()
@@ -178,7 +179,6 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Renders_fully_booked_badge_from_the_read_model_fact()
@@ -206,7 +206,6 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
     [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Renders_below_minimum_badge_from_the_read_model_fact()

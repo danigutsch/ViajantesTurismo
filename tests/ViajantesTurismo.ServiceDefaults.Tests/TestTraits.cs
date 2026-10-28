@@ -5,8 +5,6 @@ internal static class TestTraits
 {
     /// <summary>Trait value for endpoint tests.</summary>
     public const string EndpointCategory = PandaBear.Testing.TestTraitValues.EndpointCategory;
-    /// <summary>Trait value for API integration scope.</summary>
-    public const string ApiIntegrationScope = PandaBear.Testing.TestTraitValues.ApiIntegrationScope;
     /// <summary>Trait value for the ServiceDefaults area.</summary>
     public const string ServiceDefaultsArea = "service-defaults";
     /// <summary>Trait value for tests using a test server host.</summary>

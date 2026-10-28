@@ -1,8 +1,10 @@
+using PandaBear.Testing;
 using Microsoft.AspNetCore.Http;
 using ViajantesTurismo.Management.Web.Components.Pages;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages;
 
+[TestScope(TestScope.Component)]
 public class ErrorPageTests : BunitContext
 {
     [Fact]

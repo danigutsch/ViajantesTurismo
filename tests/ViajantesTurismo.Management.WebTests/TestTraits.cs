@@ -3,10 +3,6 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>Trait names and values used to tag Management web tests.</summary>
 internal static class TestTraits
 {
-    /// <summary>Scope value for unit tests.</summary>
-    public const string UnitScope = "unit";
-    /// <summary>Scope value for component tests.</summary>
-    public const string ComponentScope = "component";
     /// <summary>Area value for the Management web application.</summary>
     public const string ManagementWebArea = "management-web";
     /// <summary>Category value for API client tests.</summary>

@@ -5,7 +5,6 @@ using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestT
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(TestTraitNames.ScopeName, TestTraits.ApiIntegrationScope)]
 [Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class PublicCatalogDeploymentTrustTests
 {

@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using PandaBear.Blazor;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using PandaBear.HttpClients;
@@ -9,7 +10,7 @@ using UploadImage = ViajantesTurismo.Management.Web.Components.Pages.Catalog.Upl
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class UploadImagePageTests : BunitContext
 {
     private readonly FakeCatalogToursApiClient catalogApi = new();

@@ -10,7 +10,7 @@ using ViajantesTurismo.Management.Web;
 namespace ViajantesTurismo.Management.WebTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Integration)]
 public sealed class ManagementWebSecurityHeadersTests
 {
     [Fact]

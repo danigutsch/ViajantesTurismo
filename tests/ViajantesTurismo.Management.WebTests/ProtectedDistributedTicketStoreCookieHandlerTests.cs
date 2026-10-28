@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.AspNetCore.TestHost;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -6,7 +7,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// Verifies sign-out fails closed when server-side ticket revocation cannot complete.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Unit)]
 public sealed class ProtectedDistributedTicketStoreCookieHandlerTests
 {
     [Fact]

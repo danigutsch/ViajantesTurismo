@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using PandaBear.Blazor;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -6,7 +7,7 @@ using UploadImage = ViajantesTurismo.Management.Web.Components.Pages.Catalog.Upl
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class UploadImageFailureRaceTests : BunitContext
 {
     private const string CanceledStatus = "Canceled: tour-image.jpg. Retry when ready.";

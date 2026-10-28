@@ -1,9 +1,10 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.ComponentScope)]
+[TestScope(TestScope.Component)]
 public sealed class PaymentAllocationEditorTests : BunitContext
 {
     [Fact]

@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
@@ -5,6 +6,7 @@ using ViajantesTurismo.Management.Web.Models;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
+[TestScope(TestScope.Component)]
 public sealed class AddressPageTests : BunitContext
 {
     private readonly CustomerCreationState _state = new();

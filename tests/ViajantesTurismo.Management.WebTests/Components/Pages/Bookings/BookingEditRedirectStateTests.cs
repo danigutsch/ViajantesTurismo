@@ -1,7 +1,9 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
+[TestScope(TestScope.Unit)]
 public sealed class BookingEditRedirectStateTests
 {
     [Fact]

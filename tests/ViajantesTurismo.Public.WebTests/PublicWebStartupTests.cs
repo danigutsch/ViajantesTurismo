@@ -3,8 +3,8 @@ using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 namespace ViajantesTurismo.Public.WebTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.ScopeName, TestTraits.WebIntegrationScope)]
 [Trait(TestTraitNames.AreaName, TestTraits.PublicWebArea)]
+[TestScope(TestScope.Integration)]
 public sealed class PublicWebStartupTests
 {
     [Fact]

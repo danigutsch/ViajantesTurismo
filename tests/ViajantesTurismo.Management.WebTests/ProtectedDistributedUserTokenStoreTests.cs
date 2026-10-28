@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Duende.AccessTokenManagement;
 using Duende.AccessTokenManagement.OpenIdConnect;
 
@@ -7,7 +8,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// Verifies protected server-side user-token storage for Blazor Server circuits.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Unit)]
 public sealed class ProtectedDistributedUserTokenStoreTests
 {
     [Fact]

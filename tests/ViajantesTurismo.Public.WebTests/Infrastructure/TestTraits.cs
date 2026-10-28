@@ -16,11 +16,6 @@ public static class TestTraits
     public const string SecurityCategory = TestTraitValues.SecurityCategory;
 
     /// <summary>
-    /// Scope value for web integration tests.
-    /// </summary>
-    public const string WebIntegrationScope = "web-integration";
-
-    /// <summary>
     /// Area value for public web test coverage.
     /// </summary>
     public const string PublicWebArea = "public-web";

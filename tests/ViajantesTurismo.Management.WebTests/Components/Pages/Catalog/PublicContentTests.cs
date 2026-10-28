@@ -1,8 +1,10 @@
+using PandaBear.Testing;
 using PublicContent = ViajantesTurismo.Management.Web.Components.Pages.Catalog.PublicContent;
 using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
+[TestScope(TestScope.Component)]
 public sealed class PublicContentTests : BunitContext
 {
     private readonly FakePublicContentApiClient publicContentApi = new();

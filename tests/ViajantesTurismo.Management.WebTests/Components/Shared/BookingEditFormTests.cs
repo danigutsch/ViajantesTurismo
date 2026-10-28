@@ -1,9 +1,11 @@
+using PandaBear.Testing;
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 
+[TestScope(TestScope.Component)]
 public class BookingEditFormTests : BunitContext
 {
     [Fact]

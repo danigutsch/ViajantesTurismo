@@ -9,7 +9,7 @@ using ViajantesTurismo.Management.WebTests.Infrastructure;
 namespace ViajantesTurismo.Management.WebTests;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernelTestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Integration)]
 public sealed class DocumentArtifactProxyEndpointTests
 {
     [Fact]

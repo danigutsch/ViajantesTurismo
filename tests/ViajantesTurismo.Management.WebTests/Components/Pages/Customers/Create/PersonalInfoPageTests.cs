@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -9,6 +10,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create
 /// Validates that validation messages are shown only via inline ValidationMessage
 /// components and NOT duplicated via a ValidationSummary.
 /// </summary>
+[TestScope(TestScope.Component)]
 public sealed class PersonalInfoPageTests : BunitContext
 {
     public PersonalInfoPageTests()

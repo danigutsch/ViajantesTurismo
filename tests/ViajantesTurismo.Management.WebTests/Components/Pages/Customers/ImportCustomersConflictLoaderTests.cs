@@ -1,9 +1,11 @@
+using PandaBear.Testing;
 using System.Text;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
+[TestScope(TestScope.Unit)]
 public sealed class ImportCustomersConflictLoaderTests
 {
     [Fact]

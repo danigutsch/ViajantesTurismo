@@ -29,7 +29,7 @@ Out-of-set values map as follows:
 |------------------------|-------------------------------------|-------------------------------------------|
 | `api-integration`      | `integration`                       | `Host=test-server` where it applies       |
 | `database-integration` | `integration`                       | `Host=aspire`; a real database container  |
-| `web-integration`      | `ui-integration` or `integration`   | By class: rendering only, or a test host  |
+| `web-integration`      | `component` or `integration`        | By class: bUnit render, or a test host    |
 | `Unit`                 | `unit`                              | Case only                                 |
 | `browser`              | `system`                            | `Host=browser`                            |
 

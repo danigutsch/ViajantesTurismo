@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using System.Net;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using ViajantesTurismo.Resources;
@@ -8,7 +9,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// Verifies the Management BFF exchanges one server-side token for each backend audience.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.ScopeName, TestTraits.UnitScope)]
+[TestScope(TestScope.Unit)]
 public sealed class AudienceTokenExchangeHandlerTests
 {
     [Fact]

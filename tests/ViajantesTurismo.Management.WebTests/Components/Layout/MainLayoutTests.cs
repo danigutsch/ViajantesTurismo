@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using Microsoft.AspNetCore.Components;
 using PandaBear.Blazor;
 using ViajantesTurismo.Management.Web.Components.Layout;
@@ -5,6 +6,7 @@ using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Layout;
 
+[TestScope(TestScope.Component)]
 public sealed class MainLayoutTests : BunitContext
 {
     private readonly RecordingUiFailureReporter reporter = new();

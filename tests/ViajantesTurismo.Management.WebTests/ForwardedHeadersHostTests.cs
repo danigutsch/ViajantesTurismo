@@ -7,6 +7,7 @@ namespace ViajantesTurismo.Management.WebTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(TestTraitNames.HostName, TestTraitValues.TestServerHost)]
+[TestScope(TestScope.Integration)]
 public sealed class ForwardedHeadersHostTests
 {
     [Fact]
