@@ -11,6 +11,7 @@ public sealed class BrandingProjectionApplier(
     TimeProvider timeProvider)
 {
     /// <summary>Applies one delivered Branding revision event.</summary>
+    /// <remarks>A pending event from a lineage an authorized epoch transition retired is quarantined, never recovered.</remarks>
     /// <param name="integrationEvent">The Branding revision event.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A task that completes when the outcome commits.</returns>
@@ -25,7 +26,6 @@ public sealed class BrandingProjectionApplier(
 
         if (await store.IsRetiredEpoch(integrationEvent.SourceEpoch, ct).ConfigureAwait(false))
         {
-            // A pending event from a lineage an authorized epoch transition retired: quarantine, never recover.
             await Settle(integrationEvent, BrandingInboxOutcome.Rejected, "superseded-epoch", ct).ConfigureAwait(false);
             return;
         }

@@ -168,9 +168,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
         }
 
         /// <inheritdoc />
+        /// <remarks>A rollback must never erase new financial history or mislabel cross-currency receipts.</remarks>
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // A rollback must never erase new financial history or mislabel cross-currency receipts.
             migrationBuilder.Sql(
                 $"""
                 DO $$ BEGIN

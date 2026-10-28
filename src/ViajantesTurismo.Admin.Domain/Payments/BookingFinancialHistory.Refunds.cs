@@ -161,7 +161,7 @@ public sealed partial class BookingFinancialHistory
             }
             selected += item.EuroAmount;
         }
-        // Refunding unapplied excess never silently reverses EUR already allocated to debt.
-        return refund.EuroCreditReversed - selected <= AvailableCredit(receipt.Id);
+        var reversesOnlyUnappliedExcess = refund.EuroCreditReversed - selected <= AvailableCredit(receipt.Id);
+        return reversesOnlyUnappliedExcess;
     }
 }

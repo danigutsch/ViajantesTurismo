@@ -10,9 +10,9 @@ namespace ViajantesTurismo.Admin.Application.Payments;
 internal static class PaymentInstructionContentFactory
 {
     /// <summary>Creates draft content that holds no sensitive payment payload, only a placeholder field and branding.</summary>
+    /// <remarks>Ordinary document fields contain no sensitive snapshot payload. Financial fields are rendered only from protected typed snapshots.</remarks>
     public static Result<DocumentDraftContent> Create(FrozenPaymentInstruction terms, DocumentBrandingSnapshotValues branding)
     {
-        // Ordinary document fields contain no sensitive snapshot payload. Financial fields are rendered only from protected typed snapshots.
         var field = DocumentField.Create("payment-instructions", "Payment details", "Generated from the protected approved schedule and verified recipient snapshot.", DocumentPrivacyClassification.Operational, false);
         if (field.IsFailure)
         {
