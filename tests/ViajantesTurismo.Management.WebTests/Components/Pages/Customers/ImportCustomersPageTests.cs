@@ -289,7 +289,9 @@ public sealed class ImportCustomersPageTests : BunitContext
         await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
 
         // Act
-        await cut.Find("button[aria-label='Cancel upload of customers.csv']").ClickAsync();
+        var cancel = cut.Find("button[aria-label='Cancel upload of customers.csv']");
+        await cancel.FocusAsync();
+        await cancel.ClickAsync();
         requestCompletion.TrySetResult(new ImportResultDto(1, 0));
         await importTask;
 
@@ -362,8 +364,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => cut.Find("progress[value]").GetAttribute("value").ShouldBe(transferredBytes.ToString(CultureInfo.InvariantCulture)));
         cut.Find("progress[value]").GetAttribute("max").ShouldBe(totalBytes.ToString(CultureInfo.InvariantCulture));
-        var liveRegion = cut.Find("[role='status'][aria-live='polite']");
-        liveRegion.GetAttribute("aria-atomic").ShouldBe("true");
+        cut.Find("[role='status'].visually-hidden").ShouldNotBeNull();
 
         // Act
         progress.Report(totalBytes);

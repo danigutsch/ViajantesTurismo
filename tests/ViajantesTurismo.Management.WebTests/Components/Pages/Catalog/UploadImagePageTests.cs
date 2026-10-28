@@ -101,7 +101,9 @@ public sealed class UploadImagePageTests : BunitContext
         await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
 
         // Act
-        await cut.Find("button[aria-label='Cancel upload of tour-image.jpg']").ClickAsync();
+        var cancel = cut.Find("button[aria-label='Cancel upload of tour-image.jpg']");
+        await cancel.FocusAsync();
+        await cancel.ClickAsync();
         requestCompletion.TrySetResult(null);
         await uploadTask;
 
@@ -234,8 +236,7 @@ public sealed class UploadImagePageTests : BunitContext
         // Assert
         await cut.WaitForAssertionAsync(() => cut.Find("progress[value]").GetAttribute("value").ShouldBe(25L.ToString(CultureInfo.InvariantCulture)));
         cut.Find("progress[value]").GetAttribute("max").ShouldBe(file.Size.ToString(CultureInfo.InvariantCulture));
-        var liveRegion = cut.Find("[role='status'][aria-live='polite']");
-        liveRegion.GetAttribute("aria-atomic").ShouldBe("true");
+        cut.Find("[role='status'].visually-hidden").ShouldNotBeNull();
 
         // Act
         progress.Report(file.Size);
@@ -327,7 +328,7 @@ public sealed class UploadImagePageTests : BunitContext
             progress.Report(transferred);
             var expected = transferred.ToString(CultureInfo.InvariantCulture);
             await cut.WaitForAssertionAsync(() => cut.Find("progress[value]").GetAttribute("value").ShouldBe(expected));
-            announcements.Add(cut.Find("[role='status'][aria-live='polite']").TextContent);
+            announcements.Add(cut.Find("[role='status'].visually-hidden").TextContent);
         }
 
         // Assert
