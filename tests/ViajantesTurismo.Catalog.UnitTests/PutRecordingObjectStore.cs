@@ -17,7 +17,8 @@ internal sealed class PutRecordingObjectStore(IObjectStore inner) : IObjectStore
     /// <param name="CanWrite">Whether the content stream accepted writes.</param>
     /// <param name="Position">Stream position when received.</param>
     /// <param name="Bytes">All bytes the stream served from its start.</param>
-    internal sealed record RecordedPut(string ObjectKey, long DeclaredLength, bool CanWrite, long Position, byte[] Bytes);
+    /// <param name="StreamType">Runtime type of the content stream.</param>
+    internal sealed record RecordedPut(string ObjectKey, long DeclaredLength, bool CanWrite, long Position, byte[] Bytes, Type StreamType);
 
     /// <inheritdoc />
     public async ValueTask<ObjectWriteResult> Put(ObjectWriteRequest request, CancellationToken ct)
@@ -27,7 +28,7 @@ internal sealed class PutRecordingObjectStore(IObjectStore inner) : IObjectStore
         using var copy = new MemoryStream();
         await request.Content.CopyToAsync(copy, ct);
         request.Content.Position = position;
-        puts.Add(new RecordedPut(request.ObjectKey, request.Length, request.Content.CanWrite, position, copy.ToArray()));
+        puts.Add(new RecordedPut(request.ObjectKey, request.Length, request.Content.CanWrite, position, copy.ToArray(), request.Content.GetType()));
         return await inner.Put(request, ct);
     }
 

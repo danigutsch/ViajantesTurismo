@@ -1,3 +1,4 @@
+using PandaBear.IO;
 using PandaBear.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
@@ -124,6 +125,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         objectStore.Puts.Count.ShouldBe(8);
         foreach (var put in objectStore.Puts)
         {
+            put.StreamType.ShouldBe(typeof(ReadOnlyMemoryStream));
             put.CanWrite.ShouldBeFalse();
             put.Position.ShouldBe(0);
             put.Bytes.Length.ShouldBe((int)put.DeclaredLength);

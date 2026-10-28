@@ -1764,6 +1764,7 @@
           "PandaBear.SharedKernel.AI": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.EventSourcing": "[0.1.0-alpha.359.1, )",
+          "PandaBear.SharedKernel.IO": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.ImageProcessing": "[0.1.0-alpha.359.1, )",
           "PandaBear.SharedKernel.InputNormalization": "[0.1.0-alpha.359.1, )",
@@ -2635,6 +2636,12 @@
         "requested": "[0.1.0-alpha.359.1, )",
         "resolved": "0.1.0-alpha.359.1",
         "contentHash": "73apid5Cg1rgSHx7XQY+q9n5eleLI+6f4OyDX7s8S6HVILD5IBmCsO6UK/fyU5ULbvzYDxDJju9b5ilLpxvKWQ=="
+      },
+      "PandaBear.SharedKernel.IO": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.359.1, )",
+        "resolved": "0.1.0-alpha.359.1",
+        "contentHash": "ltI2FVNRXiIACtX8mwm4rL/6E9tYov054xAwRoCwcR6s6Ai7wejKa/EKXr1zre1bxQbeVUzPRdHRDY3uqlVprQ=="
       },
       "PandaBear.SharedKernel.MalwareScanning.ClamAv": {
         "type": "CentralTransitive",
