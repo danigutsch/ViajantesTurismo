@@ -14,33 +14,20 @@
 
 @if (!_success && _upload.Status is not UploadOperationStatus.None)
 {
-    <section class="alert alert-light border" aria-label="Catalog image upload status" tabindex="-1" @ref="_statusRegion">
-        <div class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">@_upload.Announcement</div>
-        <div data-upload-status>@GetUploadStatusText()</div>
-        @if (_upload.IsDeterminate)
-        {
-            <progress class="w-100 mt-2"
-                      aria-label="@($"Upload progress for {_upload.FileName}")"
-                      value="@_upload.BytesTransferred"
-                      max="@_upload.TotalBytes">
-                @_upload.BytesTransferred of @_upload.TotalBytes bytes
-            </progress>
-        }
-        else if (_upload.IsActive)
-        {
-            <progress class="w-100 mt-2" aria-label="@($"Indeterminate server progress for {_upload.FileName}")"></progress>
-        }
-
-        @if (_upload.IsActive)
-        {
-            <button type="button"
-                    class="btn btn-sm btn-outline-danger mt-2"
-                    aria-label="@($"Cancel upload of {_upload.FileName}")"
-                    @onclick="CancelUpload">
-                Cancel upload
-            </button>
-        }
-    </section>
+    <UploadStatus State="@_upload"
+                  Label="Catalog image upload status"
+                  class="alert alert-light border"
+                  OnCancel="CancelUpload"
+                  CancelClass="btn btn-sm btn-outline-danger mt-2"
+                  CancelLabelFormat="Cancel upload of {0}"
+                  ProgressClass="w-100 mt-2"
+                  ProgressLabelFormat="Upload progress for {0}"
+                  IndeterminateProgressLabelFormat="Indeterminate server progress for {0}"
+                  ProgressTextFormat="{0} of {1} bytes"
+                  StatusClass="visually-hidden"
+                  RenderFailureInStatus="false">
+        <Detail><div data-upload-status>@GetUploadStatusText()</div></Detail>
+    </UploadStatus>
 }
 
 @if (_success)
@@ -81,19 +68,6 @@
 </EditForm>
 
 @code {
-    private ElementReference _statusRegion;
-    private bool _focusStatusRegion;
-
-    /// <inheritdoc />
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_focusStatusRegion)
-        {
-            _focusStatusRegion = false;
-            await _statusRegion.FocusAsync();
-        }
-    }
-
     [Parameter]
     public Guid Id { get; set; }
 
@@ -223,7 +197,6 @@
         }
 
         await uploadCancellation.CancelAsync();
-        _focusStatusRegion = true;
     }
 
     private string GetSubmitButtonLabel()
