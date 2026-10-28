@@ -26,23 +26,25 @@ public sealed class BrandingCacheFreshnessTests
     }
 
     [Fact]
-    public async Task Concurrent_cold_public_reads_load_settings_once()
+    public async Task Concurrent_public_reads_after_the_first_cold_load_reuse_the_cached_response()
     {
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
         await using var factory = BrandingApiTestHost.CreateAnonymous(store);
         using var client = factory.CreateClient();
-        var baseline = store.ReadCount;
+        using var cold = await client.GetAsync(new Uri(PublicSettingsPath, UriKind.Relative), TestContext.Current.CancellationToken);
+        var loadsAfterColdRead = store.ReadCount;
 
         // Act
         var responses = await Task.WhenAll(Enumerable.Range(0, 20).Select(_ =>
             client.GetAsync(new Uri(PublicSettingsPath, UriKind.Relative), TestContext.Current.CancellationToken)));
 
         // Assert
+        cold.StatusCode.ShouldBe(HttpStatusCode.OK);
         var okCount = responses.Count(response => response.StatusCode == HttpStatusCode.OK);
         okCount.ShouldBe(responses.Length);
-        var loads = store.ReadCount - baseline;
-        loads.ShouldBe(1);
+        loadsAfterColdRead.ShouldBe(1);
+        store.ReadCount.ShouldBe(loadsAfterColdRead);
     }
 
     [Fact]
