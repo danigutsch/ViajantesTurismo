@@ -13,7 +13,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment) : ICou
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
-    // Mapping of common demonyms to country names
+    /// <summary>Maps common demonyms to country names.</summary>
     private static readonly Dictionary<string, string> DemonymToCountryName = new(StringComparer.OrdinalIgnoreCase)
     {
         { "Brazilian", "Brazil" },
@@ -34,6 +34,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment) : ICou
     /// Gets the list of countries asynchronously.
     /// </summary>
     /// <returns>A list of country information.</returns>
+    /// <remarks>Falls back to a few common countries, as used in tests, when the data file is missing or malformed.</remarks>
     public async Task<CountryInfo[]> GetCountries(CancellationToken ct)
     {
         if (_countries is not null)
@@ -60,13 +61,11 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment) : ICou
         }
         catch (FileNotFoundException)
         {
-            // Fallback with common countries used in tests
             _countries = GetFallbackCountries();
             return _countries;
         }
         catch (JsonException)
         {
-            // Fallback with common countries used in tests
             _countries = GetFallbackCountries();
             return _countries;
         }

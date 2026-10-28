@@ -54,6 +54,10 @@
     private string HeroBody => _hero?.Body ?? "Travel differently. ViajantesTurismo is culture, health, and fun.";
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The public fallback is preserved when an API implementation reports an upstream timeout as cancellation, or
+    /// has not materialized transport outcomes and throws <see cref="HttpRequestException" />.
+    /// </remarks>
     protected override async Task OnInitializedAsync()
     {
         var heroTask = LoadHero();
@@ -98,11 +102,9 @@
         }
         catch (OperationCanceledException) when (!requestAborted.IsCancellationRequested)
         {
-            // Preserve the public fallback when an API implementation reports an upstream timeout as cancellation.
         }
         catch (HttpRequestException)
         {
-            // Preserve the public fallback for API implementations that have not materialized transport outcomes.
         }
 
         PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);

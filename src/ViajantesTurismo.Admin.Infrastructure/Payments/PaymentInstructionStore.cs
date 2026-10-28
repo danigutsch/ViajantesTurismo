@@ -34,8 +34,7 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
                 || state.Terms is null || state.Recipient is null || state.Terms.BookingId != row.BookingId || state.Terms.AccountId != row.AccountId
                 || state.Terms.AccountRevisionId != row.AccountRevisionId || document.BookingId != row.BookingId || document.Revision != row.Revision
                 || document.Type != DocumentType.PaymentInstructions || string.IsNullOrWhiteSpace(state.CreatedBy) || state.CreatedBy.Length > 256
-                || state.CreatedAt != state.Terms.CreatedAt || // PostgreSQL timestamps retain microseconds; preserve the full instant inside the protected snapshot.
-                state.CreatedAt.UtcTicks / 10 != document.CreatedAt.Ticks / 10)
+                || !CreatedAtIsConsistent(state, document))
             {
                 throw new CryptographicException("Protected payment instruction state is invalid.");
             }
@@ -50,6 +49,14 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
         }
         finally { CryptographicOperations.ZeroMemory(plaintext); }
     }
+
+    /// <summary>
+    /// PostgreSQL timestamps retain microseconds, so the document is compared at that precision while the full instant
+    /// is preserved and compared inside the protected snapshot.
+    /// </summary>
+    private static bool CreatedAtIsConsistent(PaymentInstructionSnapshotState state, DocumentDraft document) =>
+        state.CreatedAt == state.Terms.CreatedAt
+        && state.CreatedAt.UtcTicks / 10 == document.CreatedAt.Ticks / 10;
 
     /// <inheritdoc />
     public Task SaveSnapshot(DocumentDraft document, FrozenPaymentInstruction terms, PaymentAccount account, string actorId, DateTimeOffset now, CancellationToken ct)

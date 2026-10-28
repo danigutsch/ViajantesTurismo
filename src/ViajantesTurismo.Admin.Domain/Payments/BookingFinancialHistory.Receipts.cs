@@ -225,7 +225,7 @@ public sealed partial class BookingFinancialHistory
     public bool IsApprovalWithdrawn(Guid targetId) => Withdrawn(targetId);
 
     private ReceiptReconciliationState? Reconciliation(Guid receiptId) => _state.Reconciliations.FirstOrDefault(item => item.ReceiptId == receiptId && item.Approval is not null);
-    // One receipt retains its originally agreed conversion basis. Later explicit credit tranches consume only its residual cash.
+    /// <summary>One receipt retains its originally agreed conversion basis. Later explicit credit tranches consume only its residual cash.</summary>
     private decimal ApprovedEuro(Guid receiptId) => _state.Reconciliations.Where(item => item.ReceiptId == receiptId && item.Approval is not null).Sum(item => item.EuroCredit);
     private bool CreditFits(PaymentReceiptState receipt, ReceiptReconciliationState draft)
     {

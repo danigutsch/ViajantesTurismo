@@ -28,8 +28,8 @@ internal sealed class BrandingIfMatch
         var hasAny = parsed.Any(tag => tag.Equals(EntityTagHeaderValue.Any));
         if (hasAny)
         {
-            // "*" and an entity-tag list are alternative forms; combining them is malformed, not a list match.
-            return parsed.Count == 1 ? new BrandingIfMatch(matchesAny: true, []) : null;
+            var wildcardIsAlternativeToTagList = parsed.Count == 1;
+            return wildcardIsAlternativeToTagList ? new BrandingIfMatch(matchesAny: true, []) : null;
         }
 
         return new BrandingIfMatch(matchesAny: false, [.. parsed]);

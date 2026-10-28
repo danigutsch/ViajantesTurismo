@@ -1,11 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
 using PandaBear.AspNetCore;
 using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.OpenApi;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
-using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 
 const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
@@ -20,23 +18,7 @@ builder.Services.AddSecurityEventTelemetry();
 builder.Services.AddCatalogOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddCatalogSecurityBaseline(builder.Configuration);
-// Catalog and the co-hosted Branding module each accept only their own audience; no scheme authenticates by default.
-builder.Services.AddApiSecurity(
-        builder.Configuration,
-        builder.Environment,
-        [
-            new ApiBearerScheme(CatalogAuthorization.BearerScheme, ApiAudienceNames.Catalog, CatalogAuthorization.PermissionsByRole),
-            new ApiBearerScheme(BrandingModule.BearerScheme, ApiAudienceNames.Branding, BrandingModule.PermissionsByRole)
-        ])
-    .AddPolicy(CatalogAuthorization.CatalogRead, policy => policy.AddAuthenticationSchemes(CatalogAuthorization.BearerScheme).RequirePermission(CatalogAuthorization.CatalogRead))
-    .AddPolicy(CatalogAuthorization.CatalogWrite, policy => policy.AddAuthenticationSchemes(CatalogAuthorization.BearerScheme).RequirePermission(CatalogAuthorization.CatalogWrite))
-    .AddPolicy(CatalogAuthorization.CatalogPublish, policy => policy.AddAuthenticationSchemes(CatalogAuthorization.BearerScheme).RequirePermission(CatalogAuthorization.CatalogPublish))
-    .AddPolicy(CatalogAuthorization.MediaAi, policy => policy.AddAuthenticationSchemes(CatalogAuthorization.BearerScheme).RequirePermission(CatalogAuthorization.MediaAi))
-    .AddBrandingPolicies()
-    // Catalog routes that use the default or fallback policy authenticate only Catalog-audience tokens; every
-    // Branding route names its own Branding policy or is anonymous (CatalogHostedBrandingRouteTests).
-    .SetDefaultPolicy(new AuthorizationPolicyBuilder(CatalogAuthorization.BearerScheme).RequireAuthenticatedUser().Build())
-    .SetFallbackPolicy(new AuthorizationPolicyBuilder(CatalogAuthorization.BearerScheme).RequireAuthenticatedUser().Build());
+builder.Services.AddCatalogAndBrandingApiSecurity(builder.Configuration, builder.Environment);
 builder.AddCatalogInfrastructure();
 builder.AddBrandingModule(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(builder.Environment));
 

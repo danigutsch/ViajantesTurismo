@@ -75,9 +75,8 @@ internal sealed class EfCatalogTourReadModelStore(
             existing.Itinerary = StringSanitizer.Sanitize(update.Itinerary) ?? string.Empty;
             existing.SeoTitle = StringSanitizer.Sanitize(update.SeoTitle) ?? string.Empty;
             existing.SeoDescription = StringSanitizer.Sanitize(update.SeoDescription) ?? string.Empty;
-            // Domain edits require a draft, so a newer presentation implies an unpublish occurred first.
-            var presentationFollowsPublication = position > existing.PublicationPosition;
-            if (presentationFollowsPublication)
+            var domainEditsRequireDraftSoUnpublishPrecededPresentation = position > existing.PublicationPosition;
+            if (domainEditsRequireDraftSoUnpublishPrecededPresentation)
             {
                 existing.IsPublished = false;
             }

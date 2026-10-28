@@ -1089,6 +1089,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         };
     }
 
+    /// <summary>Maps a client type to the API it calls; Catalog.ApiService hosts the Branding routes, so Branding HTTP clients reach the Catalog API.</summary>
     private static ApiDestination GetClientTypeDestination(ITypeSymbol type)
     {
         var namespaceName = type.ContainingNamespace.ToDisplayString();
@@ -1097,7 +1098,6 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
             return ApiDestination.Admin;
         }
 
-        // Catalog.ApiService hosts the Branding routes, so Branding HTTP clients reach the Catalog API.
         if (IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Catalog.Contracts.Http")
             || IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Branding.Contracts.Http")
             || (string.Equals(namespaceName, SharedKernelBrandingNamespace, StringComparison.Ordinal)

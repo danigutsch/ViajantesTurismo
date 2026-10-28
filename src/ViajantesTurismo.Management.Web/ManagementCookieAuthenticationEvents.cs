@@ -12,6 +12,8 @@ internal sealed partial class ManagementCookieAuthenticationEvents(
     ILogger<ManagementCookieAuthenticationEvents> logger)
     : CookieAuthenticationEvents
 {
+    /// <inheritdoc />
+    /// <remarks>User-token cleanup and browser cookie deletion must proceed when audience-token cleanup fails.</remarks>
     public override async Task SigningOut(CookieSigningOutContext context)
     {
         var user = context.HttpContext.User;
@@ -53,7 +55,6 @@ internal sealed partial class ManagementCookieAuthenticationEvents(
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
-            // User-token cleanup and browser cookie deletion must proceed when audience-token cleanup fails.
             LogAudienceTokenCleanupFailure(logger, exception.GetType().Name);
         }
     }

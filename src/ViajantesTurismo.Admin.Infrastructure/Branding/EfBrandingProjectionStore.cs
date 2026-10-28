@@ -52,6 +52,7 @@ internal sealed class EfBrandingProjectionStore(AdminWriteDbContext dbContext) :
             ct);
 
     /// <summary>Stages the recovery fence, adding the row when none is tracked.</summary>
+    /// <remarks><c>GetRecovery</c> tracks an existing row, so an untracked fence is the first one ever written.</remarks>
     public void SetRecovery(BrandingProjectionRecovery recovery)
     {
         ArgumentNullException.ThrowIfNull(recovery);
@@ -60,7 +61,6 @@ internal sealed class EfBrandingProjectionStore(AdminWriteDbContext dbContext) :
             .SingleOrDefault(record => record.Id == BrandingRecoveryRecord.RecoveryId);
         if (tracked is null)
         {
-            // GetRecovery tracks an existing row, so an untracked fence is the first one ever written.
             dbContext.Set<BrandingRecoveryRecord>().Add(BrandingRecoveryRecord.Create(recovery));
             return;
         }
@@ -75,10 +75,12 @@ internal sealed class EfBrandingProjectionStore(AdminWriteDbContext dbContext) :
     /// <summary>Stages an inbox entry for a processed event.</summary>
     public void Record(BrandingInboxEntry entry) => dbContext.Set<BrandingInboxRecord>().Add(BrandingInboxRecord.From(entry));
 
-    // Projection replacement and inbox completion commit in one transaction. A concurrent worker that applied first
-    // fails this save on the projection revision token or the inbox key; the transport then redelivers and the
-    // inbox check makes the retry a no-op.
     /// <summary>Commits all staged projection, recovery, audit and inbox changes.</summary>
+    /// <remarks>
+    /// Projection replacement and inbox completion commit in one transaction. A concurrent worker that applied first
+    /// fails this save on the projection revision token or the inbox key; the transport then redelivers and the
+    /// inbox check makes the retry a no-op.
+    /// </remarks>
     public Task Save(CancellationToken ct) => dbContext.SaveChangesAsync(ct);
 
     private Task<BrandingProjectionRecord?> Load(CancellationToken ct) =>

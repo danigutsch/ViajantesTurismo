@@ -195,7 +195,14 @@ else
             return;
         }
 
-        // The write response carries no validator; one fresh read replaces the document and its entity tag together.
+        await ReloadDocumentAndEntityTag();
+
+        _saving = false;
+    }
+
+    /// <summary>The write response carries no validator; one fresh read replaces the document and its entity tag together.</summary>
+    private async Task ReloadDocumentAndEntityTag()
+    {
         var reloaded = await BrandingApi.GetSettings(CancellationToken.None);
         if (reloaded is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
         {
@@ -206,11 +213,9 @@ else
         {
             _errorMessage = UserFacingErrorMessage.ForOperation("save branding");
         }
-
-        _saving = false;
     }
 
-    // False when nothing could be shown on a field or some server text was withheld; the caller then shows fixed copy.
+    /// <summary>False when nothing could be shown on a field or some server text was withheld; the caller then shows fixed copy.</summary>
     private bool ShowServerFieldErrors(IReadOnlyDictionary<string, string[]>? validationErrors)
     {
         _ = FormContext;

@@ -51,15 +51,20 @@ internal sealed class PaymentProtection : IDisposable
                 .SetApplicationName("ViajantesTurismo.Admin.Payments")
                 .ProtectKeysWithCertificate(_certificates[0])
                 .UnprotectKeysWithAnyCertificate([.. _certificates]));
-            // Fail startup rather than enabling workflows with unusable key protection.
-            var probe = Accounts.Protect("startup-check", [1]);
-            _ = Accounts.Unprotect("startup-check", probe);
+            FailStartupWhenKeyProtectionIsUnusable();
         }
         catch
         {
             Dispose();
             throw;
         }
+    }
+
+    /// <summary>Round-trips a probe value so startup fails rather than enabling workflows with unusable key protection.</summary>
+    private void FailStartupWhenKeyProtectionIsUnusable()
+    {
+        var probe = Accounts.Protect("startup-check", [1]);
+        _ = Accounts.Unprotect("startup-check", probe);
     }
 
     /// <summary>Wraps an existing data protection provider and enables protection; used by tests.</summary>

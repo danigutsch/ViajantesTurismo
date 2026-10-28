@@ -6,6 +6,7 @@ namespace ViajantesTurismo.AppHost;
 internal static class SharedProductResourceExtensions
 {
     /// <summary>Registers the shared product resources and wires OTLP environment for every project resource.</summary>
+    /// <remarks>Catalog hosts Branding and relays its outbox; the Admin worker fills the projection documents read.</remarks>
     public static void AddSharedProductResources(this IDistributedApplicationBuilder builder, HostedProfile profile)
     {
         var admin = builder.AddConnectionString(ResourceNames.AdminDatabase);
@@ -13,7 +14,6 @@ internal static class SharedProductResourceExtensions
         var security = builder.AddConnectionString(ResourceNames.SecurityDatabase);
         var secret = builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true);
         var migrations = builder.AddMigrationService(admin, catalog, security);
-        // Catalog hosts Branding and relays its outbox; the Admin worker fills the projection documents read.
         var catalogApi = builder.AddCatalogApi(admin, catalog, migrations, clamAv: null, seaweedFs: null, identityProvider: null);
         builder.AddAdminIntegrationEventWorker(admin, catalog, migrations);
         var api = builder.AddAdminApi(admin, migrations, clamAv: null, identityProvider: null);

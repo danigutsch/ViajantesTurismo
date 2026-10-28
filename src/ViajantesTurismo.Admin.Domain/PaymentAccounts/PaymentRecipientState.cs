@@ -2,8 +2,8 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
-// Untrusted persistence data. Restore through PaymentRecipientDetails before use.
 /// <summary>Persistence snapshot of payment recipient details; fields not used by the recipient kind are null or none.</summary>
+/// <remarks>Untrusted persistence data. Restore through <see cref="PaymentRecipientDetails" /> before use.</remarks>
 /// <param name="Kind">The recipient account kind.</param>
 /// <param name="RecipientName">The recipient name.</param>
 /// <param name="Iban">The IBAN, for IBAN recipients.</param>

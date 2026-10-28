@@ -245,6 +245,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         return Guid.TryParseExact(fileName.AsSpan(TemporaryFilePrefix.Length, 32), "N", out _);
     }
 
+    /// <summary>Preserves the primary write failure; reserved artifacts remain hidden from object inventory.</summary>
     private static void DeleteTemporaryFileAfterFailure(string temporaryPath)
     {
         try
@@ -253,11 +254,9 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
         }
         catch (IOException)
         {
-            // Preserve the primary write failure; reserved artifacts remain hidden from object inventory.
         }
         catch (UnauthorizedAccessException)
         {
-            // Preserve the primary write failure; reserved artifacts remain hidden from object inventory.
         }
     }
 }

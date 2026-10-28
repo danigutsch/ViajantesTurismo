@@ -26,7 +26,9 @@ public static class InfrastructureDependencyInjection
 {
     private const int CatalogSlugLockMaximumPoolSize = 8;
 
-    // ponytail: a fixed attempt budget; make it configurable when operations sets a per-environment retry SLO.
+    /// <summary>
+    /// ponytail: a fixed attempt budget; make it configurable when operations sets a per-environment retry SLO.
+    /// </summary>
     private const int CatalogConsumeAttemptLimit = 10;
 
     /// <summary>
@@ -232,11 +234,13 @@ public static class InfrastructureDependencyInjection
         dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 
+    /// <summary>
+    /// A message that keeps failing is poisoned after the limit so later events keep flowing; operators release it
+    /// with IntegrationEventTransportPoison once the cause is fixed.
+    /// </summary>
     private static TApplicationBuilder AddCatalogIntegrationEventTransportConsumer<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        // A message that keeps failing is poisoned after the limit so later events keep flowing; operators release it
-        // with IntegrationEventTransportPoison once the cause is fixed.
         builder.Services.AddPostgreSqlIntegrationEventTransportConsumer<CatalogIntegrationTransportDbContext>(
             IntegrationEventConsumerNames.Catalog,
             options => options.MaxConsumeAttempts = CatalogConsumeAttemptLimit);

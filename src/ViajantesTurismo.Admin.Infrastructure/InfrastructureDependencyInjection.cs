@@ -159,6 +159,11 @@ public static class InfrastructureDependencyInjection
     /// Adds the Admin-owned integration-event worker composition: the Branding projection consumer that claims
     /// Catalog-database transport rows for consumer <c>admin</c> and writes only the Branding projection and inbox.
     /// </summary>
+    /// <remarks>
+    /// The consumer attempt limit is unbounded on purpose: while the projection is recovering, fenced events must stay
+    /// pending until the authorized reseed, not be poisoned by the fence itself. Old-epoch events are quarantined in
+    /// the inbox.
+    /// </remarks>
     /// <param name="builder">The application builder to configure.</param>
     /// <typeparam name="TApplicationBuilder">The application builder type.</typeparam>
     /// <returns>The updated application builder.</returns>
@@ -187,8 +192,6 @@ public static class InfrastructureDependencyInjection
                     options,
                     builder.Environment.IsDevelopment());
             });
-        // Unbounded on purpose: while the projection is recovering, fenced events must stay pending until the
-        // authorized reseed, not be poisoned by the fence itself. Old-epoch events are quarantined in the inbox.
         builder.Services.AddPostgreSqlIntegrationEventTransportConsumer<AdminBrandingTransportDbContext>(
             IntegrationEventConsumerNames.Admin);
 

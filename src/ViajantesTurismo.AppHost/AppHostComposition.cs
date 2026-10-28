@@ -10,6 +10,10 @@ internal static class AppHostComposition
     /// <summary>
     /// Adds the resources required by the selected product profile.
     /// </summary>
+    /// <remarks>
+    /// Catalog hosts Branding and relays its outbox; the Admin worker keeps the Admin Branding projection that
+    /// document generation reads, so even the Admin-only profile needs both.
+    /// </remarks>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="profile">The product profile to compose.</param>
     public static void AddProductResources(this IDistributedApplicationBuilder builder, HostedProfile profile)
@@ -39,8 +43,6 @@ internal static class AppHostComposition
         var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase, securityDatabase);
         var seaweedFs = profile.IncludesMediaInfrastructure() ? builder.AddMediaObjectStorage() : null;
 
-        // Catalog hosts Branding and relays its outbox; the Admin worker keeps the Admin Branding projection that
-        // document generation reads, so even the Admin-only profile needs both.
         var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
         builder.AddAdminIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
         var apiService = builder.AddAdminApi(adminDatabase, migrationService, clamAv, identityProvider);

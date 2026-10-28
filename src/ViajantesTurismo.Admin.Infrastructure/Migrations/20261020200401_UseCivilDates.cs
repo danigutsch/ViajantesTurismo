@@ -8,9 +8,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations;
 public partial class UseCivilDates : Migration
 {
     /// <inheritdoc />
+    /// <remarks>Preserves the UTC calendar date regardless of the database session timezone.</remarks>
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        // Preserve the UTC calendar date regardless of the database session timezone.
         migrationBuilder.Sql("""
             ALTER TABLE "Tours"
                 ALTER COLUMN "StartDate" TYPE date USING ("StartDate" AT TIME ZONE 'UTC')::date,
@@ -21,9 +21,9 @@ public partial class UseCivilDates : Migration
     }
 
     /// <inheritdoc />
+    /// <remarks>Civil dates recover as UTC midnight. Original times of day cannot be reconstructed.</remarks>
     protected override void Down(MigrationBuilder migrationBuilder)
     {
-        // Civil dates recover as UTC midnight. Original times of day cannot be reconstructed.
         migrationBuilder.Sql("""
             ALTER TABLE "Tours"
                 ALTER COLUMN "StartDate" TYPE timestamp with time zone USING "StartDate"::timestamp AT TIME ZONE 'UTC',

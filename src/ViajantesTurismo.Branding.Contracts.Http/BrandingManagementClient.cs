@@ -35,11 +35,15 @@ public sealed class BrandingManagementClient(HttpClient httpClient) : IBrandingM
             };
         }
 
-        // The validator is opaque to the client; only a weak or missing tag cannot guard the next full-state PUT.
-        return outcome.ETag is { } entityTag && !entityTag.StartsWith("W/", StringComparison.Ordinal)
+        return outcome.ETag is { } entityTag && IsStrongEntityTag(entityTag)
             ? HttpOutcomeMapper.Succeeded(status, new BrandingManagementDocument(settings, entityTag))
             : HttpOutcomeMapper.Status<BrandingManagementDocument>(HttpOutcomeKind.MalformedBody, status, MissingStrongEntityTagMessage);
     }
+
+    /// <summary>
+    /// The validator is opaque to the client; only a weak or missing tag cannot guard the next full-state PUT.
+    /// </summary>
+    private static bool IsStrongEntityTag(string entityTag) => !entityTag.StartsWith("W/", StringComparison.Ordinal);
 
     /// <inheritdoc />
     public async Task<HttpOutcome<BrandingManagementSettingsDto>> SaveSettings(

@@ -14,9 +14,9 @@ public sealed class DocumentBrandingSource(IBrandingProjectionStore projectionSt
         "Branding is not available for document generation yet. Retry after the Branding projection is ready.";
 
     /// <summary>Captures the current branding snapshot, or an unavailable failure when the projection is missing or recovering.</summary>
+    /// <remarks>A recovering projection is fenced: documents fail closed instead of capturing a stale or partial snapshot.</remarks>
     internal async Task<Result<DocumentBrandingSnapshotValues>> Capture(CancellationToken ct)
     {
-        // A recovering projection is fenced: documents fail closed instead of capturing a stale or partial snapshot.
         var recovery = await projectionStore.GetRecovery(ct);
         var current = recovery.IsReady ? await projectionStore.GetCurrent(ct) : null;
         return current is null

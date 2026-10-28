@@ -14,6 +14,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
     IPaymentAccountStore accounts, IDocumentStore documents, IDocumentQueryService queries, ITourStore tours, IUnitOfWork unitOfWork, TimeProvider clock)
 {
     /// <summary>Applies an explicit confirmed lifecycle action; independent review uses a separate operation.</summary>
+    /// <remarks>Finalization rechecks eligibility after all preparation, so no expired quote or retired recipient may be finalized.</remarks>
     public async Task<Result<Guid>> Change(Guid documentId, UpdatePaymentInstructionsDto input, string actorId, string? key, PaymentInstructionAuditOperation operation, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -77,7 +78,6 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
                     {
                         return FinancialErrors.Unavailable().ConvertError<Guid>();
                     }
-                    // Recheck after all preparation; no expired quote or retired recipient may be finalized.
                     if (!await Eligible(current, ct))
                     {
                         return FinancialErrors.Changed().ConvertError<Guid>();

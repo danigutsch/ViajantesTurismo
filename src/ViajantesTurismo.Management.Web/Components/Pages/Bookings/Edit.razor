@@ -440,7 +440,6 @@ else if (_booking is not null)
                 };
             }
 
-            // Update discount if changed
             if (_model.DiscountType != _booking.DiscountType ||
                 _model.DiscountAmount != _booking.DiscountAmount ||
                 normalizedDiscountReason != _booking.DiscountReason)
@@ -467,7 +466,6 @@ else if (_booking is not null)
                 };
             }
 
-            // Update notes if changed
             if (_model.Notes != _booking.Notes)
             {
                 var notesDto = new UpdateBookingNotesDto { Notes = _model.Notes };
@@ -489,15 +487,10 @@ else if (_booking is not null)
 
             try
             {
-                await Task.Delay(3000, token);
-                if (_redirectState.CanNavigate(token))
+                if (await RedirectDelay.Elapsed(3000, token) && _redirectState.CanNavigate(token))
                 {
                     Navigation.NavigateTo("/bookings");
                 }
-            }
-            catch (TaskCanceledException)
-            {
-                /* Cancelled by the user */
             }
             finally
             {

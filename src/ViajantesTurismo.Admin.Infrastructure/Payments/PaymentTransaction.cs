@@ -28,9 +28,7 @@ internal sealed class PaymentTransaction(AdminWriteDbContext context) : IPayment
             foreach (var name in lockNames.Where(name => name.StartsWith("admin:booking-finance:", StringComparison.Ordinal)).Order(StringComparer.Ordinal))
             {
                 var id = Guid.ParseExact(name["admin:booking-finance:".Length..], "N");
-                // Serialize against booking and price mutations as well as financial commands.
-                _ = await context.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM \"Tours\" WHERE \"Id\" = (SELECT \"TourId\" FROM \"Booking\" WHERE \"Id\" = {id}) FOR UPDATE", ct);
-                _ = await context.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM \"Booking\" WHERE \"Id\" = {id} FOR UPDATE", ct);
+                await LockBookingAndTourRows(id, ct);
             }
             try
             {
@@ -53,5 +51,12 @@ internal sealed class PaymentTransaction(AdminWriteDbContext context) : IPayment
                 return Result.Conflict(detail: "The payment record changed. Reload and confirm the current revision.").ConvertError<Guid>();
             }
         });
+    }
+
+    /// <summary>Locks the booking and its tour rows to serialize against booking and price mutations as well as financial commands.</summary>
+    private async Task LockBookingAndTourRows(Guid bookingId, CancellationToken ct)
+    {
+        _ = await context.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM \"Tours\" WHERE \"Id\" = (SELECT \"TourId\" FROM \"Booking\" WHERE \"Id\" = {bookingId}) FOR UPDATE", ct);
+        _ = await context.Database.ExecuteSqlInterpolatedAsync($"SELECT 1 FROM \"Booking\" WHERE \"Id\" = {bookingId} FOR UPDATE", ct);
     }
 }
