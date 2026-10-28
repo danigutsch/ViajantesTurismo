@@ -12,7 +12,7 @@ public sealed class MainLayoutTests : BunitContext
     public MainLayoutTests()
     {
         Services.AddSingleton<IUiFailureReporter>(reporter);
-        SetRendererInfo(new Microsoft.AspNetCore.Components.RendererInfo("Server", true));
+        SetRendererInfo(new RendererInfo("Server", true));
     }
 
     [Fact]

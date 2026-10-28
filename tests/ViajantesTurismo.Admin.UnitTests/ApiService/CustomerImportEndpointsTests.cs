@@ -155,7 +155,7 @@ public sealed class CustomerImportEndpointsTests
     {
         // Arrange
         var expectedCsv = "firstName,lastName\nAda,Lovelace";
-        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(expectedCsv));
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(expectedCsv));
         var file = new FormFile(stream, 0, stream.Length, "file", "customers.csv")
         {
             Headers = new HeaderDictionary(),
@@ -169,7 +169,7 @@ public sealed class CustomerImportEndpointsTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         Encoding.UTF8.GetString(result.Value.Span).ShouldBe(expectedCsv);
-        scanner.ScannedContent.ShouldBe(System.Text.Encoding.UTF8.GetBytes(expectedCsv));
+        scanner.ScannedContent.ShouldBe(Encoding.UTF8.GetBytes(expectedCsv));
     }
 
     [Fact]
@@ -384,9 +384,9 @@ public sealed class CustomerImportEndpointsTests
         const string text = "firstName,lastName\nJosé,Müller";
         var content = encoding switch
         {
-            "utf8" => System.Text.Encoding.UTF8.GetBytes(text),
-            "utf8-bom" => [.. System.Text.Encoding.UTF8.GetPreamble(), .. System.Text.Encoding.UTF8.GetBytes(text)],
-            _ => [.. System.Text.Encoding.Unicode.GetPreamble(), .. System.Text.Encoding.Unicode.GetBytes(text)]
+            "utf8" => Encoding.UTF8.GetBytes(text),
+            "utf8-bom" => [.. Encoding.UTF8.GetPreamble(), .. Encoding.UTF8.GetBytes(text)],
+            _ => [.. Encoding.Unicode.GetPreamble(), .. Encoding.Unicode.GetBytes(text)]
         };
         using var stream = new MemoryStream(content);
         var file = new FormFile(stream, 0, content.LongLength, "file", "customers.csv")

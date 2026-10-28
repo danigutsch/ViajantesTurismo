@@ -17,7 +17,7 @@ public sealed class DetailsPageTests : BunitContext
 
     public DetailsPageTests()
     {
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+        Services.AddSingleton<IUiFailureReporter>(_failures);
         Services.AddSingleton(TimeProvider.System);
         var authorization = AddAuthorization();
         authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
