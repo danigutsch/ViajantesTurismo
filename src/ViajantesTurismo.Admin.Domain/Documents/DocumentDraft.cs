@@ -199,8 +199,8 @@ public sealed class DocumentDraft : IEntity<Guid>
         get; private init;
     }
 
-    /// <summary>Gets the reason recorded when the document was voided.</summary>
-    public string? VoidReason
+    /// <summary>Gets the bounded reason code recorded when the document was voided.</summary>
+    public DocumentVoidReason? VoidReason
     {
         get; private set;
     }
@@ -653,22 +653,17 @@ public sealed class DocumentDraft : IEntity<Guid>
         return Result.Ok();
     }
 
-    /// <summary>Voids a document with a non-empty reason.</summary>
-    internal Result Void(string reason, DateTime now)
+    /// <summary>Voids a document with an assignable reason code.</summary>
+    internal Result Void(DocumentVoidReason reason, DateTime now)
     {
         if (Status != DocumentStatus.Finalized)
         {
             return DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Voided);
         }
 
-        if (string.IsNullOrWhiteSpace(reason))
+        if (!Enum.IsDefined(reason) || reason == DocumentVoidReason.Legacy)
         {
-            return DocumentErrors.VoidReasonRequired();
-        }
-
-        if (reason.Length > DocumentLimits.MaxVoidReasonLength)
-        {
-            return DocumentErrors.ValueTooLong("reason", DocumentLimits.MaxVoidReasonLength);
+            return DocumentErrors.VoidReasonInvalid();
         }
 
         VoidReason = reason;

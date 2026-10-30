@@ -96,7 +96,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
 
         var result = await new VoidDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork))
-            .Handle(new VoidDocumentCommand(document.Id, "customer-cancellation", DocumentAuditTestData.CreateContext()), CancellationToken.None);
+            .Handle(new VoidDocumentCommand(document.Id, DocumentVoidReason.AdministrativeVoid, DocumentAuditTestData.CreateContext()), CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Voided);
@@ -127,7 +127,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new VoidDocumentCommand(document.Id, " ", DocumentAuditTestData.CreateContext()),
+            new VoidDocumentCommand(document.Id, (DocumentVoidReason)99, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
         // Assert
@@ -304,7 +304,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
 
         // Act
         var result = await new VoidDocumentCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork))
-            .Handle(new VoidDocumentCommand(documentId, "customer-cancellation", auditContext), CancellationToken.None);
+            .Handle(new VoidDocumentCommand(documentId, DocumentVoidReason.AdministrativeVoid, auditContext), CancellationToken.None);
         var audit = auditStore.Records.ShouldHaveSingleItem();
 
         // Assert
@@ -341,7 +341,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
 
         // Act
         var result = await handler.Handle(
-            new VoidDocumentCommand(document.Id, "customer-cancellation", null!),
+            new VoidDocumentCommand(document.Id, DocumentVoidReason.AdministrativeVoid, null!),
             CancellationToken.None);
 
         // Assert

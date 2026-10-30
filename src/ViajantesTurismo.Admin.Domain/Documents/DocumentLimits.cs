@@ -35,8 +35,8 @@ public static class DocumentLimits
     /// <summary>The maximum staff-entered field override length.</summary>
     public const int MaxStaffOverrideLength = 4_000;
 
-    /// <summary>The maximum void reason length.</summary>
-    public const int MaxVoidReasonLength = 512;
+    /// <summary>The maximum persisted void reason code length.</summary>
+    public const int MaxVoidReasonLength = 64;
 
     /// <summary>The retention period for unfinalized drafts.</summary>
     public const int DraftRetentionDays = 30;

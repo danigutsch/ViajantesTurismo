@@ -7,8 +7,6 @@ namespace ViajantesTurismo.Admin.Domain.Documents;
 /// <summary>Owns every revision and lifecycle invariant for one booking document lineage.</summary>
 public sealed class DocumentLineage : IAggregateRoot<Guid>
 {
-    private const string ApprovalWithdrawnVoidReason = "approval-withdrawn";
-
     private readonly List<IDomainEvent> _domainEvents = [];
     private readonly List<DocumentDraft> _revisions = [];
 
@@ -333,14 +331,14 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         }
 
         return revision.IsFinalized
-            ? Void(documentId, ApprovalWithdrawnVoidReason, now, auditContext)
+            ? Void(documentId, DocumentVoidReason.ApprovalWithdrawn, now, auditContext)
             : RequestChanges(documentId, now, auditContext);
     }
 
     /// <summary>Voids one finalized revision without erasing finalization history.</summary>
     public Result Void(
         Guid documentId,
-        string reason,
+        DocumentVoidReason reason,
         DateTime now,
         DocumentAuditContext auditContext) =>
         Apply(documentId, revision => revision.Void(reason, now), DocumentAuditOperation.Void, auditContext);

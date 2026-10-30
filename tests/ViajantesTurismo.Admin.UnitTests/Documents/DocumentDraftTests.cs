@@ -72,7 +72,7 @@ public sealed class DocumentDraftTests
         var finalize = draft.Finalize("artifact"u8.ToArray(), now);
 
         // Act
-        var result = draft.Void("customer-cancellation", now);
+        var result = draft.Void(DocumentVoidReason.AdministrativeVoid, now);
 
         // Assert
         beginReview.IsSuccess.ShouldBeTrue();
@@ -91,7 +91,7 @@ public sealed class DocumentDraftTests
         var draft = DocumentDraftTestData.Create(now);
 
         // Act
-        var result = draft.Void("customer-cancellation", now);
+        var result = draft.Void(DocumentVoidReason.AdministrativeVoid, now);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -251,34 +251,34 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
-    public void Void_rejects_missing_and_overlong_reasons()
+    public void Void_rejects_undefined_and_legacy_reasons()
     {
         // Arrange
         var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
-        var missingReasonDraft = DocumentDraftTestData.Create(now);
-        var overlongReasonDraft = DocumentDraftTestData.Create(now);
-        var missingBeginReview = missingReasonDraft.BeginReview(now);
-        var missingApprove = missingReasonDraft.Approve(now);
-        var missingFinalize = missingReasonDraft.Finalize("artifact"u8.ToArray(), now);
-        var overlongBeginReview = overlongReasonDraft.BeginReview(now);
-        var overlongApprove = overlongReasonDraft.Approve(now);
-        var overlongFinalize = overlongReasonDraft.Finalize("artifact"u8.ToArray(), now);
+        var undefinedReasonDraft = DocumentDraftTestData.Create(now);
+        var legacyReasonDraft = DocumentDraftTestData.Create(now);
+        var undefinedBeginReview = undefinedReasonDraft.BeginReview(now);
+        var undefinedApprove = undefinedReasonDraft.Approve(now);
+        var undefinedFinalize = undefinedReasonDraft.Finalize("artifact"u8.ToArray(), now);
+        var legacyBeginReview = legacyReasonDraft.BeginReview(now);
+        var legacyApprove = legacyReasonDraft.Approve(now);
+        var legacyFinalize = legacyReasonDraft.Finalize("artifact"u8.ToArray(), now);
 
         // Act
-        var missingReasonResult = missingReasonDraft.Void(" ", now.AddMinutes(1));
-        var overlongReasonResult = overlongReasonDraft.Void(new string('r', DocumentLimits.MaxVoidReasonLength + 1), now.AddMinutes(1));
+        var undefinedReasonResult = undefinedReasonDraft.Void((DocumentVoidReason)99, now.AddMinutes(1));
+        var legacyReasonResult = legacyReasonDraft.Void(DocumentVoidReason.Legacy, now.AddMinutes(1));
 
         // Assert
-        missingBeginReview.IsSuccess.ShouldBeTrue();
-        missingApprove.IsSuccess.ShouldBeTrue();
-        missingFinalize.IsSuccess.ShouldBeTrue();
-        overlongBeginReview.IsSuccess.ShouldBeTrue();
-        overlongApprove.IsSuccess.ShouldBeTrue();
-        overlongFinalize.IsSuccess.ShouldBeTrue();
-        missingReasonResult.IsFailure.ShouldBeTrue();
-        overlongReasonResult.IsFailure.ShouldBeTrue();
-        missingReasonDraft.Status.ShouldBe(DocumentStatus.Finalized);
-        overlongReasonDraft.Status.ShouldBe(DocumentStatus.Finalized);
+        undefinedBeginReview.IsSuccess.ShouldBeTrue();
+        undefinedApprove.IsSuccess.ShouldBeTrue();
+        undefinedFinalize.IsSuccess.ShouldBeTrue();
+        legacyBeginReview.IsSuccess.ShouldBeTrue();
+        legacyApprove.IsSuccess.ShouldBeTrue();
+        legacyFinalize.IsSuccess.ShouldBeTrue();
+        undefinedReasonResult.IsFailure.ShouldBeTrue();
+        legacyReasonResult.IsFailure.ShouldBeTrue();
+        undefinedReasonDraft.Status.ShouldBe(DocumentStatus.Finalized);
+        legacyReasonDraft.Status.ShouldBe(DocumentStatus.Finalized);
     }
 
     [Fact]

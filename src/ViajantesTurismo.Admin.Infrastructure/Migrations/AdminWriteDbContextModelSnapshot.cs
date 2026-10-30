@@ -465,8 +465,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("VoidReason")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<byte[]>("_finalizedArtifactContent")
                         .HasColumnType("bytea")

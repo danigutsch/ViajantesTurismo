@@ -488,7 +488,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         newer.BeginReview(now).IsSuccess.ShouldBeTrue();
         newer.Approve(now).IsSuccess.ShouldBeTrue();
         newer.Finalize("newer"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
-        newer.Void("Superseded contract cancelled", now).IsSuccess.ShouldBeTrue();
+        newer.Void(DocumentVoidReason.AdministrativeVoid, now).IsSuccess.ShouldBeTrue();
         older.BeginReview(now).IsSuccess.ShouldBeTrue();
         older.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();

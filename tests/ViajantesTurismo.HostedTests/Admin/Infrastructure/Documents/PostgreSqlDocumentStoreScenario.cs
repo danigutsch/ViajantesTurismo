@@ -1,6 +1,8 @@
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using PandaBear.Domain.EntityFrameworkCore;
@@ -567,6 +569,33 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .SingleAsync(ct);
 
         return count == 1;
+    }
+
+    /// <summary>Migrates the database up or down to the named migration, or to the latest when none is named.</summary>
+    public async Task MigrateTo(string? target, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await dbContext.GetService<IMigrator>().MigrateAsync(target, ct);
+    }
+
+    /// <summary>Overwrites a draft's raw void reason column and asserts one row changed.</summary>
+    public async ValueTask SetRawVoidReason(Guid documentId, string value, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var rows = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE \"DocumentDrafts\" SET \"VoidReason\" = {value} WHERE \"Id\" = {documentId}",
+            ct);
+
+        rows.ShouldBe(1);
+    }
+
+    /// <summary>Reads a draft's raw void reason column.</summary>
+    public async ValueTask<string?> GetRawVoidReason(Guid documentId, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.Database
+            .SqlQuery<string?>($"SELECT \"VoidReason\" AS \"Value\" FROM \"DocumentDrafts\" WHERE \"Id\" = {documentId}")
+            .SingleAsync(ct);
     }
 
     /// <summary>Disposes the fixture-issued database.</summary>

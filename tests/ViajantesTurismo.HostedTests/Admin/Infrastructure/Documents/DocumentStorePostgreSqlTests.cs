@@ -196,6 +196,44 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task Void_reason_migration_maps_known_codes_and_preserves_unknown_text_as_legacy_in_both_directions()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var administrative = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        var withdrawn = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        var freeText = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        await Scenario.Seed(administrative, withdrawn, freeText);
+        await Scenario.MigrateTo("20261030171704_AddDocumentAuditPurgeEvidence", ct);
+        await Scenario.SetRawVoidReason(administrative.Id, "administrative-void", ct);
+        await Scenario.SetRawVoidReason(withdrawn.Id, "approval-withdrawn", ct);
+        await Scenario.SetRawVoidReason(freeText.Id, "Customer asked for a refund", ct);
+
+        // Act
+        await Scenario.MigrateTo(null, ct);
+
+        // Assert
+        var administrativeAfterUp = await Scenario.GetRawVoidReason(administrative.Id, ct);
+        administrativeAfterUp.ShouldBe("AdministrativeVoid");
+        var withdrawnAfterUp = await Scenario.GetRawVoidReason(withdrawn.Id, ct);
+        withdrawnAfterUp.ShouldBe("ApprovalWithdrawn");
+        var freeTextAfterUp = await Scenario.GetRawVoidReason(freeText.Id, ct);
+        freeTextAfterUp.ShouldBe("Legacy");
+
+        // Act
+        await Scenario.MigrateTo("20261030171704_AddDocumentAuditPurgeEvidence", ct);
+
+        // Assert
+        var administrativeAfterDown = await Scenario.GetRawVoidReason(administrative.Id, ct);
+        administrativeAfterDown.ShouldBe("administrative-void");
+        var withdrawnAfterDown = await Scenario.GetRawVoidReason(withdrawn.Id, ct);
+        withdrawnAfterDown.ShouldBe("approval-withdrawn");
+        var freeTextAfterDown = await Scenario.GetRawVoidReason(freeText.Id, ct);
+        freeTextAfterDown.ShouldBe("legacy");
+    }
+
+    [Fact]
     public async Task GetById_preserves_persisted_template_field_order()
     {
         // Arrange
