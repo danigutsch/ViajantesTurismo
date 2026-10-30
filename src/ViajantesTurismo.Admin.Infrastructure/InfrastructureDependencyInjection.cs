@@ -109,6 +109,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
+        builder.Services.AddScoped<IDocumentIdempotencyRetentionStore, DocumentIdempotencyRetentionStore>();
         builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
             AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
@@ -207,6 +208,7 @@ public static class InfrastructureDependencyInjection
         {
             builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
             builder.Services.AddHostedService<DocumentAuditRetentionHostedService>();
+            builder.Services.AddHostedService<DocumentIdempotencyRetentionHostedService>();
             builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
             builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
         }

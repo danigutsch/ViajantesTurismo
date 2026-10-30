@@ -48,11 +48,11 @@ public static class DocumentErrors
     public static Result DocumentIsImmutable(DocumentStatus status) => Result.Conflict(
         detail: $"A {status} document revision is immutable.");
 
-    /// <summary>Returns a missing-void-reason failure.</summary>
-    public static Result VoidReasonRequired() => Result.Invalid(
-        detail: "A reason is required to void a document.",
+    /// <summary>Returns an unknown-void-reason failure.</summary>
+    public static Result VoidReasonInvalid() => Result.Invalid(
+        detail: "A known reason code is required to void a document.",
         field: "reason",
-        message: "A void reason is required.");
+        message: "A known void reason is required.");
 
     /// <summary>Returns an invalid artifact-content failure.</summary>
     public static Result ArtifactContentRequired() => Result.Invalid(

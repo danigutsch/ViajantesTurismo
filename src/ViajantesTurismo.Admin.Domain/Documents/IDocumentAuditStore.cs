@@ -6,6 +6,9 @@ public interface IDocumentAuditStore
     /// <summary>Adds an immutable document audit record.</summary>
     void Add(DocumentAuditRecord record);
 
+    /// <summary>Adds immutable evidence that an audit-retention purge ran.</summary>
+    void Add(DocumentAuditPurgeRecord record);
+
     /// <summary>Removes audit records whose currently configured retention period has elapsed.</summary>
     Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct);
 }

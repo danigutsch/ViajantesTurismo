@@ -94,7 +94,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
                     result = current.Lineage.WithdrawApproval(documentId, now.UtcDateTime, audit.Value);
                     break;
                 case PaymentInstructionAuditOperation.Voided:
-                    result = current.Lineage.Void(documentId, "administrative-void", now.UtcDateTime, audit.Value);
+                    result = current.Lineage.Void(documentId, DocumentVoidReason.AdministrativeVoid, now.UtcDateTime, audit.Value);
                     break;
                 default:
                     return FinancialErrors.Invalid("operation").ConvertError<Guid>();

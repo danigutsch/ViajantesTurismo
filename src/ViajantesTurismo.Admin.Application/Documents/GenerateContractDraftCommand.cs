@@ -23,5 +23,5 @@ public sealed record GenerateContractDraftCommand(
     }
 
     /// <summary>Gets the persisted operation and resource scope used for idempotency.</summary>
-    public IdempotencyScope Scope => IdempotencyScope.From($"admin.documents.generate-contract-draft:{BookingId:N}");
+    public IdempotencyScope Scope => IdempotencyScope.From($"{DocumentCommandIdempotency.ScopePrefix}generate-contract-draft:{BookingId:N}");
 }

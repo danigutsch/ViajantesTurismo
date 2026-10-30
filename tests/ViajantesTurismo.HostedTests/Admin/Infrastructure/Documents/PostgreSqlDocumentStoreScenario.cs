@@ -1,6 +1,8 @@
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using PandaBear.Domain.EntityFrameworkCore;
@@ -16,6 +18,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Behavior;
+using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
@@ -331,13 +334,14 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ValidateScopes = true,
         });
         var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{first.BookingId:N}");
+        var storedKey = DocumentCommandIdempotency.DigestKey(key);
         var competingAttemptCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await using var firstOperationScope = serviceProvider.CreateAsyncScope();
         await using var secondOperationScope = serviceProvider.CreateAsyncScope();
         var firstAttempt = CaptureSameKeyGeneration(
             first,
             scope,
-            key,
+            storedKey,
             requestFingerprint,
             competingAttemptCompleted,
             firstOperationScope.ServiceProvider,
@@ -345,7 +349,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         var secondAttempt = CaptureSameKeyGeneration(
             second,
             scope,
-            key,
+            storedKey,
             requestFingerprint,
             competingAttemptCompleted,
             secondOperationScope.ServiceProvider,
@@ -364,7 +368,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         var replayStore = replayScope.ServiceProvider.GetRequiredService<IIdempotencyStore>();
         var replayContext = replayScope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
         var replayCoordinator = new DocumentCommandIdempotency(replayStore, replayContext, TimeProvider.System);
-        var replay = await replayCoordinator.GetExistingResult(scope, key, requestFingerprint, ct)
+        var replay = await replayCoordinator.GetExistingResult(scope, storedKey, requestFingerprint, ct)
             ?? throw new InvalidOperationException("The completed document idempotency key did not produce a replay.");
         return (attempts, replay);
     }
@@ -395,7 +399,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                   AND "Key" = {1}
                 """,
                 scope,
-                key.Value)
+                DocumentCommandIdempotency.DigestKey(key).Value)
             .SingleOrDefaultAsync(ct);
     }
 
@@ -506,6 +510,25 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await new DocumentAuditStore(dbContext).PurgeExpiredRecords(now, ct);
     }
 
+    /// <summary>Runs the audit purge handler at the given time, recording evidence, and returns how many records were removed.</summary>
+    public async ValueTask<int> PurgeExpiredAuditRecordsWithEvidence(DateTime now, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var handler = new PurgeExpiredDocumentAuditsCommandHandler(
+            new DocumentAuditStore(dbContext),
+            dbContext,
+            new FakeTimeProvider(new DateTimeOffset(now)));
+        var auditContext = DocumentAuditContext.Create("system:test-purge", Guid.CreateVersion7().ToString("N")).Value;
+        return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
+    }
+
+    /// <summary>Reads the stored purge evidence ordered by time.</summary>
+    public async ValueTask<DocumentAuditPurgeRecord[]> GetPurgeEvidence(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentAuditPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
+    }
+
     /// <summary>Resets the mutable tables while preserving document audit records.</summary>
     public async Task ResetMutableDataPreservingDocumentAudits(CancellationToken ct)
     {
@@ -567,6 +590,73 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .SingleAsync(ct);
 
         return count == 1;
+    }
+
+    /// <summary>Migrates the database to the latest unless told otherwise and inserts one raw idempotency entry.</summary>
+    public async Task SeedIdempotencyEntry(
+        string scope,
+        string key,
+        DateTimeOffset startedAt,
+        DateTimeOffset? completedAt,
+        CancellationToken ct,
+        bool migrate = true)
+    {
+        await using var dbContext = CreateDbContext();
+        if (migrate)
+        {
+            await dbContext.Database.MigrateAsync(ct);
+        }
+
+        var state = completedAt is null ? "Started" : "Completed";
+        _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            INSERT INTO "messaging"."idempotency_keys" ("Scope", "Key", "State", "StartedAt", "CompletedAt")
+            VALUES ({scope}, {key}, {state}, {startedAt}, {completedAt})
+            """,
+            ct);
+    }
+
+    /// <summary>Purges document idempotency entries at or before the cutoff and returns how many were removed.</summary>
+    public async Task<int> PurgeExpiredIdempotencyEntries(DateTimeOffset cutoff, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, ct);
+    }
+
+    /// <summary>Returns the keys of the remaining idempotency entries.</summary>
+    public async Task<string[]> GetIdempotencyKeys(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.Database
+            .SqlQueryRaw<string>("""SELECT "Key" AS "Value" FROM "messaging"."idempotency_keys" ORDER BY "Key" """)
+            .ToArrayAsync(ct);
+    }
+
+    /// <summary>Migrates the database up or down to the named migration, or to the latest when none is named.</summary>
+    public async Task MigrateTo(string? target, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await dbContext.GetService<IMigrator>().MigrateAsync(target, ct);
+    }
+
+    /// <summary>Overwrites a draft's raw void reason column and asserts one row changed.</summary>
+    public async ValueTask SetRawVoidReason(Guid documentId, string value, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var rows = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"UPDATE \"DocumentDrafts\" SET \"VoidReason\" = {value} WHERE \"Id\" = {documentId}",
+            ct);
+
+        rows.ShouldBe(1);
+    }
+
+    /// <summary>Reads a draft's raw void reason column.</summary>
+    public async ValueTask<string?> GetRawVoidReason(Guid documentId, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.Database
+            .SqlQuery<string?>($"SELECT \"VoidReason\" AS \"Value\" FROM \"DocumentDrafts\" WHERE \"Id\" = {documentId}")
+            .SingleAsync(ct);
     }
 
     /// <summary>Disposes the fixture-issued database.</summary>

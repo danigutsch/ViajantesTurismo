@@ -142,12 +142,40 @@ public sealed class DocumentCommandIdempotencyTests
         result.Value.ShouldBe(documentId);
         ownershipCountBeforePreparation.ShouldBe(0);
         ownershipCountAtMutation.ShouldBe(1);
-        var key = command.IdempotencyKey;
+        var key = DocumentCommandIdempotency.DigestKey(command.IdempotencyKey);
         store.StartedOperation.ShouldBe(new IdempotencyOperation(command.Scope, key));
         store.StagedResultFingerprint.ShouldBe($"{RequestFingerprint}:{documentId:N}");
         store.WasCompletionStagedBeforeSave.ShouldBeTrue();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
         auditStore.Records.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DigestKey_hides_the_caller_key_behind_a_stable_valid_key()
+    {
+        // Arrange
+        var callerKey = IdempotencyKey.From("customer.jane-doe:2026");
+
+        // Act
+        var digest = DocumentCommandIdempotency.DigestKey(callerKey);
+        var repeatedDigest = DocumentCommandIdempotency.DigestKey(callerKey);
+        var otherDigest = DocumentCommandIdempotency.DigestKey(IdempotencyKey.From("customer.jane-doe:2027"));
+
+        // Assert
+        digest.ShouldBe(repeatedDigest);
+        digest.ShouldNotBe(otherDigest);
+        digest.Value.Length.ShouldBe(64);
+        digest.Value.ShouldNotBe(callerKey.Value);
+    }
+
+    [Fact]
+    public void Replay_window_is_thirty_days()
+    {
+        // Act
+        var window = DocumentCommandIdempotency.ReplayWindow;
+
+        // Assert
+        window.ShouldBe(TimeSpan.FromDays(30));
     }
 
     [Fact]

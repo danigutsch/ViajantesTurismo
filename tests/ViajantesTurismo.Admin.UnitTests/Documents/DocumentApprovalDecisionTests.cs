@@ -88,7 +88,7 @@ public sealed class DocumentApprovalDecisionTests
         lineage.BeginReview(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Approve(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Finalize(newer.Id, "newer"u8.ToArray(), now, auditContext).IsSuccess.ShouldBeTrue();
-        lineage.Void(newer.Id, "administrative-void", now, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.Void(newer.Id, DocumentVoidReason.AdministrativeVoid, now, auditContext).IsSuccess.ShouldBeTrue();
 
         // Act
         var supersededIsRetired = older.IsRetired;
@@ -137,7 +137,7 @@ public sealed class DocumentApprovalDecisionTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         revision.Status.ShouldBe(DocumentStatus.Voided);
-        revision.VoidReason.ShouldBe("approval-withdrawn");
+        revision.VoidReason.ShouldBe(DocumentVoidReason.ApprovalWithdrawn);
     }
 
     [Fact]

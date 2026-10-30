@@ -133,7 +133,7 @@ public sealed class DocumentEndpointFailureTests
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         DocumentNoStoreHeaders.ArePresent(response).ShouldBeTrue();
         var requestedOperation = idempotencyStore.RequestedOperations.ShouldHaveSingleItem();
-        requestedOperation.Key.Value.ShouldBe("valid-key");
+        requestedOperation.Key.ShouldBe(DocumentCommandIdempotency.DigestKey(IdempotencyKey.From("valid-key")));
         auditStore.Records.ShouldHaveSingleItem().Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
