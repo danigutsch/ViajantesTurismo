@@ -1,4 +1,6 @@
 using Npgsql;
+using PandaBear.Idempotency;
+using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
 
@@ -7,7 +9,7 @@ internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDispo
 {
     private readonly NpgsqlDataSource dataSource;
     private readonly string scope;
-    private readonly Guid idempotencyKey;
+    private readonly string idempotencyKey;
     private readonly bool failOnceWithRetryableError;
     private readonly string triggerName;
     private readonly string functionName;
@@ -21,7 +23,7 @@ internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDispo
     {
         this.dataSource = dataSource;
         this.scope = scope;
-        this.idempotencyKey = idempotencyKey;
+        this.idempotencyKey = DocumentCommandIdempotency.DigestKey(IdempotencyKey.From(idempotencyKey.ToString("N"))).Value;
         this.failOnceWithRetryableError = failOnceWithRetryableError;
         var suffix = Guid.CreateVersion7().ToString("N");
         triggerName = $"document_idem_failure_trigger_{suffix}";
@@ -67,7 +69,7 @@ internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDispo
               AND "Key" = @key;
             """);
         command.Parameters.AddWithValue("scope", scope);
-        command.Parameters.AddWithValue("key", idempotencyKey.ToString("N"));
+        command.Parameters.AddWithValue("key", idempotencyKey);
         var state = await command.ExecuteScalarAsync(ct);
         return state?.ToString();
     }
@@ -92,7 +94,7 @@ internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDispo
             : string.Empty;
         var failureStatement = failOnceWithRetryableError
             ? $"""
-                IF OLD."Key" = '{idempotencyKey:N}'
+                IF OLD."Key" = '{idempotencyKey}'
                    AND OLD."State" = 'Started'
                    AND NEW."State" = 'Completed'
                    AND nextval('"{sequenceName}"') = 1 THEN
@@ -102,7 +104,7 @@ internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDispo
                 END IF;
                 """
             : $"""
-                IF OLD."Key" = '{idempotencyKey:N}'
+                IF OLD."Key" = '{idempotencyKey}'
                    AND OLD."State" = 'Started'
                    AND NEW."State" = 'Completed' THEN
                     RAISE EXCEPTION 'test-owned idempotency completion failure';
