@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -23,6 +24,6 @@ internal static class DocumentAuditTestData
     /// <summary>Creates a purge handler over the given fakes with a clock fixed at <paramref name="now" />.</summary>
     public static PurgeExpiredDocumentAuditsCommandHandler CreatePurgeHandler(
         FakeDocumentAuditStore auditStore,
-        FakeUnitOfWork unitOfWork,
+        IUnitOfWork unitOfWork,
         DateTimeOffset now) => new(auditStore, unitOfWork, new FakeTimeProvider(now));
 }

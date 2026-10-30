@@ -80,4 +80,21 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandlerTests
         evidence.PurgedCount.ShouldBe(0);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task Handle_surfaces_both_failures_when_the_rejected_evidence_cannot_be_saved()
+    {
+        // Arrange
+        var purgeFailure = new InvalidOperationException("purge failed");
+        var evidenceFailure = new InvalidOperationException("evidence failed");
+        var auditStore = new FakeDocumentAuditStore { PurgeFailure = purgeFailure };
+        var handler = DocumentAuditTestData.CreatePurgeHandler(auditStore, new ThrowingUnitOfWork(evidenceFailure), Now);
+
+        // Act
+        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken);
+        var thrown = await purge.ShouldThrow<AggregateException>();
+
+        // Assert
+        thrown.InnerExceptions.ShouldBe([purgeFailure, evidenceFailure]);
+    }
 }

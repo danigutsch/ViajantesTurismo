@@ -20,9 +20,17 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
         {
             purgedCount = await auditStore.PurgeExpiredRecords(cutoff, ct);
         }
-        catch (Exception)
+        catch (Exception purgeFailure)
         {
-            await RecordEvidence(command.AuditContext, 0, cutoff, DocumentAuditOutcome.Rejected, CancellationToken.None);
+            try
+            {
+                await RecordEvidence(command.AuditContext, 0, cutoff, DocumentAuditOutcome.Rejected, CancellationToken.None);
+            }
+            catch (Exception evidenceFailure)
+            {
+                throw new AggregateException(purgeFailure, evidenceFailure);
+            }
+
             throw;
         }
 
