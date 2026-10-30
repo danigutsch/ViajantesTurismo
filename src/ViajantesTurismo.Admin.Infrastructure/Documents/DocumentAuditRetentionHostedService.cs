@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PandaBear.Scheduling;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
@@ -12,6 +13,7 @@ internal sealed class DocumentAuditRetentionHostedService(
     : PollingBackgroundService(logger, DocumentAuditRetentionServiceName, TimeSpan.FromDays(1))
 {
     private const string DocumentAuditRetentionServiceName = "admin-document-audit-retention";
+    private const string SystemActorId = "system:admin-document-audit-retention";
 
     /// <summary>Runs one purge batch and returns the number of removed audit records.</summary>
     internal ValueTask<int> RunBatch(CancellationToken ct) => ExecuteBatch(ct);
@@ -20,6 +22,7 @@ internal sealed class DocumentAuditRetentionHostedService(
     {
         using var scope = scopeFactory.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentAuditsCommandHandler>();
-        return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(), ct).ConfigureAwait(false);
+        var auditContext = DocumentAuditContext.Create(SystemActorId, Guid.NewGuid().ToString("N")).Value;
+        return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct).ConfigureAwait(false);
     }
 }

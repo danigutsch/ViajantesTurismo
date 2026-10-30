@@ -8,6 +8,15 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
     /// <summary>Audit records added to the store.</summary>
     public List<DocumentAuditRecord> Records { get; } = [];
 
+    /// <summary>Purge evidence added to the store.</summary>
+    public List<DocumentAuditPurgeRecord> PurgeRecords { get; } = [];
+
+    /// <summary>Exception thrown by <c>PurgeExpiredRecords</c> when set.</summary>
+    public Exception? PurgeFailure
+    {
+        get; set;
+    }
+
     /// <summary>Count returned by <c>PurgeExpiredRecords</c>.</summary>
     public int PurgedCount
     {
@@ -23,10 +32,18 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
     /// <summary>Adds the record to <see cref="Records" />.</summary>
     public void Add(DocumentAuditRecord record) => Records.Add(record);
 
-    /// <summary>Captures the purge time and returns <see cref="PurgedCount" />.</summary>
+    /// <summary>Adds the evidence to <see cref="PurgeRecords" />.</summary>
+    public void Add(DocumentAuditPurgeRecord record) => PurgeRecords.Add(record);
+
+    /// <summary>Captures the purge time and returns <see cref="PurgedCount" />, or throws <see cref="PurgeFailure" />.</summary>
     public Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct)
     {
         PurgeCalledAt = now;
+        if (PurgeFailure is not null)
+        {
+            throw PurgeFailure;
+        }
+
         return Task.FromResult(PurgedCount);
     }
 }
