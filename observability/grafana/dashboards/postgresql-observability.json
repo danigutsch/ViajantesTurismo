@@ -8,6 +8,21 @@
   "links": [],
   "panels": [
     {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose:** Advisory PostgreSQL index-health evidence from the opt-in collector. It never changes schema.\n\n**Audience:** Developers reviewing database indexes.\n\n**Decision supported:** Whether collection works and whether any index deserves a human-reviewed migration.\n"
+      }
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -23,9 +38,9 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 5
       },
-      "id": 3,
+      "id": 13,
       "options": {
         "legend": {
           "displayMode": "list",
@@ -49,7 +64,8 @@
         }
       ],
       "title": "Index-health collection outcomes",
-      "type": "timeseries"
+      "type": "timeseries",
+      "verify": "idle-ok"
     },
     {
       "datasource": {
@@ -67,9 +83,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 5
       },
-      "id": 4,
+      "id": 14,
       "options": {
         "legend": {
           "displayMode": "list",
@@ -93,7 +109,8 @@
         }
       ],
       "title": "Index-health advisory evidence",
-      "type": "timeseries"
+      "type": "timeseries",
+      "verify": "idle-ok"
     }
   ],
   "refresh": "1m",

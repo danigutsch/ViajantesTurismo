@@ -112,7 +112,6 @@ public static class ServiceDefaultsExtensions
         metrics.AddAspNetCoreInstrumentation()
             .AddCatalogMetrics()
             .AddBrandingMetrics()
-            .AddSharedKernelMediatorMetrics()
             .AddSharedKernelProviderMetrics()
             .AddSharedKernelAspNetCoreMetrics()
             .AddSharedKernelBlazorMetrics();
@@ -123,7 +122,6 @@ public static class ServiceDefaultsExtensions
         tracing.AddProcessor(new ActivityPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive))
             .AddSource(applicationName, AdminContractsClientTelemetryName)
             .AddCatalogTracing()
-            .AddSharedKernelMediatorTracing()
             .AddSharedKernelProviderTracing()
             .AddAspNetCoreInstrumentation(options => options.Filter = ShouldTraceRequest)
             .AddGrpcClientInstrumentation()

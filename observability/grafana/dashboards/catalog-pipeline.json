@@ -1,0 +1,366 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose:** Follows Catalog work from integration event intake through idempotency, event-stream updates and projections to media object reconciliation.\n\n**Audience:** Developers and operators of the Catalog bounded context.\n\n**Decision supported:** Whether the public catalog is falling behind the Admin source of truth, and which stage (intake, dedupe, stream, projection, reconciliation) is failing.\n"
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Integration events by outcome",
+      "description": "catalog_integration_event_total in events/s by bounded outcome (success, skipped, error). Question: are Admin events being handled?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (catalog_outcome) (rate(catalog_integration_event_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Integration events by type",
+      "description": "catalog_integration_event_total in events/s by event type (a small fixed set). Question: which event types drive the load?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (catalog_integration_event_type) (rate(catalog_integration_event_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_integration_event_type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Idempotency outcomes",
+      "description": "catalog_idempotency_operation_total in operations/s by outcome. Question: how many deliveries are duplicates (expected) versus unexpected outcomes?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (catalog_idempotency_outcome) (rate(catalog_idempotency_operation_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_idempotency_outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Tour stream updates",
+      "description": "catalog_tour_stream_update_total in operations/s by outcome. Question: are Catalog tour event streams being written?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (catalog_outcome) (rate(catalog_tour_stream_update_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Projection events by projection",
+      "description": "catalog_projection_event_total in events/s by projection name. Question: are projections consuming events?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (catalog_projection_name) (rate(catalog_projection_event_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_projection_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Projection batches by outcome",
+      "description": "catalog_projection_batch_total in batches/s by projection and outcome. Question: do batches complete or fail?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (catalog_projection_name, catalog_outcome) (rate(catalog_projection_batch_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_projection_name}} {{catalog_outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Media object reconciliation",
+      "description": "catalog_media_object_reconciliation_object_total in objects/s by operation and outcome. Question: is cleanup finding, deleting or failing on orphaned media objects?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (catalog_media_object_reconciliation_operation, catalog_outcome) (rate(catalog_media_object_reconciliation_object_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_media_object_reconciliation_operation}} {{catalog_outcome}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [
+    "catalog",
+    "events",
+    "projections"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Catalog Event Pipeline",
+  "uid": "catalog-pipeline",
+  "version": 1,
+  "weekStart": ""
+}

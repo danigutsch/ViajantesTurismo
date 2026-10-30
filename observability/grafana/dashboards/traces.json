@@ -1,0 +1,181 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose:** Trace search over sanitized spans (span events dropped, status descriptions cleared). Tempo here has no metrics generator, so views are searches, not rates.\n\n**Audience:** Developers investigating latency or failures.\n\n**Decision supported:** Which recent traces failed or were slow, so they can be opened for detail.\n"
+      }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Recent error traces",
+      "description": "Traces containing a span with error status. Question: which requests failed?",
+      "datasource": {
+        "type": "tempo",
+        "uid": "Tempo"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "Tempo"
+          },
+          "queryType": "traceql",
+          "query": "{ status = error }",
+          "expr": "{ status = error }",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Slow traces",
+      "description": "Traces with a span longer than 2 seconds. Question: which requests were slow?",
+      "datasource": {
+        "type": "tempo",
+        "uid": "Tempo"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "Tempo"
+          },
+          "queryType": "traceql",
+          "query": "{ duration > 2s }",
+          "expr": "{ duration > 2s }",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Event store spans",
+      "description": "Traces with PostgreSQL event-store append, load and checkpoint spans. Question: are event-store spans exported and correlated with requests?",
+      "datasource": {
+        "type": "tempo",
+        "uid": "Tempo"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "Tempo"
+          },
+          "queryType": "traceql",
+          "query": "{ name =~ \"eventsourcing.*\" }",
+          "expr": "{ name =~ \"eventsourcing.*\" }",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Catalog pipeline spans",
+      "description": "Traces with Catalog integration event and projection spans. Question: are pipeline spans exported?",
+      "datasource": {
+        "type": "tempo",
+        "uid": "Tempo"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "Tempo"
+          },
+          "queryType": "traceql",
+          "query": "{ name =~ \"catalog.*\" }",
+          "expr": "{ name =~ \"catalog.*\" }",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [
+    "traces",
+    "tempo"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Traces",
+  "uid": "traces",
+  "version": 1,
+  "weekStart": ""
+}

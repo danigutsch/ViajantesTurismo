@@ -1,0 +1,523 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose:** Request health for the Admin, Catalog and Management.Web hosts: rate, errors, latency, auth outcomes, rate limiting, unhandled exceptions, handled UI failures and outbound client calls.\n\n**Audience:** Developers and operators of the application hosts.\n\n**Decision supported:** Whether an incident is a server fault (5xx, unhandled exceptions), an access problem (auth, rate limits), a UI fault, or a dependency fault (client calls).\n"
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Requests per second by status class",
+      "description": "http_server_request_duration_seconds_count rate in requests/s grouped by service and status class. Question: how much traffic does each service serve and how much fails?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (exported_job, http_response_status_code) (rate(http_server_request_duration_seconds_count{exported_job=~\"$service\"}[$__rate_interval]))",
+          "legendFormat": "{{exported_job}} {{http_response_status_code}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "5xx ratio",
+      "description": "Share of responses with status 5xx (ratio, 0 to 1). Question: are server errors above normal?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (exported_job) (rate(http_server_request_duration_seconds_count{exported_job=~\"$service\",http_response_status_code=~\"5..\"}[$__rate_interval])) / clamp_min(sum by (exported_job) (rate(http_server_request_duration_seconds_count{exported_job=~\"$service\"}[$__rate_interval])), 0.001)",
+          "legendFormat": "{{exported_job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "p95 request latency",
+      "description": "histogram_quantile(0.95) of http_server_request_duration_seconds in seconds. Question: are requests slower than expected?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(http_server_request_duration_seconds_bucket{exported_job=~\"$service\"}[$__rate_interval])))",
+          "legendFormat": "{{exported_job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Active requests",
+      "description": "http_server_active_requests (requests in flight). Question: is concurrency building up?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (exported_job) (http_server_active_requests{exported_job=~\"$service\"})",
+          "legendFormat": "{{exported_job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Unhandled exceptions",
+      "description": "unhandled_exceptions_total from PandaBear.AspNetCore in exceptions/s by bounded error type. Question: is any request failing with an exception nobody handled?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (exported_job, error_type) (rate(unhandled_exceptions_total{exported_job=~\"$service\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "{{exported_job}} {{error_type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Authentication events",
+      "description": "authentication_events_total from PandaBear.AspNetCore in events/s by bounded outcome. Question: are sign-ins failing or spiking?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (exported_job) (rate(authentication_events_total{exported_job=~\"$service\"}[$__rate_interval]))",
+          "legendFormat": "{{exported_job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Rate-limit rejections",
+      "description": "rate_limit_rejections_total from PandaBear.AspNetCore in rejections/s. Question: are clients being throttled?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (exported_job) (rate(rate_limit_rejections_total{exported_job=~\"$service\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "{{exported_job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Handled UI failures",
+      "description": "handled_ui_failures_total from PandaBear.Blazor in failures/s by operation and error type. Question: which Management.Web operation shows users an error?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (operation, error_type) (rate(handled_ui_failures_total[$__rate_interval])) or vector(0)",
+          "legendFormat": "{{operation}} {{error_type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Outbound HTTP p95 latency",
+      "description": "histogram_quantile(0.95) of http_client_request_duration_seconds in seconds by service. Question: is a downstream API (including Admin and Catalog clients) slow?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 37
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(http_client_request_duration_seconds_bucket{exported_job=~\"$service\"}[$__rate_interval])))",
+          "legendFormat": "{{exported_job}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Object-storage client errors",
+      "description": "client_call_errors_total in errors/s by service (AWS SDK calls to object storage). Question: is object storage failing?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 37
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (exported_job) (rate(client_call_errors_total{exported_job=~\"$service\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "{{exported_job}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [
+    "http",
+    "api",
+    "pandabear"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "Prometheus"
+        },
+        "query": {
+          "query": "label_values(http_server_request_duration_seconds_count, exported_job)",
+          "refId": "svc"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "HTTP, Auth and UI Failures",
+  "uid": "http-platform",
+  "version": 1,
+  "weekStart": ""
+}

@@ -11,22 +11,6 @@ internal static class OpenTelemetryBuilderExtensions
     private const string SharedKernelBlazorName = "PandaBear.Blazor";
     private const string SharedKernelNpgsqlEventSourcingName = "SharedKernel.EventSourcing.Npgsql";
 
-    /// <summary>Adds the SharedKernel mediator meter.</summary>
-    public static MeterProviderBuilder AddSharedKernelMediatorMetrics(this MeterProviderBuilder metrics)
-    {
-        ArgumentNullException.ThrowIfNull(metrics);
-
-        return metrics.AddMeter(PandaBear.Mediator.MediatorTelemetry.Name);
-    }
-
-    /// <summary>Adds the SharedKernel mediator activity source.</summary>
-    public static TracerProviderBuilder AddSharedKernelMediatorTracing(this TracerProviderBuilder tracing)
-    {
-        ArgumentNullException.ThrowIfNull(tracing);
-
-        return tracing.AddSource(PandaBear.Mediator.MediatorTelemetry.Name);
-    }
-
     /// <summary>Adds the SharedKernel event-sourcing provider meter.</summary>
     public static MeterProviderBuilder AddSharedKernelProviderMetrics(this MeterProviderBuilder metrics)
     {

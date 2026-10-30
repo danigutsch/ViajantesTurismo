@@ -6,3 +6,7 @@ scrape_configs:
     static_configs:
       - targets:
           - opentelemetry-collector:8889
+  - job_name: otel-collector-internal
+    static_configs:
+      - targets:
+          - opentelemetry-collector:8888

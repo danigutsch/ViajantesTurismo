@@ -16,7 +16,6 @@ resilience, and service discovery.
 - Logging integration
 - ASP.NET Core instrumentation
 - HTTP client instrumentation
-- SharedKernel mediator custom source and meter registration (`SharedKernel.Mediator`)
 
 ### Health Checks
 
