@@ -18,6 +18,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Behavior;
+using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
@@ -507,6 +508,25 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     {
         await using var dbContext = CreateDbContext();
         return await new DocumentAuditStore(dbContext).PurgeExpiredRecords(now, ct);
+    }
+
+    /// <summary>Runs the audit purge handler at the given time, recording evidence, and returns how many records were removed.</summary>
+    public async ValueTask<int> PurgeExpiredAuditRecordsWithEvidence(DateTime now, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var handler = new PurgeExpiredDocumentAuditsCommandHandler(
+            new DocumentAuditStore(dbContext),
+            dbContext,
+            new FakeTimeProvider(new DateTimeOffset(now)));
+        var auditContext = DocumentAuditContext.Create("system:test-purge", Guid.CreateVersion7().ToString("N")).Value;
+        return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
+    }
+
+    /// <summary>Reads the stored purge evidence ordered by time.</summary>
+    public async ValueTask<DocumentAuditPurgeRecord[]> GetPurgeEvidence(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentAuditPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
     }
 
     /// <summary>Resets the mutable tables while preserving document audit records.</summary>
