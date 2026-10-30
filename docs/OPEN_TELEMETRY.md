@@ -2,8 +2,9 @@
 
 The signal inventory, per-signal use, and keep-or-remove verdicts live in
 [OBSERVABILITY_CATALOG.md](OBSERVABILITY_CATALOG.md). This document keeps the registration, privacy,
-and span and log contract rules. The application does not dispatch through `SharedKernel.Mediator`, so
-its meter and source are not registered.
+and span and log contract rules. The application does not yet dispatch through `SharedKernel.Mediator`,
+so its meter and source are not registered. Admin commands and queries are planned to move onto the
+mediator; the registration returns with that change (see the Removed section of the catalog).
 
 This document lists repository-defined custom telemetry (logs, ActivitySource, and Meter), where
 each surface is registered, and how to verify the emitted signals locally.

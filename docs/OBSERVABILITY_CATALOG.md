@@ -70,7 +70,7 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 
 | Signal | Reason | Verdict |
 | --- | --- | --- |
-| `SharedKernel.Mediator` meter and source (`mediator.*` metrics and spans) | No production code dispatches through SharedKernel.Mediator, so the signals never carry data. Verified against the running local stack: no `mediator_*` series and no `mediator.*` spans. Registration removed from `ServiceDefaults`. Re-add it with the first production dispatch, together with a dashboard panel. | remove |
+| `SharedKernel.Mediator` meter and source (`mediator.*` metrics and spans) | No production code dispatches through SharedKernel.Mediator, so the signals never carry data. Verified against the running local stack: no `mediator_*` series and no `mediator.*` spans. Registration removed from `ServiceDefaults`. The intended direction is to route Admin commands and queries through SharedKernel.Mediator, first for one vertical as a spike and then for all handlers. Re-add `AddSharedKernelMediatorMetrics` and `AddSharedKernelMediatorTracing` together with a `mediator` dashboard in the same change that introduces the first production dispatch. | remove |
 
 ## Spans
 
