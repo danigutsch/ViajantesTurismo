@@ -291,7 +291,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
         var context = DocumentAuditTestData.CreateContext();
-        (await handler.Handle(new FinalizeDocumentCommand(previous.Id, context), CancellationToken.None)).IsSuccess.ShouldBeTrue();
+        var firstFinalization = await handler.Handle(new FinalizeDocumentCommand(previous.Id, context), CancellationToken.None);
+        firstFinalization.IsSuccess.ShouldBeTrue();
         var finalizedBefore = previous.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray();
 
         // Act
