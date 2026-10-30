@@ -525,24 +525,20 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
     }
 
-    /// <summary>Runs the audit purge handler with an evidence save that fails and returns the failure.</summary>
-    public async ValueTask<AggregateException?> PurgeExpiredAuditRecordsWhenEvidenceSaveFails(DateTime now, CancellationToken ct)
+    /// <summary>Runs the audit purge handler with a first commit that fails and returns the failure it rethrew.</summary>
+    public async ValueTask<InvalidOperationException> PurgeExpiredAuditRecordsWhenTheFirstCommitFails(
+        DateTime now,
+        InvalidOperationException commitFailure,
+        CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         var handler = new PurgeExpiredDocumentAuditsCommandHandler(
             new DocumentAuditStore(dbContext),
-            new FailingUnitOfWork(),
+            new FailingFirstSaveUnitOfWork(commitFailure, dbContext),
             new FakeTimeProvider(new DateTimeOffset(now)));
         var auditContext = DocumentAuditContext.Create("system:test-purge", Guid.CreateVersion7().ToString("N")).Value;
-        try
-        {
-            _ = await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
-            return null;
-        }
-        catch (InvalidOperationException failure)
-        {
-            return new AggregateException(failure);
-        }
+        Func<Task> purge = async () => await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
+        return await purge.ShouldThrow<InvalidOperationException>();
     }
 
     /// <summary>Reads the stored purge evidence ordered by time.</summary>

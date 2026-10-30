@@ -82,6 +82,27 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_discards_staged_changes_and_records_rejected_evidence_when_the_commit_fails()
+    {
+        // Arrange
+        var commitFailure = new InvalidOperationException("commit failed");
+        var auditStore = new FakeDocumentAuditStore { PurgedCount = 3 };
+        var unitOfWork = new FailingFirstSaveUnitOfWork(commitFailure, new FakeUnitOfWork());
+        var handler = DocumentAuditTestData.CreatePurgeHandler(auditStore, unitOfWork, Now);
+
+        // Act
+        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken);
+        var thrown = await purge.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        thrown.ShouldBeSameAs(commitFailure);
+        auditStore.DiscardCount.ShouldBe(1);
+        var evidence = auditStore.PurgeRecords.ShouldHaveSingleItem();
+        evidence.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        evidence.PurgedCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Handle_surfaces_both_failures_when_the_rejected_evidence_cannot_be_saved()
     {
         // Arrange

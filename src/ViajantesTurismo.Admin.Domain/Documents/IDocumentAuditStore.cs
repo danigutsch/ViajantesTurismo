@@ -11,4 +11,7 @@ public interface IDocumentAuditStore
 
     /// <summary>Stages removal of audit records whose currently configured retention period has elapsed; the removal commits on the next save.</summary>
     Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct);
+
+    /// <summary>Discards every change staged and not yet saved, so a failed commit cannot leak into later evidence.</summary>
+    void DiscardPendingChanges();
 }

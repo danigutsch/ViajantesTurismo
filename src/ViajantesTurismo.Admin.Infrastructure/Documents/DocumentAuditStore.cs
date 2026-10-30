@@ -29,4 +29,7 @@ internal sealed class DocumentAuditStore(AdminWriteDbContext dbContext) : IDocum
         dbContext.DocumentAuditRecords.RemoveRange(expired);
         return expired.Length;
     }
+
+    /// <summary>Clears the change tracker, dropping staged deletions and unsaved evidence.</summary>
+    public void DiscardPendingChanges() => dbContext.ChangeTracker.Clear();
 }

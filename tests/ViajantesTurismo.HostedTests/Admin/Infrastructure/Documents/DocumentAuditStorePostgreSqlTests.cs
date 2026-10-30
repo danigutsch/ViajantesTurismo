@@ -174,21 +174,26 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     }
 
     [Fact]
-    public async Task Purge_keeps_expired_records_when_the_evidence_cannot_be_saved()
+    public async Task Purge_keeps_expired_records_and_records_rejected_evidence_when_the_commit_fails()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         var now = new DateTime(2026, 7, 16, 12, 0, 0, DateTimeKind.Utc);
         var expired = DocumentAuditInfrastructureTestData.CreateRecord(now.AddMonths(-25));
+        var commitFailure = new InvalidOperationException("Commit failed.");
         await Scenario.SeedAudit(expired);
 
         // Act
-        var failure = await Scenario.PurgeExpiredAuditRecordsWhenEvidenceSaveFails(now, ct);
+        var thrown = await Scenario.PurgeExpiredAuditRecordsWhenTheFirstCommitFails(now, commitFailure, ct);
         var record = await Scenario.GetAuditRecord(expired.Id, ct);
+        var evidence = await Scenario.GetPurgeEvidence(ct);
 
         // Assert
-        failure.ShouldNotBeNull();
+        thrown.ShouldBeSameAs(commitFailure);
         record.ShouldNotBeNull();
+        var rejected = evidence.ShouldHaveSingleItem();
+        rejected.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        rejected.PurgedCount.ShouldBe(0);
     }
 
     [Fact]

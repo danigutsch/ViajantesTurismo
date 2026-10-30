@@ -9,20 +9,22 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
 {
-    /// <summary>Removes expired document audit records, records metadata-only evidence of the run, and returns the count.</summary>
+    /// <summary>Removes expired document audit records and records metadata-only evidence of the run in one save, and returns the count. A failed run discards its staged changes and records rejected evidence instead.</summary>
     public async Task<int> Handle(PurgeExpiredDocumentAuditsCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(command.AuditContext);
 
         var cutoff = timeProvider.GetUtcNow().UtcDateTime;
-        int purgedCount;
         try
         {
-            purgedCount = await auditStore.PurgeExpiredRecords(cutoff, ct);
+            var purgedCount = await auditStore.PurgeExpiredRecords(cutoff, ct);
+            await RecordEvidence(command.AuditContext, purgedCount, cutoff, DocumentAuditOutcome.Succeeded, ct);
+            return purgedCount;
         }
         catch (Exception purgeFailure) when (purgeFailure.ShouldHandleAsFailure(ct))
         {
+            auditStore.DiscardPendingChanges();
             try
             {
                 await RecordEvidence(command.AuditContext, 0, cutoff, DocumentAuditOutcome.Rejected, CancellationToken.None);
@@ -34,9 +36,6 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
 
             throw;
         }
-
-        await RecordEvidence(command.AuditContext, purgedCount, cutoff, DocumentAuditOutcome.Succeeded, ct);
-        return purgedCount;
     }
 
     private async Task RecordEvidence(
