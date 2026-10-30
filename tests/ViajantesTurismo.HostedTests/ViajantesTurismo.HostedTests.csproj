@@ -24,6 +24,7 @@
         <PackageReference Include="PandaBear.SharedKernel.IntegrationTesting" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Http" />
         <PackageReference Include="Aspire.Hosting.Redis" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
         <PackageReference Include="PandaBear.SharedKernel.Observability.Npgsql" />

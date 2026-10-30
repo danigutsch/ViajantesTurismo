@@ -40,7 +40,7 @@ public sealed class UploadImagePageTests : BunitContext
     public void Opens_browser_file_reads_with_the_shared_catalog_upload_limit()
     {
         // Arrange
-        var file = new RecordingBrowserFile();
+        var file = TestBrowserFiles.TourImage();
 
         // Act
         using var stream = CatalogImageUploadFileReader.Open(file);
@@ -54,7 +54,7 @@ public sealed class UploadImagePageTests : BunitContext
     {
         // Arrange
         var tourId = Guid.CreateVersion7();
-        var file = new RecordingBrowserFile();
+        var file = TestBrowserFiles.TourImage();
         catalogApi.UploadedImage = new CatalogMediaImageDto
         {
             Id = Guid.CreateVersion7(),
@@ -94,7 +94,7 @@ public sealed class UploadImagePageTests : BunitContext
             return requestCompletion.Task;
         };
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile();
+        var file = TestBrowserFiles.TourImage();
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
         var uploadTask = cut.Find("form").SubmitAsync();
@@ -124,7 +124,7 @@ public sealed class UploadImagePageTests : BunitContext
             return requestCompletion.Task;
         };
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile();
+        var file = TestBrowserFiles.TourImage();
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 
@@ -155,7 +155,7 @@ public sealed class UploadImagePageTests : BunitContext
     {
         // Arrange
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile([]);
+        var file = TestBrowserFiles.TourImage([]);
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 
@@ -191,7 +191,7 @@ public sealed class UploadImagePageTests : BunitContext
             });
         };
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile();
+        var file = TestBrowserFiles.TourImage();
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 
@@ -223,7 +223,7 @@ public sealed class UploadImagePageTests : BunitContext
             return requestCompletion.Task;
         };
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile(new byte[100]);
+        var file = TestBrowserFiles.TourImage(new byte[100]);
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 
@@ -280,7 +280,7 @@ public sealed class UploadImagePageTests : BunitContext
             });
         };
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile();
+        var file = TestBrowserFiles.TourImage();
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
         await cut.Find("#caption").ChangeAsync("Mountain pass");
@@ -314,7 +314,7 @@ public sealed class UploadImagePageTests : BunitContext
             return requestCompletion.Task;
         };
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile(new byte[200]);
+        var file = TestBrowserFiles.TourImage(new byte[200]);
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
         var announcements = new HashSet<string>(StringComparer.Ordinal);
@@ -350,7 +350,7 @@ public sealed class UploadImagePageTests : BunitContext
         const string Hostile = "<script>alert(1)</script> at Server.Internal.Handler() in /src/Secret.cs:line 42";
         catalogApi.UploadValidationErrors = new Dictionary<string, string[]> { ["file"] = [Hostile, "System.NullReferenceException: Object reference"] };
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile();
+        var file = TestBrowserFiles.TourImage();
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 
@@ -374,7 +374,7 @@ public sealed class UploadImagePageTests : BunitContext
             "Validation failed",
             new Dictionary<string, string[]> { ["file"] = [Hostile] });
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile();
+        var file = TestBrowserFiles.TourImage();
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 
@@ -392,7 +392,7 @@ public sealed class UploadImagePageTests : BunitContext
     {
         // Arrange
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        var file = new RecordingBrowserFile(openFailure: new IOException("disk path /srv/private/tour-image.jpg"));
+        var file = TestBrowserFiles.TourImage(openFailure: new IOException("disk path /srv/private/tour-image.jpg"));
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
         await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 

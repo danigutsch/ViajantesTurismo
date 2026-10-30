@@ -1,6 +1,6 @@
 using PandaBear.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
-using ViajantesTurismo.Catalog.Testing.Infrastructure;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -138,7 +138,7 @@ public sealed class MediaObjectReconciliationServiceTests
             TestContext.Current.CancellationToken);
         objectStore.FailNextDelete(objectKey);
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var logger = new CollectingLogger<MediaObjectReconciliationService>();
+        var logger = new RecordingLogger<MediaObjectReconciliationService>();
         var service = new MediaObjectReconciliationService(objectStore, imageStore, logger: logger);
 
         // Act
@@ -151,11 +151,11 @@ public sealed class MediaObjectReconciliationServiceTests
         retryReport.DeletedOrphanObjectKeys.ShouldContain(objectKey);
         retryReport.FailedDeleteObjectKeys.ShouldBeEmpty();
         objectStore.ObjectKeys.ShouldNotContain(objectKey);
-        var logMessage = logger.Messages.ShouldHaveSingleItem();
+        var logMessage = logger.Records.Select(record => record.Message).ShouldHaveSingleItem();
         logMessage.ShouldContain(nameof(IOException), StringComparison.Ordinal);
         logMessage.ShouldNotContain(objectKey, StringComparison.Ordinal);
-        logger.StructuredValues.ShouldNotContain(value => string.Equals(value.Value as string, objectKey, StringComparison.Ordinal));
-        logger.Exceptions.ShouldBeEmpty();
+        logger.Records.SelectMany(record => record.State).ShouldNotContain(value => string.Equals(value.Value as string, objectKey, StringComparison.Ordinal));
+        logger.Records.Where(record => record.Exception is not null).ShouldBeEmpty();
     }
 
     [Fact]

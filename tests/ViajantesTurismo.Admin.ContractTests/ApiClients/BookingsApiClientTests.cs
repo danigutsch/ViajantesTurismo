@@ -4,6 +4,7 @@ using HttpOutcomeKind = PandaBear.HttpClients.HttpOutcomeKind;
 using CatalogToursApiClientTestsHelpers = PandaBear.Testing.Contracts.ContractHttpClientTestHelper;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
@@ -260,7 +261,7 @@ public sealed class BookingsApiClientTests
     public async Task CreateBooking_logs_non_success_outcome_without_response_body()
     {
         // Arrange
-        var logger = new CollectingLogger<BookingsApiClient>();
+        var logger = new RecordingLogger<BookingsApiClient>();
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
             CatalogToursApiClientTestsHelpers.JsonResponse("not json booking@example.test", System.Net.HttpStatusCode.BadRequest));
         var sut = new BookingsApiClient(httpClient, logger);
@@ -270,10 +271,10 @@ public sealed class BookingsApiClientTests
 
         // Assert
         outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
-        var entry = logger.Entries.ShouldHaveSingleItem();
-        entry.LogLevel.ShouldBe(LogLevel.Warning);
+        var entry = logger.Records.ShouldHaveSingleItem();
+        entry.Level.ShouldBe(LogLevel.Warning);
         entry.Message.ShouldBe("Booking create returned BadRequest with outcome MalformedBody.");
         entry.Message.Contains("booking@example.test", StringComparison.Ordinal).ShouldBeFalse();
-        entry.State.Values.Any(value => value.Contains("booking@example.test", StringComparison.Ordinal)).ShouldBeFalse();
+        entry.State.Any(value => value.Value?.ToString()?.Contains("booking@example.test", StringComparison.Ordinal) == true).ShouldBeFalse();
     }
 }

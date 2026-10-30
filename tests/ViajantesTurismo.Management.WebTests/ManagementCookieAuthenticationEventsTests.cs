@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Resources;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Management.WebTests;
 
@@ -128,9 +129,9 @@ public sealed class ManagementCookieAuthenticationEventsTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(
+        var cache = DistributedCacheFailures.Remove(
             innerCache,
-            shouldThrowOnRemove: static (key, _) => key.StartsWith("management-audience-token:", StringComparison.Ordinal));
+            when: static (key, _) => key.StartsWith("management-audience-token:", StringComparison.Ordinal));
         var tokenStoreContext = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await tokenStoreContext.Store.StoreTokenAsync(
@@ -174,7 +175,7 @@ public sealed class ManagementCookieAuthenticationEventsTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingSetDistributedCache(
+        var cache = DistributedCacheFailures.Set(
             innerCache,
             static (key, _) => key.EndsWith(":revoked", StringComparison.Ordinal));
         var tokenStoreContext = new ProtectedDistributedUserTokenStoreTestContext(cache);
@@ -255,7 +256,7 @@ public sealed class ManagementCookieAuthenticationEventsTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         var tokenStoreContext = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await tokenStoreContext.Store.StoreTokenAsync(
@@ -294,7 +295,7 @@ public sealed class ManagementCookieAuthenticationEventsTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache, new IOException("The cache is unavailable."));
+        var cache = DistributedCacheFailures.Remove(innerCache, new IOException("The cache is unavailable."));
         var tokenStoreContext = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         var httpContext = new DefaultHttpContext { User = user };
@@ -327,7 +328,7 @@ public sealed class ManagementCookieAuthenticationEventsTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(
+        var cache = DistributedCacheFailures.Remove(
             innerCache,
             new InvalidOperationException($"The cache could not remove {cacheKey}."));
         var tokenStoreContext = new ProtectedDistributedUserTokenStoreTestContext(cache);
@@ -342,7 +343,7 @@ public sealed class ManagementCookieAuthenticationEventsTests
             new CookieAuthenticationOptions(),
             properties: null,
             new CookieOptions());
-        var logger = new CapturingLogger<ManagementCookieAuthenticationEvents>();
+        var logger = new RecordingLogger<ManagementCookieAuthenticationEvents>();
         var events = new ManagementCookieAuthenticationEvents(
             tokenStoreContext.Store,
             tokenStoreContext.AudienceTokenStore,
@@ -350,7 +351,7 @@ public sealed class ManagementCookieAuthenticationEventsTests
 
         // Act
         await events.SigningOut(signingOutContext);
-        var logEntries = logger.Entries;
+        var logEntries = logger.Records.Select(record => string.Concat(record.Message, record.Exception)).ToList();
         var audienceLogEntry = logEntries.ShouldHaveSingleItem(entry => entry.StartsWith("Management audience-token", StringComparison.Ordinal));
         var userLogEntry = logEntries.ShouldHaveSingleItem(entry => entry.StartsWith("Management user-token", StringComparison.Ordinal));
 

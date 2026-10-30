@@ -17,18 +17,18 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
 {
     /// <summary>Name of the test authentication cookie.</summary>
     internal const string CookieName = "management-test";
-    private readonly ThrowingRemoveDistributedCache? _ticketRemovalCache;
+    private readonly ThrowingDistributedCache? _ticketRemovalCache;
 
     private ProtectedDistributedTicketStoreCookieHandlerTestHost(
         IHost host,
-        ThrowingRemoveDistributedCache? ticketRemovalCache)
+        ThrowingDistributedCache? ticketRemovalCache)
     {
         Host = host;
         _ticketRemovalCache = ticketRemovalCache;
     }
 
     /// <summary>Cache that throws on ticket removal; throws when the host was not started with it.</summary>
-    public ThrowingRemoveDistributedCache Cache => _ticketRemovalCache
+    public ThrowingDistributedCache Cache => _ticketRemovalCache
         ?? throw new InvalidOperationException("The test host was not configured with a failing ticket cache.");
 
     /// <summary>The running test host.</summary>
@@ -41,7 +41,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
     public static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> StartWithFailingTicketRemoval(CancellationToken ct)
     {
         var innerCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
 
         return await Start(cache, cache, ct);
     }
@@ -50,7 +50,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
     public static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> StartWithFailingSessionRevocation(CancellationToken ct)
     {
         var innerCache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
-        var cache = new ThrowingSetDistributedCache(
+        var cache = DistributedCacheFailures.Set(
             innerCache,
             static (key, _) => key.EndsWith(":revoked", StringComparison.Ordinal));
 
@@ -59,7 +59,7 @@ internal sealed class ProtectedDistributedTicketStoreCookieHandlerTestHost : IDi
 
     private static async Task<ProtectedDistributedTicketStoreCookieHandlerTestHost> Start(
         IDistributedCache cache,
-        ThrowingRemoveDistributedCache? ticketRemovalCache,
+        ThrowingDistributedCache? ticketRemovalCache,
         CancellationToken ct)
     {
         var host = await new HostBuilder()

@@ -1,9 +1,9 @@
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
-using ViajantesTurismo.Catalog.Testing.Infrastructure;
 using PandaBear.Results;
 using PandaBear.Testing;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -17,7 +17,7 @@ public sealed class MediaImageUploadIntakeTests
         const string scannerMessage = "traveler@example.com in media/customer/private-image.jpg";
         var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
         var content = CatalogTestImages.CreateJpeg(320, 160);
-        var logger = new CollectingLogger<MediaImageUploadIntake>();
+        var logger = new RecordingLogger<MediaImageUploadIntake>();
         var intake = MediaImageUploadIntakeTestFactory.Create(
             new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Rejected, scannerMessage)),
             new InMemoryMediaObjectStore(),
@@ -37,10 +37,10 @@ public sealed class MediaImageUploadIntakeTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var message = logger.Messages.ShouldHaveSingleItem();
+        var message = logger.Records.Select(record => record.Message).ShouldHaveSingleItem();
         message.ShouldContain(nameof(MediaUploadScanStatus.Rejected), StringComparison.Ordinal);
         message.ShouldNotContain(scannerMessage, StringComparison.Ordinal);
-        logger.StructuredValues.ShouldNotContain(value => string.Equals(value.Value as string, scannerMessage, StringComparison.Ordinal));
+        logger.Records.SelectMany(record => record.State).ShouldNotContain(value => string.Equals(value.Value as string, scannerMessage, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class MediaImageUploadIntakeTests
         // Arrange
         var originalImage = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1);
         var content = CatalogTestImages.CreateJpeg(320, 160);
-        var logger = new CollectingLogger<MediaImageUploadIntake>();
+        var logger = new RecordingLogger<MediaImageUploadIntake>();
         var intake = MediaImageUploadIntakeTestFactory.Create(
             new StubMediaUploadScanner(new MediaUploadScanResult(MediaUploadScanStatus.Rejected)),
             new InMemoryMediaObjectStore(),
@@ -69,7 +69,7 @@ public sealed class MediaImageUploadIntakeTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var message = logger.Messages.ShouldHaveSingleItem();
+        var message = logger.Records.Select(record => record.Message).ShouldHaveSingleItem();
         message.ShouldContain(nameof(MediaUploadScanStatus.Rejected), StringComparison.Ordinal);
     }
 
