@@ -94,6 +94,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<VoidDocumentCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDraftsCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
+        builder.Services.AddScoped<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();
         builder.Services.AddScoped<CreateTourCommandHandler>();
         builder.Services.AddScoped<DeleteTourCommandHandler>();
         builder.Services.AddScoped<UpdateTourCommandHandler>();

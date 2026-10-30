@@ -196,6 +196,28 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task PurgeExpiredIdempotencyEntries_removes_only_document_entries_at_or_before_the_cutoff()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = new DateTimeOffset(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
+        const string DocumentScope = "admin.documents.generate-contract-draft:booking";
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "before", cutoff.AddDays(-3), cutoff.AddSeconds(-1), ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "at", cutoff.AddDays(-3), cutoff, ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "after", cutoff.AddDays(-3), cutoff.AddSeconds(1), ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "abandoned", cutoff.AddSeconds(-1), null, ct);
+        await Scenario.SeedIdempotencyEntry("admin.payments.record:booking", "other-scope", cutoff.AddDays(-90), cutoff.AddDays(-90), ct);
+
+        // Act
+        var removed = await Scenario.PurgeExpiredIdempotencyEntries(cutoff, ct);
+
+        // Assert
+        removed.ShouldBe(3);
+        var remainingKeys = await Scenario.GetIdempotencyKeys(ct);
+        remainingKeys.ShouldBe(["after", "other-scope"]);
+    }
+
+    [Fact]
     public async Task Void_reason_migration_maps_known_codes_and_preserves_unknown_text_as_legacy_in_both_directions()
     {
         // Arrange

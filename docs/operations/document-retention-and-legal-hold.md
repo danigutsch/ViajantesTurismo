@@ -33,7 +33,8 @@ bytes and metadata, document lineages, document audit records, and document idem
 | Unfinalized draft and staff overrides | Creation, when never finalized | 30 days (`DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500; empty lineages are removed. |
 | Finalized, superseded and voided revisions | None | Kept indefinitely | Finalization clears `RetentionExpiresAt`. No automatic deletion and no deletion endpoint. |
 | Document audit record | Audit event occurrence | 24 months (`DocumentAuditLimits.RetentionMonths`) | Deleted by a daily worker in batches of 500. Database protections reject updates, truncation and pre-expiry deletion. |
-| Document idempotency entry | First accepted keyed request | No expiry | Kept until the cleanup in the follow-up below exists. A replay after its document is purged returns `404 Not Found`. |
+| Document idempotency entry | Completion, or start when never completed | 30 days (`DocumentCommandIdempotency.ReplayWindow`, equal to `DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500. The stored key is a SHA-256 digest of the caller key, so the raw value is never persisted. A replay after the window is treated as a new request; a replay after its document is purged returns `404 Not Found`. |
+| Document audit purge evidence | Each audit-retention purge run | Kept indefinitely | Metadata only: system actor, correlation id, purged count, retention cutoff, outcome and time. It is not removed by the audit-retention worker. |
 
 Metadata-only audit records can contain linkable identifiers, which remain personal data where
 re-identification is possible. Callers must not place personal data or secrets in idempotency keys.
@@ -65,7 +66,6 @@ Deletion is not complete until every covered store and copy has the approved out
 Each gap above is tracked as an issue instead of a placeholder in this policy:
 
 - Legal-hold placement, review and release controls, with hold checks on every purge.
-- Bounded cleanup of document idempotency entries.
 - Document-specific backup rotation and restore suppression.
 
 ## Implementation evidence and references

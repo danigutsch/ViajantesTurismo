@@ -18,12 +18,24 @@ public sealed class DocumentCommandIdempotency(
     private const int Sha256HexLength = 64;
     private static readonly TimeSpan ProcessingLockDuration = TimeSpan.FromMinutes(5);
 
+    /// <summary>The scope prefix shared by every document idempotency entry.</summary>
+    public const string ScopePrefix = "admin.documents.";
+
+    /// <summary>How long a document idempotency entry can replay, matching the unfinalized draft retention period.</summary>
+    public static readonly TimeSpan ReplayWindow = TimeSpan.FromDays(DocumentLimits.DraftRetentionDays);
+
     /// <summary>Creates the validation error for a required document operation key.</summary>
     /// <returns>The stable required-key validation problem.</returns>
     public static Result RequiredKeyError() => Result.Invalid(
         detail: "Idempotency-Key is required.",
         field: "Idempotency-Key",
         message: "Idempotency-Key is required.");
+
+    /// <summary>Creates the key persisted for a caller key, so the caller's raw value is never stored.</summary>
+    /// <param name="key">The caller-supplied key.</param>
+    /// <returns>The uppercase SHA-256 hex digest of the UTF-8 encoded key.</returns>
+    public static IdempotencyKey DigestKey(IdempotencyKey key) =>
+        IdempotencyKey.From(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key.Value))));
 
     /// <summary>Creates the persisted request fingerprint for a document template and version.</summary>
     /// <param name="templateId">The unchanged, nonblank template identifier.</param>
@@ -103,7 +115,8 @@ public sealed class DocumentCommandIdempotency(
         }
 
         var requestFingerprint = CreateRequestFingerprint(templateId, templateVersion);
-        var existingResult = await GetExistingResult(scope, key, requestFingerprint, ct);
+        var storedKey = DigestKey(key);
+        var existingResult = await GetExistingResult(scope, storedKey, requestFingerprint, ct);
         if (existingResult is { IsSuccess: true } replayedResult)
         {
             return replayedResult;
@@ -118,7 +131,7 @@ public sealed class DocumentCommandIdempotency(
         return await prepare(async (operation, preparedDocumentId, preparedBookingId, preparedRevision) =>
         {
             var operationWasInvoked = false;
-            var result = await Execute(scope, key, requestFingerprint, () =>
+            var result = await Execute(scope, storedKey, requestFingerprint, () =>
             {
                 operationWasInvoked = true;
                 return operation();

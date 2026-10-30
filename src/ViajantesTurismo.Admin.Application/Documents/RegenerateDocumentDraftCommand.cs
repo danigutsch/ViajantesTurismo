@@ -21,5 +21,5 @@ public sealed record RegenerateDocumentDraftCommand(
     }
 
     /// <summary>Gets the persisted operation and resource scope used for idempotency.</summary>
-    public IdempotencyScope Scope => IdempotencyScope.From($"admin.documents.regenerate-draft:{DocumentId:N}");
+    public IdempotencyScope Scope => IdempotencyScope.From($"{DocumentCommandIdempotency.ScopePrefix}regenerate-draft:{DocumentId:N}");
 }

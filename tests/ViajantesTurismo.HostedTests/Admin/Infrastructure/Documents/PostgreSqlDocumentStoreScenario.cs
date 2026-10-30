@@ -333,13 +333,14 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ValidateScopes = true,
         });
         var scope = IdempotencyScope.From($"admin.documents.generate-contract-draft:{first.BookingId:N}");
+        var storedKey = DocumentCommandIdempotency.DigestKey(key);
         var competingAttemptCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await using var firstOperationScope = serviceProvider.CreateAsyncScope();
         await using var secondOperationScope = serviceProvider.CreateAsyncScope();
         var firstAttempt = CaptureSameKeyGeneration(
             first,
             scope,
-            key,
+            storedKey,
             requestFingerprint,
             competingAttemptCompleted,
             firstOperationScope.ServiceProvider,
@@ -347,7 +348,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         var secondAttempt = CaptureSameKeyGeneration(
             second,
             scope,
-            key,
+            storedKey,
             requestFingerprint,
             competingAttemptCompleted,
             secondOperationScope.ServiceProvider,
@@ -366,7 +367,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         var replayStore = replayScope.ServiceProvider.GetRequiredService<IIdempotencyStore>();
         var replayContext = replayScope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
         var replayCoordinator = new DocumentCommandIdempotency(replayStore, replayContext, TimeProvider.System);
-        var replay = await replayCoordinator.GetExistingResult(scope, key, requestFingerprint, ct)
+        var replay = await replayCoordinator.GetExistingResult(scope, storedKey, requestFingerprint, ct)
             ?? throw new InvalidOperationException("The completed document idempotency key did not produce a replay.");
         return (attempts, replay);
     }
@@ -397,7 +398,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                   AND "Key" = {1}
                 """,
                 scope,
-                key.Value)
+                DocumentCommandIdempotency.DigestKey(key).Value)
             .SingleOrDefaultAsync(ct);
     }
 
@@ -569,6 +570,41 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .SingleAsync(ct);
 
         return count == 1;
+    }
+
+    /// <summary>Migrates the database and inserts one raw idempotency entry.</summary>
+    public async Task SeedIdempotencyEntry(
+        string scope,
+        string key,
+        DateTimeOffset startedAt,
+        DateTimeOffset? completedAt,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await dbContext.Database.MigrateAsync(ct);
+        var state = completedAt is null ? "Started" : "Completed";
+        _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            INSERT INTO "messaging"."idempotency_keys" ("Scope", "Key", "State", "StartedAt", "CompletedAt")
+            VALUES ({scope}, {key}, {state}, {startedAt}, {completedAt})
+            """,
+            ct);
+    }
+
+    /// <summary>Purges document idempotency entries at or before the cutoff and returns how many were removed.</summary>
+    public async Task<int> PurgeExpiredIdempotencyEntries(DateTimeOffset cutoff, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, ct);
+    }
+
+    /// <summary>Returns the keys of the remaining idempotency entries.</summary>
+    public async Task<string[]> GetIdempotencyKeys(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.Database
+            .SqlQueryRaw<string>("""SELECT "Key" AS "Value" FROM "messaging"."idempotency_keys" ORDER BY "Key" """)
+            .ToArrayAsync(ct);
     }
 
     /// <summary>Migrates the database up or down to the named migration, or to the latest when none is named.</summary>
