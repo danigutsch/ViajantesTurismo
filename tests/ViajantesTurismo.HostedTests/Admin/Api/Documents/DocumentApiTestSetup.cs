@@ -1,9 +1,9 @@
 using System.Net;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
-namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
 /// <summary>Arranges bookings and documents for document API tests.</summary>
 internal static class DocumentApiTestSetup

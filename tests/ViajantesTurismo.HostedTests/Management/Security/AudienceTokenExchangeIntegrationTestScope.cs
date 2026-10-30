@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Test scope that runs the Keycloak audience token exchange handler against a blocking fake backend.</summary>
 internal sealed class AudienceTokenExchangeIntegrationTestScope : IDisposable

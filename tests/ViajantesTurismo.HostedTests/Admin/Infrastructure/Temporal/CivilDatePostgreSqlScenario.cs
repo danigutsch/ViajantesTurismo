@@ -6,8 +6,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Temporal;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Temporal;
 
 /// <summary>Arranges a PostgreSQL database for verifying that civil dates survive timezone changes and migrations.</summary>
 internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable

@@ -6,7 +6,7 @@ using PandaBear.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Infrastructure;
 
-namespace ViajantesTurismo.Catalog.InfrastructureTests.Media;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 
 /// <summary>Gallery placement scenario backed by a leased PostgreSQL test database.</summary>
 internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable

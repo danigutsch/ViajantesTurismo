@@ -17,8 +17,9 @@ using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 /// <summary>Runs document store behavior against a real PostgreSQL database.</summary>
 internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable

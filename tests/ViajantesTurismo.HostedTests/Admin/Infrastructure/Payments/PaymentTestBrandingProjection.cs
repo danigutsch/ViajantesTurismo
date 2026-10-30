@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Application.Branding;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 /// <summary>Fixed in-memory branding projection store for payment tests; read members return a ready state and writes throw <see cref="NotSupportedException" />.</summary>
 internal sealed class PaymentTestBrandingProjection : IBrandingProjectionStore

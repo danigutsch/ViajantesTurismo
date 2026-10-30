@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
 using PandaBear.Observability.Npgsql;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Observability;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Observability;
 
 /// <summary>Test listener that captures index-health meter measurements as tag strings.</summary>
 internal static class PostgreSqlIndexHealthTelemetryTestListener

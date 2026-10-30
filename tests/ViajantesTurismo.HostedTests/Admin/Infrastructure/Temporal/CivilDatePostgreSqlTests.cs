@@ -1,6 +1,6 @@
 using PandaBear.Testing;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Temporal;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Temporal;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]

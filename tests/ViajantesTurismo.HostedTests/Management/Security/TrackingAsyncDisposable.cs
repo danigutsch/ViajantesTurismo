@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Records its name in the disposal order on first disposal and optionally fails.</summary>
 /// <param name="name">Name added to the disposal order.</param>

@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Domain.Payments;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
@@ -100,7 +100,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
         finalized.IsSuccess.ShouldBeTrue();
         var downloaded = await restarted.Instructions.Download(documentId, "owner", ct);
         downloaded.IsSuccess.ShouldBeTrue();
-        var html = System.Text.Encoding.UTF8.GetString(downloaded.Value.Content.Span);
+        var html = global::System.Text.Encoding.UTF8.GetString(downloaded.Value.Content.Span);
         html.ShouldContain(brl ? "payment@example.test" : "DE89370400440532013000", StringComparison.Ordinal);
         html.ShouldContain("100", StringComparison.Ordinal);
         if (brl)

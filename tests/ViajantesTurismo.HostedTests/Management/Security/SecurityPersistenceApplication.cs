@@ -2,7 +2,7 @@ using PostgreSqlTestCleanup = ViajantesTurismo.HostedTests.Infrastructure.Hosted
 using PandaBear.IntegrationTesting;
 using PandaBear.Npgsql.Testing;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Aspire test application together with its PostgreSQL database lease, disposed together.</summary>
 /// <param name="application">Running Aspire test application.</param>

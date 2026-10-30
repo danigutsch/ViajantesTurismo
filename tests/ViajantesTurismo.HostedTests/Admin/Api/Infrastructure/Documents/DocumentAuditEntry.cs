@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 
 /// <summary>Document audit record row as read from the database.</summary>
 /// <param name="Operation">Audited operation name.</param>

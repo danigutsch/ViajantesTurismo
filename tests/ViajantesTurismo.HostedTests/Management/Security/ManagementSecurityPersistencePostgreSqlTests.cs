@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using PandaBear.Testing;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
@@ -78,7 +78,7 @@ public sealed class ManagementSecurityPersistencePostgreSqlTests(HostedTestFixtu
         }
 
         await using var providerC = scenario.CreateHost(
-            "ViajantesTurismo.Management.WebIntegrationTests.Isolated");
+            "ViajantesTurismo.HostedTests.Management.Security.Isolated");
         Func<string> wrongApplicationUnprotect = () => providerC.UnprotectPayload(protectedPayload);
         _ = wrongApplicationUnprotect.ShouldThrow<CryptographicException>();
 

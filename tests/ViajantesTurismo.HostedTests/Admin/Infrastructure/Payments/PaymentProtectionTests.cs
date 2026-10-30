@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using PandaBear.Testing;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, SharedKernelTestTraitNames.UnitScope)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]

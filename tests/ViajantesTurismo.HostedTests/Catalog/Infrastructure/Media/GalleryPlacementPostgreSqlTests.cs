@@ -3,7 +3,7 @@ using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-namespace ViajantesTurismo.Catalog.InfrastructureTests.Media;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]

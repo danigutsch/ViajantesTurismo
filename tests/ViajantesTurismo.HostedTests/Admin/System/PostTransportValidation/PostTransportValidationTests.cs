@@ -1,13 +1,13 @@
 using PandaBear.Testing;
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using PandaBear.HttpClients;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
-namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
+namespace ViajantesTurismo.HostedTests.Admin.System.PostTransportValidation;
 
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]

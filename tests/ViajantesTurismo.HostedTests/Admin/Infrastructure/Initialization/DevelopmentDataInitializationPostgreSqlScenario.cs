@@ -18,8 +18,9 @@ using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Initialization;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Initialization;
 
 /// <summary>Runs development data initialization against a real PostgreSQL database.</summary>
 internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDisposable

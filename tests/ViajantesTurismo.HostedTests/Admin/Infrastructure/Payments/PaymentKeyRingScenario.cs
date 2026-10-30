@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 /// <summary>Arranges a temporary key directory and two self-signed certificates to exercise payment key-ring protection and rotation.</summary>
 internal sealed class PaymentKeyRingScenario : IDisposable

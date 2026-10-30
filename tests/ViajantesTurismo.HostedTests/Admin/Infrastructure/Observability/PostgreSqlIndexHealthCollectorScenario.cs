@@ -2,7 +2,7 @@ using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLe
 using Npgsql;
 using System.Diagnostics.CodeAnalysis;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Observability;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Observability;
 
 public sealed class PostgreSqlIndexHealthCollectorScenario(HostedTestFixture shared) : IAsyncLifetime
 {

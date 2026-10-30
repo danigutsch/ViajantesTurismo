@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.SystemTests.Tours;
+namespace ViajantesTurismo.HostedTests.Admin.System.Tours;
 
 public sealed record CapacityStateExpectation(
     string DetailsBadgeText,

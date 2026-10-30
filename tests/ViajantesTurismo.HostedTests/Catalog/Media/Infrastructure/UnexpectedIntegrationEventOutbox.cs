@@ -1,6 +1,6 @@
 using PandaBear.Messaging.IntegrationEvents;
 
-namespace ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 
 /// <summary>Outbox fake that fails the test when an event is enqueued.</summary>
 internal sealed class UnexpectedIntegrationEventOutbox : IIntegrationEventOutbox

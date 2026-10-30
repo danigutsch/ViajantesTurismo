@@ -1,6 +1,6 @@
 using PandaBear.Testing;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Initialization;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Initialization;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.DatabaseInitializationCapability)]

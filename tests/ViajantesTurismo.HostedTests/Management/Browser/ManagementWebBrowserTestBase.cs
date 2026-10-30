@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using Microsoft.Playwright.Xunit.v3;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Base for browser tests that drive Management Web pages hosted in-process against fake API clients.</summary>
 public abstract class ManagementWebBrowserTestBase : PageTest

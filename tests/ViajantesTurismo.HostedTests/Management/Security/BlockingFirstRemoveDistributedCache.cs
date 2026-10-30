@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Caching.Distributed;
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Distributed cache decorator that suspends the first asynchronous removal until released.</summary>
 /// <param name="inner">Cache that receives all operations.</param>

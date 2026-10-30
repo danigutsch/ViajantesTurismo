@@ -1,6 +1,6 @@
 # Admin system tests
 
-These tests live in `ViajantesTurismo.HostedTests` and keep the `ViajantesTurismo.Admin.SystemTests` namespace.
+These tests live in `ViajantesTurismo.HostedTests` and use the `ViajantesTurismo.HostedTests.Admin.System` namespace.
 
 System browser tests using [Playwright for .NET](https://playwright.dev/dotnet/) against the full stack
 (Blazor, API, PostgreSQL, Redis) managed by Aspire.
@@ -39,13 +39,13 @@ sudo apt-get install -y libnspr4 libnss3 libasound2t64
 
 ```powershell
 # All system tests (headless)
-dotnet test --project tests/ViajantesTurismo.HostedTests --filter-namespace "ViajantesTurismo.Admin.SystemTests*"
+dotnet test --project tests/ViajantesTurismo.HostedTests --filter-namespace "ViajantesTurismo.HostedTests.Admin.System*"
 
 # Visible browser
-dotnet test --project tests/ViajantesTurismo.HostedTests --filter-namespace "ViajantesTurismo.Admin.SystemTests*" -- Playwright.LaunchOptions.Headless=false
+dotnet test --project tests/ViajantesTurismo.HostedTests --filter-namespace "ViajantesTurismo.HostedTests.Admin.System*" -- Playwright.LaunchOptions.Headless=false
 
 # Slow motion (500ms between actions)
-dotnet test --project tests/ViajantesTurismo.HostedTests --filter-namespace "ViajantesTurismo.Admin.SystemTests*" -- Playwright.LaunchOptions.Headless=false Playwright.LaunchOptions.SlowMo=500
+dotnet test --project tests/ViajantesTurismo.HostedTests --filter-namespace "ViajantesTurismo.HostedTests.Admin.System*" -- Playwright.LaunchOptions.Headless=false Playwright.LaunchOptions.SlowMo=500
 
 # Specific test
 dotnet test --project tests/ViajantesTurismo.HostedTests --filter-method "*TourCrudTests.CreateTour*"
@@ -68,7 +68,7 @@ Repeat the migration slice locally with:
 
 ```bash
 dotnet test --project tests/ViajantesTurismo.HostedTests \
-  --filter-class ViajantesTurismo.Admin.SystemTests.Shared.NavigationTests
+  --filter-class ViajantesTurismo.HostedTests.Admin.System.Shared.NavigationTests
 ```
 
 ## Parallel safety guidance

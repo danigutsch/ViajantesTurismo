@@ -1,13 +1,13 @@
 using PandaBear.Testing;
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using PandaBear.Testing.Playwright;
-using TestTraits = ViajantesTurismo.Admin.SystemTests.Infrastructure.TestTraits;
+using TestTraits = ViajantesTurismo.HostedTests.Admin.System.Infrastructure.TestTraits;
 
-namespace ViajantesTurismo.Admin.SystemTests.Shared;
+namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.MigrationCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.SharedArea)]

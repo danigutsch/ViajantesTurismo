@@ -3,7 +3,7 @@ using PandaBear.HttpClients;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>
 /// Catalog tours API client for browser journeys: serves one tour, holds uploads on a gate that only

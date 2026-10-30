@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Catalog.InfrastructureTests;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure;
 
 /// <summary>Temporary directory for media files that is deleted when disposed.</summary>
 internal sealed class TemporaryMediaDirectory : IDisposable

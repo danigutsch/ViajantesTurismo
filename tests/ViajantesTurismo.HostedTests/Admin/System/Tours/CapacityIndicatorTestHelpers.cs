@@ -1,10 +1,10 @@
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using PandaBear.Testing.Playwright;
 using System.Globalization;
 using static Microsoft.Playwright.Assertions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Tours;
+namespace ViajantesTurismo.HostedTests.Admin.System.Tours;
 
 public static class CapacityIndicatorTestHelpers
 {

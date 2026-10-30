@@ -10,7 +10,7 @@ using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Catalog.InfrastructureTests.Tours;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 /// <summary>Catalog tour slug lock scenario backed by a leased PostgreSQL database and the Catalog event store.</summary>
 internal sealed class CatalogTourSlugLockPostgreSqlScenario : IAsyncDisposable

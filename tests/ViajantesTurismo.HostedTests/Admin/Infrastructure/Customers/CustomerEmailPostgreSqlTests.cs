@@ -3,7 +3,7 @@ using Npgsql;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Customers;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Customers;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Customers;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]

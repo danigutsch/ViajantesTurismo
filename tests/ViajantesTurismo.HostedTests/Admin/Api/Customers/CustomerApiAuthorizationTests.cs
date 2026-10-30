@@ -1,7 +1,7 @@
 using PandaBear.Testing;
 using System.Net;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
-namespace ViajantesTurismo.Admin.IntegrationTests.Customers;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Customers;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]

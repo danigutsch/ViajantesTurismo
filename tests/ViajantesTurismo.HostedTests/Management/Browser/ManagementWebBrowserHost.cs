@@ -10,7 +10,7 @@ using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components;
 using ViajantesTurismo.Management.Web.Services;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>
 /// Hosts the real Management Web Razor components on a loopback Kestrel port with synthetic authentication,

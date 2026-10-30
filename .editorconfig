@@ -332,12 +332,6 @@ dotnet_diagnostic.CA1812.severity = none
 [src/ViajantesTurismo.*.Contracts.{Application,Http}/**.cs]
 dotnet_style_namespace_match_folder = false
 
-# HostedTests merged several test projects and keeps their original namespaces, such as ViajantesTurismo.Admin.SystemTests,
-# so filters, documentation, and partially qualified references stay stable (see tests/ViajantesTurismo.HostedTests/Admin/System/README.md).
-# Owner: hosted test maintainers.
-[tests/ViajantesTurismo.HostedTests/**.cs]
-dotnet_style_namespace_match_folder = false
-
 # HTTP contract contexts read external API payloads, so they must keep case-insensitive property names (SKSTYLE015).
 # Owner: API contract maintainers. Persistence, fingerprint, integration-event, and server binding contexts stay out of
 # scope because they are not external API payload readers.

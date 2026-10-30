@@ -1,7 +1,7 @@
 using System.Text;
 using Microsoft.Playwright;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Selects files in a Blazor <c>InputFile</c> once its client script is wired.</summary>
 internal static class BrowserFileSelection
