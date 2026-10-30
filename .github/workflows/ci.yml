@@ -528,9 +528,6 @@ jobs:
       - name: Lint shell scripts
         run: shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh
 
-      - name: Verify observability assets
-        run: python3 -I -m unittest discover -s observability/tests
-
       - name: Check repository content
         run: |
           dotnet tool run sharedkernel-repo -- verify-text-encoding --root .

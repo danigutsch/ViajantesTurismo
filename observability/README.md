@@ -54,22 +54,22 @@ be empty on a healthy system.
 
 ## Verifying dashboards
 
-Static contract (CI):
+Static contract (CI, `ObservabilityAssetsTests` in the architecture tests):
 
 ```bash
-python3 -I -m unittest discover -s observability/tests -v
+dotnet test --project tests/ViajantesTurismo.ArchitectureTests -- --filter-class "*ObservabilityAssetsTests"
 ```
 
 Live check against a running stack:
 
 ```bash
 ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run   # separate terminal
-python3 -I observability/tests/smoke_traffic.py                   # give panels data
-python3 -I observability/tests/verify_live.py --grafana http://127.0.0.1:<grafana-port>
+dotnet run observability/tests/SmokeTraffic.cs                   # give panels data
+dotnet run observability/tests/VerifyQueries.cs -- http://127.0.0.1:<grafana-port>
 dotnet run observability/tests/VerifyDashboards.cs -- http://127.0.0.1:<grafana-port> <screenshot-dir>
 ```
 
-`verify_live.py` runs every panel query through Grafana's datasource proxy. `VerifyDashboards.cs` renders
+`VerifyQueries.cs` runs every panel query through Grafana's datasource proxy. `VerifyDashboards.cs` renders
 each dashboard in headless Chromium with Playwright, fails on "No data" for `data` panels or a panel
 error, and writes screenshots for review. Install browsers once with the Playwright tool if needed.
 

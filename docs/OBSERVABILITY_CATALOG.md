@@ -92,10 +92,11 @@ series and no `mediator.*` spans. Admin commands and queries are being moved ont
 
 ## Drift guard
 
-`observability/tests/test_observability_assets.py` fails when a meter registered in
+`ObservabilityAssetsTests` in `tests/ViajantesTurismo.ArchitectureTests` fails when a meter registered in
 `ServiceDefaults` is missing from this catalog, when a catalog row lacks a verdict, or when a dashboard
-uses a repository metric the catalog does not list. Run it with:
+uses a repository metric the catalog does not list. It also checks the dashboard and alert contracts. It
+runs with the architecture tests in CI:
 
 ```bash
-python3 -I -m unittest discover -s observability/tests -v
+dotnet test --project tests/ViajantesTurismo.ArchitectureTests -- --filter-class "*ObservabilityAssetsTests"
 ```
