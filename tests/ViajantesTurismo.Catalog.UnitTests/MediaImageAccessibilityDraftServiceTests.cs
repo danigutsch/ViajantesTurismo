@@ -22,7 +22,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var objects = new InMemoryMediaObjectStore();
         await objects.Put(new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), TestContext.Current.CancellationToken);
         var generatedAt = new DateTimeOffset(2026, 10, 21, 12, 0, 0, TimeSpan.Zero);
-        var service = new MediaImageAccessibilityDraftService(store, objects, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), new ControlledTimeProvider(generatedAt));
+        var service = new MediaImageAccessibilityDraftService(store, objects, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), new FakeTimeProvider(generatedAt));
 
         // Act
         var result = await service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.PtBr }, TestContext.Current.CancellationToken);

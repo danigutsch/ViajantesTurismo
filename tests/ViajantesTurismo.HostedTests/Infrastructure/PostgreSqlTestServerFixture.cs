@@ -1,7 +1,7 @@
 using Npgsql;
 using PandaBear.Npgsql.Testing;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Infrastructure;
 
 /// <summary>Issues databases on the assembly-owned PostgreSQL server.</summary>
 public sealed class PostgreSqlTestServerFixture(HostedTestFixture shared) : IAsyncLifetime
@@ -9,7 +9,7 @@ public sealed class PostgreSqlTestServerFixture(HostedTestFixture shared) : IAsy
     private PostgreSqlTestDatabasePool? pool;
     private string? connectionString;
 
-    /// <summary>Names of the databases issued by this fixture.</summary>
+    /// <summary>Names of the databases this fixture has issued and still owns.</summary>
     internal IReadOnlyCollection<string> OwnedDatabaseNames => Pool.OwnedDatabaseNames;
     private PostgreSqlTestDatabasePool Pool => pool ?? throw new InvalidOperationException("Fixture is not initialized.");
 
@@ -19,10 +19,10 @@ public sealed class PostgreSqlTestServerFixture(HostedTestFixture shared) : IAsy
         pool = new PostgreSqlTestDatabasePool(connectionString);
     }
 
-    /// <summary>Creates a database lease on the owned server.</summary>
+    /// <summary>Issues a new test database from the pool.</summary>
     internal Task<PostgreSqlTestDatabaseLease> CreateDatabase(CancellationToken ct) => Pool.Create(ct);
 
-    /// <summary>Returns whether a database with the given name exists on the server.</summary>
+    /// <summary>Checks whether a database named <paramref name="databaseName" /> exists on the server.</summary>
     internal async Task<bool> DatabaseExists(string databaseName, CancellationToken ct)
     {
         await using var dataSource = NpgsqlDataSource.Create(connectionString ?? throw new InvalidOperationException("Fixture is not initialized."));
