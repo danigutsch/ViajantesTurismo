@@ -2,7 +2,7 @@ using Npgsql;
 using PandaBear.Idempotency;
 using ViajantesTurismo.Admin.Application.Documents;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 
 /// <summary>Installs a trigger that fails completion of one idempotency key, always or once with a retryable error, and removes it on dispose.</summary>
 internal sealed class DocumentIdempotencyCompletionFailureScenario : IAsyncDisposable

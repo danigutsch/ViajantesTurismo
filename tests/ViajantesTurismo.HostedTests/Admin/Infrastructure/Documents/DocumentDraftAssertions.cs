@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Documents;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 /// <summary>Assertions over document drafts.</summary>
 internal static class DocumentDraftAssertions

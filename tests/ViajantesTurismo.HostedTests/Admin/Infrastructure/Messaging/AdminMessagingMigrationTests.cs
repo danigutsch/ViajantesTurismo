@@ -1,6 +1,6 @@
 using PandaBear.Testing;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Messaging;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Messaging;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.MessagingMigrationCapability)]

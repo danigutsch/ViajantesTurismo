@@ -1,14 +1,14 @@
 using PandaBear.Testing;
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using PandaBear.Testing.Playwright;
 using System.Globalization;
 using ViajantesTurismo.Admin.Contracts.Application;
 
-namespace ViajantesTurismo.Admin.SystemTests.Bookings;
+namespace ViajantesTurismo.HostedTests.Admin.System.Bookings;
 
 [TestScope(TestScope.System)]
 public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
@@ -70,7 +70,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         await Expect(financialDetails.GetByText("1,170.00 €", new LocatorGetByTextOptions { Exact = true }))
             .ToBeVisibleAsync();
         await BookingWorkflow.NavigateToFinances(createdBookingId);
-        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { NameRegex = new System.Text.RegularExpressions.Regex("^Receipt ") })).ToHaveCountAsync(1);
+        await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { NameRegex = new global::System.Text.RegularExpressions.Regex("^Receipt ") })).ToHaveCountAsync(1);
         await Expect(Page.GetByText("Method: Cash.", new PageGetByTextOptions { Exact = false })).ToBeVisibleAsync();
     }
 

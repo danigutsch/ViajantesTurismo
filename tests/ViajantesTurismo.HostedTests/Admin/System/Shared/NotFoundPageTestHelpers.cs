@@ -1,8 +1,8 @@
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using static Microsoft.Playwright.Assertions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Shared;
+namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 public static class NotFoundPageTestHelpers
 {

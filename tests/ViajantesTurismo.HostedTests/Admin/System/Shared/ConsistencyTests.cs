@@ -1,11 +1,11 @@
 using PandaBear.Testing;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using PandaBear.Testing.Playwright;
 using ViajantesTurismo.Admin.Contracts.Application;
 
-namespace ViajantesTurismo.Admin.SystemTests.Shared;
+namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 [TestScope(TestScope.System)]
 public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)

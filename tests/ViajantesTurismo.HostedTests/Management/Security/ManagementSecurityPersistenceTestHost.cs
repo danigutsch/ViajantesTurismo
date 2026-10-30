@@ -8,7 +8,7 @@ using PandaBear.AspNetCore;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Management.Web;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Service provider hosting the management authentication services for security persistence tests.</summary>
 internal sealed class ManagementSecurityPersistenceTestHost : IAsyncDisposable
@@ -44,7 +44,7 @@ internal sealed class ManagementSecurityPersistenceTestHost : IAsyncDisposable
                 [ManagementAuthenticationDefaults.TokenExchangeProviderConfigurationKey] = "Keycloak"
             })
             .Build();
-        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebIntegrationTests")
+        var environment = new TestHostEnvironment("ViajantesTurismo.HostedTests.Management.Security")
         {
             EnvironmentName = Environments.Development
         };

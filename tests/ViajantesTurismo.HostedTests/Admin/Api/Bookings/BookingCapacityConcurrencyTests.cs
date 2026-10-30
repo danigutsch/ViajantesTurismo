@@ -2,10 +2,10 @@ using PandaBear.Testing;
 using System.Net;
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
-namespace ViajantesTurismo.Admin.IntegrationTests.Bookings;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Bookings;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]

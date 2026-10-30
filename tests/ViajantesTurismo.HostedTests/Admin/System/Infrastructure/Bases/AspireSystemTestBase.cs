@@ -1,11 +1,11 @@
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using PandaBear.Testing.Playwright;
 using Microsoft.Playwright.Xunit.v3;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 
 public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest, IClassFixture<AspireSystemTestFixture>
     where TFixture : IAspireSystemTestFixture

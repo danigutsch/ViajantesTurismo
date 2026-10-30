@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Authentication handler that signs every request in as a synthetic management user.</summary>
 /// <param name="options">Scheme options monitor.</param>

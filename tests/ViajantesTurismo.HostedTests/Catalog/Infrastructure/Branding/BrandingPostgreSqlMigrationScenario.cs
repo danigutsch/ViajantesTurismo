@@ -8,7 +8,7 @@ using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Branding.Infrastructure;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Branding;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Branding;
 
 public sealed class BrandingPostgreSqlMigrationScenario(HostedTestFixture shared) : IAsyncLifetime
 {

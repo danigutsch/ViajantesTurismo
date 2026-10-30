@@ -1,8 +1,8 @@
 using PandaBear.Testing;
 using System.Net;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing;
-namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [TestScope(TestScope.Integration)]

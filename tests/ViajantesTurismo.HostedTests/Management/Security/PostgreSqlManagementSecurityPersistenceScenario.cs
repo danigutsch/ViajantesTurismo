@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PandaBear.IntegrationTesting;
 using ViajantesTurismo.Management.Security;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Provisions a PostgreSQL security database through Aspire, migrates it, and queries persisted security data.</summary>
 internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDisposable

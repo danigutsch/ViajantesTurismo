@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PandaBear.Testing;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, "unit")]
 [TestScope(TestScope.Integration)]

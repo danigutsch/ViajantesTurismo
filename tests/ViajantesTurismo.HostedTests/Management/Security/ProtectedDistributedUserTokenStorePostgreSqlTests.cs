@@ -3,7 +3,7 @@ using Duende.AccessTokenManagement;
 using Duende.AccessTokenManagement.OpenIdConnect;
 using System.Net;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]

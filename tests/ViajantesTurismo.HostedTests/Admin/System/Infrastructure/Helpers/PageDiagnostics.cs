@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Playwright;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
 /// <summary>
 /// Records browser-side events (console, page errors, failed requests, WebSocket lifecycle) so a

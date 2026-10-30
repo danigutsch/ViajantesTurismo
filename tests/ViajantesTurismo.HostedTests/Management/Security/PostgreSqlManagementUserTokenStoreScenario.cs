@@ -10,7 +10,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.DataProtection;
 using ViajantesTurismo.Management.Web;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Provisions a PostgreSQL-backed distributed cache and builds user and audience token stores for tests.</summary>
 [SuppressMessage(

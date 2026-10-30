@@ -1,7 +1,7 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Tours;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]

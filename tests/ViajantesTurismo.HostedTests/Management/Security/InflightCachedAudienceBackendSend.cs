@@ -2,7 +2,7 @@ using System.Security.Claims;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Arranges a backend send in flight while a concurrent sign-out is blocked on its cache removal.</summary>
 internal sealed class InflightCachedAudienceBackendSend : IAsyncDisposable

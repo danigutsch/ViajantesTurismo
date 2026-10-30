@@ -11,7 +11,7 @@ Application stacks start on demand and share those services, while keeping indep
 Keycloak realms and media buckets. Each test scenario owns its data. The assembly stops application
 instances before disposing database leases and infrastructure. No custom runner is required.
 
-Tests retain their original namespaces, class names and traits. Use `--filter-namespace`,
+Namespaces follow the folder layout under `ViajantesTurismo.HostedTests`; class names and traits are unchanged. Use `--filter-namespace`,
 `--filter-class` or `--filter-trait` to select a seam. Playwright browser installation is required only when browser
 tests run.
 

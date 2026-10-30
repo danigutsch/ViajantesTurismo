@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 
 /// <summary>Captures failures raised while creating or opening resources for the booking cancellation scenario.</summary>
 internal static class BookingCancellationAtDocumentPersistenceScenarioTestHelpers

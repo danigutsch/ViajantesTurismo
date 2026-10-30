@@ -2,13 +2,13 @@ using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLe
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using Npgsql;
 using PandaBear.IntegrationTesting;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Bookings;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Bookings;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 
-public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.IAdminTestHost, IAsyncLifetime
+public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime
 {
     private static readonly TimeSpan BrandingProjectionTimeout = TimeSpan.FromMinutes(2);
 
@@ -43,7 +43,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
             testConfiguration.ConformanceUserPassword,
             [ApiAudienceNames.Admin],
             TestContext.Current.CancellationToken, realm: shared.Realm("api"));
-        _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        _client.DefaultRequestHeaders.Authorization = new global::System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
     }
 
     public Task<PostgreSqlTestDatabase> CreateIsolatedPostgreSqlDatabase(CancellationToken ct)
@@ -130,7 +130,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
             """);
         command.Parameters.AddWithValue("bookingId", bookingId);
         var count = await command.ExecuteScalarAsync(ct);
-        return Convert.ToInt32(count, System.Globalization.CultureInfo.InvariantCulture);
+        return Convert.ToInt32(count, global::System.Globalization.CultureInfo.InvariantCulture);
     }
 
     /// <summary>Creates an HTTP client authenticated as the operator user.</summary>
@@ -147,7 +147,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : Testing.Integration.I
             ct,
             KeycloakConformanceClient.OperatorUsername, shared.Realm("api"));
         var client = _app.CreateHttpClient(ResourceNames.Api);
-        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        client.DefaultRequestHeaders.Authorization = new global::System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         return client;
     }
 

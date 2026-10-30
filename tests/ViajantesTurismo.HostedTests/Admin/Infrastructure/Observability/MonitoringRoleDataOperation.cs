@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.IntegrationTests.Observability;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Observability;
 
 /// <summary>Data-changing statements the monitoring role must be denied.</summary>
 internal enum MonitoringRoleDataOperation

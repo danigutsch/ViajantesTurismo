@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 
 /// <summary>Installs a trigger that suppresses updates to one document lineage, simulating a concurrent mutation, and removes it on dispose.</summary>
 internal sealed class DocumentMutationConcurrencyScenario : IAsyncDisposable

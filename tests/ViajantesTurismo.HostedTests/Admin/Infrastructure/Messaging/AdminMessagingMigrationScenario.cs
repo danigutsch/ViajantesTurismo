@@ -10,8 +10,9 @@ using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Messaging;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Messaging;
 
 /// <summary>Runs messaging schema migrations against a real PostgreSQL database.</summary>
 internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
@@ -99,7 +100,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         await connection.OpenAsync(ct);
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT COUNT(*)::int FROM messaging.idempotency_keys;";
-        return Convert.ToInt32(await command.ExecuteScalarAsync(ct), System.Globalization.CultureInfo.InvariantCulture);
+        return Convert.ToInt32(await command.ExecuteScalarAsync(ct), global::System.Globalization.CultureInfo.InvariantCulture);
     }
 
     /// <summary>Reads the applied migration ids in order.</summary>

@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 
 /// <summary>
 /// Shared trait constants for Admin system tests.

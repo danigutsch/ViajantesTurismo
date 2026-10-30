@@ -1,13 +1,13 @@
 using PandaBear.Testing;
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using PandaBear.Testing.Playwright;
 using ViajantesTurismo.Admin.Contracts.Application;
 
-namespace ViajantesTurismo.Admin.SystemTests.Bookings;
+namespace ViajantesTurismo.HostedTests.Admin.System.Bookings;
 
 [TestScope(TestScope.System)]
 public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)

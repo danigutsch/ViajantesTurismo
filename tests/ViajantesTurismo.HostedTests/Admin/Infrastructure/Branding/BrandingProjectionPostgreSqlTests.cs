@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Branding;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Branding;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]

@@ -1,5 +1,5 @@
 using Microsoft.Playwright;
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
 /// <summary>Signs the conformance user in to the management web app through the Keycloak login page.</summary>
 /// <param name="page">The page used for the sign-in.</param>

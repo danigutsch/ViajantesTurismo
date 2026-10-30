@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Npgsql;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Bookings;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Bookings;
 
 /// <summary>Holds row locks on two bookings so tests can observe concurrent confirmations queueing on the tour capacity lock.</summary>
 internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
@@ -117,7 +117,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
 
             blockingConnection = connection;
             blockingTransaction = transaction;
-            blockingProcessId = Convert.ToInt32(processId, System.Globalization.CultureInfo.InvariantCulture);
+            blockingProcessId = Convert.ToInt32(processId, global::System.Globalization.CultureInfo.InvariantCulture);
         }
         catch
         {
@@ -247,7 +247,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
     {
         var lockIdentity = string.Concat(
             "admin:tour-capacity:",
-            tourId.ToString("D", System.Globalization.CultureInfo.InvariantCulture));
+            tourId.ToString("D", global::System.Globalization.CultureInfo.InvariantCulture));
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(lockIdentity));
         return BinaryPrimitives.ReadInt64BigEndian(hash);
     }

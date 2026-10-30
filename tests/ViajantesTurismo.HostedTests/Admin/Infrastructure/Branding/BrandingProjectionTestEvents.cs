@@ -1,6 +1,6 @@
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Branding;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
 /// <summary>Builds branding settings changed integration events for projection tests.</summary>
 internal static class BrandingProjectionTestEvents

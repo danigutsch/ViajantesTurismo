@@ -1,6 +1,6 @@
 using PandaBear.HttpClients;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
 /// <summary>Test assertions for document client outcomes.</summary>
 internal static class DocumentClientOutcomeExtensions

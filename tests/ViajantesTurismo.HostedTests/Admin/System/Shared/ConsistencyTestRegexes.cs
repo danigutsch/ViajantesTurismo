@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Shared;
+namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 public static partial class ConsistencyTestRegexes
 {

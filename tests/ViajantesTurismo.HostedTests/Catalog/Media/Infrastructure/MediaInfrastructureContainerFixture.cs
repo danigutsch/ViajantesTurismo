@@ -2,7 +2,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 
-namespace ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 
 public sealed class MediaInfrastructureContainerFixture(HostedTestFixture shared) : IAsyncLifetime
 {

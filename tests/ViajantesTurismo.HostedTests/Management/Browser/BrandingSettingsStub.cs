@@ -5,7 +5,7 @@ using System.Text.Json;
 using PandaBear.Testing.Http;
 using ViajantesTurismo.Branding.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>
 /// Stands in for the Branding API: serves one settings document and answers every save with a

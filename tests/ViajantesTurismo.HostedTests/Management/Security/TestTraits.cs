@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Management.WebIntegrationTests;
+namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Trait values for tagging management web integration tests.</summary>
 internal static class TestTraits

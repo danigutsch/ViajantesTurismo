@@ -1,7 +1,7 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 
 /// <summary>
 /// Verifies DCP isolation when multiple test AppHosts start concurrently.

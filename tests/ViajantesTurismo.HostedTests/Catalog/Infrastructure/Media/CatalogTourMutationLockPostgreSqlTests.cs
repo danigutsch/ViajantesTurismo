@@ -1,6 +1,6 @@
 using PandaBear.Testing;
 
-namespace ViajantesTurismo.Catalog.InfrastructureTests.Media;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]

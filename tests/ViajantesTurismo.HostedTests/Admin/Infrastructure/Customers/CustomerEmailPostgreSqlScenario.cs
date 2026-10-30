@@ -12,8 +12,9 @@ using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Customers;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Customers;
 
 /// <summary>Runs customer email behavior against a real PostgreSQL database.</summary>
 internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable

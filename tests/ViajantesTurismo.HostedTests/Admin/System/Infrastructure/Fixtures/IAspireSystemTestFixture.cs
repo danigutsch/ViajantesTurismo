@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 
 public interface IAspireSystemTestFixture
 {

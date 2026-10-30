@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 
 /// <summary>Holds an uncommitted booking cancellation so tests can observe document persistence blocking on it.</summary>
 internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncDisposable
@@ -84,7 +84,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
 
             cancellationConnection = connection;
             cancellationTransaction = transaction;
-            cancellationProcessId = Convert.ToInt32(processId, System.Globalization.CultureInfo.InvariantCulture);
+            cancellationProcessId = Convert.ToInt32(processId, global::System.Globalization.CultureInfo.InvariantCulture);
         }
         catch
         {
@@ -179,7 +179,7 @@ internal sealed class BookingCancellationAtDocumentPersistenceScenario : IAsyncD
             "SELECT \"Status\" FROM \"Booking\" WHERE \"Id\" = @bookingId;");
         command.Parameters.AddWithValue("bookingId", bookingId);
         var status = await command.ExecuteScalarAsync(ct);
-        return Convert.ToString(status, System.Globalization.CultureInfo.InvariantCulture)
+        return Convert.ToString(status, global::System.Globalization.CultureInfo.InvariantCulture)
             ?? throw new InvalidOperationException("The booking status was not found.");
     }
 

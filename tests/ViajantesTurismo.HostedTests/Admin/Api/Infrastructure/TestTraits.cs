@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 
 /// <summary>
 /// Shared trait constants for Admin integration tests.

@@ -1,10 +1,10 @@
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using PandaBear.Testing.Playwright;
 using System.Text.RegularExpressions;
 using static Microsoft.Playwright.Assertions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Shared;
+namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 public static class NavigationTestHelpers
 {

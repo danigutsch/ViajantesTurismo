@@ -1,6 +1,6 @@
 using System.Data.Common;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
 /// <summary>Truncates the event sourcing schema tables of a PostgreSQL database.</summary>
 internal static class PostgreSqlEventSourcingSchemaReset
@@ -26,7 +26,7 @@ internal static class PostgreSqlEventSourcingSchemaReset
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        if (connection.State != System.Data.ConnectionState.Open)
+        if (connection.State != global::System.Data.ConnectionState.Open)
         {
             await connection.OpenAsync(ct);
         }
