@@ -508,7 +508,9 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async ValueTask<int> PurgeExpiredAuditRecords(DateTime now, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        return await new DocumentAuditStore(dbContext).PurgeExpiredRecords(now, ct);
+        var removedCount = await new DocumentAuditStore(dbContext).PurgeExpiredRecords(now, ct);
+        _ = await dbContext.SaveChangesAsync(ct);
+        return removedCount;
     }
 
     /// <summary>Runs the audit purge handler at the given time, recording evidence, and returns how many records were removed.</summary>
@@ -521,6 +523,26 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             new FakeTimeProvider(new DateTimeOffset(now)));
         var auditContext = DocumentAuditContext.Create("system:test-purge", Guid.CreateVersion7().ToString("N")).Value;
         return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
+    }
+
+    /// <summary>Runs the audit purge handler with an evidence save that fails and returns the failure.</summary>
+    public async ValueTask<AggregateException?> PurgeExpiredAuditRecordsWhenEvidenceSaveFails(DateTime now, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var handler = new PurgeExpiredDocumentAuditsCommandHandler(
+            new DocumentAuditStore(dbContext),
+            new FailingUnitOfWork(),
+            new FakeTimeProvider(new DateTimeOffset(now)));
+        var auditContext = DocumentAuditContext.Create("system:test-purge", Guid.CreateVersion7().ToString("N")).Value;
+        try
+        {
+            _ = await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
+            return null;
+        }
+        catch (InvalidOperationException failure)
+        {
+            return new AggregateException(failure);
+        }
     }
 
     /// <summary>Reads the stored purge evidence ordered by time.</summary>

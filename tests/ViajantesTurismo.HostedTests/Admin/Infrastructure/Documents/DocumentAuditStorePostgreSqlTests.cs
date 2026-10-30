@@ -174,6 +174,24 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     }
 
     [Fact]
+    public async Task Purge_keeps_expired_records_when_the_evidence_cannot_be_saved()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = new DateTime(2026, 7, 16, 12, 0, 0, DateTimeKind.Utc);
+        var expired = DocumentAuditInfrastructureTestData.CreateRecord(now.AddMonths(-25));
+        await Scenario.SeedAudit(expired);
+
+        // Act
+        var failure = await Scenario.PurgeExpiredAuditRecordsWhenEvidenceSaveFails(now, ct);
+        var record = await Scenario.GetAuditRecord(expired.Id, ct);
+
+        // Assert
+        failure.ShouldNotBeNull();
+        record.ShouldNotBeNull();
+    }
+
+    [Fact]
     public async Task PurgeExpiredRecords_deletes_the_boundary_in_bounded_batches_and_then_becomes_a_no_op()
     {
         // Arrange

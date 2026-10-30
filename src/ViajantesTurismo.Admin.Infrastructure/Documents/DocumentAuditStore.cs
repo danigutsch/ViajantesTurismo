@@ -14,23 +14,19 @@ internal sealed class DocumentAuditStore(AdminWriteDbContext dbContext) : IDocum
     /// <summary>Stages purge evidence for insertion on the next save.</summary>
     public void Add(DocumentAuditPurgeRecord record) => dbContext.DocumentAuditPurgeRecords.Add(record);
 
-    /// <summary>Deletes up to one batch of audit records whose retention expired at or before <paramref name="now"/> and returns the count.</summary>
+    /// <summary>
+    /// Stages deletion of up to one batch of audit records whose retention expired at or before <paramref name="now"/>
+    /// and returns the count. The rows are removed on the next save, so the purge commits together with its evidence.
+    /// </summary>
     public async Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct)
     {
-        var purgeIds = await dbContext.DocumentAuditRecords
+        var expired = await dbContext.DocumentAuditRecords
             .Where(record => record.RetentionExpiresAt <= now)
             .OrderBy(record => record.RetentionExpiresAt)
-            .Select(record => record.Id)
             .Take(PurgeBatchSize)
             .ToArrayAsync(ct);
 
-        if (purgeIds.Length == 0)
-        {
-            return 0;
-        }
-
-        return await dbContext.DocumentAuditRecords
-            .Where(record => purgeIds.Contains(record.Id) && record.RetentionExpiresAt <= now)
-            .ExecuteDeleteAsync(ct);
+        dbContext.DocumentAuditRecords.RemoveRange(expired);
+        return expired.Length;
     }
 }
