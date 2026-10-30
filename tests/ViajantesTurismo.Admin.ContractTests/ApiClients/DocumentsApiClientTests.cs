@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using PandaBear.HttpClients;
+using PandaBear.Testing;
 using PandaBear.Testing.Contracts;
 using ViajantesTurismo.Admin.Contracts.Http;
 
@@ -244,7 +245,7 @@ public sealed class DocumentsApiClientTests
     {
         // Arrange
         var documentId = Guid.CreateVersion7();
-        using var responseBody = new BlockingDocumentReadStream();
+        using var responseBody = new BlockingReadStream();
         using var httpClient = ContractHttpClientTestHelper.CreateClient(_ =>
             new HttpResponseMessage(HttpStatusCode.BadRequest)
             {
@@ -271,7 +272,7 @@ public sealed class DocumentsApiClientTests
         // Arrange
         var documentId = Guid.CreateVersion7();
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        using var responseBody = new BlockingDocumentReadStream(cts.Cancel);
+        using var responseBody = new BlockingReadStream(cts.Cancel);
         using var httpClient = ContractHttpClientTestHelper.CreateClient(_ =>
             new HttpResponseMessage(HttpStatusCode.BadRequest)
             {

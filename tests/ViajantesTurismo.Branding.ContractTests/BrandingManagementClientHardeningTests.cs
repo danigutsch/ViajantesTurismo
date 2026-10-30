@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using PandaBear.Branding;
 using PandaBear.HttpClients;
+using PandaBear.Testing;
 using ViajantesTurismo.Branding.ContractTests.Infrastructure;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -71,7 +72,7 @@ public sealed class BrandingManagementClientHardeningTests
     public async Task Write_reports_a_timeout_while_reading_a_stalled_response_body()
     {
         // Arrange
-        using var responseBody = new BlockingBrandingReadStream();
+        using var responseBody = new BlockingReadStream();
         using var handler = new RecordingBrandingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StreamContent(responseBody) { Headers = { ContentType = new MediaTypeHeaderValue("application/json") } }
@@ -97,7 +98,7 @@ public sealed class BrandingManagementClientHardeningTests
     {
         // Arrange
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        using var responseBody = new BlockingBrandingReadStream(cts.Cancel);
+        using var responseBody = new BlockingReadStream(cts.Cancel);
         using var handler = new RecordingBrandingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StreamContent(responseBody) { Headers = { ContentType = new MediaTypeHeaderValue("application/json") } }

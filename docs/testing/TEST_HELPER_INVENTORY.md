@@ -55,7 +55,17 @@ See [Test guidelines](../TEST_GUIDELINES.md) for how tests use these helpers.
 - **Catalog time providers.** `ControlledTimeProvider` and `FixedTimeProvider` were
   single-purpose copies of a clock fake. They are removed in favor of the repository's custom
   `FakeTimeProvider`, so there is one fake clock rather than three.
-- **Local HTTP handler stubs.** Not consolidated yet. The pinned SharedKernel build does not ship a shared test HTTP message handler, so the Management web, branding contract and hosted-test handlers stay local until a published build includes it.
+- **Output cache store.** The local `RecordingOutputCacheStore` in the Catalog API service tests is removed in
+  favor of the SharedKernel `RecordingOutputCacheStore`.
+- **Blocking read streams.** The Admin document and branding contract test copies of a blocking read stream are
+  replaced by the SharedKernel `BlockingReadStream`. Stream doubles with chunking, cancellation tracking or
+  throwing behavior stay local.
+- **Logger captures and remaining generic doubles.** Not consolidated yet. The pinned SharedKernel build does not
+  ship a recording logger, and its shared browser file, form file and distributed cache fakes do not cover the
+  local variants' recorded state or selective failures.
+- **Local HTTP handler stubs.** Not consolidated yet. The pinned SharedKernel build does not ship a shared
+  test HTTP message handler, so the Management web, branding contract and hosted-test handlers stay local
+  until a published build includes it.
 
 ## Rejected consolidations
 

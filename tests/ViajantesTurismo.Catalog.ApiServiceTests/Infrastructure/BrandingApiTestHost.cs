@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
-using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.ApiService;
