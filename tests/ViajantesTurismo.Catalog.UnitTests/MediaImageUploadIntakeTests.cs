@@ -83,7 +83,7 @@ public sealed class MediaImageUploadIntakeTests
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1));
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
         var intake = MediaImageUploadIntakeTestFactory.Create(scanner, objectStore, imageStore,
-            timeProvider: new ControlledTimeProvider(new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero)));
+            timeProvider: new FakeTimeProvider(new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero)));
         var tourLink = new MediaImageTourLink(Guid.CreateVersion7(), 0, true);
         var request = new MediaImageUploadIntakeRequest(
             mediaImageId,

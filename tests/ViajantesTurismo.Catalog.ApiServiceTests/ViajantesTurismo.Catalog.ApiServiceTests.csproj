@@ -14,10 +14,12 @@
         <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
         <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.AspNetCore" />
         <Using Include="Microsoft.Extensions.DependencyInjection.Extensions" />
         <Using Include="ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure" />
         <Using Include="ViajantesTurismo.Catalog.Contracts.Http" />
         <Using Include="ViajantesTurismo.Catalog.Testing.Infrastructure" />
+        <Using Include="ViajantesTurismo.Admin.Testing.Fakes" />
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -40,6 +42,10 @@
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Testing\ViajantesTurismo.Catalog.Testing.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.UploadWire.Testing\ViajantesTurismo.UploadWire.Testing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\ViajantesTurismo.Admin.Testing\Fakes\FakeTimeProvider.cs" Link="Infrastructure\FakeTimeProvider.cs" />
     </ItemGroup>
 
 </Project>

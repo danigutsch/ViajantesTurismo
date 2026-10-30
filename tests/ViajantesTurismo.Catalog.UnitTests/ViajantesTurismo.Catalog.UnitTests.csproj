@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="ViajantesTurismo.Admin.Testing.Fakes" />
         <Using Include="Xunit" />
     </ItemGroup>
 
@@ -14,7 +15,6 @@
         <PackageReference Include="Magick.NET-Q8-AnyCPU" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
-        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
         <PackageReference Include="coverlet.MTP">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -44,6 +44,10 @@
 
     <ItemGroup>
         <Content Include="../fixtures/media-accessibility/*" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\ViajantesTurismo.Admin.Testing\Fakes\FakeTimeProvider.cs" Link="Infrastructure\FakeTimeProvider.cs" />
     </ItemGroup>
 
 </Project>

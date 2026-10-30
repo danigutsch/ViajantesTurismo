@@ -18,7 +18,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     {
         // Arrange
         var now = new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero);
-        var clock = new ControlledTimeProvider(now);
+        var clock = new FakeTimeProvider(now);
         var store = new CapturingIdempotencyStore();
         var handler = new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
             new AdminTourCreatedIntegrationHandler(new CapturingEventStore

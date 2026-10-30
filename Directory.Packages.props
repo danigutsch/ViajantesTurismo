@@ -28,7 +28,6 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.9.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.9.0" />
-    <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.11.0" />
     <PackageVersion Include="Microsoft.Playwright" Version="1.63.0" />
     <!-- Playwright.TestAdapter requests ObjectModel >=17.3.0; use 17.14.1 (MIT) to satisfy license policy. -->
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" />

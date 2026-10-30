@@ -1770,7 +1770,7 @@ public sealed class CatalogApiEndpointTests
         await using var factory = baseFactory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
             {
                 services.RemoveAll<TimeProvider>();
-                services.AddSingleton<TimeProvider>(new FixedTimeProvider(now));
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
             }));
         using var client = factory.CreateClient();
 

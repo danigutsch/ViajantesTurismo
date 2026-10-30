@@ -870,6 +870,7 @@ dotnet test --solution ViajantesTurismo.slnx --max-parallel-test-modules 1
 ## Related Documentation
 
 Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.
+See the [test helper inventory](testing/TEST_HELPER_INVENTORY.md) before adding or moving a shared test helper.
 
 ## Summary
 

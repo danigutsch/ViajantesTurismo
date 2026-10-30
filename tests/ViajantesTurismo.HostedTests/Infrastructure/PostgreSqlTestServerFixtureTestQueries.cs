@@ -1,19 +1,20 @@
 using Npgsql;
-namespace ViajantesTurismo.Management.WebIntegrationTests;
 
-/// <summary>Queries used by fixture tests to check server identity and database ownership.</summary>
+namespace ViajantesTurismo.HostedTests.Infrastructure;
+
+/// <summary>Queries used by fixture tests to identify the server and check database isolation.</summary>
 internal static class PostgreSqlTestServerFixtureTestQueries
 {
-    /// <summary>Returns the server start time and port as an identity string.</summary>
+    /// <summary>Returns the server start time and port, identifying the server instance.</summary>
     public static async Task<string> GetServerIdentity(NpgsqlDataSource dataSource, CancellationToken ct)
     {
         await using var command = dataSource.CreateCommand(
             "SELECT pg_postmaster_start_time()::text || ':' || inet_server_port()::text;");
-        var scalar = await command.ExecuteScalarAsync(ct);
-        return (string)scalar.ShouldNotBeNull();
+        var assertionTarget1 = await command.ExecuteScalarAsync(ct);
+        return (string)assertionTarget1.ShouldNotBeNull();
     }
 
-    /// <summary>Creates a table and inserts the given value into it.</summary>
+    /// <summary>Creates <c>public.fixture_owned_table</c> and inserts <paramref name="value" />.</summary>
     public static async Task CreateOwnedTable(NpgsqlDataSource dataSource, string value, CancellationToken ct)
     {
         await using var command = dataSource.CreateCommand(
@@ -23,11 +24,11 @@ internal static class PostgreSqlTestServerFixtureTestQueries
         _ = await command.ExecuteNonQueryAsync(ct);
     }
 
-    /// <summary>Reads the value inserted by CreateOwnedTable.</summary>
+    /// <summary>Reads the single value stored in <c>public.fixture_owned_table</c>.</summary>
     public static async Task<string> ReadOwnedValue(NpgsqlDataSource dataSource, CancellationToken ct)
     {
         await using var command = dataSource.CreateCommand("SELECT value FROM public.fixture_owned_table;");
-        var scalar = await command.ExecuteScalarAsync(ct);
-        return (string)scalar.ShouldNotBeNull();
+        var assertionTarget2 = await command.ExecuteScalarAsync(ct);
+        return (string)assertionTarget2.ShouldNotBeNull();
     }
 }
