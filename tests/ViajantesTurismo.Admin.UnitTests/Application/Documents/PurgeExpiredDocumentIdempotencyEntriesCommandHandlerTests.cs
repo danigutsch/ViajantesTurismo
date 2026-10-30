@@ -17,8 +17,7 @@ public sealed class PurgeExpiredDocumentIdempotencyEntriesCommandHandlerTests
         var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, new FakeTimeProvider(now));
 
         // Act
-        var removedCount = await handler.Handle(
-            new PurgeExpiredDocumentIdempotencyEntriesCommand(), TestContext.Current.CancellationToken);
+        var removedCount = await handler.Handle(TestContext.Current.CancellationToken);
 
         // Assert
         removedCount.ShouldBe(5);

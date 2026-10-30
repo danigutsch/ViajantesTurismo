@@ -6,10 +6,8 @@ public sealed class PurgeExpiredDocumentIdempotencyEntriesCommandHandler(
     TimeProvider timeProvider)
 {
     /// <summary>Removes expired document idempotency entries and returns the count.</summary>
-    public async Task<int> Handle(PurgeExpiredDocumentIdempotencyEntriesCommand command, CancellationToken ct)
+    public async Task<int> Handle(CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(command);
-
         return await retentionStore.PurgeExpiredEntries(
             timeProvider.GetUtcNow() - DocumentCommandIdempotency.ReplayWindow, ct);
     }

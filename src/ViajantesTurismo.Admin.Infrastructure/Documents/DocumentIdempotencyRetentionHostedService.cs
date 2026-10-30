@@ -22,6 +22,6 @@ internal sealed class DocumentIdempotencyRetentionHostedService(
     {
         using var scope = scopeFactory.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();
-        return await handler.Handle(new PurgeExpiredDocumentIdempotencyEntriesCommand(), ct).ConfigureAwait(false);
+        return await handler.Handle(ct).ConfigureAwait(false);
     }
 }
