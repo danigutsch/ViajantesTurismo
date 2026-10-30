@@ -2,7 +2,7 @@ using PandaBear.Branding;
 using PandaBear.Testing;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Branding;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]

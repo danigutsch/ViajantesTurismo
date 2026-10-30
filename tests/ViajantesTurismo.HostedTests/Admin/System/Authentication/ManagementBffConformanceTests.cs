@@ -1,15 +1,15 @@
 using PandaBear.Testing;
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Bases;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.SystemTests.Authentication;
+namespace ViajantesTurismo.HostedTests.Admin.System.Authentication;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]

@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
 /// <summary>Polling helper that waits for an asynchronous condition in system tests.</summary>
 internal static class Eventually

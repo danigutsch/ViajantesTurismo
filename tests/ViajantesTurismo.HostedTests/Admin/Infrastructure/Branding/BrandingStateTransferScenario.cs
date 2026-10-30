@@ -11,8 +11,9 @@ using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Branding;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
 /// <summary>
 /// Runs the Branding producer host (store, outbox, relay) and the Admin worker host (transport consumer, inbox,

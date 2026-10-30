@@ -225,16 +225,16 @@ See [xUnit v3 MTP docs](https://xunit.net/docs/getting-started/v3/microsoft-test
 
 #### xUnit v3 filter switches
 
-| Switch                   | Purpose                                           | Example                                                       |
-|--------------------------|---------------------------------------------------|---------------------------------------------------------------|
-| `--filter-method`        | Run a given test method (wildcards `*` supported) | `--filter-method "*BookingApi*"`                              |
-| `--filter-not-method`    | Exclude a method                                  | `--filter-not-method "SlowTest"`                              |
-| `--filter-class`         | Run all tests in a class (fully-qualified name)   | `--filter-class "Namespace.TourCreationTests"`                |
-| `--filter-not-class`     | Exclude a class                                   | `--filter-not-class "SlowTests"`                              |
-| `--filter-namespace`     | Run all tests in a namespace                      | `--filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"` |
-| `--filter-not-namespace` | Exclude a namespace                               | `--filter-not-namespace "ViajantesTurismo.Admin.SystemTests"` |
-| `--filter-trait`         | Run tests matching a trait, such as a seam        | `--filter-trait "Scope=unit"`                                 |
-| `--filter-not-trait`     | Exclude tests with a trait                        | `--filter-not-trait "Scope=system"`                           |
+| Switch                   | Purpose                                           | Example                                                              |
+| ------------------------ | ------------------------------------------------- | -------------------------------------------------------------------- |
+| `--filter-method`        | Run a given test method (wildcards `*` supported) | `--filter-method "*BookingApi*"`                                     |
+| `--filter-not-method`    | Exclude a method                                  | `--filter-not-method "SlowTest"`                                     |
+| `--filter-class`         | Run all tests in a class (fully-qualified name)   | `--filter-class "Namespace.TourCreationTests"`                       |
+| `--filter-not-class`     | Exclude a class                                   | `--filter-not-class "SlowTests"`                                     |
+| `--filter-namespace`     | Run all tests in a namespace                      | `--filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"`        |
+| `--filter-not-namespace` | Exclude a namespace                               | `--filter-not-namespace "ViajantesTurismo.HostedTests.Admin.System"` |
+| `--filter-trait`         | Run tests matching a trait, such as a seam        | `--filter-trait "Scope=unit"`                                        |
+| `--filter-not-trait`     | Exclude tests with a trait                        | `--filter-not-trait "Scope=system"`                                  |
 
 > **Seams:** select a lane by seam with `--filter-trait "Scope=<value>"` (see `tests/README.md`) instead of by project,
 > folder, or namespace name.
@@ -250,7 +250,7 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-method "*T
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-class "ViajantesTurismo.Admin.UnitTests.Tours.TourCreationTests"
 
 # Run multiple test classes at once
-dotnet test --project tests/ViajantesTurismo.HostedTests --filter-class "ViajantesTurismo.Admin.SystemTests.Bookings.ConditionalStateTests" "ViajantesTurismo.Admin.SystemTests.Bookings.BookingDeleteAndDialogTests"
+dotnet test --project tests/ViajantesTurismo.HostedTests --filter-class "ViajantesTurismo.HostedTests.Admin.System.Bookings.ConditionalStateTests" "ViajantesTurismo.HostedTests.Admin.System.Bookings.BookingDeleteAndDialogTests"
 
 # Run all tests in a namespace
 dotnet test --project tests/ViajantesTurismo.Admin.UnitTests --filter-namespace "ViajantesTurismo.Admin.UnitTests.Tours"

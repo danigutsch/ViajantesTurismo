@@ -1,7 +1,7 @@
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 
-namespace ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 
 /// <summary>Image store fake that fails the test on any use.</summary>
 internal sealed class UnexpectedPublicMediaImageStore : IPublicMediaImageStore

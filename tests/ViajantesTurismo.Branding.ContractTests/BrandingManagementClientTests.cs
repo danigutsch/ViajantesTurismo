@@ -1,6 +1,7 @@
 using System.Net;
 using PandaBear.Branding;
 using PandaBear.HttpClients;
+using PandaBear.Testing.Http;
 using ViajantesTurismo.Branding.ContractTests.Infrastructure;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -17,7 +18,7 @@ public sealed class BrandingManagementClientTests
     {
         // Arrange
         var tag = BrandingEntityTags.Format(Guid.Parse("0192f3a4-0000-7000-8000-000000000001"), 4);
-        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(HttpStatusCode.OK, SettingsJson, tag));
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(HttpStatusCode.OK, SettingsJson, tag));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 
@@ -39,7 +40,7 @@ public sealed class BrandingManagementClientTests
     public async Task Read_reports_a_malformed_body_without_a_strong_entity_tag(string? tag)
     {
         // Arrange
-        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(HttpStatusCode.OK, SettingsJson, tag));
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(HttpStatusCode.OK, SettingsJson, tag));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 
@@ -60,7 +61,7 @@ public sealed class BrandingManagementClientTests
     public async Task Read_reports_the_documented_failure_status_as_an_outcome(HttpStatusCode status, HttpOutcomeKind kind)
     {
         // Arrange
-        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(status, "{}"));
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(status, "{}"));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 
@@ -79,7 +80,7 @@ public sealed class BrandingManagementClientTests
     {
         // Arrange
         var tag = BrandingEntityTags.Format(Guid.CreateVersion7(), 4);
-        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(HttpStatusCode.OK, SettingsJson));
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(HttpStatusCode.OK, SettingsJson));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 
@@ -87,7 +88,7 @@ public sealed class BrandingManagementClientTests
         var outcome = await client.SaveSettings(new BrandingSettingsDto { BrandName = "Viajantes" }, tag, TestContext.Current.CancellationToken);
 
         // Assert
-        var request = handler.Requests.ShouldHaveSingleItem();
+        var request = handler.Requests.ShouldHaveSingleItem().Message;
         request.Method.ShouldBe(HttpMethod.Put);
         request.Headers.IfMatch.ShouldHaveSingleItem().Tag.ShouldBe(tag);
         outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
@@ -102,7 +103,7 @@ public sealed class BrandingManagementClientTests
     public async Task Write_reports_a_precondition_status_without_retrying(HttpStatusCode status)
     {
         // Arrange
-        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(status, "{}"));
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(status, "{}"));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 
@@ -123,7 +124,7 @@ public sealed class BrandingManagementClientTests
     public async Task Write_reports_a_malformed_if_match_as_a_bad_request_without_validation_errors()
     {
         // Arrange
-        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(
             HttpStatusCode.BadRequest,
             """{"status":400,"code":"branding.invalid_if_match"}"""));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
@@ -146,7 +147,7 @@ public sealed class BrandingManagementClientTests
     public async Task Write_reports_an_empty_success_body()
     {
         // Arrange
-        using var handler = new RecordingBrandingHandler(_ => RecordingBrandingHandler.Json(HttpStatusCode.OK, string.Empty));
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(HttpStatusCode.OK, string.Empty));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 

@@ -1,7 +1,7 @@
 using PandaBear.Branding;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Branding;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Branding;
 
 /// <summary>Builds Branding settings test data for PostgreSQL integration tests.</summary>
 internal static class BrandingPostgreSqlTestData

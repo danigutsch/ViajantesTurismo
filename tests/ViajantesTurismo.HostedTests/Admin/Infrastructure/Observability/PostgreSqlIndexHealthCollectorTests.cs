@@ -1,12 +1,11 @@
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 using System.Collections.Concurrent;
 using Npgsql;
 using PandaBear.Observability.Npgsql;
 using PandaBear.Testing;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Observability;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Observability;
 
-[Trait(TestTraits.ComponentName, TestTraits.PostgreSqlObservabilityComponent)]
+[Trait(ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.TestTraits.ComponentName, ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.TestTraits.PostgreSqlObservabilityComponent)]
 [TestScope(TestScope.Integration)]
 public sealed class PostgreSqlIndexHealthCollectorTests(PostgreSqlIndexHealthCollectorScenario scenario)
     : IClassFixture<PostgreSqlIndexHealthCollectorScenario>

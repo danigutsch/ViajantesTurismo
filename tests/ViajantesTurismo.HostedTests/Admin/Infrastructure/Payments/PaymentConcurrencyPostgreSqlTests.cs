@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]

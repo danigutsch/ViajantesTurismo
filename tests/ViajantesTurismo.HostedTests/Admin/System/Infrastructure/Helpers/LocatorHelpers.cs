@@ -1,5 +1,5 @@
 using Microsoft.Playwright;
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
 /// <summary>
 /// Helper class to provide extension methods for locating elements in Playwright tests, improving readability and maintainability of test code.

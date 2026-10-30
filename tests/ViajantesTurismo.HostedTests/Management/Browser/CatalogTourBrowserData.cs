@@ -1,6 +1,6 @@
 using ViajantesTurismo.Catalog.Contracts.Application;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Builds the Catalog tour the browser journeys edit.</summary>
 internal static class CatalogTourBrowserData

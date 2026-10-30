@@ -1,5 +1,5 @@
 using Microsoft.Playwright;
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
 /// <summary>
 /// Provides semantic assertions for common toast and redirect feedback in E2E tests.

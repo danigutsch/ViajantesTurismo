@@ -1,6 +1,6 @@
 using PandaBear.ObjectStorage;
 
-namespace ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 
 /// <summary>Object store fake that counts writes and rejects reads and direct uploads.</summary>
 internal sealed class RecordingMediaObjectStore : IObjectStore

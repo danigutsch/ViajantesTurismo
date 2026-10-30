@@ -14,8 +14,9 @@ using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 /// <summary>Test host that wires payment, document and tour services against a PostgreSQL database and exposes them for scenarios.</summary>
 internal sealed class PaymentTestSession : IAsyncDisposable
@@ -30,7 +31,7 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { DisableDefaults = true });
         builder.AddApplication();
         var services = builder.Services;
-        services.AddSingleton<Application.Branding.IBrandingProjectionStore, PaymentTestBrandingProjection>();
+        services.AddSingleton<ViajantesTurismo.Admin.Application.Branding.IBrandingProjectionStore, PaymentTestBrandingProjection>();
         services.AddSingleton(clock);
         services.AddSingleton(protection);
         services.AddSingleton(new PaymentBusinessCalendar(clock, TimeZoneInfo.Utc));
@@ -67,7 +68,7 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         await Context.SaveEntities(ct);
     }
     /// <summary>Saves the payment account and commits.</summary>
-    public async Task SeedAccount(Domain.PaymentAccounts.PaymentAccount account, CancellationToken ct)
+    public async Task SeedAccount(ViajantesTurismo.Admin.Domain.PaymentAccounts.PaymentAccount account, CancellationToken ct)
     {
         await _provider.GetRequiredService<IPaymentAccountStore>().Save(account, ct);
         await Context.SaveEntities(ct);

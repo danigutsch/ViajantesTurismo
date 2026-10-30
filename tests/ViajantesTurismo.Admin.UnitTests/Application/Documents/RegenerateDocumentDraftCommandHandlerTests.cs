@@ -60,7 +60,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
-            DocumentIdempotencyTestData.CreateStarted(idempotencyScope, idempotencyKey, unitOfWork));
+            DocumentIdempotencyTestData.CreateStarted(idempotencyScope, DocumentCommandIdempotency.DigestKey(idempotencyKey), unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -107,7 +107,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.CreateCompleted(
                 idempotencyScope,
-                idempotencyKey,
+                DocumentCommandIdempotency.DigestKey(idempotencyKey),
                 replacementDocumentId,
                 DocumentCommandIdempotency.CreateRequestFingerprint("booking-confirmation", "2"),
                 unitOfWork));

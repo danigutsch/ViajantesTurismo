@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
 
-namespace ViajantesTurismo.Catalog.InfrastructureTests.Tours;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]

@@ -62,7 +62,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
-            DocumentIdempotencyTestData.CreateStarted(idempotencyScope, idempotencyKey, unitOfWork));
+            DocumentIdempotencyTestData.CreateStarted(idempotencyScope, DocumentCommandIdempotency.DigestKey(idempotencyKey), unitOfWork));
 
         // Act
         var result = await handler.Handle(
@@ -109,7 +109,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.CreateCompleted(
                 idempotencyScope,
-                idempotencyKey,
+                DocumentCommandIdempotency.DigestKey(idempotencyKey),
                 documentId,
                 ApplicationRequestFingerprint.Create("booking-confirmation", "1"),
                 unitOfWork));

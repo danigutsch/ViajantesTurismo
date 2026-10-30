@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Initialization;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Initialization;
 
 /// <summary>Holds each save until two have arrived and <see cref="Release" /> is called, forcing concurrent initializations.</summary>
 internal sealed class ConcurrentInitializationSaveBarrierInterceptor : SaveChangesInterceptor

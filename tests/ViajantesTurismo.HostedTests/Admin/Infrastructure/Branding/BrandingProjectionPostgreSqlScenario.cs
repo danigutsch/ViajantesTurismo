@@ -10,8 +10,9 @@ using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Branding;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
 /// <summary>Runs the Admin Branding projection store against a migrated PostgreSQL database.</summary>
 internal sealed class BrandingProjectionPostgreSqlScenario : IAsyncDisposable

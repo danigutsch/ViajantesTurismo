@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 
 /// <summary>Reads document audit records from the database.</summary>
 internal static class DocumentAuditMetadataReader

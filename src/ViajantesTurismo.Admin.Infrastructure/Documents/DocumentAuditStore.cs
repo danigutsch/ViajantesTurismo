@@ -11,6 +11,9 @@ internal sealed class DocumentAuditStore(AdminWriteDbContext dbContext) : IDocum
     /// <summary>Stages an audit record for insertion on the next save.</summary>
     public void Add(DocumentAuditRecord record) => dbContext.DocumentAuditRecords.Add(record);
 
+    /// <summary>Stages purge evidence for insertion on the next save.</summary>
+    public void Add(DocumentAuditPurgeRecord record) => dbContext.DocumentAuditPurgeRecords.Add(record);
+
     /// <summary>Deletes up to one batch of audit records whose retention expired at or before <paramref name="now"/> and returns the count.</summary>
     public async Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct)
     {

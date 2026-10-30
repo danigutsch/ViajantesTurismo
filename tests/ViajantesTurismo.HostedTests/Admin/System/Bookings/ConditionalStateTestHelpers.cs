@@ -1,8 +1,8 @@
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using static Microsoft.Playwright.Assertions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Bookings;
+namespace ViajantesTurismo.HostedTests.Admin.System.Bookings;
 
 public static class ConditionalStateTestHelpers
 {

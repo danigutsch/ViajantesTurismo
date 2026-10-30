@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using ViajantesTurismo.Branding.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser journey for a server validation problem on the Branding form.</summary>
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]
@@ -15,7 +15,7 @@ public sealed class BrandingServerValidationTests : ManagementWebBrowserTestBase
     public BrandingServerValidationTests()
     {
         Registrations.AddSingleton<IBrandingManagementClient>(_ => new BrandingManagementClient(
-            new HttpClient(new BrandingSettingsStubHandler("BrandName", HostileMessage)) { BaseAddress = new Uri("http://branding.invalid") }));
+            new HttpClient(BrandingSettingsStub.Create("BrandName", HostileMessage)) { BaseAddress = new Uri("http://branding.invalid") }));
     }
 
     [Fact]

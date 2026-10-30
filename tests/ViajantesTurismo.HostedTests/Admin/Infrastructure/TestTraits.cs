@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Infrastructure.Tests;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure;
 
 /// <summary>Trait names used to categorize hosted infrastructure tests.</summary>
 internal static class TestTraits

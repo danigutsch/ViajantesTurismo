@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
+namespace ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 
 /// <summary>Trait values used to categorize Catalog media integration tests.</summary>
 internal static class TestTraits

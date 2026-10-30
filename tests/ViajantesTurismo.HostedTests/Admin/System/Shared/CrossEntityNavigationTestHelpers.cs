@@ -2,7 +2,7 @@ using Microsoft.Playwright;
 using PandaBear.Testing.Playwright;
 using static Microsoft.Playwright.Assertions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Shared;
+namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 public static class CrossEntityNavigationTestHelpers
 {

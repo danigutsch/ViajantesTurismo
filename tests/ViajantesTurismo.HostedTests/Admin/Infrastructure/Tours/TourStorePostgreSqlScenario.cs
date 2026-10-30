@@ -9,8 +9,9 @@ using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Admin.Infrastructure;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Tours;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 
 /// <summary>Arranges an isolated PostgreSQL database for tour store tests.</summary>
 internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
@@ -50,8 +51,8 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
     public async Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        using var protection = new Infrastructure.Payments.PaymentProtection(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
-        return await new TourStore(dbContext, new Infrastructure.Payments.PaymentHistoryStore(dbContext, protection)).GetTourIdByBookingId(bookingId, ct);
+        using var protection = new ViajantesTurismo.Admin.Infrastructure.Payments.PaymentProtection(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
+        return await new TourStore(dbContext, new ViajantesTurismo.Admin.Infrastructure.Payments.PaymentHistoryStore(dbContext, protection)).GetTourIdByBookingId(bookingId, ct);
     }
 
     /// <summary>Disposes the test database.</summary>

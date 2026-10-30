@@ -267,6 +267,74 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_keeps_a_finalized_artifact_unchanged_when_a_replacement_is_finalized_with_new_branding()
+    {
+        // Arrange
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var previous = DocumentDraftTestData.Create(now, new Uri("https://branding.example.test/old.svg", UriKind.Absolute));
+        previous.BeginReview(now).IsSuccess.ShouldBeTrue();
+        previous.Approve(now).IsSuccess.ShouldBeTrue();
+        var replacement = previous.CreateRevision(
+            "tour-service-contract",
+            "2",
+            "SOURCE-VERSION-2",
+            [DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value],
+            "BRANDING-VERSION-2",
+            "Renamed Travel Brand",
+            new Uri("/new-logo.svg", UriKind.Relative),
+            now).Value;
+        replacement.BeginReview(now).IsSuccess.ShouldBeTrue();
+        replacement.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(previous.Id, previous);
+        store.Documents.Add(replacement.Id, replacement);
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+        var context = DocumentAuditTestData.CreateContext();
+        var firstFinalization = await handler.Handle(new FinalizeDocumentCommand(previous.Id, context), CancellationToken.None);
+        firstFinalization.IsSuccess.ShouldBeTrue();
+        var finalizedBefore = previous.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray();
+
+        // Act
+        var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id, context), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        previous.Status.ShouldBe(DocumentStatus.Superseded);
+        var finalizedAfter = previous.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray();
+        finalizedAfter.ShouldBe(finalizedBefore);
+        var oldHtml = Encoding.UTF8.GetString(finalizedAfter);
+        oldHtml.ShouldContain("Viajantes Turismo", StringComparison.Ordinal);
+        oldHtml.ShouldNotContain("Renamed Travel Brand", StringComparison.Ordinal);
+        previous.BrandingVersion.ShouldBe("BRANDING-VERSION");
+        previous.BrandingName.ShouldBe("Viajantes Turismo");
+    }
+
+    [Fact]
+    public async Task Handle_finalizes_an_artifact_that_loads_nothing_from_an_external_host()
+    {
+        // Arrange
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var document = DocumentDraftTestData.Create(now, new Uri("https://tracker.example.test/pixel.svg?viewer=1", UriKind.Absolute));
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+
+        // Act
+        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var html = Encoding.UTF8.GetString(document.CopyFinalizedArtifactContent().ShouldNotBeNull().Span);
+        html.ShouldNotContain("http://", StringComparison.OrdinalIgnoreCase);
+        html.ShouldNotContain("https://", StringComparison.OrdinalIgnoreCase);
+        html.ShouldNotContain("@import", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task Handle_supersedes_previous_finalized_revision_after_replacement_finalizes()
     {
         // Arrange
@@ -488,7 +556,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         newer.BeginReview(now).IsSuccess.ShouldBeTrue();
         newer.Approve(now).IsSuccess.ShouldBeTrue();
         newer.Finalize("newer"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
-        newer.Void("Superseded contract cancelled", now).IsSuccess.ShouldBeTrue();
+        newer.Void(DocumentVoidReason.AdministrativeVoid, now).IsSuccess.ShouldBeTrue();
         older.BeginReview(now).IsSuccess.ShouldBeTrue();
         older.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();

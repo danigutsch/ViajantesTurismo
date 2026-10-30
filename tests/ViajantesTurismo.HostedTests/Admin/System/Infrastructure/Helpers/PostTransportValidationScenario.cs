@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
 /// <summary>Drives the Admin to Catalog tour transport validation scenario through both APIs.</summary>
 /// <param name="adminApi">The authenticated Admin API client.</param>

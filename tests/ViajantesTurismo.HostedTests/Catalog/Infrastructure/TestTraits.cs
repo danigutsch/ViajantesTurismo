@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Catalog.InfrastructureTests;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure;
 
 /// <summary>Trait values used to categorize Catalog infrastructure tests.</summary>
 internal static class TestTraits

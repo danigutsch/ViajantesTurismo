@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using HttpOutcomeKind = PandaBear.HttpClients.HttpOutcomeKind;
 using CatalogToursApiClientTestsHelpers = PandaBear.Testing.Contracts.ContractHttpClientTestHelper;
 using ViajantesTurismo.Admin.Contracts.Http;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
@@ -251,7 +252,7 @@ public sealed class CustomersApiClientTests
     public async Task CreateCustomer_logs_malformed_validation_problem_without_response_body()
     {
         // Arrange
-        var logger = new CollectingLogger<CustomersApiClient>();
+        var logger = new RecordingLogger<CustomersApiClient>();
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
             CatalogToursApiClientTestsHelpers.JsonResponse("not json alice@example.test", HttpStatusCode.BadRequest));
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient, logger);
@@ -261,14 +262,14 @@ public sealed class CustomersApiClientTests
 
         // Assert
         outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
-        var entry = logger.Entries.ShouldHaveSingleItem();
-        entry.LogLevel.ShouldBe(LogLevel.Warning);
+        var entry = logger.Records.ShouldHaveSingleItem();
+        entry.Level.ShouldBe(LogLevel.Warning);
         entry.EventId.Id.ShouldBe(1);
         entry.Message.ShouldBe("Customer create returned BadRequest with outcome MalformedBody.");
         entry.Message.Contains("alice@example.test", StringComparison.Ordinal).ShouldBeFalse();
-        entry.State.Values.Any(value => value.Contains("alice@example.test", StringComparison.Ordinal)).ShouldBeFalse();
-        entry.State["StatusCode"].ShouldBe("BadRequest");
-        entry.State["OutcomeKind"].ShouldBe("MalformedBody");
+        entry.State.Any(value => value.Value?.ToString()?.Contains("alice@example.test", StringComparison.Ordinal) == true).ShouldBeFalse();
+        entry.State.ShouldContain(value => value.Key == "StatusCode" && value.Value?.ToString() == "BadRequest");
+        entry.State.ShouldContain(value => value.Key == "OutcomeKind" && value.Value?.ToString() == "MalformedBody");
     }
 
     [Fact]

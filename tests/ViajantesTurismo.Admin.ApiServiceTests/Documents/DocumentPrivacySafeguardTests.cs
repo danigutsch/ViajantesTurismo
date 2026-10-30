@@ -16,6 +16,7 @@ using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 
@@ -71,7 +72,7 @@ public sealed class DocumentPrivacySafeguardTests
         const string tokenMarker = "SYNTHETIC_BEARER_TOKEN_8A42";
         var auditStore = new CapturingDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        using var loggerProvider = new DocumentPrivacyLoggerProvider();
+        using var loggerProvider = new RecordingLoggerProvider();
         using var telemetryCapture = new DocumentPrivacyTelemetryCapture();
         await using var factory = AdminApiTestHost.Create(services =>
         {
@@ -129,7 +130,7 @@ public sealed class DocumentPrivacySafeguardTests
         DocumentNoStoreHeaders.ArePresent(invalidTokenResponse).ShouldBeTrue();
         auditStore.Records.ShouldBeEmpty();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
-        var logs = string.Join('\n', loggerProvider.Messages);
+        var logs = DocumentPrivacyLogText.From(loggerProvider);
         logs.ShouldNotContain(bodyMarker, StringComparison.Ordinal);
         logs.ShouldNotContain(tokenMarker, StringComparison.Ordinal);
         var telemetry = telemetryCapture.GetCapturedText(parentActivity.TraceId);
@@ -327,7 +328,7 @@ public sealed class DocumentPrivacySafeguardTests
         var missingDocuments = new MissingDocumentServices();
         var auditStore = new CapturingDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        using var loggerProvider = new DocumentPrivacyLoggerProvider();
+        using var loggerProvider = new RecordingLoggerProvider();
         using var telemetryCapture = new DocumentPrivacyTelemetryCapture();
         await using var factory = AdminApiTestHost.Create(services =>
         {
@@ -374,7 +375,7 @@ public sealed class DocumentPrivacySafeguardTests
         {
             responseBody.ShouldNotContain(marker, StringComparison.Ordinal);
             auditJson.ShouldNotContain(marker, StringComparison.Ordinal);
-            string.Join('\n', loggerProvider.Messages).ShouldNotContain(marker, StringComparison.Ordinal);
+            DocumentPrivacyLogText.From(loggerProvider).ShouldNotContain(marker, StringComparison.Ordinal);
             telemetryCapture.GetCapturedText(parentActivity.TraceId).ShouldNotContain(marker, StringComparison.Ordinal);
         }
     }

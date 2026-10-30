@@ -2,10 +2,10 @@ using Npgsql;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Domain.Documents;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
@@ -146,6 +146,31 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
         removedCount.ShouldBe(1);
         expiredRecord.ShouldBeNull();
         currentRecord.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Purge_evidence_survives_the_purge_and_later_audit_retention_runs()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = new DateTime(2026, 7, 16, 12, 0, 0, DateTimeKind.Utc);
+        var expired = DocumentAuditInfrastructureTestData.CreateRecord(now.AddMonths(-25));
+        await Scenario.SeedAudit(expired);
+
+        // Act
+        var firstRemoved = await Scenario.PurgeExpiredAuditRecordsWithEvidence(now, ct);
+        var secondRemoved = await Scenario.PurgeExpiredAuditRecordsWithEvidence(now.AddYears(5), ct);
+
+        // Assert
+        firstRemoved.ShouldBe(1);
+        secondRemoved.ShouldBe(0);
+        var evidence = await Scenario.GetPurgeEvidence(ct);
+        evidence.Length.ShouldBe(2);
+        evidence[0].PurgedCount.ShouldBe(1);
+        evidence[0].RetentionCutoffUtc.ShouldBe(now);
+        evidence[0].Outcome.ShouldBe(DocumentAuditOutcome.Succeeded);
+        evidence[0].ActorId.ShouldBe("system:test-purge");
+        evidence[1].PurgedCount.ShouldBe(0);
     }
 
     [Fact]

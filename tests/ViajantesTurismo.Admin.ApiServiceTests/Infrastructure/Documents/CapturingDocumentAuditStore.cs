@@ -17,6 +17,11 @@ internal sealed class CapturingDocumentAuditStore : IDocumentAuditStore
         records.Add(record);
     }
 
+    /// <summary>Ignores purge evidence.</summary>
+    public void Add(DocumentAuditPurgeRecord record)
+    {
+    }
+
     /// <summary>Purges nothing and returns zero.</summary>
     public Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct) =>
         Task.FromResult(0);

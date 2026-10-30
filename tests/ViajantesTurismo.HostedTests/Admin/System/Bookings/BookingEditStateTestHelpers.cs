@@ -1,7 +1,7 @@
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Bookings;
+namespace ViajantesTurismo.HostedTests.Admin.System.Bookings;
 
 public static class BookingEditStateTestHelpers
 {

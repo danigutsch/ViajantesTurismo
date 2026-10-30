@@ -1,11 +1,10 @@
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
 using PandaBear.Testing;
 using PandaBear.Branding;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Branding;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Branding;
 
-[Trait(TestTraitNames.AreaName, TestTraits.BrandingArea)]
+[Trait(TestTraitNames.AreaName, ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.TestTraits.BrandingArea)]
 [TestScope(TestScope.Integration)]
 public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigrationScenario scenario)
     : IClassFixture<BrandingPostgreSqlMigrationScenario>

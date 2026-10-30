@@ -1,7 +1,7 @@
 using Microsoft.Playwright;
 using System.Text;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
 /// <summary>Builds customer import CSV content and Playwright upload payloads for system tests.</summary>
 internal static class CustomerImportCsvHelpers

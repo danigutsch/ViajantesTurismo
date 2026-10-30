@@ -1,10 +1,10 @@
 using PandaBear.Testing;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using System.Net;
 using ViajantesTurismo.Catalog.Contracts.Application;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 
-namespace ViajantesTurismo.Admin.SystemTests.PostTransportValidation;
+namespace ViajantesTurismo.HostedTests.Admin.System.PostTransportValidation;
 
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]

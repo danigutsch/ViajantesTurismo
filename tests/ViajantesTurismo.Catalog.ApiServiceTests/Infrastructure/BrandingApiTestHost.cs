@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.ApiService;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
@@ -27,7 +28,7 @@ internal static class BrandingApiTestHost
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestBrandingSettingsStore store,
         RecordingOutputCacheStore outputCacheStore,
-        CollectingLogger<BrandingAspNetCoreMarker>? logger = null) =>
+        RecordingLogger<BrandingAspNetCoreMarker>? logger = null) =>
         Create(null, store, outputCacheStore, logger, authenticateClient: true);
 
     /// <summary>Creates an anonymous host using the given Branding settings store.</summary>
@@ -43,7 +44,7 @@ internal static class BrandingApiTestHost
         WebApplicationFactory<CatalogApiHostEntryPoint> catalog,
         TestBrandingSettingsStore store,
         RecordingOutputCacheStore? outputCacheStore = null,
-        CollectingLogger<BrandingAspNetCoreMarker>? logger = null)
+        RecordingLogger<BrandingAspNetCoreMarker>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(catalog);
         ArgumentNullException.ThrowIfNull(store);
@@ -90,7 +91,7 @@ internal static class BrandingApiTestHost
         string? environment,
         TestBrandingSettingsStore? store,
         RecordingOutputCacheStore? outputCacheStore,
-        CollectingLogger<BrandingAspNetCoreMarker>? logger,
+        RecordingLogger<BrandingAspNetCoreMarker>? logger,
         bool authenticateClient) =>
         WithBranding(
             authenticateClient ? CatalogApiTestHost.CreateForBranding(environment) : CatalogApiTestHost.CreateAnonymous(),

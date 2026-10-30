@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Customers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Customers;
 
 public static partial class CustomerImportTestRegexes
 {

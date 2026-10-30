@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Infrastructure;
 
-namespace ViajantesTurismo.Catalog.InfrastructureTests;
+namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure;
 
 [TestScope(TestScope.Integration)]
 public sealed class LocalMediaObjectStoreTests

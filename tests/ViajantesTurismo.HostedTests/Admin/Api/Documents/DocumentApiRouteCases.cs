@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
 /// <summary>Expected document API routes and helpers to normalize observed routes against them.</summary>
 internal static class DocumentApiRouteCases

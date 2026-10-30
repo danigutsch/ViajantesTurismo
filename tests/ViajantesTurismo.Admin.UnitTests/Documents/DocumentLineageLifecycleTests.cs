@@ -20,7 +20,7 @@ public sealed class DocumentLineageLifecycleTests
         lineage.BeginReview(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Approve(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Finalize(newer.Id, "newer"u8.ToArray(), now, auditContext).IsSuccess.ShouldBeTrue();
-        lineage.Void(newer.Id, "Newer revision administratively voided", now, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.Void(newer.Id, DocumentVoidReason.AdministrativeVoid, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.BeginReview(older.Id, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Approve(older.Id, now, auditContext).IsSuccess.ShouldBeTrue();
 

@@ -1,13 +1,13 @@
 using PandaBear.Testing;
 using System.Net;
 using ViajantesTurismo.Admin.Contracts.Http;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using PandaBear.HttpClients;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.ApiClients;
+namespace ViajantesTurismo.HostedTests.Admin.Api.ApiClients;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
 [TestScope(TestScope.Integration)]

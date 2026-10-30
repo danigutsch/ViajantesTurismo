@@ -1,9 +1,9 @@
 using PandaBear.Testing;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using System.Net;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 
-namespace ViajantesTurismo.Admin.SystemTests.Authentication;
+namespace ViajantesTurismo.HostedTests.Admin.System.Authentication;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]

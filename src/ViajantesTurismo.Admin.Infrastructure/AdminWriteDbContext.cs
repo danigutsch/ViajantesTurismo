@@ -33,6 +33,8 @@ internal sealed class AdminWriteDbContext(
     public DbSet<DocumentDraft> DocumentDrafts => Set<DocumentDraft>();
     /// <summary>Document audit records.</summary>
     public DbSet<DocumentAuditRecord> DocumentAuditRecords => Set<DocumentAuditRecord>();
+    /// <summary>Document audit purge evidence.</summary>
+    public DbSet<DocumentAuditPurgeRecord> DocumentAuditPurgeRecords => Set<DocumentAuditPurgeRecord>();
 
     /// <summary>Saves tracked changes, translating unique-constraint and revision conflicts into domain conflict exceptions.</summary>
     public async Task SaveEntities(CancellationToken ct)
@@ -91,6 +93,7 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new DocumentLineageConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentAuditConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentAuditPurgeConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingProjectionConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingInboxConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingRecoveryConfiguration());

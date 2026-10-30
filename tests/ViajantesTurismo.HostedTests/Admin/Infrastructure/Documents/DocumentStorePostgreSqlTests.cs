@@ -8,10 +8,10 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
@@ -193,6 +193,101 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task PurgeExpiredIdempotencyEntries_removes_only_document_entries_at_or_before_the_cutoff()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = new DateTimeOffset(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
+        const string DocumentScope = "admin.documents.generate-contract-draft:booking";
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "before", cutoff.AddDays(-3), cutoff.AddSeconds(-1), ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "at", cutoff.AddDays(-3), cutoff, ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "after", cutoff.AddDays(-3), cutoff.AddSeconds(1), ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "abandoned", cutoff.AddSeconds(-1), null, ct);
+        await Scenario.SeedIdempotencyEntry("admin.payments.record:booking", "other-scope", cutoff.AddDays(-90), cutoff.AddDays(-90), ct);
+
+        // Act
+        var removed = await Scenario.PurgeExpiredIdempotencyEntries(cutoff, ct);
+
+        // Assert
+        removed.ShouldBe(3);
+        var remainingKeys = await Scenario.GetIdempotencyKeys(ct);
+        remainingKeys.ShouldBe(["after", "other-scope"]);
+    }
+
+    [Fact]
+    public async Task Idempotency_key_migration_digests_existing_document_keys_and_leaves_other_scopes()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var startedAt = new DateTimeOffset(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
+        const string DocumentScope = "admin.documents.generate-contract-draft:booking";
+        await Scenario.MigrateTo("20261030171856_UseBoundedDocumentVoidReason", ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "raw-caller-key", startedAt, startedAt, ct, migrate: false);
+        await Scenario.SeedIdempotencyEntry("admin.payments.record:booking", "payment-key", startedAt, startedAt, ct, migrate: false);
+
+        // Act
+        await Scenario.MigrateTo(null, ct);
+
+        // Assert
+        var digest = DocumentCommandIdempotency.DigestKey(IdempotencyKey.From("raw-caller-key")).Value;
+        var keys = await Scenario.GetIdempotencyKeys(ct);
+        keys.Length.ShouldBe(2);
+        keys.ShouldContain(digest);
+        keys.ShouldContain("payment-key");
+    }
+
+    [Fact]
+    public async Task Void_reason_migration_maps_known_codes_in_both_directions()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var administrative = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        var withdrawn = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
+        await Scenario.Seed(administrative, withdrawn);
+        await Scenario.MigrateTo("20261030171704_AddDocumentAuditPurgeEvidence", ct);
+        await Scenario.SetRawVoidReason(administrative.Id, "administrative-void", ct);
+        await Scenario.SetRawVoidReason(withdrawn.Id, "approval-withdrawn", ct);
+
+        // Act
+        await Scenario.MigrateTo("20261030171856_UseBoundedDocumentVoidReason", ct);
+
+        // Assert
+        var administrativeAfterUp = await Scenario.GetRawVoidReason(administrative.Id, ct);
+        var withdrawnAfterUp = await Scenario.GetRawVoidReason(withdrawn.Id, ct);
+        administrativeAfterUp.ShouldBe("AdministrativeVoid");
+        withdrawnAfterUp.ShouldBe("ApprovalWithdrawn");
+
+        // Act
+        await Scenario.MigrateTo("20261030171704_AddDocumentAuditPurgeEvidence", ct);
+
+        // Assert
+        var administrativeAfterDown = await Scenario.GetRawVoidReason(administrative.Id, ct);
+        var withdrawnAfterDown = await Scenario.GetRawVoidReason(withdrawn.Id, ct);
+        administrativeAfterDown.ShouldBe("administrative-void");
+        withdrawnAfterDown.ShouldBe("approval-withdrawn");
+    }
+
+    [Fact]
+    public async Task Void_reason_migration_refuses_to_run_when_unknown_text_exists_and_leaves_it_untouched()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var document = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(document);
+        await Scenario.MigrateTo("20261030171704_AddDocumentAuditPurgeEvidence", ct);
+        await Scenario.SetRawVoidReason(document.Id, "Customer asked for a refund", ct);
+
+        // Act
+        Func<Task> migrate = () => Scenario.MigrateTo("20261030171856_UseBoundedDocumentVoidReason", ct);
+        await migrate.ShouldThrow<PostgresException>();
+
+        // Assert
+        var reason = await Scenario.GetRawVoidReason(document.Id, ct);
+        reason.ShouldBe("Customer asked for a refund");
     }
 
     [Fact]

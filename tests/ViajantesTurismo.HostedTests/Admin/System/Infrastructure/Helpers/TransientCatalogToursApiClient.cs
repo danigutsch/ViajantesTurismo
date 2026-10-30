@@ -3,7 +3,7 @@ using PandaBear.HttpClients;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
 /// <summary>Catalog tours client fake whose first tour list call fails and later calls return the tour; other operations report not found or succeed.</summary>
 /// <param name="tour">The tour returned once the initial failure has passed.</param>

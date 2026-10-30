@@ -1,4 +1,5 @@
 using ViajantesTurismo.Catalog.ApiService;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
@@ -9,7 +10,7 @@ public sealed class CatalogCacheLogPrivacyTests
     public void Pending_projection_log_omits_the_tour_identifier()
     {
         // Arrange
-        var logger = new CollectingLogger<CatalogCacheLogPrivacyTests>();
+        var logger = new RecordingLogger<CatalogCacheLogPrivacyTests>();
 
         // Act
         logger.TourProjectionPending(nameof(TimeoutException));
@@ -17,8 +18,8 @@ public sealed class CatalogCacheLogPrivacyTests
         // Assert
         var logText = string.Join(
             '|',
-            logger.Messages.Concat(logger.StructuredValues.Select(value => value.Value?.ToString() ?? string.Empty)));
-        logger.StructuredValues.ShouldNotContain(value =>
+            logger.Records.Select(record => record.Message).Concat(logger.Records.SelectMany(record => record.State).Select(value => value.Value?.ToString() ?? string.Empty)));
+        logger.Records.SelectMany(record => record.State).ShouldNotContain(value =>
             string.Equals(value.Key, "CatalogTourId", StringComparison.Ordinal));
         logText.ShouldContain(nameof(TimeoutException), StringComparison.Ordinal);
     }

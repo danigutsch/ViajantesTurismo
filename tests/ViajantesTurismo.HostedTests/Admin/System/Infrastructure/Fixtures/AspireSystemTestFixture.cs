@@ -1,11 +1,11 @@
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using Npgsql;
 using PandaBear.IntegrationTesting;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Fixtures;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 
 public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireSystemTestFixture, IAsyncLifetime
 {
@@ -219,7 +219,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         try
         {
             client.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+                new global::System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
             return client;
         }
         catch (FormatException)

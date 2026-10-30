@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
-namespace ViajantesTurismo.Management.WebBrowserTests;
+namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser keyboard journey for cancelling a held Catalog image upload.</summary>
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]

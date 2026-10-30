@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Branding.Contracts.Http;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
@@ -116,7 +117,7 @@ public sealed class BrandingApiEndpointTests
         {
             EvictionException = new IOException(sensitiveFailureMessage)
         };
-        var logger = new CollectingLogger<BrandingAspNetCoreMarker>();
+        var logger = new RecordingLogger<BrandingAspNetCoreMarker>();
         await using var factory = BrandingApiTestHost.Create(store, outputCacheStore, logger);
         using var client = factory.CreateClient();
 
@@ -127,12 +128,12 @@ public sealed class BrandingApiEndpointTests
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         store.Settings.ShouldNotBeNull();
         outputCacheStore.EvictionObserved.ShouldBeTrue();
-        logger.StructuredValues.ShouldContain(value =>
+        logger.Records.SelectMany(record => record.State).ShouldContain(value =>
             value.Key == "CacheArea" && Equals(value.Value, BrandingHttpCache.PublicBrandingArea));
-        logger.StructuredValues.ShouldContain(value =>
+        logger.Records.SelectMany(record => record.State).ShouldContain(value =>
             value.Key == "FailureType" && Equals(value.Value, nameof(IOException)));
-        logger.Messages.ShouldNotContain(message => message.Contains(sensitiveFailureMessage, StringComparison.Ordinal));
-        logger.Exceptions.ShouldBeEmpty();
+        logger.Records.Select(record => record.Message).ShouldNotContain(message => message.Contains(sensitiveFailureMessage, StringComparison.Ordinal));
+        logger.Records.Where(record => record.Exception is not null).ShouldBeEmpty();
     }
 
     [Fact]

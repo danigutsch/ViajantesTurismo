@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Infrastructure.Tests;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure;
 
 /// <summary>Async-disposable probe that records the order in which instances are disposed and can simulate a disposal failure.</summary>
 /// <param name="name">Name appended to the disposal order when this instance is first disposed.</param>

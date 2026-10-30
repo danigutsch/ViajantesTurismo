@@ -32,7 +32,7 @@ public sealed class ProtectedDistributedTicketStoreCookieHandlerTests
 
         // Assert
         await signOut.ShouldThrow<InvalidOperationException>();
-        testHost.Cache.RemoveCalls.ShouldBe(2);
+        testHost.Cache.CallCount(DistributedCacheOperation.Remove).ShouldBe(2);
     }
 
     [Fact]

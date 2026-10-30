@@ -12,7 +12,6 @@ namespace ViajantesTurismo.Admin.ApiService.Documents;
 /// <summary>Defines Admin-only endpoints for generated document lifecycle operations.</summary>
 internal static class DocumentEndpoints
 {
-    private const string AdministrativeVoidReasonCode = "administrative-void";
     private const string HtmlMediaType = "text/html; charset=utf-8";
 
     /// <summary>Maps generated-document endpoints to the Admin API.</summary>
@@ -322,7 +321,7 @@ internal static class DocumentEndpoints
         var auditContext = CreateAuditContext(httpContext);
         return await GetDocumentAfterCommand(
             await ExecuteDocumentCommand(
-                () => handler.Handle(new VoidDocumentCommand(id, AdministrativeVoidReasonCode, auditContext), ct),
+                () => handler.Handle(new VoidDocumentCommand(id, DocumentVoidReason.AdministrativeVoid, auditContext), ct),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Void, id, null),
                 scopeFactory,
                 ct),

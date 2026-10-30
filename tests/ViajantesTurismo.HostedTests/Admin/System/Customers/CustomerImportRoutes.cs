@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.SystemTests.Customers;
+namespace ViajantesTurismo.HostedTests.Admin.System.Customers;
 
 /// <summary>Relative web routes of the customer import feature used by system tests.</summary>
 internal static class CustomerImportRoutes

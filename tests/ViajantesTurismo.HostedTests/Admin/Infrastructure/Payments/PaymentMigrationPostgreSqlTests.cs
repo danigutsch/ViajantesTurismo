@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Payments;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
@@ -43,7 +43,7 @@ public sealed class PaymentMigrationPostgreSqlTests(PostgreSqlTestServerFixture 
         var now = scenario.Clock.GetUtcNow();
         var date = DateOnly.FromDateTime(now.UtcDateTime).AddDays(-1);
         var result = tour.RecordBookingReceipt(booking.Id, 0,
-            Domain.Payments.ReceiptSettlement.Create(Currency.Euro, 123.45m, 1m).Value,
+            ViajantesTurismo.Admin.Domain.Payments.ReceiptSettlement.Create(Currency.Euro, 123.45m, 1m).Value,
             date, now, PaymentMethod.Cash, "calendar-receipt", [], "operator", now, DateOnly.FromDateTime(now.UtcDateTime));
         result.IsSuccess.ShouldBeTrue();
         await session.Seed(tour, ct);
@@ -57,7 +57,7 @@ public sealed class PaymentMigrationPostgreSqlTests(PostgreSqlTestServerFixture 
         var receipt = history.Receipts.ShouldHaveSingleItem();
         receipt.Id.ShouldBe(result.Value);
         receipt.PaymentDate.ShouldBe(date);
-        receipt.Method.ShouldBe(Contracts.Application.PaymentMethodDto.Cash);
+        receipt.Method.ShouldBe(ViajantesTurismo.Admin.Contracts.Application.PaymentMethodDto.Cash);
         receipt.CreatedBy.ShouldBe("operator");
         receipt.ApprovedEuroCredit.ShouldBe(0m);
         receipt.PendingReconciliation.ShouldBeTrue();

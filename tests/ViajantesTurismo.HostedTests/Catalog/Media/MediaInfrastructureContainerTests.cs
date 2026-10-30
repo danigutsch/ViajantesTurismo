@@ -12,9 +12,9 @@ using PandaBear.Results;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
-using ViajantesTurismo.Catalog.IntegrationTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 
-namespace ViajantesTurismo.Catalog.IntegrationTests;
+namespace ViajantesTurismo.HostedTests.Catalog.Media;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 [Trait(TestTraitNames.AreaName, TestTraits.MediaInfrastructureArea)]

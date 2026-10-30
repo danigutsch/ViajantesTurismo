@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -41,6 +42,7 @@ internal sealed class DocumentAuditRetentionHostedServiceFixture : IAsyncDisposa
         var auditStore = new FakeDocumentAuditStore { PurgedCount = purgedCount };
         var services = new ServiceCollection();
         services.AddSingleton<IDocumentAuditStore>(auditStore);
+        services.AddSingleton<IUnitOfWork>(new FakeUnitOfWork());
         services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
         services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
         var provider = services.BuildServiceProvider();

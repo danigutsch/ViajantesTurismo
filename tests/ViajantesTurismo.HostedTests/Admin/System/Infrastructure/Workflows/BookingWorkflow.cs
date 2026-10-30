@@ -1,9 +1,9 @@
 using Microsoft.Playwright;
-using ViajantesTurismo.Admin.SystemTests.Infrastructure.Helpers;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Contracts.Application;
 using static Microsoft.Playwright.Assertions;
 
-namespace ViajantesTurismo.Admin.SystemTests.Infrastructure.Workflows;
+namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
 /// <summary>
 /// Encapsulates reusable booking-focused browser workflows for E2E tests.

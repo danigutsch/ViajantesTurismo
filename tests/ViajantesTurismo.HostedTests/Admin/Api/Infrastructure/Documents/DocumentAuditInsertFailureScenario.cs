@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Infrastructure.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 
 /// <summary>Installs a database trigger that rejects document audit inserts for one booking, and removes it on dispose.</summary>
 internal sealed class DocumentAuditInsertFailureScenario : IAsyncDisposable

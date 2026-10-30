@@ -1,14 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Admin.IntegrationTests.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using System.Text;
 using System.Text.Json;
 using PandaBear.Testing;
 
-namespace ViajantesTurismo.Admin.IntegrationTests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]

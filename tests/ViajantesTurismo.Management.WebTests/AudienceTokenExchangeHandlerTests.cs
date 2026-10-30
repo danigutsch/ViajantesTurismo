@@ -432,7 +432,7 @@ public sealed class AudienceTokenExchangeHandlerTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         await using var host = AudienceTokenExchangeTestHost.Create(cache);
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await host.StoreProtectedAudienceTokenEntry(
@@ -464,7 +464,7 @@ public sealed class AudienceTokenExchangeHandlerTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         await using var host = AudienceTokenExchangeTestHost.Create(cache);
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await host.Cache.SetAsync(

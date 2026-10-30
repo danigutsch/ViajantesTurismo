@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Documents;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 /// <summary>Builds document audit records for infrastructure tests.</summary>
 internal static class DocumentAuditInfrastructureTestData

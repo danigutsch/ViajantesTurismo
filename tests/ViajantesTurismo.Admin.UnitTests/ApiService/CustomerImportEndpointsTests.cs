@@ -15,6 +15,7 @@ using ViajantesTurismo.Admin.ApiService;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.ApiService.Customers;
 using ViajantesTurismo.Admin.Contracts.Application;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
@@ -257,11 +258,11 @@ public sealed class CustomerImportEndpointsTests
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Unavailable);
-        var entry = logger.Entries.ShouldHaveSingleItem();
+        var entry = logger.Records.ShouldHaveSingleItem();
         entry.Level.ShouldBe(LogLevel.Warning);
         entry.EventId.Id.ShouldBe(1);
         entry.EventId.Name.ShouldBe("CustomerImportScannerFailed");
-        entry.Values.ShouldContain(value => value.Key == "FailureType" && Equals(value.Value, nameof(IOException)));
+        entry.State.ShouldContain(value => value.Key == "FailureType" && Equals(value.Value, nameof(IOException)));
         entry.Message.ShouldNotContain(sensitiveText, StringComparison.Ordinal);
         entry.Message.ShouldNotContain("customers-private", StringComparison.Ordinal);
         entry.Exception.ShouldBeNull();

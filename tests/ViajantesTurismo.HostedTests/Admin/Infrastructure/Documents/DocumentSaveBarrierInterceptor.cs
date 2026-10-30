@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace ViajantesTurismo.Admin.Infrastructure.Tests.Documents;
+namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 /// <summary>Holds each save until two have arrived and <see cref="Release" /> is called, forcing concurrent saves.</summary>
 internal sealed class DocumentSaveBarrierInterceptor : SaveChangesInterceptor
