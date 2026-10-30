@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using PandaBear.Branding;
 using PandaBear.HttpClients;
 using PandaBear.Testing;
+using PandaBear.Testing.Http;
 using ViajantesTurismo.Branding.ContractTests.Infrastructure;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -20,17 +21,14 @@ public sealed class BrandingManagementClientHardeningTests
     {
         // Arrange
         var body = new string(' ', ResponseCeilingBytes + 1);
-        using var handler = new RecordingBrandingHandler(_ =>
+        var response = BrandingResponses.Json(HttpStatusCode.OK, body, "\"tag\"");
+        if (!knownLength)
         {
-            var response = RecordingBrandingHandler.Json(HttpStatusCode.OK, body, "\"tag\"");
-            if (!knownLength)
-            {
-                response.Content = new StreamContent(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body)));
-                response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            }
+            response.Content = new StreamContent(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body)));
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        }
 
-            return response;
-        });
+        using var handler = new TestHttpMessageHandler(response);
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 
@@ -47,14 +45,11 @@ public sealed class BrandingManagementClientHardeningTests
     public async Task Write_returns_a_validation_problem_with_its_field_errors()
     {
         // Arrange
-        using var handler = new RecordingBrandingHandler(_ =>
-        {
-            var response = RecordingBrandingHandler.Json(
-                HttpStatusCode.BadRequest,
-                """{"title":"One or more validation errors occurred.","status":400,"errors":{"PrimaryColor":["Use a safe color."]}}""");
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/problem+json");
-            return response;
-        });
+        var response = BrandingResponses.Json(
+            HttpStatusCode.BadRequest,
+            """{"title":"One or more validation errors occurred.","status":400,"errors":{"PrimaryColor":["Use a safe color."]}}""");
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/problem+json");
+        using var handler = new TestHttpMessageHandler(response);
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
         var client = new BrandingManagementClient(httpClient);
 
@@ -73,10 +68,11 @@ public sealed class BrandingManagementClientHardeningTests
     {
         // Arrange
         using var responseBody = new BlockingReadStream();
-        using var handler = new RecordingBrandingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        using var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StreamContent(responseBody) { Headers = { ContentType = new MediaTypeHeaderValue("application/json") } }
-        });
+        };
+        using var handler = new TestHttpMessageHandler(response);
         using var httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri("https://branding.test"),
@@ -99,10 +95,11 @@ public sealed class BrandingManagementClientHardeningTests
         // Arrange
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         using var responseBody = new BlockingReadStream(cts.Cancel);
-        using var handler = new RecordingBrandingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        using var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StreamContent(responseBody) { Headers = { ContentType = new MediaTypeHeaderValue("application/json") } }
-        });
+        };
+        using var handler = new TestHttpMessageHandler(response);
         using var httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri("https://branding.test"),

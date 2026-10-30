@@ -185,7 +185,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var activeUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", TimeProvider.System.GetUtcNow().AddMinutes(-1));
@@ -199,7 +199,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
 
         // Assert
         result.Succeeded.ShouldBeFalse();
-        cache.RemoveCalls.ShouldBe(1);
+        cache.CallCount(DistributedCacheOperation.Remove).ShouldBe(1);
     }
 
     [Fact]
@@ -209,7 +209,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var activeUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         var expiredUser = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a", TimeProvider.System.GetUtcNow().AddMinutes(-1));
@@ -222,7 +222,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         await context.Store.ClearTokenAsync(expiredUser, ct: Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        cache.RemoveCalls.ShouldBe(1);
+        cache.CallCount(DistributedCacheOperation.Remove).ShouldBe(1);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await context.Store.StoreTokenAsync(
@@ -250,7 +250,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
 
         // Assert
         result.Succeeded.ShouldBeFalse();
-        cache.RemoveCalls.ShouldBe(1);
+        cache.CallCount(DistributedCacheOperation.Remove).ShouldBe(1);
     }
 
     [Fact]
@@ -260,7 +260,7 @@ public sealed class ProtectedDistributedUserTokenStoreTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         var context = new ProtectedDistributedUserTokenStoreTestContext(cache);
         var user = ProtectedDistributedUserTokenStoreTestContext.CreateUser("session-a");
         await context.Store.StoreTokenAsync(

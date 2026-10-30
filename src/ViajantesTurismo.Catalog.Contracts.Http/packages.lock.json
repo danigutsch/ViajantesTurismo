@@ -10,9 +10,9 @@
       },
       "PandaBear.SharedKernel.HttpClients": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.372.1, )",
-        "resolved": "0.1.0-alpha.372.1",
-        "contentHash": "2SZ/1MUn4vqFr/WnqIx44j4wvHxTUWvqWk7B8ypp3RIO1UyZyJvok4EoIRP5e1aPEqTK3GMIahEW6bcQUc9W8w==",
+        "requested": "[0.1.0-alpha.389.1, )",
+        "resolved": "0.1.0-alpha.389.1",
+        "contentHash": "L41xZWcYNOozbT2GONBPZseHrkKM7mruGfvHoNSMFWAOH1MNMip5zdRZYxuqooAVYUeLXr8OcssYxx/gO+LhSA==",
         "dependencies": {
           "Microsoft.Extensions.Compliance.Abstractions": "10.11.0",
           "Microsoft.Extensions.DependencyInjection": "10.0.13",
@@ -28,20 +28,20 @@
           "OpenTelemetry": "1.20.0",
           "OpenTelemetry.Extensions.Hosting": "1.20.0",
           "OpenTelemetry.Instrumentation.Http": "1.20.0",
-          "PandaBear.SharedKernel.Idempotency.Abstractions": "0.1.0-alpha.372.1"
+          "PandaBear.SharedKernel.Idempotency.Abstractions": "0.1.0-alpha.389.1"
         }
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.372.1, )",
-        "resolved": "0.1.0-alpha.372.1",
-        "contentHash": "ulPwkQsTh9WbIGwWOVL0ti598mYYZTs1gmWfmXjisPaho2oG3z28ANWHwxektyo3Ye0Mbha4J92x6cuCmAsZDA=="
+        "requested": "[0.1.0-alpha.389.1, )",
+        "resolved": "0.1.0-alpha.389.1",
+        "contentHash": "9cGkmHb/qRoah8ob4NWCDD59ANltPy3c8illbHoRIYS9KRHP8O1ONuRPx+tM3g4B59wbXrUe0VS5fHdsygEHQA=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.372.1, )",
-        "resolved": "0.1.0-alpha.372.1",
-        "contentHash": "800yUhVrf/ukFZ+CuepFcMBs+OOtKK7wn519CKCbkE+F0CT9IGZcJbXbCruqoMgoDCbNQneqaA68JzRdOlv/ow=="
+        "requested": "[0.1.0-alpha.389.1, )",
+        "resolved": "0.1.0-alpha.389.1",
+        "contentHash": "zvjPBvAxECpTAJXbuTcxwrah35OJzqhI52OA3m9JC+RFE4qRGlq0lRqcMfDnSdIhmGwOow30i+IjhdHc4sGdRw=="
       },
       "Microsoft.Extensions.AmbientMetadata.Application": {
         "type": "Transitive",
@@ -418,9 +418,9 @@
       },
       "PandaBear.SharedKernel.Idempotency.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.372.1, )",
-        "resolved": "0.1.0-alpha.372.1",
-        "contentHash": "rYE3AlybJZOyplTLMF6AnEB4QygPGBiWWi1VdpHJUUjCunIwSrFInE7KPJcSfo+waw25AaImJ3KWkxymSuT7vQ=="
+        "requested": "[0.1.0-alpha.389.1, )",
+        "resolved": "0.1.0-alpha.389.1",
+        "contentHash": "IJZOmj5A/uByHZsguBieeNiLa5KBid3/+ERlE2nYOFT7VUxMH4rKh7/KB+NVHH8CKnWlQ34ZjxaOEA+UjKGtpA=="
       }
     }
   }

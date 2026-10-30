@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.UnitTests.Infrastructure;
 using ViajantesTurismo.MigrationService;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
@@ -233,14 +234,14 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     {
         // Arrange
         using var harness = DatabaseInitializationWorkerHarness.CreateWithDefaultInitialization(Environments.Development);
-        using var loggerProvider = new CapturingLoggerProvider();
+        using var loggerProvider = new RecordingLoggerProvider();
         using var loggerFactory = LoggerFactory.Create(builder => builder.AddProvider(loggerProvider));
 
         // Act
         _ = harness.CreateDefaultWorker(loggerFactory);
 
         // Assert
-        loggerProvider.CategoryName.ShouldBe(typeof(DatabaseInitializationWorker).FullName);
+        loggerProvider.CategoryNames.ShouldHaveSingleItem().ShouldBe(typeof(DatabaseInitializationWorker).FullName);
     }
 
 }

@@ -15,7 +15,7 @@ public sealed class BrandingServerValidationTests : ManagementWebBrowserTestBase
     public BrandingServerValidationTests()
     {
         Registrations.AddSingleton<IBrandingManagementClient>(_ => new BrandingManagementClient(
-            new HttpClient(new BrandingSettingsStubHandler("BrandName", HostileMessage)) { BaseAddress = new Uri("http://branding.invalid") }));
+            new HttpClient(BrandingSettingsStub.Create("BrandName", HostileMessage)) { BaseAddress = new Uri("http://branding.invalid") }));
     }
 
     [Fact]

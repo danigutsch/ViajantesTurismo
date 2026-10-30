@@ -33,7 +33,7 @@ public sealed class ImportCustomersFileReadTests : BunitContext
             return Task.FromResult(new ImportResultDto(1, 0));
         });
         var cut = Render<ImportCustomers>();
-        var file = new CsvBrowserFile(Encoding.UTF8.GetBytes(csv));
+        var file = TestBrowserFiles.Csv(Encoding.UTF8.GetBytes(csv));
 
         // Act
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
@@ -64,7 +64,7 @@ public sealed class ImportCustomersFileReadTests : BunitContext
             return Task.FromResult(new ImportResultDto(1, 0));
         });
         var cut = Render<ImportCustomers>();
-        var file = new CsvBrowserFile(content);
+        var file = TestBrowserFiles.Csv(content);
 
         // Act
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
@@ -85,7 +85,7 @@ public sealed class ImportCustomersFileReadTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = new CsvBrowserFile([]);
+        var file = TestBrowserFiles.Csv([]);
 
         // Act
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
@@ -101,7 +101,7 @@ public sealed class ImportCustomersFileReadTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = new CsvBrowserFile([0x01], AdminContractConstants.CustomerImportMaxFileBytes + 1);
+        var file = TestBrowserFiles.Csv([0x01], AdminContractConstants.CustomerImportMaxFileBytes + 1);
 
         // Act
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
@@ -116,7 +116,7 @@ public sealed class ImportCustomersFileReadTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = new CsvBrowserFile(Encoding.UTF8.GetBytes("Email\n"), declaredSize: 100);
+        var file = TestBrowserFiles.Csv(Encoding.UTF8.GetBytes("Email\n"), declaredSize: 100);
 
         // Act
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
@@ -132,7 +132,7 @@ public sealed class ImportCustomersFileReadTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = new CsvBrowserFile(Encoding.UTF8.GetBytes("Email\nextra@example.com\n"), declaredSize: 6);
+        var file = TestBrowserFiles.Csv(Encoding.UTF8.GetBytes("Email\nextra@example.com\n"), declaredSize: 6);
 
         // Act
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));

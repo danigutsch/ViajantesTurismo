@@ -41,7 +41,6 @@ See [Test guidelines](../TEST_GUIDELINES.md) for how tests use these helpers.
 | `PostgreSqlTestServerFixture` and `PostgreSqlTestServerFixtureTestQueries` | `HostedTests/Infrastructure` | 28 | Project-level reusable. Depends on `HostedTestFixture`, so it stays in this repository |
 | `HostedTestCleanup`, `AdvisoryLockWaitScope` | `HostedTests/Infrastructure` | 8, 3 | Local-only to `HostedTests` |
 | `Catalog.Testing` stores, locks and `CatalogApiTestHost` | `tests/ViajantesTurismo.Catalog.Testing/Infrastructure` | shared by Catalog unit, API and behavior suites | Project-level reusable. Catalog ports only |
-| `CollectingLogger` | `Catalog.Testing/Infrastructure` | 11 | Project-level reusable. A shared recording-logger replacement is planned |
 | `DisposalTrackingStream` | `Catalog.Testing/Infrastructure` | 2 | Local-only until stream doubles are reviewed |
 | `ReadObservingStream`, `GatedChunkContent`, `SlowUpload`, `RawHttpUpload` and related wire probes | `tests/ViajantesTurismo.UploadWire.Testing` | shared by upload wire tests | Project-level reusable. Upload wire behavior only |
 
@@ -60,12 +59,14 @@ See [Test guidelines](../TEST_GUIDELINES.md) for how tests use these helpers.
 - **Blocking read streams.** The Admin document and branding contract test copies of a blocking read stream are
   replaced by the SharedKernel `BlockingReadStream`. Stream doubles with chunking, cancellation tracking or
   throwing behavior stay local.
-- **Logger captures and remaining generic doubles.** Not consolidated yet. The pinned SharedKernel build does not
-  ship a recording logger, and its shared browser file, form file and distributed cache fakes do not cover the
-  local variants' recorded state or selective failures.
-- **Local HTTP handler stubs.** Not consolidated yet. The pinned SharedKernel build does not ship a shared
-  test HTTP message handler, so the Management web, branding contract and hosted-test handlers stay local
-  until a published build includes it.
+- **Logger captures.** The six local logger captures are replaced by the SharedKernel `RecordingLogger` and
+  `RecordingLoggerProvider`.
+- **Browser files and distributed caches.** The local browser file and throwing distributed cache doubles are
+  replaced by the SharedKernel `FakeBrowserFile` and `ThrowingDistributedCache`. Stream form files and
+  blocking-first distributed caches stay local because the shared types do not cover them.
+- **HTTP handler stubs.** The branding handlers use the SharedKernel `TestHttpMessageHandler` and
+  `DelegateHttpMessageHandler`. The audience token handlers and the payment page handler stay local because they
+  need unbounded, request-dependent or delegating behavior that a queued response cannot express.
 
 ## Rejected consolidations
 

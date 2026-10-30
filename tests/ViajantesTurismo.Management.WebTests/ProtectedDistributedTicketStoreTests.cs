@@ -1,5 +1,6 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
+using PandaBear.Testing.Logging;
 namespace ViajantesTurismo.Management.WebTests;
 
 /// <summary>
@@ -39,7 +40,7 @@ public sealed class ProtectedDistributedTicketStoreTests
         // Arrange
         var inner = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingSetDistributedCache(inner, static (_, _) => false);
+        var cache = DistributedCacheFailures.Set(inner, static (_, _) => false);
         var context = new ProtectedDistributedTicketStoreTestContext(cache);
         var ticket = ProtectedDistributedTicketStoreTestContext.CreateTicket();
         ticket.Properties.ExpiresUtc = null;
@@ -48,7 +49,7 @@ public sealed class ProtectedDistributedTicketStoreTests
         var retrieved = await context.Store.RetrieveAsync(key);
         // Assert
         retrieved.ShouldNotBeNull();
-        var options = cache.LastOptions.ShouldNotBeNull();
+        var options = cache.LastSetOptions.ShouldNotBeNull();
         options.AbsoluteExpiration.ShouldBeNull();
         options.AbsoluteExpirationRelativeToNow.ShouldBe(Web.ManagementAuthenticationDefaults.SessionLifetime);
     }
@@ -130,9 +131,9 @@ public sealed class ProtectedDistributedTicketStoreTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(
+        var cache = DistributedCacheFailures.Remove(
             innerCache,
-            shouldThrowOnRemove: static (_, removeCall) => removeCall == 1);
+            when: static (_, removeCall) => removeCall == 1);
         var context = new ProtectedDistributedTicketStoreTestContext(cache);
         var key = await context.Store.StoreAsync(ProtectedDistributedTicketStoreTestContext.CreateTicket());
 
@@ -142,7 +143,7 @@ public sealed class ProtectedDistributedTicketStoreTests
 
         // Assert
         retrieved.ShouldBeNull();
-        cache.RemoveCalls.ShouldBe(2);
+        cache.CallCount(DistributedCacheOperation.Remove).ShouldBe(2);
     }
 
     [Fact]
@@ -152,7 +153,7 @@ public sealed class ProtectedDistributedTicketStoreTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         var context = new ProtectedDistributedTicketStoreTestContext(cache);
         var expiredTicket = ProtectedDistributedTicketStoreTestContext.CreateTicket(TimeProvider.System.GetUtcNow().AddMinutes(-1));
 
@@ -160,7 +161,7 @@ public sealed class ProtectedDistributedTicketStoreTests
         await context.Store.RenewAsync("management-ticket:expired", expiredTicket);
 
         // Assert
-        cache.RemoveCalls.ShouldBe(1);
+        cache.CallCount(DistributedCacheOperation.Remove).ShouldBe(1);
     }
 
     [Fact]
@@ -171,10 +172,10 @@ public sealed class ProtectedDistributedTicketStoreTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(
+        var cache = DistributedCacheFailures.Remove(
             innerCache,
             new InvalidOperationException($"The cache could not remove {key}."));
-        var logger = new CapturingLogger<Web.ProtectedDistributedTicketStore>();
+        var logger = new RecordingLogger<Web.ProtectedDistributedTicketStore>();
         var context = new ProtectedDistributedTicketStoreTestContext(cache, logger);
 
         // Act
@@ -182,7 +183,8 @@ public sealed class ProtectedDistributedTicketStoreTests
 
         // Assert
         var exception = await remove.ShouldThrow<InvalidOperationException>();
-        var logEntry = logger.Entries.ShouldHaveSingleItem();
+        var record = logger.Records.ShouldHaveSingleItem();
+        var logEntry = string.Concat(record.Message, record.Exception);
 
         logEntry.ShouldContain("Management ticket cache removal failed after 2 attempts.", StringComparison.Ordinal);
         logEntry.ShouldNotContain(key, StringComparison.Ordinal);
@@ -221,7 +223,7 @@ public sealed class ProtectedDistributedTicketStoreTests
         var innerCache = new Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache(
             Microsoft.Extensions.Options.Options.Create(
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
-        var cache = new ThrowingRemoveDistributedCache(innerCache);
+        var cache = DistributedCacheFailures.Remove(innerCache);
         var context = new ProtectedDistributedTicketStoreTestContext(cache);
         var key = await context.Store.StoreAsync(ProtectedDistributedTicketStoreTestContext.CreateTicket());
         await context.Cache.SetAsync(
@@ -235,7 +237,7 @@ public sealed class ProtectedDistributedTicketStoreTests
 
         // Assert
         ticket.ShouldBeNull();
-        cache.RemoveCalls.ShouldBe(1);
+        cache.CallCount(DistributedCacheOperation.Remove).ShouldBe(1);
     }
 
     [Fact]
@@ -248,7 +250,7 @@ public sealed class ProtectedDistributedTicketStoreTests
                 new Microsoft.Extensions.Caching.Memory.MemoryDistributedCacheOptions()));
         using var cancellationSource = new CancellationTokenSource();
         await cancellationSource.CancelAsync();
-        var cache = new ThrowingRemoveDistributedCache(
+        var cache = DistributedCacheFailures.Remove(
             innerCache,
             new OperationCanceledException($"The cache could not remove {key}.", cancellationSource.Token));
         var context = new ProtectedDistributedTicketStoreTestContext(cache);
