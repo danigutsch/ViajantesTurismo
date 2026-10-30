@@ -42,6 +42,13 @@ re-identification is possible. Callers must not place personal data or secrets i
 The current artifact is an in-database HTML byte payload. A future PDF renderer or object store needs
 a new policy version before it holds finalized artifacts.
 
+Branding is captured onto each revision (name, colors, fonts, version and source revision) and the
+finalized HTML is stored as bytes, so later branding changes and regeneration never alter a finalized
+artifact. Absolute logo addresses are not rendered, so opening an artifact loads nothing from a third
+party. Known limit: a root-relative logo path is rendered as an image reference, so the image a
+viewer sees is whatever the Admin host serves at that path later. Making it immutable needs the logo
+bytes embedded or stored at finalization, which needs a logo asset source that does not exist yet.
+
 ## Legal hold
 
 Finalized artifacts are kept indefinitely, so a hold has nothing to restrain today. Legal hold
