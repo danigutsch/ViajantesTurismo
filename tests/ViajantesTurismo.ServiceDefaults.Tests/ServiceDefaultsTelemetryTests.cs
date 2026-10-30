@@ -157,7 +157,7 @@ public sealed class ServiceDefaultsTelemetryTests
     }
 
     [Fact]
-    public void Add_service_defaults_does_not_register_unused_mediator_telemetry()
+    public void Add_service_defaults_exports_mediator_custom_tracing_and_metrics()
     {
         // Arrange
         var exportedActivities = new ConcurrentQueue<Activity>();
@@ -200,9 +200,10 @@ public sealed class ServiceDefaultsTelemetryTests
         meterProvider.ForceFlush();
 
         // Assert
-        exportedActivities.ShouldNotContain(activity =>
+        var mediatorActivity = exportedActivities.ShouldHaveSingleItem(activity =>
             string.Equals(activity.Source.Name, SharedKernelMediatorActivitySource.ActivitySourceName, StringComparison.Ordinal));
-        exportedMetricNames.ShouldNotContain("mediator.requests", StringComparer.Ordinal);
+        mediatorActivity.OperationName.ShouldBe("test.dispatch");
+        exportedMetricNames.ShouldContain("mediator.requests", StringComparer.Ordinal);
     }
 
     [Fact]

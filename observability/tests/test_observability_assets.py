@@ -29,6 +29,7 @@ EXPECTED_DASHBOARDS = {
 }
 
 REGISTERED_METERS = {
+    "SharedKernel.Mediator",
     "ViajantesTurismo.Catalog",
     "ViajantesTurismo.Branding",
     "PandaBear.AspNetCore",

@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+        <PackageReference Include="PandaBear.SharedKernel.Mediator.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.Observability" />
         <PackageReference Include="PandaBear.SharedKernel.OpenApi" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />

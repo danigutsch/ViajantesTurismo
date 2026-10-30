@@ -77,6 +77,12 @@
           "OpenTelemetry.Api": "[1.20.0, 2.0.0)"
         }
       },
+      "PandaBear.SharedKernel.Mediator.Abstractions": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.389.1, )",
+        "resolved": "0.1.0-alpha.389.1",
+        "contentHash": "ykSMCIgtLEKlMu17Du2lueqLY+M0Sobyzt+ibLnfT/FNUVBhqk2OnBGK/BCWrpS9QJoByMgR8Cg297FpDsvAAA=="
+      },
       "PandaBear.SharedKernel.Observability": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.389.1, )",

@@ -18,6 +18,7 @@ use is a removal candidate. Verdicts:
 
 | Meter | Registration | Dashboard |
 | --- | --- | --- |
+| `SharedKernel.Mediator` | `AddSharedKernelMediatorMetrics` | none yet, added with the first production dispatch |
 | `ViajantesTurismo.Catalog` | `AddCatalogMetrics` | `catalog-pipeline`, `media-accessibility` |
 | `ViajantesTurismo.Branding` | `AddBrandingMetrics` | `branding-cache` |
 | `PandaBear.AspNetCore` | `AddSharedKernelAspNetCoreMetrics` | `http-platform` |
@@ -66,11 +67,12 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | `postgresql.index_health.assessments` | `SharedKernel.Observability.Npgsql` | `{assessment}` | action, reason | Is any index worth human review? | `postgresql-observability` | keep |
 | `AdminContractsClientTelemetry` outcomes | Admin contracts client | n/a | outcome | Which inter-service client calls fail? | none yet | gap |
 
-## Removed
+## Pending dispatch
 
-| Signal | Reason | Verdict |
-| --- | --- | --- |
-| `SharedKernel.Mediator` meter and source (`mediator.*` metrics and spans) | No production code dispatches through SharedKernel.Mediator, so the signals never carry data. Verified against the running local stack: no `mediator_*` series and no `mediator.*` spans. Registration removed from `ServiceDefaults`. The intended direction is to route Admin commands and queries through SharedKernel.Mediator, first for one vertical as a spike and then for all handlers. Re-add `AddSharedKernelMediatorMetrics` and `AddSharedKernelMediatorTracing` together with a `mediator` dashboard in the same change that introduces the first production dispatch. | remove |
+`SharedKernel.Mediator` (meter and `ActivitySource`, `mediator.*` metrics and spans) stays registered in
+`ServiceDefaults`. No production code dispatches through it yet, so the live stack shows no `mediator_*`
+series and no `mediator.*` spans. Admin commands and queries are being moved onto the mediator; the
+`mediator` dashboard and the per-metric rows land with the first production dispatch. Verdict: `gap`.
 
 ## Spans
 

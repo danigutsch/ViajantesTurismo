@@ -2,9 +2,7 @@
 
 The signal inventory, per-signal use, and keep-or-remove verdicts live in
 [OBSERVABILITY_CATALOG.md](OBSERVABILITY_CATALOG.md). This document keeps the registration, privacy,
-and span and log contract rules. The application does not yet dispatch through `SharedKernel.Mediator`,
-so its meter and source are not registered. Admin commands and queries are planned to move onto the
-mediator; the registration returns with that change (see the Removed section of the catalog).
+and span and log contract rules.
 
 This document lists repository-defined custom telemetry (logs, ActivitySource, and Meter), where
 each surface is registered, and how to verify the emitted signals locally.
@@ -13,6 +11,8 @@ each surface is registered, and how to verify the emitted signals locally.
 
 | Surface type | Name | Defined in | Notes |
 | --- | --- | --- | --- |
+| ActivitySource | `SharedKernel.Mediator` | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Used by generated and runtime mediator spans. |
+| Meter | `SharedKernel.Mediator` | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Emits mediator request/notification/stream metrics. |
 | ActivitySource | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, stream update, and projection spans. |
 | Meter | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, idempotency, stream update, and projection metrics. |
 | Meter | `ViajantesTurismo.Branding` | `src/ViajantesTurismo.Branding.AspNetCore/BrandingTelemetry.cs` | Emits `branding.cache.requests` and `branding.cache.invalidations` tagged with `outcome` only, plus the `branding.settings.source_revision` gauge. No Branding values are recorded. |
@@ -144,6 +144,7 @@ debug, or other providers unless those providers enforce the same privacy bounda
 
 - Metrics registration:
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
+    - `AddSharedKernelMediatorMetrics()` -> `metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name)`
     - `AddCatalogMetrics()` -> `metrics.AddMeter(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
     - `AddBrandingMetrics()` -> `metrics.AddMeter("ViajantesTurismo.Branding")`
     - `AddSharedKernelAspNetCoreMetrics()` -> `metrics.AddMeter("PandaBear.AspNetCore")`
@@ -151,6 +152,7 @@ debug, or other providers unless those providers enforce the same privacy bounda
     - `AddSharedKernelProviderMetrics()` -> `metrics.AddMeter("SharedKernel.EventSourcing.Npgsql")`
 - Tracing registration:
     - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
+    - `AddSharedKernelMediatorTracing()` -> `tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name)`
     - `AddCatalogTracing()` -> `tracing.AddSource(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
     - `AddSharedKernelProviderTracing()` -> `tracing.AddSource("SharedKernel.EventSourcing.Npgsql")`
 - Applied in pipeline:

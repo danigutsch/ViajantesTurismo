@@ -22,6 +22,7 @@ public sealed class PostgreSqlObservabilityDashboardTests
         var expressions = document.RootElement
             .GetProperty("panels")
             .EnumerateArray()
+            .Where(panel => panel.TryGetProperty("targets", out _))
             .SelectMany(panel => panel.GetProperty("targets").EnumerateArray())
             .Select(target => target.GetProperty("expr").GetString() ?? string.Empty)
             .ToArray();
