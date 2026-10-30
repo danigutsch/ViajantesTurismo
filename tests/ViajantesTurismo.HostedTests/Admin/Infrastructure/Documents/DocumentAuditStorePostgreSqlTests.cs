@@ -197,6 +197,29 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     }
 
     [Fact]
+    public async Task PurgeExpiredRecords_keeps_records_the_database_clock_has_not_yet_expired_when_the_application_clock_is_ahead()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var databaseNow = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var expiresInThirtyMinutes = DocumentAuditInfrastructureTestData.CreateRecord(
+            databaseNow.AddMonths(-DocumentAuditLimits.RetentionMonths).AddMinutes(30));
+        var expired = DocumentAuditInfrastructureTestData.CreateRecord(databaseNow.AddMonths(-25));
+        await Scenario.SeedAudit(expiresInThirtyMinutes);
+        await Scenario.SeedAudit(expired);
+
+        // Act
+        var removedCount = await Scenario.PurgeExpiredAuditRecords(databaseNow.AddHours(1), ct);
+        var early = await Scenario.GetAuditRecord(expiresInThirtyMinutes.Id, ct);
+        var old = await Scenario.GetAuditRecord(expired.Id, ct);
+
+        // Assert
+        removedCount.ShouldBe(1);
+        early.ShouldNotBeNull();
+        old.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task PurgeExpiredRecords_deletes_the_boundary_in_bounded_batches_and_then_becomes_a_no_op()
     {
         // Arrange
