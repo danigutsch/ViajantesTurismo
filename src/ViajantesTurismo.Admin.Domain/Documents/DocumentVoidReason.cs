@@ -7,8 +7,5 @@ public enum DocumentVoidReason
     AdministrativeVoid = 0,
 
     /// <summary>Approval was withdrawn after the revision was finalized.</summary>
-    ApprovalWithdrawn = 1,
-
-    /// <summary>The revision was voided before bounded reasons existed; this value cannot be assigned to new voids.</summary>
-    Legacy = 2
+    ApprovalWithdrawn = 1
 }

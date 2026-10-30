@@ -592,16 +592,21 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return count == 1;
     }
 
-    /// <summary>Migrates the database and inserts one raw idempotency entry.</summary>
+    /// <summary>Migrates the database to the latest unless told otherwise and inserts one raw idempotency entry.</summary>
     public async Task SeedIdempotencyEntry(
         string scope,
         string key,
         DateTimeOffset startedAt,
         DateTimeOffset? completedAt,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool migrate = true)
     {
         await using var dbContext = CreateDbContext();
-        await dbContext.Database.MigrateAsync(ct);
+        if (migrate)
+        {
+            await dbContext.Database.MigrateAsync(ct);
+        }
+
         var state = completedAt is null ? "Started" : "Completed";
         _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"""

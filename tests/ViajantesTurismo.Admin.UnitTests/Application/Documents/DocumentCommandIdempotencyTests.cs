@@ -2,7 +2,6 @@ using PandaBear.Idempotency;
 using PandaBear.Results;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
-using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -166,17 +165,17 @@ public sealed class DocumentCommandIdempotencyTests
         digest.ShouldBe(repeatedDigest);
         digest.ShouldNotBe(otherDigest);
         digest.Value.Length.ShouldBe(64);
-        digest.Value.ShouldNotContain("jane", StringComparison.OrdinalIgnoreCase);
+        digest.Value.ShouldNotBe(callerKey.Value);
     }
 
     [Fact]
-    public void Replay_window_equals_the_unfinalized_draft_retention_period()
+    public void Replay_window_is_thirty_days()
     {
         // Act
         var window = DocumentCommandIdempotency.ReplayWindow;
 
         // Assert
-        window.ShouldBe(TimeSpan.FromDays(DocumentLimits.DraftRetentionDays));
+        window.ShouldBe(TimeSpan.FromDays(30));
     }
 
     [Fact]

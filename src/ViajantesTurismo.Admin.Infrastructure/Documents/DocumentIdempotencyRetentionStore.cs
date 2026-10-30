@@ -13,7 +13,6 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
     private const string IdempotencyEntityTypeName = "IdempotencyEntryEntity";
     private const int PurgeBatchSize = 500;
 
-    // Identifiers come from the EF model, never from input; values are bound as parameters.
     private static readonly CompositeFormat DeleteExpiredSql = CompositeFormat.Parse(
         """
         DELETE FROM {0}
@@ -25,8 +24,9 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
         """);
 
     /// <summary>
-    /// Deletes up to one batch of document-scoped entries completed, or never completed and started, at or before
-    /// <paramref name="cutoff" />. Once legal hold exists, held documents' entries must be excluded here.
+    /// Deletes, in batches, every document-scoped entry completed, or never completed and started, at or before
+    /// <paramref name="cutoff" />. Table and column names come from the EF model, never from input, and values are
+    /// bound as parameters. Once legal hold exists, held documents' entries must be excluded here.
     /// </summary>
     public async Task<int> PurgeExpiredEntries(DateTimeOffset cutoff, CancellationToken ct)
     {
@@ -48,13 +48,22 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
             completedAt,
             PurgeBatchSize);
 
-        return await dbContext.Database.ExecuteSqlRawAsync(
-            sql,
-            [
-                new NpgsqlParameter("prefix", DocumentCommandIdempotency.ScopePrefix),
-                new NpgsqlParameter("cutoff", cutoff),
-            ],
-            ct);
+        var total = 0;
+        int batchCount;
+        do
+        {
+            batchCount = await dbContext.Database.ExecuteSqlRawAsync(
+                sql,
+                [
+                    new NpgsqlParameter("prefix", DocumentCommandIdempotency.ScopePrefix),
+                    new NpgsqlParameter("cutoff", cutoff),
+                ],
+                ct);
+            total += batchCount;
+        }
+        while (batchCount == PurgeBatchSize);
+
+        return total;
     }
 
     private static string Column(IEntityType entityType, StoreObjectIdentifier table, string propertyName) =>

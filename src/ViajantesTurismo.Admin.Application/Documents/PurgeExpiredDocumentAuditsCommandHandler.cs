@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
@@ -20,7 +21,7 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
         {
             purgedCount = await auditStore.PurgeExpiredRecords(cutoff, ct);
         }
-        catch (Exception purgeFailure)
+        catch (Exception purgeFailure) when (purgeFailure.ShouldHandleAsFailure(ct))
         {
             try
             {

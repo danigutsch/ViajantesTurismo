@@ -653,7 +653,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         return Result.Ok();
     }
 
-    /// <summary>Voids a document with an assignable reason code.</summary>
+    /// <summary>Voids a document with a known reason code.</summary>
     internal Result Void(DocumentVoidReason reason, DateTime now)
     {
         if (Status != DocumentStatus.Finalized)
@@ -661,7 +661,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Voided);
         }
 
-        if (!Enum.IsDefined(reason) || reason == DocumentVoidReason.Legacy)
+        if (!Enum.IsDefined(reason))
         {
             return DocumentErrors.VoidReasonInvalid();
         }

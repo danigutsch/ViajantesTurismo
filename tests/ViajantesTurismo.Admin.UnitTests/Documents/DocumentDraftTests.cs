@@ -251,7 +251,7 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
-    public void Void_rejects_undefined_and_legacy_reasons()
+    public void Void_rejects_undefined_reasons()
     {
         // Arrange
         var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
@@ -266,7 +266,7 @@ public sealed class DocumentDraftTests
 
         // Act
         var undefinedReasonResult = undefinedReasonDraft.Void((DocumentVoidReason)99, now.AddMinutes(1));
-        var legacyReasonResult = legacyReasonDraft.Void(DocumentVoidReason.Legacy, now.AddMinutes(1));
+        var legacyReasonResult = legacyReasonDraft.Void((DocumentVoidReason)100, now.AddMinutes(1));
 
         // Assert
         undefinedBeginReview.IsSuccess.ShouldBeTrue();
