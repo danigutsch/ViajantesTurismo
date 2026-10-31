@@ -17,6 +17,8 @@ internal sealed class DocumentAuditConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(record => record.BookingId);
         entity.Property(record => record.DocumentRevision);
         entity.Property(record => record.Operation).HasConversion<string>().IsRequired();
+        entity.Property<Guid?>(DocumentAuditLineage.PropertyName);
+        entity.HasIndex(DocumentAuditLineage.PropertyName);
         entity.Property(record => record.Outcome).HasConversion<string>().IsRequired();
         entity.Property(record => record.ReasonCode).HasConversion<string>().IsRequired();
         entity.Property(record => record.CorrelationId).HasMaxLength(DocumentAuditLimits.MaxCorrelationIdLength).IsRequired();

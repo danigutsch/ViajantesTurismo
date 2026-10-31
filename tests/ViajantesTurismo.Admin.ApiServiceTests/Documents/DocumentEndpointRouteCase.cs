@@ -1,3 +1,5 @@
+using ViajantesTurismo.Admin.ApiService;
+
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 
 /// <summary>Lists every document endpoint route used by document boundary tests.</summary>
@@ -5,6 +7,14 @@ internal static class DocumentEndpointRouteCase
 {
     private const string DocumentId = "00000000-0000-0000-0000-000000000001";
     private const string BookingId = "00000000-0000-0000-0000-000000000002";
+
+    /// <summary>Gets the authorization policy a route pattern must require.</summary>
+    public static string ExpectedPolicy(string? pattern) => pattern switch
+    {
+        not null when pattern.Contains("payment-instructions", StringComparison.Ordinal) => AdminAuthorization.PaymentManage,
+        not null when pattern.Contains("/holds", StringComparison.Ordinal) => AdminAuthorization.DocumentHold,
+        _ => AdminAuthorization.DocumentManage,
+    };
 
     /// <summary>Gets the HTTP method, route pattern and concrete request path of each document endpoint.</summary>
     public static IReadOnlyList<(string Method, string Pattern, string RequestPath)> All
@@ -23,6 +33,9 @@ internal static class DocumentEndpointRouteCase
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/void", $"/api/v1/documents/{DocumentId}/void"),
         (HttpMethod.Get.Method, "api/v1/documents/{id:guid}/download", $"/api/v1/documents/{DocumentId}/download"),
         (HttpMethod.Get.Method, "api/v1/documents/bookings/{bookingId:guid}/payment-instructions", $"/api/v1/documents/bookings/{BookingId}/payment-instructions"),
+        (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/holds", $"/api/v1/documents/{DocumentId}/holds"),
+        (HttpMethod.Get.Method, "api/v1/documents/{id:guid}/holds", $"/api/v1/documents/{DocumentId}/holds"),
+        (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/holds/{holdId:guid}/release", $"/api/v1/documents/{DocumentId}/holds/{BookingId}/release"),
         (HttpMethod.Post.Method, "api/v1/documents/bookings/{bookingId:guid}/payment-instructions", $"/api/v1/documents/bookings/{BookingId}/payment-instructions"),
         (HttpMethod.Post.Method, "api/v1/documents/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate", $"/api/v1/documents/bookings/{BookingId}/payment-instructions/{DocumentId}/regenerate"),
         (HttpMethod.Get.Method, "api/v1/documents/{id:guid}/payment-instructions", $"/api/v1/documents/{DocumentId}/payment-instructions"),

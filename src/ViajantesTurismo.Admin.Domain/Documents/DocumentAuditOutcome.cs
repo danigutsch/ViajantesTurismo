@@ -7,5 +7,8 @@ public enum DocumentAuditOutcome
     Succeeded = 0,
 
     /// <summary>The operation was rejected without completing.</summary>
-    Rejected = 1
+    Rejected = 1,
+
+    /// <summary>The operation was refused because a required safety check could not be decided, so nothing was changed.</summary>
+    Refused = 2
 }

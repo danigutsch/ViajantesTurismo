@@ -24,6 +24,7 @@
         <ProjectReference Include="..\ViajantesTurismo.Admin.Domain\ViajantesTurismo.Admin.Domain.csproj" />
         <PackageReference Include="PandaBear.SharedKernel.AuditTrail" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.DispositionHold.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.Domain.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.EntityFrameworkCore" />

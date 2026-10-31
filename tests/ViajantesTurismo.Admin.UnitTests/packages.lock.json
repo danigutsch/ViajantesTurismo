@@ -877,6 +877,7 @@
           "Microsoft.Extensions.Hosting.Abstractions": "[10.0.13, )",
           "PandaBear.SharedKernel.AuditTrail": "[0.1.0-alpha.418.1, )",
           "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.418.1, )",
+          "PandaBear.SharedKernel.DispositionHold.Abstractions": "[0.1.0-alpha.418.1, )",
           "PandaBear.SharedKernel.DocumentRendering": "[0.1.0-alpha.418.1, )",
           "PandaBear.SharedKernel.Domain": "[0.1.0-alpha.418.1, )",
           "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.418.1, )",
@@ -927,6 +928,7 @@
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.6.4, )",
           "PandaBear.SharedKernel.AspNetCore": "[0.1.0-alpha.418.1, )",
           "PandaBear.SharedKernel.AuditTrail": "[0.1.0-alpha.418.1, )",
+          "PandaBear.SharedKernel.DispositionHold.EntityFrameworkCore": "[0.1.0-alpha.418.1, )",
           "PandaBear.SharedKernel.Domain": "[0.1.0-alpha.418.1, )",
           "PandaBear.SharedKernel.Domain.EntityFrameworkCore": "[0.1.0-alpha.418.1, )",
           "PandaBear.SharedKernel.EntityFrameworkCore": "[0.1.0-alpha.418.1, )",
@@ -1581,6 +1583,30 @@
         "contentHash": "WHPYgBFspZgz7PPJu7c24Cvr9Vbm5kbdlTePt5HjXXftixQ2+pbkI5XldVtrKP1KvLe+bAN/gyaYoWIfVM+t9Q==",
         "dependencies": {
           "PandaBear.SharedKernel.Results": "0.1.0-alpha.418.1"
+        }
+      },
+      "PandaBear.SharedKernel.DispositionHold.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.418.1, )",
+        "resolved": "0.1.0-alpha.418.1",
+        "contentHash": "AKtlUy4dGMQChj/iag7W5JhtJadwAfti3fq2k9fiIU2aTgCXQrS4eAlgtt38kTZsaq394rT44on2tG19YC/gng=="
+      },
+      "PandaBear.SharedKernel.DispositionHold.EntityFrameworkCore": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.418.1, )",
+        "resolved": "0.1.0-alpha.418.1",
+        "contentHash": "eJ8jBHJwHsH6SkM1d1iEnjovUxSN6LSeMZRvdWUEqybhwZkvDlO3v03ExKnLSkeKCjINk9cOBhjozTOve4qGhw==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.13",
+          "Microsoft.Extensions.DependencyInjection": "10.0.13",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Options": "10.0.13",
+          "Npgsql": "10.0.3",
+          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.418.1",
+          "PandaBear.SharedKernel.DispositionHold.Abstractions": "0.1.0-alpha.418.1",
+          "PandaBear.SharedKernel.EntityFrameworkCore": "0.1.0-alpha.418.1",
+          "PandaBear.SharedKernel.Npgsql": "0.1.0-alpha.418.1"
         }
       },
       "PandaBear.SharedKernel.DocumentRendering": {

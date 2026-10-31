@@ -38,6 +38,27 @@ public static class ContractConstants
     /// </summary>
     public const int MaxDocumentFieldValueLength = 4000;
 
+    /// <summary>Maximum length of an opaque disposition hold code: purpose, authority reference or release reason.</summary>
+    public const int MaxDocumentHoldCodeLength = 128;
+
+    /// <summary>Characters an opaque disposition hold code may use: ASCII letters, digits and <c>. _ : -</c>.</summary>
+    public const string DocumentHoldCodePattern = "^[A-Za-z0-9._:-]+$";
+
+    /// <summary>Hold basis: the establishment, exercise or defence of a legal claim.</summary>
+    public const string DocumentHoldBasisLegalClaim = "LegalClaim";
+
+    /// <summary>Hold basis: a legal or regulatory obligation to keep the data.</summary>
+    public const string DocumentHoldBasisLegalObligation = "LegalObligation";
+
+    /// <summary>Hold basis: a restriction of processing requested by, or owed to, a data subject.</summary>
+    public const string DocumentHoldBasisDataSubjectRestriction = "DataSubjectRestriction";
+
+    /// <summary>Hold basis: an inquiry by a regulator or other authority.</summary>
+    public const string DocumentHoldBasisRegulatoryInquiry = "RegulatoryInquiry";
+
+    /// <summary>Hold basis: an internal or external investigation.</summary>
+    public const string DocumentHoldBasisInvestigation = "Investigation";
+
     /// <summary>
     /// The maximum length for medical information fields (allergies and additional info).
     /// </summary>

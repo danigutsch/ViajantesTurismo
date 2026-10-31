@@ -23,8 +23,8 @@ internal sealed class CapturingDocumentAuditStore : IDocumentAuditStore
     }
 
     /// <summary>Purges nothing and returns zero.</summary>
-    public Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct) =>
-        Task.FromResult(0);
+    public Task<DocumentPurgeCounts> PurgeExpiredRecords(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct) =>
+        Task.FromResult(new DocumentPurgeCounts(0, 0));
 
     /// <summary>Has nothing staged to discard.</summary>
     public void DiscardPendingChanges()

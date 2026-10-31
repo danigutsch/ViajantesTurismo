@@ -12,7 +12,10 @@ using PandaBear.Idempotency.EntityFrameworkCore;
 using PandaBear.IntegrationTesting;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -88,6 +91,20 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             store.Add(record);
         }
 
+        await dbContext.SaveEntities(TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>Migrates the database and stores one audit record without a lineage stamp, as a pre-migration record would be.</summary>
+    public async ValueTask SeedLegacyAuditWithoutLineage(params DocumentAuditRecord[] records)
+    {
+        await using var dbContext = CreateDbContext();
+        await dbContext.Database.MigrateAsync(TestContext.Current.CancellationToken);
+        var store = new DocumentAuditStore(dbContext);
+        foreach (var record in records)
+        {
+            store.Add(record);
+        }
+
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
@@ -98,14 +115,14 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async ValueTask<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        return await new DocumentStore(dbContext).PurgeExpiredDrafts(now, ct);
+        return (await new DocumentStore(dbContext).PurgeExpiredDrafts(now, NoHeldLineages.Filter, ct)).Purged;
     }
 
     /// <summary>Purges expired drafts using a context with retry on failure enabled and returns how many were removed.</summary>
     public async ValueTask<int> PurgeExpiredDraftsWithRetries(DateTime now, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext(enableRetryOnFailure: true);
-        return await new DocumentStore(dbContext).PurgeExpiredDrafts(now, ct);
+        return (await new DocumentStore(dbContext).PurgeExpiredDrafts(now, NoHeldLineages.Filter, ct)).Purged;
     }
 
     /// <summary>Installs a trigger that fails every document lineage delete.</summary>
@@ -141,7 +158,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
 
         await using (var purgeContext = CreateDbContext())
         {
-            _ = await new DocumentStore(purgeContext).PurgeExpiredDrafts(now, ct);
+            _ = await new DocumentStore(purgeContext).PurgeExpiredDrafts(now, NoHeldLineages.Filter, ct);
         }
 
         staleLineage.ShouldNotBeNull().UpdateField(
@@ -508,7 +525,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async ValueTask<int> PurgeExpiredAuditRecords(DateTime now, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        var removedCount = await new DocumentAuditStore(dbContext).PurgeExpiredRecords(now, ct);
+        var removedCount = (await new DocumentAuditStore(dbContext).PurgeExpiredRecords(now, NoHeldLineages.Filter, ct)).Purged;
         _ = await dbContext.SaveChangesAsync(ct);
         return removedCount;
     }
@@ -517,12 +534,9 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async ValueTask<int> PurgeExpiredAuditRecordsWithEvidence(DateTime now, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        var handler = new PurgeExpiredDocumentAuditsCommandHandler(
-            new DocumentAuditStore(dbContext),
-            dbContext,
-            new FakeTimeProvider(new DateTimeOffset(now)));
+        var handler = CreateAuditPurgeHandler(dbContext, dbContext, now);
         var auditContext = DocumentAuditContext.Create("system:test-purge", Guid.CreateVersion7().ToString("N")).Value;
-        return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
+        return (await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct)).Purged;
     }
 
     /// <summary>Runs the audit purge handler with a first commit that fails and returns the failure it rethrew.</summary>
@@ -532,10 +546,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        var handler = new PurgeExpiredDocumentAuditsCommandHandler(
-            new DocumentAuditStore(dbContext),
-            new FailingFirstSaveUnitOfWork(commitFailure, dbContext),
-            new FakeTimeProvider(new DateTimeOffset(now)));
+        var handler = CreateAuditPurgeHandler(dbContext, new FailingFirstSaveUnitOfWork(commitFailure, dbContext), now);
         var auditContext = DocumentAuditContext.Create("system:test-purge", Guid.CreateVersion7().ToString("N")).Value;
         Func<Task> purge = async () => await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct);
         return await purge.ShouldThrow<InvalidOperationException>();
@@ -639,7 +650,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     public async Task<int> PurgeExpiredIdempotencyEntries(DateTimeOffset cutoff, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        return await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, ct);
+        return (await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, NoHeldLineages.Filter, ct)).Purged;
     }
 
     /// <summary>Returns the keys of the remaining idempotency entries.</summary>
@@ -803,6 +814,24 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         }
     }
 
+    private static PurgeExpiredDocumentAuditsCommandHandler CreateAuditPurgeHandler(
+        AdminWriteDbContext dbContext,
+        IUnitOfWork unitOfWork,
+        DateTime now)
+    {
+        var clock = new FakeTimeProvider(new DateTimeOffset(now));
+        var gate = new DocumentHoldGate(new FakeDispositionHoldGuard(), new InMemoryDispositionHoldStore(), clock);
+        return new PurgeExpiredDocumentAuditsCommandHandler(
+            new DocumentAuditStore(dbContext),
+            unitOfWork,
+            new DocumentDispositionTransaction(dbContext),
+            gate,
+            clock);
+    }
+
+    /// <summary>Gets the connection string of the scenario database.</summary>
+    internal string ConnectionString => connectionString;
+
     private AdminWriteDbContext CreateDbContext(
         bool enableRetryOnFailure = false,
         DocumentSaveBarrierInterceptor? saveBarrier = null)
@@ -810,6 +839,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
+        services.AddAdminDispositionHolds();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         using var provider = services.BuildServiceProvider();

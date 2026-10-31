@@ -15,6 +15,8 @@ internal sealed class DocumentAuditPurgeConfiguration : IEntityTypeConfiguration
         entity.Property(record => record.ActorId).HasMaxLength(DocumentAuditLimits.MaxActorIdLength).IsRequired();
         entity.Property(record => record.CorrelationId).HasMaxLength(DocumentAuditLimits.MaxCorrelationIdLength).IsRequired();
         entity.Property(record => record.PurgedCount).IsRequired();
+        entity.Property(record => record.HeldCount).HasDefaultValue(0).IsRequired();
+        entity.Property(record => record.UndecidableCount).HasDefaultValue(0).IsRequired();
         entity.Property(record => record.RetentionCutoffUtc).IsRequired();
         entity.Property(record => record.Outcome).HasConversion<string>().IsRequired();
         entity.Property(record => record.OccurredAtUtc).IsRequired();

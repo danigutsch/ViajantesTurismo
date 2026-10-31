@@ -101,6 +101,8 @@
     <PackageVersion Include="PandaBear.SharedKernel.Branding" Version="0.1.0-alpha.418.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Blazor" Version="0.1.0-alpha.418.1" />
     <PackageVersion Include="PandaBear.SharedKernel.BuildingBlocks" Version="0.1.0-alpha.418.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.DispositionHold.Abstractions" Version="0.1.0-alpha.418.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.DispositionHold.EntityFrameworkCore" Version="0.1.0-alpha.418.1" />
     <PackageVersion Include="PandaBear.SharedKernel.DocumentRendering" Version="0.1.0-alpha.418.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Documentation" Version="0.1.0-alpha.418.1" />
         <PackageVersion Include="PandaBear.SharedKernel.Domain" Version="0.1.0-alpha.418.1" />

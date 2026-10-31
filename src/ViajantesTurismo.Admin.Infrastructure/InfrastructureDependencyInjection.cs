@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using PandaBear.AuditTrail;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency.EntityFrameworkCore;
@@ -24,6 +25,7 @@ using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -109,6 +111,8 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
+        builder.Services.AddScoped<IDocumentDispositionTransaction, DocumentDispositionTransaction>();
+        builder.Services.AddScoped<IDocumentHoldQuery, DocumentHoldQuery>();
         builder.Services.AddScoped<IDocumentIdempotencyRetentionStore, DocumentIdempotencyRetentionStore>();
         builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
         JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
@@ -222,6 +226,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.TryAddSingleton<IAuditTrailSink<DocumentAuditRecord>, DocumentAuditTrailSink>();
         builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
         builder.Services.AddIdempotencyStore<AdminWriteDbContext>();
+        builder.Services.AddAdminDispositionHolds();
 
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.AdminDatabase,
