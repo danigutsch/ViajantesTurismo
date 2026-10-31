@@ -18,8 +18,8 @@ internal sealed class MissingDocumentServices : IDocumentStore, IDocumentQuerySe
         Task.FromResult<DocumentLineage?>(null);
 
     /// <summary>Purges nothing and returns zero.</summary>
-    public Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct) =>
-        Task.FromResult(0);
+    public Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct) =>
+        Task.FromResult(new DocumentPurgeCounts(0, 0));
 
     /// <summary>Returns no document.</summary>
     public Task<GetDocumentDto?> GetById(Guid id, CancellationToken ct) =>

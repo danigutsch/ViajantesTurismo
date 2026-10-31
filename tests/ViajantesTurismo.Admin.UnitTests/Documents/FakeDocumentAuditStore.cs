@@ -17,6 +17,9 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
         get; set;
     }
 
+    /// <summary>Lineages of the expired candidates the fake offers to the held-lineage filter.</summary>
+    public List<Guid> CandidateLineageIds { get; } = [];
+
     /// <summary>Count returned by <c>PurgeExpiredRecords</c>.</summary>
     public int PurgedCount
     {
@@ -42,7 +45,7 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
     public void Add(DocumentAuditPurgeRecord record) => PurgeRecords.Add(record);
 
     /// <summary>Captures the purge time and returns <see cref="PurgedCount" />, or throws <see cref="PurgeFailure" />.</summary>
-    public Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct)
+    public async Task<DocumentPurgeCounts> PurgeExpiredRecords(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
         PurgeCalledAt = now;
         if (PurgeFailure is not null)
@@ -50,7 +53,8 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
             throw PurgeFailure;
         }
 
-        return Task.FromResult(PurgedCount);
+        var held = await heldLineages(CandidateLineageIds, ct);
+        return new DocumentPurgeCounts(PurgedCount, held.Count);
     }
 
     /// <summary>Counts the discard and drops any evidence staged so far.</summary>

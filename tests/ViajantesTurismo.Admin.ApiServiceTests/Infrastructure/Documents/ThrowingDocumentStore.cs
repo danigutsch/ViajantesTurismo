@@ -22,9 +22,9 @@ internal sealed class ThrowingDocumentStore(Exception exception) : IDocumentStor
     }
 
     /// <summary>Purges nothing and returns zero.</summary>
-    public Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct)
+    public Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(0);
+        return Task.FromResult(new DocumentPurgeCounts(0, 0));
     }
 }

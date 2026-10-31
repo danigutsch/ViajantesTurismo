@@ -22,8 +22,12 @@ internal sealed class DocumentDraftRetentionHostedService(
     {
         using var scope = scopeFactory.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDraftsCommandHandler>();
-        var removedCount = await handler.Handle(new PurgeExpiredDraftsCommand(), ct).ConfigureAwait(false);
+        var counts = await handler.Handle(new PurgeExpiredDraftsCommand(), ct).ConfigureAwait(false);
+        if (counts.Held > 0)
+        {
+            DocumentRetentionLog.SkippedHeld(logger, DocumentDraftRetentionServiceName, counts.Held);
+        }
 
-        return removedCount;
+        return counts.Purged;
     }
 }

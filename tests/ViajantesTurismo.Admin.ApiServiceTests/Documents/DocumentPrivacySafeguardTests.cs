@@ -9,7 +9,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PandaBear.Testing;
 using PandaBear.Idempotency;
-using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -59,8 +58,7 @@ public sealed class DocumentPrivacySafeguardTests
         {
             endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>()
                 .Select(metadata => metadata.Policy)
-                .ShouldContain(endpoint.RoutePattern.RawText?.Contains("payment-instructions", StringComparison.Ordinal) == true
-                    ? AdminAuthorization.PaymentManage : AdminAuthorization.DocumentManage);
+                .ShouldContain(DocumentEndpointRouteCase.ExpectedPolicy(endpoint.RoutePattern.RawText));
         }
     }
 

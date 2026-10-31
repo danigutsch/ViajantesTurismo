@@ -3,6 +3,7 @@ using ViajantesTurismo.Admin.Application.Payments;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 
 namespace ViajantesTurismo.Admin.Application;
 
@@ -68,6 +69,10 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<GetFinalizedDocumentArtifactHandler>();
         builder.Services.AddScoped<RegenerateDocumentDraftCommandHandler>();
         builder.Services.AddScoped<VoidDocumentCommandHandler>();
+        builder.Services.AddScoped<DocumentHoldGate>();
+        builder.Services.AddScoped<PlaceDocumentHoldCommandHandler>();
+        builder.Services.AddScoped<ReleaseDocumentHoldCommandHandler>();
+        builder.Services.AddScoped<ListDocumentHoldsQueryHandler>();
         builder.Services.AddScoped<PurgeExpiredDraftsCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();

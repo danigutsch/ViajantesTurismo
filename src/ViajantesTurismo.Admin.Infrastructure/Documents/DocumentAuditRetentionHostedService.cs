@@ -23,6 +23,12 @@ internal sealed class DocumentAuditRetentionHostedService(
         using var scope = scopeFactory.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentAuditsCommandHandler>();
         var auditContext = DocumentAuditContext.Create(SystemActorId, Guid.NewGuid().ToString("N")).Value;
-        return await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct).ConfigureAwait(false);
+        var counts = await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct).ConfigureAwait(false);
+        if (counts.Held > 0)
+        {
+            DocumentRetentionLog.SkippedHeld(logger, DocumentAuditRetentionServiceName, counts.Held);
+        }
+
+        return counts.Purged;
     }
 }

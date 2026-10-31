@@ -5,6 +5,7 @@ using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
@@ -23,6 +24,7 @@ internal sealed class AdminWriteDbContextDesignTimeFactory : IDesignTimeDbContex
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
+        services.AddAdminDispositionHolds();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
 
