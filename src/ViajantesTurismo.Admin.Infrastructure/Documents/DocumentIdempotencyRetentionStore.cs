@@ -6,6 +6,7 @@ using Npgsql;
 using NpgsqlTypes;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
@@ -21,8 +22,8 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
         """
         SELECT {1} AS "Scope", {2} AS "Key", {4} AS "ResultFingerprint" FROM {0}
         WHERE starts_with({1}, @prefix) AND COALESCE({5}, {3}) <= @cutoff
-        ORDER BY {3}
-        LIMIT {6}
+        ORDER BY {3}, {1}, {2}
+        LIMIT {6} OFFSET @skip
         """);
 
     private static readonly CompositeFormat DeleteSql = CompositeFormat.Parse(
@@ -57,15 +58,40 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
             Column(entityType, table, "ResultFingerprint"),
             Column(entityType, table, "CompletedAt"),
             PurgeBatchSize);
-        var candidates = await dbContext.Database
-            .SqlQueryRaw<ExpiredEntry>(
-                selectSql,
-                new NpgsqlParameter("prefix", DocumentCommandIdempotency.ScopePrefix),
-                new NpgsqlParameter("cutoff", cutoff))
-            .ToListAsync(ct);
+        var activeLineages = (await ActiveHoldLineages.Find(dbContext, ct)).OfType<Guid>().ToHashSet();
+        var candidates = new List<ExpiredEntry>();
+        var preHeldCount = 0;
+        var skip = 0;
+        int pageCount;
+        do
+        {
+            var page = await dbContext.Database
+                .SqlQueryRaw<ExpiredEntry>(
+                    selectSql,
+                    new NpgsqlParameter("prefix", DocumentCommandIdempotency.ScopePrefix),
+                    new NpgsqlParameter("cutoff", cutoff),
+                    new NpgsqlParameter("skip", skip))
+                .ToListAsync(ct);
+            pageCount = page.Count;
+            skip += pageCount;
+            var pageLineages = await FindLineages(page, ct);
+            foreach (var entry in page)
+            {
+                if (activeLineages.Count > 0 && IsHeld(entry, pageLineages, activeLineages))
+                {
+                    preHeldCount++;
+                }
+                else if (candidates.Count < PurgeBatchSize)
+                {
+                    candidates.Add(entry);
+                }
+            }
+        }
+        while (pageCount == PurgeBatchSize && candidates.Count < PurgeBatchSize);
+
         if (candidates.Count == 0)
         {
-            return new DocumentPurgeCounts(0, 0);
+            return new DocumentPurgeCounts(0, preHeldCount);
         }
 
         var lineageByDocument = await FindLineages(candidates, ct);
@@ -85,10 +111,10 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
                 ct);
         }
 
-        return new DocumentPurgeCounts(purgeable.Length, candidates.Count - purgeable.Length);
+        return new DocumentPurgeCounts(purgeable.Length, preHeldCount + candidates.Count - purgeable.Length);
     }
 
-    private async Task<Dictionary<Guid, Guid>> FindLineages(List<ExpiredEntry> candidates, CancellationToken ct)
+    private async Task<Dictionary<Guid, Guid>> FindLineages(IEnumerable<ExpiredEntry> candidates, CancellationToken ct)
     {
         var documentIds = candidates.SelectMany(DocumentIds).Distinct().ToArray();
         return await dbContext.DocumentDrafts

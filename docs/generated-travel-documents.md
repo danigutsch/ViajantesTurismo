@@ -218,6 +218,8 @@ Documents move through explicit states:
 Rules:
 
 - Only authorized staff can generate, edit, approve, finalize, download, void, or regenerate.
+- Placing, releasing and listing disposition holds needs the separate `document.hold` permission, granted to the `Admin` role only by
+  default (a pending Product decision); see [document retention and legal hold](operations/document-retention-and-legal-hold.md).
 - The first vertical slice is Admin-only with global staff scope; it does not introduce a per-booking
   assignment model.
 - Customer-facing contract drafts can be generated or regenerated only for `Confirmed` or `Completed`

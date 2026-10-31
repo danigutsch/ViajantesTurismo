@@ -51,15 +51,56 @@ bytes embedded or stored at finalization, which needs a logo asset source that d
 
 ## Legal hold
 
-Finalized artifacts are kept indefinitely, so a hold has nothing to restrain today. Legal hold
-matters once any deletion of finalized artifacts, anonymization or an erasure workflow exists.
+Finalized artifacts are kept indefinitely, so a hold has nothing to restrain among them today. A hold restrains the
+purges that do exist: unfinalized drafts, document audit records and document idempotency entries.
 
-- No legal-hold workflow exists. Do not add deletion of finalized artifacts before it does.
-- A hold may restrict deletion or anonymization only as far as its documented purpose needs.
-- Hold checks must be atomic with purge decisions and fail closed: a purge worker must not delete an
-  in-scope record when hold state cannot be determined.
-- Placement and release record an authorized actor, an opaque hold identifier, purpose, scope,
-  effective date and review date, without document content or unnecessary personal data.
+### Hold model
+
+- Holds use the SharedKernel `DispositionHold` packages. The hold table is `disposition_hold.holds` in the Admin database.
+- A hold has an opaque scope, a neutral basis (`LegalClaim`, `LegalObligation`, `DataSubjectRestriction`,
+  `RegulatoryInquiry` or `Investigation`), an opaque purpose code, an opaque reference to the authorizing record, the placing
+  actor, effective, review and optional expiry dates, and one explicit release with the releasing actor and an opaque reason code.
+- The scope kind is `document-lineage` and the key is the lowercase 32-digit (`N` format) lineage identifier. Every text
+  field accepts only ASCII letters, digits and `. _ : -`. Callers must not derive codes from names, e-mail addresses or
+  document numbers. Rejected requests never echo the submitted value.
+- A hold restrains deletion only. It does not freeze edits to a draft.
+- API (Admin, version 1): `POST /api/v1/documents/{id}/holds`, `GET /api/v1/documents/{id}/holds` and
+  `POST /api/v1/documents/{id}/holds/{holdId}/release`, where `{id}` is any revision of the lineage. A second release of the
+  same hold is `409 Conflict`; a hold of another lineage is `404 Not Found`.
+
+### Who may place and release
+
+- Permission `document.hold` covers placing, releasing and listing. By default only the `Admin` role holds it; `Operator` and
+  `Reader` do not, and `document.manage` does not imply it.
+- **Product decision pending:** this default awaits Product confirmation. Changing it means editing the role mapping in
+  `AdminAuthorization.PermissionsByRole`.
+- The placing and releasing actor is the opaque subject identifier of the authenticated principal. It is never read from the
+  request body.
+
+### Purge behavior and lock order
+
+- Every purge (draft, audit and idempotency) loads its candidates, calls `IDispositionHoldGuard.Check` once with all candidate
+  lineage scopes, and deletes inside the same explicit database transaction at read committed. The package refuses any other
+  isolation level and refuses to answer outside a transaction.
+- Held candidates are skipped and counted. The audit purge records the count (`HeldCount`) in its evidence; the other purges log
+  counts only. No data-subject identifier is logged.
+- If hold state cannot be determined (`DispositionHoldStateUnknownException`), the purge deletes nothing. The audit purge records
+  `Refused` evidence and rethrows; the worker retries on its next run.
+- Lock order: take the locks a command declares first, hold locks last, one `Check` per purge, and no other advisory lock after
+  it. Release takes a command lock on the hold identifier before it reads the hold.
+- A SQL pre-filter leaves lineages with an effective hold out of the candidate query before the batch limit, so held rows cannot
+  starve a batch. It is an optimization only; the guard check on the final candidates stays the authoritative decision.
+- Audit records store their lineage so a hold placed after a revision was purged still covers that revision's audit records.
+  A record written before that column existed whose lineage could not be derived is kept and counted as held, never purged.
+- Idempotency entries are matched to a lineage through the document identifier in their scope or stored result. An entry whose
+  document row was already purged cannot be matched and is purged on schedule; it holds a hashed key and an identifier only.
+
+### Not done
+
+- Management UI for holds (#1430).
+- Backup rotation and restore suppression for held data (#1314).
+- Retention of finalized artifacts and any deletion workflow for them (#1299). Do not add one without checking holds.
+- Retention periods, jurisdiction-specific rules and review reminders.
 
 ## Copies
 
@@ -72,8 +113,9 @@ Deletion is not complete until every covered store and copy has the approved out
 
 Each gap above is tracked as an issue instead of a placeholder in this policy:
 
-- Legal-hold placement, review and release controls, with hold checks on every purge.
-- Document-specific backup rotation and restore suppression.
+- Hold management UI (#1430).
+- Document-specific backup rotation and restore suppression (#1314).
+- Finalized-artifact retention (#1299).
 
 ## Implementation evidence and references
 
