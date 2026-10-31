@@ -100,6 +100,10 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
 
+                    b.Property<string>("RetentionOwner")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
                     b.Property<DateTimeOffset>("StartedAt")
                         .IsConcurrencyToken()
                         .HasColumnType("timestamp with time zone");
@@ -111,6 +115,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasColumnType("character varying(32)");
 
                     b.HasKey("Scope", "Key");
+
+                    b.HasIndex("RetentionOwner");
 
                     b.ToTable("idempotency_keys", "messaging");
                 });

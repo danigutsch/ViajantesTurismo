@@ -139,7 +139,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     State = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     StartedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CompletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ResultFingerprint = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true)
+                    ResultFingerprint = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    RetentionOwner = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -729,6 +730,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 schema: "disposition_hold",
                 table: "holds",
                 column: "Scope");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_idempotency_keys_RetentionOwner",
+                schema: "messaging",
+                table: "idempotency_keys",
+                column: "RetentionOwner");
 
             migrationBuilder.CreateIndex(
                 name: "IX_inbox_messages_Outcome",
