@@ -11,6 +11,8 @@ with a runbook, or a documented diagnostic or correlation role. Alerts are optio
 use is a removal candidate. Verdicts:
 
 - `keep`: has a documented use.
+- `idle-ok`: emitted by the library at no cost, but the system has no traffic for it yet;
+  silence is expected.
 - `remove`: has no use; delete it and call out the change for operators.
 - `gap`: wanted by an operator question but not emitted or not yet verified; tracked by an issue.
 

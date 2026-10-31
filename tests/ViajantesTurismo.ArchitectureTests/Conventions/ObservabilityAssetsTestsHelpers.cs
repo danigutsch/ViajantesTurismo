@@ -138,8 +138,8 @@ internal static partial class ObservabilityAssetsTestsHelpers
     [GeneratedRegex(@"runbook: \S*#(\S+)", RegexOptions.CultureInvariant)]
     public static partial Regex RunbookAnchor();
 
-    /// <summary>Matches a catalog row that ends with a keep, remove, or gap verdict.</summary>
-    [GeneratedRegex(@"\| (keep|remove|gap) \|?\s*$", RegexOptions.CultureInvariant)]
+    /// <summary>Matches a catalog row that ends with a keep, idle-ok, remove, or gap verdict.</summary>
+    [GeneratedRegex(@"\| (keep|idle-ok|remove|gap) \|?\s*$", RegexOptions.CultureInvariant)]
     public static partial Regex VerdictCell();
 
     /// <summary>Matches histogram series suffixes.</summary>
