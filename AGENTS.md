@@ -39,6 +39,9 @@ Use nested `AGENTS.md` files for scoped rules.
 - For consistency/audit findings, prove each actionable production gap with a failing test before any
     production code change. Do not change production code for such gaps until the failing test exists.
 
+- When touching uploads, streams, `MemoryStream`, byte arrays, or binary parsing, use the `io-streams` skill and follow
+  `docs/UPLOAD_AND_BINARY_DATA_GUIDELINES.md`.
+
 ## Build and validation
 
 - Setup: `setup-dev.ps1` (Windows) or `setup-dev.sh` (Unix).

@@ -105,6 +105,22 @@ bypass states remain separate from successful scan results. Validation rejects u
 oversized, or malformed input with generic errors; scanning does not establish semantic validity or
 remove personal data.
 
+Branding logo upload (`PUT /api/v1/branding/settings/logo`, raw request body, authorized and rate limited). Threats and the
+mitigations that exist in code:
+
+- Spoofed type: the declared type is allow-listed (PNG, JPEG, WebP; SVG refused) and checked against the file signature.
+- Oversize or slow body: a 1 MiB request limit and a 1 MiB `SeekableContent` byte limit, with a 256 KiB memory spool threshold.
+- Malicious or polyglot image: malware scan (a hit is rejected, an unavailable scanner is `503`), decode limits of 2048 x 2048
+  pixels and 4,000,000 pixels, and a re-encode to WebP of at most 40 KiB that strips metadata.
+- Animated image: refused by a bounded chunk walk.
+- Hostile content address on read: the hash is validated with an anchored pattern before the store is read.
+- Browser sniffing of served bytes: `nosniff`, a fixed `image/webp` type, and a content-addressed immutable response.
+
+Residual risks: the animation chunk walk is hand-written parsing that runs before the scan and has a proven fault on a
+hostile length field; there is no Branding wire test over real Kestrel; stored logos are never garbage collected; the logo
+bytes ship in every revision's outbox payload. These are tracked in the I/O hardening epic. See
+[Upload and binary data guidelines](../UPLOAD_AND_BINARY_DATA_GUIDELINES.md) and [Branding](../branding.md#logo).
+
 ## AI-assisted accessibility abuse
 
 The current AI flow drafts text from an image; it does not generate image binaries.

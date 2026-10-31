@@ -487,6 +487,19 @@ var builder = WebApplication.CreateBuilder(args);
 - Don't use `async void` except for event handlers
 - `ConfigureAwait(false)` is NOT needed (InvariantGlobalization enabled)
 
+## Streams, uploads and binary data
+
+Rules, sources, and examples are in [Upload and binary data guidelines](UPLOAD_AND_BINARY_DATA_GUIDELINES.md); the agent
+checklist is the `io-streams` skill (`.agents/skills/io-streams/SKILL.md`). Non-negotiable:
+
+- Never trust a declared content type, file name, or length. Allow-list the type, check the signature, and count received bytes.
+- Keep a request size limit on every upload endpoint, and scan before decoding into domain state or storing.
+- Check every `Stream.Read` result (`ReadExactly` or `ReadAtLeast`) and forward the request `CancellationToken`.
+- Hand-written binary parsers use `long` arithmetic, compare declared lengths with the remaining length before seeking or
+  allocating, bound iteration, and fail closed.
+- Never expose `byte[]` properties on public types; use `ReadOnlyMemory<byte>` and keep `byte[]` internal to EF rows.
+- Never log payload bytes, file names, or temporary paths.
+
 ## Related Documentation
 
 Use the [documentation source-of-truth map](README.md#source-of-truth-map) for related repository guidance.

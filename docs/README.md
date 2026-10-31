@@ -84,6 +84,7 @@ outdated behavior.
 - [Documentation inventory and consolidation](documentation-inventory.md)
 - [API request shape policy](API_REQUEST_SHAPES.md)
 - [API endpoint I/O and streaming contracts](API_IO_AND_STREAMING.md)
+- [Upload and binary data guidelines](UPLOAD_AND_BINARY_DATA_GUIDELINES.md)
 - [API versioning](API_VERSIONING.md)
 - [Async contracts](ASYNC_CONTRACTS.md)
 - [AsyncAPI contract](asyncapi.json)
