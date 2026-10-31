@@ -537,6 +537,7 @@ jobs:
           dotnet tool run sharedkernel-repo -- verify-json --root .
           dotnet tool run sharedkernel-repo -- verify-links --root .
           dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+          dotnet tool run sharedkernel-repo -- verify-dependabot --root .
           dotnet tool run sharedkernel-repo -- verify --root .
 
       - name: Check generated documentation
