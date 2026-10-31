@@ -29,7 +29,7 @@ proxy endpoints that forward them.
 | --- | --- | --- | --- | --- |
 | Customer CSV import (`CustomerImportEndpoints.ReadCsv`) | Browser to API | `ContractConstants.CustomerImportMaxFileBytes` = 1 MiB, enforced while reading; oversize and cancellation tested. Three passes: bounded `SeekableContent` read, malware scan, `ReadToEnd` into a string | Malware scanning needs a seekable stream and the parser needs the whole text | Keep buffering. A 1 MiB file bounds the request at about 1 MiB of bytes plus about 2 MiB of string. |
 | Finalized document download (`DocumentEndpoints`, `DocumentsApiClient`, Management Web proxy) | API to browser | Rendered HTML artifact held as `ReadOnlyMemory<byte>`, copied once by `ToArray()` in the endpoint and once by `ReadAsByteArrayAsync` in the client. Measured 49,481 bytes with the three staff-editable fields at 4,000 `<` characters each (the largest escaping); `FinalizeDocumentCommandHandlerTests` fails above 64 KiB. Non-editable fields such as tour name and included services are not at their maximum in this measurement | Artifact is stored and audited as one value | Keep buffering. Revisit if the template gains unbounded content. |
-| Branding logo upload (`BrandingLogoIntake.Process`, `PUT /api/v1/branding/settings/logo`) | Browser to API | `BrandingLogoLimits.MaxUploadBytes` = 1 MiB, enforced by `RequestSizeLimitAttribute` and by the `SeekableContent` byte limit; 256 KiB memory spool threshold. Raw request body, not multipart | The signature check, animation chunk walk, malware scan, and decode need several seekable passes | Keep the lease. See [Branding logo flow](#branding-logo-flow). |
+| Branding logo upload (`BrandingLogoIntake.Process`, `PUT /api/v1/branding/settings/logo`) | Browser to API | `BrandingLogoLimits.MaxUploadBytes` = 1 MiB, enforced by `RequestSizeLimitAttribute` and by the `SeekableContent` byte limit; 256 KiB memory spool threshold. Raw request body, not multipart | The signature check, malware scan, animation chunk walk, and decode need several seekable passes | Keep the lease. See [Branding logo flow](#branding-logo-flow). |
 
 Any change to these flows must keep malware scanning, the size limit, authorization, audit, privacy, and
 `no-store` headers.
@@ -45,7 +45,7 @@ budgets.
 | --- | --- | --- | --- | --- |
 | Customer CSV import (`ReadCsv`) | 1 pass, 80 KiB chunks (14 reads at 1 MiB) | One `MemoryStream`, capacity 1,310,720 at 1 MiB (growth slack) before presizing | Scan, then `ReadToEnd` into a string | 510,104 B at 64 KiB; 6,927,192 B at 1 MiB (about 6.6 times the payload, transient) |
 | Media upload intake (`MediaImageUploadIntake.Accept`) | 1 pass (65 reads at 5 MiB) | One `MemoryStream`, capacity equal to length at 5 MiB, 1,310,720 at 1 MiB before presizing | 12-byte header peek, scan, decode probe, SHA-256, object store `Put`; scanner and store receive the same instance | 247,168 B at 64 KiB; 2,721,224 B at 1 MiB; 10,603,960 B at 5 MiB (about 2 times the payload) |
-| Branding logo upload (`BrandingLogoIntake.Process`) | 1 pass over the raw `HttpRequest.Body` through `SeekableContent` (spools past 256 KiB) | The lease content: memory up to 256 KiB, then a private temporary file | 12-byte signature peek, animation chunk walk (rewinds to 0), scan, decode and re-encode, SHA-256 of the output | Not measured. The re-encoded result is at most 40 KiB |
+| Branding logo upload (`BrandingLogoIntake.Process`) | 1 pass over the raw `HttpRequest.Body` through `SeekableContent` (spools past 256 KiB) | The lease content: memory up to 256 KiB, then a private temporary file | 12-byte signature peek, scan, animation chunk walk (rewinds to 0), decode and re-encode, SHA-256 of the output | Not measured. The re-encoded result is at most 40 KiB |
 
 Findings:
 
@@ -169,14 +169,17 @@ change.
 `PUT /api/v1/branding/settings/logo` (`BrandingEndpoints.UploadLogo`) takes the image as the raw request body, not as
 multipart. `BrandingLogoIntake.Process` runs these steps; each rewinds the lease before the next:
 
-1. Declared `Content-Type` must be `image/png`, `image/jpeg`, or `image/webp`; anything else, including SVG, is `400`.
+1. Declared `Content-Type` is parsed as a media type and must be `image/png`, `image/jpeg`, or `image/webp` (case-insensitive;
+   parameters such as `charset` are ignored). A missing, malformed, comma-separated or other value, including SVG, is `400` on
+   `ContentType`.
 2. `SeekableContent.Create` copies the body with a 1 MiB limit and a 256 KiB memory spool threshold. An empty or oversize body
    is `400` on `Content`. The endpoint also carries `RequestSizeLimitAttribute` at 1 MiB.
 3. Signature check of the first 12 bytes against the declared type.
-4. Animation chunk walk for PNG (`acTL`) and WebP (`VP8X` flag, `ANIM`, `ANMF`); animated images are `400`. This hand-written
-   walk runs before the scan; it is bounded by the 1 MiB limit and is a known deviation from the scan-first order, tracked in
-   the I/O hardening epic. See [Upload and binary data guidelines](UPLOAD_AND_BINARY_DATA_GUIDELINES.md#intake-order).
-5. Malware scan of the lease: rejected is `400`, a scanner failure is `503`, and the failure type is the only thing logged.
+4. Malware scan of the lease: rejected is `400`, a scanner failure is `503`, and the failure type is the only thing logged.
+   Nothing past the signature peek is parsed before the scan approves.
+5. Animation chunk walk for PNG (`acTL`) and WebP (`VP8X` flag, `ANIM`, `ANMF`); animated, truncated or overrunning files are
+   `400`. The walk is bounded by the 1 MiB limit and built on the pure functions in `ImageChunkParser`. See
+   [Upload and binary data guidelines](UPLOAD_AND_BINARY_DATA_GUIDELINES.md#intake-order).
 6. Decode within 2048 x 2048 pixels and 4,000,000 pixels, then re-encode to WebP trying seven size and quality variants until
    one is at most 40 KiB; otherwise `400`.
 7. The result is a `BrandingLogo` (`ReadOnlyMemory<byte>`) addressed by its SHA-256 and stored once in
