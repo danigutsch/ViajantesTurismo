@@ -1,4 +1,5 @@
 using PandaBear.DispositionHold;
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -49,6 +50,9 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
         services.AddSingleton<IDispositionHoldGuard>(new FakeDispositionHoldGuard());
         services.AddSingleton<IDispositionHoldStore>(new InMemoryDispositionHoldStore());
         services.AddScoped<DocumentHoldGate>();
+        services.AddSingleton<IDocumentPurgeEvidenceStore>(new FakeDocumentPurgeEvidenceStore());
+        services.AddSingleton<IUnitOfWork>(new FakeUnitOfWork());
+        services.AddScoped<DocumentPurgeRunner>();
         services.AddScoped<PurgeExpiredDraftsCommandHandler>();
         var provider = services.BuildServiceProvider();
 
