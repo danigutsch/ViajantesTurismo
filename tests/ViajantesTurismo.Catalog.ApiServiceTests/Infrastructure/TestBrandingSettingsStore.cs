@@ -82,6 +82,35 @@ internal sealed class TestBrandingSettingsStore : IBrandingSettingsStore, IBrand
         return Snapshot();
     }
 
+    /// <summary>Gets the logos stored by content address.</summary>
+    public Dictionary<string, BrandingLogo> Logos { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>Stores the logo and points the settings at it, or clears the logo, when the precondition accepts the snapshot.</summary>
+    public async Task<BrandingSettingsSnapshot?> ReplaceLogoIfMatch(
+        BrandingLogo? logo,
+        Func<BrandingSettingsSnapshot?, bool> precondition,
+        CancellationToken ct)
+    {
+        if (!precondition(Snapshot()) || settings is null)
+        {
+            return null;
+        }
+
+        var dto = settings.ToDto();
+        dto.LogoUri = logo is null ? null : BrandingLogoPath.For(logo.Sha256);
+        if (logo is not null)
+        {
+            Logos[logo.Sha256] = logo;
+        }
+
+        await SaveSettings(BrandingSettings.Create(dto, BrandingDefaults.AllowedFonts).Value, ct);
+        return Snapshot();
+    }
+
+    /// <summary>Returns the stored logo with the address, or null.</summary>
+    public Task<BrandingLogo?> GetLogo(string sha256, CancellationToken ct) =>
+        Task.FromResult(Logos.TryGetValue(sha256, out var logo) ? logo : null);
+
     /// <summary>Creates a store already holding seeded settings at revision 1.</summary>
     public static TestBrandingSettingsStore Seeded()
     {

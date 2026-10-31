@@ -18,7 +18,8 @@ internal sealed class BrandingSettingsRecord
         string textColor,
         string headingFontFamily,
         string bodyFontFamily,
-        string? logoUri)
+        string? logoUri,
+        string? logoSha256)
     {
         Id = id;
         BrandName = brandName;
@@ -29,6 +30,7 @@ internal sealed class BrandingSettingsRecord
         HeadingFontFamily = headingFontFamily;
         BodyFontFamily = bodyFontFamily;
         LogoUri = logoUri;
+        LogoSha256 = logoSha256;
     }
 
     /// <summary>Identifier of the settings row.</summary>
@@ -79,8 +81,14 @@ internal sealed class BrandingSettingsRecord
         get; private set;
     }
 
-    /// <summary>Logo URI, or null when no logo is set.</summary>
+    /// <summary>App-generated root-relative URL of the logo, or null when no logo is set.</summary>
     public string? LogoUri
+    {
+        get; private set;
+    }
+
+    /// <summary>Content address of the stored logo, or null when no logo is set.</summary>
+    public string? LogoSha256
     {
         get; private set;
     }
@@ -122,7 +130,8 @@ internal sealed class BrandingSettingsRecord
             settings.TextColor,
             settings.HeadingFontFamily,
             settings.BodyFontFamily,
-            settings.LogoUri);
+            null,
+            null);
     }
 
     /// <summary>Converts the record to validated settings, or null when persisted values are invalid.</summary>
@@ -161,7 +170,10 @@ internal sealed class BrandingSettingsRecord
         SourceRevision = 1;
     }
 
-    /// <summary>Returns whether the record already holds the same values as the given settings.</summary>
+    /// <summary>
+    /// Returns whether the record already holds the same values as the given settings, whose logo URI is either
+    /// absent (no logo) or the record's own generated logo URL (keep the logo).
+    /// </summary>
     public bool HasSameValues(BrandingSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -176,7 +188,13 @@ internal sealed class BrandingSettingsRecord
             && LogoUri == settings.LogoUri;
     }
 
-    /// <summary>Replaces the values with the given settings and increments the source revision.</summary>
+    /// <summary>Returns whether the record already holds the given logo address.</summary>
+    public bool HasSameLogo(string? logoSha256) => LogoSha256 == logoSha256;
+
+    /// <summary>Returns whether the given settings keep or clear the logo this record holds, and never name another.</summary>
+    public bool AcceptsLogoUri(string? logoUri) => logoUri is null || logoUri == LogoUri;
+
+    /// <summary>Replaces the values with the given settings, keeping the logo they keep, and increments the source revision.</summary>
     public void ApplyRevision(BrandingSettings settings)
     {
         if (!IsRevisioned)
@@ -184,11 +202,28 @@ internal sealed class BrandingSettingsRecord
             throw new InvalidOperationException("Branding settings revisions have not started; run the Branding bootstrap first.");
         }
 
-        ReplaceWith(settings);
+        if (!AcceptsLogoUri(settings.LogoUri))
+        {
+            throw new ArgumentException("Branding settings may only keep or clear the stored logo.", nameof(settings));
+        }
+
+        ReplaceWith(settings, settings.LogoUri is null ? null : LogoSha256);
         SourceRevision++;
     }
 
-    private void ReplaceWith(BrandingSettings settings)
+    /// <summary>Points the settings at another logo, or clears it, and increments the source revision.</summary>
+    public void ApplyLogoRevision(BrandingSettings settings, string? logoSha256)
+    {
+        if (!IsRevisioned)
+        {
+            throw new InvalidOperationException("Branding settings revisions have not started; run the Branding bootstrap first.");
+        }
+
+        ReplaceWith(settings, logoSha256);
+        SourceRevision++;
+    }
+
+    private void ReplaceWith(BrandingSettings settings, string? logoSha256)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -200,6 +235,7 @@ internal sealed class BrandingSettingsRecord
         HeadingFontFamily = settings.HeadingFontFamily;
         BodyFontFamily = settings.BodyFontFamily;
         LogoUri = settings.LogoUri;
+        LogoSha256 = logoSha256;
     }
 
     private BrandingSettingsDto ToDto()

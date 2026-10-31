@@ -142,6 +142,7 @@ public sealed class EfBrandingSettingsStoreTests
             string.Empty,
             string.Empty,
             string.Empty,
+            null,
             null);
 
         // Act

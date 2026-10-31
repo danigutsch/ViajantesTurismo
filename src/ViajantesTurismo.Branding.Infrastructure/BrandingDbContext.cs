@@ -22,6 +22,9 @@ public sealed class BrandingDbContext(
     /// <summary>Immutable history of committed Branding settings revisions.</summary>
     internal DbSet<BrandingSettingsRevisionRecord> BrandingSettingsRevisions => Set<BrandingSettingsRevisionRecord>();
 
+    /// <summary>Immutable content-addressed logos referenced by settings and their revisions.</summary>
+    internal DbSet<BrandingLogoRecord> BrandingLogos => Set<BrandingLogoRecord>();
+
     /// <inheritdoc />
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -44,6 +47,7 @@ public sealed class BrandingDbContext(
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasDefaultSchema(SchemaName);
+        modelBuilder.ApplyConfiguration(new BrandingLogoConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingSettingsConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingSettingsRevisionConfiguration());
         modelBuilder.ApplyConfiguration(new BrandingRecoveryAuditConfiguration());
