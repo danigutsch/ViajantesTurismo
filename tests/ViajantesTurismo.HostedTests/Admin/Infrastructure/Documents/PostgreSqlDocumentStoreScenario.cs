@@ -598,6 +598,25 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ct);
     }
 
+    /// <summary>
+    /// Appends the record through the audit trail sink during a plain SaveChanges, as the save pipeline does after the
+    /// pre-save stamp has run, and returns the stored lineage stamp.
+    /// </summary>
+    public async Task<Guid?> AppendAuditThroughSinkAndReadLineage(DocumentAuditRecord record, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        using (CurrentSaveChangesDbContext.Enter(dbContext))
+        {
+            await new DocumentAuditTrailSink().Append(record, ct);
+        }
+
+        _ = await dbContext.SaveChangesAsync(ct);
+        return await dbContext.DocumentAuditRecords
+            .Where(audit => audit.Id == record.Id)
+            .Select(audit => EF.Property<Guid?>(audit, "DocumentLineageId"))
+            .SingleAsync(ct);
+    }
+
     /// <summary>Returns whether the partial retention index on unfinalized drafts exists.</summary>
     public async ValueTask<bool> HasRetentionIndex(CancellationToken ct)
     {
