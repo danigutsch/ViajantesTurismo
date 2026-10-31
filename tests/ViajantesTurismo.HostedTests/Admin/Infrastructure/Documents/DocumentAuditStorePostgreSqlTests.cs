@@ -174,6 +174,52 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     }
 
     [Fact]
+    public async Task Purge_keeps_expired_records_and_records_rejected_evidence_when_the_commit_fails()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = new DateTime(2026, 7, 16, 12, 0, 0, DateTimeKind.Utc);
+        var expired = DocumentAuditInfrastructureTestData.CreateRecord(now.AddMonths(-25));
+        var commitFailure = new InvalidOperationException("Commit failed.");
+        await Scenario.SeedAudit(expired);
+
+        // Act
+        var thrown = await Scenario.PurgeExpiredAuditRecordsWhenTheFirstCommitFails(now, commitFailure, ct);
+        var record = await Scenario.GetAuditRecord(expired.Id, ct);
+        var evidence = await Scenario.GetPurgeEvidence(ct);
+
+        // Assert
+        thrown.ShouldBeSameAs(commitFailure);
+        record.ShouldNotBeNull();
+        var rejected = evidence.ShouldHaveSingleItem();
+        rejected.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        rejected.PurgedCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task PurgeExpiredRecords_keeps_records_the_database_clock_has_not_yet_expired_when_the_application_clock_is_ahead()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var databaseNow = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var expiresInThirtyMinutes = DocumentAuditInfrastructureTestData.CreateRecord(
+            databaseNow.AddMonths(-DocumentAuditLimits.RetentionMonths).AddMinutes(30));
+        var expired = DocumentAuditInfrastructureTestData.CreateRecord(databaseNow.AddMonths(-25));
+        await Scenario.SeedAudit(expiresInThirtyMinutes);
+        await Scenario.SeedAudit(expired);
+
+        // Act
+        var removedCount = await Scenario.PurgeExpiredAuditRecords(databaseNow.AddHours(1), ct);
+        var early = await Scenario.GetAuditRecord(expiresInThirtyMinutes.Id, ct);
+        var old = await Scenario.GetAuditRecord(expired.Id, ct);
+
+        // Assert
+        removedCount.ShouldBe(1);
+        early.ShouldNotBeNull();
+        old.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task PurgeExpiredRecords_deletes_the_boundary_in_bounded_batches_and_then_becomes_a_no_op()
     {
         // Arrange

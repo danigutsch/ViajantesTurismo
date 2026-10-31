@@ -23,6 +23,12 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
         get; set;
     }
 
+    /// <summary>Number of times staged changes were discarded.</summary>
+    public int DiscardCount
+    {
+        get; private set;
+    }
+
     /// <summary>Time passed to the last purge, or null when no purge ran.</summary>
     public DateTime? PurgeCalledAt
     {
@@ -45,5 +51,12 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
         }
 
         return Task.FromResult(PurgedCount);
+    }
+
+    /// <summary>Counts the discard and drops any evidence staged so far.</summary>
+    public void DiscardPendingChanges()
+    {
+        DiscardCount++;
+        PurgeRecords.Clear();
     }
 }

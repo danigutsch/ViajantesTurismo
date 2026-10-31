@@ -14,23 +14,28 @@ internal sealed class DocumentAuditStore(AdminWriteDbContext dbContext) : IDocum
     /// <summary>Stages purge evidence for insertion on the next save.</summary>
     public void Add(DocumentAuditPurgeRecord record) => dbContext.DocumentAuditPurgeRecords.Add(record);
 
-    /// <summary>Deletes up to one batch of audit records whose retention expired at or before <paramref name="now"/> and returns the count.</summary>
+    /// <summary>
+    /// Stages deletion of up to one batch of audit records whose retention expired at or before <paramref name="now"/>
+    /// and returns the count. The rows are removed on the next save, so the purge commits together with its evidence.
+    /// The cutoff never exceeds the database clock: the retention trigger judges expiry by that clock and would otherwise
+    /// fail the whole batch when the application clock is ahead.
+    /// </summary>
     public async Task<int> PurgeExpiredRecords(DateTime now, CancellationToken ct)
     {
-        var purgeIds = await dbContext.DocumentAuditRecords
-            .Where(record => record.RetentionExpiresAt <= now)
+        var databaseNow = await dbContext.Database
+            .SqlQueryRaw<DateTime>("SELECT now() AS \"Value\"")
+            .SingleAsync(ct);
+        var cutoff = now < databaseNow ? now : databaseNow;
+        var expired = await dbContext.DocumentAuditRecords
+            .Where(record => record.RetentionExpiresAt <= cutoff)
             .OrderBy(record => record.RetentionExpiresAt)
-            .Select(record => record.Id)
             .Take(PurgeBatchSize)
             .ToArrayAsync(ct);
 
-        if (purgeIds.Length == 0)
-        {
-            return 0;
-        }
-
-        return await dbContext.DocumentAuditRecords
-            .Where(record => purgeIds.Contains(record.Id) && record.RetentionExpiresAt <= now)
-            .ExecuteDeleteAsync(ct);
+        dbContext.DocumentAuditRecords.RemoveRange(expired);
+        return expired.Length;
     }
+
+    /// <summary>Clears the change tracker, dropping staged deletions and unsaved evidence.</summary>
+    public void DiscardPendingChanges() => dbContext.ChangeTracker.Clear();
 }
