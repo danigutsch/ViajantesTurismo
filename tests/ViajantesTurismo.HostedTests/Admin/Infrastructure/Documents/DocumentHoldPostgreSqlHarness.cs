@@ -9,6 +9,7 @@ using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
@@ -25,14 +26,19 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         this.provider = provider;
     }
 
-    /// <summary>Creates the harness over the given database; the schema must already be migrated. Retry must be off to hold a transaction open.</summary>
-    public static DocumentHoldPostgreSqlHarness Create(string connectionString, bool enableRetryOnFailure = true)
+    /// <summary>Creates the harness over the given database; the schema must already be migrated. Retry must be off to hold a transaction open. A given failure replaces the real hold guard with one that always throws it.</summary>
+    public static DocumentHoldPostgreSqlHarness Create(string connectionString, bool enableRetryOnFailure = true, Exception? holdGuardFailure = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(TimeProvider.System);
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
         services.AddAdminDispositionHolds();
+        if (holdGuardFailure is not null)
+        {
+            services.AddSingleton<IDispositionHoldGuard>(new FakeDispositionHoldGuard { Failure = holdGuardFailure });
+        }
+
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         services.AddDbContext<AdminWriteDbContext>(options => options.UseNpgsql(connectionString, npgsql =>

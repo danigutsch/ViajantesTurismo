@@ -115,6 +115,31 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
     }
 
     [Fact]
+    public async Task A_refused_draft_purge_deletes_nothing_and_persists_refused_evidence()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var created = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays - 1);
+        await Scenario.Seed(DocumentDraftInfrastructureTestData.CreateLineage(created));
+        await using var refusingHarness = DocumentHoldPostgreSqlHarness.Create(
+            Scenario.ConnectionString, holdGuardFailure: new DispositionHoldStateUnknownException());
+
+        // Act
+        Func<Task> purge = () => refusingHarness.PurgeDrafts(ct);
+
+        // Assert
+        await purge.ShouldThrow<DispositionHoldStateUnknownException>();
+        var allEvidence = await Scenario.GetRetentionPurgeEvidence(ct);
+        var evidence = allEvidence.ShouldHaveSingleItem();
+        evidence.Kind.ShouldBe(DocumentRetentionPurgeKind.Drafts);
+        evidence.Outcome.ShouldBe(DocumentRetentionPurgeOutcome.Refused);
+        evidence.PurgedCount.ShouldBe(0);
+        evidence.HeldCount.ShouldBe(0);
+        var remaining = await Scenario.GetDocuments(ct);
+        remaining.ShouldHaveSingleItem();
+    }
+
+    [Fact]
     public async Task Held_candidates_beyond_the_batch_size_do_not_starve_purgeable_ones()
     {
         // Arrange

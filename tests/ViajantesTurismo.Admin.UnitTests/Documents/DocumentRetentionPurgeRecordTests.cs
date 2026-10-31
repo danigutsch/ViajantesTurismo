@@ -41,6 +41,7 @@ public sealed class DocumentRetentionPurgeRecordTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+        result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull().Keys.ShouldBe(["purgeEvidence"]);
     }
 
     [Theory]
@@ -54,6 +55,7 @@ public sealed class DocumentRetentionPurgeRecordTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+        result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull().Keys.ShouldBe(["purgeEvidence"]);
     }
 
     [Fact]
@@ -66,6 +68,7 @@ public sealed class DocumentRetentionPurgeRecordTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+        result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull().Keys.ShouldBe(["occurredAtUtc"]);
     }
 
     [Fact]
@@ -79,6 +82,8 @@ public sealed class DocumentRetentionPurgeRecordTests
 
         // Assert
         kind.IsFailure.ShouldBeTrue();
+        kind.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull().Keys.ShouldBe(["purgeEvidence"]);
         outcome.IsFailure.ShouldBeTrue();
+        outcome.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull().Keys.ShouldBe(["purgeEvidence"]);
     }
 }

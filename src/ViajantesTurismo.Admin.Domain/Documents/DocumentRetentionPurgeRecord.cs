@@ -74,7 +74,7 @@ public sealed class DocumentRetentionPurgeRecord : IEntity<Guid>
     {
         if (occurredAtUtc.Kind != DateTimeKind.Utc)
         {
-            return DocumentAuditErrors.InvalidOccurredAtUtc().ConvertError<DocumentRetentionPurgeRecord>();
+            return DocumentRetentionPurgeErrors.InvalidOccurredAtUtc().ConvertError<DocumentRetentionPurgeRecord>();
         }
 
         if (!Enum.IsDefined(kind) ||
@@ -83,7 +83,7 @@ public sealed class DocumentRetentionPurgeRecord : IEntity<Guid>
             heldCount < 0 ||
             (outcome != DocumentRetentionPurgeOutcome.Succeeded && (purgedCount != 0 || heldCount != 0)))
         {
-            return DocumentAuditErrors.InvalidEvidence().ConvertError<DocumentRetentionPurgeRecord>();
+            return DocumentRetentionPurgeErrors.InvalidEvidence().ConvertError<DocumentRetentionPurgeRecord>();
         }
 
         return Result.Ok(new DocumentRetentionPurgeRecord(kind, purgedCount, heldCount, outcome, occurredAtUtc));
