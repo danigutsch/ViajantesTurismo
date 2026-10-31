@@ -466,7 +466,7 @@ rolled back
     rows a command creates.
 - `ClientGeneratedKeyConventionTests` fails when a non-owned entity of the Admin or Branding model has a
     key generated on add. The Catalog model is not covered yet: `CatalogTourReadModelEntity.CatalogTourId`
-    still relies on EF generating the key on add (tracked in #1478).
+    still relies on EF generating the key on add.
 
 ### CreateSlimBuilder
 
