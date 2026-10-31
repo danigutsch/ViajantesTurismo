@@ -1,6 +1,6 @@
 using PandaBear.Mediator;
 
-namespace ViajantesTurismo.Admin.Application.Bookings.Pipeline;
+namespace ViajantesTurismo.Admin.Application.Pipeline;
 
 /// <summary>
 /// Rejects a command before any handler work when the caller has already cancelled the request.

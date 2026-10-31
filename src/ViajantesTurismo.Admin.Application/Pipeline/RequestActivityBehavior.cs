@@ -1,15 +1,15 @@
 using PandaBear.Mediator;
 
-namespace ViajantesTurismo.Admin.Application.Bookings.Pipeline;
+namespace ViajantesTurismo.Admin.Application.Pipeline;
 
 /// <summary>
-/// Binds the runtime <see cref="ActivityBehavior{TRequest, TResponse}"/> into the Bookings command pipeline,
+/// Binds the runtime <see cref="ActivityBehavior{TRequest, TResponse}"/> into the Admin command pipeline,
 /// because the generator only discovers behaviors declared in marked or primary assemblies.
 /// </summary>
 /// <typeparam name="TRequest">The command type.</typeparam>
 /// <typeparam name="TResponse">The command response type.</typeparam>
 [PipelineOrder(PipelineStage.Observability, Order = 0)]
-public sealed class BookingActivityBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public sealed class RequestActivityBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : ICommand<TResponse>
 {
     private readonly ActivityBehavior<TRequest, TResponse> inner = new();

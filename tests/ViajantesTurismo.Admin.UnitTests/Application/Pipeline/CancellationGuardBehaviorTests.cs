@@ -1,8 +1,8 @@
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
-using ViajantesTurismo.Admin.Application.Bookings.Pipeline;
+using ViajantesTurismo.Admin.Application.Pipeline;
 
-namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
+namespace ViajantesTurismo.Admin.UnitTests.Application.Pipeline;
 
 public sealed class CancellationGuardBehaviorTests
 {
