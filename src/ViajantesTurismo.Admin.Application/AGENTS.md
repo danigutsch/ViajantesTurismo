@@ -15,7 +15,7 @@ Instructions for files under `src/ViajantesTurismo.Admin.Application/`.
 - Bookings commands (spike) implement `ICommand<Result>` / `ICommand<Result<T>>` and handlers implement
   `ICommandHandler<TCommand, TResponse>` (`ValueTask<TResponse> Handle`) from `PandaBear.Mediator`; endpoints dispatch through `ISender`.
   Handlers must be public; the assembly carries `[assembly: MediatorModule]` and the host calls `AddSharedKernelMediator()`.
-- Pipeline behaviors live in `Bookings/Pipeline`, must be open generic over exactly `<TRequest, TResponse>`,
+- Pipeline behaviors live in `Bookings/Pipeline` (booking-scoped) or `Pipeline` (all commands), must be open generic over exactly `<TRequest, TResponse>`,
   and declare `[PipelineOrder(PipelineStage.X)]`.
 - Do not use MediatR. Other features keep plain handler classes registered with scoped lifetime in Application dependency injection.
 
