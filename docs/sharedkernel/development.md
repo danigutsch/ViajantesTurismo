@@ -129,9 +129,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/96f094ff0c4e678bf72abb9041e6dd3b83602cac/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/079cd9fb28192d027fb14d959da9e29f7ab6d2a4/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`96f094ff0c4e678bf72abb9041e6dd3b83602cac`, while `.config/sharedkernel-candidate.json` still records the earlier
+`079cd9fb28192d027fb14d959da9e29f7ab6d2a4`, while `.config/sharedkernel-candidate.json` still records the earlier
 `libraryRevision`; the next candidate bump moves `libraryRevision` to that revision or a later one. Every pin bump
 must change all of these in the same commit, and `SharedKernelConsumerWorkflowTests` fails when they disagree:
 
