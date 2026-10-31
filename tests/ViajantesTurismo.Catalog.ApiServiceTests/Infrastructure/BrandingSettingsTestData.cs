@@ -13,7 +13,7 @@ internal static class BrandingSettingsTestData
         TextColor = "#000000",
         HeadingFontFamily = "Inter",
         BodyFontFamily = "Verdana",
-        LogoUri = "https://cdn.example.test/logo.svg"
+        LogoUri = null
     };
 
     /// <summary>Creates valid domain settings from the DTO using the default allowed fonts.</summary>

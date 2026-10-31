@@ -28,7 +28,7 @@ internal static class DocumentArtifactRenderer
             new DocumentBrandingSnapshot(
                 document.BrandingVersion,
                 document.BrandingName,
-                document.BrandingLogoUri is { IsAbsoluteUri: false } logoUri ? logoUri : null,
+                RasterDataLogo.From(document.BrandingLogoUri),
                 document.BrandingPrimaryColor,
                 document.BrandingAccentColor,
                 document.BrandingBackgroundColor,

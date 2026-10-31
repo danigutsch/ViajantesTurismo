@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -26,7 +27,7 @@ internal static class DocumentLineageTestData
         ],
         "BRANDING-VERSION",
         "Viajantes Turismo",
-        new Uri("/logo.svg", UriKind.Relative),
+        DocumentLogoTestData.DataUri,
         "#102030",
         "#405060",
         "#ffffff",

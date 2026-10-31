@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Branding;
+using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
@@ -35,6 +36,25 @@ public sealed class BrandingProjectionPostgreSqlTests(PostgreSqlTestServerFixtur
         await save.ShouldThrow<DbUpdateConcurrencyException>();
         var projection = await scenario.Read(ct);
         projection.ShouldBe((2L, "From A", 2L));
+    }
+
+    [Fact]
+    public async Task The_logo_bytes_are_stored_and_read_back_unchanged()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var database = await fixture.CreateDatabase(ct);
+        await using var scenario = await BrandingProjectionPostgreSqlScenario.Create(database, ct);
+        await scenario.Apply(BrandingProjectionTestEvents.CreateWithLogo(1, "Logo", DocumentLogoTestData.Content), ct);
+
+        // Act
+        var state = await scenario.CreateStore().GetCurrent(ct);
+
+        // Assert
+        var logo = state.ShouldNotBeNull().Logo.ShouldNotBeNull();
+        logo.Sha256.ShouldBe(DocumentLogoTestData.Sha256);
+        logo.ContentType.ShouldBe("image/webp");
+        logo.Content.ShouldBe(DocumentLogoTestData.Content);
     }
 
     [Fact]

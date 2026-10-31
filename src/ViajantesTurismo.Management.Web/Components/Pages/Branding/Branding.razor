@@ -43,10 +43,23 @@ else
                 <ValidationMessage For="() => _model.BrandName" />
             </div>
             <div class="mb-3">
-                <label for="branding-logo-uri" class="form-label">Logo URI</label>
-                <InputText id="branding-logo-uri" class="form-control" @bind-Value="_model.LogoUri" />
-                <ValidationMessage For="() => _model.LogoUri" />
-                <div class="form-text">Optional. Use a root-relative path or HTTPS URI.</div>
+                <label for="branding-logo-file" class="form-label">Logo image</label>
+                <InputFile id="branding-logo-file" class="form-control" accept="image/png,image/jpeg,image/webp"
+                           aria-describedby="@LogoDescribedBy" aria-invalid="@(_logoError is null ? null : "true")" disabled="@(_uploading || _saving)"
+                           OnChange="UploadLogo" />
+                <div id="branding-logo-help" class="form-text">
+                    Optional. PNG, JPEG or WebP, up to 1 MiB and 2048 x 2048 pixels. The image is converted to a small WebP logo.
+                </div>
+                <div id="branding-logo-status" class="form-text" role="status" aria-live="polite">@LogoStatus</div>
+                @if (_logoError is not null)
+                {
+                    <div id="branding-logo-error" class="text-danger" role="alert">@_logoError</div>
+                }
+                @if (HasLogo)
+                {
+                    <button type="button" class="btn btn-outline-secondary btn-sm mt-2" disabled="@(_uploading || _saving)"
+                            @onclick="RemoveLogo">Remove logo</button>
+                }
             </div>
         </fieldset>
 
@@ -104,6 +117,9 @@ else
 }
 
 @code {
+    private const int MaxLogoUploadBytes = 1024 * 1024;
+    private const string LogoTooLargeMessage = "The logo is larger than 1 MiB. Choose a smaller image.";
+
     private static readonly IReadOnlyList<string> AllowedFontFamilies = BrandingFontFamilies.All;
 
     private BrandingFormModel _model = BrandingFormModel.Default();
@@ -114,7 +130,7 @@ else
     private static readonly IReadOnlyList<KeyValuePair<string, string>> FieldIds =
     [
         new("BrandName", "branding-brand-name"),
-        new("LogoUri", "branding-logo-uri"),
+        new("LogoUri", "branding-logo-file"),
         new("PrimaryColor", "branding-primary-color"),
         new("AccentColor", "branding-accent-color"),
         new("BackgroundColor", "branding-background-color"),
@@ -150,6 +166,8 @@ else
     private string? _entityTag;
     private bool _loading = true;
     private bool _saving;
+    private bool _uploading;
+    private string? _logoError;
     private string? _errorMessage;
     private string? _successMessage;
 
@@ -168,6 +186,113 @@ else
 
         _loading = false;
     }
+
+    private string LogoDescribedBy => _logoError is null
+        ? "branding-logo-help branding-logo-status"
+        : "branding-logo-help branding-logo-status branding-logo-error";
+
+    private bool HasLogo => !string.IsNullOrEmpty(_model.LogoUri);
+
+    private string LogoStatus => _uploading ? "Uploading logo..." : HasLogo ? "A logo is set." : "No logo is set.";
+
+    private async Task UploadLogo(InputFileChangeEventArgs args)
+    {
+        if (args.FileCount != 1)
+        {
+            return;
+        }
+
+        BeginLogoOperation();
+        if (_entityTag is null)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("upload the logo");
+            return;
+        }
+
+        _uploading = true;
+        try
+        {
+            var file = args.File;
+            await using var content = file.OpenReadStream(MaxLogoUploadBytes);
+            var uploaded = await BrandingApi.UploadLogo(content, file.ContentType, _entityTag, CancellationToken.None);
+            await ApplyLogoOutcome(uploaded, "Logo uploaded.");
+        }
+        catch (IOException)
+        {
+            _logoError = LogoTooLargeMessage;
+        }
+        catch (InvalidOperationException)
+        {
+            _logoError = UserFacingErrorMessage.ForOperation("upload the logo");
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+
+    /// <summary>Removes only the logo; unsaved edits to the other fields stay in the form.</summary>
+    private async Task RemoveLogo()
+    {
+        BeginLogoOperation();
+        if (_entityTag is null)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("remove the logo");
+            return;
+        }
+
+        _uploading = true;
+        try
+        {
+            var removed = await BrandingApi.RemoveLogo(_entityTag, CancellationToken.None);
+            await ApplyLogoOutcome(removed, "Logo removed.");
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+
+    private void BeginLogoOperation()
+    {
+        _logoError = null;
+        _errorMessage = null;
+        _successMessage = null;
+    }
+
+    /// <summary>
+    /// Takes only the logo address and the new entity tag from the logo response, so unsaved edits to the other
+    /// fields survive. The response carries no validator, so one read supplies the tag.
+    /// </summary>
+    private async Task ApplyLogoOutcome(HttpOutcome<BrandingManagementSettingsDto> outcome, string successMessage)
+    {
+        if (outcome.Kind != HttpOutcomeKind.Succeeded)
+        {
+            _logoError = LogoErrorMessage(outcome);
+            return;
+        }
+
+        var reloaded = await BrandingApi.GetSettings(CancellationToken.None);
+        if (reloaded is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
+        {
+            _model.LogoUri = document.Settings.LogoUri?.OriginalString ?? string.Empty;
+            _entityTag = document.EntityTag;
+            _successMessage = successMessage;
+        }
+        else
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("update the logo");
+        }
+    }
+
+    private static string LogoErrorMessage(HttpOutcome<BrandingManagementSettingsDto> outcome) => outcome switch
+    {
+        { StatusCode: HttpStatusCode.PreconditionFailed } => SaveErrorMessage(outcome),
+        { StatusCode: HttpStatusCode.BadRequest } or { Kind: HttpOutcomeKind.ValidationProblem } =>
+            "The logo could not be used. Choose a PNG, JPEG or WebP image up to 1 MiB and 2048 x 2048 pixels.",
+        { StatusCode: HttpStatusCode.ServiceUnavailable } => "The logo scanner is unavailable. Try again later.",
+        _ => UserFacingErrorMessage.ForOperation("upload the logo")
+    };
 
     private async Task SaveBranding()
     {
@@ -201,13 +326,13 @@ else
     }
 
     /// <summary>The write response carries no validator; one fresh read replaces the document and its entity tag together.</summary>
-    private async Task ReloadDocumentAndEntityTag()
+    private async Task ReloadDocumentAndEntityTag(string successMessage = "Branding saved.")
     {
         var reloaded = await BrandingApi.GetSettings(CancellationToken.None);
         if (reloaded is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
         {
             ApplyDocument(document);
-            _successMessage = "Branding saved.";
+            _successMessage = successMessage;
         }
         else
         {
@@ -247,7 +372,6 @@ else
         public string BrandName { get; set; } = string.Empty;
 
         [StringLength(BrandingContractConstants.MaxLogoUriLength)]
-        [RegularExpression(@"^(|/(?!/)[^\s\\]*|https://(?![^/\s\\]*@)[^/\s\\]+[^\s\\]*)$", ErrorMessage = "Use an optional root-relative path or HTTPS URI without spaces, backslashes, or credentials.")]
         public string LogoUri { get; set; } = string.Empty;
 
         [Required]

@@ -18,7 +18,7 @@ internal static class DocumentBrandingSnapshotFactory
 
         return Create(
             projection.BrandName,
-            projection.LogoUri?.OriginalString,
+            projection.Logo,
             projection.PrimaryColor,
             projection.AccentColor,
             projection.BackgroundColor,
@@ -30,7 +30,7 @@ internal static class DocumentBrandingSnapshotFactory
 
     private static DocumentBrandingSnapshotValues Create(
         string brandName,
-        string? rawLogoUri,
+        BrandingProjectionLogo? logo,
         string primaryColor,
         string accentColor,
         string backgroundColor,
@@ -39,10 +39,9 @@ internal static class DocumentBrandingSnapshotFactory
         string bodyFontFamily,
         long sourceRevision)
     {
-        var logoUri = rawLogoUri is { Length: <= DocumentLimits.MaxBrandingLogoUriLength } value ? value : null;
-        var parsedLogoUri = WebAssetUriSanitizer.ToRootRelativeOrHttpsUri(logoUri, DocumentLimits.MaxBrandingLogoUriLength);
+        var parsedLogoUri = ToDataUri(logo);
         var footerText = brandName;
-        var source = string.Join("\n", brandName, parsedLogoUri?.OriginalString ?? string.Empty, primaryColor,
+        var source = string.Join("\n", brandName, parsedLogoUri is null ? string.Empty : logo?.Sha256 ?? string.Empty, primaryColor,
             accentColor, backgroundColor, textColor, headingFontFamily, bodyFontFamily, footerText);
         var version = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source)));
         return new DocumentBrandingSnapshotValues(
@@ -57,5 +56,18 @@ internal static class DocumentBrandingSnapshotFactory
             bodyFontFamily,
             footerText,
             sourceRevision);
+    }
+
+    private static Uri? ToDataUri(BrandingProjectionLogo? logo)
+    {
+        if (logo is null)
+        {
+            return null;
+        }
+
+        var dataUri = $"data:{logo.ContentType};base64,{Convert.ToBase64String(logo.Content)}";
+        return WebAssetUriSanitizer.NormalizeRasterDataImage(dataUri, DocumentLimits.MaxBrandingLogoUriLength) is { } valid
+            ? new Uri(valid, UriKind.Absolute)
+            : null;
     }
 }

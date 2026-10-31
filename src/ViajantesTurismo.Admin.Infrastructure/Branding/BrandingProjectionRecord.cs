@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using ViajantesTurismo.Admin.Application.Branding;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Branding;
@@ -85,6 +86,25 @@ internal sealed class BrandingProjectionRecord
         get; private set;
     }
 
+    /// <summary>Lowercase hexadecimal SHA-256 of <see cref="LogoContent" />; null when no logo is stored.</summary>
+    public string? LogoSha256
+    {
+        get; private set;
+    }
+
+    /// <summary>Media type of <see cref="LogoContent" />; null when no logo is stored.</summary>
+    public string? LogoContentType
+    {
+        get; private set;
+    }
+
+    /// <summary>Re-encoded logo bytes; null when no logo is stored.</summary>
+    [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "The row maps one bytea column.")]
+    public byte[]? LogoContent
+    {
+        get; private set;
+    }
+
     /// <summary>Creates the projection row from a state.</summary>
     public static BrandingProjectionRecord Create(BrandingProjectionState state)
     {
@@ -108,6 +128,9 @@ internal sealed class BrandingProjectionRecord
         HeadingFontFamily = state.HeadingFontFamily;
         BodyFontFamily = state.BodyFontFamily;
         LogoUri = state.LogoUri?.OriginalString;
+        LogoSha256 = state.Logo?.Sha256;
+        LogoContentType = state.Logo?.ContentType;
+        LogoContent = state.Logo?.Content;
     }
 
     /// <summary>Converts the row back to an application projection state.</summary>
@@ -121,5 +144,8 @@ internal sealed class BrandingProjectionRecord
         TextColor,
         HeadingFontFamily,
         BodyFontFamily,
-        LogoUri is null ? null : new Uri(LogoUri, UriKind.RelativeOrAbsolute));
+        LogoUri is null ? null : new Uri(LogoUri, UriKind.RelativeOrAbsolute),
+        LogoSha256 is { } sha256 && LogoContentType is { } contentType && LogoContent is { } content
+            ? new BrandingProjectionLogo(sha256, contentType, content)
+            : null);
 }

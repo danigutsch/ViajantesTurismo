@@ -59,6 +59,11 @@ internal sealed class EfBrandingSettingsStore(
         var existing = await Load(ct).ConfigureAwait(false);
         if (existing is null)
         {
+            if (settings.LogoUri is not null)
+            {
+                throw new ArgumentException("Branding settings cannot keep a logo before one is stored.", nameof(settings));
+            }
+
             existing = BrandingSettingsRecord.StartLineage(settings, Guid.CreateVersion7());
             dbContext.BrandingSettings.Add(existing);
         }
@@ -72,6 +77,58 @@ internal sealed class EfBrandingSettingsStore(
         }
 
         await CommitRevision(existing, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<BrandingSettingsSnapshot?> ReplaceLogoIfMatch(
+        BrandingLogo? logo,
+        Func<BrandingSettingsSnapshot?, bool> precondition,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(precondition);
+
+        var existing = await Load(ct).ConfigureAwait(false);
+        if (!precondition(ToSnapshot(existing)))
+        {
+            return null;
+        }
+
+        if (existing is not { IsRevisioned: true } || existing.ToSettings(BrandingFontFamilies.All) is not { } current)
+        {
+            throw new InvalidOperationException("Branding revisions have not started; there are no settings to attach a logo to.");
+        }
+
+        if (existing.HasSameLogo(logo?.Sha256))
+        {
+            return ToSnapshot(existing);
+        }
+
+        if (logo is not null && !await dbContext.BrandingLogos.AnyAsync(stored => stored.Sha256 == logo.Sha256, ct).ConfigureAwait(false))
+        {
+            dbContext.BrandingLogos.Add(BrandingLogoRecord.Create(logo, timeProvider.GetUtcNow()));
+        }
+
+        var dto = current.ToDto();
+        dto.LogoUri = logo is null ? null : BrandingLogoPath.For(logo.Sha256);
+        var updated = BrandingSettings.Create(dto, BrandingFontFamilies.All);
+        existing.ApplyLogoRevision(
+            updated.TryGetValue(out var settings) ? settings : throw new InvalidOperationException("The generated logo URL is not a valid Branding logo URI."),
+            logo?.Sha256);
+
+        await CommitRevision(existing, ct).ConfigureAwait(false);
+        return ToSnapshot(await Load(ct).ConfigureAwait(false));
+    }
+
+    /// <inheritdoc />
+    public async Task<BrandingLogo?> GetLogo(string sha256, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(sha256);
+
+        var stored = await dbContext.BrandingLogos
+            .AsNoTracking()
+            .SingleOrDefaultAsync(logo => logo.Sha256 == sha256, ct)
+            .ConfigureAwait(false);
+        return stored?.ToLogo();
     }
 
     /// <summary>
@@ -187,8 +244,10 @@ internal sealed class EfBrandingSettingsStore(
         }
     }
 
-    private ValueTask Enqueue(BrandingSettingsRecord current, Guid eventId, DateTimeOffset occurredAt, CancellationToken ct) =>
-        outbox.Enqueue(
+    private async ValueTask Enqueue(BrandingSettingsRecord current, Guid eventId, DateTimeOffset occurredAt, CancellationToken ct)
+    {
+        var logo = await LoadLogo(current, ct).ConfigureAwait(false);
+        await outbox.Enqueue(
             new BrandingSettingsChangedIntegrationEvent(
                 eventId,
                 occurredAt,
@@ -201,6 +260,21 @@ internal sealed class EfBrandingSettingsStore(
                 current.TextColor,
                 current.HeadingFontFamily,
                 current.BodyFontFamily,
-                current.LogoUri is null ? null : new Uri(current.LogoUri, UriKind.RelativeOrAbsolute)),
-            ct);
+                current.LogoUri is null ? null : new Uri(current.LogoUri, UriKind.RelativeOrAbsolute),
+                logo?.Sha256,
+                logo?.ContentType,
+                logo?.Content),
+            ct).ConfigureAwait(false);
+    }
+
+    private async Task<BrandingLogoRecord?> LoadLogo(BrandingSettingsRecord current, CancellationToken ct)
+    {
+        if (current.LogoSha256 is null)
+        {
+            return null;
+        }
+
+        return await dbContext.BrandingLogos.FindAsync([current.LogoSha256], ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The stored Branding logo is missing.");
+    }
 }

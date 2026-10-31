@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
+using PandaBear.MalwareScanning;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.ApiService;
@@ -63,6 +64,18 @@ internal static class BrandingApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<ILogger<BrandingAspNetCoreMarker>>(_ => logger));
             }
         }));
+    }
+
+    /// <summary>Replaces the malware scanner of an existing Branding test host.</summary>
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> WithMalwareScanner(
+        WebApplicationFactory<CatalogApiHostEntryPoint> factory,
+        IMalwareScanner scanner)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        ArgumentNullException.ThrowIfNull(scanner);
+
+        return factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
+            services.Replace(ServiceDescriptor.Singleton(scanner))));
     }
 
     /// <summary>Configures the client with a token for the Branding audience and the given role.</summary>

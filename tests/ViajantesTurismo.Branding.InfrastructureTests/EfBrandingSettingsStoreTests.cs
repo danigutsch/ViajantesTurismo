@@ -142,6 +142,7 @@ public sealed class EfBrandingSettingsStoreTests
             string.Empty,
             string.Empty,
             string.Empty,
+            null,
             null);
 
         // Act
@@ -176,7 +177,7 @@ public sealed class EfBrandingSettingsStoreTests
             TextColor = "#000000",
             HeadingFontFamily = "Inter",
             BodyFontFamily = "Verdana",
-            LogoUri = "/assets/logo.svg"
+            LogoUri = null
         }, BrandingFontFamilies.All).Value;
 
         // Act
@@ -188,6 +189,6 @@ public sealed class EfBrandingSettingsStoreTests
         saved.ShouldNotBeNull();
         saved.BrandName.ShouldBe("Updated Brand");
         saved.PrimaryColor.ShouldBe("#112233");
-        saved.LogoUri.ShouldBe("/assets/logo.svg");
+        saved.LogoUri.ShouldBeNull();
     }
 }

@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -301,7 +302,7 @@ public sealed class DocumentDraftTests
         var brandingLogoResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
             "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo",
-            new Uri($"/{new string('l', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Relative), now);
+            new Uri($"data:image/webp;base64,{new string('A', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Absolute), now);
 
         // Assert
         sourceVersionResult.IsFailure.ShouldBeTrue();
@@ -464,12 +465,12 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
-    public void Create_accepts_safe_https_branding_logo_and_custom_tokens()
+    public void Create_accepts_raster_data_uri_branding_logo_and_custom_tokens()
     {
         // Arrange
         var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
         DocumentField[] fields = [DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value];
-        var logoUri = new Uri("https://cdn.example.test/logo.svg", UriKind.Absolute);
+        var logoUri = DocumentLogoTestData.DataUri;
 
         // Act
         var result = DocumentDraft.Create(
@@ -615,7 +616,7 @@ public sealed class DocumentDraftTests
             fields,
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri($"/{new string('l', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Relative),
+            new Uri($"data:image/webp;base64,{new string('A', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Absolute),
             now);
 
         // Assert
@@ -627,6 +628,10 @@ public sealed class DocumentDraftTests
     [InlineData("https://viewer@example.test/logo.svg")]
     [InlineData("//example.test/logo.svg")]
     [InlineData("/\\evil.test/logo.svg")]
+    [InlineData("/logo.svg")]
+    [InlineData("https://cdn.example.test/logo.png")]
+    [InlineData("data:image/svg+xml;base64,PHN2Zy8+")]
+    [InlineData("data:image/webp;base64,AAAA")]
     public void Create_rejects_unsafe_branding_logo_uris(string logoValue)
     {
         // Arrange

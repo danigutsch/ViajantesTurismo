@@ -25,8 +25,7 @@ public sealed class BrandingStateTransferPostgreSqlTests(PostgreSqlTestServerFix
                 BackgroundColor = "#FFFFFF",
                 TextColor = "#000000",
                 HeadingFontFamily = "Inter",
-                BodyFontFamily = "Verdana",
-                LogoUri = "/branding/logo.svg"
+                BodyFontFamily = "Verdana"
             },
             BrandingFontFamilies.All).Value;
 
@@ -40,6 +39,6 @@ public sealed class BrandingStateTransferPostgreSqlTests(PostgreSqlTestServerFix
         snapshot.IsSuccess.ShouldBeTrue();
         snapshot.Value.SourceRevision.ShouldBe(1);
         snapshot.Value.PrimaryColor.ShouldBe("#112233");
-        snapshot.Value.LogoUri.ShouldNotBeNull().OriginalString.ShouldBe("/branding/logo.svg");
+        snapshot.Value.LogoUri.ShouldBeNull();
     }
 }

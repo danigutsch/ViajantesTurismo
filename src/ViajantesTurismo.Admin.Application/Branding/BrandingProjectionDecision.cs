@@ -19,5 +19,8 @@ public enum BrandingProjectionDecision
     EpochMismatch,
 
     /// <summary>The event lacks a source epoch or a positive source revision.</summary>
-    InvalidEnvelope
+    InvalidEnvelope,
+
+    /// <summary>The logo fields are partial, oversize, of the wrong type or do not match their SHA-256.</summary>
+    InvalidLogo
 }

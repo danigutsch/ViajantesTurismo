@@ -1,3 +1,4 @@
+using System.Net;
 using PandaBear.Testing;
 using BrandingPage = ViajantesTurismo.Management.Web.Components.Pages.Branding.Branding;
 using ViajantesTurismo.Branding.Contracts.Http;
@@ -7,6 +8,8 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Branding;
 [TestScope(TestScope.Component)]
 public sealed class BrandingTests : BunitContext
 {
+    private const string GeneratedLogoUri = "/api/v1/public/branding/logo/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
     private readonly FakeBrandingApiClient brandingApi = new();
 
     public BrandingTests()
@@ -22,7 +25,7 @@ public sealed class BrandingTests : BunitContext
         brandingApi.Branding = new BrandingSettingsDto
         {
             BrandName = "Camino Riders",
-            LogoUri = "https://cdn.example/logo.svg",
+            LogoUri = GeneratedLogoUri,
             PrimaryColor = "#112233",
             AccentColor = "#445566",
             BackgroundColor = "#FFFFFF",
@@ -37,7 +40,8 @@ public sealed class BrandingTests : BunitContext
 
         // Assert
         cut.Find("#branding-brand-name").GetAttribute("value").ShouldBe("Camino Riders");
-        cut.Find("#branding-logo-uri").GetAttribute("value").ShouldBe("https://cdn.example/logo.svg");
+        cut.Find("#branding-logo-status").TextContent.ShouldBe("A logo is set.");
+        cut.FindAll("#branding-logo-uri").ShouldBeEmpty();
         cut.Find("#branding-primary-color").GetAttribute("value").ShouldBe("#112233");
         cut.Find("#branding-heading-font").GetAttribute("value").ShouldBe("Inter");
     }
@@ -51,7 +55,6 @@ public sealed class BrandingTests : BunitContext
 
         // Act
         cut.Find("#branding-brand-name").Change("Camino Riders");
-        cut.Find("#branding-logo-uri").Change("https://cdn.example/logo.svg");
         cut.Find("#branding-primary-color").Change("#112233");
         cut.Find("#branding-accent-color").Change("#445566");
         cut.Find("#branding-background-color").Change("#FFFFFF");
@@ -64,7 +67,7 @@ public sealed class BrandingTests : BunitContext
         cut.WaitForState(() => brandingApi.SavedBranding is not null, TimeSpan.FromSeconds(2));
         var savedBranding = brandingApi.SavedBranding.ShouldNotBeNull();
         savedBranding.BrandName.ShouldBe("Camino Riders");
-        savedBranding.LogoUri.ShouldBe("https://cdn.example/logo.svg");
+        savedBranding.LogoUri.ShouldBeNull();
         savedBranding.PrimaryColor.ShouldBe("#112233");
         savedBranding.HeadingFontFamily.ShouldBe("Inter");
         cut.Markup.ShouldContain("Branding saved", StringComparison.Ordinal);
@@ -123,7 +126,7 @@ public sealed class BrandingTests : BunitContext
         string[] inputIds =
         [
             "branding-brand-name",
-            "branding-logo-uri",
+            "branding-logo-file",
             "branding-primary-color",
             "branding-accent-color",
             "branding-background-color",
@@ -360,5 +363,150 @@ public sealed class BrandingTests : BunitContext
         cut.WaitForState(() => cut.FindAll(".alert-danger").Count == 1, TimeSpan.FromSeconds(2));
         cut.Find(".alert-danger").TextContent.ShouldBe("We couldn't save branding right now. Please try again.");
         cut.Markup.ShouldNotContain("Branding saved", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Offers_an_accessible_image_upload_with_hints_and_a_live_status()
+    {
+        // Act
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Assert
+        var input = cut.Find("#branding-logo-file");
+        input.GetAttribute("accept").ShouldBe("image/png,image/jpeg,image/webp");
+        input.GetAttribute("aria-describedby").ShouldBe("branding-logo-help branding-logo-status");
+        cut.Find("#branding-logo-help").TextContent.ShouldContain("1 MiB", StringComparison.Ordinal);
+        cut.Find("#branding-logo-status").GetAttribute("aria-live").ShouldBe("polite");
+        cut.Find("#branding-logo-status").TextContent.ShouldBe("No logo is set.");
+        cut.FindAll("button:contains('Remove logo')").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Uploads_the_chosen_image_with_the_loaded_entity_tag()
+    {
+        // Arrange
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+        byte[] png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary(png, "logo.png", contentType: "image/png"));
+
+        // Assert
+        cut.WaitForState(() => brandingApi.UploadedContent is not null, TimeSpan.FromSeconds(2));
+        brandingApi.UploadedContentType.ShouldBe("image/png");
+        brandingApi.UploadedContent.ShouldBe(png);
+        brandingApi.UploadedEntityTag.ShouldBe(BrandingEntityTags.Format(brandingApi.SourceEpoch, 1));
+        cut.WaitForState(() => cut.Markup.Contains("Logo uploaded.", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.Find("#branding-logo-status").TextContent.ShouldBe("A logo is set.");
+    }
+
+    [Fact]
+    public void Shows_fixed_error_copy_when_the_server_refuses_the_image()
+    {
+        // Arrange
+        brandingApi.UploadFailureStatus = HttpStatusCode.BadRequest;
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary([1, 2, 3], "logo.png", contentType: "image/png"));
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll("#branding-logo-error").Count == 1, TimeSpan.FromSeconds(2));
+        var error = cut.Find("#branding-logo-error");
+        error.GetAttribute("role").ShouldBe("alert");
+        error.TextContent.ShouldContain("PNG, JPEG or WebP", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Reports_a_stale_entity_tag_when_uploading()
+    {
+        // Arrange
+        brandingApi.UploadFailureStatus = HttpStatusCode.PreconditionFailed;
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary([1], "logo.png", contentType: "image/png"));
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll("#branding-logo-error").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find("#branding-logo-error").TextContent.ShouldContain("changed by someone else", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Removing_the_logo_calls_the_dedicated_route_and_keeps_unsaved_edits()
+    {
+        // Arrange
+        brandingApi.Branding.LogoUri = GeneratedLogoUri;
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.FindAll("button:contains('Remove logo')").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find("#branding-brand-name").Change("Unsaved name");
+
+        // Act
+        cut.Find("button:contains('Remove logo')").Click();
+
+        // Assert
+        cut.WaitForState(() => brandingApi.RemovedEntityTag is not null, TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Find("#branding-logo-status").TextContent == "No logo is set.", TimeSpan.FromSeconds(2));
+        brandingApi.SavedBranding.ShouldBeNull();
+        cut.Find("#branding-brand-name").GetAttribute("value").ShouldBe("Unsaved name");
+        cut.Markup.ShouldContain("Logo removed.", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Uploading_a_logo_keeps_unsaved_edits_to_other_fields()
+    {
+        // Arrange
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+        cut.Find("#branding-brand-name").Change("Unsaved name");
+        cut.Find("#branding-primary-color").Change("#123456");
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary([1, 2], "logo.png", contentType: "image/png"));
+
+        // Assert
+        cut.WaitForState(() => cut.Find("#branding-logo-status").TextContent == "A logo is set.", TimeSpan.FromSeconds(2));
+        cut.Find("#branding-brand-name").GetAttribute("value").ShouldBe("Unsaved name");
+        cut.Find("#branding-primary-color").GetAttribute("value").ShouldBe("#123456");
+    }
+
+    [Fact]
+    public async Task A_file_dialog_change_without_a_file_does_nothing()
+    {
+        // Arrange
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        var input = cut.FindComponent<InputFile>().Instance;
+        await cut.InvokeAsync(() => input.OnChange.InvokeAsync(new InputFileChangeEventArgs([])));
+
+        // Assert
+        brandingApi.UploadedContent.ShouldBeNull();
+        cut.FindAll("#branding-logo-error").ShouldBeEmpty();
+        cut.FindAll(".alert-danger").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void A_logo_error_is_linked_to_the_input_and_marks_it_invalid()
+    {
+        // Arrange
+        brandingApi.UploadFailureStatus = HttpStatusCode.BadRequest;
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+        cut.Find("#branding-logo-file").GetAttribute("aria-invalid").ShouldBeNull();
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary([1], "logo.png", contentType: "image/png"));
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll("#branding-logo-error").Count == 1, TimeSpan.FromSeconds(2));
+        var input = cut.Find("#branding-logo-file");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-describedby").ShouldBe("branding-logo-help branding-logo-status branding-logo-error");
     }
 }
