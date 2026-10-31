@@ -175,6 +175,27 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
         return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, ToManagement(Branding));
     }
 
+    /// <summary>Entity tag received by the latest remove call.</summary>
+    public string? RemovedEntityTag
+    {
+        get; private set;
+    }
+
+    /// <summary>Records the remove call, then clears the stored logo URL or applies the configured upload failure.</summary>
+    public Task<HttpOutcome<BrandingManagementSettingsDto>> RemoveLogo(string entityTag, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        RemovedEntityTag = entityTag;
+        if (UploadFailureStatus is { } status)
+        {
+            return Task.FromResult(HttpOutcomeMapper.Status<BrandingManagementSettingsDto>(HttpOutcomeKind.UnexpectedStatus, status));
+        }
+
+        Branding.LogoUri = null;
+        SourceRevision++;
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, ToManagement(Branding)));
+    }
+
     private BrandingManagementSettingsDto ToManagement(BrandingSettingsDto settings) => new()
     {
         BrandName = settings.BrandName,

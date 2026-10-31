@@ -342,7 +342,8 @@ Recorded deviations:
    WebP of at most 40 KiB, stored by SHA-256 and served from an immutable public route. The settings-changed event
    carries the bytes in additive optional fields (`LogoSha256`, `LogoContentType`, `LogoContent`; event version
    unchanged), so the Admin projection holds the bytes locally and a finalized document embeds them as a data URI
-   instead of depending on a live fetch. Invalid logo fields are rejected like other poison events. See
+   instead of depending on a live fetch. Invalid logo fields are rejected like other poison events. The bytes ride every
+   revision's outbox payload (about 54 KB base64); sending them only on a hash change is a possible follow-up. See
    [Branding](../branding.md#logo).
 
 ## Consequences

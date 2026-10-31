@@ -95,4 +95,20 @@ public sealed class BrandingManagementClient(HttpClient httpClient) : IBrandingM
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
     }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<BrandingManagementSettingsDto>> RemoveLogo(string entityTag, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(entityTag);
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Delete, new Uri(ManagementLogoRequestPath, UriKind.Relative));
+        httpRequest.Headers.IfMatch.ParseAdd(entityTag);
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            httpRequest,
+            HttpStatusCode.OK,
+            Json.BrandingManagementSettingsDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+    }
 }

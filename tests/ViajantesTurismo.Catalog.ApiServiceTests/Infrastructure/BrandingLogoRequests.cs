@@ -26,6 +26,20 @@ internal static class BrandingLogoRequests
         return client.SendAsync(message, TestContext.Current.CancellationToken);
     }
 
+    /// <summary>Sends a DELETE of the logo, adding an If-Match header when values are given.</summary>
+    public static Task<HttpResponseMessage> DeleteLogo(HttpClient client, params string[] ifMatch)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+
+        var message = new HttpRequestMessage(HttpMethod.Delete, new Uri(ManagementLogoPath, UriKind.Relative));
+        if (ifMatch.Length > 0)
+        {
+            message.Headers.TryAddWithoutValidation("If-Match", ifMatch).ShouldBeTrue();
+        }
+
+        return client.SendAsync(message, TestContext.Current.CancellationToken);
+    }
+
     /// <summary>Sends a GET of the public logo with the given address and optional If-None-Match value.</summary>
     public static Task<HttpResponseMessage> GetLogo(HttpClient client, string address, string? ifNoneMatch = null)
     {

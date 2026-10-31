@@ -41,4 +41,10 @@ public interface IBrandingManagementClient
     /// precondition failures follow <see cref="SaveSettings" />.
     /// </returns>
     Task<HttpOutcome<BrandingManagementSettingsDto>> UploadLogo(Stream content, string contentType, string entityTag, CancellationToken ct);
+
+    /// <summary>Removes the logo when <paramref name="entityTag" /> still identifies the current revision.</summary>
+    /// <param name="entityTag">The entity tag from the read the edit started from.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The saved settings on success; precondition and availability failures follow <see cref="UploadLogo" />.</returns>
+    Task<HttpOutcome<BrandingManagementSettingsDto>> RemoveLogo(string entityTag, CancellationToken ct);
 }

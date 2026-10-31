@@ -20,4 +20,9 @@ public sealed record BrandingProjectionLogo(string Sha256, string ContentType, b
     /// <summary>Hashes the content address and media type.</summary>
     /// <returns>The hash code.</returns>
     public override int GetHashCode() => HashCode.Combine(Sha256, ContentType);
+
+    /// <summary>Prints the content address, media type and size, never the roughly 40 KiB of bytes.</summary>
+    /// <returns>The description.</returns>
+    public override string ToString() =>
+        $"BrandingProjectionLogo {{ Sha256 = {Sha256}, ContentType = {ContentType}, ContentLength = {Content.Length} }}";
 }
