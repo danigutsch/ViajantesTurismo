@@ -15,6 +15,10 @@ public static class DocumentHoldOverviewPaging
     /// <summary>The largest accepted page size.</summary>
     public const int MaxPageSize = 100;
 
-    /// <summary>The largest accepted page number, which keeps the skipped row count far below the integer range.</summary>
-    public const int MaxPage = 10_000;
+    /// <summary>
+    /// The largest accepted page number. It bounds the offset a single request can force the database to read and
+    /// discard: at <see cref="MaxPageSize" /> rows per page the skipped row count stays below 10 million,
+    /// far below the 32-bit offset range that <c>Skip</c> accepts.
+    /// </summary>
+    public const int MaxPage = 100_000;
 }
