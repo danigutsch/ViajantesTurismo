@@ -6,18 +6,20 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.396.1` at clean library revision
-[`079cd9fb28192d027fb14d959da9e29f7ab6d2a4`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/079cd9fb28192d027fb14d959da9e29f7ab6d2a4).
-It adds the approved consumer workflow actions to the shared pin manifest; the packages are otherwise unchanged from the
-previous candidate. The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.396.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.396.1), built by
-[CI run 41181486534](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41181486534).
+The published candidate is `0.1.0-alpha.402.1` at clean library revision
+[`dca2de14985fc5a18eb9a632ee17705deb50cbe9`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/dca2de14985fc5a18eb9a632ee17705deb50cbe9).
+It adds `IResultLike` to `PandaBear.SharedKernel.Results` and fixes the mediator generator's `SKMED010` and
+`SKMED012` false positives; the other packages are unchanged in behavior. The packages, symbol archives and manifest are
+published in GitHub prerelease
+[`v0.1.0-alpha.402.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.402.1), built by
+[CI run 41195436680](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41195436680).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.389.1` at revision `9ef862a978a3915b0c63944a83fc65f67fa4a8fb`,
+The previous previews `0.1.0-alpha.396.1` at revision `079cd9fb28192d027fb14d959da9e29f7ab6d2a4`,
+`0.1.0-alpha.389.1` at revision `9ef862a978a3915b0c63944a83fc65f67fa4a8fb`,
 `0.1.0-alpha.372.1` at revision `725be335280c3b7bdb659bf3043b2bfe747b9d12`,
 `0.1.0-alpha.368.1` at revision `4d54ab830508be0d4d3189d86858e909c6ed8641`,
 `0.1.0-alpha.359.1` at revision `7893ca689c8aa10602cb8accb66f83a7ac2f6525`,
@@ -129,11 +131,11 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/079cd9fb28192d027fb14d959da9e29f7ab6d2a4/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/dca2de14985fc5a18eb9a632ee17705deb50cbe9/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`079cd9fb28192d027fb14d959da9e29f7ab6d2a4`, while `.config/sharedkernel-candidate.json` still records the earlier
-`libraryRevision`; the next candidate bump moves `libraryRevision` to that revision or a later one. Every pin bump
-must change all of these in the same commit, and `SharedKernelConsumerWorkflowTests` fails when they disagree:
+`dca2de14985fc5a18eb9a632ee17705deb50cbe9`, which equals the `libraryRevision` in
+`.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
+`SharedKernelConsumerWorkflowTests` fails when they disagree:
 
 | Reference | File |
 | --- | --- |
