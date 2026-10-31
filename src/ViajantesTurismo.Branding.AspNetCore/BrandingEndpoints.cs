@@ -195,10 +195,7 @@ internal static class BrandingEndpoints
 
         if (saved is null)
         {
-            return PreconditionProblem(
-                StatusCodes.Status412PreconditionFailed,
-                BrandingManagementProblemCodes.PreconditionFailed,
-                "Branding settings changed after they were loaded. Reload them and reapply your changes.");
+            return StalePreconditionProblem();
         }
 
         telemetry.ObserveRevision(saved.SourceRevision);
@@ -221,6 +218,11 @@ internal static class BrandingEndpoints
             return check.Problem ?? throw new InvalidOperationException("A failed If-Match check carries a problem.");
         }
 
+        if (await HasStaleSnapshot(store, ifMatch, ct).ConfigureAwait(false))
+        {
+            return StalePreconditionProblem();
+        }
+
         var logo = await intake.Process(httpContext.Request.Body, httpContext.Request.ContentType, ct).ConfigureAwait(false);
         if (logo.IsFailure)
         {
@@ -231,6 +233,19 @@ internal static class BrandingEndpoints
 
         return await ReplaceLogo(logo.Value, ifMatch, store, outputCacheStore, telemetry, logger, ct).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Cheap fail-fast read so a stale tag skips the scan and re-encode. The store re-checks the precondition when it writes,
+    /// and a missing snapshot is left to the store to report.
+    /// </summary>
+    private static async Task<bool> HasStaleSnapshot(IBrandingSettingsRevisionStore store, BrandingIfMatch ifMatch, CancellationToken ct) =>
+        await store.GetCurrent(ct).ConfigureAwait(false) is { } current && !ifMatch.Matches(current);
+
+    private static ProblemHttpResult StalePreconditionProblem() =>
+        PreconditionProblem(
+            StatusCodes.Status412PreconditionFailed,
+            BrandingManagementProblemCodes.PreconditionFailed,
+            "Branding settings changed after they were loaded. Reload them and reapply your changes.");
 
     private static async Task<Results<Ok<BrandingManagementSettingsDto>, ProblemHttpResult>> RemoveLogo(
         IBrandingSettingsRevisionStore store,
@@ -285,10 +300,7 @@ internal static class BrandingEndpoints
 
         if (saved is null)
         {
-            return PreconditionProblem(
-                StatusCodes.Status412PreconditionFailed,
-                BrandingManagementProblemCodes.PreconditionFailed,
-                "Branding settings changed after they were loaded. Reload them and reapply your changes.");
+            return StalePreconditionProblem();
         }
 
         telemetry.ObserveRevision(saved.SourceRevision);

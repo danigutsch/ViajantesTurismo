@@ -1,5 +1,6 @@
 using System.Net;
 using PandaBear.Testing;
+using ViajantesTurismo.Management.Web.Helpers;
 using BrandingPage = ViajantesTurismo.Management.Web.Components.Pages.Branding.Branding;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -418,6 +419,42 @@ public sealed class BrandingTests : BunitContext
         var error = cut.Find("#branding-logo-error");
         error.GetAttribute("role").ShouldBe("alert");
         error.TextContent.ShouldContain("PNG, JPEG or WebP", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not a media type")]
+    public void Shows_fixed_error_copy_when_the_declared_type_is_empty_or_malformed(string declaredType)
+    {
+        // Arrange
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary([1, 2, 3], "logo.png", contentType: declaredType));
+
+        // Assert
+        cut.WaitForState(() => cut.FindAll("#branding-logo-error").Count == 1, TimeSpan.FromSeconds(2));
+        cut.Find("#branding-logo-error").TextContent.ShouldBe(UserFacingErrorMessage.ForOperation("upload the logo"));
+        brandingApi.UploadedContent.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Cancels_the_upload_token_when_the_page_is_disposed()
+    {
+        // Arrange
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+        cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary([1, 2, 3], "logo.png", contentType: "image/png"));
+        cut.WaitForState(() => brandingApi.UploadedContent is not null, TimeSpan.FromSeconds(2));
+        var token = brandingApi.UploadedToken;
+        token.CanBeCanceled.ShouldBeTrue();
+
+        // Act
+        cut.Instance.Dispose();
+
+        // Assert
+        token.IsCancellationRequested.ShouldBeTrue();
     }
 
     [Fact]
