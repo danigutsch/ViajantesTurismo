@@ -186,12 +186,13 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         var check = Harness.CheckInTransaction(lineage.Id, ct);
 
         // Act
-        var finishedEarly = await Task.WhenAny(check, Task.Delay(TimeSpan.FromSeconds(1), ct)) == check;
+        await Scenario.WaitForBlockedSession(ct);
+        var finishedWhileBlocked = check.IsCompleted;
         await commit();
         var held = await check;
 
         // Assert
-        finishedEarly.ShouldBeFalse();
+        finishedWhileBlocked.ShouldBeFalse();
         held.ShouldContain(lineage.Id);
     }
 }

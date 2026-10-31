@@ -453,6 +453,21 @@ References: [EF Core migrations overview](https://learn.microsoft.com/ef/core/ma
 [applying migrations](https://learn.microsoft.com/ef/core/managing-schemas/migrations/applying), and
 [owned entity collections](https://learn.microsoft.com/ef/core/modeling/owned-entities#collections-of-owned-types).
 
+### Client-generated keys for created rows
+
+The EF Core execution strategy replays a whole transaction attempt after a transient failure. When the
+connection drops while the transaction commits, the outcome is unknown and the strategy retries as if it had
+rolled back
+([connection resiliency](https://learn.microsoft.com/ef/core/miscellaneous/connection-resiliency#transaction-commit-failure-and-the-idempotency-issue)).
+
+- Commands that create rows must use client-generated keys: the domain assigns the key and the EF
+    configuration declares `ValueGeneratedNever()`. A replay then conflicts on the key instead of duplicating.
+- Do not rely on store-generated keys (identity columns) or on EF generating a default `Guid` on add for
+    rows a command creates.
+- `ClientGeneratedKeyConventionTests` fails when a non-owned entity of the Admin or Branding model has a
+    key generated on add. The Catalog model is not covered yet: `CatalogTourReadModelEntity.CatalogTourId`
+    still relies on EF generating the key on add.
+
 ### CreateSlimBuilder
 
 For AOT-optimized API applications, use `CreateSlimBuilder` instead of `CreateBuilder`:
