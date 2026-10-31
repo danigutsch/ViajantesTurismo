@@ -6,7 +6,7 @@
 
 <div class="container-fluid">
     <h1>Document holds</h1>
-    <p>Holds on generated documents across all lineages. Lineages are shown by their opaque identifier only.</p>
+    <p>Holds on generated documents across all lineages. Lineages are shown by their opaque identifier; each row opens the current document of its lineage when one remains.</p>
 
     <div class="d-flex flex-wrap align-items-end gap-3 mb-3">
         <div class="btn-group" role="group" aria-label="Hold view">
@@ -51,6 +51,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Lineage</th>
+                        <th scope="col">Document</th>
                         <th scope="col">Status</th>
                         <th scope="col">Basis</th>
                         <th scope="col">Purpose</th>
@@ -65,6 +66,17 @@
                     {
                         <tr>
                             <td><code>@item.LineageId</code></td>
+                            <td>
+                                @if (item.DocumentId is { } documentId)
+                                {
+                                    <a href="@($"/documents/{documentId}")"
+                                       aria-label="@($"Open document {documentId} for hold {item.Hold.Id}")">Open document <code>@documentId</code></a>
+                                }
+                                else
+                                {
+                                    <span>No document available</span>
+                                }
+                            </td>
                             <td><HoldStatusBadge Hold="item.Hold" /></td>
                             <td>@item.Hold.Basis</td>
                             <td>@item.Hold.PurposeCode</td>

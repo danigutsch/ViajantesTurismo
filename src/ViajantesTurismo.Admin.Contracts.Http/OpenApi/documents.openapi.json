@@ -2177,6 +2177,13 @@
             "type": "string",
             "format": "uuid"
           },
+          "documentId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
           "hold": {
             "$ref": "#/components/schemas/GetDocumentHoldDto"
           }

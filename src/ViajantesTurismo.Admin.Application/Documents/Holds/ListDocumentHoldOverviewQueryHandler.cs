@@ -1,3 +1,4 @@
+using PandaBear.DispositionHold;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -27,17 +28,25 @@ public sealed class ListDocumentHoldOverviewQueryHandler(IDocumentHoldQuery hold
         var skip = (query.Page - DocumentHoldOverviewPaging.FirstPage) * query.PageSize;
         var holds = await holdQuery.Search(search, skip, query.PageSize + 1, ct);
 
-        var items = new List<GetDocumentHoldOverviewItemDto>(query.PageSize);
+        var pageHolds = new List<(Guid LineageId, Hold Hold)>(query.PageSize);
         foreach (var hold in holds.Take(query.PageSize))
         {
             if (DocumentHoldScopes.TryGetLineageId(hold.Scope, out var lineageId))
             {
-                items.Add(new GetDocumentHoldOverviewItemDto
-                {
-                    LineageId = lineageId,
-                    Hold = DocumentHoldMapper.MapToGetDocumentHoldDto(hold, now),
-                });
+                pageHolds.Add((lineageId, hold));
             }
+        }
+
+        var currentDocuments = await holdQuery.FindCurrentDocumentIds([.. pageHolds.Select(entry => entry.LineageId).Distinct()], ct);
+        var items = new List<GetDocumentHoldOverviewItemDto>(pageHolds.Count);
+        foreach (var (lineageId, hold) in pageHolds)
+        {
+            items.Add(new GetDocumentHoldOverviewItemDto
+            {
+                LineageId = lineageId,
+                DocumentId = currentDocuments.TryGetValue(lineageId, out var documentId) ? documentId : null,
+                Hold = DocumentHoldMapper.MapToGetDocumentHoldDto(hold, now),
+            });
         }
 
         return Result.Ok(new GetDocumentHoldOverviewPageDto

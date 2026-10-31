@@ -255,4 +255,43 @@ public sealed class DocumentHoldReadTests
         var rendered = string.Concat(errors.Detail, string.Join(' ', errors.ValidationErrors.ShouldNotBeNull().SelectMany(pair => pair.Value)));
         rendered.ShouldNotContain(pageSize.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task Each_overview_item_carries_the_newest_document_id_of_its_lineage_from_one_lookup()
+    {
+        // Arrange
+        var harness = DocumentHoldHarness.Create();
+        var newest = Guid.CreateVersion7();
+        harness.Query.LineageByDocument[newest] = harness.LineageId;
+        var otherLineage = Guid.CreateVersion7();
+        var otherDocument = Guid.CreateVersion7();
+        harness.Query.LineageByDocument[otherDocument] = otherLineage;
+        _ = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now.AddDays(30));
+        _ = DocumentHoldReadTestData.AddHold(harness, otherLineage, harness.Now.AddDays(30));
+
+        // Act
+        var result = await DocumentHoldReadTestData.List(harness, DocumentHoldState.Active);
+
+        // Assert
+        result.Value.Items.Select(item => item.DocumentId).Order().ShouldBe(new Guid?[] { newest, otherDocument }.Order());
+        harness.Query.CurrentDocumentLookups.ShouldHaveSingleItem().Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task A_lineage_without_a_document_is_still_listed_with_a_null_document_id()
+    {
+        // Arrange
+        var harness = DocumentHoldHarness.Create();
+        var purgedLineage = Guid.CreateVersion7();
+        var hold = DocumentHoldReadTestData.AddHold(harness, purgedLineage, harness.Now.AddDays(30));
+
+        // Act
+        var result = await DocumentHoldReadTestData.List(harness, DocumentHoldState.Active);
+
+        // Assert
+        var item = result.Value.Items.ShouldHaveSingleItem();
+        item.Hold.Id.ShouldBe(hold.Id);
+        item.LineageId.ShouldBe(purgedLineage);
+        item.DocumentId.ShouldBeNull();
+    }
 }

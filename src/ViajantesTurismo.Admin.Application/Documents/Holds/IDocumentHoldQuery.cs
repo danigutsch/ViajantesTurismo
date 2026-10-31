@@ -31,4 +31,10 @@ public interface IDocumentHoldQuery
     /// <param name="ct">A token that can cancel the operation.</param>
     /// <returns>The matching holds.</returns>
     Task<IReadOnlyList<Hold>> Search(DocumentHoldSearch search, int skip, int take, CancellationToken ct);
+
+    /// <summary>Resolves the newest revision of each lineage in one read.</summary>
+    /// <param name="lineageIds">The document lineage identifiers.</param>
+    /// <param name="ct">A token that can cancel the operation.</param>
+    /// <returns>The newest document id per lineage; a lineage with no remaining document is absent.</returns>
+    Task<IReadOnlyDictionary<Guid, Guid>> FindCurrentDocumentIds(IReadOnlyCollection<Guid> lineageIds, CancellationToken ct);
 }

@@ -102,7 +102,9 @@ purges that do exist: unfinalized drafts, document audit records and document id
   (basis, purpose code, authority reference, review date, optional expiry) with an explicit confirmation step, and release
   one through a modal dialog that restates the document and hold identifiers and requires an opaque reason code.
 - The holds overview (`/documents/holds`, Admin only) lists active, overdue-review and recently released holds (the last 30
-  days), filterable by basis and paged. It shows the opaque lineage identifier only.
+  days), filterable by basis and paged. It shows the opaque lineage identifier and links each row to the document page
+  of the newest revision (`documentId` in the API item). A lineage with no remaining document, for example one already
+  purged, is listed without a link and `documentId` is `null`.
 - The UI sends and shows opaque codes, dates and subject identifiers only. A hold takes effect when it is placed; the API has
   no separate effective date.
 
