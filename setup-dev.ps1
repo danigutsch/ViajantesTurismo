@@ -225,7 +225,7 @@ function Write-SetupSummary {
 
     Write-Host "Next steps:" -ForegroundColor Cyan
     Write-Host "  1. Run the application: dotnet tool run aspire run" -ForegroundColor White
-    Write-Host "  2. Run tests: dotnet test" -ForegroundColor White
+    Write-Host "  2. Generate OpenAPI artifacts (once per clone or worktree, needed by contract tests): dotnet tool run sharedkernel-ci -- openapi refresh`n     Then run tests: dotnet test" -ForegroundColor White
     Write-Host "  3. Install Playwright browsers after build: dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj --browser chromium" -ForegroundColor White
     Write-Host "  4. Optional performance smoke run: `$env:VT_API_BASE_URL = '<admin-api-url>'; dotnet tool run sharedkernel-k6 -- run --scenario admin-smoke" -ForegroundColor White
     Write-Host "  5. Validate a commit message: dotnet tool run sharedkernel-ci -- verify-commit-message --file /path/to/message.txt" -ForegroundColor White

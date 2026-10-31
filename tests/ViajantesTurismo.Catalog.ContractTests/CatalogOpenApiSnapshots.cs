@@ -7,7 +7,7 @@ internal static class CatalogOpenApiSnapshots
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Catalog.ApiService_";
-    private const string RefreshHint = "Refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target catalog` when the HTTP contract changes intentionally.";
+    private const string RefreshHint = "Generate or refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target catalog` (needed once in a fresh clone or worktree, and after intentional HTTP contract changes).";
 
     /// <summary>Asserts the canonical Catalog OpenAPI artifacts match the generated artifacts.</summary>
     public static void AssertCanonicalArtifactsMatchGeneratedArtifacts()

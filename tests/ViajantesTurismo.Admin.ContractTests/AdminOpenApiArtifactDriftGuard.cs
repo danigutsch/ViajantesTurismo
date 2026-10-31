@@ -11,7 +11,7 @@ internal static class AdminOpenApiArtifactDriftGuard
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Admin.ApiService_";
-    private const string RefreshHint = "Refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target admin` when the HTTP contract changes intentionally.";
+    private const string RefreshHint = "Generate or refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target admin` (needed once in a fresh clone or worktree, and after intentional HTTP contract changes).";
 
     /// <summary>
     /// Asserts that every canonical boundary artifact has a matching generated artifact and vice versa.
