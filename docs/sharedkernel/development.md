@@ -6,12 +6,12 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.402.1` at clean library revision
-[`dca2de14985fc5a18eb9a632ee17705deb50cbe9`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/dca2de14985fc5a18eb9a632ee17705deb50cbe9).
+The published candidate is `0.1.0-alpha.418.1` at clean library revision
+[`b5bcfed6a35b40eb82d5e2cb7baa76d98fcf41cc`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/b5bcfed6a35b40eb82d5e2cb7baa76d98fcf41cc).
 It adds `IResultLike` to `PandaBear.SharedKernel.Results` and fixes the mediator generator's `SKMED010` and
 `SKMED012` false positives; the other packages are unchanged in behavior. The packages, symbol archives and manifest are
 published in GitHub prerelease
-[`v0.1.0-alpha.402.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.402.1), built by
+[`v0.1.0-alpha.418.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.418.1), built by
 [CI run 41195436680](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41195436680).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
@@ -131,9 +131,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/dca2de14985fc5a18eb9a632ee17705deb50cbe9/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/b5bcfed6a35b40eb82d5e2cb7baa76d98fcf41cc/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`dca2de14985fc5a18eb9a632ee17705deb50cbe9`, which equals the `libraryRevision` in
+`b5bcfed6a35b40eb82d5e2cb7baa76d98fcf41cc`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 
