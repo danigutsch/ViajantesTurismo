@@ -13,7 +13,7 @@ updates:
       # SharedKernel refs move with the SharedKernel pin bump: libraryRevision for the candidate and scanner action,
       # one shared-workflow SHA for the reusable workflows and setup-dotnet-tool.
       - dependency-name: danigutsch/PandaBear.SharedKernel
-      # Third-party pins follow SharedKernel's .github/action-pins.json (or .github/action-pins.local.json) and
+      # Third-party pins follow SharedKernel's .github/action-pins.json and
       # verify-action-pins fails on drift, so bumps start from the manifest, not from Dependabot.
       - dependency-name: actions/checkout
       - dependency-name: actions/setup-dotnet

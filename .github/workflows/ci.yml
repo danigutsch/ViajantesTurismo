@@ -512,10 +512,8 @@ jobs:
       - name: Verify action pins
         shell: bash
         run: |
-          jq -s '{version: .[0].version, firstParty: .[0].firstParty, actions: (.[0].actions + .[1].actions)}' \
-            "$SHAREDKERNEL_SOURCE/.github/action-pins.json" .github/action-pins.local.json > "$RUNNER_TEMP/action-pins.json"
           dotnet "$SHAREDKERNEL_SOURCE"/tools/SharedKernel.RepoConfig.Tool/bin/Release/*/SharedKernel.RepoConfig.Tool.dll \
-            verify-action-pins --root . --manifest "$RUNNER_TEMP/action-pins.json"
+            verify-action-pins --root . --manifest "$SHAREDKERNEL_SOURCE/.github/action-pins.json"
 
       - name: Set up CI prerequisites
         uses: ./.github/actions/setup-ci-prerequisites

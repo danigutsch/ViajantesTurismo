@@ -71,9 +71,8 @@ The Lint job runs these commands from the repository root after `setup-dev.sh` (
 `setup-dev.ps1`) stages the candidate; run the failing one to reproduce it:
 
 Before these, the job runs `verify-action-pins` with the RepoConfig tool built from the shared-workflow SHA
-against SharedKernel's `.github/action-pins.json` merged with `.github/action-pins.local.json`. To reproduce
-it, build that tool from a SharedKernel checkout at the SHA and run
-`verify-action-pins --root . --manifest <merged manifest>`.
+against SharedKernel's `.github/action-pins.json`. To reproduce it, build that tool from a SharedKernel checkout
+at the SHA and run `verify-action-pins --root . --manifest <checkout>/.github/action-pins.json`.
 
 ```bash
 shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh

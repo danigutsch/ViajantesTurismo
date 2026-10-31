@@ -188,10 +188,8 @@ the restore.
 Every third-party action in `.github/workflows` and `.github/actions` pins the SHA and trailing version comment of
 SharedKernel's `.github/action-pins.json`. The CI Lint job builds the RepoConfig tool from the shared revision
 (`revision:` and `sparse-extra: .github` inputs of `build-sharedkernel-tool`) and runs `verify-action-pins`
-against that manifest merged with `.github/action-pins.local.json`, which lists the three actions that only this
-repository uses (`actions/create-github-app-token`, `DavidAnson/markdownlint-cli2-action`,
-`tj-actions/changed-files`). Move those entries into the SharedKernel manifest to drop the local file. To bump an
-action, change the SharedKernel manifest first, then every reference here in the same change.
+against that manifest. To bump an action, or to use a new one, change the SharedKernel manifest first, then every
+reference here in the same change.
 
 Optional repository variables `SHAREDKERNEL_LIBRARY_ROOT` and `SHAREDKERNEL_CANDIDATE_FEED` reach the
 setup action as explicit inputs. A library-root override skips the hosted checkout, requires a clean

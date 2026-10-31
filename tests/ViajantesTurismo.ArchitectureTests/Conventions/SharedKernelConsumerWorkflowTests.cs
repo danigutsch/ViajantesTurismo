@@ -47,7 +47,8 @@ public sealed class SharedKernelConsumerWorkflowTests
         verify.ShouldBeGreaterThan(pinTool);
         bootstrap.ShouldBeGreaterThan(verify);
         lintJob.ShouldContain("sparse-extra: .github", StringComparison.Ordinal);
-        lintJob.ShouldContain("\"$SHAREDKERNEL_SOURCE/.github/action-pins.json\" .github/action-pins.local.json", StringComparison.Ordinal);
+        lintJob.ShouldContain("--manifest \"$SHAREDKERNEL_SOURCE/.github/action-pins.json\"", StringComparison.Ordinal);
+        lintJob.ShouldNotContain("action-pins.local.json", StringComparison.Ordinal);
     }
 
     [Fact]

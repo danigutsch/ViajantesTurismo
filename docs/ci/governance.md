@@ -134,8 +134,7 @@ evidence, compatibility checks, and stateful recovery.
   configuration covers `github-actions`, `nuget`, and `devcontainers` ecosystems with
   deliberately cautious schedules for routine version updates. SDK and SharedKernel action
   updates arrive only with a SharedKernel pin bump.
-- Third-party actions listed in SharedKernel's `.github/action-pins.json` (and the three in
-  `.github/action-pins.local.json`) are ignored by Dependabot: `verify-action-pins` in the Lint job fails on any
+- Third-party actions listed in SharedKernel's `.github/action-pins.json` are ignored by Dependabot: `verify-action-pins` in the Lint job fails on any
   drift from that manifest, so a bump starts from the manifest and then updates every reference here.
 - When Dependabot proposes an action update, review both the release notes and the
   resolved SHA, then verify the affected workflows still pass before merging.
