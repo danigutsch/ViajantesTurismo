@@ -79,6 +79,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     ReasonCode = table.Column<string>(type: "text", nullable: false),
                     CorrelationId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    HoldId = table.Column<Guid>(type: "uuid", nullable: true),
+                    HoldBasis = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     RetentionExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DocumentLineageId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
@@ -103,6 +105,22 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DocumentLineages", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentRetentionPurgeRecords",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Kind = table.Column<string>(type: "text", nullable: false),
+                    PurgedCount = table.Column<int>(type: "integer", nullable: false),
+                    HeldCount = table.Column<int>(type: "integer", nullable: false),
+                    Outcome = table.Column<string>(type: "text", nullable: false),
+                    OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentRetentionPurgeRecords", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -1029,6 +1047,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "DocumentLineages");
+
+            migrationBuilder.DropTable(
+                name: "DocumentRetentionPurgeRecords");
         }
     }
 }

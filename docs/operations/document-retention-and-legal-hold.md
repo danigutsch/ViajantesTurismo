@@ -35,6 +35,7 @@ bytes and metadata, document lineages, document audit records, and document idem
 | Document audit record | Audit event occurrence | 24 months (`DocumentAuditLimits.RetentionMonths`) | Deleted by a daily worker in batches of 500. Database protections reject updates, truncation and pre-expiry deletion. |
 | Document idempotency entry | Completion, or start when never completed | 30 days (`DocumentCommandIdempotency.ReplayWindow`, equal to `DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500. The stored key is a SHA-256 digest of the caller key, so the raw value is never persisted. A replay after the window is treated as a new request; a replay after its document is purged returns `404 Not Found`. |
 | Document audit purge evidence | Each audit-retention purge run | Kept indefinitely | Metadata only: system actor, correlation id, purged count, retention cutoff, outcome and time. It is not removed by the audit-retention worker. |
+| Draft and idempotency purge evidence | Each draft or idempotency purge run | Kept indefinitely | Counts only: purge kind, purged count, held count, outcome (`Succeeded` or `Refused`) and time, in `DocumentRetentionPurgeRecords`. Written in the same transaction as the deletion. It is not removed by any worker. |
 
 Metadata-only audit records can contain linkable identifiers, which remain personal data where
 re-identification is possible. Callers must not place personal data or secrets in idempotency keys.
@@ -72,6 +73,19 @@ purges that do exist: unfinalized drafts, document audit records and document id
   `POST /api/v1/documents/{id}/holds/{holdId}/release`, where `{id}` is any revision of the lineage. A second release of the
   same hold is `409 Conflict`; a hold of another lineage is `404 Not Found`.
 
+### Hold audit evidence
+
+- Placing and releasing a hold each add exactly one `DocumentAuditRecords` row (`PlaceHold`, `ReleaseHold`) in the same
+  transaction as the hold change. An audit record that cannot be formed persists nothing, so no hold changes without its record.
+- The row carries the opaque actor, correlation id, document id, hold id, hold basis name and a bounded audit reason code
+  (`ManualHoldPlacement`, `ManualHoldRelease`). It never carries the purpose code, authority reference, release reason code
+  or any request text. `HoldBasis` accepts ASCII letters only, at most 64 characters.
+- A rejected request (unknown document, unknown or foreign hold, double release, invalid field) changes no hold and adds one
+  `Rejected` row with `DocumentNotFound`, `HoldNotFound`, `StateConflict` or `ValidationRejected`. A request refused by
+  authorization never reaches the handler and adds nothing, like every other document route.
+- The rows are stamped with the document lineage and follow the 24-month audit retention; a hold on the lineage restrains
+  their purge like any other audit row.
+
 ### Who may place and release
 
 - Permission `document.hold` covers placing, releasing and listing. By default only the `Admin` role holds it; `Operator` and
@@ -97,9 +111,9 @@ purges that do exist: unfinalized drafts, document audit records and document id
 - Every purge (draft, audit and idempotency) loads its candidates, calls `IDispositionHoldGuard.Check` once with all candidate
   lineage scopes, and deletes inside the same explicit database transaction at read committed. The package refuses any other
   isolation level and refuses to answer outside a transaction.
-- Held candidates are skipped and counted. The audit purge records the count (`HeldCount`) in its evidence; the other purges log
-  counts only. No data-subject identifier is logged.
-- If hold state cannot be determined (`DispositionHoldStateUnknownException`), the purge deletes nothing. The audit purge records
+- Held candidates are skipped and counted. Every purge records the count (`HeldCount`) in its evidence row; the draft and idempotency purges also log
+  it. No data-subject identifier is logged.
+- If hold state cannot be determined (`DispositionHoldStateUnknownException`), the purge deletes nothing. Each purge records
   `Refused` evidence and rethrows; the worker retries on its next run.
 - Lock order: take the locks a command declares first, hold locks last, one `Check` per purge, and no other advisory lock after
   it. Release takes a command lock on the hold identifier before it reads the hold.

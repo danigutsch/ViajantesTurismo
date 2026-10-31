@@ -394,6 +394,13 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<int?>("DocumentRevision")
                         .HasColumnType("integer");
 
+                    b.Property<string>("HoldBasis")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid?>("HoldId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("OccurredAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -595,6 +602,33 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasDatabaseName("UX_DocumentLineages_BookingId_Type");
 
                     b.ToTable("DocumentLineages");
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentRetentionPurgeRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("HeldCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PurgedCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DocumentRetentionPurgeRecords");
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Booking", b =>

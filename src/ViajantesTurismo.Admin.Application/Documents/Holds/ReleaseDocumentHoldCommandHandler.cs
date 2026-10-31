@@ -4,13 +4,16 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 
-/// <summary>Releases a disposition hold once, recording the releasing actor and reason code.</summary>
+/// <summary>
+/// Releases a disposition hold once, recording the releasing actor and reason code, and records the release or the
+/// rejection in the document audit trail.
+/// </summary>
 public sealed class ReleaseDocumentHoldCommandHandler(
     IDocumentHoldQuery holdQuery,
     IDispositionHoldStore holdStore,
-    IUnitOfWork unitOfWork,
     IDocumentDispositionTransaction transaction,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    DocumentAuditWriter auditWriter)
 {
     private const string ReleasingActorParameter = "releasedBy";
     private const string ReleaseLockPrefix = "admin:document-hold-release:";
@@ -19,11 +22,15 @@ public sealed class ReleaseDocumentHoldCommandHandler(
     public async Task<Result<Hold>> Handle(ReleaseDocumentHoldCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (command.AuditContext is null)
+        {
+            return DocumentAuditErrors.AuditContextRequired().ConvertError<Hold>();
+        }
 
         var lineageId = await holdQuery.FindLineageId(command.DocumentId, ct);
         if (lineageId is null)
         {
-            return DocumentErrors.DocumentNotFound().ConvertError<Hold>();
+            return await Reject(DocumentErrors.DocumentNotFound().ConvertError<Hold>(), command, null, DocumentAuditReasonCode.DocumentNotFound, ct);
         }
 
         var lockName = string.Concat(ReleaseLockPrefix, command.HoldId.ToString("N"));
@@ -35,29 +42,56 @@ public sealed class ReleaseDocumentHoldCommandHandler(
         var hold = await holdStore.Find(command.HoldId, ct);
         if (hold is null || hold.Scope != scope)
         {
-            return DocumentHoldErrors.HoldNotFound().ConvertError<Hold>();
+            return await Reject(DocumentHoldErrors.HoldNotFound().ConvertError<Hold>(), command, null, DocumentAuditReasonCode.HoldNotFound, ct);
         }
 
         if (hold.IsReleased)
         {
-            return DocumentHoldErrors.HoldAlreadyReleased().ConvertError<Hold>();
+            return await Reject(DocumentHoldErrors.HoldAlreadyReleased().ConvertError<Hold>(), command, hold, DocumentAuditReasonCode.StateConflict, ct);
         }
 
         var released = TryRelease(hold, command);
         if (released.IsFailure)
         {
-            return released;
+            return await Reject(released, command, hold, DocumentAuditReasonCode.ValidationRejected, ct);
         }
 
-        await unitOfWork.SaveEntities(ct);
-        return released;
+        var audit = await auditWriter.AddHold(
+            command.AuditContext,
+            DocumentAuditOperation.ReleaseHold,
+            command.DocumentId,
+            hold.Id,
+            hold.Basis.ToString(),
+            DocumentAuditOutcome.Succeeded,
+            DocumentAuditReasonCode.ManualHoldRelease,
+            ct);
+        return audit.IsFailure ? audit.ConvertError<Hold>() : released;
+    }
+
+    private async Task<Result<Hold>> Reject(
+        Result<Hold> rejection,
+        ReleaseDocumentHoldCommand command,
+        Hold? hold,
+        DocumentAuditReasonCode reasonCode,
+        CancellationToken ct)
+    {
+        var audit = await auditWriter.AddHold(
+            command.AuditContext,
+            DocumentAuditOperation.ReleaseHold,
+            command.DocumentId,
+            command.HoldId,
+            hold?.Basis.ToString(),
+            DocumentAuditOutcome.Rejected,
+            reasonCode,
+            ct);
+        return audit.IsFailure ? audit.ConvertError<Hold>() : rejection;
     }
 
     private Result<Hold> TryRelease(Hold hold, ReleaseDocumentHoldCommand command)
     {
         try
         {
-            hold.Release(command.ActorId, command.ReasonCode, timeProvider.GetUtcNow());
+            hold.Release(command.AuditContext.ActorId, command.ReasonCode, timeProvider.GetUtcNow());
             return Result.Ok(hold);
         }
         catch (ArgumentException invalid) when (string.Equals(invalid.ParamName, ReleasingActorParameter, StringComparison.Ordinal))

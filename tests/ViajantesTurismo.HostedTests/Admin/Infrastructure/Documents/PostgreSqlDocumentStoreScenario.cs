@@ -385,6 +385,16 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Reads the audit records that name a document ordered by occurrence time.</summary>
+    public async Task<DocumentAuditRecord[]> GetDocumentAuditsForDocument(Guid documentId, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentAuditRecords
+            .Where(record => record.DocumentId == documentId)
+            .OrderBy(record => record.Id)
+            .ToArrayAsync(ct);
+    }
+
     /// <summary>Reads the stored idempotency state for the document generation scope of a booking and key, or <see langword="null" /> when absent.</summary>
     public async Task<string?> GetIdempotencyState(
         Guid bookingId,
@@ -541,6 +551,13 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     {
         await using var dbContext = CreateDbContext();
         return await dbContext.DocumentAuditPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
+    }
+
+    /// <summary>Reads the stored draft and idempotency purge evidence ordered by time.</summary>
+    public async ValueTask<DocumentRetentionPurgeRecord[]> GetRetentionPurgeEvidence(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentRetentionPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
     }
 
     /// <summary>Resets the mutable tables while preserving document audit records.</summary>

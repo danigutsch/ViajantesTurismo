@@ -1,4 +1,6 @@
 using PandaBear.Testing;
+using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Documents;
+using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
@@ -181,6 +183,56 @@ public sealed class DocumentHoldEndpointTests
         text.ShouldNotContain("jane.doe", StringComparison.Ordinal);
         text.ShouldNotContain("SYNTHETIC", StringComparison.Ordinal);
         holds.Holds.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Place_and_release_each_audit_once_with_the_principal_and_no_request_text()
+    {
+        // Arrange
+        const string marker = "SYNTHETIC-jane-doe-marker";
+        var documentId = Guid.CreateVersion7();
+        var holds = new InMemoryDispositionHoldStore();
+        var auditStore = new CapturingDocumentAuditStore();
+        await using var factory = DocumentHoldTestHost.Create(documentId, holds, auditStore);
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        var body = $$"""{"basis":"LegalClaim","purposeCode":"purpose.{{marker}}","authorityReference":"authority:{{marker}}","reviewDueAt":"2999-01-01T00:00:00Z"}""";
+        using var placeContent = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+        using var placeResponse = await client.PostAsync(new Uri($"/api/v1/documents/{documentId}/holds", UriKind.Relative), placeContent, TestContext.Current.CancellationToken);
+        var holdId = holds.Holds.ShouldHaveSingleItem().Id;
+        using var releaseContent = new StringContent($$"""{"reasonCode":"reason.{{marker}}"}""", System.Text.Encoding.UTF8, "application/json");
+
+        // Act
+        using var releaseResponse = await client.PostAsync(new Uri($"/api/v1/documents/{documentId}/holds/{holdId}/release", UriKind.Relative), releaseContent, TestContext.Current.CancellationToken);
+
+        // Assert
+        placeResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
+        releaseResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        auditStore.Records.Select(record => record.Operation).ShouldBe([DocumentAuditOperation.PlaceHold, DocumentAuditOperation.ReleaseHold]);
+        auditStore.Records.All(record => record.ActorId == "test-user" && record.HoldId == holdId && record.Outcome == DocumentAuditOutcome.Succeeded).ShouldBeTrue();
+        var rendered = string.Join(' ', auditStore.Records.SelectMany(record => typeof(DocumentAuditRecord).GetProperties().Select(property => property.GetValue(record)?.ToString())));
+        rendered.ShouldNotContain("marker", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task A_forbidden_hold_request_adds_no_hold_and_no_audit_record()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        var holds = new InMemoryDispositionHoldStore();
+        var auditStore = new CapturingDocumentAuditStore();
+        await using var factory = DocumentHoldTestHost.Create(documentId, holds, auditStore);
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Operator");
+        using var content = new StringContent(ValidBody, System.Text.Encoding.UTF8, "application/json");
+
+        // Act
+        using var response = await client.PostAsync(new Uri($"/api/v1/documents/{documentId}/holds", UriKind.Relative), content, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        holds.Holds.ShouldBeEmpty();
+        auditStore.Records.ShouldBeEmpty();
     }
 
     [Fact]

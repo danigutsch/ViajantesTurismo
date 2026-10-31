@@ -17,7 +17,7 @@ public sealed class PurgeExpiredDocumentIdempotencyEntriesCommandHandlerTests
         var store = new FakeDocumentIdempotencyRetentionStore { PurgedCount = 5 };
         var clock = new FakeTimeProvider(now);
         var gate = new DocumentHoldGate(new FakeDispositionHoldGuard(), new InMemoryDispositionHoldStore(), clock);
-        var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, new FakeDocumentDispositionTransaction(), gate, clock);
+        var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, DocumentPurgeTestData.CreateRunner(new FakeDocumentPurgeEvidenceStore(), clock), gate, clock);
 
         // Act
         var counts = await handler.Handle(TestContext.Current.CancellationToken);

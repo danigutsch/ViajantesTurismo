@@ -9,6 +9,9 @@ public static class DocumentAuditLimits
     /// <summary>Maximum length of a server-generated correlation identifier.</summary>
     public const int MaxCorrelationIdLength = 128;
 
+    /// <summary>Maximum length of a hold basis name recorded as audit evidence.</summary>
+    public const int MaxHoldBasisLength = 64;
+
     /// <summary>Number of months audit records remain immutable and retained.</summary>
     public const int RetentionMonths = 24;
 }

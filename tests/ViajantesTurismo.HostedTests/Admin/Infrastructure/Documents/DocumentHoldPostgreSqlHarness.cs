@@ -11,6 +11,7 @@ using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
@@ -27,14 +28,19 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         this.provider = provider;
     }
 
-    /// <summary>Creates the harness over the given database; the schema must already be migrated. Retry must be off to hold a transaction open.</summary>
-    public static DocumentHoldPostgreSqlHarness Create(string connectionString, bool enableRetryOnFailure = true)
+    /// <summary>Creates the harness over the given database; the schema must already be migrated. Retry must be off to hold a transaction open. A given failure replaces the real hold guard with one that always throws it.</summary>
+    public static DocumentHoldPostgreSqlHarness Create(string connectionString, bool enableRetryOnFailure = true, Exception? holdGuardFailure = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(TimeProvider.System);
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
         services.AddAdminDispositionHolds();
+        if (holdGuardFailure is not null)
+        {
+            services.AddSingleton<IDispositionHoldGuard>(new FakeDispositionHoldGuard { Failure = holdGuardFailure });
+        }
+
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         services.AddDbContext<AdminWriteDbContext>(options => options.UseNpgsql(connectionString, npgsql =>
@@ -51,22 +57,28 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         services.AddScoped<IDocumentHoldQuery, DocumentHoldQuery>();
         services.AddScoped<IDocumentDispositionTransaction, DocumentDispositionTransaction>();
         services.AddScoped<DocumentHoldGate>();
+        services.AddScoped<DocumentAuditWriter>();
         services.AddScoped<PlaceDocumentHoldCommandHandler>();
         services.AddScoped<ReleaseDocumentHoldCommandHandler>();
         services.AddScoped<ListDocumentHoldsQueryHandler>();
         services.AddScoped<GetDocumentHoldQueryHandler>();
         services.AddScoped<ListDocumentHoldOverviewQueryHandler>();
+        services.AddScoped<IDocumentPurgeEvidenceStore, DocumentPurgeEvidenceStore>();
+        services.AddScoped<DocumentPurgeRunner>();
         services.AddScoped<PurgeExpiredDraftsCommandHandler>();
+        services.AddScoped<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();
         services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
         return new DocumentHoldPostgreSqlHarness(services.BuildServiceProvider());
     }
+
+    private static DocumentAuditContext AuditContext(string actorId) => DocumentAuditContext.Create(actorId, Guid.CreateVersion7().ToString("N")).Value;
 
     /// <summary>Places a hold on the lineage of the document as a synthetic actor and returns its identifier.</summary>
     public async Task<Guid> Place(Guid documentId, CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
         var now = TimeProvider.System.GetUtcNow();
-        var command = new PlaceDocumentHoldCommand(documentId, HoldBasis.LegalClaim, "purpose.claim-001", "authority:case-0001", now.AddDays(90), null, "actor-0001");
+        var command = new PlaceDocumentHoldCommand(documentId, HoldBasis.LegalClaim, "purpose.claim-001", "authority:case-0001", now.AddDays(90), null, AuditContext("actor-0001"));
         var result = await scope.ServiceProvider.GetRequiredService<PlaceDocumentHoldCommandHandler>().Handle(command, ct);
         result.IsSuccess.ShouldBeTrue();
         return result.Value.Id;
@@ -76,9 +88,17 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
     public async Task Release(Guid documentId, Guid holdId, CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
-        var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", "actor-0002");
+        var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", AuditContext("actor-0002"));
         var result = await scope.ServiceProvider.GetRequiredService<ReleaseDocumentHoldCommandHandler>().Handle(command, ct);
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    /// <summary>Releases a hold as a synthetic actor and returns the outcome without asserting success.</summary>
+    public async Task<PandaBear.Results.Result<Hold>> TryRelease(Guid documentId, Guid holdId, CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", AuditContext("actor-0003"));
+        return await scope.ServiceProvider.GetRequiredService<ReleaseDocumentHoldCommandHandler>().Handle(command, ct);
     }
 
     /// <summary>Reads one hold of the lineage of the document through the single-hold handler.</summary>
@@ -108,6 +128,13 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
     {
         await using var scope = provider.CreateAsyncScope();
         return await scope.ServiceProvider.GetRequiredService<PurgeExpiredDraftsCommandHandler>().Handle(new PurgeExpiredDraftsCommand(), ct);
+    }
+
+    /// <summary>Runs the idempotency purge handler.</summary>
+    public async Task<DocumentPurgeCounts> PurgeIdempotencyEntries(CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>().Handle(ct);
     }
 
     /// <summary>Runs the audit purge handler.</summary>
