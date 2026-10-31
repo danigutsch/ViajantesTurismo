@@ -144,35 +144,34 @@ public sealed class ObservabilityAssetsTests
     }
 
     [Fact]
-    public void Catalog_lists_every_registered_meter_and_gives_every_signal_row_a_verdict()
+    public void Catalog_meter_table_lists_exactly_the_meters_the_application_registers()
+    {
+        // Arrange
+        var catalog = File.ReadAllText(CatalogPath());
+        var meterTable = catalog.Split("## Meters", 2)[1].Split("## Metrics", 2)[0];
+
+        // Act
+        var listed = MeterTableRow().Matches(meterTable).Select(match => match.Groups["meter"].Value).Order(StringComparer.Ordinal).ToArray();
+        var registered = RegisteredMeterNames();
+
+        // Assert
+        registered.ShouldNotBeEmpty();
+        listed.ShouldBe(registered);
+    }
+
+    [Fact]
+    public void Every_signal_row_in_the_catalog_has_a_verdict()
     {
         // Arrange
         var catalog = File.ReadAllText(CatalogPath());
 
         // Act
-        var missingMeters = RegisteredMeters.Where(meter => !catalog.Contains($"`{meter}`", StringComparison.Ordinal));
         var rows = catalog.Split("## Metrics", 2)[1].Split('\n').Where(line => line.StartsWith("| `", StringComparison.Ordinal)).ToArray();
         var rowsWithoutVerdict = rows.Where(row => !VerdictCell().IsMatch(row));
 
         // Assert
-        string.Join('\n', missingMeters).ShouldBe(string.Empty);
         rows.Length.ShouldBeGreaterThan(20);
         string.Join('\n', rowsWithoutVerdict).ShouldBe(string.Empty);
-    }
-
-    [Fact]
-    public void Meter_names_registered_in_service_defaults_are_known_to_the_catalog()
-    {
-        // Arrange
-        var source = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(), "src", "ViajantesTurismo.ServiceDefaults", "OpenTelemetryBuilderExtensions.cs"));
-
-        // Act
-        var registered = MeterNameConstant().Matches(source).Select(match => match.Groups[1].Value).ToArray();
-
-        // Assert
-        registered.ShouldNotBeEmpty();
-        string.Join('\n', registered.Except(RegisteredMeters, StringComparer.Ordinal)).ShouldBe(string.Empty);
     }
 
     [Fact]
