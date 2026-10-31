@@ -8,9 +8,7 @@ using PandaBear.Mediator;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Customers.Import;
-using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -107,8 +105,6 @@ internal static class AdminApiTestHost
 
         using var scope = factory.Services.CreateScope();
         _ = scope.ServiceProvider.GetRequiredService<IQueryService>();
-        _ = scope.ServiceProvider.GetRequiredService<CreateCustomerCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<UpdateCustomerCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<CustomerImportWorkflowService>();
         _ = scope.ServiceProvider.GetRequiredService<IMalwareScanner>();
         _ = scope.ServiceProvider.GetRequiredService<ISender>();

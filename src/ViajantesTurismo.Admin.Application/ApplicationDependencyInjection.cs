@@ -1,9 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Application.Payments;
 using Microsoft.Extensions.Hosting;
-using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Customers.Import;
-using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.Admin.Application;
@@ -55,12 +53,9 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<ReviewPaymentAccountCommandHandler>();
         builder.Services.AddScoped<RetirePaymentAccountCommandHandler>();
         builder.Services.AddScoped<WithdrawPaymentAccountVerificationCommandHandler>();
-
-        builder.Services.AddScoped<CreateCustomerCommandHandler>();
         builder.Services.AddScoped<CustomerImportCommandHandler>();
         builder.Services.AddScoped<CustomerImportConflictDetector>();
         builder.Services.AddScoped<CustomerImportWorkflowService>();
-        builder.Services.AddScoped<UpdateCustomerCommandHandler>();
         builder.Services.AddScoped<GenerateContractDraftCommandHandler>();
         builder.Services.AddScoped<DocumentBrandingSource>();
         builder.Services.AddScoped<DocumentCommandIdempotency>();

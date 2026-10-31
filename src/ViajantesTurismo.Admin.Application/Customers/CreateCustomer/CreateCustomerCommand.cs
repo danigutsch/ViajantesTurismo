@@ -1,3 +1,5 @@
+using PandaBear.Mediator;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
@@ -13,4 +15,4 @@ public sealed record CreateCustomerCommand(
     PhysicalInfoDto PhysicalInfo,
     AccommodationPreferencesDto AccommodationPreferences,
     EmergencyContactDto EmergencyContact,
-    MedicalInfoDto MedicalInfo);
+    MedicalInfoDto MedicalInfo) : ICommand<Result<Guid>>;
