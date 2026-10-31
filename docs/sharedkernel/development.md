@@ -9,7 +9,7 @@ documentation configuration, CI and coverage policy, setup scripts, and compatib
 The published candidate is `0.1.0-alpha.421.1` at clean library revision
 [`2c9a17f0cdb035bd9d1690547e3877cfe9b71b61`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/2c9a17f0cdb035bd9d1690547e3877cfe9b71b61).
 It adds `ResultTransactionBehavior`, `ITransactionLockDeclaration`, `IAfterCommit` and `IAfterRollback` to
-`PandaBear.SharedKernel.Mediator.EntityFrameworkCore` (SharedKernel #295); the other packages are unchanged in behavior.
+`PandaBear.SharedKernel.Mediator.EntityFrameworkCore` ([SharedKernel pull request 295](https://github.com/danigutsch/PandaBear.SharedKernel/pull/295)); the other packages are unchanged in behavior.
 The packages, symbol archives and manifest are published in GitHub prerelease
 [`v0.1.0-alpha.421.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.421.1), built by
 [CI run 41214524810](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41214524810).
