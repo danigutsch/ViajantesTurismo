@@ -59,8 +59,9 @@ Snapshot JSON is retained as CI evidence. This describes the committed restore g
 that all build-time dependency inputs have been dynamically evaluated.
 
 Both targets use one generator implementation: `.github/actions/build-sharedkernel-tool` builds
-`SharedKernel.RepoConfig.Tool` from a cone sparse checkout of the SharedKernel `libraryRevision`
-pinned in `.config/sharedkernel-candidate.json`, with the repository `global.json` SDK. Only the
+`SharedKernel.RepoConfig.Tool` from a cone sparse checkout of the SharedKernel `source-ref` that the
+`dependency-snapshot-reusable.yml` caller passes (the shared-workflow SHA that moves with
+`.config/sharedkernel-candidate.json` in the pin bump), with the SDK of that checkout. Only the
 generator's own prerequisites are restored. No application solution is restored, and neither target's historical candidate packages, release
 assets, or local feed are needed. There is no fallback to a mutable branch, retired preview, or old
 detector binary.

@@ -78,7 +78,9 @@ source, test, collector, or configuration changes.
 ## Branch protection
 
 The required workflow check is `Quality Gate`, with `Build and Test`, `Lint`, `Dependency Review`, and
-`Secret Scan`. Strict up-to-date checks, GitHub Actions check attribution (app `15368`), signed commits,
+`Secret Scan`, plus `PR Metadata`. `Dependency Review` and `PR Metadata` are reported as
+`Dependency Review / Review` and `PR Metadata / Validate squash header` after the shared-workflow adoption; the
+ruleset update is a manual step to do before that change merges. Strict up-to-date checks, GitHub Actions check attribution (app `15368`), signed commits,
 additional review requirements, and the no-bypass policy remain in force. Branch protection and ruleset
 `14460324` were read back and verified on October 20, 2026.
 
