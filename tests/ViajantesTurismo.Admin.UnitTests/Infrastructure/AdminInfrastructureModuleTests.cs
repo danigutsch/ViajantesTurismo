@@ -164,13 +164,13 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    public void Admin_command_handlers_are_resolved_as_scoped_direct_handlers()
+    public void Admin_stores_are_resolved_with_scoped_lifetime()
     {
         // Arrange
         using var serviceProvider = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
 
         // Act
-        var hasScopedLifetime = serviceProvider.CreateTourHandlerHasScopedLifetime();
+        var hasScopedLifetime = serviceProvider.TourStoreHasScopedLifetime();
 
         // Assert
         hasScopedLifetime.ShouldBeTrue();
