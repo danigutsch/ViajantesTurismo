@@ -20,8 +20,8 @@ public static class DocumentLimits
     /// <summary>The maximum branding display-name length.</summary>
     public const int MaxBrandingNameLength = 128;
 
-    /// <summary>The maximum branding logo URI length.</summary>
-    public const int MaxBrandingLogoUriLength = 2048;
+    /// <summary>The maximum branding logo data URI length; a 40 KiB WebP logo encodes to about 54,600 characters.</summary>
+    public const int MaxBrandingLogoUriLength = 60_000;
 
     /// <summary>The maximum branding token length.</summary>
     public const int MaxBrandingTokenLength = 128;

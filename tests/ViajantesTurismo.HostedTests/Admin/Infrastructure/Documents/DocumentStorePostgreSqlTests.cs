@@ -6,6 +6,7 @@ using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
@@ -655,7 +656,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
             first.Fields,
             Guid.CreateVersion7().ToString("N"),
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now.AddMinutes(1));
         secondResult.IsSuccess.ShouldBeTrue();
         var second = secondResult.Value;

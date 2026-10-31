@@ -1,4 +1,5 @@
 using System.Globalization;
+using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
@@ -17,7 +18,7 @@ internal static class DocumentDraftInfrastructureTestData
         ],
         Guid.CreateVersion7().ToString("N"),
         "Viajantes Turismo",
-        new Uri("/logo.svg", UriKind.Relative),
+        DocumentLogoTestData.DataUri,
         "#000000",
         "#000000",
         "#ffffff",
@@ -86,7 +87,7 @@ internal static class DocumentDraftInfrastructureTestData
             ],
             Guid.CreateVersion7().ToString("N"),
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             createdAt);
 
         result.IsSuccess.ShouldBeTrue();

@@ -35,7 +35,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.BrandingLogoUri)
             .HasConversion(new ValueConverter<Uri?, string?>(
                 uri => uri == null ? null : uri.OriginalString,
-                value => WebAssetUriSanitizer.ToRootRelativeOrHttpsUri(value, DocumentLimits.MaxBrandingLogoUriLength)))
+                value => ReadLogoUri(value)))
             .HasMaxLength(DocumentLimits.MaxBrandingLogoUriLength);
         entity.Property(document => document.BrandingPrimaryColor).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
         entity.Property(document => document.BrandingAccentColor).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
@@ -71,4 +71,10 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Navigation(document => document.Fields).Metadata.SetField("_fields");
         entity.Navigation(document => document.Fields).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
+
+    /// <summary>Reads a stored logo; legacy root-relative or external values are not data URIs and read as null.</summary>
+    private static Uri? ReadLogoUri(string? value) =>
+        WebAssetUriSanitizer.NormalizeRasterDataImage(value, DocumentLimits.MaxBrandingLogoUriLength) is { } dataUri
+            ? new Uri(dataUri, UriKind.Absolute)
+            : null;
 }

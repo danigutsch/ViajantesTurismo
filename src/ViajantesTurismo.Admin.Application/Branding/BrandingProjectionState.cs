@@ -13,6 +13,7 @@ namespace ViajantesTurismo.Admin.Application.Branding;
 /// <param name="HeadingFontFamily">The heading font family.</param>
 /// <param name="BodyFontFamily">The body font family.</param>
 /// <param name="LogoUri">The optional public logo URI.</param>
+/// <param name="Logo">The optional locally stored logo bytes.</param>
 public sealed record BrandingProjectionState(
     Guid SourceEpoch,
     long SourceRevision,
@@ -23,7 +24,8 @@ public sealed record BrandingProjectionState(
     string TextColor,
     string HeadingFontFamily,
     string BodyFontFamily,
-    Uri? LogoUri)
+    Uri? LogoUri,
+    BrandingProjectionLogo? Logo = null)
 {
     /// <summary>Creates the projection state carried by one Branding revision event.</summary>
     /// <param name="incoming">The Branding revision event.</param>
@@ -42,6 +44,9 @@ public sealed record BrandingProjectionState(
             incoming.TextColor,
             incoming.HeadingFontFamily,
             incoming.BodyFontFamily,
-            incoming.LogoUri);
+            incoming.LogoUri,
+            incoming.LogoSha256 is { } sha256 && incoming.LogoContentType is { } contentType && incoming.LogoContent is { } content
+                ? new BrandingProjectionLogo(sha256, contentType, content)
+                : null);
     }
 }

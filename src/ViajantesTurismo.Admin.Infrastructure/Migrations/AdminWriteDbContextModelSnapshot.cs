@@ -390,8 +390,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasColumnType("character varying(128)");
 
                     b.Property<string>("BrandingLogoUri")
-                        .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)");
+                        .HasMaxLength(60000)
+                        .HasColumnType("character varying(60000)");
 
                     b.Property<string>("BrandingName")
                         .IsRequired()
@@ -650,6 +650,20 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<byte[]>("LogoContent")
+                        .HasColumnType("bytea")
+                        .HasColumnName("LogoContent");
+
+                    b.Property<string>("LogoContentType")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("LogoContentType");
+
+                    b.Property<string>("LogoSha256")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("LogoSha256");
 
                     b.Property<string>("LogoUri")
                         .HasMaxLength(2048)

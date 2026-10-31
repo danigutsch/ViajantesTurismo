@@ -9,6 +9,12 @@ internal sealed class BrandingProjectionConfiguration : IEntityTypeConfiguration
     private const int MaxNameLength = 120;
     private const int MaxColorLength = 7;
     private const int MaxLogoUriLength = 2048;
+    private const int Sha256HexLength = 64;
+    private const int MaxContentTypeLength = 64;
+    private const string LogoSha256Column = "LogoSha256";
+    private const string LogoContentTypeColumn = "LogoContentType";
+    private const string LogoContentColumn = "LogoContent";
+    private const string ByteaColumnType = "bytea";
 
     /// <summary>Maps the settings table, required columns, length limits and the revision concurrency token.</summary>
     public void Configure(EntityTypeBuilder<BrandingProjectionRecord> entity)
@@ -26,5 +32,8 @@ internal sealed class BrandingProjectionConfiguration : IEntityTypeConfiguration
         entity.Property(projection => projection.HeadingFontFamily).HasMaxLength(MaxNameLength).IsRequired();
         entity.Property(projection => projection.BodyFontFamily).HasMaxLength(MaxNameLength).IsRequired();
         entity.Property(projection => projection.LogoUri).HasMaxLength(MaxLogoUriLength);
+        entity.Property(projection => projection.LogoSha256).HasColumnName(LogoSha256Column).HasMaxLength(Sha256HexLength);
+        entity.Property(projection => projection.LogoContentType).HasColumnName(LogoContentTypeColumn).HasMaxLength(MaxContentTypeLength);
+        entity.Property(projection => projection.LogoContent).HasColumnName(LogoContentColumn).HasColumnType(ByteaColumnType);
     }
 }
