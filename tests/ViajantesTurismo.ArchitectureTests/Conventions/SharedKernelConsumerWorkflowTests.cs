@@ -44,26 +44,44 @@ public sealed class SharedKernelConsumerWorkflowTests
     }
 
     [Fact]
-    public void SharedKernel_actions_are_pinned_to_the_candidate_library_revision()
+    public void SharedKernel_scanner_action_is_pinned_to_the_candidate_library_revision()
     {
         // Arrange
         var root = GetRepositoryRoot();
         using var pin = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-candidate.json")));
         var revision = pin.RootElement.GetProperty("libraryRevision").GetString();
-        var files = Directory.EnumerateFiles(Path.Combine(root, ".github", "workflows"), "*.yml")
-            .Concat(Directory.EnumerateFiles(Path.Combine(root, ".github", "actions"), "action.yml", SearchOption.AllDirectories));
 
         // Act
-        var references = files
-            .SelectMany(File.ReadLines)
-            .Select(static line => line.Trim())
-            .Where(static line => line.StartsWith("uses: danigutsch/PandaBear.SharedKernel/", StringComparison.OrdinalIgnoreCase)
-                || line.StartsWith("- uses: danigutsch/PandaBear.SharedKernel/", StringComparison.OrdinalIgnoreCase))
-            .Select(static line => line.Split('@')[1].Split(' ')[0])
+        var references = SharedKernelWorkflowReferences.SharedKernelReferences(root).Where(static reference => reference.Path.Contains("/actions/setup-security-scanner", StringComparison.Ordinal))
+            .Select(static reference => reference.Revision)
             .ToArray();
 
         // Assert
         references.ShouldNotBeEmpty();
-        references.Where(reference => reference != revision).ShouldBeEmpty($"SharedKernel actions must use libraryRevision {revision}.");
+        references.Where(reference => reference != revision).ShouldBeEmpty($"SharedKernel scanner actions must use libraryRevision {revision}.");
+    }
+
+    [Fact]
+    public void Shared_workflow_references_use_one_revision()
+    {
+        // Arrange
+        var root = GetRepositoryRoot();
+        var files = SharedKernelWorkflowReferences.WorkflowFiles(root);
+
+        // Act
+        var references = SharedKernelWorkflowReferences.SharedKernelReferences(root)
+            .Where(static reference => !reference.Path.Contains("/actions/setup-security-scanner", StringComparison.Ordinal))
+            .Select(static reference => reference.Revision)
+            .Concat(files.SelectMany(File.ReadLines)
+                .Select(static line => line.Trim())
+                .Where(static line => line.StartsWith("source-ref:", StringComparison.Ordinal) || line.StartsWith("revision:", StringComparison.Ordinal))
+                .Select(static line => line[(line.IndexOf(':', StringComparison.Ordinal) + 1)..].Trim())
+                .Where(static value => value.Length > 0))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        // Assert
+        references.Length.ShouldBe(1, "Shared workflow, shared action and source-ref values must move together in the pin bump.");
+        references[0].Length.ShouldBe(40);
     }
 }
