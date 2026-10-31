@@ -20,6 +20,10 @@ Branch protection and the active `main` ruleset require these status checks:
 - `Quality Gate` (from `.github/workflows/ci.yml`)
 - `PR Metadata` (from `.github/workflows/pr-metadata.yml`)
 
+`Dependency Review` and `PR Metadata` call shared reusable workflows, so GitHub reports them as
+`Dependency Review / Review` and `PR Metadata / Validate squash header`; the ruleset requires those reported
+names. See [SharedKernel consumption](../sharedkernel/development.md#shared-ci-references-and-the-pin-bump).
+
 Branch protection and ruleset `14460324` require these checks with strict up-to-date checks,
 GitHub Actions check attribution (app `15368`), signed commits, additional review requirements,
 and no bypass.

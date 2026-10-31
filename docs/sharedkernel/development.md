@@ -125,6 +125,46 @@ The transfer preserves 37 guards in library test commit `3752abb54681e28f4d16abd
 application tests continue to verify domain dispatch, saved envelopes, registration, and schema policy
 through public package interfaces. This test-only commit does not change the pinned runtime artifacts.
 
+## Shared CI references and the pin bump
+
+Generic CI pieces come from SharedKernel's
+[reusable workflows and actions](
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/96f094ff0c4e678bf72abb9041e6dd3b83602cac/docs/ci/reusable-workflows.md),
+referenced by full commit SHA. The workflow references currently use
+`96f094ff0c4e678bf72abb9041e6dd3b83602cac`, while `.config/sharedkernel-candidate.json` still records the earlier
+`libraryRevision`; the next candidate bump moves `libraryRevision` to that revision or a later one. Every pin bump
+must change all of these in the same commit, and `SharedKernelConsumerWorkflowTests` fails when they disagree:
+
+| Reference | File |
+| --- | --- |
+| `.github/workflows/pr-metadata-reusable.yml@<sha>` and `source-ref` | `.github/workflows/pr-metadata.yml` |
+| `.github/workflows/actionlint-reusable.yml@<sha>` | `.github/workflows/actionlint.yml` |
+| `.github/workflows/dependency-snapshot-reusable.yml@<sha>` and `source-ref` | `.github/workflows/dependency-review.yml` |
+| `.github/workflows/dependency-review-reusable.yml@<sha>` and `source-ref` | `.github/workflows/dependency-review.yml` |
+| `.github/actions/setup-dotnet-tool@<sha>` | `.github/actions/build-sharedkernel-tool/action.yml` |
+| `revision:` of the action pin check | `.github/workflows/ci.yml` (Lint job) |
+| `.github/actions/setup-security-scanner@<libraryRevision>` | `.github/workflows/secret-scan.yml` |
+| `libraryRevision`, package version and hashes | `.config/sharedkernel-candidate.json` |
+
+`secret-scan.yml` stays a local workflow: SharedKernel offers only the scanner setup action, which it already uses,
+and the SARIF upload permission belongs to the caller. Its reference must equal `libraryRevision`. After the bump,
+also compare SharedKernel's `.github/action-pins.json` with the third-party pins and update the SHA and version
+comment of each differing reference in the same change.
+
+Callers keep the triggers, concurrency groups, ignored-label rules, change planning, license values and permissions.
+Because GitHub reports a reusable call as `<caller job> / <called job>`, the required checks change names:
+
+| Previous check | Check after adopting the shared workflow |
+| --- | --- |
+| `PR Metadata` | `PR Metadata / Validate squash header` |
+| `Dependency Review` | `Dependency Review / Review` |
+| `Dependency snapshot (base)` | `Dependency snapshot (base) / Snapshot` |
+| `Dependency snapshot (head)` | `Dependency snapshot (head) / Snapshot` |
+| `Actionlint` (not required) | `Actionlint / Actionlint` |
+
+Update the `main` ruleset to require the two new names; `Build and Test`, `Lint`, `Quality Gate` and `Secret Scan` are
+unchanged. Do not merge before the ruleset accepts the new names, or the old checks stay pending forever.
+
 ## CI and platform evidence
 
 Hosted Linux and Windows jobs stage the candidate through `.github/actions/setup-ci-prerequisites`.
