@@ -28,6 +28,8 @@ internal sealed class DocumentHoldHarness
         Place = new PlaceDocumentHoldCommandHandler(Query, Store, Transaction, Clock, auditWriter);
         Release = new ReleaseDocumentHoldCommandHandler(Query, Store, Transaction, Clock, auditWriter);
         List = new ListDocumentHoldsQueryHandler(Query, Clock);
+        Get = new GetDocumentHoldQueryHandler(Query, Clock);
+        Overview = new ListDocumentHoldOverviewQueryHandler(Query, Clock);
     }
 
     /// <summary>Gets the synthetic document revision id.</summary>
@@ -92,6 +94,18 @@ internal sealed class DocumentHoldHarness
 
     /// <summary>Gets the list handler.</summary>
     public ListDocumentHoldsQueryHandler List
+    {
+        get;
+    }
+
+    /// <summary>Gets the single-hold handler.</summary>
+    public GetDocumentHoldQueryHandler Get
+    {
+        get;
+    }
+
+    /// <summary>Gets the cross-document overview handler.</summary>
+    public ListDocumentHoldOverviewQueryHandler Overview
     {
         get;
     }

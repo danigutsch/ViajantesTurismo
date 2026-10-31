@@ -321,9 +321,11 @@ public sealed class DocumentPrivacySafeguardTests
             assertionTarget1
                 .ShouldBeTrue($"Unexpected status for {Pattern}: {StatusCode}.");
         }
-        outcomes.Where(outcome => outcome.Pattern.Contains("/holds", StringComparison.Ordinal))
+        outcomes.Where(outcome => outcome.Pattern.Contains("/holds", StringComparison.Ordinal) && !outcome.Pattern.EndsWith("documents/holds", StringComparison.Ordinal))
             .All(outcome => outcome.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
             .ShouldBeTrue();
+        outcomes.ShouldHaveSingleItem(outcome => outcome.Pattern.EndsWith("documents/holds", StringComparison.Ordinal))
+            .StatusCode.ShouldBe(HttpStatusCode.OK);
         outcomes.All(outcome => outcome.HasNoStoreHeaders).ShouldBeTrue();
     }
 
