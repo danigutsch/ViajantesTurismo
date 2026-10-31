@@ -83,8 +83,7 @@ seam requires demonstrated synchronous need and a separate decision.
 Branding stores the current document with a source epoch and monotonically increasing positive
 revision. Each write appends an immutable full-state revision and enqueues
 `BrandingSettingsChangedIntegrationEvent`, carrying that epoch, positive revision, and full immutable snapshot, in
-the same Branding transaction. No earlier Branding integration event exists. Only document rows made
-before rollout may have nullable Branding revision provenance.
+the same Branding transaction.
 
 Implemented so far: the settings row carries `SourceEpoch` and `SourceRevision` (an optimistic
 concurrency token), each change appends a row to `branding."BrandingSettingsRevisions"` and enqueues
@@ -166,14 +165,8 @@ remove action; it has no logo address field.
 - Document snapshots embed the projected bytes as a `data:image/webp;base64,...` URI and record the logo hash in the
   branding version; see [Generated travel documents](generated-travel-documents.md).
 
-### Logo rollout and operating notes
+### Logo operating notes
 
-- The `AddBrandingLogos` migration clears a legacy admin-typed `LogoUri` on the current settings row without a
-  revision bump or an event. `Down` cannot restore it and revision history keeps the old value. The Admin
-  projection keeps the stale `LogoUri` until the next revision; that is harmless because finalization uses the
-  bytes only.
-- Not-yet-finalized drafts that captured a legacy root-relative or HTTPS logo now read as no logo, and their recorded
-  `BrandingVersion` no longer matches the current capture, so re-capture such drafts before finalizing.
 - Every revision re-ships the logo bytes (about 54 KB as base64) in the outbox payload. Sending the bytes only when the
   hash changes is a possible follow-up.
 - Logos are never deleted: replaced or removed logos stay in `branding."BrandingLogos"`. Orphan growth is bounded by

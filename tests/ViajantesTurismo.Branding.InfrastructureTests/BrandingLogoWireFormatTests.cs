@@ -23,69 +23,22 @@ public sealed class BrandingLogoWireFormatTests
     }
 
     [Fact]
-    public void The_outbox_serializer_writes_the_same_json_text_as_the_previous_byte_array_payload()
-    {
-        // Arrange
-        var integrationEvent = BrandingLogoWireFormatData.CreateEvent(BrandingLogoWireFormatData.LogoBytes);
-        var previous = BrandingLogoWireFormatData.CreatePrevious(BrandingLogoWireFormatData.LogoBytes);
-        var serializer = new BrandingIntegrationEventSerializer();
-
-        // Act
-        var json = serializer.Serialize(integrationEvent);
-        var previousJson = JsonSerializer.Serialize(previous);
-
-        // Assert
-        json.ShouldBe(previousJson);
-    }
-
-    [Fact]
-    public void The_outbox_serializer_omits_the_logo_fields_exactly_like_the_previous_byte_array_payload()
+    public void The_outbox_serializer_omits_the_logo_fields_when_there_is_no_logo()
     {
         // Arrange
         var integrationEvent = BrandingLogoWireFormatData.CreateEvent(null);
-        var previous = BrandingLogoWireFormatData.CreatePrevious(null);
         var serializer = new BrandingIntegrationEventSerializer();
 
         // Act
         var json = serializer.Serialize(integrationEvent);
-        var previousJson = JsonSerializer.Serialize(previous);
 
         // Assert
-        json.ShouldBe(previousJson);
         json.ShouldNotContain("LogoContent", StringComparison.Ordinal);
         json.ShouldNotContain("LogoSha256", StringComparison.Ordinal);
     }
 
     [Fact]
-    public void A_payload_written_with_the_previous_byte_array_shape_restores_the_exact_bytes()
-    {
-        // Arrange
-        var previousJson = JsonSerializer.Serialize(BrandingLogoWireFormatData.CreatePrevious(BrandingLogoWireFormatData.LogoBytes));
-        var typeInfo = BrandingIntegrationEventJsonContext.Default.BrandingSettingsChangedIntegrationEvent;
-
-        // Act
-        var restored = JsonSerializer.Deserialize(previousJson, typeInfo).ShouldNotBeNull();
-
-        // Assert
-        restored.LogoContent.ShouldNotBeNull().ToArray().ShouldBe(BrandingLogoWireFormatData.LogoBytes);
-        restored.LogoSha256.ShouldBe("sha");
-    }
-
-    [Fact]
-    public void A_payload_written_by_the_serializer_is_readable_with_the_previous_byte_array_shape()
-    {
-        // Arrange
-        var json = new BrandingIntegrationEventSerializer().Serialize(BrandingLogoWireFormatData.CreateEvent(BrandingLogoWireFormatData.LogoBytes));
-
-        // Act
-        var restored = JsonSerializer.Deserialize<LegacyByteArrayBrandingPayload>(json).ShouldNotBeNull();
-
-        // Assert
-        restored.LogoContent.ShouldBe(BrandingLogoWireFormatData.LogoBytes);
-    }
-
-    [Fact]
-    public void A_payload_written_before_the_logo_fields_existed_restores_without_a_logo()
+    public void A_payload_without_logo_fields_restores_without_a_logo()
     {
         // Arrange
         const string json = """

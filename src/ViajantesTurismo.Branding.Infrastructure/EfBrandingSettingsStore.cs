@@ -93,7 +93,7 @@ internal sealed class EfBrandingSettingsStore(
             return null;
         }
 
-        if (existing is not { IsRevisioned: true } || existing.ToSettings(BrandingFontFamilies.All) is not { } current)
+        if (existing?.ToSettings(BrandingFontFamilies.All) is not { } current)
         {
             throw new InvalidOperationException("Branding revisions have not started; there are no settings to attach a logo to.");
         }
@@ -131,42 +131,25 @@ internal sealed class EfBrandingSettingsStore(
         return stored?.ToLogo();
     }
 
-    /// <summary>
-    /// Starts revisions once: an existing valid row becomes revision 1, a missing row becomes the defaults
-    /// at revision 1, and invalid persisted settings fail without writing anything.
-    /// </summary>
+    /// <summary>Creates the default settings at revision 1 when no row exists yet; an existing row is left untouched.</summary>
     public async Task Bootstrap(CancellationToken ct)
     {
-        var existing = await Load(ct).ConfigureAwait(false);
-        if (existing is { IsRevisioned: true })
+        if (await Load(ct).ConfigureAwait(false) is not null)
         {
             return;
         }
 
-        if (existing is null)
-        {
-            existing = BrandingSettingsRecord.StartLineage(BrandingDefaults.CreateSettings(), Guid.CreateVersion7());
-            dbContext.BrandingSettings.Add(existing);
-        }
-        else
-        {
-            if (existing.ToSettings(BrandingFontFamilies.All) is null)
-            {
-                throw new InvalidOperationException(
-                    "Persisted Branding settings are invalid; correct them before Branding revisions can start.");
-            }
-
-            existing.StartRevisions(Guid.CreateVersion7());
-        }
+        var created = BrandingSettingsRecord.StartLineage(BrandingDefaults.CreateSettings(), Guid.CreateVersion7());
+        dbContext.BrandingSettings.Add(created);
 
         try
         {
-            await CommitRevision(existing, ct).ConfigureAwait(false);
+            await CommitRevision(created, ct).ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException)
         {
             dbContext.ChangeTracker.Clear();
-            if (await Load(ct).ConfigureAwait(false) is not { IsRevisioned: true })
+            if (await Load(ct).ConfigureAwait(false) is null)
             {
                 throw;
             }
@@ -211,12 +194,12 @@ internal sealed class EfBrandingSettingsStore(
     }
 
     private async Task<BrandingSettingsRecord> LoadRevisioned(CancellationToken ct) =>
-        await Load(ct).ConfigureAwait(false) is { IsRevisioned: true } current
+        await Load(ct).ConfigureAwait(false) is { } current
             ? current
             : throw new InvalidOperationException("Branding revisions have not started; there is no snapshot to recover from.");
 
     private static BrandingSettingsSnapshot? ToSnapshot(BrandingSettingsRecord? record) =>
-        record is { IsRevisioned: true } && record.ToSettings(BrandingFontFamilies.All) is { } settings
+        record is not null && record.ToSettings(BrandingFontFamilies.All) is { } settings
             ? new BrandingSettingsSnapshot(settings, record.SourceEpoch, record.SourceRevision)
             : null;
 

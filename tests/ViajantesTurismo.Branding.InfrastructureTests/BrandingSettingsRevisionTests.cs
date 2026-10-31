@@ -198,36 +198,14 @@ public sealed class BrandingSettingsRevisionTests
     }
 
     [Fact]
-    public async Task Bootstrap_turns_an_existing_valid_row_into_revision_one_once()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        using var scenario = BrandingStoreScenario.Create();
-        var settings = BrandingSettingsTestData.CreateSettings();
-        await scenario.SeedUnrevisionedSettings(settings, ct);
-
-        // Act
-        await scenario.CreateStore().Bootstrap(ct);
-        await scenario.CreateStore().Bootstrap(ct);
-
-        // Assert
-        var snapshot = scenario.ReadSnapshot();
-        var current = snapshot.Current.ShouldNotBeNull();
-        current.SourceRevision.ShouldBe(1);
-        current.SourceEpoch.ShouldNotBe(Guid.Empty);
-        current.BrandName.ShouldBe(settings.BrandName);
-        snapshot.Revisions.ShouldHaveSingleItem().SourceRevision.ShouldBe(1);
-        snapshot.Outbox.ShouldHaveSingleItem();
-    }
-
-    [Fact]
-    public async Task Bootstrap_materializes_defaults_as_revision_one_when_no_row_exists()
+    public async Task Bootstrap_materializes_defaults_as_revision_one_once_when_no_row_exists()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         using var scenario = BrandingStoreScenario.Create();
 
         // Act
+        await scenario.CreateStore().Bootstrap(ct);
         await scenario.CreateStore().Bootstrap(ct);
 
         // Assert
@@ -237,24 +215,5 @@ public sealed class BrandingSettingsRevisionTests
         current.BrandName.ShouldBe(BrandingDefaults.CreateDto().BrandName);
         snapshot.Revisions.ShouldHaveSingleItem();
         snapshot.Outbox.ShouldHaveSingleItem();
-    }
-
-    [Fact]
-    public async Task Bootstrap_fails_visibly_for_invalid_persisted_settings()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        using var scenario = BrandingStoreScenario.Create();
-        await scenario.SeedInvalidUnrevisionedSettings(ct);
-
-        // Act
-        var bootstrap = () => scenario.CreateStore().Bootstrap(ct);
-
-        // Assert
-        await bootstrap.ShouldThrow<InvalidOperationException>();
-        var snapshot = scenario.ReadSnapshot();
-        snapshot.Current.ShouldNotBeNull().SourceRevision.ShouldBe(0);
-        snapshot.Revisions.ShouldBeEmpty();
-        snapshot.Outbox.ShouldBeEmpty();
     }
 }

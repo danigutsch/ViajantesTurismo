@@ -51,18 +51,6 @@
             return null;
         }
 
-        if (value[0] == '/')
-        {
-            return !value.StartsWith("//", StringComparison.Ordinal) ? value : null;
-        }
-
-        return Uri.TryCreate(value, UriKind.Absolute, out var uri) && IsHttpsUri(uri) && !string.IsNullOrEmpty(uri.Host) && string.IsNullOrEmpty(uri.UserInfo)
-            ? uri.ToString()
-            : null;
-    }
-
-    private static bool IsHttpsUri(Uri uri)
-    {
-        return string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+        return value[0] == '/' && !value.StartsWith("//", StringComparison.Ordinal) ? value : null;
     }
 }

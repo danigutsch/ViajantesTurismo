@@ -275,7 +275,7 @@ public sealed class PublicWebEndpointTests
         brandingApi.SetBranding(new BrandingSettingsDto
         {
             BrandName = "Camino Riders",
-            LogoUri = "https://cdn.example/logo.svg",
+            LogoUri = "/api/v1/public/branding/logo/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             PrimaryColor = "#112233",
             AccentColor = "#445566",
             BackgroundColor = "#FFFFFF",
@@ -299,40 +299,12 @@ public sealed class PublicWebEndpointTests
         content.ShouldContain("class=\"public-hero\"", StringComparison.Ordinal);
         content.ShouldContain("class=\"public-shell-nav\"", StringComparison.Ordinal);
         content.ShouldContain("Camino Riders", StringComparison.Ordinal);
-        content.ShouldContain("https://cdn.example/logo.svg", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Root_renders_root_relative_branding_logo_uri()
-    {
-        // Arrange
-        var brandingApi = new FakeBrandingApiClient();
-        brandingApi.SetBranding(new BrandingSettingsDto
-        {
-            BrandName = "Camino Riders",
-            LogoUri = "/images/logo.svg",
-            PrimaryColor = "#112233",
-            AccentColor = "#445566",
-            BackgroundColor = "#FFFFFF",
-            TextColor = "#000000",
-            HeadingFontFamily = "Inter",
-            BodyFontFamily = "Verdana"
-        });
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("/images/logo.svg", StringComparison.Ordinal);
+        content.ShouldContain("/api/v1/public/branding/logo/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", StringComparison.Ordinal);
     }
 
     [Theory]
     [InlineData("/images/\u0001logo.svg")]
+    [InlineData("https://cdn.example/logo.svg")]
     [InlineData("https://cdn.example/\u0001logo.svg")]
     [InlineData("/images\\logo.svg")]
     [InlineData("//cdn.example/logo.svg")]

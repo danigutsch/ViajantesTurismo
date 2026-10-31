@@ -47,26 +47,6 @@ internal sealed class BrandingStoreScenario : IDisposable
         return scope.ServiceProvider.GetRequiredService<EfBrandingSettingsStore>();
     }
 
-    /// <summary>Seeds a settings row as it existed before revisions were introduced.</summary>
-    public async Task SeedUnrevisionedSettings(BrandingSettings settings, CancellationToken ct)
-    {
-        using var scope = provider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<BrandingDbContext>();
-        dbContext.BrandingSettings.Add(BrandingSettingsRecord.FromUnrevisionedSettings(settings));
-        await dbContext.SaveChangesAsync(ct);
-    }
-
-    /// <summary>Seeds a settings row whose persisted values no longer validate.</summary>
-    public async Task SeedInvalidUnrevisionedSettings(CancellationToken ct)
-    {
-        using var scope = provider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<BrandingDbContext>();
-        var record = BrandingSettingsRecord.FromUnrevisionedSettings(BrandingDefaults.CreateSettings());
-        dbContext.BrandingSettings.Add(record);
-        dbContext.Entry(record).Property(nameof(BrandingSettingsRecord.PrimaryColor)).CurrentValue = "not-a-color";
-        await dbContext.SaveChangesAsync(ct);
-    }
-
     /// <summary>Reads the persisted settings row, revisions ordered by source revision, and outbox envelopes.</summary>
     public BrandingStoreSnapshot ReadSnapshot()
     {

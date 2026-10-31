@@ -12,8 +12,8 @@ using ViajantesTurismo.Branding.Infrastructure;
 namespace ViajantesTurismo.Branding.Infrastructure.Migrations
 {
     [DbContext(typeof(BrandingDbContext))]
-    [Migration("20261025065038_AddBrandingRecoveryAudit")]
-    partial class AddBrandingRecoveryAudit
+    [Migration("20261031155113_InitialBranding")]
+    partial class InitialBranding
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -197,6 +197,9 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<DateTimeOffset?>("PoisonedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTimeOffset?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -220,12 +223,38 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
                     b.HasIndex("ConsumerName", "EventId")
                         .IsUnique();
 
+                    b.HasIndex("ConsumerName", "PoisonedAt");
+
                     b.HasIndex("ConsumerName", "ProcessedAt", "NextConsumeAttemptAt", "ReceivedAt");
 
                     b.ToTable("transport_messages", "messaging", t =>
                         {
                             t.ExcludeFromMigrations();
                         });
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Branding.Infrastructure.BrandingLogoRecord", b =>
+                {
+                    b.Property<string>("Sha256")
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .IsFixedLength();
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("StoredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Sha256");
+
+                    b.ToTable("BrandingLogos", "branding");
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Branding.Infrastructure.BrandingRecoveryAuditRecord", b =>
@@ -306,6 +335,11 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
+                    b.Property<string>("LogoSha256")
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .IsFixedLength();
+
                     b.Property<string>("LogoUri")
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
@@ -328,6 +362,8 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
                         .HasColumnType("character varying(7)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LogoSha256");
 
                     b.ToTable("BrandingSettings", "branding");
                 });
@@ -365,6 +401,11 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
+                    b.Property<string>("LogoSha256")
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .IsFixedLength();
+
                     b.Property<string>("LogoUri")
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)");
@@ -387,10 +428,28 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LogoSha256");
+
                     b.HasIndex("SourceEpoch", "SourceRevision")
                         .IsUnique();
 
                     b.ToTable("BrandingSettingsRevisions", "branding");
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Branding.Infrastructure.BrandingSettingsRecord", b =>
+                {
+                    b.HasOne("ViajantesTurismo.Branding.Infrastructure.BrandingLogoRecord", null)
+                        .WithMany()
+                        .HasForeignKey("LogoSha256")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Branding.Infrastructure.BrandingSettingsRevisionRecord", b =>
+                {
+                    b.HasOne("ViajantesTurismo.Branding.Infrastructure.BrandingLogoRecord", null)
+                        .WithMany()
+                        .HasForeignKey("LogoSha256")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 #pragma warning restore 612, 618
         }
