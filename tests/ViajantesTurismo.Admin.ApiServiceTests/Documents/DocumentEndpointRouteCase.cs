@@ -35,6 +35,8 @@ internal static class DocumentEndpointRouteCase
         (HttpMethod.Get.Method, "api/v1/documents/bookings/{bookingId:guid}/payment-instructions", $"/api/v1/documents/bookings/{BookingId}/payment-instructions"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/holds", $"/api/v1/documents/{DocumentId}/holds"),
         (HttpMethod.Get.Method, "api/v1/documents/{id:guid}/holds", $"/api/v1/documents/{DocumentId}/holds"),
+        (HttpMethod.Get.Method, "api/v1/documents/{id:guid}/holds/{holdId:guid}", $"/api/v1/documents/{DocumentId}/holds/{BookingId}"),
+        (HttpMethod.Get.Method, "api/v1/documents/holds", "/api/v1/documents/holds"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/holds/{holdId:guid}/release", $"/api/v1/documents/{DocumentId}/holds/{BookingId}/release"),
         (HttpMethod.Post.Method, "api/v1/documents/bookings/{bookingId:guid}/payment-instructions", $"/api/v1/documents/bookings/{BookingId}/payment-instructions"),
         (HttpMethod.Post.Method, "api/v1/documents/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate", $"/api/v1/documents/bookings/{BookingId}/payment-instructions/{DocumentId}/regenerate"),

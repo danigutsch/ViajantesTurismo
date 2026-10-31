@@ -24,13 +24,25 @@ internal static class DocumentHoldEndpoints
             .Produces<GetDocumentHoldDto>(StatusCodes.Status201Created)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
-            .WithAdminMetadata("PlaceDocumentHold", "Places a disposition hold on the lineage of a document so purges skip it. The 201 Location is the hold collection of the document; there is no single-hold GET, so read the created hold from the response body or the list endpoint.", "Places a document hold.");
+            .WithAdminMetadata("PlaceDocumentHold", "Places a disposition hold on the lineage of a document so purges skip it. The 201 Location is the created hold.", "Places a document hold.");
 
         group.MapGet("/{id:guid}/holds", ListHolds)
             .RequireAuthorization(AdminAuthorization.DocumentHold)
             .Produces<IReadOnlyList<GetDocumentHoldDto>>()
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .WithAdminMetadata("ListDocumentHolds", "Lists every hold, released or not, on the lineage of a document.", "Lists document holds.");
+
+        group.MapGet("/{id:guid}/holds/{holdId:guid}", GetHold)
+            .RequireAuthorization(AdminAuthorization.DocumentHold)
+            .Produces<GetDocumentHoldDto>()
+            .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
+            .WithAdminMetadata("GetDocumentHold", "Reads one hold, released or not, on the lineage of a document. An unknown hold and a hold of another document are both not found.", "Gets a document hold.");
+
+        group.MapGet("/holds", ListHoldOverview)
+            .RequireAuthorization(AdminAuthorization.DocumentHold)
+            .Produces<GetDocumentHoldOverviewPageDto>()
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .WithAdminMetadata("ListDocumentHoldOverview", "Lists holds across documents, oldest placement first, one bounded page at a time. Filters: state (the states are disjoint: Active is unreleased with a review date at or after now, OverdueReview is unreleased with a review date before now, Released is released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Page defaults to 1 and pageSize to 25, at most 100.", "Lists holds across documents.");
 
         group.MapPost("/{id:guid}/holds/{holdId:guid}/release", ReleaseHold)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
@@ -63,7 +75,7 @@ internal static class DocumentHoldEndpoints
         return result.IsFailure
             ? ToError(result.ConvertError())
             : TypedResults.Created(
-                $"/api/v1/documents/{id}/holds",
+                $"/api/v1/documents/{id}/holds/{result.Value.Id}",
                 DocumentHoldMapper.MapToGetDocumentHoldDto(result.Value, timeProvider.GetUtcNow()));
     }
 
@@ -73,6 +85,35 @@ internal static class DocumentHoldEndpoints
         CancellationToken ct)
     {
         var result = await handler.Handle(new ListDocumentHoldsQuery(id), ct);
+        return result.IsFailure ? ToError(result.ConvertError()) : TypedResults.Ok(result.Value);
+    }
+
+    private static async Task<IResult> GetHold(
+        [FromRoute] Guid id,
+        [FromRoute] Guid holdId,
+        [FromServices] GetDocumentHoldQueryHandler handler,
+        CancellationToken ct)
+    {
+        var result = await handler.Handle(new GetDocumentHoldQuery(id, holdId), ct);
+        return result.IsFailure ? ToError(result.ConvertError()) : TypedResults.Ok(result.Value);
+    }
+
+    private static async Task<IResult> ListHoldOverview(
+        [FromQuery] string? state,
+        [FromQuery] string? basis,
+        [FromQuery] string? releasedSince,
+        [FromQuery] string? page,
+        [FromQuery] string? pageSize,
+        [FromServices] ListDocumentHoldOverviewQueryHandler handler,
+        CancellationToken ct)
+    {
+        var query = DocumentHoldOverviewQueryParser.Parse(state, basis, releasedSince, page, pageSize);
+        if (query.IsFailure)
+        {
+            return ToError(query.ConvertError());
+        }
+
+        var result = await handler.Handle(query.Value, ct);
         return result.IsFailure ? ToError(result.ConvertError()) : TypedResults.Ok(result.Value);
     }
 

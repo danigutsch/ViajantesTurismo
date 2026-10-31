@@ -84,6 +84,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
 | `GET` | `/details` | GetBookingFinancialDetails | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
 | `GET` | `/documents/{id:guid}/download` | Download | management/internal | required | `ViajantesTurismo.Management.Web/DocumentArtifactProxyEndpoints.cs` |
+| `GET` | `/holds` | ListDocumentHoldOverview | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
 | `POST` | `/quotes` | DraftBookingPaymentQuote | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
 | `POST` | `/quotes/{quoteId:guid}/approve` | ApproveBookingPaymentQuote | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
 | `POST` | `/receipts` | RecordBookingReceipt | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
@@ -102,6 +103,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `PUT` | `/{id:guid}` | UpdatePaymentAccount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
 | `GET` | `/{id:guid}/holds` | ListDocumentHolds | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
 | `POST` | `/{id:guid}/holds` | PlaceDocumentHold | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
+| `GET` | `/{id:guid}/holds/{holdId:guid}` | GetDocumentHold | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
 | `POST` | `/{id:guid}/holds/{holdId:guid}/release` | ReleaseDocumentHold | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
 | `GET` | `/{id:guid}/payment-instructions` | GetPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
 | `POST` | `/{id:guid}/payment-instructions/approve` | ApprovePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |

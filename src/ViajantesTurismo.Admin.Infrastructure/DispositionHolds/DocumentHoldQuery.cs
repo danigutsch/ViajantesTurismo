@@ -25,4 +25,25 @@ internal sealed class DocumentHoldQuery(AdminWriteDbContext dbContext) : IDocume
             .ToListAsync(ct);
         return [.. holds.OrderBy(hold => hold.PlacedAt).ThenBy(hold => hold.Id)];
     }
+
+    /// <inheritdoc />
+    public async Task<Hold?> FindForLineage(Guid lineageId, Guid holdId, CancellationToken ct)
+    {
+        var scope = DocumentHoldScopes.ForLineage(lineageId);
+        return await dbContext.Set<Hold>()
+            .AsNoTracking()
+            .Where(hold => hold.Id == holdId && hold.Scope == scope)
+            .SingleOrDefaultAsync(ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<Hold>> Search(DocumentHoldSearch search, int skip, int take, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(search);
+
+        return await search.Apply(dbContext.Set<Hold>().AsNoTracking())
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+    }
 }

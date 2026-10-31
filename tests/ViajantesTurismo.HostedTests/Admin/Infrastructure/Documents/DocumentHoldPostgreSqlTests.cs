@@ -1,5 +1,7 @@
 using PandaBear.DispositionHold;
+using PandaBear.Results;
 using PandaBear.Testing;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
@@ -298,5 +300,58 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         // Assert
         finishedWhileBlocked.ShouldBeFalse();
         held.ShouldContain(lineage.Id);
+    }
+
+    [Fact]
+    public async Task One_hold_is_read_only_through_its_own_document_lineage()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        var other = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(lineage);
+        await Scenario.Seed(other);
+        var holdId = await Harness.Place(documentId, ct);
+
+        // Act
+        var found = await Harness.Get(documentId, holdId, ct);
+        var wrongDocument = await Harness.Get(other.Revisions.ShouldHaveSingleItem().Id, holdId, ct);
+        var unknown = await Harness.Get(documentId, Guid.CreateVersion7(), ct);
+
+        // Assert
+        found.Value.Id.ShouldBe(holdId);
+        wrongDocument.Status.ShouldBe(ResultStatus.NotFound);
+        unknown.Status.ShouldBe(ResultStatus.NotFound);
+    }
+
+    [Fact]
+    public async Task The_overview_filters_and_pages_holds_across_lineages_in_a_stable_order()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var first = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var second = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(first);
+        await Scenario.Seed(second);
+        var firstHold = await Harness.Place(first.Revisions.ShouldHaveSingleItem().Id, ct);
+        var secondHold = await Harness.Place(second.Revisions.ShouldHaveSingleItem().Id, ct);
+        await Harness.Release(second.Revisions.ShouldHaveSingleItem().Id, secondHold, ct);
+
+        // Act
+        var active = await Harness.Overview(new ListDocumentHoldOverviewQuery(DocumentHoldState.Active, null, null, 1, 10), ct);
+        var released = await Harness.Overview(new ListDocumentHoldOverviewQuery(DocumentHoldState.Released, HoldBasis.LegalClaim, TimeProvider.System.GetUtcNow().AddMinutes(-5), 1, 10), ct);
+        var overdue = await Harness.Overview(new ListDocumentHoldOverviewQuery(DocumentHoldState.OverdueReview, null, null, 1, 10), ct);
+        var firstPage = await Harness.Overview(new ListDocumentHoldOverviewQuery(null, null, null, 1, 1), ct);
+        var secondPage = await Harness.Overview(new ListDocumentHoldOverviewQuery(null, null, null, 2, 1), ct);
+
+        // Assert
+        active.Value.Items.Select(item => item.Hold.Id).ShouldBe([firstHold]);
+        released.Value.Items.Select(item => item.Hold.Id).ShouldBe([secondHold]);
+        overdue.Value.Items.ShouldBeEmpty();
+        firstPage.Value.Items.Select(item => item.Hold.Id).ShouldBe([firstHold]);
+        firstPage.Value.HasMore.ShouldBeTrue();
+        secondPage.Value.Items.Select(item => item.Hold.Id).ShouldBe([secondHold]);
+        secondPage.Value.HasMore.ShouldBeFalse();
     }
 }
