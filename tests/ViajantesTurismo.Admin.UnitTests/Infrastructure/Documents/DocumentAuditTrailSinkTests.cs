@@ -10,7 +10,7 @@ public sealed class DocumentAuditTrailSinkTests
     public async Task Append_stamps_the_record_with_the_lineage_of_its_tracked_document()
     {
         // Arrange
-        await using var scope = DocumentAuditTrailSinkTestData.CreateScope();
+        await using var scope = DocumentAuditTrailSinkTestData.CreateContext();
         var dbContext = scope.DbContext;
         var lineage = DocumentLineageTestData.Create();
         var draft = lineage.Revisions[0];
@@ -30,7 +30,7 @@ public sealed class DocumentAuditTrailSinkTests
     public async Task Append_stamps_the_no_lineage_marker_when_the_document_does_not_exist()
     {
         // Arrange
-        await using var scope = DocumentAuditTrailSinkTestData.CreateScope();
+        await using var scope = DocumentAuditTrailSinkTestData.CreateContext();
         var dbContext = scope.DbContext;
         var record = DocumentAuditTrailSinkTestData.CreateRecord(Guid.CreateVersion7());
         using var ambient = CurrentSaveChangesDbContext.Enter(dbContext);

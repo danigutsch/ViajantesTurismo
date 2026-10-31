@@ -9,7 +9,7 @@ internal static class DocumentAuditTrailSinkTestData
     private static readonly DateTime Now = new(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc);
 
     /// <summary>Creates an in-memory Admin write context scope.</summary>
-    public static AdminWriteDbContextTestScope CreateScope() =>
+    public static AdminWriteDbContextTestScope CreateContext() =>
         AdminWriteDbContextTestFactory.CreateWithDomainEventDispatcher(
             new OutboxEnqueuingDomainEventDispatcher(new FakeTimeProvider(new DateTimeOffset(Now))));
 
