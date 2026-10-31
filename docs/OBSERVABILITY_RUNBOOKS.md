@@ -56,7 +56,8 @@ the Prometheus exporter).
 **First checks.** The `collector-gateway` dashboard shows the failing exporter. Check that the backend
 container is running and healthy in the Aspire dashboard.
 
-**Rollback.** Restart the failing backend resource. When a sending queue is full the Collector rejects new data by default (`block_on_overflow` is false), so telemetry stays lost until the backend recovers.
+**Rollback.** Restart the failing backend resource. When a sending queue is full the Collector rejects new data by default
+(`block_on_overflow` is false), so telemetry stays lost until the backend recovers.
 
 ## Collector self telemetry down
 
