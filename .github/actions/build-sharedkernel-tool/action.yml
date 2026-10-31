@@ -1,7 +1,8 @@
 name: Build SharedKernel tool
 description: >-
   Build a source-runnable SharedKernel tool at the pinned library revision and export
-  SHAREDKERNEL_SOURCE. Requires the .NET SDK pinned by global.json.
+  SHAREDKERNEL_SOURCE. Sets up the .NET SDK pinned by global.json and builds in locked-restore mode
+  through the shared setup-dotnet-tool action.
 
 inputs:
   tool:
@@ -67,13 +68,12 @@ runs:
           tools/${{ inputs.tool }}
           tools/Shared
 
-    - name: Build SharedKernel tool
-      shell: pwsh
-      working-directory: ${{ steps.sharedkernel-source.outputs.source }}
-      env:
-        TOOL: ${{ inputs.tool }}
-      run: |
-        dotnet restore "tools/$env:TOOL" --locked-mode
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        dotnet build "tools/$env:TOOL" -c Release --no-restore
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    - name: Set up the SDK and build SharedKernel tool
+      uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@96f094ff0c4e678bf72abb9041e6dd3b83602cac
+      with:
+        project: tools/${{ inputs.tool }}
+        global-json-file: global.json
+        working-directory: ${{ steps.sharedkernel-source.outputs.source }}
+        cache-dependency-path: |
+          **/packages.lock.json
+          !.local/**

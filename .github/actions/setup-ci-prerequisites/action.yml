@@ -1,5 +1,5 @@
 name: Setup CI Prerequisites
-description: Set up the repository toolchains, stage the pinned SharedKernel candidate, and restore local tools for CI jobs.
+description: Stage the pinned SharedKernel candidate and restore local tools for CI jobs.
 
 inputs:
   sharedkernel-library-root:
@@ -25,14 +25,6 @@ runs:
     - name: Configure NuGet global-packages path
       shell: bash
       run: echo "NUGET_PACKAGES=$GITHUB_WORKSPACE/.nuget/packages" >> "$GITHUB_ENV"
-
-    - name: Set up .NET SDK
-      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
-      with:
-        global-json-file: global.json
-        cache: true
-        cache-dependency-path: |
-          **/packages.lock.json
 
     - name: Build SharedKernel CI tool
       uses: ./.github/actions/build-sharedkernel-tool
