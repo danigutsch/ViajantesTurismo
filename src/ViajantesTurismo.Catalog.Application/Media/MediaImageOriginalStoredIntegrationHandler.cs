@@ -55,7 +55,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
                 storedVariants.ResponsiveVariants);
             if (updatedImage.IsFailure)
             {
-                await DeleteStoredVariants(storedVariants.ObjectKeys, ct).ConfigureAwait(false);
+                await DeleteStoredVariants(storedVariants.ObjectKeys).ConfigureAwait(false);
 
                 throw new InvalidOperationException(
                     $"Processed media image {notification.MediaImageId} is invalid: {updatedImage.ErrorDetails?.Detail ?? "unknown validation failure"}.");
@@ -123,20 +123,31 @@ public sealed class MediaImageOriginalStoredIntegrationHandler(
         return new StoredMediaImageVariants(variants, storedVariantKeys);
     }
 
-    private ValueTask StoreImageAndCompensateVariants(
+    private async ValueTask StoreImageAndCompensateVariants(
         PublicMediaImage image,
         IReadOnlyCollection<string> storedVariantKeys,
-        CancellationToken ct) =>
-        Compensation.CompleteOrCompensate(
-            ct => imageStore.Upsert(image, ct),
-            ct => DeleteStoredVariants(storedVariantKeys, ct),
-            ct);
+        CancellationToken ct)
+    {
+        try
+        {
+            await Compensation.CompleteOrCompensate(
+                ct => imageStore.Upsert(image, ct),
+                _ => DeleteStoredVariants(storedVariantKeys),
+                ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            await DeleteStoredVariants(storedVariantKeys).ConfigureAwait(false);
 
-    private async ValueTask DeleteStoredVariants(IReadOnlyCollection<string> storedVariantKeys, CancellationToken ct)
+            throw;
+        }
+    }
+
+    private async ValueTask DeleteStoredVariants(IReadOnlyCollection<string> storedVariantKeys)
     {
         foreach (var storedVariantKey in storedVariantKeys)
         {
-            await objectStore.Delete(storedVariantKey, ct).ConfigureAwait(false);
+            await MediaObjectCompensation.Delete(objectStore, storedVariantKey).ConfigureAwait(false);
         }
     }
 
