@@ -40,5 +40,15 @@ The typed event id is the idempotency key for inbox-style consumers. Variant obj
 media id, processing version, variant name, and format so replay overwrites the same objects instead
 of appending duplicate variants.
 
+## Shared intake order
+
+The Catalog media upload and the Branding logo upload share the intake order: bounded read through
+`SeekableContent`, a small signature peek, malware scan, decode with pixel limits, then hash and store (the logo is first
+re-encoded to at most 40 KiB). Decode limits come from `ImageProcessingLimits`: the Catalog values are options
+(`MediaUploadValidationOptions`); the Branding values are 2048 x 2048 pixels and 4,000,000 pixels. The Branding flow also
+walks container chunks before the scan to refuse animated images, which is a documented deviation. See
+[Upload and binary data guidelines](UPLOAD_AND_BINARY_DATA_GUIDELINES.md#intake-order),
+[API I/O and streaming contracts](API_IO_AND_STREAMING.md#branding-logo-flow), and [Branding](branding.md#logo).
+
 CloudEvents remains a transport envelope only; the application contract is the typed integration
 event.

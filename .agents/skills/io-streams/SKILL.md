@@ -7,15 +7,18 @@ license: See repository LICENSE.txt
 # I/O and Stream Handling Workflow
 
 Use this skill to change or review code that reads incoming files or streams. The contracts live in the docs below;
-this skill is the workflow. It adds no rules of its own.
+this skill is the workflow. The long form of every rule, with sources, is
+`docs/UPLOAD_AND_BINARY_DATA_GUIDELINES.md`; items there marked project policy are repository decisions, not platform facts.
 
 ## Read first
 
-1. `docs/API_IO_AND_STREAMING.md`: current streamed and buffered flows, bounds, and decisions not taken.
-2. `docs/file-and-stream-benchmark-baselines.md`: BenchmarkDotNet and real-Kestrel k6 commands.
-3. `docs/media-image-processing.md` and `docs/sharedkernel/development.md` (candidate and pin workflow).
-4. SharedKernel `docs/stream-intake.md`: the `PandaBear.IO.SeekableContent` decision and lease contract.
-5. The nearest `AGENTS.md` for every file you touch.
+1. `docs/UPLOAD_AND_BINARY_DATA_GUIDELINES.md`: rules, sources, intake order, safe parsers, serving, storage, logging, testing.
+2. `docs/API_IO_AND_STREAMING.md`: current streamed and buffered flows (including the Branding logo), bounds, and decisions not taken.
+3. `docs/file-and-stream-benchmark-baselines.md`: BenchmarkDotNet and real-Kestrel k6 commands.
+4. `docs/media-image-processing.md` and `docs/sharedkernel/development.md` (candidate and pin workflow).
+5. SharedKernel `docs/stream-intake.md`: the `PandaBear.IO.SeekableContent` decision and lease contract. It lives in the external
+   SharedKernel repository, not in this one; the pinned package READMEs under `~/.nuget/packages/pandabear.sharedkernel.*/` are the local copy.
+6. The nearest `AGENTS.md` for every file you touch.
 
 ## Decision ladder
 
@@ -38,7 +41,10 @@ Stop at the first rung that holds.
   Reject a mismatch between declared and actual length.
 - Keep the request size limit on the endpoint (`RequestSizeLimitAttribute`). Do not use `DisableRequestSizeLimit`,
   `RequestFormLimits.BufferBody = true`, or unbounded `EnableBuffering()` without a stated bound.
-- Malware scan approval comes before parsing, decoding into domain state, or persistence.
+- Malware scan approval comes before parsing, decoding into domain state, or persistence. Exception: bounded header-only
+  parsing before the scan (the 12-byte signature peek) is allowed when it is documented as an exception and stays bounded.
+  The Branding animation chunk walk runs before the scan today; that is a known deviation tracked in the I/O hardening epic,
+  not a pattern to copy.
 - Forward the request `CancellationToken` to every read, scan, and store call. Cancellation must clean up partial
   copies and temporary files, and must not leave a half-committed state.
 - Dispose every lease and opened stream on every path, including scanner failure and validation failure.
@@ -46,6 +52,23 @@ Stop at the first rung that holds.
 - Do not log payloads, original filenames, temporary paths, or upload credentials.
 - Do not duplicate byte arrays merely because an API accepts `ReadOnlyMemory<byte>`; do not add a second copy.
 - Do not trust one machine's result to set an application-wide threshold.
+- Content type: the declared type and file name are untrusted. Allow-list the type, cross-check it against the signature, and
+  re-encode images so the stored bytes are ours.
+- Hand-written binary parsers: `long` arithmetic, compare a declared length with the remaining length before seeking or
+  allocating, bound iteration, fail closed on truncation, no catch-all, and split parsing (pure span function) from seeking.
+- Raw body (`Stream` parameter or `HttpRequest.Body`): not rewindable and readable once. Require a content-type allow-list,
+  `RequestSizeLimitAttribute`, a `SeekableContent` byte limit, the request token, authorization, a rate limit, and a scan.
+- Serving: `X-Content-Type-Options: nosniff`; `Content-Disposition` set by the server for downloads; content-addressed bytes get
+  an immutable cache and a strong ETag; validate the hash format with a `\z`-anchored pattern; refuse SVG.
+- Storage: small immutable blobs in their own table with a size cap, never in list projections, with a stated orphan cleanup
+  rule (Branding logos are never deleted today). Cap bytes carried in events and outbox payloads on both producer and consumer.
+- Logging: ids, lengths, hash prefixes, content types only. No payload bytes, file names, or temporary paths; do not format
+  byte-holding records into messages.
+- Blazor client: the declared content type may be empty; pass a real cancellation token (not `CancellationToken.None`); catch the
+  specific exceptions `OpenReadStream` throws. The server limit is the control, the client limit a convenience.
+- `Stream` or `ReadOnlyMemory<byte>`: `Stream` for stream consumers and large or spooled data; `ReadOnlyMemory<byte>` for small
+  immutable stored or sent payloads; spans only inside synchronous parsers; EF rows keep `byte[]` internally; no public `byte[]`
+  properties.
 
 ## Test recipe
 
@@ -55,6 +78,18 @@ Stop at the first rung that holds.
 - Cover: exact limit, limit plus one byte, declared versus actual length mismatch, empty input, cancellation mid-read,
   scanner rejection and failure, disposal on every path, and partial-copy cleanup.
 - Real HTTP path: `tests/SharedKernel.IntegrationTesting/AspireTestApplication.cs` for disconnect and slow-client cases.
+- Hostile parser input: truncation at every offset; length fields 0, max, `int.MaxValue + 1`, `uint.MaxValue`; offset plus length
+  overflow; flag set and cleared; trailing data; a stream returning one byte per `Read`; scanner down, timeout, oversize.
+
+Per-feature wire-test checklist (real Kestrel, `tests/ViajantesTurismo.UploadWire.Testing`; no TestServer, no `Task.Delay`):
+
+- `LoopbackKestrel.UseRandomLoopbackPort` and `Start` for a real socket.
+- `SlowUpload` with `GatedChunkContent` for slow clients; the scan must start only after the last chunk.
+- `RawHttpUpload` for a client that declares a length, sends a prefix, and aborts.
+- `ScanRecorder` and `RecordedScan` to assert the exact bytes scanned, or that no scan happened.
+- `RequestLifetimeProbe` with `RequestProbeStartupFilter` for token cancellation and read sizes; `WireTimeout.Default` bounds waits.
+- Cover over-limit (`413`), over-file-limit, stalled client (`408`), and persistence not happening. Admin customer import and
+  Catalog media upload have such tests; the Branding logo `PUT` does not yet.
 - Use `docs/TEST_GUIDELINES.md` and the `xunit-v3-mtp-test-stack` skill for runner details.
 
 ## Diagnostics to expect
@@ -66,10 +101,14 @@ Stop at the first rung that holds.
 | CA2000 | Disposable not disposed | `using` or `await using`; document ownership transfer |
 | CA2012 | ValueTask consumed incorrectly | Await directly once |
 | CA2024 | `StreamReader.EndOfStream` in async code | Use `ReadLineAsync` returning `null` |
+| SKIO001 | Request or upload stream buffered in memory without a length bound (`PandaBear.SharedKernel.IO.Analyzers`) | Use `SeekableContent.Create` with a byte limit |
+| SKIO002 | Hand-rolled read loop into a `MemoryStream` without a length bound | Use `SeekableContent.Create` |
 
-Planned SharedKernel analyzers (not shipped; update this table when they are): unbounded `MemoryStream` buffering of
-request streams, hand-rolled copy loops that should use `SeekableContent`, and endpoints that bind uploads without a
-request size limit. Treat warnings as errors; do not suppress without a written justification.
+`PandaBear.SharedKernel.IO.Analyzers` (SKIO001, SKIO002, both Warning) is shipped and referenced in
+`ViajantesTurismo.Admin.ApiService`, `ViajantesTurismo.Catalog.Application`, and `ViajantesTurismo.Catalog.ApiService`. It is
+not referenced in the Branding projects, which hold the raw-body logo intake; adding it there is a candidate follow-up. The
+analysis is local: it does not see host-configured request limits or follow parameters. Treat warnings as errors; do not suppress
+without a written justification.
 
 ## Workflow
 

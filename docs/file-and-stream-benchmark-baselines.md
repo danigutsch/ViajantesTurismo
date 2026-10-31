@@ -16,6 +16,9 @@ smaller isolated host and still uses a real Kestrel socket with an ephemeral por
 The host binds loopback by default; explicit Docker mode uses `0.0.0.0` only so the pinned k6 container can
 reach the host through `host.docker.internal`.
 
+The benchmark host binds multipart `IFormFile` uploads. It does not cover the raw request body used by the Branding logo `PUT`
+(see [API I/O and streaming contracts](API_IO_AND_STREAMING.md#branding-logo-flow)), so no figure here applies to that path.
+
 ## Upload host modes
 
 The benchmark host exposes three routes that share a base response shape (`files=<count>;bytes=<bytes>;matches=<matches>`):
