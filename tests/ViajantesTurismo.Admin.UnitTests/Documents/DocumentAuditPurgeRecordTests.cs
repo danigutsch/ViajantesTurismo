@@ -24,7 +24,7 @@ public sealed class DocumentAuditPurgeRecordTests
             .Select(property => property.Name)
             .Order()
             .ToArray()
-            .ShouldBe(["ActorId", "CorrelationId", "HeldCount", "Id", "OccurredAtUtc", "Outcome", "PurgedCount", "RetentionCutoffUtc"]);
+            .ShouldBe(["ActorId", "CorrelationId", "HeldCount", "Id", "OccurredAtUtc", "Outcome", "PurgedCount", "RetentionCutoffUtc", "UndecidableCount"]);
     }
 
     [Theory]

@@ -135,6 +135,30 @@ public sealed class DocumentHoldEndpointTests
         secondRelease.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 
+    [Theory]
+    [InlineData("1")]
+    [InlineData("99")]
+    [InlineData("legalclaim")]
+    [InlineData("LegalClaim,Investigation")]
+    public async Task A_basis_that_is_not_an_exact_member_name_is_rejected(string basis)
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        var holds = new InMemoryDispositionHoldStore();
+        await using var factory = DocumentHoldTestHost.Create(documentId, holds);
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        var body = $$"""{"basis":"{{basis}}","purposeCode":"purpose.claim-001","authorityReference":"authority:case-0001","reviewDueAt":"2999-01-01T00:00:00Z"}""";
+        using var content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+
+        // Act
+        using var response = await client.PostAsync(new Uri($"/api/v1/documents/{documentId}/holds", UriKind.Relative), content, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        holds.Holds.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task A_rejected_request_does_not_echo_the_submitted_content()
     {

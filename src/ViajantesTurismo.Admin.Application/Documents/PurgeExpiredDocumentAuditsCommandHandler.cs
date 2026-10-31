@@ -85,7 +85,8 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
             counts.Held,
             cutoff,
             outcome,
-            timeProvider.GetUtcNow().UtcDateTime);
+            timeProvider.GetUtcNow().UtcDateTime,
+            counts.Undecidable);
         if (record.IsFailure)
         {
             throw new InvalidOperationException("Document audit purge evidence was invalid.");

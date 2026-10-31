@@ -91,7 +91,14 @@ purges that do exist: unfinalized drafts, document audit records and document id
 - A SQL pre-filter leaves lineages with an effective hold out of the candidate query before the batch limit, so held rows cannot
   starve a batch. It is an optimization only; the guard check on the final candidates stays the authoritative decision.
 - Audit records store their lineage so a hold placed after a revision was purged still covers that revision's audit records.
-  A record written before that column existed whose lineage could not be derived is kept and counted as held, never purged.
+  A record written before that column existed whose lineage could not be derived (its revision was already purged) is
+  undecidable: it is left out of the candidate query so it cannot occupy a batch, kept (fail closed), and counted separately as
+  `UndecidableCount` in the purge evidence. Whether to keep or purge such legacy records is a Product decision.
+- Residual: an audit record written for a document that no longer exists is stamped as having no lineage and stays purgeable. A
+  draft purged between the handler's read and the audit write could therefore leave one audit record that a later hold on the
+  same lineage does not cover.
+- The held counts of the three purges come from the same pre-filter (effective holds by the database clock) plus any candidates
+  the guard then reports as held, so a hold placed during the run is counted too. The guard check stays authoritative.
 - Idempotency entries are matched to a lineage through the document identifier in their scope or stored result. An entry whose
   document row was already purged cannot be matched and is purged on schedule; it holds a hashed key and an identifier only.
 

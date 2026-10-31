@@ -24,7 +24,7 @@ internal static class DocumentHoldEndpoints
             .Produces<GetDocumentHoldDto>(StatusCodes.Status201Created)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
-            .WithAdminMetadata("PlaceDocumentHold", "Places a disposition hold on the lineage of a document so purges skip it.", "Places a document hold.");
+            .WithAdminMetadata("PlaceDocumentHold", "Places a disposition hold on the lineage of a document so purges skip it. The 201 Location is the hold collection of the document; there is no single-hold GET, so read the created hold from the response body or the list endpoint.", "Places a document hold.");
 
         group.MapGet("/{id:guid}/holds", ListHolds)
             .RequireAuthorization(AdminAuthorization.DocumentHold)
@@ -51,7 +51,8 @@ internal static class DocumentHoldEndpoints
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        if (!Enum.TryParse<HoldBasis>(dto.Basis, ignoreCase: false, out var basis) || !Enum.IsDefined(basis))
+        if (!Enum.GetNames<HoldBasis>().Contains(dto.Basis, StringComparer.Ordinal)
+            || !Enum.TryParse<HoldBasis>(dto.Basis, ignoreCase: false, out var basis))
         {
             return ToError(DocumentHoldErrors.InvalidField("basis"));
         }

@@ -37,7 +37,15 @@ internal sealed class DocumentAuditStore(AdminWriteDbContext dbContext) : IDocum
         Expression<Func<DocumentAuditRecord, bool>> isPreHeld = record =>
             activeLineages.Contains(EF.Property<Guid?>(record, DocumentAuditLineage.PropertyName))
             || (record.DocumentId != null && heldDocuments.Contains(record.DocumentId.Value));
-        var expiredQuery = dbContext.DocumentAuditRecords.Where(record => record.RetentionExpiresAt <= cutoff);
+        var allExpired = dbContext.DocumentAuditRecords.Where(record => record.RetentionExpiresAt <= cutoff);
+        Expression<Func<DocumentAuditRecord, bool>> isDecidable = record =>
+            EF.Property<Guid?>(record, DocumentAuditLineage.PropertyName) != null
+            || record.DocumentId == null
+            || dbContext.DocumentDrafts.Any(draft => draft.Id == record.DocumentId);
+        var undecidableCount = await allExpired.CountAsync(
+            Expression.Lambda<Func<DocumentAuditRecord, bool>>(Expression.Not(isDecidable.Body), isDecidable.Parameters),
+            ct);
+        var expiredQuery = allExpired.Where(isDecidable);
         var preHeldCount = activeLineages.Length == 0 ? 0 : await expiredQuery.CountAsync(isPreHeld, ct);
         var candidateQuery = activeLineages.Length == 0
             ? expiredQuery
@@ -59,7 +67,7 @@ internal sealed class DocumentAuditStore(AdminWriteDbContext dbContext) : IDocum
             .ToArray();
 
         dbContext.DocumentAuditRecords.RemoveRange(purgeable);
-        return new DocumentPurgeCounts(purgeable.Length, preHeldCount + candidates.Length - purgeable.Length);
+        return new DocumentPurgeCounts(purgeable.Length, preHeldCount + candidates.Length - purgeable.Length, undecidableCount);
     }
 
     private async Task<Dictionary<Guid, Guid>> FindLineages(Candidate[] candidates, CancellationToken ct)

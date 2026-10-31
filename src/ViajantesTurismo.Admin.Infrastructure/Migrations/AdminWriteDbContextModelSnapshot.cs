@@ -362,6 +362,11 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<DateTime>("RetentionCutoffUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("UndecidableCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.HasKey("Id");
 
                     b.ToTable("DocumentAuditPurgeRecords");
