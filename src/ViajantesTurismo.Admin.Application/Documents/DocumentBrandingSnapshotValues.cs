@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// </summary>
 /// <param name="Version">Content hash identifying this branding appearance.</param>
 /// <param name="BrandName">Brand display name.</param>
-/// <param name="LogoUri">Root-relative or HTTPS logo address, or null when there is no usable logo.</param>
+/// <param name="LogoUri">Raster data URI of the logo, or null when there is no logo.</param>
 /// <param name="PrimaryColor">Primary brand color.</param>
 /// <param name="AccentColor">Accent brand color.</param>
 /// <param name="BackgroundColor">Background color.</param>

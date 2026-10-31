@@ -3,7 +3,7 @@ using PandaBear.DispositionHold;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes;
 
-/// <summary>A configurable guard that reports given holds as restraining, or fails as an undecidable state.</summary>
+/// <summary>A configurable guard that reports given holds as restraining, or fails as an unknown state.</summary>
 public sealed class FakeDispositionHoldGuard : IDispositionHoldGuard
 {
     /// <summary>Gets or sets the hold ids reported as restraining; empty means clear.</summary>

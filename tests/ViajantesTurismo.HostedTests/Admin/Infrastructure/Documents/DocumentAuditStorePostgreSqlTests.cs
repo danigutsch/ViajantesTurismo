@@ -129,6 +129,22 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     }
 
     [Fact]
+    public async Task Audit_records_that_name_a_document_reject_a_missing_lineage_stamp()
+    {
+        // Arrange
+        await Scenario.SeedAudit(DocumentAuditInfrastructureTestData.CreateRecord(TimeProvider.System.GetUtcNow().UtcDateTime));
+
+        // Act
+        Func<Task> insert = async () => await Scenario.InsertAuditRecordWithoutLineageStamp(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        _ = await insert.ShouldThrow<PostgresException>();
+    }
+
+    [Fact]
     public async Task PurgeExpiredRecords_deletes_only_records_after_their_retention_period()
     {
         // Arrange

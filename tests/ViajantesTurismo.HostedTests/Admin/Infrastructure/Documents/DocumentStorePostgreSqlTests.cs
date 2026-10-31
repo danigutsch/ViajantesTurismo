@@ -182,36 +182,6 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
-    public async Task Invalid_branding_logo_uri_materializes_as_missing_snapshot_logo()
-    {
-        // Arrange
-        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
-        await Scenario.Seed(document);
-        await Scenario.SetBrandingLogoUri(document.Id, "/\\evil.test/logo.svg", TestContext.Current.CancellationToken);
-
-        // Act
-        var documents = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
-
-        // Assert
-        documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldBeNull();
-    }
-
-    [Fact]
-    public async Task Legacy_root_relative_branding_logo_reads_as_a_missing_logo()
-    {
-        // Arrange
-        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
-        await Scenario.Seed(document);
-        await Scenario.SetBrandingLogoUri(document.Id, "/logo.svg", TestContext.Current.CancellationToken);
-
-        // Act
-        var documents = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
-
-        // Assert
-        documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldBeNull();
-    }
-
-    [Fact]
     public async Task A_stored_raster_data_uri_logo_round_trips_unchanged()
     {
         // Arrange
@@ -246,79 +216,6 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         removed.ShouldBe(3);
         var remainingKeys = await Scenario.GetIdempotencyKeys(ct);
         remainingKeys.ShouldBe(["after", "other-scope"]);
-    }
-
-    [Fact]
-    public async Task Idempotency_key_migration_digests_existing_document_keys_and_leaves_other_scopes()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        var startedAt = new DateTimeOffset(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
-        const string DocumentScope = "admin.documents.generate-contract-draft:booking";
-        await Scenario.MigrateTo("20261030171856_UseBoundedDocumentVoidReason", ct);
-        await Scenario.SeedIdempotencyEntry(DocumentScope, "raw-caller-key", startedAt, startedAt, ct, migrate: false);
-        await Scenario.SeedIdempotencyEntry("admin.payments.record:booking", "payment-key", startedAt, startedAt, ct, migrate: false);
-
-        // Act
-        await Scenario.MigrateTo(null, ct);
-
-        // Assert
-        var digest = DocumentCommandIdempotency.DigestKey(IdempotencyKey.From("raw-caller-key")).Value;
-        var keys = await Scenario.GetIdempotencyKeys(ct);
-        keys.Length.ShouldBe(2);
-        keys.ShouldContain(digest);
-        keys.ShouldContain("payment-key");
-    }
-
-    [Fact]
-    public async Task Void_reason_migration_maps_known_codes_in_both_directions()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
-        var administrative = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
-        var withdrawn = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now);
-        await Scenario.Seed(administrative, withdrawn);
-        await Scenario.MigrateTo("20261030171704_AddDocumentAuditPurgeEvidence", ct);
-        await Scenario.SetRawVoidReason(administrative.Id, "administrative-void", ct);
-        await Scenario.SetRawVoidReason(withdrawn.Id, "approval-withdrawn", ct);
-
-        // Act
-        await Scenario.MigrateTo("20261030171856_UseBoundedDocumentVoidReason", ct);
-
-        // Assert
-        var administrativeAfterUp = await Scenario.GetRawVoidReason(administrative.Id, ct);
-        var withdrawnAfterUp = await Scenario.GetRawVoidReason(withdrawn.Id, ct);
-        administrativeAfterUp.ShouldBe("AdministrativeVoid");
-        withdrawnAfterUp.ShouldBe("ApprovalWithdrawn");
-
-        // Act
-        await Scenario.MigrateTo("20261030171704_AddDocumentAuditPurgeEvidence", ct);
-
-        // Assert
-        var administrativeAfterDown = await Scenario.GetRawVoidReason(administrative.Id, ct);
-        var withdrawnAfterDown = await Scenario.GetRawVoidReason(withdrawn.Id, ct);
-        administrativeAfterDown.ShouldBe("administrative-void");
-        withdrawnAfterDown.ShouldBe("approval-withdrawn");
-    }
-
-    [Fact]
-    public async Task Void_reason_migration_refuses_to_run_when_unknown_text_exists_and_leaves_it_untouched()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        var document = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
-        await Scenario.Seed(document);
-        await Scenario.MigrateTo("20261030171704_AddDocumentAuditPurgeEvidence", ct);
-        await Scenario.SetRawVoidReason(document.Id, "Customer asked for a refund", ct);
-
-        // Act
-        Func<Task> migrate = () => Scenario.MigrateTo("20261030171856_UseBoundedDocumentVoidReason", ct);
-        await migrate.ShouldThrow<PostgresException>();
-
-        // Assert
-        var reason = await Scenario.GetRawVoidReason(document.Id, ct);
-        reason.ShouldBe("Customer asked for a refund");
     }
 
     [Fact]

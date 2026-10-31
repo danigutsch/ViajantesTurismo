@@ -384,7 +384,7 @@ flowchart LR
 Delivery rules:
 
 - No Branding integration event predates `BrandingSettingsChangedIntegrationEvent`, and every valid event has a
-  positive revision. Only pre-rollout document rows may have nullable Branding revision provenance.
+  positive revision. A document row may have a null Branding revision when no revision was captured for its snapshot.
 - Within one source epoch, a higher revision replaces the Admin projection; older/duplicate revisions
   are acknowledged. A new epoch requires audited recovery rather than an implicit switch.
 - Relay enqueue and outbox `PublishedAt` commit atomically. The worker commits Admin

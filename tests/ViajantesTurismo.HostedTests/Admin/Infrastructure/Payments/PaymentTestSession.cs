@@ -77,11 +77,6 @@ internal sealed class PaymentTestSession : IAsyncDisposable
     }
     /// <summary>Resolves the payment instruction workflow.</summary>
     public PaymentInstructionWorkflow Instructions => _provider.GetRequiredService<PaymentInstructionWorkflow>();
-    /// <summary>Checks whether the legacy <c>Payment</c> table exists in the public schema.</summary>
-    public Task<bool> HasPaymentTable(CancellationToken ct) => Context.Database.SqlQueryRaw<bool>(
-        """
-        SELECT to_regclass('public."Payment"') IS NOT NULL AS "Value"
-        """).SingleAsync(ct);
     /// <summary>Counts persisted payment account rows.</summary>
     public async Task<int> AccountCount(CancellationToken ct) => await Context.Set<PaymentAccountRow>().CountAsync(ct);
     /// <summary>Counts persisted payment audit rows.</summary>

@@ -362,11 +362,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<DateTime>("RetentionCutoffUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UndecidableCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
                     b.HasKey("Id");
 
                     b.ToTable("DocumentAuditPurgeRecords");
@@ -424,7 +419,10 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.HasIndex("RetentionExpiresAt")
                         .HasDatabaseName("IX_DocumentAuditRecords_RetentionExpiresAt");
 
-                    b.ToTable("DocumentAuditRecords");
+                    b.ToTable("DocumentAuditRecords", t =>
+                        {
+                            t.HasCheckConstraint("CK_DocumentAuditRecords_DocumentLineageStamped", "\"DocumentId\" IS NULL OR \"DocumentLineageId\" IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentDraft", b =>

@@ -2,8 +2,6 @@ using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLe
 using System.Diagnostics.CodeAnalysis;
 using ViajantesTurismo.Admin.Domain.Shared;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Infrastructure;
@@ -49,27 +47,6 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
         context.Customers.Add(customer);
         context.Tours.Add(tour);
         await context.SaveEntities(ct);
-    }
-
-    /// <summary>Migrates forward, or back to the initial migration when <paramref name="forward" /> is false, with the session time zone set to <paramref name="timeZone" />.</summary>
-    public async Task Migrate(bool forward, string timeZone, CancellationToken ct)
-    {
-        await using var context = CreateContext();
-        await context.Database.OpenConnectionAsync(ct);
-        await context.Database.ExecuteSqlInterpolatedAsync($"SELECT set_config('TimeZone', {timeZone}, false)", ct);
-        await context.Database.GetService<IMigrator>().MigrateAsync(
-            forward ? null : "20260724210254_InitialAdmin", ct);
-    }
-
-    /// <summary>Overwrites tour and birth dates with timestamptz values near midnight UTC.</summary>
-    public async Task SetTimestampDates(CancellationToken ct)
-    {
-        await using var context = CreateContext();
-        await context.Database.ExecuteSqlRawAsync("""
-            UPDATE "Tours" SET "StartDate" = TIMESTAMPTZ '2030-02-03T00:30:00Z',
-                "EndDate" = TIMESTAMPTZ '2030-02-10T23:30:00Z';
-            UPDATE "CustomerPersonalInfo" SET "BirthDate" = TIMESTAMPTZ '1990-01-01T00:30:00Z';
-            """, ct);
     }
 
     /// <summary>Reads back the customer birth date, tour start and end dates, and the booking date.</summary>

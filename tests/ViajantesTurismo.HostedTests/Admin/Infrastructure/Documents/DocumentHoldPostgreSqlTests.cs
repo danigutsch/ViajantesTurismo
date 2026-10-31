@@ -133,23 +133,6 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
     }
 
     [Fact]
-    public async Task A_legacy_audit_record_whose_lineage_was_never_determined_is_not_purged()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        var unattributed = DocumentAuditInfrastructureTestData.CreateRecord(new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-        await Scenario.SeedLegacyAuditWithoutLineage(unattributed);
-
-        // Act
-        var counts = await Harness.PurgeAudits(ct);
-
-        // Assert
-        counts.ShouldBe(new DocumentPurgeCounts(0, 0, 1));
-        var stillStored = await Scenario.GetAuditRecord(unattributed.Id, ct);
-        stillStored.ShouldNotBeNull();
-    }
-
-    [Fact]
     public async Task Held_idempotency_entries_beyond_the_batch_size_do_not_starve_purgeable_ones()
     {
         // Arrange
@@ -175,33 +158,6 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         counts.ShouldBe(new DocumentPurgeCounts(2, 501));
         var remaining = await Scenario.GetIdempotencyKeys(ct);
         remaining.Length.ShouldBe(501);
-    }
-
-    [Fact]
-    public async Task Undecidable_legacy_audit_records_beyond_the_batch_size_do_not_starve_purgeable_ones()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        var legacy = Enumerable.Range(0, 501)
-            .Select(index => DocumentAuditInfrastructureTestData.CreateRecord(new DateTime(2019, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMinutes(index)))
-            .ToArray();
-        await Scenario.SeedLegacyAuditWithoutLineage(legacy);
-        var purgeable = new[]
-        {
-            DocumentAuditInfrastructureTestData.CreateRecord(new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
-            DocumentAuditInfrastructureTestData.CreateRecord(new DateTime(2020, 1, 2, 0, 0, 0, DateTimeKind.Utc)),
-        };
-        await Scenario.SeedAudits(purgeable);
-
-        // Act
-        var counts = await Harness.PurgeAudits(ct);
-
-        // Assert
-        counts.ShouldBe(new DocumentPurgeCounts(2, 0, 501));
-        var evidence = await Scenario.GetPurgeEvidence(ct);
-        var recorded = evidence.ShouldHaveSingleItem();
-        recorded.UndecidableCount.ShouldBe(501);
-        recorded.HeldCount.ShouldBe(0);
     }
 
     [Fact]

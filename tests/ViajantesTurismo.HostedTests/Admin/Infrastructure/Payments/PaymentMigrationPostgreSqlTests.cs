@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
@@ -11,25 +12,6 @@ namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 [TestScope(TestScope.Integration)]
 public sealed class PaymentMigrationPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {
-    [Fact]
-    public async Task Unpublished_migrations_never_create_the_obsolete_payment_table()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
-        await using var session = scenario.Open();
-        await session.Migrate(ct, "20261020200401_UseCivilDates");
-        var paymentTableBeforeLifecycle = await session.HasPaymentTable(ct);
-        paymentTableBeforeLifecycle.ShouldBeFalse();
-
-        // Act
-        await session.Migrate(ct);
-
-        // Assert
-        var paymentTableAfterLifecycle = await session.HasPaymentTable(ct);
-        paymentTableAfterLifecycle.ShouldBeFalse();
-    }
-
     [Fact]
     public async Task Receipt_calendar_date_and_method_survive_encrypted_persistence_and_restart()
     {
@@ -75,7 +57,7 @@ public sealed class PaymentMigrationPostgreSqlTests(PostgreSqlTestServerFixture 
         await session.SeedAccount(account, ct);
 
         // Act
-        var rollback = () => session.Migrate(ct, "20261020200401_UseCivilDates");
+        var rollback = () => session.Migrate(ct, Migration.InitialDatabase);
         var rejected = await rollback.ShouldThrow<PostgresException>();
 
         // Assert

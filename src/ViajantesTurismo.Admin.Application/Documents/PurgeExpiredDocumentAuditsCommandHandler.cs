@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 
 /// <summary>
 /// Purges document audit records only after their currently configured retention period and never those of a held
-/// document lineage. The hold check and the deletion share one explicit transaction, and an undecidable hold state
+/// document lineage. The hold check and the deletion share one explicit transaction, and an unknown hold state
 /// refuses the purge.
 /// </summary>
 public sealed class PurgeExpiredDocumentAuditsCommandHandler(
@@ -20,7 +20,7 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
     /// <summary>
     /// Removes expired, unheld document audit records and records metadata-only evidence of the run in one save inside
     /// one transaction, and returns the purged and held counts. A failed run discards its staged changes and records
-    /// rejected evidence; an undecidable hold state records refused evidence and rethrows. Neither removes anything.
+    /// rejected evidence; an unknown hold state records refused evidence and rethrows. Neither removes anything.
     /// </summary>
     public async Task<DocumentPurgeCounts> Handle(PurgeExpiredDocumentAuditsCommand command, CancellationToken ct)
     {
@@ -85,8 +85,7 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
             counts.Held,
             cutoff,
             outcome,
-            timeProvider.GetUtcNow().UtcDateTime,
-            counts.Undecidable);
+            timeProvider.GetUtcNow().UtcDateTime);
         if (record.IsFailure)
         {
             throw new InvalidOperationException("Document audit purge evidence was invalid.");
