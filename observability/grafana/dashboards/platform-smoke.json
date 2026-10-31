@@ -71,7 +71,7 @@
       "id": 3,
       "type": "timeseries",
       "title": "Reporting services",
-      "description": "Count of distinct services that exported metrics in the last 5 minutes (services). Question: are the applications sending telemetry through the gateway?",
+      "description": "Count of distinct HTTP-serving services that exported request metrics in the last 5 minutes (services); workers without a web server are not counted. Question: are the applications sending telemetry through the gateway?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"

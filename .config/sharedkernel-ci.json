@@ -82,6 +82,14 @@
       },
       {
         "paths": [
+          "docs/OBSERVABILITY_*.md"
+        ],
+        "tests": [
+          "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj"
+        ]
+      },
+      {
+        "paths": [
           "observability/*"
         ],
         "tests": [

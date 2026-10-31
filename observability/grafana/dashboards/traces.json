@@ -50,7 +50,6 @@
           },
           "queryType": "traceql",
           "query": "{ status = error }",
-          "expr": "{ status = error }",
           "limit": 20,
           "refId": "A"
         }
@@ -84,7 +83,6 @@
           },
           "queryType": "traceql",
           "query": "{ duration > 2s }",
-          "expr": "{ duration > 2s }",
           "limit": 20,
           "refId": "A"
         }
@@ -118,7 +116,6 @@
           },
           "queryType": "traceql",
           "query": "{ name =~ \"eventsourcing.*\" }",
-          "expr": "{ name =~ \"eventsourcing.*\" }",
           "limit": 20,
           "refId": "A"
         }
@@ -152,7 +149,6 @@
           },
           "queryType": "traceql",
           "query": "{ name =~ \"catalog.*\" }",
-          "expr": "{ name =~ \"catalog.*\" }",
           "limit": 20,
           "refId": "A"
         }

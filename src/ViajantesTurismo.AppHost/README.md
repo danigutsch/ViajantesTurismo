@@ -283,7 +283,7 @@ The resources are:
 - optional `grafana`: local dashboard UI with provisioned datasources and dashboards
 - optional `loki`: log backend
 - optional `tempo`: sanitized trace backend
-- optional `prometheus`: metric backend scraping the Collector's Prometheus exporter
+- optional `prometheus`: metric backend scraping the Collector's Prometheus exporter and its internal metrics on port 8888
 
 Raw telemetry exists on the trusted application-to-Collector hop. AppHost forwarding covers the
 normal AppHost OTLP annotation contract, but a manually constructed exporter or a process outside this

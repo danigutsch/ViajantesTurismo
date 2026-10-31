@@ -395,7 +395,7 @@
       "id": 9,
       "type": "timeseries",
       "title": "Reporting services",
-      "description": "Distinct services with metrics in the last 5 minutes (services). Question: has any application stopped reporting through the gateway?",
+      "description": "Distinct HTTP-serving services that exported request metrics in the last 5 minutes (services); workers without a web server are not counted. Question: has any application stopped reporting through the gateway?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"

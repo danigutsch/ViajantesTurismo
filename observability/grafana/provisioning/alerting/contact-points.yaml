@@ -9,4 +9,5 @@ contactPoints:
         settings:
           url: http://127.0.0.1:9/local-alert-sink
           httpMethod: POST
+          message: '{{ range .Alerts }}{{ template "viajantes.message" . }}{{ end }}'
         disableResolveMessage: false

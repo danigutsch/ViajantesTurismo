@@ -46,9 +46,9 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | `catalog.media_accessibility.generation.attempts` | `ViajantesTurismo.Catalog` | `{attempt}` | bounded | Are generations attempted? | `media-accessibility` | keep |
 | `catalog.media_accessibility.generation.completed` | `ViajantesTurismo.Catalog` | `{attempt}` | bounded | Do generations finish? | `media-accessibility` | keep |
 | `catalog.media_accessibility.generation.duration` | `ViajantesTurismo.Catalog` | `s` | bounded | Is generation slow? | `media-accessibility` | keep |
-| `catalog.media_accessibility.evaluation.cases` | `ViajantesTurismo.Catalog` | `{case}` | result | Is generated text passing evaluation? | `media-accessibility` | keep |
-| `catalog.media_accessibility.publication.blocked` | `ViajantesTurismo.Catalog` | `{image}` | reason | What blocks publication? | `media-accessibility` | keep |
-| `catalog.media_accessibility.review.decisions` | `ViajantesTurismo.Catalog` | `{decision}` | decision | Are editors working the queue? | `media-accessibility` | keep |
+| `catalog.media_accessibility.evaluation.cases` | `ViajantesTurismo.Catalog` | `{case}` | `catalog.outcome` (pass, fail) | Is generated text passing evaluation? | `media-accessibility` | keep |
+| `catalog.media_accessibility.publication.blocked` | `ViajantesTurismo.Catalog` | `{image}` | `catalog.outcome` (missing_alt, unreviewed) | What blocks publication? | `media-accessibility` | keep |
+| `catalog.media_accessibility.review.decisions` | `ViajantesTurismo.Catalog` | `{decision}` | `catalog.outcome` (approved, edited, rejected, failed, missing_alt) | Are editors working the queue? | `media-accessibility` | keep |
 | `catalog.media_accessibility.review.queue_age` | `ViajantesTurismo.Catalog` | `s` | none | How long do items wait for review? | `media-accessibility` | keep |
 | `branding.cache.requests` | `ViajantesTurismo.Branding` | `{request}` | outcome | Is the cache effective? | `branding-cache` | keep |
 | `branding.cache.invalidations` | `ViajantesTurismo.Branding` | `{invalidation}` | outcome | Do invalidations succeed? | `branding-cache`, alert `branding-invalidation-failures` | keep |
