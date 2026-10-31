@@ -5,7 +5,7 @@ using PandaBear.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Observability;
 
-[Trait(ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.TestTraits.ComponentName, ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.TestTraits.PostgreSqlObservabilityComponent)]
+[Trait(Api.Infrastructure.TestTraits.ComponentName, Api.Infrastructure.TestTraits.PostgreSqlObservabilityComponent)]
 [TestScope(TestScope.Integration)]
 public sealed class PostgreSqlIndexHealthCollectorTests(PostgreSqlIndexHealthCollectorScenario scenario)
     : IClassFixture<PostgreSqlIndexHealthCollectorScenario>

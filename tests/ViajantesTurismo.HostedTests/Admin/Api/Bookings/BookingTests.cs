@@ -6,13 +6,13 @@ using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.HostedTests.Admin.Api.Bookings;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+[Trait(TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
+[Trait(TestTraitNames.AreaName, TestTraits.BookingsArea)]
 [TestScope(TestScope.Integration)]
 public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
     public async Task All_booking_read_endpoints_return_persisted_room_and_bike_selections()
     {
         // Arrange

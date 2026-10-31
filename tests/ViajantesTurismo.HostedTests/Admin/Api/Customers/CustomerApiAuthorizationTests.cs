@@ -3,8 +3,8 @@ using System.Net;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 namespace ViajantesTurismo.HostedTests.Admin.Api.Customers;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
 [TestScope(TestScope.Integration)]
 public sealed class CustomerApiAuthorizationTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {

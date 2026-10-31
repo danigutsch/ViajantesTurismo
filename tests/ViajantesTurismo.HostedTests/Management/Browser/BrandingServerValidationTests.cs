@@ -6,7 +6,7 @@ using ViajantesTurismo.Branding.Contracts.Http;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser journey for a server validation problem on the Branding form.</summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, "management-web")]
 [TestScope(TestScope.System)]
 public sealed class BrandingServerValidationTests : ManagementWebBrowserTestBase
 {

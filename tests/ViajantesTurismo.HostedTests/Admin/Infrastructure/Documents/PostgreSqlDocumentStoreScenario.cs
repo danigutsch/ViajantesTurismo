@@ -671,6 +671,32 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Waits until a session of the scenario database is blocked waiting for a lock.</summary>
+    public async Task WaitForBlockedSession(CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(30));
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(20));
+        do
+        {
+            await using var dbContext = CreateDbContext();
+            var blocked = await dbContext.Database
+                .SqlQueryRaw<bool>(
+                    """
+                    SELECT EXISTS (
+                        SELECT 1 FROM pg_stat_activity
+                        WHERE datname = current_database()
+                          AND wait_event_type = 'Lock') AS "Value"
+                    """)
+                .SingleAsync(timeout.Token);
+            if (blocked)
+            {
+                return;
+            }
+        }
+        while (await timer.WaitForNextTickAsync(timeout.Token));
+    }
+
     /// <summary>Disposes the fixture-issued database.</summary>
     public async ValueTask DisposeAsync() => await database.DisposeAsync();
 
