@@ -11,8 +11,8 @@ each surface is registered, and how to verify the emitted signals locally.
 
 | Surface type | Name | Defined in | Notes |
 | --- | --- | --- | --- |
-| ActivitySource | `SharedKernel.Mediator` | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Used by generated and runtime mediator spans. |
-| Meter | `SharedKernel.Mediator` | `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs` | Emits mediator request/notification/stream metrics. |
+| ActivitySource | `SharedKernel.Mediator` | `PandaBear.SharedKernel.Mediator.Abstractions` package (`MediatorTelemetry`) | Emits `mediator.send` and `mediator.stream` spans plus one span per request type from the activity pipeline behavior (for example `CompleteBookingCommand`, attributes `sharedkernel.mediator.request_type`, `sharedkernel.mediator.response_type`, `sharedkernel.mediator.outcome`). Verified live in Tempo: all carry instrumentation scope `SharedKernel.Mediator`. |
+| Meter | `SharedKernel.Mediator` | `PandaBear.SharedKernel.Mediator.Abstractions` package (`MediatorTelemetry`) | Emits `mediator.requests`, `mediator.request.duration`, `mediator.notifications`. Prometheus names verified live: `mediator_requests_total`, `mediator_request_duration_milliseconds_{bucket,count,sum}` with labels `mediator_request_name`, `mediator_outcome`, `otel_scope_name="SharedKernel.Mediator"`. |
 | ActivitySource | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, stream update, and projection spans. |
 | Meter | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, idempotency, stream update, and projection metrics. |
 | Meter | `ViajantesTurismo.Branding` | `src/ViajantesTurismo.Branding.AspNetCore/BrandingTelemetry.cs` | Emits `branding.cache.requests` and `branding.cache.invalidations` tagged with `outcome` only, plus the `branding.settings.source_revision` gauge. No Branding values are recorded. |
@@ -342,8 +342,7 @@ least two production surfaces need the same lifecycle API and tag contract.
     - Confirm structured fields come from stable message-template placeholders or scopes.
 
 4. Verify traces:
-    - Find mediator spans (present only once production code dispatches through the mediator; see the
-      Pending dispatch section of the catalog):
+    - Find mediator spans (emitted for the Bookings commands that dispatch through the mediator):
         - `mediator.send`
         - `mediator.stream`
         - `mediator.publish`

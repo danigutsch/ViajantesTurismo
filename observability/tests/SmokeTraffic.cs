@@ -70,7 +70,97 @@ foreach (var resource in document.RootElement.GetProperty("resources").Enumerate
     totalReached += reached;
 }
 
+await SendBookingsCommandTraffic([.. document.RootElement.GetProperty("resources").EnumerateArray()]);
+
 return totalReached > 0 ? 0 : 1;
+
+// Drives Bookings commands through SharedKernel.Mediator with an authenticated Keycloak conformance token.
+// The empty id hits BookingIdGuardBehavior and the random id reaches the handler; both end as 404 with mediator.outcome=success.
+async Task SendBookingsCommandTraffic(JsonElement[] resources)
+{
+    var api = resources.FirstOrDefault(resource => resource.GetProperty("name").GetString()!.StartsWith("api-", StringComparison.Ordinal));
+    var identityProvider = resources.FirstOrDefault(resource =>
+        resource.GetProperty("name").GetString()!.StartsWith("identity-provider-", StringComparison.Ordinal)
+        && resource.TryGetProperty("urls", out var providerUrls)
+        && providerUrls.EnumerateArray().Any(url => url.GetProperty("url").GetString()!.StartsWith("http://", StringComparison.Ordinal)));
+    if (api.ValueKind == JsonValueKind.Undefined || identityProvider.ValueKind == JsonValueKind.Undefined)
+    {
+        Console.WriteLine("skipped bookings command traffic: api or identity provider missing");
+        return;
+    }
+
+    var password = await ReadConformancePassword(identityProvider.GetProperty("name").GetString()!);
+    if (password is null)
+    {
+        Console.WriteLine("skipped bookings command traffic: container runtime or conformance password unavailable");
+        return;
+    }
+
+    var authority = identityProvider.GetProperty("urls").EnumerateArray()
+        .Select(url => url.GetProperty("url").GetString()!)
+        .First(url => url.StartsWith("http://", StringComparison.Ordinal));
+    using var form = new FormUrlEncodedContent(new Dictionary<string, string>
+    {
+        ["grant_type"] = "password",
+        ["client_id"] = "conformance-test-client",
+        ["username"] = "conformance",
+        ["password"] = password,
+        ["scope"] = "admin-api",
+    });
+    using var tokenResponse = await http.PostAsync(authority + "/realms/viajantes/protocol/openid-connect/token", form);
+    tokenResponse.EnsureSuccessStatusCode();
+    using var tokenDocument = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync());
+    var token = tokenDocument.RootElement.GetProperty("access_token").GetString()!;
+
+    var baseUrl = api.GetProperty("urls").EnumerateArray()
+        .Select(url => url.GetProperty("url").GetString()!)
+        .First(url => url.StartsWith("https://", StringComparison.Ordinal));
+    foreach (var _ in Enumerable.Range(0, 3))
+    {
+        foreach (var bookingId in new[] { Guid.Empty, Guid.NewGuid() })
+        {
+            foreach (var action in new[] { "complete", "cancel" })
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/api/v1/bookings/{bookingId}/{action}");
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                using var response = await http.SendAsync(request);
+            }
+        }
+    }
+
+    Console.WriteLine($"sent {api.GetProperty("name").GetString()} bookings complete/cancel commands");
+}
+
+static async Task<string?> ReadConformancePassword(string containerName)
+{
+    foreach (var runtime in new[] { "podman", "docker" })
+    {
+        try
+        {
+            using var inspect = Process.Start(new ProcessStartInfo(runtime, ["inspect", containerName, "--format", "{{json .Config.Env}}"])
+            {
+                RedirectStandardOutput = true,
+            })!;
+            var json = await inspect.StandardOutput.ReadToEndAsync();
+            await inspect.WaitForExitAsync();
+            if (inspect.ExitCode != 0)
+            {
+                continue;
+            }
+
+            var entry = JsonSerializer.Deserialize<string[]>(json)?.FirstOrDefault(value => value.StartsWith("LOCAL_CONFORMANCE_PASSWORD=", StringComparison.Ordinal));
+            if (entry is not null)
+            {
+                return entry["LOCAL_CONFORMANCE_PASSWORD=".Length..];
+            }
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+        }
+    }
+
+    return null;
+}
 
 async Task<bool> TryGet(string url)
 {
