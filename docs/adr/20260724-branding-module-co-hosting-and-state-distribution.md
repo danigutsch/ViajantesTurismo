@@ -338,6 +338,13 @@ Recorded deviations:
    uses the bounded retry and poison state, and operators release poisoned messages with
    `IntegrationEventTransportPoison`.
 
+3. **Logo upload and state transfer (amendment).** The logo is uploaded to the Branding module, re-encoded to a
+   WebP of at most 40 KiB, stored by SHA-256 and served from an immutable public route. The settings-changed event
+   carries the bytes in additive optional fields (`LogoSha256`, `LogoContentType`, `LogoContent`; event version
+   unchanged), so the Admin projection holds the bytes locally and a finalized document embeds them as a data URI
+   instead of depending on a live fetch. Invalid logo fields are rejected like other poison events. See
+   [Branding](../branding.md#logo).
+
 ## Consequences
 
 ### Positive
