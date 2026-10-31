@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using PandaBear.Results;
@@ -11,7 +12,7 @@ namespace ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 public sealed class UpdateCustomerCommandHandler(
     ICustomerStore customerStore,
     IUnitOfWork unitOfWork,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider) : ICommandHandler<UpdateCustomerCommand, Result>
 {
     /// <summary>
     /// Handles the UpdateCustomerCommand and updates the customer if validation passes.
@@ -19,7 +20,7 @@ public sealed class UpdateCustomerCommandHandler(
     /// <param name="command">The command containing the customer ID and updated values.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Result indicating success or validation errors.</returns>
-    public async Task<Result> Handle(UpdateCustomerCommand command, CancellationToken ct)
+    public async ValueTask<Result> Handle(UpdateCustomerCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 
