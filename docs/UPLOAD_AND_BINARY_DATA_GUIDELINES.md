@@ -21,7 +21,7 @@ it; it is a choice, not a fact about the platform. See [Unverified or project-po
 
 | Rule | Why | Source or project policy | Where the repo does it |
 | --- | --- | --- | --- |
-| Allow-list file types; never trust the declared `Content-Type` or the client file name | Both are attacker controlled | [OWASP File Upload](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html), [Microsoft file uploads](https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-10.0) | `src/ViajantesTurismo.Branding.Infrastructure/BrandingLogoIntake.cs` accepts only PNG, JPEG, WebP |
+| Allow-list file types; never trust the declared `Content-Type` or the client file name | Both are attacker controlled | [OWASP File Upload](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html), [Microsoft file uploads](https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-10.0) | `src/ViajantesTurismo.Branding.Infrastructure/BrandingLogoIntake.cs` accepts only PNG, JPEG, WebP; the declared `Content-Type` is parsed as a media type and parameters such as `charset` are ignored |
 | Confirm the type by signature, never by signature alone; content must match the claimed type | A signature proves a prefix, not that the file is a valid image | OWASP File Upload; [ASVS v5 V5.2.2](https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/en/0x14-V5-File-Handling.md) | `BrandingLogoIntake.MatchesSignature`, then a full decode in `Reencode` |
 | Set the request size limit per endpoint to the smallest viable value | Kestrel defaults to 30,000,000 bytes; the multipart limit is 128 MB | [Kestrel options](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/options?view=aspnetcore-10.0) | `RequestSizeLimitAttribute` in `src/ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs` |
 | Count received bytes while reading; `Content-Length`, `IFormFile.Length`, and `Stream.Length` are hints | A declared length is a claim | Project policy | `SeekableContent.Create` with a byte limit in `BrandingLogoIntake`, `MediaImageUploadIntake`, `CustomerImportEndpoints.ReadCsv` |
@@ -30,7 +30,7 @@ it; it is a choice, not a fact about the platform. See [Unverified or project-po
 | Scan for malware before decoding into domain state, storing, or serving; fail closed | An unscanned or skipped file is not known clean | [ASVS v5 V5.4.3](https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/en/0x14-V5-File-Handling.md), [ClamAV scanning](https://docs.clamav.net/manual/Usage/Scanning.html); refusal on error, timeout, oversize, or disconnect is project policy | `BrandingLogoIntake.Scan` (rejected is 400, unavailable is 503); `CustomerImportEndpoints.ReadCsv` |
 | Use server-generated storage names; ignore client path information | Prevents traversal and overwrite | OWASP File Upload; ASVS v5 V5.3.1 to V5.3.3 | Logos are addressed by the SHA-256 of the re-encoded bytes (`BrandingLogo.FromEncodedBytes`) |
 | Check every `Stream.Read` result; use `ReadExactly`/`ReadAtLeast` | A read may return fewer bytes than asked before the end | [Stream.Read](https://learn.microsoft.com/en-us/dotnet/api/system.io.stream.read?view=net-10.0), [CA2022](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2022) | `ReadAtLeast` in `BrandingLogoIntake.MatchesSignature` |
-| Do length arithmetic in `long`, compare to the remaining length before seeking or allocating, bound every loop, fail closed | Integer overflow and length inconsistency are the usual parser faults | [CWE-190](https://cwe.mitre.org/data/definitions/190.html), [CWE-130](https://cwe.mitre.org/data/definitions/130.html); the concrete rule set is project policy | See [Safe hand-written binary parsers](#safe-hand-written-binary-parsers); the Branding chunk walk is a known deviation |
+| Do length arithmetic in `long`, compare to the remaining length before seeking or allocating, bound every loop, fail closed | Integer overflow and length inconsistency are the usual parser faults | [CWE-190](https://cwe.mitre.org/data/definitions/190.html), [CWE-130](https://cwe.mitre.org/data/definitions/130.html); the concrete rule set is project policy | See [Safe hand-written binary parsers](#safe-hand-written-binary-parsers); the Branding chunk walk follows it through `ImageChunkParser` |
 | Pass the request `CancellationToken` to every read, scan, decode, and store call | A disconnected client must stop the work | Project policy | `ct` flows through `BrandingLogoIntake.Process` |
 | Dispose every lease and opened stream on every path | A lease may hold a spooled temporary file | Project policy | `await using var ownedLease` in the three intakes |
 | Serve user content with `X-Content-Type-Options: nosniff` | The browser then honours the declared type | [MDN nosniff](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Content-Type-Options) | `BrandingHttpCache.SetImmutableHeaders` |
@@ -84,10 +84,14 @@ Exception rule: bounded header-only parsing that runs before the scan must be do
 in this page, and must stay bounded by the already limited upload size. The signature peek is the standing exception, because
 it reads a fixed 12 bytes and decodes nothing.
 
-Known deviation: the Branding animation chunk walk (`HasAnimationControlChunk`, `HasWebPAnimation` in
-`BrandingLogoIntake`) runs before the scan. It is bounded by the 1 MiB upload limit but it is hand-written parsing of
-untrusted bytes ahead of the scanner, and it has a proven fault (see below). It is tracked in the I/O hardening epic.
-The Catalog media intake follows the order: validator and 12-byte header peek, then scan, then decode, hash, store.
+The Branding logo intake follows this order: size limit, 12-byte signature peek, scan, animation chunk walk
+(`HasAnimationControlChunk`, `HasWebPAnimation`), then decode and re-encode. The walk is hand-written parsing, so it runs only
+after the scanner approved the bytes. The Catalog media intake follows the order: validator and 12-byte header peek, then scan,
+then decode, hash, store.
+
+The declared `Content-Type` is parsed as a media type: type and subtype are compared case-insensitively with the allow-list,
+parameters such as `charset` are ignored, and an empty, malformed or comma-separated value is refused. The file signature still
+has to match the type.
 
 ## Safe hand-written binary parsers
 
@@ -115,11 +119,12 @@ Format facts used by the animation check:
 - WebP (RIFF): animation is set by the `VP8X` animation flag and carried by `ANIM` and `ANMF` chunks; the chunk size excludes the
   header and padding, and odd payloads are padded ([WebP container](https://developers.google.com/speed/webp/docs/riff_container)).
 
-Repository evidence: `HasAnimationControlChunk` advances with `upload.Position += BinaryPrimitives.ReadUInt32BigEndian(header) +
-(long)PngChunkCrcLength`. The sum is computed in `long`, but the declared length is never compared with the remaining length before
-it is assigned to `Position`. A declared length of `0xFFFFFFF0` plus the 4-byte CRC therefore moved `Position` far past the end
-of a `MemoryStream`, and the endpoint answered 500 instead of a refusal. The WebP walk assigns `payloadStart + size + (size & 1)`
-with the same missing comparison. Fixing both is tracked in the I/O hardening epic.
+Repository evidence: an earlier `HasAnimationControlChunk` assigned `Position` from a declared length without comparing it with
+the remaining length, so a declared length of `0xFFFFFFF0` moved `Position` far past the end of a `MemoryStream` and the endpoint
+answered 500 instead of a refusal. The WebP walk had the same fault. Both now use the pure functions in `ImageChunkParser`
+(`TryParsePngHeader`, `TryGetNextPngPosition`, `TryParseWebPHeader`, `TryGetWebPEnd`, `TryGetNextWebPPosition`), which compare in
+`long` and report overrun, and a thin stream loop in `BrandingLogoIntake` that only assigns `Position` after that check.
+`ImageChunkParserTests` and `BrandingLogoChunkWalkTests` cover hostile lengths and truncation at every offset.
 
 Hostile-input test list (project policy):
 

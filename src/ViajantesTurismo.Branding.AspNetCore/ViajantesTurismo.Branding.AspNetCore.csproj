@@ -28,6 +28,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.IO.Analyzers" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.OpenApi" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <ProjectReference Include="..\ViajantesTurismo.Branding.Contracts.Http\ViajantesTurismo.Branding.Contracts.Http.csproj" />

@@ -25,6 +25,7 @@
         <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.ImageProcessing" />
         <PackageReference Include="PandaBear.SharedKernel.IO" />
+        <PackageReference Include="PandaBear.SharedKernel.IO.Analyzers" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" />

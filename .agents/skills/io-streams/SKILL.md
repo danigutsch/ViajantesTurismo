@@ -43,8 +43,8 @@ Stop at the first rung that holds.
   `RequestFormLimits.BufferBody = true`, or unbounded `EnableBuffering()` without a stated bound.
 - Malware scan approval comes before parsing, decoding into domain state, or persistence. Exception: bounded header-only
   parsing before the scan (the 12-byte signature peek) is allowed when it is documented as an exception and stays bounded.
-  The Branding animation chunk walk runs before the scan today; that is a known deviation tracked in the I/O hardening epic,
-  not a pattern to copy.
+  The Branding animation chunk walk runs after the scan (size limit, signature peek, scan, animation walk, decode), and the
+  declared `Content-Type` is parsed as a media type with parameters ignored.
 - Forward the request `CancellationToken` to every read, scan, and store call. Cancellation must clean up partial
   copies and temporary files, and must not leave a half-committed state.
 - Dispose every lease and opened stream on every path, including scanner failure and validation failure.
@@ -89,7 +89,8 @@ Per-feature wire-test checklist (real Kestrel, `tests/ViajantesTurismo.UploadWir
 - `ScanRecorder` and `RecordedScan` to assert the exact bytes scanned, or that no scan happened.
 - `RequestLifetimeProbe` with `RequestProbeStartupFilter` for token cancellation and read sizes; `WireTimeout.Default` bounds waits.
 - Cover over-limit (`413`), over-file-limit, stalled client (`408`), and persistence not happening. Admin customer import and
-  Catalog media upload have such tests; the Branding logo `PUT` does not yet.
+  Catalog media upload have such tests; the Branding logo `PUT` has endpoint tests, and
+  `BrandingLogoIntake.Process` has unit tests in `ViajantesTurismo.Branding.InfrastructureTests`.
 - Use `docs/TEST_GUIDELINES.md` and the `xunit-v3-mtp-test-stack` skill for runner details.
 
 ## Diagnostics to expect
@@ -106,7 +107,7 @@ Per-feature wire-test checklist (real Kestrel, `tests/ViajantesTurismo.UploadWir
 
 `PandaBear.SharedKernel.IO.Analyzers` (SKIO001, SKIO002, both Warning) is shipped and referenced in
 `ViajantesTurismo.Admin.ApiService`, `ViajantesTurismo.Catalog.Application`, and `ViajantesTurismo.Catalog.ApiService`. It is
-not referenced in the Branding projects, which hold the raw-body logo intake; adding it there is a candidate follow-up. The
+also referenced in `ViajantesTurismo.Branding.Infrastructure` and `ViajantesTurismo.Branding.AspNetCore`. The
 analysis is local: it does not see host-configured request limits or follow parameters. Treat warnings as errors; do not suppress
 without a written justification.
 

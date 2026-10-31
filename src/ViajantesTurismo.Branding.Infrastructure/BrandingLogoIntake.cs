@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using PandaBear.BuildingBlocks;
 using PandaBear.ImageProcessing;
@@ -11,7 +11,8 @@ namespace ViajantesTurismo.Branding.Infrastructure;
 /// <summary>
 /// Turns an uploaded image into a Branding logo: validates the declared type and signature, bounds the size, scans
 /// for malware, decodes, and re-encodes it so metadata is stripped and dimensions and bytes are bounded.
-/// Animated WebP and APNG uploads are refused by a bounded chunk walk before the malware scan and the decode; a truncated or overrunning chunk is refused the same way.
+/// The order is: size limit, signature, malware scan, animation check, decode and re-encode. Animated WebP and APNG uploads
+/// are refused by a bounded chunk walk after the scan and before the decode; a truncated or overrunning chunk is refused the same way.
 /// </summary>
 /// <param name="scanner">The malware scanner.</param>
 /// <param name="logger">The logger.</param>
@@ -22,9 +23,6 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
     private const string ContentField = "Content";
     private const int SignatureLength = 12;
     private const int PngSignatureLength = 8;
-    private const int PngChunkHeaderLength = 8;
-    private const int PngChunkCrcLength = 4;
-    private const int WebPChunkHeaderLength = 8;
     private const int WebPRiffSizeOffset = 4;
     private const int WebPAnimationFlag = 0x02;
 
@@ -40,7 +38,12 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
 
     /// <summary>Validates, scans, decodes, and re-encodes an uploaded logo; animated images are refused.</summary>
     /// <param name="content">The upload body.</param>
-    /// <param name="declaredContentType">The declared media type; only PNG, JPEG and WebP are accepted.</param>
+    /// <param name="declaredContentType">
+    /// The declared <c>Content-Type</c>. It is parsed as a media type: the type and subtype are compared case-insensitively with
+    /// <c>image/png</c>, <c>image/jpeg</c> and <c>image/webp</c> and parameters such as <c>charset</c> are ignored. A missing,
+    /// empty, malformed or list-valued (comma separated) value, or any other type, is refused with a <c>ContentType</c> error.
+    /// The declared type is only a claim; the file signature must still match it.
+    /// </param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The content-addressed logo, or the reason the upload was refused.</returns>
     public async ValueTask<Result<BrandingLogo>> Process(Stream content, string? declaredContentType, CancellationToken ct)
@@ -75,22 +78,22 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
             return Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, "Logo content does not match its declared image type.");
         }
 
-        if (IsAnimated(upload, declaredType))
-        {
-            return Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, "Logo must be a still image; animated images are not accepted.");
-        }
-
         var scan = await Scan(upload, ct).ConfigureAwait(false);
         if (scan is { } refused)
         {
             return refused;
         }
 
+        if (IsAnimated(upload, declaredType))
+        {
+            return Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, "Logo must be a still image; animated images are not accepted.");
+        }
+
         return Reencode(upload, ct);
     }
 
     private static string? NormalizeDeclaredType(string? declaredContentType) =>
-        declaredContentType?.Trim().ToUpperInvariant() switch
+        (MediaTypeHeaderValue.TryParse(declaredContentType, out var mediaType) ? mediaType.MediaType : null)?.ToUpperInvariant() switch
         {
             "IMAGE/PNG" => "png",
             "IMAGE/JPEG" => "jpeg",
@@ -131,28 +134,34 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
         }
     }
 
-    private static bool HasAnimationControlChunk(Stream upload)
+    /// <summary>Walks PNG chunks and reports whether the file is animated or its chunk sequence is truncated or overruns.</summary>
+    /// <param name="upload">The seekable upload.</param>
+    /// <returns><see langword="true"/> when the file must be refused.</returns>
+    internal static bool HasAnimationControlChunk(Stream upload)
     {
-        Span<byte> header = stackalloc byte[PngChunkHeaderLength];
+        Span<byte> header = stackalloc byte[ImageChunkParser.PngChunkHeaderLength];
         var length = upload.Length;
         var position = (long)PngSignatureLength;
-        while (position + PngChunkHeaderLength <= length)
+        while (position + ImageChunkParser.PngChunkHeaderLength <= length)
         {
             upload.Position = position;
             upload.ReadExactly(header);
-            var type = header[4..];
-            if (type.SequenceEqual("acTL"u8))
+            if (!ImageChunkParser.TryParsePngHeader(header, out var kind, out var chunkLength))
             {
                 return true;
             }
 
-            if (type.SequenceEqual("IDAT"u8) || type.SequenceEqual("IEND"u8))
+            if (kind is ImageChunkKind.Animation)
+            {
+                return true;
+            }
+
+            if (kind is ImageChunkKind.EndOfControlRegion)
             {
                 return false;
             }
 
-            position += PngChunkHeaderLength + (long)BinaryPrimitives.ReadUInt32BigEndian(header) + PngChunkCrcLength;
-            if (position > length)
+            if (!ImageChunkParser.TryGetNextPngPosition(position, chunkLength, length, out position))
             {
                 return true;
             }
@@ -161,36 +170,49 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
         return position != length;
     }
 
-    private static bool HasWebPAnimation(Stream upload)
+    /// <summary>Walks WebP chunks and reports whether the file is animated or its chunk sequence is truncated or overruns.</summary>
+    /// <param name="upload">The seekable upload.</param>
+    /// <returns><see langword="true"/> when the file must be refused.</returns>
+    internal static bool HasWebPAnimation(Stream upload)
     {
-        Span<byte> header = stackalloc byte[WebPChunkHeaderLength];
+        if (upload.Length < SignatureLength)
+        {
+            return true;
+        }
+
+        Span<byte> header = stackalloc byte[ImageChunkParser.WebPChunkHeaderLength];
         upload.Position = WebPRiffSizeOffset;
         upload.ReadExactly(header[..4]);
-        var end = Math.Min(upload.Length, WebPChunkHeaderLength + (long)BinaryPrimitives.ReadUInt32LittleEndian(header));
+        if (!ImageChunkParser.TryGetWebPEnd(header[..4], upload.Length, out var end))
+        {
+            return true;
+        }
+
         var position = (long)SignatureLength;
-        while (position + WebPChunkHeaderLength <= end)
+        while (position + ImageChunkParser.WebPChunkHeaderLength <= end)
         {
             upload.Position = position;
             upload.ReadExactly(header);
-            var type = header[..4];
-            if (type.SequenceEqual("ANIM"u8) || type.SequenceEqual("ANMF"u8))
+            if (!ImageChunkParser.TryParseWebPHeader(header, out var kind, out var size))
             {
                 return true;
             }
 
-            var size = BinaryPrimitives.ReadUInt32LittleEndian(header[4..]);
-            var payloadStart = position + WebPChunkHeaderLength;
-            if (payloadStart + size > end)
+            if (kind is ImageChunkKind.Animation)
             {
                 return true;
             }
 
-            if (type.SequenceEqual("VP8X"u8) && size > 0 && (upload.ReadByte() & WebPAnimationFlag) != 0)
+            var chunkStart = position;
+            if (!ImageChunkParser.TryGetNextWebPPosition(chunkStart, size, end, out position))
             {
                 return true;
             }
 
-            position = payloadStart + size + (size & 1);
+            if (kind is ImageChunkKind.ExtendedHeader && size > 0 && (upload.ReadByte() & WebPAnimationFlag) != 0)
+            {
+                return true;
+            }
         }
 
         return position < end;
