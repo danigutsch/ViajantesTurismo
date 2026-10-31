@@ -210,7 +210,7 @@ public sealed class ConsumerSetupContractTests
         action.ShouldContain("git -C $source status --porcelain", StringComparison.Ordinal);
         action.ShouldContain("WORKSPACE: ${{ github.workspace }}", StringComparison.Ordinal);
         action.ShouldContain("\"SHAREDKERNEL_SOURCE=$source\" >> $env:GITHUB_ENV", StringComparison.Ordinal);
-        action.ShouldContain("uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@2c9a17f0cdb035bd9d1690547e3877cfe9b71b61\n", StringComparison.Ordinal);
+        action.ShouldContain("uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@c82b4469c099604587ed8314709ad30686f18b0c\n", StringComparison.Ordinal);
         shells.ShouldBe(runSteps);
         action.ShouldNotContain("token", StringComparison.OrdinalIgnoreCase);
         action.ShouldNotContain("secrets.", StringComparison.Ordinal);
