@@ -55,6 +55,24 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
     }
 
     [Fact]
+    public async Task Sink_appended_audit_record_is_stamped_with_the_lineage_of_its_document()
+    {
+        // Arrange
+        var draft = DocumentDraftInfrastructureTestData.CreateDraft(new DateTime(2026, 7, 16, 9, 0, 0, DateTimeKind.Utc));
+        await Scenario.Seed(draft);
+        var record = DocumentAuditInfrastructureTestData.CreateRecord(
+            new DateTime(2026, 7, 16, 9, 0, 0, DateTimeKind.Utc),
+            draft.Id,
+            draft.BookingId);
+
+        // Act
+        var lineageId = await Scenario.AppendAuditThroughSinkAndReadLineage(record, TestContext.Current.CancellationToken);
+
+        // Assert
+        lineageId.ShouldBe(draft.DocumentLineageId);
+    }
+
+    [Fact]
     public async Task Audit_table_contains_only_approved_metadata_columns()
     {
         // Arrange
