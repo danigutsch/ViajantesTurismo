@@ -32,6 +32,111 @@ public sealed class BrandingLogoEndpointTests
         body.ShouldNotBeNull().LogoUri.ShouldNotBeNull().OriginalString.ShouldBe($"/api/v1/public/branding/logo/{stored.Sha256}");
     }
 
+    /// <summary>Allowed alpha drift (0-255) after re-encoding: lossy WebP keeps alpha lossless, so only rounding is expected.</summary>
+    private const double AlphaTolerance = 3;
+
+    [Fact]
+    public async Task A_fully_transparent_png_stays_fully_transparent()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var png = BrandingTestImages.CreateTransparentPng(64, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, png, PngType, "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var stored = store.Logos.ShouldHaveSingleItem().Value.Content.ToArray();
+        BrandingTestImages.HasAlpha(stored).ShouldBeTrue();
+        BrandingTestImages.AlphaAt(stored, 0, 0).ShouldBeLessThanOrEqualTo(AlphaTolerance);
+        BrandingTestImages.AlphaAt(stored, 32, 16).ShouldBeLessThanOrEqualTo(AlphaTolerance);
+    }
+
+    [Fact]
+    public async Task A_soft_edged_png_keeps_its_transparent_surround_and_partial_alpha()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var png = BrandingTestImages.CreateSoftEdgedLogoPng(256, 128);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, png, PngType, "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var stored = store.Logos.ShouldHaveSingleItem().Value.Content.ToArray();
+        BrandingTestImages.HasAlpha(stored).ShouldBeTrue();
+        BrandingTestImages.AlphaAt(stored, 0, 0).ShouldBeLessThanOrEqualTo(AlphaTolerance);
+        BrandingTestImages.AlphaAt(stored, 128, 64).ShouldBeGreaterThanOrEqualTo(255 - AlphaTolerance);
+        var edgeBefore = BrandingTestImages.AlphaAt(png, 192, 64);
+        var edgeAfter = BrandingTestImages.AlphaAt(stored, 192, 64);
+        edgeBefore.ShouldBeGreaterThan(AlphaTolerance);
+        edgeBefore.ShouldBeLessThan(255 - AlphaTolerance);
+        Math.Abs(edgeAfter - edgeBefore).ShouldBeLessThanOrEqualTo(AlphaTolerance);
+        BrandingTestImages.MaxAlphaDifference(png, stored).ShouldBeLessThanOrEqualTo(AlphaTolerance);
+    }
+
+    [Fact]
+    public async Task A_large_gradient_logo_with_alpha_fits_the_budget_at_512_pixels()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var png = BrandingTestImages.CreateGradientLogoPng(1024, 512);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, png, PngType, "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var stored = store.Logos.ShouldHaveSingleItem().Value;
+        BrandingTestImages.HasAlpha(stored.Content.ToArray()).ShouldBeTrue();
+        BrandingTestImages.WidthOf(stored.Content.ToArray()).ShouldBe(512u);
+    }
+
+    [Fact]
+    public async Task A_jpeg_upload_without_alpha_is_stored_as_an_opaque_webp()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var jpeg = BrandingTestImages.Create(MagickFormat.Jpeg, 64, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, jpeg, "image/jpeg", "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var stored = store.Logos.ShouldHaveSingleItem().Value;
+        stored.ContentType.ShouldBe("image/webp");
+        BrandingTestImages.AlphaAt(stored.Content.ToArray(), 10, 10).ShouldBeGreaterThanOrEqualTo(255 - AlphaTolerance);
+    }
+
+    [Fact]
+    public async Task An_animated_webp_upload_is_stored_as_a_single_frame()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var apng = BrandingTestImages.CreateAnimatedWebP(32, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, apng, "image/webp", "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var stored = store.Logos.ShouldHaveSingleItem().Value.Content.ToArray();
+        BrandingTestImages.FrameCount(stored).ShouldBe(1);
+    }
+
     [Fact]
     public async Task Uploading_the_same_image_twice_keeps_one_content_addressed_logo()
     {

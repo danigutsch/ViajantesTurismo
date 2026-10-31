@@ -1,4 +1,5 @@
 using System.Text;
+using ImageMagick;
 using PandaBear.Results;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Branding;
@@ -75,6 +76,31 @@ public sealed class DocumentBrandingSourceTests
         var logoUri = result.Value.LogoUri.ShouldNotBeNull();
         logoUri.OriginalString.ShouldBe(DocumentLogoTestData.DataUri.OriginalString);
         logoUri.OriginalString.ShouldStartWith("data:image/webp;base64,", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task A_transparent_webp_logo_stays_a_valid_data_uri_and_is_rendered_with_its_alpha()
+    {
+        // Arrange
+        using var transparent = new MagickImage(MagickColors.Transparent, 32, 16);
+        transparent.Format = MagickFormat.WebP;
+        var webp = transparent.ToByteArray();
+        var settings = DocumentDraftTestData.CreateBrandingSettings();
+        var source = DocumentBrandingTestData.Projection(
+            DocumentBrandingTestData.ProjectionMatching(settings, 4, DocumentLogoTestData.LogoFor(webp)));
+        var capture = await source.Capture(CancellationToken.None);
+        var logoUri = capture.Value.LogoUri.ShouldNotBeNull();
+        var draft = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime, logoUri);
+
+        // Act
+        var html = Encoding.UTF8.GetString(DocumentArtifactRenderer.Render(draft));
+        var embedded = Convert.FromBase64String(logoUri.OriginalString["data:image/webp;base64,".Length..]);
+        using var decoded = new MagickImage(embedded);
+
+        // Assert
+        logoUri.OriginalString.ShouldStartWith("data:image/webp;base64,", StringComparison.Ordinal);
+        html.ShouldContain(logoUri.OriginalString, StringComparison.Ordinal);
+        decoded.HasAlpha.ShouldBeTrue();
     }
 
     [Fact]
