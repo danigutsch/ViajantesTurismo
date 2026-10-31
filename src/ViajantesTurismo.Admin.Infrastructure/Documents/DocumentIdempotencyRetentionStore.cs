@@ -21,9 +21,21 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
     private static readonly CompositeFormat SelectExpiredSql = CompositeFormat.Parse(
         """
         SELECT {1} AS "Scope", {2} AS "Key", {4} AS "ResultFingerprint" FROM {0}
-        WHERE starts_with({1}, @prefix) AND COALESCE({5}, {3}) <= @cutoff
+        WHERE starts_with({1}, @prefix) AND COALESCE({5}, {3}) <= @cutoff AND NOT ({7})
         ORDER BY {3}, {1}, {2}
-        LIMIT {6} OFFSET @skip
+        LIMIT {6}
+        """);
+
+    private static readonly CompositeFormat CountHeldSql = CompositeFormat.Parse(
+        """
+        SELECT count(*)::int AS "Value" FROM {0}
+        WHERE starts_with({1}, @prefix) AND COALESCE({5}, {3}) <= @cutoff AND ({7})
+        """);
+
+    private static readonly CompositeFormat HeldDocumentPredicate = CompositeFormat.Parse(
+        """
+        (position('regenerate-draft:' in {0}) > 0 AND right({0}, 32) = ANY(@heldDocuments))
+        OR ({1} IS NOT NULL AND right({1}, 32) = ANY(@heldDocuments))
         """);
 
     private static readonly CompositeFormat DeleteSql = CompositeFormat.Parse(
@@ -48,6 +60,11 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
         var scope = Column(entityType, table, "Scope");
         var key = Column(entityType, table, "Key");
 
+        var heldPredicate = string.Format(
+            CultureInfo.InvariantCulture,
+            HeldDocumentPredicate,
+            scope,
+            Column(entityType, table, "ResultFingerprint"));
         var selectSql = string.Format(
             CultureInfo.InvariantCulture,
             SelectExpiredSql,
@@ -57,37 +74,33 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
             Column(entityType, table, "StartedAt"),
             Column(entityType, table, "ResultFingerprint"),
             Column(entityType, table, "CompletedAt"),
-            PurgeBatchSize);
-        var activeLineages = (await ActiveHoldLineages.Find(dbContext, ct)).OfType<Guid>().ToHashSet();
-        var candidates = new List<ExpiredEntry>();
-        var preHeldCount = 0;
-        var skip = 0;
-        int pageCount;
-        do
-        {
-            var page = await dbContext.Database
-                .SqlQueryRaw<ExpiredEntry>(
-                    selectSql,
-                    new NpgsqlParameter("prefix", DocumentCommandIdempotency.ScopePrefix),
-                    new NpgsqlParameter("cutoff", cutoff),
-                    new NpgsqlParameter("skip", skip))
-                .ToListAsync(ct);
-            pageCount = page.Count;
-            skip += pageCount;
-            var pageLineages = await FindLineages(page, ct);
-            foreach (var entry in page)
-            {
-                if (activeLineages.Count > 0 && IsHeld(entry, pageLineages, activeLineages))
-                {
-                    preHeldCount++;
-                }
-                else if (candidates.Count < PurgeBatchSize)
-                {
-                    candidates.Add(entry);
-                }
-            }
-        }
-        while (pageCount == PurgeBatchSize && candidates.Count < PurgeBatchSize);
+            PurgeBatchSize,
+            heldPredicate);
+        var countSql = string.Format(
+            CultureInfo.InvariantCulture,
+            CountHeldSql,
+            tableName,
+            scope,
+            key,
+            Column(entityType, table, "StartedAt"),
+            Column(entityType, table, "ResultFingerprint"),
+            Column(entityType, table, "CompletedAt"),
+            PurgeBatchSize,
+            heldPredicate);
+        var activeLineages = (await ActiveHoldLineages.Find(dbContext, ct)).OfType<Guid>().ToArray();
+        var heldDocuments = (await dbContext.DocumentDrafts
+            .AsNoTracking()
+            .Where(draft => activeLineages.Contains(draft.DocumentLineageId))
+            .Select(draft => draft.Id)
+            .ToListAsync(ct))
+            .Select(id => id.ToString("N"))
+            .ToArray();
+        var preHeldCount = await dbContext.Database
+            .SqlQueryRaw<int>(countSql, ExpiryParameters(cutoff, heldDocuments))
+            .SingleAsync(ct);
+        var candidates = await dbContext.Database
+            .SqlQueryRaw<ExpiredEntry>(selectSql, ExpiryParameters(cutoff, heldDocuments))
+            .ToListAsync(ct);
 
         if (candidates.Count == 0)
         {
@@ -113,6 +126,13 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
 
         return new DocumentPurgeCounts(purgeable.Length, preHeldCount + candidates.Count - purgeable.Length);
     }
+
+    private static NpgsqlParameter[] ExpiryParameters(DateTimeOffset cutoff, string[] heldDocuments) =>
+    [
+        new NpgsqlParameter("prefix", DocumentCommandIdempotency.ScopePrefix),
+        new NpgsqlParameter("cutoff", cutoff),
+        new NpgsqlParameter("heldDocuments", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = heldDocuments },
+    ];
 
     private async Task<Dictionary<Guid, Guid>> FindLineages(IEnumerable<ExpiredEntry> candidates, CancellationToken ct)
     {

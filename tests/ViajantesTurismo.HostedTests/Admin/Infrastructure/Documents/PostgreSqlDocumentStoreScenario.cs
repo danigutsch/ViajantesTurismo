@@ -95,11 +95,16 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     }
 
     /// <summary>Migrates the database and stores one audit record without a lineage stamp, as a pre-migration record would be.</summary>
-    public async ValueTask SeedLegacyAuditWithoutLineage(DocumentAuditRecord record)
+    public async ValueTask SeedLegacyAuditWithoutLineage(params DocumentAuditRecord[] records)
     {
         await using var dbContext = CreateDbContext();
         await dbContext.Database.MigrateAsync(TestContext.Current.CancellationToken);
-        new DocumentAuditStore(dbContext).Add(record);
+        var store = new DocumentAuditStore(dbContext);
+        foreach (var record in records)
+        {
+            store.Add(record);
+        }
+
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 

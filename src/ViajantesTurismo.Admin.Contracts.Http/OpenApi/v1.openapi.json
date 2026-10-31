@@ -3539,7 +3539,7 @@
           "Documents"
         ],
         "summary": "Places a document hold.",
-        "description": "Places a disposition hold on the lineage of a document so purges skip it.",
+        "description": "Places a disposition hold on the lineage of a document so purges skip it. The 201 Location is the hold collection of the document; there is no single-hold GET, so read the created hold from the response body or the list endpoint.",
         "operationId": "PlaceDocumentHold",
         "parameters": [
           {
