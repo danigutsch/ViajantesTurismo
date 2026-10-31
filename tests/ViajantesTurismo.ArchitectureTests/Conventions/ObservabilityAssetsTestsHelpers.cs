@@ -14,12 +14,12 @@ internal static partial class ObservabilityAssetsTestsHelpers
         "media-accessibility", "platform-smoke", "postgresql-observability", "runtime", "traces"
     ];
 
-    /// <summary>Meter names registered in ServiceDefaults that the catalog must list.</summary>
-    public static readonly string[] RegisteredMeters =
-    [
-        "SharedKernel.Mediator", "ViajantesTurismo.Catalog", "ViajantesTurismo.Branding", "PandaBear.AspNetCore",
-        "PandaBear.Blazor", "SharedKernel.EventSourcing.Npgsql", "SharedKernel.Observability.Npgsql"
-    ];
+    /// <summary>Meter argument expressions from other packages mapped to the meter names they resolve to.</summary>
+    public static readonly (string Argument, string Meter)[] ExternalMeterNames =
+        [("PandaBear.Mediator.MediatorTelemetry.Name", "SharedKernel.Mediator")];
+
+    /// <summary>Meters registered outside ServiceDefaults by host configuration.</summary>
+    public static readonly string[] SeparatelyRegisteredMeters = ["SharedKernel.Observability.Npgsql"];
 
     /// <summary>Prefixes of platform metrics that the catalog does not enumerate.</summary>
     public static readonly string[] PlatformMetricPrefixes =
@@ -64,9 +64,17 @@ internal static partial class ObservabilityAssetsTestsHelpers
     /// <summary>Alert provisioning files that must exist.</summary>
     public static readonly string[] AlertingFiles = ["rules.yaml", "contact-points.yaml", "policies.yaml", "templates.yaml"];
 
-    /// <summary>Captures meter name constants declared in ServiceDefaults.</summary>
-    [GeneratedRegex(@"const string \w+Name = ""([^""]+)""", RegexOptions.CultureInvariant)]
+    /// <summary>Captures string constants declared in ServiceDefaults.</summary>
+    [GeneratedRegex(@"const string (?<name>\w+) = ""(?<value>[^""]+)""", RegexOptions.CultureInvariant)]
     public static partial Regex MeterNameConstant();
+
+    /// <summary>Captures the argument of each AddMeter call.</summary>
+    [GeneratedRegex(@"AddMeter\((?<argument>[^)]+)\)", RegexOptions.CultureInvariant)]
+    public static partial Regex AddMeterCall();
+
+    /// <summary>Captures the meter name in the first cell of a catalog meter table row.</summary>
+    [GeneratedRegex(@"^\| `(?<meter>[^`]+)` \|", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
+    public static partial Regex MeterTableRow();
 
     /// <summary>Extracts metric names from a PromQL expression, ignoring labels, literals, functions, and variables.</summary>
     public static IEnumerable<string> MetricNames(string expression)
@@ -76,6 +84,19 @@ internal static partial class ObservabilityAssetsTestsHelpers
         stripped = SelectorBody().Replace(stripped, string.Empty);
         stripped = GrafanaVariable().Replace(stripped, " ");
         return Identifier().Matches(stripped).Select(match => match.Value).Where(name => !PromQlKeywords.Contains(name));
+    }
+
+    /// <summary>Resolves the meters the application registers from the AddMeter calls in ServiceDefaults.</summary>
+    public static string[] RegisteredMeterNames()
+    {
+        var source = File.ReadAllText(Path.Combine(
+            GetRepositoryRoot(), "src", "ViajantesTurismo.ServiceDefaults", "OpenTelemetryBuilderExtensions.cs"));
+        var constants = MeterNameConstant().Matches(source).ToDictionary(match => match.Groups["name"].Value, match => match.Groups["value"].Value);
+        var resolved = AddMeterCall().Matches(source).Select(match => match.Groups["argument"].Value.Trim()).Select(argument =>
+            constants.TryGetValue(argument, out var value) ? value
+            : ExternalMeterNames.FirstOrDefault(known => known.Argument == argument).Meter
+              ?? throw new InvalidOperationException($"AddMeter({argument}) has no known meter name. Add it to ExternalMeterNames."));
+        return [.. resolved.Concat(SeparatelyRegisteredMeters).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
     }
 
     /// <summary>Strips series, unit, and counter suffixes from a Prometheus metric name.</summary>
