@@ -9,9 +9,9 @@ using TestTraits = ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Test
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.MigrationCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.SharedArea)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.CategoryName, TestTraits.MigrationCategory)]
+[Trait(TestTraitNames.AreaName, TestTraits.SharedArea)]
+[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
 [TestScope(TestScope.System)]
 public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {

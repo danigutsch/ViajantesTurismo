@@ -8,7 +8,7 @@ using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.Cont
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class ImportCustomersPageTests : BunitContext
 {

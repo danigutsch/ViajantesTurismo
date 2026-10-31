@@ -9,6 +9,11 @@ public sealed class DisposalTrackingStream(Stream inner, bool stallAfterFirstRea
     /// <summary>Gets a task that completes when the stalled read has begun waiting for cancellation.</summary>
     public Task StalledReadStarted => stalledReadStarted.Task;
 
+    private readonly TaskCompletionSource disposed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    /// <summary>Gets a task that completes when the stream is disposed.</summary>
+    public Task Disposed => disposed.Task;
+
     public bool IsDisposed
     {
         get; private set;
@@ -69,7 +74,14 @@ public sealed class DisposalTrackingStream(Stream inner, bool stallAfterFirstRea
         if (disposing)
         {
             IsDisposed = true;
-            inner.Dispose();
+            try
+            {
+                inner.Dispose();
+            }
+            finally
+            {
+                disposed.TrySetResult();
+            }
         }
 
         base.Dispose(disposing);

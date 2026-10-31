@@ -5,9 +5,9 @@ using System.Net;
 
 namespace ViajantesTurismo.HostedTests.Management.Security;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
 [TestScope(TestScope.Integration)]
 public sealed class ProtectedDistributedUserTokenStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {

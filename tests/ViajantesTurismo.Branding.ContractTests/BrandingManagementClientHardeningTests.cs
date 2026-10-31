@@ -16,7 +16,7 @@ public sealed class BrandingManagementClientHardeningTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ContractCategory)]
     public async Task Read_reports_a_body_above_the_response_ceiling_as_malformed(bool knownLength)
     {
         // Arrange
@@ -41,7 +41,7 @@ public sealed class BrandingManagementClientHardeningTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ContractCategory)]
     public async Task Write_returns_a_validation_problem_with_its_field_errors()
     {
         // Arrange
@@ -63,7 +63,7 @@ public sealed class BrandingManagementClientHardeningTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ContractCategory)]
     public async Task Write_reports_a_timeout_while_reading_a_stalled_response_body()
     {
         // Arrange
@@ -89,7 +89,7 @@ public sealed class BrandingManagementClientHardeningTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ContractCategory)]
     public async Task Read_preserves_caller_cancellation_while_reading_the_response_body()
     {
         // Arrange

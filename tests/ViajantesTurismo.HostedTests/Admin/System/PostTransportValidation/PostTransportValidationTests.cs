@@ -9,12 +9,12 @@ using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.PostTransportValidation;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
-[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.CatalogSurface)]
-[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.PublicWebSurface)]
+[Trait(TestTraitNames.AreaName, TestTraits.PostTransportArea)]
+[Trait(TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
+[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
+[Trait(TestTraitNames.SurfaceName, TestTraits.CatalogSurface)]
+[Trait(TestTraitNames.SurfaceName, TestTraits.PublicWebSurface)]
 [TestScope(TestScope.System)]
 public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {

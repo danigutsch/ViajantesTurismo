@@ -9,8 +9,8 @@ using HttpOutcomeKind = PandaBear.HttpClients.HttpOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class ReviewPageTests : BunitContext
 {

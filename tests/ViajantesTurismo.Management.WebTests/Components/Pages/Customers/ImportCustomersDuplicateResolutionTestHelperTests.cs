@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
 [TestScope(TestScope.Unit)]
 public sealed class ImportCustomersDuplicateResolutionTestHelperTests
 {

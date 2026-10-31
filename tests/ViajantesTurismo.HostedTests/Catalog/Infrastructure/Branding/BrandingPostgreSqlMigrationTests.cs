@@ -4,7 +4,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Branding;
 
-[Trait(TestTraitNames.AreaName, ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.TestTraits.BrandingArea)]
+[Trait(TestTraitNames.AreaName, Admin.Api.Infrastructure.TestTraits.BrandingArea)]
 [TestScope(TestScope.Integration)]
 public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigrationScenario scenario)
     : IClassFixture<BrandingPostgreSqlMigrationScenario>
