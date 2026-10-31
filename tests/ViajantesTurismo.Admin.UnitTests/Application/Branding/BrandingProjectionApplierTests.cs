@@ -268,7 +268,7 @@ public sealed class BrandingProjectionApplierTests
         var logo = store.Current.ShouldNotBeNull().Logo.ShouldNotBeNull();
         logo.Sha256.ShouldBe(DocumentLogoTestData.Sha256);
         logo.ContentType.ShouldBe("image/webp");
-        logo.Content.ShouldBe(DocumentLogoTestData.Content);
+        logo.Content.ToArray().ShouldBe(DocumentLogoTestData.Content);
     }
 
     [Fact]
@@ -308,7 +308,7 @@ public sealed class BrandingProjectionApplierTests
 
         // Assert
         var logo = store.Current.ShouldNotBeNull().Logo.ShouldNotBeNull();
-        logo.Content.ShouldBe(DocumentLogoTestData.Content);
+        logo.Content.ToArray().ShouldBe(DocumentLogoTestData.Content);
         store.Recovery.ShouldNotBeNull().Status.ShouldBe(BrandingProjectionStatus.Ready);
     }
 

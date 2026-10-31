@@ -68,6 +68,6 @@ public static class BrandingProjectionRules
         }
 
         return incoming is { LogoSha256: { } sha256, LogoContentType: LogoContentType, LogoContent: { Length: > 0 and <= MaxLogoBytes } content }
-            && string.Equals(sha256, Convert.ToHexStringLower(SHA256.HashData(content)), StringComparison.Ordinal);
+            && string.Equals(sha256, Convert.ToHexStringLower(SHA256.HashData(content.Span)), StringComparison.Ordinal);
     }
 }

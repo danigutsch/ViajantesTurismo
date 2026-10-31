@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using ViajantesTurismo.Admin.Application.Branding;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Branding;
@@ -99,7 +98,6 @@ internal sealed class BrandingProjectionRecord
     }
 
     /// <summary>Re-encoded logo bytes; null when no logo is stored.</summary>
-    [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "The row maps one bytea column.")]
     public byte[]? LogoContent
     {
         get; private set;
@@ -130,7 +128,7 @@ internal sealed class BrandingProjectionRecord
         LogoUri = state.LogoUri?.OriginalString;
         LogoSha256 = state.Logo?.Sha256;
         LogoContentType = state.Logo?.ContentType;
-        LogoContent = state.Logo?.Content;
+        LogoContent = state.Logo?.Content.ToArray();
     }
 
     /// <summary>Converts the row back to an application projection state.</summary>

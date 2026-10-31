@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using PandaBear.Messaging.IntegrationEvents;
 
@@ -25,10 +24,6 @@ namespace ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 /// <param name="LogoSha256">The lowercase hexadecimal SHA-256 of <paramref name="LogoContent" />, or null without a logo.</param>
 /// <param name="LogoContentType">The media type of <paramref name="LogoContent" />, or null without a logo.</param>
 /// <param name="LogoContent">The re-encoded logo bytes, or null without a logo.</param>
-[SuppressMessage(
-    "Performance",
-    "CA1819:Properties should not return arrays",
-    Justification = "The serialized contract carries the re-encoded logo bytes as one immutable base64 payload.")]
 public sealed record BrandingSettingsChangedIntegrationEvent(
     Guid EventId,
     DateTimeOffset OccurredAt,
@@ -44,7 +39,7 @@ public sealed record BrandingSettingsChangedIntegrationEvent(
     Uri? LogoUri,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? LogoSha256 = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? LogoContentType = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] byte[]? LogoContent = null) : IIntegrationEvent
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ReadOnlyMemory<byte>? LogoContent = null) : IIntegrationEvent
 {
     /// <inheritdoc />
     public static string EventType => "branding.settings.changed";

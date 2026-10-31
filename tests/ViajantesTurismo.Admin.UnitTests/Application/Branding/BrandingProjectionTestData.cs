@@ -18,7 +18,7 @@ internal static class BrandingProjectionTestData
         Guid? eventId = null,
         string? logoSha256 = null,
         string? logoContentType = null,
-        byte[]? logoContent = null) => new(
+        ReadOnlyMemory<byte>? logoContent = null) => new(
         eventId ?? Guid.CreateVersion7(),
         new DateTimeOffset(2026, 10, 24, 12, 0, 0, TimeSpan.Zero),
         epoch ?? Epoch,

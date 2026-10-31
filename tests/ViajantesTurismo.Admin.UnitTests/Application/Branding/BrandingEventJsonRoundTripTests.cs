@@ -39,6 +39,6 @@ public sealed class BrandingEventJsonRoundTripTests
         // Assert
         restored.LogoSha256.ShouldBe(DocumentLogoTestData.Sha256);
         restored.LogoContentType.ShouldBe("image/webp");
-        restored.LogoContent.ShouldBe(DocumentLogoTestData.Content);
+        restored.LogoContent.ShouldNotBeNull().ToArray().ShouldBe(DocumentLogoTestData.Content);
     }
 }

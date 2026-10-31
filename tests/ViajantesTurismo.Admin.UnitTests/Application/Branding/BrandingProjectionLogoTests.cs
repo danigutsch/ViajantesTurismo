@@ -34,4 +34,33 @@ public sealed class BrandingProjectionLogoTests
         text.ShouldContain("ContentLength = ", StringComparison.Ordinal);
         text.ShouldNotContain("System.Byte[]", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Logos_with_equal_bytes_in_different_buffers_are_equal()
+    {
+        // Arrange
+        var first = DocumentLogoTestData.LogoFor([1, 2, 3]);
+        var second = DocumentLogoTestData.LogoFor([1, 2, 3]);
+
+        // Act
+        var equal = first.Equals(second);
+
+        // Assert
+        equal.ShouldBeTrue();
+        first.GetHashCode().ShouldBe(second.GetHashCode());
+    }
+
+    [Fact]
+    public void Logos_with_the_same_address_but_different_bytes_are_not_equal()
+    {
+        // Arrange
+        var first = new BrandingProjectionLogo(DocumentLogoTestData.Sha256, "image/webp", new byte[] { 1, 2, 3 });
+        var second = new BrandingProjectionLogo(DocumentLogoTestData.Sha256, "image/webp", new byte[] { 1, 2, 4 });
+
+        // Act
+        var equal = first.Equals(second);
+
+        // Assert
+        equal.ShouldBeFalse();
+    }
 }

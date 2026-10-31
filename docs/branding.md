@@ -141,12 +141,13 @@ infrastructure; the production identity provider and concrete roles are undecide
 
 ## Logo
 
-The logo is uploaded, never typed. Management.Web shows an image input (PNG, JPEG or WebP, up to 1 MiB) and a
+The logo is uploaded, never typed. Management.Web shows an image input (PNG, JPEG or WebP, still images only, up to 1 MiB) and a
 remove action; it has no logo address field.
 
 - `PUT /api/v1/branding/settings/logo` (`BrandingWrite`, `If-Match` required, 428 without it) takes the raw image
   with its content type. The intake checks the declared type against the file signature, refuses SVG and every
-  other type, scans for malware (a hit is 400, an unavailable scanner is 503), decodes within 2048 x 2048 pixels and
+  other type, refuses animated WebP and APNG (400 on `Content`, nothing stored; the check walks the container chunks
+  before any decode), scans for malware (a hit is 400, an unavailable scanner is 503), decodes within 2048 x 2048 pixels and
   4,000,000 pixels, and re-encodes to WebP of at most 40 KiB. Metadata is stripped by the re-encode.
 - The result is stored once by lowercase SHA-256 in `branding."BrandingLogos"` and never updated; the same image
   uploaded again reuses the row. Settings and revisions keep the hash.
@@ -192,7 +193,7 @@ Editable Branding settings are intentionally narrow:
 | Brand name | Yes | `SharedKernel.Branding` | Normalize and trim; require non-empty public display text within the contract maximum. |
 | Palette | Yes | `SharedKernel.Branding` | Accept only safe color tokens such as `#RRGGBB`; reject named colors, functions, variables, comments, and CSS fragments. |
 | Typography | Yes | `SharedKernel.Branding` | Accept only exact values from the approved font-family allow-list after normalization. |
-| Logo | Optional | Branding module | Upload only (PNG, JPEG, WebP); see [Logo](#logo). `LogoUri` is `null` or the stored logo URL. |
+| Logo | Optional | Branding module | Upload only (still PNG, JPEG, WebP; animated images are rejected); see [Logo](#logo). `LogoUri` is `null` or the stored logo URL. |
 | Icons | Deferred | Future brand-assets epic | Favicons, touch icons, app icons, social-preview images, and icon sets require asset metadata, dimensions, media-type checks, and public head-tag rendering before becoming editable. |
 
 Reject values that look like CSS or script payloads, including semicolons, braces, selectors, `url()`,
