@@ -4,26 +4,46 @@
   },
   "editable": false,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "links": [],
   "panels": [
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "Prometheus"
-      },
-      "description": "Smoke panel for validating that the local optional OpenTelemetry Collector is exporting metrics to Prometheus.",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
       "gridPos": {
-        "h": 8,
+        "h": 5,
         "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 1,
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose:** Fast yes/no: is the local telemetry pipeline scraped and are the applications reporting?\n\n**Audience:** Developers starting the local stack.\n\n**Decision supported:** Whether to debug the stack (Collector or Prometheus down) or the application.\n"
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "OTel Collector scrape status",
+      "description": "up (1 = scraped, 0 = down) per Prometheus scrape job. Question: is Prometheus reaching the Collector exporter and its self-telemetry?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
       "options": {
         "legend": {
           "displayMode": "list",
@@ -31,8 +51,8 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
-          "sort": "none"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -41,15 +61,59 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "up{job=\"otel-collector\"}",
+          "expr": "up",
+          "legendFormat": "{{job}}",
           "refId": "A"
         }
-      ],
-      "title": "OTel Collector scrape status",
-      "type": "timeseries"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Reporting services",
+      "description": "Count of distinct services that exported metrics in the last 5 minutes (services). Question: are the applications sending telemetry through the gateway?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "count(count by (exported_job) (http_server_request_duration_seconds_count))",
+          "legendFormat": "services",
+          "refId": "A"
+        }
+      ]
     }
   ],
-  "refresh": "10s",
+  "refresh": "1m",
   "schemaVersion": 41,
   "tags": [
     "platform",
@@ -59,7 +123,7 @@
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},

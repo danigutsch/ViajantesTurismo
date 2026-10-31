@@ -38,6 +38,41 @@ payload instead of forwarding unsanitized telemetry. This deliberately trades te
 for privacy. Monitor Collector processor and receiver errors so rejected telemetry is visible to
 operators.
 
+## Dashboards and alerts
+
+Every dashboard under `grafana/dashboards/` opens with a text panel stating its purpose, audience, and
+the decision it supports, and every panel carries a description naming the metric, unit, and
+operational question. Signal inventory and keep-or-remove verdicts live in
+`docs/OBSERVABILITY_CATALOG.md`.
+
+Alert rules are provisioned from `grafana/provisioning/alerting/`. Alerts are optional and exist only for
+actionable conditions; each has a runbook in `docs/OBSERVABILITY_RUNBOOKS.md`, which also lists the
+alert templates. The contact point is a local-only sink.
+
+Panels carry a `verify` key: `data` panels must return series once smoke traffic ran, `idle-ok` panels may
+be empty on a healthy system.
+
+## Verifying dashboards
+
+Static contract (CI, `ObservabilityAssetsTests` in the architecture tests):
+
+```bash
+dotnet test --project tests/ViajantesTurismo.ArchitectureTests -- --filter-class "*ObservabilityAssetsTests"
+```
+
+Live check against a running stack:
+
+```bash
+ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run   # separate terminal
+dotnet run observability/tests/SmokeTraffic.cs                   # give panels data
+dotnet run observability/tests/VerifyQueries.cs -- http://127.0.0.1:<grafana-port>
+dotnet run observability/tests/VerifyDashboards.cs -- http://127.0.0.1:<grafana-port> <screenshot-dir>
+```
+
+`VerifyQueries.cs` runs every panel query through Grafana's datasource proxy. `VerifyDashboards.cs` renders
+each dashboard in headless Chromium with Playwright, fails on "No data" for `data` panels or a panel
+error, and writes screenshots for review. Install browsers once with the Playwright tool if needed.
+
 ## Local security boundary
 
 This source-controlled stack is for local development only. The checked-in Collector YAML does not
@@ -57,6 +92,7 @@ observability/
     dashboards/
     provisioning/
   loki/
+  tests/
   otel-collector/
     privacy.yaml
     aspire.yaml

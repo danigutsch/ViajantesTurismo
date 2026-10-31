@@ -1,0 +1,11 @@
+apiVersion: 1
+
+templates:
+  - orgId: 1
+    name: viajantes-alert
+    template: |
+      {{ define "viajantes.message" -}}
+      {{ .Annotations.summary }}
+      {{ .Annotations.description }}
+      Runbook: {{ .Annotations.runbook }}
+      {{- end }}

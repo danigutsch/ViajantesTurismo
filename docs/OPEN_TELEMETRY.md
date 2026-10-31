@@ -1,5 +1,9 @@
 # OpenTelemetry Custom Telemetry Surfaces
 
+The signal inventory, per-signal use, and keep-or-remove verdicts live in
+[OBSERVABILITY_CATALOG.md](OBSERVABILITY_CATALOG.md). This document keeps the registration, privacy,
+and span and log contract rules.
+
 This document lists repository-defined custom telemetry (logs, ActivitySource, and Meter), where
 each surface is registered, and how to verify the emitted signals locally.
 
