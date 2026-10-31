@@ -104,9 +104,9 @@ purges that do exist: unfinalized drafts, document audit records and document id
 
 ### Not done
 
-- Management UI for holds (#1430).
-- Backup rotation and restore suppression for held data (#1314).
-- Retention of finalized artifacts and any deletion workflow for them (#1299). Do not add one without checking holds.
+- Management UI for holds.
+- Backup rotation and restore suppression for held data.
+- Retention of finalized artifacts and any deletion workflow for them. Do not add one without checking holds.
 - Retention periods, jurisdiction-specific rules and review reminders.
 
 ## Copies
@@ -120,9 +120,9 @@ Deletion is not complete until every covered store and copy has the approved out
 
 Each gap above is tracked as an issue instead of a placeholder in this policy:
 
-- Hold management UI (#1430).
-- Document-specific backup rotation and restore suppression (#1314).
-- Finalized-artifact retention (#1299).
+- Hold management UI.
+- Document-specific backup rotation and restore suppression.
+- Finalized-artifact retention.
 
 ## Implementation evidence and references
 

@@ -11,6 +11,7 @@ using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
@@ -91,6 +92,7 @@ internal sealed class BrandingProjectionPostgreSqlScenario : IAsyncDisposable
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
+        services.AddAdminDispositionHolds();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(
             IntegrationEventConsumerNames.Catalog);
