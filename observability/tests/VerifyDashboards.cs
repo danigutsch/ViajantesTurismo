@@ -55,8 +55,9 @@ foreach (var file in Directory.EnumerateFiles(dashboardDirectory, "*.json").Orde
             const title = h.getAttribute('data-testid').replace('data-testid Panel header ', '');
             const panel = h.closest('[data-panelid]') ?? h.parentElement?.parentElement ?? h;
             const text = panel.innerText ?? '';
-            const drawn = !!panel.querySelector('canvas, table, [role="row"], [class*="logs"]') || text.trim().length > title.length + 8;
-            return { title, drawn, noData: /No data|No logs found/i.test(text), error: !!panel.querySelector('[data-testid="data-testid Panel status error"]') };
+            const noData = /No data|No logs found/i.test(text);
+            const drawn = noData || !!panel.querySelector('canvas, table, [role="row"], [class*="logs"]') || text.trim().length > title.length + 8;
+            return { title, drawn, noData, error: !!panel.querySelector('[data-testid="data-testid Panel status error"]') };
         })
         """);
 
