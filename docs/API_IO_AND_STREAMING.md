@@ -59,7 +59,8 @@ Findings:
   object store receive the same `MemoryStream`, positioned at zero.
 - Retained memory per request is bounded by the configured maximum: 1 MiB (CSV, plus about 2 MiB of string) and
   `ContractConstants.MaxMediaUploadBytes` = 5 MiB (media). The extra transient allocation was `MemoryStream` growth.
-- The local object store writes with one `CopyToAsync` into a temporary file and moves it into place (code reading).
+- The local object store rewinds a seekable stream, copies at most the declared length into a temporary file while hashing it,
+  refuses a shorter or longer stream and a wrong `sha256:` checksum (deleting the temporary file), and then moves it into place.
 - Not measured here: native Magick.NET memory and the SharedKernel S3 provider. Concurrent-request memory and
   pre-handler time are covered in the next section.
 
@@ -163,6 +164,26 @@ The regression guard for the media gap is a unit test that runs the intake over 
 allocation on the calling thread stays far below the payload. Before the change that run allocated 4,211,544 bytes. Preserve the
 size checks, the scan-before-parse order for CSV, actual-length comparison, cancellation, and the non-seekable path in any later
 change.
+
+## Catalog media intake flow
+
+`MediaImageUploadIntake.Accept` handles the Catalog gallery upload:
+
+1. Bounded read through `SeekableContent` (limit `MediaUploadValidationOptions.MaxLengthBytes`), then `MediaUploadValidator`
+   checks the declared type against the allow-list (AVIF, JPEG, PNG, WebP), the file extension against that type, and the
+   first 12 bytes against the type's signature. A signature that belongs to a different allowed type is refused with the fixed
+   copy "File signature does not match the allowed content type." and nothing from the upload is echoed.
+2. Malware scan, then decode with pixel limits. The decode probe in `SharedKernel.ImageProcessing` does not report the decoded
+   format; ImageMagick selects the decoder from the content signature, which step 1 already matched to the declared type. The
+   stored `ContentType` is the canonical lower-case type (for example `image/jpeg`), never the client-supplied string.
+3. Hash, then `IObjectStore.Put`, then outbox and metadata in `Compensation.CompleteOrCompensate`. If a later step fails or the
+   request is cancelled, the object is deleted on a separate token that times out after 10 seconds
+   (`MediaObjectCompensation`), so a cancelled request still removes the object it wrote. The original exception keeps flowing;
+   a delete that fails is left to `MediaObjectReconciliationService`. The variant handler compensates its variant objects the
+   same way.
+
+Animated PNG and WebP uploads are accepted. The pipeline keeps only the first frame; see
+[Media image processing flow](media-image-processing.md#animated-images). AVIF image sequences are not detected either.
 
 ## Branding logo flow
 

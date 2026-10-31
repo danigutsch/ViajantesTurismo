@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Security.Cryptography;
 using PandaBear.ObjectStorage;
 using Microsoft.Extensions.Options;
 using PandaBear.InputNormalization;
@@ -11,6 +13,10 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
     private const string UriPathSeparator = "/";
     private const string TemporaryFilePrefix = ".viajantes-";
     private const string TemporaryFileSuffix = ".tmp";
+    private const string Sha256ChecksumPrefix = "sha256:";
+    private const int CopyBufferSize = 81920;
+
+    private static readonly SearchValues<char> HexDigits = SearchValues.Create("0123456789abcdefABCDEF");
 
     private readonly LocalMediaObjectStorageOptions options = storageOptions.Value;
 
@@ -44,7 +50,7 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             });
             await using (destination.ConfigureAwait(false))
             {
-                await request.Content.CopyToAsync(destination, ct).ConfigureAwait(false);
+                await CopyVerified(request, destination, ct).ConfigureAwait(false);
                 await destination.FlushAsync(ct).ConfigureAwait(false);
             }
 
@@ -71,6 +77,76 @@ internal sealed class LocalMediaObjectStore(IOptions<LocalMediaObjectStorageOpti
             request.ContentType,
             request.Length,
             request.Checksum);
+    }
+
+    /// <summary>
+    /// Copies exactly the declared length from the start of the content, then confirms the content has no more bytes and that the
+    /// SHA-256 matches the request checksum when one was supplied.
+    /// </summary>
+    private static async ValueTask CopyVerified(ObjectWriteRequest request, Stream destination, CancellationToken ct)
+    {
+        if (request.Length < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(request), request.Length, "Object length must not be negative.");
+        }
+
+        var expectedHash = ParseSha256(request.Checksum);
+        var content = request.Content;
+        if (content.CanSeek)
+        {
+            content.Position = 0;
+        }
+
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var buffer = ArrayPool<byte>.Shared.Rent(CopyBufferSize);
+        try
+        {
+            var remaining = request.Length;
+            while (remaining > 0)
+            {
+                var read = await content.ReadAsync(buffer.AsMemory(0, (int)Math.Min(buffer.Length, remaining)), ct).ConfigureAwait(false);
+                if (read == 0)
+                {
+                    throw new InvalidDataException("The content is shorter than the declared object length.");
+                }
+
+                hash.AppendData(buffer, 0, read);
+                await destination.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
+                remaining -= read;
+            }
+
+            if (await content.ReadAsync(buffer.AsMemory(0, 1), ct).ConfigureAwait(false) != 0)
+            {
+                throw new InvalidDataException("The content is longer than the declared object length.");
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+
+        if (expectedHash is not null && !CryptographicOperations.FixedTimeEquals(hash.GetHashAndReset(), expectedHash))
+        {
+            throw new InvalidDataException("The content does not match the supplied checksum.");
+        }
+    }
+
+    private static byte[]? ParseSha256(string? checksum)
+    {
+        if (string.IsNullOrEmpty(checksum))
+        {
+            return null;
+        }
+
+        var hex = checksum.StartsWith(Sha256ChecksumPrefix, StringComparison.OrdinalIgnoreCase)
+            ? checksum.AsSpan(Sha256ChecksumPrefix.Length)
+            : default;
+        if (hex.Length != SHA256.HashSizeInBytes * 2 || hex.IndexOfAnyExcept(HexDigits) >= 0)
+        {
+            throw new ArgumentException("The checksum must be sha256: followed by 64 hexadecimal digits.", nameof(checksum));
+        }
+
+        return Convert.FromHexString(hex);
     }
 
     /// <summary>Opens the stored object for reading.</summary>

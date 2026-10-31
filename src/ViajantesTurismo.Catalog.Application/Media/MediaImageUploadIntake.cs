@@ -95,8 +95,9 @@ public sealed partial class MediaImageUploadIntake(
         }
 
         content.Position = 0;
-        var objectKey = CreateOriginalObjectKey(request.MediaImageId, Guid.CreateVersion7(), request.ContentType);
-        var scanResult = await Scan(objectKey, content, request.ContentType, actualLength, ct).ConfigureAwait(false);
+        var canonicalContentType = GetCanonicalContentType(request.ContentType);
+        var objectKey = CreateOriginalObjectKey(request.MediaImageId, Guid.CreateVersion7(), canonicalContentType);
+        var scanResult = await Scan(objectKey, content, canonicalContentType, actualLength, ct).ConfigureAwait(false);
         if (scanResult.Status is MediaUploadScanStatus.Failed)
         {
             LogScanDiagnostic(scanResult.Status);
@@ -135,7 +136,7 @@ public sealed partial class MediaImageUploadIntake(
         var checksum = ComputeChecksum(content);
         content.Position = 0;
         var stored = await objectStore.Put(
-            new ObjectWriteRequest(objectKey, content, request.ContentType.Trim(), actualLength, checksum),
+            new ObjectWriteRequest(objectKey, content, canonicalContentType, actualLength, checksum),
             ct).ConfigureAwait(false);
         var imageResult = PublicMediaImage.Create(
             new PublicMediaImageMetadata
@@ -157,7 +158,7 @@ public sealed partial class MediaImageUploadIntake(
             request.TourLinks);
         if (imageResult.IsFailure)
         {
-            await objectStore.Delete(objectKey, ct).ConfigureAwait(false);
+            await MediaObjectCompensation.Delete(objectStore, objectKey).ConfigureAwait(false);
 
             return imageResult.ConvertError<PublicMediaImage, MediaImageUploadIntakeResult>();
         }
@@ -203,19 +204,30 @@ public sealed partial class MediaImageUploadIntake(
         }
     }
 
-    private ValueTask StoreImageEventAndCompensateObject(
+    private async ValueTask StoreImageEventAndCompensateObject(
         PublicMediaImage image,
         MediaImageOriginalStoredIntegrationEvent originalStoredEvent,
         string objectKey,
-        CancellationToken ct) =>
-        Compensation.CompleteOrCompensate(
-            async ct =>
-            {
-                await outbox.Enqueue(originalStoredEvent, ct).ConfigureAwait(false);
-                await imageStore.Upsert(image, ct).ConfigureAwait(false);
-            },
-            ct => objectStore.Delete(objectKey, ct),
-            ct);
+        CancellationToken ct)
+    {
+        try
+        {
+            await Compensation.CompleteOrCompensate(
+                async ct =>
+                {
+                    await outbox.Enqueue(originalStoredEvent, ct).ConfigureAwait(false);
+                    await imageStore.Upsert(image, ct).ConfigureAwait(false);
+                },
+                _ => MediaObjectCompensation.Delete(objectStore, objectKey),
+                ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            await MediaObjectCompensation.Delete(objectStore, objectKey).ConfigureAwait(false);
+
+            throw;
+        }
+    }
 
     private static ReadOnlyMemory<byte> ReadHeaderBytes(Stream content)
     {
@@ -244,6 +256,19 @@ public sealed partial class MediaImageUploadIntake(
 
     private static string CreateOriginalObjectKey(Guid mediaImageId, Guid uploadAttemptId, string contentType)
         => string.Create(CultureInfo.InvariantCulture, $"media/{mediaImageId:N}/original-{uploadAttemptId:N}{GetFileExtension(contentType)}");
+
+    /// <summary>
+    /// Maps the declared type to the canonical one. The validator has already matched the file signature, which is the format the
+    /// decoder selects, to this type, so the canonical value is the decoded type and never the client string.
+    /// </summary>
+    private static string GetCanonicalContentType(string contentType) => contentType.Trim().ToUpperInvariant() switch
+    {
+        "IMAGE/AVIF" => "image/avif",
+        "IMAGE/JPEG" => "image/jpeg",
+        "IMAGE/PNG" => "image/png",
+        "IMAGE/WEBP" => "image/webp",
+        _ => throw new ArgumentOutOfRangeException(nameof(contentType), contentType, "Unsupported image content type.")
+    };
 
     private static string GetFileExtension(string contentType) => contentType.Trim().ToUpperInvariant() switch
     {

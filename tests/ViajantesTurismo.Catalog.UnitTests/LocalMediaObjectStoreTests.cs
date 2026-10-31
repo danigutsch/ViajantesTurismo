@@ -22,7 +22,7 @@ public sealed class LocalMediaObjectStoreTests
 
         // Act
         var result = await store.Put(
-            new ObjectWriteRequest("images/tour/photo.jpg", content, "image/jpeg", 3, "sha256:test"),
+            new ObjectWriteRequest("images/tour/photo.jpg", content, "image/jpeg", 3, "sha256:039058C6F2C0CB492C533B0A4D14EF77CC0F78ABCCCED5287D84A1A2011CFB81"),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -30,6 +30,95 @@ public sealed class LocalMediaObjectStoreTests
         File.Exists(savedPath).ShouldBe(true);
         result.ObjectKey.ShouldBe("images/tour/photo.jpg");
         result.PublicUri.ShouldBe(new Uri("https://cdn.example/media/images/tour/photo.jpg"));
+    }
+
+    [Fact]
+    public async Task Put_rewinds_a_seekable_stream_before_copying()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        await using var content = new MemoryStream([1, 2, 3, 4]);
+        content.Position = 3;
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        _ = await store.Put(new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4), TestContext.Current.CancellationToken);
+
+        // Assert
+        var persistedBytes = await File.ReadAllBytesAsync(Path.Combine(directory.Path, "images", "photo.jpg"), TestContext.Current.CancellationToken);
+        persistedBytes.ShouldBe([1, 2, 3, 4]);
+    }
+
+    [Fact]
+    public async Task Put_refuses_a_stream_shorter_than_the_declared_length_and_leaves_no_file()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        await using var content = new MemoryStream([1, 2]);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        Func<Task> action = async () => await store.Put(
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        _ = await action.ShouldThrow<InvalidDataException>();
+        Directory.EnumerateFiles(directory.Path, "*", SearchOption.AllDirectories).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Put_refuses_a_stream_longer_than_the_declared_length_and_leaves_no_file()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        await using var content = new MemoryStream([1, 2, 3, 4, 5]);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        Func<Task> action = async () => await store.Put(
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        _ = await action.ShouldThrow<InvalidDataException>();
+        Directory.EnumerateFiles(directory.Path, "*", SearchOption.AllDirectories).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Put_refuses_a_wrong_checksum_and_leaves_no_file()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        await using var content = new MemoryStream([1, 2, 3]);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        Func<Task> action = async () => await store.Put(
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 3, "sha256:" + new string('0', 64)),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        _ = await action.ShouldThrow<InvalidDataException>();
+        Directory.EnumerateFiles(directory.Path, "*", SearchOption.AllDirectories).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Put_accepts_a_matching_checksum_case_insensitively()
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        await using var content = new MemoryStream([1, 2, 3]);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+        var checksum = "sha256:" + Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData([1, 2, 3]));
+
+        // Act
+        var result = await store.Put(
+            new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 3, checksum),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Length.ShouldBe(3);
     }
 
     [Fact]

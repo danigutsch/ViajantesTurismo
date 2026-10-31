@@ -1,12 +1,15 @@
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-/// <summary>Non-seekable read stream whose copy writes a prefix, then blocks until released, then writes the remainder.</summary>
+/// <summary>Non-seekable read stream whose copy writes a prefix, then blocks until released, then writes the remainder (through <c>CopyToAsync</c> or <c>ReadAsync</c>).</summary>
 /// <param name="prefix">Bytes copied before blocking.</param>
 /// <param name="remainder">Bytes copied after release.</param>
 internal sealed class BlockingReadStream(byte[] prefix, byte[] remainder) : Stream
 {
     private readonly TaskCompletionSource blocked = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    private int served;
+    private int servedRemainder;
 
     public override bool CanRead => true;
     public override bool CanSeek => false;
@@ -25,6 +28,28 @@ internal sealed class BlockingReadStream(byte[] prefix, byte[] remainder) : Stre
         _ = blocked.TrySetResult();
         await release.Task.WaitAsync(ct);
         await destination.WriteAsync(remainder, ct);
+    }
+
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct = default)
+    {
+        if (served < prefix.Length)
+        {
+            return Serve(prefix, ref served, buffer);
+        }
+
+        _ = blocked.TrySetResult();
+        await release.Task.WaitAsync(ct);
+
+        return Serve(remainder, ref servedRemainder, buffer);
+    }
+
+    private static int Serve(byte[] source, ref int served, Memory<byte> buffer)
+    {
+        var count = Math.Min(buffer.Length, source.Length - served);
+        source.AsMemory(served, count).CopyTo(buffer);
+        served += count;
+
+        return count;
     }
 
     /// <summary>Completes once the prefix was copied and the copy is blocked.</summary>
