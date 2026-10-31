@@ -19,7 +19,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**Purpose:** Sanitized application logs by service and severity, with navigation to traces through trace ids.\n\n**Audience:** Developers and operators investigating a fault.\n\n**Decision supported:** Which service is logging errors, how often, and which trace to open next.\n"
+        "content": "**Purpose:** Application logs by service and severity, with navigation to traces through trace ids. The Collector removes credential-like resource attributes only; log records carry no personal data by application contract, not by gateway enforcement.\n\n**Audience:** Developers and operators investigating a fault.\n\n**Decision supported:** Which service is logging errors, how often, and which trace to open next.\n"
       }
     },
     {
@@ -106,7 +106,7 @@
             "type": "loki",
             "uid": "Loki"
           },
-          "expr": "sum by (service_name) (count_over_time({service_name=~\".+\", detected_level=~\"error|critical\"} [$__auto]))",
+          "expr": "sum by (service_name) (count_over_time({service_name=~\".+\"} | detected_level=~\"(?i)error|critical\" [$__auto]))",
           "legendFormat": "{{service_name}}",
           "refId": "A"
         }
@@ -116,7 +116,7 @@
       "id": 4,
       "type": "logs",
       "title": "Recent warnings and errors",
-      "description": "Latest warning, error and critical log lines. Message templates are static; structured fields never hold personal data.",
+      "description": "Latest warning, error and critical log lines. Message templates are static by application contract; the gateway does not scrub log records.",
       "datasource": {
         "type": "loki",
         "uid": "Loki"
@@ -143,7 +143,7 @@
             "type": "loki",
             "uid": "Loki"
           },
-          "expr": "{service_name=~\".+\", detected_level=~\"warn|warning|error|critical\"}",
+          "expr": "{service_name=~\".+\"} | detected_level=~\"(?i)warn|warning|error|critical\"",
           "refId": "A"
         }
       ]

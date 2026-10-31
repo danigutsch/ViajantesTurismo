@@ -26,7 +26,7 @@ is the telemetry privacy boundary.
 - Optional: `grafana` provides the provisioned local UI.
 - Optional: `loki` stores logs.
 - Optional: `tempo` stores sanitized traces.
-- Optional: `prometheus` scrapes the Collector metric exporter.
+- Optional: `prometheus` scrapes the Collector metric exporter and the Collector internal metrics on port 8888.
 
 Raw telemetry exists between the application and this trusted Collector. The AppHost forwarding
 contract covers resources carrying Aspire's standard OTLP annotation; a manually constructed direct

@@ -83,16 +83,16 @@ that model incrementally:
 2. Add backend-neutral query intent next.
 3. Add source-controlled Grafana assets only when a dashboard has a clear owner and validation path.
 
-Recommended future layout, once dashboards are implemented:
+Current layout (see [OBSERVABILITY_CATALOG.md](OBSERVABILITY_CATALOG.md) for what each dashboard consumes):
 
 ```text
 observability/
   grafana/
-    dashboards/
-      catalog.json
-      mediator.json
+    dashboards/                one JSON file per dashboard, uid equals file name
     provisioning/
-      dashboards.yaml
+      alerting/                rules, contact points, policies, templates
+      dashboards/
+      datasources/
 ```
 
 Dashboard design rules:
@@ -342,7 +342,8 @@ least two production surfaces need the same lifecycle API and tag contract.
     - Confirm structured fields come from stable message-template placeholders or scopes.
 
 4. Verify traces:
-    - Find mediator spans:
+    - Find mediator spans (present only once production code dispatches through the mediator; see the
+      Pending dispatch section of the catalog):
         - `mediator.send`
         - `mediator.stream`
         - `mediator.publish`
@@ -359,7 +360,7 @@ least two production surfaces need the same lifecycle API and tag contract.
         - `eventsourcing.postgresql.checkpoint`
 
 5. Verify metrics:
-    - Meter: `SharedKernel.Mediator`
+    - Meter: `SharedKernel.Mediator` (emits only after the first production dispatch)
     - Expected custom metric names:
         - `mediator.requests`
         - `mediator.request.duration`

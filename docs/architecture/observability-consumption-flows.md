@@ -70,8 +70,8 @@ contract.
   variables or group-by labels.
 - Treat log categories, event IDs, message-template placeholder names, span tags, and metric
   dimensions as stable contracts once dashboards or alerts consume them.
-- Keep Grafana assets out of the repository until provisioning and validation are part of local
-  checks.
+- Grafana dashboards and alert rules live in `observability/grafana` and are validated by
+  `ObservabilityAssetsTests` in the architecture tests.
 - Prefer backend-neutral query intent in docs before committing dashboard JSON.
 
 ## Cancellation and error interpretation

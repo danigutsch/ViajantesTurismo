@@ -125,7 +125,7 @@
       "id": 4,
       "type": "timeseries",
       "title": "Evaluation cases",
-      "description": "catalog_media_accessibility_evaluation_cases_total in cases/s by bounded result. Question: is generated text passing evaluation?",
+      "description": "catalog_media_accessibility_evaluation_cases_total in cases/s by outcome (pass or fail). Question: is generated text passing evaluation?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -170,7 +170,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "Publication blocked",
-      "description": "catalog_media_accessibility_publication_blocked_total in images/s by bounded reason. Question: what stops images from being published?",
+      "description": "catalog_media_accessibility_publication_blocked_total in images/s by outcome (missing_alt or unreviewed). Question: what stops images from being published?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -205,8 +205,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum(rate(catalog_media_accessibility_publication_blocked_total[$__rate_interval]))",
-          "legendFormat": "blocked",
+          "expr": "sum by (catalog_outcome) (rate(catalog_media_accessibility_publication_blocked_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_outcome}}",
           "refId": "A"
         }
       ]
@@ -215,7 +215,7 @@
       "id": 6,
       "type": "timeseries",
       "title": "Review decisions",
-      "description": "catalog_media_accessibility_review_decisions_total in decisions/s. Question: are editors working the review queue?",
+      "description": "catalog_media_accessibility_review_decisions_total in decisions/s by outcome (approved, edited, rejected, failed, missing_alt). Question: are editors working the review queue?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -250,8 +250,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum(rate(catalog_media_accessibility_review_decisions_total[$__rate_interval]))",
-          "legendFormat": "decisions",
+          "expr": "sum by (catalog_outcome) (rate(catalog_media_accessibility_review_decisions_total[$__rate_interval]))",
+          "legendFormat": "{{catalog_outcome}}",
           "refId": "A"
         }
       ]

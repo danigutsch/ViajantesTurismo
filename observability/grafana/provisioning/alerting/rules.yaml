@@ -38,7 +38,7 @@ groups:
               refId: C
         noDataState: OK
         execErrState: Error
-        for: 5m
+        for: 1m
         annotations:
           summary: Collector is refusing telemetry
           description: The privacy gateway refused telemetry. Because privacy processors fail closed, this means telemetry is being lost rather than leaked.
@@ -77,11 +77,50 @@ groups:
               refId: C
         noDataState: OK
         execErrState: Error
-        for: 5m
+        for: 1m
         annotations:
           summary: Collector cannot export telemetry
           description: A downstream backend (Aspire, Tempo, Loki or the Prometheus exporter) rejected or did not receive telemetry from the gateway.
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#collector-export-failing
+        labels:
+          severity: warning
+      - uid: collector-self-telemetry-down
+        title: Collector self-telemetry is not scraped
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "min(up{job=\"otel-collector-internal\"})"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [1]
+              refId: C
+        noDataState: Alerting
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: Collector self-telemetry is not scraped
+          description: Prometheus cannot scrape the Collector internal metrics, so the refusal and export alerts cannot fire.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#collector-self-telemetry-down
         labels:
           severity: warning
       - uid: http-5xx-ratio
@@ -133,7 +172,7 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "sum(increase(unhandled_exceptions_total[5m]))"
+              expr: "(sum(increase(unhandled_exceptions_total[5m])) or vector(0)) + (sum(unhandled_exceptions_total unless unhandled_exceptions_total offset 5m) or vector(0))"
               instant: true
               refId: A
           - refId: B
@@ -211,7 +250,7 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "sum(increase(branding_cache_invalidations_total{outcome!=\"success\"}[10m]))"
+              expr: "(sum(increase(branding_cache_invalidations_total{outcome=\"failed\"}[10m])) or vector(0)) + (sum(branding_cache_invalidations_total{outcome=\"failed\"} unless branding_cache_invalidations_total{outcome=\"failed\"} offset 10m) or vector(0))"
               instant: true
               refId: A
           - refId: B
@@ -236,7 +275,7 @@ groups:
         for: 5m
         annotations:
           summary: Branding cache invalidation failing
-          description: Branding cache invalidation reported a non-success outcome, so public pages may serve stale branding.
+          description: Branding cache invalidation reported failed, so public pages may serve stale branding.
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#branding-invalidation-failures
         labels:
           severity: warning

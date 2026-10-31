@@ -256,7 +256,7 @@
       "id": 7,
       "type": "timeseries",
       "title": "Authentication events",
-      "description": "authentication_events_total from PandaBear.AspNetCore in events/s by bounded outcome. Question: are sign-ins failing or spiking?",
+      "description": "authentication_events_total from PandaBear.AspNetCore in events/s by event (challenge, authentication_failed, and similar). Question: are sign-ins failing or spiking?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -291,8 +291,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (exported_job) (rate(authentication_events_total{exported_job=~\"$service\"}[$__rate_interval]))",
-          "legendFormat": "{{exported_job}}",
+          "expr": "sum by (event) (rate(authentication_events_total{exported_job=~\"$service\"}[$__rate_interval]))",
+          "legendFormat": "{{event}}",
           "refId": "A"
         }
       ]
