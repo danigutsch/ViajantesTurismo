@@ -218,11 +218,28 @@ public sealed class DocumentHoldReadTests
         first.Value.Items.All(item => item.LineageId == harness.LineageId).ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task The_highest_accepted_page_is_valid_and_empty_when_no_hold_reaches_it()
+    {
+        // Arrange
+        var harness = DocumentHoldHarness.Create();
+        DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now.AddDays(30));
+
+        // Act
+        var result = await harness.Overview.Handle(DocumentHoldReadTestData.Query(page: 100_000, pageSize: 100), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Items.ShouldBeEmpty();
+        result.Value.HasMore.ShouldBeFalse();
+    }
+
     [Theory]
     [InlineData(0, 10)]
     [InlineData(-1, 10)]
     [InlineData(1, 0)]
     [InlineData(1, 101)]
+    [InlineData(100_001, 10)]
     [InlineData(int.MaxValue, 100)]
     public async Task Out_of_range_paging_is_invalid_without_echoing_the_values(int page, int pageSize)
     {
