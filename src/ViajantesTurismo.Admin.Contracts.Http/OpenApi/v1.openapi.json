@@ -3539,7 +3539,7 @@
           "Documents"
         ],
         "summary": "Places a document hold.",
-        "description": "Places a disposition hold on the lineage of a document so purges skip it. The 201 Location is the hold collection of the document; there is no single-hold GET, so read the created hold from the response body or the list endpoint.",
+        "description": "Places a disposition hold on the lineage of a document so purges skip it. The 201 Location is the created hold.",
         "operationId": "PlaceDocumentHold",
         "parameters": [
           {
@@ -3644,6 +3644,149 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/holds/{holdId}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Gets a document hold.",
+        "description": "Reads one hold, released or not, on the lineage of a document. An unknown hold and a hold of another document are both not found.",
+        "operationId": "GetDocumentHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "holdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDocumentHoldDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/holds": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Lists holds across documents.",
+        "description": "Lists holds across documents, oldest placement first, one bounded page at a time. Filters: state (Active is every unreleased hold, OverdueReview is unreleased with a review date before now, Released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Page defaults to 1 and pageSize to 25, at most 100.",
+        "operationId": "ListDocumentHoldOverview",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "basis",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "releasedSince",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDocumentHoldOverviewPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -6816,6 +6959,58 @@
             ]
           },
           "isRestraining": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GetDocumentHoldOverviewItemDto": {
+        "required": [
+          "lineageId",
+          "hold"
+        ],
+        "type": "object",
+        "properties": {
+          "lineageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hold": {
+            "$ref": "#/components/schemas/GetDocumentHoldDto"
+          }
+        }
+      },
+      "GetDocumentHoldOverviewPageDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "hasMore"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetDocumentHoldOverviewItemDto"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "hasMore": {
             "type": "boolean"
           }
         }

@@ -3,10 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.DispositionHold;
 using PandaBear.Idempotency.EntityFrameworkCore;
+using PandaBear.Results;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
@@ -52,6 +54,8 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         services.AddScoped<PlaceDocumentHoldCommandHandler>();
         services.AddScoped<ReleaseDocumentHoldCommandHandler>();
         services.AddScoped<ListDocumentHoldsQueryHandler>();
+        services.AddScoped<GetDocumentHoldQueryHandler>();
+        services.AddScoped<ListDocumentHoldOverviewQueryHandler>();
         services.AddScoped<PurgeExpiredDraftsCommandHandler>();
         services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
         return new DocumentHoldPostgreSqlHarness(services.BuildServiceProvider());
@@ -75,6 +79,20 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", "actor-0002");
         var result = await scope.ServiceProvider.GetRequiredService<ReleaseDocumentHoldCommandHandler>().Handle(command, ct);
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    /// <summary>Reads one hold of the lineage of the document through the single-hold handler.</summary>
+    public async Task<Result<GetDocumentHoldDto>> Get(Guid documentId, Guid holdId, CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<GetDocumentHoldQueryHandler>().Handle(new GetDocumentHoldQuery(documentId, holdId), ct);
+    }
+
+    /// <summary>Reads one overview page through the overview handler.</summary>
+    public async Task<Result<GetDocumentHoldOverviewPageDto>> Overview(ListDocumentHoldOverviewQuery query, CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<ListDocumentHoldOverviewQueryHandler>().Handle(query, ct);
     }
 
     /// <summary>Saves audit records through the unit of work, so each is stamped with its lineage.</summary>

@@ -73,6 +73,8 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<PlaceDocumentHoldCommandHandler>();
         builder.Services.AddScoped<ReleaseDocumentHoldCommandHandler>();
         builder.Services.AddScoped<ListDocumentHoldsQueryHandler>();
+        builder.Services.AddScoped<GetDocumentHoldQueryHandler>();
+        builder.Services.AddScoped<ListDocumentHoldOverviewQueryHandler>();
         builder.Services.AddScoped<PurgeExpiredDraftsCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();
