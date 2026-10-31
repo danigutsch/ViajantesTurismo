@@ -52,7 +52,10 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         services.AddScoped<PlaceDocumentHoldCommandHandler>();
         services.AddScoped<ReleaseDocumentHoldCommandHandler>();
         services.AddScoped<ListDocumentHoldsQueryHandler>();
+        services.AddScoped<IDocumentPurgeEvidenceStore, DocumentPurgeEvidenceStore>();
+        services.AddScoped<DocumentPurgeRunner>();
         services.AddScoped<PurgeExpiredDraftsCommandHandler>();
+        services.AddScoped<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();
         services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
         return new DocumentHoldPostgreSqlHarness(services.BuildServiceProvider());
     }
@@ -90,6 +93,13 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
     {
         await using var scope = provider.CreateAsyncScope();
         return await scope.ServiceProvider.GetRequiredService<PurgeExpiredDraftsCommandHandler>().Handle(new PurgeExpiredDraftsCommand(), ct);
+    }
+
+    /// <summary>Runs the idempotency purge handler.</summary>
+    public async Task<DocumentPurgeCounts> PurgeIdempotencyEntries(CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>().Handle(ct);
     }
 
     /// <summary>Runs the audit purge handler.</summary>
