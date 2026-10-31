@@ -139,6 +139,30 @@ The mounted module retains its configured CORS allow-list, public/mutation rate 
 `no-store` behavior, validation, and authenticated fallback policy. Local Keycloak remains local/CI
 infrastructure; the production identity provider and concrete roles are undecided.
 
+## Logo
+
+The logo is uploaded, never typed. Management.Web shows an image input (PNG, JPEG or WebP, up to 1 MiB) and a
+remove action; it has no logo address field.
+
+- `PUT /api/v1/branding/settings/logo` (`BrandingWrite`, `If-Match` required, 428 without it) takes the raw image
+  with its content type. The intake checks the declared type against the file signature, refuses SVG and every
+  other type, scans for malware (a hit is 400, an unavailable scanner is 503), decodes within 2048 x 2048 pixels and
+  4,000,000 pixels, and re-encodes to WebP of at most 40 KiB. Metadata is stripped by the re-encode.
+- The result is stored once by lowercase SHA-256 in `branding."BrandingLogos"` and never updated; the same image
+  uploaded again reuses the row. Settings and revisions keep the hash.
+- `LogoUri` is always `null` or `/api/v1/public/branding/logo/{sha256}`. `PUT settings` accepts only `null` (remove)
+  or the URL of the currently stored logo (keep); any other value is 400 on `LogoUri`.
+- `GET /api/v1/public/branding/logo/{sha256}` is anonymous and rate limited. It answers `200` with
+  `Cache-Control: public, max-age=31536000, immutable`, a strong `ETag` equal to the hash,
+  `X-Content-Type-Options: nosniff` and `image/webp`; `If-None-Match` gives `304`; an unknown or malformed hash is `404`.
+- `BrandingSettingsChangedIntegrationEvent` gains the optional `LogoSha256`, `LogoContentType` and `LogoContent`
+  (bytes). Version stays 1: absent fields mean no logo, and null fields are omitted from the JSON. Reseed and epoch
+  rotation republish them.
+- The Admin projection validates before applying: all three fields or none, hash equals the SHA-256 of the bytes, at
+  most 40 KiB, `image/webp`. A violation is rejected with reason `invalid-logo` and acknowledged.
+- Document snapshots embed the projected bytes as a `data:image/webp;base64,...` URI and record the logo hash in the
+  branding version; see [Generated travel documents](generated-travel-documents.md).
+
 ## Styling safety
 
 The migration must not introduce arbitrary user-editable CSS. Editors choose safe branding values;
@@ -153,7 +177,7 @@ Editable Branding settings are intentionally narrow:
 | Brand name | Yes | `SharedKernel.Branding` | Normalize and trim; require non-empty public display text within the contract maximum. |
 | Palette | Yes | `SharedKernel.Branding` | Accept only safe color tokens such as `#RRGGBB`; reject named colors, functions, variables, comments, and CSS fragments. |
 | Typography | Yes | `SharedKernel.Branding` | Accept only exact values from the approved font-family allow-list after normalization. |
-| Logo URI | Optional | `SharedKernel.Branding` | Accept only public-safe HTTPS or application-owned relative URIs; reject script, data, file, credentialed, and CSS-like values. |
+| Logo | Optional | Branding module | Upload only (PNG, JPEG, WebP); see [Logo](#logo). `LogoUri` is `null` or the stored logo URL. |
 | Icons | Deferred | Future brand-assets epic | Favicons, touch icons, app icons, social-preview images, and icon sets require asset metadata, dimensions, media-type checks, and public head-tag rendering before becoming editable. |
 
 Reject values that look like CSS or script payloads, including semicolons, braces, selectors, `url()`,
@@ -164,8 +188,8 @@ Reject values that look like CSS or script payloads, including semicolons, brace
 Current workflow:
 
 1. Management.Web loads Branding settings through the Branding typed client hosted by Catalog.
-2. An editor changes brand name, palette, typography, or logo URI.
-3. Management.Web submits the full Branding settings payload to the Branding routes.
+2. An editor changes brand name, palette, or typography, uploads a logo image, or removes the logo.
+3. Management.Web submits the full Branding settings payload, or the raw image to `PUT settings/logo`, to the Branding routes.
 4. The server validates all values with `SharedKernel.Branding` rules.
 5. Valid settings are saved by the ViajantesTurismo Branding module.
 6. Invalid settings return a validation problem; callers show safe field-level messages.
@@ -196,7 +220,7 @@ Preview, review, scheduled publish, and multi-step approval are deferred until i
 document them as current behavior or add UI/API assumptions for them before their feature slices exist.
 
 Icon and brand-asset management is also deferred. Branding includes icons conceptually, but this slice
-only stores a single optional logo URI. A follow-up epic should model favicons, application/touch icons,
+only stores a single optional logo. A follow-up epic should model favicons, application/touch icons,
 social preview images, asset dimensions, media types, upload/select workflows, and public `<head>`
 rendering separately.
 
@@ -205,7 +229,7 @@ rendering separately.
 Public rendering uses a public-safe DTO only:
 
 - brand name for display text;
-- optional logo URI for image rendering;
+- optional logo URL (the generated public route) for image rendering;
 - palette values already normalized into safe tokens;
 - typography values from the allow-list;
 - no internal identifiers, audit metadata, drafts, validation errors, editor names, or PII.

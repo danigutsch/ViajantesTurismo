@@ -44,10 +44,13 @@ a new policy version before it holds finalized artifacts.
 
 Branding is captured onto each revision (name, colors, fonts, version and source revision) and the
 finalized HTML is stored as bytes, so later branding changes and regeneration never alter a finalized
-artifact. Absolute logo addresses are not rendered, so opening an artifact loads nothing from a third
-party. Known limit: a root-relative logo path is rendered as an image reference, so the image a
-viewer sees is whatever the Admin host serves at that path later. Making it immutable needs the logo
-bytes embedded or stored at finalization, which needs a logo asset source that does not exist yet.
+artifact. The logo is embedded: at capture the Admin Branding projection's stored WebP bytes (at most 40 KiB)
+become a `data:image/webp;base64,...` URI that must pass the SharedKernel raster data-URI check. The document stores
+that URI, so the finalized HTML contains the image itself, and the logo SHA-256 (not an address) is part of the
+recorded branding version. A projection without a logo yields a brand-name-only header. Admin-typed, root-relative
+and external logo addresses are never captured and are never rendered, so opening an artifact loads nothing from a
+third party or from the Admin host, and replacing or deleting the logo later does not change a finalized artifact.
+Stored legacy values that are not data URIs read as no logo.
 
 ## Legal hold
 
