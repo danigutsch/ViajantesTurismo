@@ -134,7 +134,8 @@ Generic CI pieces come from SharedKernel's
 https://github.com/danigutsch/PandaBear.SharedKernel/blob/dca2de14985fc5a18eb9a632ee17705deb50cbe9/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
 `dca2de14985fc5a18eb9a632ee17705deb50cbe9`, which equals the `libraryRevision` in
-`.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and `SharedKernelConsumerWorkflowTests` fails when they disagree:
+`.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
+`SharedKernelConsumerWorkflowTests` fails when they disagree:
 
 | Reference | File |
 | --- | --- |
