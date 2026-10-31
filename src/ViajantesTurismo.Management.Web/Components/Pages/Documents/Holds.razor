@@ -1,0 +1,173 @@
+@page "/documents/holds"
+@attribute [Authorize(Roles = "Admin")]
+@inject IDocumentsApiClient DocumentsApi
+
+<PageTitle>Document holds</PageTitle>
+
+<div class="container-fluid">
+    <h1>Document holds</h1>
+    <p>Holds on generated documents across all lineages. Lineages are shown by their opaque identifier only.</p>
+
+    <div class="d-flex flex-wrap align-items-end gap-3 mb-3">
+        <div class="btn-group" role="group" aria-label="Hold view">
+            @foreach (var view in Views)
+            {
+                <button type="button"
+                        class="btn @(view.State == _state ? "btn-primary" : "btn-outline-primary")"
+                        aria-pressed="@(view.State == _state ? "true" : "false")"
+                        @onclick="() => SelectView(view.State)">@view.Label</button>
+            }
+        </div>
+        <div>
+            <label for="holds-basis-filter" class="form-label">Basis</label>
+            <select id="holds-basis-filter" class="form-select" value="@_basis" @onchange="SelectBasis">
+                <option value="">All bases</option>
+                @foreach (var basis in Bases)
+                {
+                    <option value="@basis">@basis</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">@_errorMessage</div>
+        <button type="button" class="btn btn-primary" @onclick="Load">Retry</button>
+    }
+    else if (_loading)
+    {
+        <p role="status"><em>Loading...</em></p>
+    }
+    else if (_result is { Items.Count: 0 })
+    {
+        <p role="status">No holds match this view.</p>
+    }
+    else if (_result is not null)
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <caption class="visually-hidden">@CurrentLabel holds, page @_page</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Lineage</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Basis</th>
+                        <th scope="col">Purpose</th>
+                        <th scope="col">Authority reference</th>
+                        <th scope="col">Review due</th>
+                        <th scope="col">Placed</th>
+                        <th scope="col">Released</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _result.Items)
+                    {
+                        <tr>
+                            <td><code>@item.LineageId</code></td>
+                            <td><HoldStatusBadge Hold="item.Hold" /></td>
+                            <td>@item.Hold.Basis</td>
+                            <td>@item.Hold.PurposeCode</td>
+                            <td>@item.Hold.AuthorityReference</td>
+                            <td>@FormatDate(item.Hold.ReviewDueAt)</td>
+                            <td>@FormatDate(item.Hold.PlacedAt)</td>
+                            <td>@(item.Hold.ReleasedAt is { } releasedAt ? $"{FormatDate(releasedAt)}, reason {item.Hold.ReleaseReasonCode}" : "Not released")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <nav aria-label="Holds pages" class="d-flex align-items-center gap-3">
+            <button type="button" class="btn btn-outline-secondary" disabled="@(_page <= 1)" @onclick="PreviousPage">Previous page</button>
+            <span>Page @_page</span>
+            <button type="button" class="btn btn-outline-secondary" disabled="@(!_result.HasMore)" @onclick="NextPage">Next page</button>
+        </nav>
+    }
+</div>
+
+@code {
+    private const int PageSize = 25;
+    private const int RecentReleaseDays = 30;
+    private const string ActiveState = "Active";
+    private const string OverdueState = "OverdueReview";
+    private const string ReleasedState = "Released";
+
+    private static readonly (string State, string Label)[] Views =
+    [
+        (ActiveState, "Active"),
+        (OverdueState, "Overdue review"),
+        (ReleasedState, "Recently released")
+    ];
+
+    private static readonly string[] Bases =
+    [
+        ContractConstants.DocumentHoldBasisLegalClaim,
+        ContractConstants.DocumentHoldBasisLegalObligation,
+        ContractConstants.DocumentHoldBasisDataSubjectRestriction,
+        ContractConstants.DocumentHoldBasisRegulatoryInquiry,
+        ContractConstants.DocumentHoldBasisInvestigation
+    ];
+
+    private GetDocumentHoldOverviewPageDto? _result;
+    private string _state = ActiveState;
+    private string _basis = string.Empty;
+    private int _page = 1;
+    private bool _loading = true;
+    private string? _errorMessage;
+
+    private string CurrentLabel => Views.First(view => view.State == _state).Label;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private static string FormatDate(DateTimeOffset value) => value.UtcDateTime.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    private async Task SelectView(string state)
+    {
+        _state = state;
+        _page = 1;
+        await Load();
+    }
+
+    private async Task SelectBasis(ChangeEventArgs e)
+    {
+        _basis = e.Value?.ToString() ?? string.Empty;
+        _page = 1;
+        await Load();
+    }
+
+    private async Task PreviousPage()
+    {
+        _page--;
+        await Load();
+    }
+
+    private async Task NextPage()
+    {
+        _page++;
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _loading = true;
+        _errorMessage = null;
+        DateTimeOffset? releasedSince = _state == ReleasedState
+            ? TimeProvider.System.GetUtcNow().AddDays(-RecentReleaseDays)
+            : null;
+
+        var outcome = await DocumentsApi.ListHoldOverview(
+            new DocumentHoldOverviewQuery(_state, _basis, releasedSince, _page, PageSize),
+            CancellationToken.None);
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } page })
+        {
+            _result = page;
+        }
+        else
+        {
+            _result = null;
+            _errorMessage = new HttpOutcomeMessages("The holds could not be loaded. Please try again.").For(outcome.Kind);
+        }
+
+        _loading = false;
+    }
+}

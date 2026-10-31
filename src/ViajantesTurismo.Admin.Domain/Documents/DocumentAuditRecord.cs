@@ -17,7 +17,9 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
         DocumentAuditOutcome outcome,
         DocumentAuditReasonCode reasonCode,
         string correlationId,
-        DateTime occurredAtUtc)
+        DateTime occurredAtUtc,
+        Guid? holdId,
+        string? holdBasis)
     {
         Id = Guid.CreateVersion7();
         ActorId = actorId;
@@ -29,6 +31,8 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
         ReasonCode = reasonCode;
         CorrelationId = correlationId;
         OccurredAtUtc = occurredAtUtc;
+        HoldId = holdId;
+        HoldBasis = holdBasis;
         RetentionExpiresAt = occurredAtUtc.AddMonths(DocumentAuditLimits.RetentionMonths);
     }
 
@@ -92,6 +96,18 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
         get; private init;
     }
 
+    /// <summary>Gets the identifier of the disposition hold a hold operation concerns, or <see langword="null" />.</summary>
+    public Guid? HoldId
+    {
+        get; private init;
+    }
+
+    /// <summary>Gets the neutral basis name of the hold a hold operation concerns, or <see langword="null" />.</summary>
+    public string? HoldBasis
+    {
+        get; private init;
+    }
+
     /// <summary>Gets when this audit record becomes eligible for retention purge.</summary>
     public DateTime RetentionExpiresAt
     {
@@ -108,7 +124,9 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
         DocumentAuditOutcome outcome,
         DocumentAuditReasonCode reasonCode,
         string correlationId,
-        DateTime occurredAtUtc)
+        DateTime occurredAtUtc,
+        Guid? holdId = null,
+        string? holdBasis = null)
     {
         if (string.IsNullOrWhiteSpace(actorId) || actorId.Length > DocumentAuditLimits.MaxActorIdLength)
         {
@@ -139,7 +157,8 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
             !Enum.IsDefined(outcome) ||
             !Enum.IsDefined(reasonCode) ||
             !IsValidReasonCode(operation, outcome, reasonCode) ||
-            !HasValidResourceMetadata(documentId, bookingId, documentRevision, operation, outcome))
+            !HasValidResourceMetadata(documentId, bookingId, documentRevision, operation, outcome) ||
+            !HasValidHoldMetadata(holdId, holdBasis, operation, outcome))
         {
             return DocumentAuditErrors.InvalidEvidence().ConvertError<DocumentAuditRecord>();
         }
@@ -153,7 +172,9 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
             outcome,
             reasonCode,
             correlationId,
-            occurredAtUtc));
+            occurredAtUtc,
+            holdId,
+            holdBasis));
     }
 
     private static bool IsValidReasonCode(
@@ -171,6 +192,8 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
                 DocumentAuditOperation.Finalize => reasonCode == DocumentAuditReasonCode.ManualFinalize,
                 DocumentAuditOperation.Regenerate => reasonCode == DocumentAuditReasonCode.ManualRegeneration,
                 DocumentAuditOperation.Void => reasonCode == DocumentAuditReasonCode.ManualVoid,
+                DocumentAuditOperation.PlaceHold => reasonCode == DocumentAuditReasonCode.ManualHoldPlacement,
+                DocumentAuditOperation.ReleaseHold => reasonCode == DocumentAuditReasonCode.ManualHoldRelease,
                 DocumentAuditOperation.Read or DocumentAuditOperation.Download => reasonCode == DocumentAuditReasonCode.None,
                 _ => false,
             },
@@ -205,6 +228,13 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
                     DocumentAuditReasonCode.BrandingUnavailable,
                 DocumentAuditOperation.Download => reasonCode is
                     DocumentAuditReasonCode.DocumentNotFound or DocumentAuditReasonCode.ArtifactUnavailable,
+                DocumentAuditOperation.PlaceHold => reasonCode is
+                    DocumentAuditReasonCode.DocumentNotFound or DocumentAuditReasonCode.ValidationRejected,
+                DocumentAuditOperation.ReleaseHold => reasonCode is
+                    DocumentAuditReasonCode.DocumentNotFound or
+                    DocumentAuditReasonCode.HoldNotFound or
+                    DocumentAuditReasonCode.StateConflict or
+                    DocumentAuditReasonCode.ValidationRejected,
                 _ => false,
             },
             _ => false,
@@ -217,6 +247,11 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
         DocumentAuditOperation operation,
         DocumentAuditOutcome outcome)
     {
+        if (IsHoldOperation(operation))
+        {
+            return documentId is not null && bookingId is null && documentRevision is null;
+        }
+
         if (outcome == DocumentAuditOutcome.Succeeded)
         {
             return documentId is not null && bookingId is not null && documentRevision is not null;
@@ -231,4 +266,30 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
             ((bookingId is null && documentRevision is null) ||
              (bookingId is not null && documentRevision is not null));
     }
+
+    private static bool IsHoldOperation(DocumentAuditOperation operation) =>
+        operation is DocumentAuditOperation.PlaceHold or DocumentAuditOperation.ReleaseHold;
+
+    private static bool HasValidHoldMetadata(
+        Guid? holdId,
+        string? holdBasis,
+        DocumentAuditOperation operation,
+        DocumentAuditOutcome outcome)
+    {
+        if (holdId == Guid.Empty || (holdBasis is not null && !IsValidHoldBasis(holdBasis)))
+        {
+            return false;
+        }
+
+        if (!IsHoldOperation(operation))
+        {
+            return holdId is null && holdBasis is null;
+        }
+
+        return outcome != DocumentAuditOutcome.Succeeded || (holdId is not null && holdBasis is not null);
+    }
+
+    private static bool IsValidHoldBasis(string holdBasis) =>
+        holdBasis.Length is > 0 and <= DocumentAuditLimits.MaxHoldBasisLength &&
+        holdBasis.All(char.IsAsciiLetter);
 }

@@ -73,6 +73,19 @@ purges that do exist: unfinalized drafts, document audit records and document id
   `POST /api/v1/documents/{id}/holds/{holdId}/release`, where `{id}` is any revision of the lineage. A second release of the
   same hold is `409 Conflict`; a hold of another lineage is `404 Not Found`.
 
+### Hold audit evidence
+
+- Placing and releasing a hold each add exactly one `DocumentAuditRecords` row (`PlaceHold`, `ReleaseHold`) in the same
+  transaction as the hold change. An audit record that cannot be formed persists nothing, so no hold changes without its record.
+- The row carries the opaque actor, correlation id, document id, hold id, hold basis name and a bounded audit reason code
+  (`ManualHoldPlacement`, `ManualHoldRelease`). It never carries the purpose code, authority reference, release reason code
+  or any request text. `HoldBasis` accepts ASCII letters only, at most 64 characters.
+- A rejected request (unknown document, unknown or foreign hold, double release, invalid field) changes no hold and adds one
+  `Rejected` row with `DocumentNotFound`, `HoldNotFound`, `StateConflict` or `ValidationRejected`. A request refused by
+  authorization never reaches the handler and adds nothing, like every other document route.
+- The rows are stamped with the document lineage and follow the 24-month audit retention; a hold on the lineage restrains
+  their purge like any other audit row.
+
 ### Who may place and release
 
 - Permission `document.hold` covers placing, releasing and listing. By default only the `Admin` role holds it; `Operator` and
@@ -81,6 +94,17 @@ purges that do exist: unfinalized drafts, document audit records and document id
   `AdminAuthorization.PermissionsByRole`.
 - The placing and releasing actor is the opaque subject identifier of the authenticated principal. It is never read from the
   request body.
+
+### Management UI
+
+- The document details page (`/documents/{id}`) shows each hold's state, basis, review date and recorded actors, and states
+  that an active hold blocks deletion, disposition after voiding and anonymization. Admins place a hold through a form
+  (basis, purpose code, authority reference, review date, optional expiry) with an explicit confirmation step, and release
+  one through a modal dialog that restates the document and hold identifiers and requires an opaque reason code.
+- The holds overview (`/documents/holds`, Admin only) lists active, overdue-review and recently released holds (the last 30
+  days), filterable by basis and paged. It shows the opaque lineage identifier only.
+- The UI sends and shows opaque codes, dates and subject identifiers only. A hold takes effect when it is placed; the API has
+  no separate effective date.
 
 ### Purge behavior and lock order
 
@@ -110,7 +134,6 @@ purges that do exist: unfinalized drafts, document audit records and document id
 
 ### Not done
 
-- Management UI for holds.
 - Backup rotation and restore suppression for held data.
 - Retention of finalized artifacts and any deletion workflow for them. Do not add one without checking holds.
 - Retention periods, jurisdiction-specific rules and review reminders.
@@ -126,7 +149,6 @@ Deletion is not complete until every covered store and copy has the approved out
 
 Each gap above is tracked as an issue instead of a placeholder in this policy:
 
-- Hold management UI.
 - Document-specific backup rotation and restore suppression.
 - Finalized-artifact retention.
 

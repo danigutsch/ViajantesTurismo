@@ -39,6 +39,8 @@ public sealed class DocumentAuditTrailMappingsTests
     [Theory]
     [InlineData(DocumentAuditOperation.Read)]
     [InlineData(DocumentAuditOperation.Download)]
+    [InlineData(DocumentAuditOperation.PlaceHold)]
+    [InlineData(DocumentAuditOperation.ReleaseHold)]
     [InlineData((DocumentAuditOperation)int.MaxValue)]
     public void Map_rejects_non_lifecycle_operations(DocumentAuditOperation operation)
     {

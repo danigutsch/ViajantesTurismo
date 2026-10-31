@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using PandaBear.AspNetCore;
 using PandaBear.DispositionHold;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
@@ -70,7 +69,7 @@ internal static class DocumentHoldEndpoints
         }
 
         var result = await handler.Handle(
-            new PlaceDocumentHoldCommand(id, basis, dto.PurposeCode, dto.AuthorityReference, dto.ReviewDueAt, dto.ExpiresAt, GetActorId(httpContext)),
+            new PlaceDocumentHoldCommand(id, basis, dto.PurposeCode, dto.AuthorityReference, dto.ReviewDueAt, dto.ExpiresAt, DocumentEndpoints.CreateAuditContext(httpContext)),
             ct);
         return result.IsFailure
             ? ToError(result.ConvertError())
@@ -128,18 +127,10 @@ internal static class DocumentHoldEndpoints
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var result = await handler.Handle(new ReleaseDocumentHoldCommand(id, holdId, dto.ReasonCode, GetActorId(httpContext)), ct);
+        var result = await handler.Handle(new ReleaseDocumentHoldCommand(id, holdId, dto.ReasonCode, DocumentEndpoints.CreateAuditContext(httpContext)), ct);
         return result.IsFailure
             ? ToError(result.ConvertError())
             : TypedResults.Ok(DocumentHoldMapper.MapToGetDocumentHoldDto(result.Value, timeProvider.GetUtcNow()));
-    }
-
-    private static string GetActorId(HttpContext httpContext)
-    {
-        var actorId = httpContext.User.GetSubjectId();
-        return string.IsNullOrWhiteSpace(actorId)
-            ? throw new InvalidOperationException("Hold operations require an authenticated subject identifier.")
-            : actorId;
     }
 
     private static IResult ToError(Result result) => result.Status switch

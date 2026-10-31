@@ -138,8 +138,10 @@ public sealed class DetailsPageTests : BunitContext
         await cut.WaitForAssertionAsync(() => cut.Find("h1"));
 
         // Assert
-        cut.FindAll("input").ShouldBeEmpty();
-        cut.FindAll("label").ShouldBeEmpty();
+        cut.FindAll("input").Where(element => element.Closest("section[aria-labelledby='document-holds-title']") is null)
+            .ShouldBeEmpty();
+        cut.FindAll("label").Where(element => element.Closest("section[aria-labelledby='document-holds-title']") is null)
+            .ShouldBeEmpty();
         cut.FindAll("a").ShouldContain(link =>
             link.GetAttribute("href") == $"/documents/{document.Id}/download"
             && link.HasAttribute("download")

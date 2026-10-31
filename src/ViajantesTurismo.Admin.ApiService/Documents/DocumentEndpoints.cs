@@ -493,7 +493,8 @@ internal static class DocumentEndpoints
             ct);
     }
 
-    private static DocumentAuditContext CreateAuditContext(HttpContext httpContext)
+    /// <summary>Creates the trusted audit context from the authenticated subject and a new correlation identifier.</summary>
+    internal static DocumentAuditContext CreateAuditContext(HttpContext httpContext)
     {
         var actorId = httpContext.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))

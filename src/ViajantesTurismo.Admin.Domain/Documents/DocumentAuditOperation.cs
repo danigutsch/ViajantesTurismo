@@ -31,5 +31,11 @@ public enum DocumentAuditOperation
     Void = 8,
 
     /// <summary>A finalized artifact was downloaded.</summary>
-    Download = 9
+    Download = 9,
+
+    /// <summary>A disposition hold was placed on a document lineage.</summary>
+    PlaceHold = 10,
+
+    /// <summary>A disposition hold on a document lineage was released.</summary>
+    ReleaseHold = 11
 }

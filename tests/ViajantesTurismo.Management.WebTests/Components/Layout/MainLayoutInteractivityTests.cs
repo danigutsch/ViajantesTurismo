@@ -10,6 +10,7 @@ public sealed class MainLayoutInteractivityTests : BunitContext
     public MainLayoutInteractivityTests()
     {
         Services.AddUiFailureReporting();
+        AddAuthorization();
     }
 
     [Fact]

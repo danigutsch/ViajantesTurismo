@@ -57,6 +57,7 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         services.AddScoped<IDocumentHoldQuery, DocumentHoldQuery>();
         services.AddScoped<IDocumentDispositionTransaction, DocumentDispositionTransaction>();
         services.AddScoped<DocumentHoldGate>();
+        services.AddScoped<DocumentAuditWriter>();
         services.AddScoped<PlaceDocumentHoldCommandHandler>();
         services.AddScoped<ReleaseDocumentHoldCommandHandler>();
         services.AddScoped<ListDocumentHoldsQueryHandler>();
@@ -70,12 +71,14 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         return new DocumentHoldPostgreSqlHarness(services.BuildServiceProvider());
     }
 
+    private static DocumentAuditContext AuditContext(string actorId) => DocumentAuditContext.Create(actorId, Guid.CreateVersion7().ToString("N")).Value;
+
     /// <summary>Places a hold on the lineage of the document as a synthetic actor and returns its identifier.</summary>
     public async Task<Guid> Place(Guid documentId, CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
         var now = TimeProvider.System.GetUtcNow();
-        var command = new PlaceDocumentHoldCommand(documentId, HoldBasis.LegalClaim, "purpose.claim-001", "authority:case-0001", now.AddDays(90), null, "actor-0001");
+        var command = new PlaceDocumentHoldCommand(documentId, HoldBasis.LegalClaim, "purpose.claim-001", "authority:case-0001", now.AddDays(90), null, AuditContext("actor-0001"));
         var result = await scope.ServiceProvider.GetRequiredService<PlaceDocumentHoldCommandHandler>().Handle(command, ct);
         result.IsSuccess.ShouldBeTrue();
         return result.Value.Id;
@@ -85,9 +88,17 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
     public async Task Release(Guid documentId, Guid holdId, CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
-        var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", "actor-0002");
+        var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", AuditContext("actor-0002"));
         var result = await scope.ServiceProvider.GetRequiredService<ReleaseDocumentHoldCommandHandler>().Handle(command, ct);
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    /// <summary>Releases a hold as a synthetic actor and returns the outcome without asserting success.</summary>
+    public async Task<PandaBear.Results.Result<Hold>> TryRelease(Guid documentId, Guid holdId, CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", AuditContext("actor-0003"));
+        return await scope.ServiceProvider.GetRequiredService<ReleaseDocumentHoldCommandHandler>().Handle(command, ct);
     }
 
     /// <summary>Reads one hold of the lineage of the document through the single-hold handler.</summary>

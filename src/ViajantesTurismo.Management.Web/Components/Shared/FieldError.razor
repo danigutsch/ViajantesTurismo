@@ -1,0 +1,14 @@
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div id="@Id" class="invalid-feedback d-block">
+        <i class="bi bi-exclamation-circle" aria-hidden="true"></i> @Message
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string Id { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Message { get; set; }
+}

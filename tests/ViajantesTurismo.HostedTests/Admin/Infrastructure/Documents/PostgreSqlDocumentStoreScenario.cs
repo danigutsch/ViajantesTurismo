@@ -385,6 +385,16 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Reads the audit records that name a document ordered by occurrence time.</summary>
+    public async Task<DocumentAuditRecord[]> GetDocumentAuditsForDocument(Guid documentId, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentAuditRecords
+            .Where(record => record.DocumentId == documentId)
+            .OrderBy(record => record.Id)
+            .ToArrayAsync(ct);
+    }
+
     /// <summary>Reads the stored idempotency state for the document generation scope of a booking and key, or <see langword="null" /> when absent.</summary>
     public async Task<string?> GetIdempotencyState(
         Guid bookingId,

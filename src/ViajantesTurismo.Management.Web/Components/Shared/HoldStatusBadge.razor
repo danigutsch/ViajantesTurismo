@@ -1,0 +1,30 @@
+<span class="badge @_cssClass"><i class="bi @_icon" aria-hidden="true"></i> @_text</span>
+
+@code {
+    private string _cssClass = "bg-secondary";
+    private string _icon = "bi-dash-circle";
+    private string _text = "Not restraining";
+
+    [Parameter, EditorRequired]
+    public GetDocumentHoldDto Hold { get; set; } = null!;
+
+    protected override void OnParametersSet()
+    {
+        if (Hold.ReleasedAt is not null)
+        {
+            (_cssClass, _icon, _text) = ("bg-secondary", "bi-unlock", "Released");
+        }
+        else if (Hold.IsRestraining && Hold.ReviewDueAt < TimeProvider.System.GetUtcNow())
+        {
+            (_cssClass, _icon, _text) = ("bg-warning text-dark", "bi-exclamation-triangle", "Active, review overdue");
+        }
+        else if (Hold.IsRestraining)
+        {
+            (_cssClass, _icon, _text) = ("bg-success", "bi-lock", "Active");
+        }
+        else
+        {
+            (_cssClass, _icon, _text) = ("bg-secondary", "bi-dash-circle", "Not restraining");
+        }
+    }
+}
