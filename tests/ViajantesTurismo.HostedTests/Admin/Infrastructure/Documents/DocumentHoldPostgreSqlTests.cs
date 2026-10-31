@@ -140,6 +140,34 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
     }
 
     [Fact]
+    public async Task A_refused_idempotency_purge_deletes_nothing_and_persists_refused_evidence()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow();
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(now.UtcDateTime);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+        await Scenario.SeedIdempotencyEntry($"admin.documents.regenerate-draft:{documentId:N}", "free-1", now.AddDays(-40), now.AddDays(-39), ct);
+        await using var refusingHarness = DocumentHoldPostgreSqlHarness.Create(
+            Scenario.ConnectionString, holdGuardFailure: new DispositionHoldStateUnknownException());
+
+        // Act
+        Func<Task> purge = () => refusingHarness.PurgeIdempotencyEntries(ct);
+
+        // Assert
+        await purge.ShouldThrow<DispositionHoldStateUnknownException>();
+        var allEvidence = await Scenario.GetRetentionPurgeEvidence(ct);
+        var evidence = allEvidence.ShouldHaveSingleItem();
+        evidence.Kind.ShouldBe(DocumentRetentionPurgeKind.IdempotencyEntries);
+        evidence.Outcome.ShouldBe(DocumentRetentionPurgeOutcome.Refused);
+        evidence.PurgedCount.ShouldBe(0);
+        evidence.HeldCount.ShouldBe(0);
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldHaveSingleItem();
+    }
+
+    [Fact]
     public async Task Held_candidates_beyond_the_batch_size_do_not_starve_purgeable_ones()
     {
         // Arrange
