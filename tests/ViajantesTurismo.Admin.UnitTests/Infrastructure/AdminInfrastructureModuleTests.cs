@@ -1,3 +1,4 @@
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Testing;
@@ -42,6 +43,20 @@ public sealed class AdminInfrastructureModuleTests
         // Assert
         sourceEnabled.ShouldBeTrue();
         hasMeterProvider.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void AddInfrastructure_configures_a_retrying_execution_strategy_for_the_write_context()
+    {
+        // Arrange
+        using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
+
+        // Act
+        var strategy = services.WriteContext.Database.CreateExecutionStrategy();
+
+        // Assert
+        strategy.ShouldBeOfType<NpgsqlRetryingExecutionStrategy>();
+        strategy.RetriesOnFailure.ShouldBeTrue();
     }
 
     [Fact]
