@@ -23,6 +23,66 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("PandaBear.DispositionHold.Hold", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AuthorityReference")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("Basis")
+                        .IsRequired()
+                        .HasMaxLength(48)
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<DateTimeOffset>("EffectiveFrom")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("PlacedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PlacedBy")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("PurposeCode")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("ReleaseReasonCode")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTimeOffset?>("ReleasedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReleasedBy")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTimeOffset>("ReviewDueAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Scope")
+                        .IsRequired()
+                        .HasMaxLength(193)
+                        .HasColumnType("character varying(193)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Scope");
+
+                    b.ToTable("holds", "disposition_hold");
+                });
+
             modelBuilder.Entity("PandaBear.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
                 {
                     b.Property<string>("Scope")
@@ -284,6 +344,11 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<int>("HeldCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<DateTime>("OccurredAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -296,6 +361,11 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.Property<DateTime>("RetentionCutoffUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UndecidableCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.HasKey("Id");
 
@@ -323,6 +393,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<Guid?>("DocumentId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("DocumentLineageId")
+                        .HasColumnType("uuid");
+
                     b.Property<int?>("DocumentRevision")
                         .HasColumnType("integer");
 
@@ -345,6 +418,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DocumentLineageId");
 
                     b.HasIndex("RetentionExpiresAt")
                         .HasDatabaseName("IX_DocumentAuditRecords_RetentionExpiresAt");

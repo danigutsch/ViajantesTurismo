@@ -13,6 +13,7 @@ using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Customers;
 
@@ -116,6 +117,7 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
+        services.AddAdminDispositionHolds();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(
             IntegrationEventConsumerNames.Catalog);

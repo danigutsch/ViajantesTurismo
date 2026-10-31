@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -11,6 +12,9 @@ internal sealed class FakeDocumentIdempotencyRetentionStore : IDocumentIdempoten
         get; set;
     }
 
+    /// <summary>Lineages of the expired candidates the fake offers to the held-lineage filter.</summary>
+    public List<Guid> CandidateLineageIds { get; } = [];
+
     /// <summary>Cutoff passed to the last purge, or null when no purge ran.</summary>
     public DateTimeOffset? PurgeCutoff
     {
@@ -18,9 +22,10 @@ internal sealed class FakeDocumentIdempotencyRetentionStore : IDocumentIdempoten
     }
 
     /// <summary>Captures the cutoff and returns <see cref="PurgedCount" />.</summary>
-    public Task<int> PurgeExpiredEntries(DateTimeOffset cutoff, CancellationToken ct)
+    public async Task<DocumentPurgeCounts> PurgeExpiredEntries(DateTimeOffset cutoff, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
         PurgeCutoff = cutoff;
-        return Task.FromResult(PurgedCount);
+        var held = await heldLineages(CandidateLineageIds, ct);
+        return new DocumentPurgeCounts(PurgedCount, held.Count);
     }
 }

@@ -3533,6 +3533,228 @@
         ]
       }
     },
+    "/api/v1/documents/{id}/holds": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Places a document hold.",
+        "description": "Places a disposition hold on the lineage of a document so purges skip it. The 201 Location is the hold collection of the document; there is no single-hold GET, so read the created hold from the response body or the list endpoint.",
+        "operationId": "PlaceDocumentHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDocumentHoldDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDocumentHoldDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Lists document holds.",
+        "description": "Lists every hold, released or not, on the lineage of a document.",
+        "operationId": "ListDocumentHolds",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GetDocumentHoldDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/holds/{holdId}/release": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Releases a document hold.",
+        "description": "Releases a disposition hold, recording the releasing actor and reason code.",
+        "operationId": "ReleaseDocumentHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "holdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseDocumentHoldDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDocumentHoldDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/documents/bookings/{bookingId}/payment-instructions": {
       "get": {
         "tags": [
@@ -5426,6 +5648,43 @@
           }
         }
       },
+      "CreateDocumentHoldDto": {
+        "required": [
+          "basis",
+          "purposeCode",
+          "authorityReference",
+          "reviewDueAt"
+        ],
+        "type": "object",
+        "properties": {
+          "basis": {
+            "type": "string"
+          },
+          "purposeCode": {
+            "maxLength": 128,
+            "minLength": 0,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "type": "string"
+          },
+          "authorityReference": {
+            "maxLength": 128,
+            "minLength": 0,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "type": "string"
+          },
+          "reviewDueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
       "CreatePaymentAccountDto": {
         "required": [
           "label",
@@ -6484,6 +6743,79 @@
             "type": "string"
           },
           "isEditable": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GetDocumentHoldDto": {
+        "required": [
+          "id",
+          "basis",
+          "purposeCode",
+          "authorityReference",
+          "placedBy",
+          "placedAt",
+          "effectiveFrom",
+          "reviewDueAt",
+          "isRestraining"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "purposeCode": {
+            "type": "string"
+          },
+          "authorityReference": {
+            "type": "string"
+          },
+          "placedBy": {
+            "type": "string"
+          },
+          "placedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reviewDueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "releasedBy": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "releasedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "releaseReasonCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isRestraining": {
             "type": "boolean"
           }
         }
@@ -7779,6 +8111,20 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "ReleaseDocumentHoldDto": {
+        "required": [
+          "reasonCode"
+        ],
+        "type": "object",
+        "properties": {
+          "reasonCode": {
+            "maxLength": 128,
+            "minLength": 0,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "type": "string"
           }
         }
       },

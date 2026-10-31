@@ -11,6 +11,7 @@ using PandaBear.Idempotency.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Messaging;
 
@@ -138,6 +139,7 @@ internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
+        services.AddAdminDispositionHolds();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(
             IntegrationEventConsumerNames.Catalog);

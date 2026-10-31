@@ -14,6 +14,7 @@
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />
+        <PackageReference Include="PandaBear.SharedKernel.DispositionHold.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.DocumentRendering" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.AuditTrail.SourceGenerator" PrivateAssets="all" />

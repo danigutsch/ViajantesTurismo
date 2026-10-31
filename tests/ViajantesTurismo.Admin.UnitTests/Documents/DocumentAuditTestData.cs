@@ -1,5 +1,6 @@
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
@@ -25,5 +26,12 @@ internal static class DocumentAuditTestData
     public static PurgeExpiredDocumentAuditsCommandHandler CreatePurgeHandler(
         FakeDocumentAuditStore auditStore,
         IUnitOfWork unitOfWork,
-        DateTimeOffset now) => new(auditStore, unitOfWork, new FakeTimeProvider(now));
+        DateTimeOffset now,
+        FakeDispositionHoldGuard? guard = null,
+        InMemoryDispositionHoldStore? holds = null)
+    {
+        var clock = new FakeTimeProvider(now);
+        var gate = new DocumentHoldGate(guard ?? new FakeDispositionHoldGuard(), holds ?? new InMemoryDispositionHoldStore(), clock);
+        return new(auditStore, unitOfWork, new FakeDocumentDispositionTransaction(), gate, clock);
+    }
 }

@@ -12,7 +12,7 @@ public sealed class DocumentAuditPurgeRecordTests
     public void Create_keeps_only_metadata_and_never_expires()
     {
         // Act
-        var result = DocumentAuditPurgeRecord.Create("system", "corr", 4, Now, DocumentAuditOutcome.Succeeded, Now);
+        var result = DocumentAuditPurgeRecord.Create("system", "corr", 4, 0, Now, DocumentAuditOutcome.Succeeded, Now);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -24,7 +24,7 @@ public sealed class DocumentAuditPurgeRecordTests
             .Select(property => property.Name)
             .Order()
             .ToArray()
-            .ShouldBe(["ActorId", "CorrelationId", "Id", "OccurredAtUtc", "Outcome", "PurgedCount", "RetentionCutoffUtc"]);
+            .ShouldBe(["ActorId", "CorrelationId", "HeldCount", "Id", "OccurredAtUtc", "Outcome", "PurgedCount", "RetentionCutoffUtc", "UndecidableCount"]);
     }
 
     [Theory]
@@ -34,7 +34,7 @@ public sealed class DocumentAuditPurgeRecordTests
     public void Create_rejects_invalid_metadata(string actorId, string correlationId, int purgedCount)
     {
         // Act
-        var result = DocumentAuditPurgeRecord.Create(actorId, correlationId, purgedCount, Now, DocumentAuditOutcome.Succeeded, Now);
+        var result = DocumentAuditPurgeRecord.Create(actorId, correlationId, purgedCount, 0, Now, DocumentAuditOutcome.Succeeded, Now);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -45,7 +45,7 @@ public sealed class DocumentAuditPurgeRecordTests
     {
         // Act
         var result = DocumentAuditPurgeRecord.Create(
-            "actor", "corr", 0, DateTime.SpecifyKind(Now, DateTimeKind.Unspecified), DocumentAuditOutcome.Succeeded, Now);
+            "actor", "corr", 0, 0, DateTime.SpecifyKind(Now, DateTimeKind.Unspecified), DocumentAuditOutcome.Succeeded, Now);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -55,7 +55,7 @@ public sealed class DocumentAuditPurgeRecordTests
     public void Create_rejects_a_rejected_outcome_that_claims_purged_records()
     {
         // Act
-        var result = DocumentAuditPurgeRecord.Create("actor", "corr", 2, Now, DocumentAuditOutcome.Rejected, Now);
+        var result = DocumentAuditPurgeRecord.Create("actor", "corr", 2, 0, Now, DocumentAuditOutcome.Rejected, Now);
 
         // Assert
         result.IsFailure.ShouldBeTrue();

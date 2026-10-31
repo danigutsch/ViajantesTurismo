@@ -16,10 +16,11 @@ public interface IDocumentStore
     /// <exception cref="OperationCanceledException">The operation was cancelled.</exception>
     Task<DocumentLineage?> GetByDocumentId(Guid documentId, CancellationToken ct);
 
-    /// <summary>Atomically removes unfinalized expired document revisions.</summary>
+    /// <summary>Atomically removes unfinalized expired document revisions, except those of a held lineage.</summary>
     /// <param name="now">The expiration cutoff.</param>
+    /// <param name="heldLineages">Reports, once for all candidate lineages, which lineages a disposition hold restrains.</param>
     /// <param name="ct">A cancellation token.</param>
-    /// <returns>The number of deleted revisions.</returns>
+    /// <returns>The number of deleted revisions and the number skipped because their lineage is held.</returns>
     /// <exception cref="OperationCanceledException">The operation was cancelled.</exception>
-    Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct);
+    Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct);
 }

@@ -47,6 +47,12 @@
           "PandaBear.SharedKernel.Results": "0.1.0-alpha.418.1"
         }
       },
+      "PandaBear.SharedKernel.DispositionHold.Abstractions": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.418.1, )",
+        "resolved": "0.1.0-alpha.418.1",
+        "contentHash": "AKtlUy4dGMQChj/iag7W5JhtJadwAfti3fq2k9fiIU2aTgCXQrS4eAlgtt38kTZsaq394rT44on2tG19YC/gng=="
+      },
       "PandaBear.SharedKernel.DocumentRendering": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.418.1, )",

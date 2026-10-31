@@ -15,6 +15,7 @@ using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
@@ -37,6 +38,7 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         services.AddSingleton(new PaymentBusinessCalendar(clock, TimeZoneInfo.Utc));
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();
+        services.AddAdminDispositionHolds();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         services.AddDbContext<AdminWriteDbContext>((provider, options) => options.UseNpgsql(connectionString));
