@@ -59,9 +59,9 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | `handled_ui_failures_total` | `PandaBear.Blazor` | `{failure}` | `error_type`, `operation` | Which UI operation shows an error? | `http-platform` | keep |
 | `mediator.requests` | `SharedKernel.Mediator` | `{request}` | `mediator.request.name`, `mediator.outcome` | How are dispatched requests ending? `error` means an exception; a failed `Result` such as booking not found (404) counts as `success`, so use the `mediator.result` span attribute for domain failures. | `mediator` | keep |
 | `mediator.request.duration` | `SharedKernel.Mediator` | `ms` | `mediator.request.name`, `mediator.outcome` | Which request type is slow? | `mediator` | keep |
-| `mediator.notifications` | `SharedKernel.Mediator` | `{notification}` | `mediator.notification.name`, `mediator.outcome` | Do notification fan-outs succeed? | `mediator` | keep |
-| `mediator.notification.duration` | `SharedKernel.Mediator` | `ms` | `mediator.notification.name`, `mediator.outcome` | Is notification fan-out slow? | none yet | gap |
-| `mediator.streams` | `SharedKernel.Mediator` | `{request}` | `mediator.request.name`, `mediator.outcome` | Are stream requests dispatched? | none yet | gap |
+| `mediator.notifications` | `SharedKernel.Mediator` | `{notification}` | `mediator.notification.name`, `mediator.outcome` | Do notification fan-outs succeed? Admin publishes no notifications yet, so the panel is idle-ok. | `mediator` | idle-ok |
+| `mediator.notification.duration` | `SharedKernel.Mediator` | `ms` | `mediator.notification.name`, `mediator.outcome` | Is notification fan-out slow? Emitted by the library at no cost; no Admin notification traffic to observe. | none yet | idle-ok |
+| `mediator.streams` | `SharedKernel.Mediator` | `{request}` | `mediator.request.name`, `mediator.outcome` | Are stream requests dispatched? Admin has no stream requests; remove from the catalog if still unused when streaming is decided. | none yet | idle-ok |
 | `eventsourcing.postgresql.append.duration` | `SharedKernel.EventSourcing.Npgsql` | `ms` | outcome | Is append slow? | `event-store` | keep |
 | `eventsourcing.postgresql.load.duration` | `SharedKernel.EventSourcing.Npgsql` | `ms` | outcome | Is load slow? | `event-store` | keep |
 | `eventsourcing.postgresql.checkpoint.duration` | `SharedKernel.EventSourcing.Npgsql` | `ms` | outcome | Is checkpointing slow? | `event-store` | keep |
@@ -76,7 +76,7 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 
 | Span | Source | Use | Verdict |
 | --- | --- | --- | --- |
-| `mediator.send`, `mediator.stream`, `mediator.publish`, `mediator.notification.handle` | `SharedKernel.Mediator` | `traces` mediator spans. Only `mediator.send` observed live so far (attributes `mediator.request.name`, `mediator.handler.name`, `mediator.pipeline.depth`, `mediator.outcome`); the others need stream or notification traffic | keep |
+| `mediator.send`, `mediator.stream`, `mediator.publish`, `mediator.notification.handle` | `SharedKernel.Mediator` | `traces` mediator spans. Only `mediator.send` observed live (`mediator.stream`, `mediator.publish` and `mediator.notification.handle` have no Admin traffic: idle-ok) (attributes `mediator.request.name`, `mediator.handler.name`, `mediator.pipeline.depth`, `mediator.outcome`) | keep |
 | One span per request type (for example `CompleteBookingCommand`, `CancelBookingCommand`) | `SharedKernel.Mediator` activity pipeline behavior | `traces` mediator spans; observed live, same trace as the HTTP server span and `mediator.send` | keep |
 | `mediator.result` attribute on request spans | `ResultTagBehavior` (Admin.Application) | `traces` "Failed mediator results" panel; domain failures that `mediator.outcome` counts as `success` | keep |
 | `eventsourcing.postgresql.append`, `.load`, `.checkpoint` | `SharedKernel.EventSourcing.Npgsql` | `traces` search | keep |
