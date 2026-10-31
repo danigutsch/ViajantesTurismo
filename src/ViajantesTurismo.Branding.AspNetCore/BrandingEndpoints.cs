@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -31,6 +32,11 @@ internal static class BrandingEndpoints
         publicBranding.MapGet("/", GetPublicSettings)
             .CacheOutput(policy => policy.AddPolicy<BrandingCacheTelemetryPolicy>().Expire(BrandingHttpCache.PublicFreshness).Tag(BrandingHttpCache.PublicBrandingTag))
             .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);
+        publicBranding.MapGet(BrandingLogoPath.Template, GetLogo)
+            .Produces(StatusCodes.Status200OK, contentType: BrandingLogo.EncodedContentType)
+            .Produces(StatusCodes.Status304NotModified)
+            .Produces(StatusCodes.Status404NotFound)
+            .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);
         managementBranding.MapGet("/", GetManagementSettings)
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
@@ -53,6 +59,35 @@ internal static class BrandingEndpoints
             })
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
+        managementBranding.MapPut(BrandingLogoPath.ManagementTemplate, UploadLogo)
+            .Accepts<byte[]>("image/png", "image/jpeg", "image/webp")
+            .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status412PreconditionFailed)
+            .ProducesProblem(StatusCodes.Status428PreconditionRequired)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .WithMetadata(new RequestSizeLimitAttribute(BrandingLogoLimits.MaxUploadBytes))
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddIfMatchRequestHeader(operation);
+                return Task.CompletedTask;
+            })
+            .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(BrandingAuthorization.BrandingWrite);
+
+        managementBranding.MapDelete(BrandingLogoPath.ManagementTemplate, RemoveLogo)
+            .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status412PreconditionFailed)
+            .ProducesProblem(StatusCodes.Status428PreconditionRequired)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddIfMatchRequestHeader(operation);
+                return Task.CompletedTask;
+            })
+            .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(BrandingAuthorization.BrandingWrite);
 
         return app;
     }
@@ -67,6 +102,21 @@ internal static class BrandingEndpoints
         var settings = await GetSettingsOrDefault(store, ct).ConfigureAwait(false);
         BrandingHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(ToDto(settings));
+    }
+
+    private static async Task<IResult> GetLogo(
+        string sha256,
+        IBrandingSettingsRevisionStore store,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        if (!BrandingLogoPath.IsContentAddress(sha256) || await store.GetLogo(sha256, ct).ConfigureAwait(false) is not { } logo)
+        {
+            return TypedResults.NotFound();
+        }
+
+        BrandingHttpCache.SetImmutableHeaders(httpContext);
+        return TypedResults.Bytes(logo.Content, logo.ContentType, entityTag: new EntityTagHeaderValue($"\"{logo.Sha256}\""));
     }
 
     private static async Task<IResult> GetManagementSettings(
@@ -120,14 +170,27 @@ internal static class BrandingEndpoints
             return ToValidationProblem(settings.ErrorDetails);
         }
 
+        var foreignLogo = false;
         BrandingSettingsSnapshot? saved;
         try
         {
-            saved = await store.SaveIfMatch(settings.Value, ifMatch.Matches, ct).ConfigureAwait(false);
+            saved = await store.SaveIfMatch(
+                settings.Value,
+                current =>
+                {
+                    foreignLogo = !KeepsOrClearsLogo(current, settings.Value);
+                    return !foreignLogo && ifMatch.Matches(current);
+                },
+                ct).ConfigureAwait(false);
         }
         catch (DbUpdateConcurrencyException)
         {
             saved = null;
+        }
+
+        if (foreignLogo)
+        {
+            return ForeignLogoProblem();
         }
 
         if (saved is null)
@@ -142,6 +205,128 @@ internal static class BrandingEndpoints
         await InvalidatePublicBrandingCache(outputCacheStore, telemetry, logger).ConfigureAwait(false);
         return TypedResults.Ok(ToManagementDto(saved));
     }
+
+    private static async Task<Results<Ok<BrandingManagementSettingsDto>, ProblemHttpResult>> UploadLogo(
+        BrandingLogoIntake intake,
+        IBrandingSettingsRevisionStore store,
+        IOutputCacheStore outputCacheStore,
+        BrandingTelemetry telemetry,
+        ILogger<BrandingAspNetCoreMarker> logger,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        var check = RequireIfMatch(httpContext);
+        if (check.IfMatch is not { } ifMatch)
+        {
+            return check.Problem ?? throw new InvalidOperationException("A failed If-Match check carries a problem.");
+        }
+
+        var logo = await intake.Process(httpContext.Request.Body, httpContext.Request.ContentType, ct).ConfigureAwait(false);
+        if (logo.IsFailure)
+        {
+            return logo.Status is ResultStatus.Invalid
+                ? ToValidationProblem(logo.ErrorDetails)
+                : TypedResults.Problem(logo.ErrorDetails.Detail, statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        return await ReplaceLogo(logo.Value, ifMatch, store, outputCacheStore, telemetry, logger, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<Results<Ok<BrandingManagementSettingsDto>, ProblemHttpResult>> RemoveLogo(
+        IBrandingSettingsRevisionStore store,
+        IOutputCacheStore outputCacheStore,
+        BrandingTelemetry telemetry,
+        ILogger<BrandingAspNetCoreMarker> logger,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        var check = RequireIfMatch(httpContext);
+        if (check.IfMatch is not { } ifMatch)
+        {
+            return check.Problem ?? throw new InvalidOperationException("A failed If-Match check carries a problem.");
+        }
+
+        return await ReplaceLogo(null, ifMatch, store, outputCacheStore, telemetry, logger, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<Results<Ok<BrandingManagementSettingsDto>, ProblemHttpResult>> ReplaceLogo(
+        BrandingLogo? logo,
+        BrandingIfMatch ifMatch,
+        IBrandingSettingsRevisionStore store,
+        IOutputCacheStore outputCacheStore,
+        BrandingTelemetry telemetry,
+        ILogger<BrandingAspNetCoreMarker> logger,
+        CancellationToken ct)
+    {
+        var unavailable = false;
+        BrandingSettingsSnapshot? saved;
+        try
+        {
+            saved = await store.ReplaceLogoIfMatch(
+                logo,
+                current =>
+                {
+                    unavailable = current is null;
+                    return !unavailable && ifMatch.Matches(current);
+                },
+                ct).ConfigureAwait(false);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            saved = null;
+        }
+
+        if (unavailable)
+        {
+            return TypedResults.Problem(
+                "Branding revisions have not started yet.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        if (saved is null)
+        {
+            return PreconditionProblem(
+                StatusCodes.Status412PreconditionFailed,
+                BrandingManagementProblemCodes.PreconditionFailed,
+                "Branding settings changed after they were loaded. Reload them and reapply your changes.");
+        }
+
+        telemetry.ObserveRevision(saved.SourceRevision);
+        await InvalidatePublicBrandingCache(outputCacheStore, telemetry, logger).ConfigureAwait(false);
+        return TypedResults.Ok(ToManagementDto(saved));
+    }
+
+    private static IfMatchCheck RequireIfMatch(HttpContext httpContext)
+    {
+        if (!httpContext.Request.Headers.TryGetValue(HeaderNames.IfMatch, out var ifMatchValues))
+        {
+            return new IfMatchCheck(null, PreconditionProblem(
+                StatusCodes.Status428PreconditionRequired,
+                BrandingManagementProblemCodes.PreconditionRequired,
+                "Send If-Match with the entity tag from the latest Branding read."));
+        }
+
+        return BrandingIfMatch.Parse(ifMatchValues) is { } parsed
+            ? new IfMatchCheck(parsed, null)
+            : new IfMatchCheck(null, PreconditionProblem(
+                StatusCodes.Status400BadRequest,
+                BrandingManagementProblemCodes.InvalidIfMatch,
+                "If-Match must be \"*\" or a list of entity tags."));
+    }
+
+    private sealed record IfMatchCheck(BrandingIfMatch? IfMatch, ProblemHttpResult? Problem);
+
+    private static bool KeepsOrClearsLogo(BrandingSettingsSnapshot? current, BrandingSettings requested) =>
+        requested.LogoUri is null || (current is not null && string.Equals(requested.LogoUri, current.Settings.LogoUri, StringComparison.Ordinal));
+
+    private static ProblemHttpResult ForeignLogoProblem() =>
+        TypedResults.Problem(TypedResults.ValidationProblem(
+            new Dictionary<string, string[]>(StringComparer.Ordinal)
+            {
+                [nameof(BrandingSettingsDto.LogoUri)] =
+                    ["The logo can only be replaced by uploading an image, or removed by leaving the logo URI empty."]
+            },
+            detail: "Branding settings are invalid.").ProblemDetails);
 
     private static ProblemHttpResult PreconditionProblem(int statusCode, string code, string detail) =>
         TypedResults.Problem(

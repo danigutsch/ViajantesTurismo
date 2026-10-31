@@ -6,6 +6,7 @@ using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
@@ -193,6 +194,36 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Legacy_root_relative_branding_logo_reads_as_a_missing_logo()
+    {
+        // Arrange
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(document);
+        await Scenario.SetBrandingLogoUri(document.Id, "/logo.svg", TestContext.Current.CancellationToken);
+
+        // Act
+        var documents = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+
+        // Assert
+        documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task A_stored_raster_data_uri_logo_round_trips_unchanged()
+    {
+        // Arrange
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
+
+        // Act
+        await Scenario.Seed(document);
+        var documents = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+
+        // Assert
+        var logo = documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldNotBeNull();
+        logo.OriginalString.ShouldBe(DocumentLogoTestData.DataUri.OriginalString);
     }
 
     [Fact]
@@ -655,7 +686,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
             first.Fields,
             Guid.CreateVersion7().ToString("N"),
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now.AddMinutes(1));
         secondResult.IsSuccess.ShouldBeTrue();
         var second = secondResult.Value;

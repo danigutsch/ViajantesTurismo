@@ -1,6 +1,7 @@
 using System.Text;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Documents;
@@ -59,7 +60,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             ],
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now).Value;
         foreach (var fieldId in new[] { "greeting", "trip-note", "support-contact" })
         {
@@ -81,11 +82,11 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_omits_remote_branding_logo_from_finalized_artifact()
+    public async Task Handle_embeds_the_branding_logo_data_uri_in_the_finalized_artifact()
     {
         // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
-        var document = DocumentDraftTestData.Create(now, new Uri("https://branding.example.test/logo.svg", UriKind.Absolute));
+        var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
@@ -101,8 +102,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
         result.IsSuccess.ShouldBeTrue();
         var finalizedArtifact = document.CopyFinalizedArtifactContent().ShouldNotBeNull();
         var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
-        html.ShouldNotContain("<img", StringComparison.Ordinal);
-        html.ShouldNotContain("branding.example.test", StringComparison.Ordinal);
+        html.ShouldContain("<img", StringComparison.Ordinal);
+        html.ShouldContain(DocumentLogoTestData.DataUri.OriginalString, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -271,7 +272,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     {
         // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
-        var previous = DocumentDraftTestData.Create(now, new Uri("https://branding.example.test/old.svg", UriKind.Absolute));
+        var previous = DocumentDraftTestData.Create(now);
         previous.BeginReview(now).IsSuccess.ShouldBeTrue();
         previous.Approve(now).IsSuccess.ShouldBeTrue();
         var replacement = previous.CreateRevision(
@@ -281,7 +282,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             [DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value],
             "BRANDING-VERSION-2",
             "Renamed Travel Brand",
-            new Uri("/new-logo.svg", UriKind.Relative),
+            new Uri($"data:image/webp;base64,{Convert.ToBase64String(DocumentLogoTestData.OtherContent)}", UriKind.Absolute),
             now).Value;
         replacement.BeginReview(now).IsSuccess.ShouldBeTrue();
         replacement.Approve(now).IsSuccess.ShouldBeTrue();
@@ -311,11 +312,11 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_finalizes_an_artifact_that_loads_nothing_from_an_external_host()
+    public async Task Handle_finalizes_an_artifact_without_http_or_root_relative_resource_references()
     {
         // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
-        var document = DocumentDraftTestData.Create(now, new Uri("https://tracker.example.test/pixel.svg?viewer=1", UriKind.Absolute));
+        var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
@@ -332,6 +333,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
         html.ShouldNotContain("http://", StringComparison.OrdinalIgnoreCase);
         html.ShouldNotContain("https://", StringComparison.OrdinalIgnoreCase);
         html.ShouldNotContain("@import", StringComparison.OrdinalIgnoreCase);
+        html.ShouldNotContain("src=\"/", StringComparison.OrdinalIgnoreCase);
+        html.ShouldNotContain("url(/", StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -355,7 +358,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             replacementFields,
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now);
         replacementResult.IsSuccess.ShouldBeTrue();
         var replacement = replacementResult.Value;
@@ -399,7 +402,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             fields,
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now);
         secondResult.IsSuccess.ShouldBeTrue();
         var second = secondResult.Value;
@@ -410,7 +413,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             fields,
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now);
         thirdResult.IsSuccess.ShouldBeTrue();
         var third = thirdResult.Value;
@@ -459,7 +462,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             replacementFields,
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now);
         replacementResult.IsSuccess.ShouldBeTrue();
         var replacement = replacementResult.Value;
@@ -498,7 +501,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             replacementFields,
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now);
         newerResult.IsSuccess.ShouldBeTrue();
         var newer = newerResult.Value;
@@ -549,7 +552,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             replacementFields,
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            new Uri("/logo.svg", UriKind.Relative),
+            DocumentLogoTestData.DataUri,
             now);
         newerResult.IsSuccess.ShouldBeTrue();
         var newer = newerResult.Value;

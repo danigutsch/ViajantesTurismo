@@ -23,5 +23,7 @@ internal sealed class BrandingSettingsRevisionConfiguration : IEntityTypeConfigu
         entity.Property(revision => revision.HeadingFontFamily).HasMaxLength(BrandingContractConstants.MaxFontFamilyLength).IsRequired();
         entity.Property(revision => revision.BodyFontFamily).HasMaxLength(BrandingContractConstants.MaxFontFamilyLength).IsRequired();
         entity.Property(revision => revision.LogoUri).HasMaxLength(BrandingContractConstants.MaxLogoUriLength);
+        entity.Property(revision => revision.LogoSha256).HasMaxLength(BrandingLogoPath.HashLength).IsFixedLength();
+        entity.HasOne<BrandingLogoRecord>().WithMany().HasForeignKey(revision => revision.LogoSha256).OnDelete(DeleteBehavior.Restrict);
     }
 }

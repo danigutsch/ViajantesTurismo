@@ -27,4 +27,24 @@ public interface IBrandingManagementClient
     /// with status 400. The client never retries a 412 full-state mutation.
     /// </returns>
     Task<HttpOutcome<BrandingManagementSettingsDto>> SaveSettings(BrandingSettingsDto request, string entityTag, CancellationToken ct);
+
+    /// <summary>
+    /// Uploads a replacement logo when <paramref name="entityTag" /> still identifies the current revision. The server
+    /// validates, scans and re-encodes the image; the response carries the generated logo URL.
+    /// </summary>
+    /// <param name="content">The raw image bytes.</param>
+    /// <param name="contentType">The declared image media type: PNG, JPEG or WebP.</param>
+    /// <param name="entityTag">The entity tag from the read the edit started from.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>
+    /// The saved settings on success. Invalid images are a validation outcome; a scanner outage has status 503;
+    /// precondition failures follow <see cref="SaveSettings" />.
+    /// </returns>
+    Task<HttpOutcome<BrandingManagementSettingsDto>> UploadLogo(Stream content, string contentType, string entityTag, CancellationToken ct);
+
+    /// <summary>Removes the logo when <paramref name="entityTag" /> still identifies the current revision.</summary>
+    /// <param name="entityTag">The entity tag from the read the edit started from.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The saved settings on success; precondition and availability failures follow <see cref="UploadLogo" />.</returns>
+    Task<HttpOutcome<BrandingManagementSettingsDto>> RemoveLogo(string entityTag, CancellationToken ct);
 }

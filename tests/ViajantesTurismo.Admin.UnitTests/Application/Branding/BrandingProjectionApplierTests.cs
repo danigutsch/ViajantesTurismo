@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Application.Branding;
+using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Branding;
 
@@ -250,5 +251,83 @@ public sealed class BrandingProjectionApplierTests
         // Assert
         store.Current.ShouldBeNull();
         store.Inbox.ShouldHaveSingleItem().ReasonCode.ShouldBe("invalid-envelope");
+    }
+
+    [Fact]
+    public async Task A_valid_logo_is_stored_with_the_projection()
+    {
+        // Arrange
+        var store = new FakeBrandingProjectionStore();
+        var applier = new BrandingProjectionApplier(store, TimeProvider.System);
+        var incoming = BrandingProjectionTestData.CreateEventWithLogo(1, DocumentLogoTestData.Content);
+
+        // Act
+        await applier.Apply(incoming, TestContext.Current.CancellationToken);
+
+        // Assert
+        var logo = store.Current.ShouldNotBeNull().Logo.ShouldNotBeNull();
+        logo.Sha256.ShouldBe(DocumentLogoTestData.Sha256);
+        logo.ContentType.ShouldBe("image/webp");
+        logo.Content.ShouldBe(DocumentLogoTestData.Content);
+    }
+
+    [Fact]
+    public async Task An_invalid_logo_is_rejected_without_replacing_the_projection()
+    {
+        // Arrange
+        var store = new FakeBrandingProjectionStore();
+        var applier = new BrandingProjectionApplier(store, TimeProvider.System);
+        var incoming = BrandingProjectionTestData.CreateEvent(
+            1,
+            logoSha256: new string('a', 64),
+            logoContentType: "image/webp",
+            logoContent: DocumentLogoTestData.Content);
+
+        // Act
+        await applier.Apply(incoming, TestContext.Current.CancellationToken);
+
+        // Assert
+        store.Current.ShouldBeNull();
+        store.Inbox.ShouldHaveSingleItem().ReasonCode.ShouldBe("invalid-logo");
+    }
+
+    [Fact]
+    public async Task An_authorized_reseed_keeps_the_logo_bytes()
+    {
+        // Arrange
+        var store = new FakeBrandingProjectionStore();
+        var applier = new BrandingProjectionApplier(store, TimeProvider.System);
+        await applier.Apply(BrandingProjectionTestData.CreateEvent(revision: 7), TestContext.Current.CancellationToken);
+        var newEpoch = Guid.CreateVersion7();
+        var reseed = BrandingProjectionTestData.CreateEventWithLogo(1, DocumentLogoTestData.Content, newEpoch);
+        store.Recovery = BrandingProjectionRecovery.Start("source-restore", DateTimeOffset.UnixEpoch)
+            .Authorize(BrandingProjectionTestData.CreateAuthorization(reseed));
+
+        // Act
+        await applier.Apply(reseed, TestContext.Current.CancellationToken);
+
+        // Assert
+        var logo = store.Current.ShouldNotBeNull().Logo.ShouldNotBeNull();
+        logo.Content.ShouldBe(DocumentLogoTestData.Content);
+        store.Recovery.ShouldNotBeNull().Status.ShouldBe(BrandingProjectionStatus.Ready);
+    }
+
+    [Fact]
+    public async Task An_invalid_logo_on_the_authorized_reseed_is_rejected_and_the_projection_stays_fenced()
+    {
+        // Arrange
+        var store = new FakeBrandingProjectionStore();
+        var applier = new BrandingProjectionApplier(store, TimeProvider.System);
+        var reseed = BrandingProjectionTestData.CreateEvent(1, logoSha256: new string('a', 64));
+        store.Recovery = BrandingProjectionRecovery.Start("source-restore", DateTimeOffset.UnixEpoch)
+            .Authorize(BrandingProjectionTestData.CreateAuthorization(reseed));
+
+        // Act
+        await applier.Apply(reseed, TestContext.Current.CancellationToken);
+
+        // Assert
+        store.Current.ShouldBeNull();
+        store.Inbox.ShouldHaveSingleItem().ReasonCode.ShouldBe("invalid-logo");
+        store.Recovery.ShouldNotBeNull().Status.ShouldNotBe(BrandingProjectionStatus.Ready);
     }
 }

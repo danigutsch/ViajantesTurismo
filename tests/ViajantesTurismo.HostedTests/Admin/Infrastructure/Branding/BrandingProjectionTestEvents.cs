@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
@@ -22,4 +23,13 @@ internal static class BrandingProjectionTestEvents
         "Georgia",
         "system-ui",
         LogoUri: null);
+
+    /// <summary>Creates an event that carries a logo whose hash matches the given bytes.</summary>
+    public static BrandingSettingsChangedIntegrationEvent CreateWithLogo(long revision, string brandName, byte[] content) =>
+        Create(revision, brandName) with
+        {
+            LogoSha256 = Convert.ToHexStringLower(SHA256.HashData(content)),
+            LogoContentType = "image/webp",
+            LogoContent = content
+        };
 }

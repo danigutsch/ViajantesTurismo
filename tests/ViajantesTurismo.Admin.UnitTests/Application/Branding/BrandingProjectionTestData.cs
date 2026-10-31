@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 
@@ -14,7 +15,10 @@ internal static class BrandingProjectionTestData
         long revision,
         string brandName = "Viajantes",
         Guid? epoch = null,
-        Guid? eventId = null) => new(
+        Guid? eventId = null,
+        string? logoSha256 = null,
+        string? logoContentType = null,
+        byte[]? logoContent = null) => new(
         eventId ?? Guid.CreateVersion7(),
         new DateTimeOffset(2026, 10, 24, 12, 0, 0, TimeSpan.Zero),
         epoch ?? Epoch,
@@ -26,7 +30,20 @@ internal static class BrandingProjectionTestData
         "#1F2937",
         "Georgia",
         "system-ui",
-        new Uri("/logo.svg", UriKind.Relative));
+        new Uri("/logo.svg", UriKind.Relative),
+        logoSha256,
+        logoContentType,
+        logoContent);
+
+    /// <summary>Builds an event carrying a complete, valid logo.</summary>
+    public static BrandingSettingsChangedIntegrationEvent CreateEventWithLogo(long revision, byte[] content, Guid? epoch = null, Guid? eventId = null) =>
+        CreateEvent(
+            revision,
+            epoch: epoch,
+            eventId: eventId,
+            logoSha256: Convert.ToHexStringLower(SHA256.HashData(content)),
+            logoContentType: "image/webp",
+            logoContent: content);
 
     /// <summary>Builds a reseed authorization matching the given reseed event.</summary>
     public static BrandingReseedAuthorization CreateAuthorization(BrandingSettingsChangedIntegrationEvent reseed) => new(

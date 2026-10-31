@@ -1,9 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using PandaBear.Messaging.IntegrationEvents;
 
 namespace ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 
 /// <summary>
-/// Carries a complete public-safe Branding settings revision to downstream projections.
+/// Carries a complete Branding settings revision, including the re-encoded logo bytes, to downstream projections.
+/// A null logo field is omitted on write because the source-generated writer would otherwise emit an empty byte payload.
+/// The logo fields are additive and nullable, so version 1 stays compatible: events published before they existed
+/// deserialize without a logo.
 /// </summary>
 /// <param name="EventId">The stable event identifier used for idempotent consumption.</param>
 /// <param name="OccurredAt">The UTC instant when the revision was committed.</param>
@@ -16,7 +21,14 @@ namespace ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 /// <param name="TextColor">The text CSS color.</param>
 /// <param name="HeadingFontFamily">The heading font family.</param>
 /// <param name="BodyFontFamily">The body font family.</param>
-/// <param name="LogoUri">The optional public logo URI.</param>
+/// <param name="LogoUri">The optional app-generated root-relative public logo URL.</param>
+/// <param name="LogoSha256">The lowercase hexadecimal SHA-256 of <paramref name="LogoContent" />, or null without a logo.</param>
+/// <param name="LogoContentType">The media type of <paramref name="LogoContent" />, or null without a logo.</param>
+/// <param name="LogoContent">The re-encoded logo bytes, or null without a logo.</param>
+[SuppressMessage(
+    "Performance",
+    "CA1819:Properties should not return arrays",
+    Justification = "The serialized contract carries the re-encoded logo bytes as one immutable base64 payload.")]
 public sealed record BrandingSettingsChangedIntegrationEvent(
     Guid EventId,
     DateTimeOffset OccurredAt,
@@ -29,7 +41,10 @@ public sealed record BrandingSettingsChangedIntegrationEvent(
     string TextColor,
     string HeadingFontFamily,
     string BodyFontFamily,
-    Uri? LogoUri) : IIntegrationEvent
+    Uri? LogoUri,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? LogoSha256 = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? LogoContentType = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] byte[]? LogoContent = null) : IIntegrationEvent
 {
     /// <inheritdoc />
     public static string EventType => "branding.settings.changed";
