@@ -16,6 +16,34 @@
           }
         }
       }
+    },
+    "/api/v1/public/branding/logo/{sha256}": {
+      "get": {
+        "tags": [
+          "BrandingEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
     }
   },
   "tags": [

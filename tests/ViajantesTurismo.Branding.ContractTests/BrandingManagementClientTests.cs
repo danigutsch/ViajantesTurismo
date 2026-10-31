@@ -161,4 +161,53 @@ public sealed class BrandingManagementClientTests
         outcome.Kind.ShouldBe(HttpOutcomeKind.EmptyBody);
         outcome.Value.ShouldBeNull();
     }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    public async Task Upload_sends_the_raw_body_content_type_and_entity_tag_to_the_logo_route()
+    {
+        // Arrange
+        var tag = BrandingEntityTags.Format(Guid.CreateVersion7(), 4);
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(HttpStatusCode.OK, SettingsJson));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
+        var client = new BrandingManagementClient(httpClient);
+        using var content = new MemoryStream([1, 2, 3, 4]);
+
+        // Act
+        var outcome = await client.UploadLogo(content, "image/webp", tag, TestContext.Current.CancellationToken);
+
+        // Assert
+        var request = handler.Requests.ShouldHaveSingleItem().Message;
+        request.Method.ShouldBe(HttpMethod.Put);
+        request.RequestUri.ShouldNotBeNull().AbsolutePath.ShouldBe("/api/v1/branding/settings/logo");
+        request.Headers.IfMatch.ShouldHaveSingleItem().Tag.ShouldBe(tag);
+        request.Content.ShouldNotBeNull().Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/webp");
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.PreconditionFailed)]
+    [InlineData(HttpStatusCode.PreconditionRequired)]
+    [InlineData(HttpStatusCode.ServiceUnavailable)]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    public async Task Upload_reports_a_precondition_or_scanner_status_without_retrying(HttpStatusCode status)
+    {
+        // Arrange
+        using var handler = new TestHttpMessageHandler(BrandingResponses.Json(status, "{}"));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://branding.test") };
+        var client = new BrandingManagementClient(httpClient);
+        using var content = new MemoryStream([1]);
+
+        // Act
+        var outcome = await client.UploadLogo(
+            content,
+            "image/png",
+            BrandingEntityTags.Format(Guid.CreateVersion7(), 1),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.UnexpectedStatus);
+        outcome.StatusCode.ShouldBe(status);
+        handler.Requests.Count.ShouldBe(1);
+    }
 }
