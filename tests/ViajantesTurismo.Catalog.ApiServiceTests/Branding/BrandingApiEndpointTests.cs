@@ -69,7 +69,7 @@ public sealed class BrandingApiEndpointTests
             TextColor = "#000000",
             HeadingFontFamily = "Inter",
             BodyFontFamily = "Verdana",
-            LogoUri = "https://cdn.example.test/logo.svg"
+            LogoUri = null
         };
 
         // Act
@@ -85,7 +85,7 @@ public sealed class BrandingApiEndpointTests
         settings.ShouldNotBeNull();
         settings.BrandName.ShouldBe("Viajantes");
         settings.PrimaryColor.ShouldBe("#112233");
-        settings.LogoUri.ShouldBe("https://cdn.example.test/logo.svg");
+        settings.LogoUri.ShouldBeNull();
     }
 
     [Fact]
