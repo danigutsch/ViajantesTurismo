@@ -731,6 +731,7 @@
           "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.MalwareScanning": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.MalwareScanning.ClamAv": "[0.1.0-alpha.402.1, )",
+          "PandaBear.SharedKernel.Mediator": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.OpenApi": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Results": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Results.AspNet": "[0.1.0-alpha.402.1, )",
@@ -751,6 +752,8 @@
           "PandaBear.SharedKernel.Domain": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.InputNormalization": "[0.1.0-alpha.402.1, )",
+          "PandaBear.SharedKernel.Mediator": "[0.1.0-alpha.402.1, )",
+          "PandaBear.SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Results": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Tabular": "[0.1.0-alpha.402.1, )",
@@ -1379,6 +1382,19 @@
         "requested": "[0.1.0-alpha.402.1, )",
         "resolved": "0.1.0-alpha.402.1",
         "contentHash": "ZvT4lFu2IABA6/tII0ao+gtJxACH4RfVQeX541QcMtaO7IZgEcVdbfAGG8LUjZT+kJx9QIYaSmBEsdYmHvkucA=="
+      },
+      "PandaBear.SharedKernel.Mediator": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.402.1, )",
+        "resolved": "0.1.0-alpha.402.1",
+        "contentHash": "oaxSn8qpRhvVHTONO72EZZKI4ezLKe9c7lvCrzI33CAkPJu2Q3wikEaZe2vjuUZw+dkUi8qYysSSOotsN5aNzg==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Diagnostics": "10.0.13",
+          "Microsoft.Extensions.Options": "10.0.13",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.13",
+          "PandaBear.SharedKernel.Mediator.Abstractions": "0.1.0-alpha.402.1"
+        }
       },
       "PandaBear.SharedKernel.Mediator.Abstractions": {
         "type": "CentralTransitive",

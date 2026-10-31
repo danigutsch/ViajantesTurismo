@@ -125,6 +125,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.MalwareScanning.ClamAv.Testing" Version="0.1.0-alpha.402.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Mediator" Version="0.1.0-alpha.402.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Mediator.Abstractions" Version="0.1.0-alpha.402.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Mediator.SourceGenerator" Version="0.1.0-alpha.402.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Messaging" Version="0.1.0-alpha.402.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" Version="0.1.0-alpha.402.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.CloudEvents" Version="0.1.0-alpha.402.1" />

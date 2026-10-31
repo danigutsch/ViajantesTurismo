@@ -563,6 +563,8 @@
           "PandaBear.SharedKernel.Domain": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.InputNormalization": "[0.1.0-alpha.402.1, )",
+          "PandaBear.SharedKernel.Mediator": "[0.1.0-alpha.402.1, )",
+          "PandaBear.SharedKernel.Mediator.Abstractions": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Results": "[0.1.0-alpha.402.1, )",
           "PandaBear.SharedKernel.Tabular": "[0.1.0-alpha.402.1, )",
@@ -709,6 +711,17 @@
         "requested": "[10.0.13, )",
         "resolved": "10.0.13",
         "contentHash": "G2GrGWNAPZBsii2F6AU8n+JT2tC1/I0Ml/e9ZyNCgPjf3hZqronP7o0X91aAynCmVeae8KkSIUNXXeXCNRmdVQ=="
+      },
+      "Microsoft.Extensions.Diagnostics": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.13, )",
+        "resolved": "10.0.13",
+        "contentHash": "J9ODOrffj1mK3Et69elNsLGRguesPxvThTdVpFmQX7fLNPhIOgqHQfLdGnTBEwNAV3yf8yiyVlpDZNw2qN87Nw==",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.13",
+          "Microsoft.Extensions.Diagnostics.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.13"
+        }
       },
       "Microsoft.Extensions.Diagnostics.HealthChecks": {
         "type": "CentralTransitive",
@@ -860,6 +873,25 @@
         "requested": "[0.1.0-alpha.402.1, )",
         "resolved": "0.1.0-alpha.402.1",
         "contentHash": "hIyiZHyHKPD0I9F0XGHXzCph4BuVIbPBrSQOiiNFBcPguLNzosjmUKPiJICjF6QgnOtiWQ9Ae5rRv13Al/L4CQ=="
+      },
+      "PandaBear.SharedKernel.Mediator": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.402.1, )",
+        "resolved": "0.1.0-alpha.402.1",
+        "contentHash": "oaxSn8qpRhvVHTONO72EZZKI4ezLKe9c7lvCrzI33CAkPJu2Q3wikEaZe2vjuUZw+dkUi8qYysSSOotsN5aNzg==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.13",
+          "Microsoft.Extensions.Diagnostics": "10.0.13",
+          "Microsoft.Extensions.Options": "10.0.13",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.13",
+          "PandaBear.SharedKernel.Mediator.Abstractions": "0.1.0-alpha.402.1"
+        }
+      },
+      "PandaBear.SharedKernel.Mediator.Abstractions": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.402.1, )",
+        "resolved": "0.1.0-alpha.402.1",
+        "contentHash": "8jKN0esGsf175FW5zU8NTYKgrkhS8oOHaFAlHi6uNdP7GAhIWJXJxv+qk5f615zDGbu3SmjiKXUblOalVgsWMg=="
       },
       "PandaBear.SharedKernel.Messaging": {
         "type": "CentralTransitive",
