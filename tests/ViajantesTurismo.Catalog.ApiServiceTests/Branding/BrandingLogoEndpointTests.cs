@@ -463,6 +463,25 @@ public sealed class BrandingLogoEndpointTests
     }
 
     [Fact]
+    public async Task An_upload_with_a_stale_if_match_is_refused_before_the_scan()
+    {
+        // Arrange
+        var scanner = new StubMalwareScanner(MalwareScanStatus.Passed);
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var host = BrandingApiTestHost.Create(store);
+        await using var factory = BrandingApiTestHost.WithMalwareScanner(host, scanner);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, BrandingTestImages.Create(MagickFormat.Png, 8, 8), PngType, "\"stale\"");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
+        scanner.ScanCount.ShouldBe(0);
+        store.Logos.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task An_svg_upload_is_refused()
     {
         // Arrange
