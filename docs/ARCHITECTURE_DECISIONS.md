@@ -86,6 +86,8 @@ Decisions about application architecture and layer responsibilities.
   Domain Terms and Numbers, Not Free Text
 - **[ADR-044](adr/20261028-test-seam-taxonomy-and-typed-scope-attribute.md)** — Test Seam Taxonomy and Typed
   Scope Attribute
+- **[ADR-045](adr/20261031-seekablecontent-bounded-buffering-for-uploads.md)** — SeekableContent as the
+  Bounded Buffering Pattern for Uploads
 
 ### Versioning & Release
 
