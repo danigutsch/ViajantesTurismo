@@ -125,6 +125,56 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, ToManagement(request)));
     }
 
+    /// <summary>Entity tag received by the latest upload call.</summary>
+    public string? UploadedEntityTag
+    {
+        get; private set;
+    }
+
+    /// <summary>Content type received by the latest upload call.</summary>
+    public string? UploadedContentType
+    {
+        get; private set;
+    }
+
+    /// <summary>Bytes received by the latest upload call.</summary>
+    public byte[]? UploadedContent
+    {
+        get; private set;
+    }
+
+    /// <summary>When set, uploads fail with this status as an unexpected-status outcome.</summary>
+    public HttpStatusCode? UploadFailureStatus
+    {
+        get; set;
+    }
+
+    /// <summary>Reads and records the upload, then stores a generated logo URL or applies the configured failure.</summary>
+    public async Task<HttpOutcome<BrandingManagementSettingsDto>> UploadLogo(
+        Stream content,
+        string contentType,
+        string entityTag,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        using var buffer = new MemoryStream();
+        await content.CopyToAsync(buffer, ct);
+        UploadedContent = buffer.ToArray();
+        UploadedContentType = contentType;
+        UploadedEntityTag = entityTag;
+
+        if (UploadFailureStatus is { } status)
+        {
+            return status == HttpStatusCode.BadRequest
+                ? new HttpOutcome<BrandingManagementSettingsDto> { Kind = HttpOutcomeKind.ValidationProblem, StatusCode = status }
+                : HttpOutcomeMapper.Status<BrandingManagementSettingsDto>(HttpOutcomeKind.UnexpectedStatus, status);
+        }
+
+        Branding.LogoUri = "/api/v1/public/branding/logo/" + new string('a', 64);
+        SourceRevision++;
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, ToManagement(Branding));
+    }
+
     private BrandingManagementSettingsDto ToManagement(BrandingSettingsDto settings) => new()
     {
         BrandName = settings.BrandName,
