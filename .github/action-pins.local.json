@@ -1,0 +1,7 @@
+{
+  "actions": [
+    { "repository": "actions/create-github-app-token", "sha": "64ab729a6294000f5aa4a4bc0b73d1f32bc45510", "version": "v3.3.0" },
+    { "repository": "DavidAnson/markdownlint-cli2-action", "sha": "ded1f9488f68a970bc66ea5619e13e9b52e601cd", "version": "v23.2.0" },
+    { "repository": "tj-actions/changed-files", "sha": "9426d40962ed5378910ee2e21d5f8c6fcbf2dd96", "version": "v47.0.6" }
+  ]
+}

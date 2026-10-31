@@ -137,6 +137,22 @@ from GitHub prerelease `v<packageVersion>` without a token. Missing assets, revi
 hash mismatches fail visibly; missing retired releases must not be recreated to unblock checks. The
 secret-scan workflow also pins the shared scanner action to an immutable library revision.
 
+`build-sharedkernel-tool` delegates the SDK, the lock-file NuGet cache and the locked restore and Release build to
+SharedKernel's `.github/actions/setup-dotnet-tool`, referenced by full SHA. It keeps the sparse checkout of the
+pinned `libraryRevision`, the library-root override and `SHAREDKERNEL_SOURCE`; `setup-ci-prerequisites` keeps
+`NUGET_PACKAGES`, candidate staging, `dotnet tool restore` and dev certificate trust. A stale lock file still fails
+the restore.
+
+## Action pins
+
+Every third-party action in `.github/workflows` and `.github/actions` pins the SHA and trailing version comment of
+SharedKernel's `.github/action-pins.json`. The CI Lint job builds the RepoConfig tool from the shared revision
+(`revision:` and `sparse-extra: .github` inputs of `build-sharedkernel-tool`) and runs `verify-action-pins`
+against that manifest merged with `.github/action-pins.local.json`, which lists the three actions that only this
+repository uses (`actions/create-github-app-token`, `DavidAnson/markdownlint-cli2-action`,
+`tj-actions/changed-files`). Move those entries into the SharedKernel manifest to drop the local file. To bump an
+action, change the SharedKernel manifest first, then every reference here in the same change.
+
 Optional repository variables `SHAREDKERNEL_LIBRARY_ROOT` and `SHAREDKERNEL_CANDIDATE_FEED` reach the
 setup action as explicit inputs. A library-root override skips the hosted checkout, requires a clean
 Git top level at the pinned revision, builds the tool there, and stages from

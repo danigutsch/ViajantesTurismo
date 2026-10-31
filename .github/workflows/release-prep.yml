@@ -48,7 +48,7 @@ jobs:
       release_impact: ${{ steps.version.outputs.release_impact }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
@@ -100,7 +100,7 @@ jobs:
           test -s artifacts/aspire/release-prep/aspire-manifest.json
 
       - name: Upload resource model
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-prep-${{ steps.version.outputs.package_version }}
           path: artifacts/aspire/release-prep/aspire-manifest.json

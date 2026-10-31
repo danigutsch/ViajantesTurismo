@@ -12,6 +12,14 @@ inputs:
     description: Optional clean checkout of the pinned SharedKernel revision used instead of a sparse checkout.
     required: false
     default: ""
+  revision:
+    description: Optional full SharedKernel commit SHA to build instead of the pinned libraryRevision.
+    required: false
+    default: ""
+  sparse-extra:
+    description: Optional extra directory added to the sparse checkout, such as .github for the action pin manifest.
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -22,6 +30,7 @@ runs:
       env:
         TOOL: ${{ inputs.tool }}
         LIBRARY_ROOT: ${{ inputs.library-root }}
+        REVISION_OVERRIDE: ${{ inputs.revision }}
         WORKSPACE: ${{ github.workspace }}
       run: |
         $ErrorActionPreference = 'Stop'
@@ -30,8 +39,11 @@ runs:
         }
         $pin = Get-Content -LiteralPath .config/sharedkernel-candidate.json -Raw | ConvertFrom-Json
         $revision = [string]$pin.libraryRevision
+        if ($env:REVISION_OVERRIDE -ne '') {
+          $revision = $env:REVISION_OVERRIDE
+        }
         if ($revision -cnotmatch '^[0-9a-f]{40}$') {
-          throw 'The committed SharedKernel libraryRevision must be 40 lowercase hexadecimal characters.'
+          throw 'The SharedKernel revision (libraryRevision or the revision input) must be 40 lowercase hexadecimal characters.'
         }
         if ($env:LIBRARY_ROOT -eq '') {
           $source = Join-Path $env:WORKSPACE ".local/sharedkernel-source/$env:TOOL"
@@ -44,7 +56,7 @@ runs:
           }
           $head = git -C $source rev-parse HEAD
           if ($LASTEXITCODE -ne 0 -or $head -cne $revision) {
-            throw 'The SharedKernel library root must be checked out at the pinned libraryRevision.'
+            throw 'The SharedKernel library root must be checked out at the selected revision.'
           }
           $status = git -C $source status --porcelain
           if ($LASTEXITCODE -ne 0 -or $status) {
@@ -57,7 +69,7 @@ runs:
 
     - name: Checkout pinned SharedKernel tool source
       if: ${{ inputs.library-root == '' }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         repository: danigutsch/PandaBear.SharedKernel
         ref: ${{ steps.sharedkernel-source.outputs.revision }}
@@ -67,6 +79,7 @@ runs:
         sparse-checkout: |
           tools/${{ inputs.tool }}
           tools/Shared
+          ${{ inputs.sparse-extra }}
 
     - name: Set up the SDK and build SharedKernel tool
       uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@96f094ff0c4e678bf72abb9041e6dd3b83602cac
