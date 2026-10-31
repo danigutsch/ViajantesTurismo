@@ -14,7 +14,7 @@ var paths = new Dictionary<string, string[]>
 {
     ["public-web-app"] = ["/", "/tours"],
     ["web-app"] = ["/"],
-    ["catalog-api"] = ["/health"],
+    ["catalog-api"] = ["/health", "/api/v1/public/branding"],
     ["api-"] = ["/health"],
 };
 
@@ -35,6 +35,8 @@ using var document = JsonDocument.Parse(output[output.IndexOf('{', StringCompari
 using var handler = new HttpClientHandler { ServerCertificateCustomValidationCallback = AcceptLocalDevelopmentCertificate };
 using var http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(15) };
 
+var totalReached = 0;
+
 foreach (var resource in document.RootElement.GetProperty("resources").EnumerateArray())
 {
     var name = resource.GetProperty("name").GetString()!;
@@ -52,25 +54,36 @@ foreach (var resource in document.RootElement.GetProperty("resources").Enumerate
         continue;
     }
 
+    var reached = 0;
     for (var round = 0; round < 6; round++)
     {
         foreach (var path in match.Value)
         {
-            try
+            if (await TryGet(baseUrl + path))
             {
-                using var response = await http.GetAsync(baseUrl + path);
-            }
-            catch (HttpRequestException)
-            {
-                // Only reachability matters; a refused connection simply yields no traffic.
+                reached++;
             }
         }
     }
 
-    Console.WriteLine($"sent {name} {string.Join(' ', match.Value)}");
+    Console.WriteLine($"{(reached > 0 ? "sent" : "UNREACHABLE")} {name} {string.Join(' ', match.Value)} ({reached} of {6 * match.Value.Length} reachable)");
+    totalReached += reached;
 }
 
-return 0;
+return totalReached > 0 ? 0 : 1;
+
+async Task<bool> TryGet(string url)
+{
+    try
+    {
+        using var response = await http.GetAsync(url);
+        return true;
+    }
+    catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+    {
+        return false;
+    }
+}
 
 static bool AcceptLocalDevelopmentCertificate(HttpRequestMessage request, System.Security.Cryptography.X509Certificates.X509Certificate2? certificate, System.Security.Cryptography.X509Certificates.X509Chain? chain, System.Net.Security.SslPolicyErrors errors) =>
     request.RequestUri is { IsLoopback: true };

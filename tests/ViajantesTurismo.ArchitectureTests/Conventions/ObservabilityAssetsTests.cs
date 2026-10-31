@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using PandaBear.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
@@ -177,33 +176,23 @@ public sealed class ObservabilityAssetsTests
     }
 
     [Fact]
-    public void Every_repository_metric_used_by_a_dashboard_is_in_the_catalog()
+    public void Every_repository_metric_used_by_a_dashboard_or_alert_is_in_the_catalog()
     {
         // Arrange
         var catalog = File.ReadAllText(CatalogPath()).Replace('.', '_');
-        var dashboards = LoadDashboards();
+        var expressions = DashboardTargets()
+            .Where(target => target.DatasourceType == "prometheus")
+            .Select(target => (Owner: $"{target.Dashboard}/{target.Panel}", target.Expression))
+            .Concat(AlertExpressions().Select(expression => (Owner: "alert", Expression: expression)));
 
         // Act
-        var missing = new List<string>();
-        foreach (var (name, document) in dashboards)
-        {
-            foreach (var panel in document.RootElement.GetProperty("panels").EnumerateArray().Where(p => p.TryGetProperty("targets", out _)))
-            {
-                foreach (var target in panel.GetProperty("targets").EnumerateArray())
-                {
-                    var expr = target.TryGetProperty("expr", out var e) ? e.GetString() ?? string.Empty : string.Empty;
-                    foreach (Match match in MetricName().Matches(expr))
-                    {
-                        var baseName = BaseMetricName(match.Value);
-                        if (!PlatformMetricPrefixes.Any(prefix => baseName.StartsWith(prefix, StringComparison.Ordinal))
-                            && !catalog.Contains(baseName, StringComparison.Ordinal))
-                        {
-                            missing.Add($"{name}: {match.Value}");
-                        }
-                    }
-                }
-            }
-        }
+        var missing = expressions
+            .SelectMany(entry => MetricNames(entry.Expression).Select(name => (entry.Owner, Name: name)))
+            .Where(entry => !PlatformMetricNames.Contains(entry.Name)
+                && !PlatformMetricPrefixes.Any(prefix => entry.Name.StartsWith(prefix, StringComparison.Ordinal))
+                && !catalog.Contains(BaseMetricName(entry.Name), StringComparison.Ordinal))
+            .Select(entry => $"{entry.Owner}: {entry.Name}")
+            .Distinct(StringComparer.Ordinal);
 
         // Assert
         string.Join('\n', missing).ShouldBe(string.Empty);

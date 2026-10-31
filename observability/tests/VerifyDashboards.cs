@@ -2,7 +2,7 @@
 #:property TreatWarningsAsErrors=false
 #:property PublishAot=false
 #:property JsonSerializerIsReflectionEnabledByDefault=true
-#:property NoWarn=$(NoWarn);CA2007
+#:property NoWarn=$(NoWarn);CA2007;CA1849
 
 // Renders every provisioned Grafana dashboard in headless Chromium and fails when a panel that must
 // carry data shows "No data" or a query error. Screenshots are written for human review.
@@ -14,7 +14,19 @@ using Microsoft.Playwright;
 
 var grafana = args[0].TrimEnd('/');
 var output = Directory.CreateDirectory(args[1]).FullName;
-var dashboardDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "observability", "grafana", "dashboards"));
+var repositoryRoot = new DirectoryInfo(Directory.GetCurrentDirectory());
+while (repositoryRoot is not null && !File.Exists(Path.Combine(repositoryRoot.FullName, "ViajantesTurismo.slnx")))
+{
+    repositoryRoot = repositoryRoot.Parent;
+}
+
+if (repositoryRoot is null)
+{
+    Console.Error.WriteLine("Run from inside the repository.");
+    return 2;
+}
+
+var dashboardDirectory = Path.Combine(repositoryRoot.FullName, "observability", "grafana", "dashboards");
 
 using var playwright = await Playwright.CreateAsync();
 await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
@@ -43,8 +55,8 @@ foreach (var file in Directory.EnumerateFiles(dashboardDirectory, "*.json").Orde
             const title = h.getAttribute('data-testid').replace('data-testid Panel header ', '');
             const panel = h.closest('[data-panelid]') ?? h.parentElement?.parentElement ?? h;
             const text = panel.innerText ?? '';
-            const drawn = !!panel.querySelector('canvas, svg, table, [data-testid*="data-testid Panel data error message"], [class*="logs"]') || text.trim().length > 0;
-            return { title, drawn, noData: /No data/i.test(text), error: !!panel.querySelector('[data-testid="data-testid Panel status error"]') };
+            const drawn = !!panel.querySelector('canvas, table, [role="row"], [class*="logs"]') || text.trim().length > title.length + 8;
+            return { title, drawn, noData: /No data|No logs found/i.test(text), error: !!panel.querySelector('[data-testid="data-testid Panel status error"]') };
         })
         """);
 
