@@ -150,6 +150,8 @@ remove action; it has no logo address field.
   4,000,000 pixels, and re-encodes to WebP of at most 40 KiB. Metadata is stripped by the re-encode.
 - The result is stored once by lowercase SHA-256 in `branding."BrandingLogos"` and never updated; the same image
   uploaded again reuses the row. Settings and revisions keep the hash.
+- `DELETE /api/v1/branding/settings/logo` (`BrandingWrite`, `If-Match` required) removes the logo as a new revision;
+  Management.Web uses it so unsaved edits to other fields are kept after an upload or a removal.
 - `LogoUri` is always `null` or `/api/v1/public/branding/logo/{sha256}`. `PUT settings` accepts only `null` (remove)
   or the URL of the currently stored logo (keep); any other value is 400 on `LogoUri`.
 - `GET /api/v1/public/branding/logo/{sha256}` is anonymous and rate limited. It answers `200` with
@@ -162,6 +164,19 @@ remove action; it has no logo address field.
   most 40 KiB, `image/webp`. A violation is rejected with reason `invalid-logo` and acknowledged.
 - Document snapshots embed the projected bytes as a `data:image/webp;base64,...` URI and record the logo hash in the
   branding version; see [Generated travel documents](generated-travel-documents.md).
+
+### Logo rollout and operating notes
+
+- The `AddBrandingLogos` migration clears a legacy admin-typed `LogoUri` on the current settings row without a
+  revision bump or an event. `Down` cannot restore it and revision history keeps the old value. The Admin
+  projection keeps the stale `LogoUri` until the next revision; that is harmless because finalization uses the
+  bytes only.
+- Not-yet-finalized drafts that captured a legacy root-relative or HTTPS logo now read as no logo, and their recorded
+  `BrandingVersion` no longer matches the current capture, so re-capture such drafts before finalizing.
+- Every revision re-ships the logo bytes (about 54 KB as base64) in the outbox payload. Sending the bytes only when the
+  hash changes is a possible follow-up.
+- Logos are never deleted: replaced or removed logos stay in `branding."BrandingLogos"`. Orphan growth is bounded by
+  upload rate limits and the 40 KiB cap; garbage collection is a follow-up.
 
 ## Styling safety
 

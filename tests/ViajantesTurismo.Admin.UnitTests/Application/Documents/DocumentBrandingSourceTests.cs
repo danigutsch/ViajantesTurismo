@@ -105,10 +105,14 @@ public sealed class DocumentBrandingSourceTests
         var none = DocumentBrandingTestData.Projection(DocumentBrandingTestData.ProjectionMatching(settings, 4));
 
         // Act
-        var firstVersion = (await first.Capture(CancellationToken.None)).Value.Version;
-        var sameVersion = (await same.Capture(CancellationToken.None)).Value.Version;
-        var otherVersion = (await other.Capture(CancellationToken.None)).Value.Version;
-        var noneVersion = (await none.Capture(CancellationToken.None)).Value.Version;
+        var firstResult = await first.Capture(CancellationToken.None);
+        var firstVersion = firstResult.Value.Version;
+        var sameResult = await same.Capture(CancellationToken.None);
+        var sameVersion = sameResult.Value.Version;
+        var otherResult = await other.Capture(CancellationToken.None);
+        var otherVersion = otherResult.Value.Version;
+        var noneResult = await none.Capture(CancellationToken.None);
+        var noneVersion = noneResult.Value.Version;
 
         // Assert
         sameVersion.ShouldBe(firstVersion);
@@ -125,7 +129,8 @@ public sealed class DocumentBrandingSourceTests
         {
             Current = DocumentBrandingTestData.ProjectionMatching(settings, 1, DocumentLogoTestData.Logo)
         };
-        var captured = (await new DocumentBrandingSource(store).Capture(CancellationToken.None)).Value;
+        var capture = await new DocumentBrandingSource(store).Capture(CancellationToken.None);
+        var captured = capture.Value;
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now, captured.LogoUri);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();

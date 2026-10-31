@@ -87,4 +87,25 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
         // Assert
         responseStatuses.ShouldBe(["200", "304", "404"]);
     }
+
+    [Fact]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public void Management_logo_removal_publishes_its_precondition_and_response_contract()
+    {
+        // Arrange
+        var document = BrandingOpenApiArtifactDriftGuard.CreateSnapshotSet().GetCanonicalSnapshot("branding").AsObject();
+        var operation = document["paths"].ShouldNotBeNull().AsObject()
+            ["/api/v1/branding/settings/logo"].ShouldNotBeNull().AsObject()
+            ["delete"].ShouldNotBeNull().AsObject();
+
+        // Act
+        var responseStatuses = operation["responses"].ShouldNotBeNull().AsObject()
+            .Select(response => response.Key).Order(StringComparer.Ordinal).ToArray();
+
+        // Assert
+        responseStatuses.ShouldBe(["200", "400", "401", "403", "412", "428", "503"]);
+        operation["parameters"].ShouldNotBeNull().AsArray()
+            .ShouldContain(parameter => parameter != null && parameter["name"] != null && parameter["name"]?.GetValue<string>() == "If-Match");
+    }
 }

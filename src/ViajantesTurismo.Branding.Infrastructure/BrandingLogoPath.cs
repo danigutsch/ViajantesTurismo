@@ -38,6 +38,6 @@ public static partial class BrandingLogoPath
     /// <returns><see langword="true" /> when the value is well formed.</returns>
     public static bool IsContentAddress(string? value) => value is not null && ContentAddressPattern().IsMatch(value);
 
-    [GeneratedRegex("^[0-9a-f]{64}$", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
+    [GeneratedRegex("^[0-9a-f]{64}\\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 100)]
     private static partial Regex ContentAddressPattern();
 }

@@ -319,4 +319,81 @@ public sealed class BrandingLogoEndpointTests
         cleared.StatusCode.ShouldBe(HttpStatusCode.OK);
         clearedBody.ShouldNotBeNull().LogoUri.ShouldBeNull();
     }
+
+    [Fact]
+    public async Task Deleting_the_logo_clears_the_logo_uri_and_returns_the_management_settings()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        using var upload = await BrandingLogoRequests.PutLogo(client, BrandingTestImages.Create(MagickFormat.Png, 16, 16), PngType, "*");
+
+        // Act
+        using var response = await BrandingLogoRequests.DeleteLogo(client, "*");
+        var body = await response.Content.ReadFromJsonAsync<BrandingManagementSettingsDto>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        body.ShouldNotBeNull().LogoUri.ShouldBeNull();
+        store.Settings.ShouldNotBeNull().LogoUri.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Deleting_the_logo_without_if_match_requires_a_precondition()
+    {
+        // Arrange
+        await using var factory = BrandingApiTestHost.Create(TestBrandingSettingsStore.Seeded());
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingLogoRequests.DeleteLogo(client);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.PreconditionRequired);
+    }
+
+    [Fact]
+    public async Task Deleting_the_logo_with_a_stale_if_match_fails_the_precondition()
+    {
+        // Arrange
+        await using var factory = BrandingApiTestHost.Create(TestBrandingSettingsStore.Seeded());
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingLogoRequests.DeleteLogo(client, "\"stale\"");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
+    }
+
+    [Fact]
+    public async Task Deleting_the_logo_before_revisions_start_returns_service_unavailable()
+    {
+        // Arrange
+        await using var factory = BrandingApiTestHost.Create(new TestBrandingSettingsStore());
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingLogoRequests.DeleteLogo(client, "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+    }
+
+    [Fact]
+    public async Task The_first_ever_upload_before_a_settings_row_exists_returns_service_unavailable()
+    {
+        // Arrange
+        var store = new TestBrandingSettingsStore();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, BrandingTestImages.Create(MagickFormat.Png, 16, 16), PngType, "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        store.Logos.ShouldBeEmpty();
+    }
 }

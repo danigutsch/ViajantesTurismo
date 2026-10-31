@@ -45,7 +45,7 @@ else
             <div class="mb-3">
                 <label for="branding-logo-file" class="form-label">Logo image</label>
                 <InputFile id="branding-logo-file" class="form-control" accept="image/png,image/jpeg,image/webp"
-                           aria-describedby="branding-logo-help branding-logo-status" disabled="@(_uploading || _saving)"
+                           aria-describedby="@LogoDescribedBy" aria-invalid="@(_logoError is null ? null : "true")" disabled="@(_uploading || _saving)"
                            OnChange="UploadLogo" />
                 <div id="branding-logo-help" class="form-text">
                     Optional. PNG, JPEG or WebP, up to 1 MiB and 2048 x 2048 pixels. The image is converted to a small WebP logo.
@@ -187,15 +187,22 @@ else
         _loading = false;
     }
 
+    private string LogoDescribedBy => _logoError is null
+        ? "branding-logo-help branding-logo-status"
+        : "branding-logo-help branding-logo-status branding-logo-error";
+
     private bool HasLogo => !string.IsNullOrEmpty(_model.LogoUri);
 
     private string LogoStatus => _uploading ? "Uploading logo..." : HasLogo ? "A logo is set." : "No logo is set.";
 
     private async Task UploadLogo(InputFileChangeEventArgs args)
     {
-        _logoError = null;
-        _errorMessage = null;
-        _successMessage = null;
+        if (args.FileCount != 1)
+        {
+            return;
+        }
+
+        BeginLogoOperation();
         if (_entityTag is null)
         {
             _errorMessage = UserFacingErrorMessage.ForOperation("upload the logo");
@@ -208,17 +215,15 @@ else
             var file = args.File;
             await using var content = file.OpenReadStream(MaxLogoUploadBytes);
             var uploaded = await BrandingApi.UploadLogo(content, file.ContentType, _entityTag, CancellationToken.None);
-            if (uploaded.Kind != HttpOutcomeKind.Succeeded)
-            {
-                _logoError = LogoErrorMessage(uploaded);
-                return;
-            }
-
-            await ReloadDocumentAndEntityTag("Logo uploaded.");
+            await ApplyLogoOutcome(uploaded, "Logo uploaded.");
         }
         catch (IOException)
         {
             _logoError = LogoTooLargeMessage;
+        }
+        catch (InvalidOperationException)
+        {
+            _logoError = UserFacingErrorMessage.ForOperation("upload the logo");
         }
         finally
         {
@@ -226,11 +231,58 @@ else
         }
     }
 
-    /// <summary>Saves the current form with the logo cleared; other edited fields are saved with it.</summary>
+    /// <summary>Removes only the logo; unsaved edits to the other fields stay in the form.</summary>
     private async Task RemoveLogo()
     {
-        _model.LogoUri = string.Empty;
-        await SaveBranding();
+        BeginLogoOperation();
+        if (_entityTag is null)
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("remove the logo");
+            return;
+        }
+
+        _uploading = true;
+        try
+        {
+            var removed = await BrandingApi.RemoveLogo(_entityTag, CancellationToken.None);
+            await ApplyLogoOutcome(removed, "Logo removed.");
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+
+    private void BeginLogoOperation()
+    {
+        _logoError = null;
+        _errorMessage = null;
+        _successMessage = null;
+    }
+
+    /// <summary>
+    /// Takes only the logo address and the new entity tag from the logo response, so unsaved edits to the other
+    /// fields survive. The response carries no validator, so one read supplies the tag.
+    /// </summary>
+    private async Task ApplyLogoOutcome(HttpOutcome<BrandingManagementSettingsDto> outcome, string successMessage)
+    {
+        if (outcome.Kind != HttpOutcomeKind.Succeeded)
+        {
+            _logoError = LogoErrorMessage(outcome);
+            return;
+        }
+
+        var reloaded = await BrandingApi.GetSettings(CancellationToken.None);
+        if (reloaded is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
+        {
+            _model.LogoUri = document.Settings.LogoUri?.OriginalString ?? string.Empty;
+            _entityTag = document.EntityTag;
+            _successMessage = successMessage;
+        }
+        else
+        {
+            _errorMessage = UserFacingErrorMessage.ForOperation("update the logo");
+        }
     }
 
     private static string LogoErrorMessage(HttpOutcome<BrandingManagementSettingsDto> outcome) => outcome switch

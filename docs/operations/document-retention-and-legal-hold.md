@@ -50,7 +50,9 @@ that URI, so the finalized HTML contains the image itself, and the logo SHA-256 
 recorded branding version. A projection without a logo yields a brand-name-only header. Admin-typed, root-relative
 and external logo addresses are never captured and are never rendered, so opening an artifact loads nothing from a
 third party or from the Admin host, and replacing or deleting the logo later does not change a finalized artifact.
-Stored legacy values that are not data URIs read as no logo.
+Stored legacy values that are not data URIs read as no logo. The `WidenDocumentBrandingLogoUri` migration widens
+`DocumentDrafts.BrandingLogoUri` to 60,000 characters and is one-way in practice: narrowing it back fails once data
+URIs exist. Each captured revision can carry up to about 54 KB of logo text.
 
 ## Legal hold
 
