@@ -3,7 +3,7 @@ using ViajantesTurismo.Management.Web.Helpers;
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
 [TestScope(TestScope.Unit)]
 public sealed class RedirectDelayTests
 {

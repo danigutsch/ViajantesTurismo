@@ -3,8 +3,8 @@ using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.HostedTests.Admin.Api.Bookings;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+[Trait(TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
+[Trait(TestTraitNames.AreaName, TestTraits.BookingsArea)]
 [TestScope(TestScope.Integration)]
 public sealed class BookingBaselineIsolationTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {

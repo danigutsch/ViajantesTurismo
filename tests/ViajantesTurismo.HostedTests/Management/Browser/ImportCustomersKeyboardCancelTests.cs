@@ -9,7 +9,7 @@ using ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser keyboard journey for cancelling a held customer import.</summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, "management-web")]
 [TestScope(TestScope.System)]
 public sealed class ImportCustomersKeyboardCancelTests : ManagementWebBrowserTestBase
 {

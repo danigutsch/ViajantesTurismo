@@ -8,7 +8,7 @@ using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class DocumentsApiClientTests
 {
     private const string DocumentJson = """

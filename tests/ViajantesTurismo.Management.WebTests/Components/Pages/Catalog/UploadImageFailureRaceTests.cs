@@ -6,7 +6,7 @@ using UploadImage = ViajantesTurismo.Management.Web.Components.Pages.Catalog.Upl
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class UploadImageFailureRaceTests : BunitContext
 {
