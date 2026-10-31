@@ -65,7 +65,7 @@ internal static class DocumentBrandingSnapshotFactory
             return null;
         }
 
-        var dataUri = $"data:{logo.ContentType};base64,{Convert.ToBase64String(logo.Content)}";
+        var dataUri = $"data:{logo.ContentType};base64,{Convert.ToBase64String(logo.Content.Span)}";
         return WebAssetUriSanitizer.NormalizeRasterDataImage(dataUri, DocumentLimits.MaxBrandingLogoUriLength) is { } valid
             ? new Uri(valid, UriKind.Absolute)
             : null;

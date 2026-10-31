@@ -263,7 +263,7 @@ internal sealed class EfBrandingSettingsStore(
                 current.LogoUri is null ? null : new Uri(current.LogoUri, UriKind.RelativeOrAbsolute),
                 logo?.Sha256,
                 logo?.ContentType,
-                logo?.Content),
+                logo?.ToLogo().Content),
             ct).ConfigureAwait(false);
     }
 

@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using ImageMagick;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
@@ -51,6 +52,37 @@ internal static class BrandingTestImages
         frames.Add(new MagickImage(MagickColors.SeaGreen, width, height) { AnimationDelay = 10 });
         frames.Add(new MagickImage(MagickColors.Crimson, width, height) { AnimationDelay = 10 });
         return frames.ToByteArray(MagickFormat.WebP);
+    }
+
+    /// <summary>Creates an APNG-shaped PNG: a valid still PNG with an <c>acTL</c> animation-control chunk before the image data.</summary>
+    public static byte[] CreateAnimatedPng(uint width, uint height)
+    {
+        var still = Create(MagickFormat.Png, width, height);
+        const int signatureLength = 8;
+        var ihdrChunkLength = 12 + (int)BinaryPrimitives.ReadUInt32BigEndian(still.AsSpan(signatureLength, 4));
+        var insertAt = signatureLength + ihdrChunkLength;
+        var chunk = new byte[20];
+        BinaryPrimitives.WriteUInt32BigEndian(chunk.AsSpan(0, 4), 8);
+        "acTL"u8.CopyTo(chunk.AsSpan(4, 4));
+        BinaryPrimitives.WriteUInt32BigEndian(chunk.AsSpan(8, 4), 2);
+        BinaryPrimitives.WriteUInt32BigEndian(chunk.AsSpan(12, 4), 0);
+        BinaryPrimitives.WriteUInt32BigEndian(chunk.AsSpan(16, 4), Crc32(chunk.AsSpan(4, 12)));
+        return [.. still.AsSpan(0, insertAt), .. chunk, .. still.AsSpan(insertAt)];
+    }
+
+    private static uint Crc32(ReadOnlySpan<byte> data)
+    {
+        var crc = 0xFFFFFFFFu;
+        foreach (var value in data)
+        {
+            crc ^= value;
+            for (var bit = 0; bit < 8; bit++)
+            {
+                crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xEDB88320u : crc >> 1;
+            }
+        }
+
+        return ~crc;
     }
 
     /// <summary>Returns true when the encoded image carries an alpha channel.</summary>

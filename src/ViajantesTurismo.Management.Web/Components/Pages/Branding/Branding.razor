@@ -48,7 +48,7 @@ else
                            aria-describedby="@LogoDescribedBy" aria-invalid="@(_logoError is null ? null : "true")" disabled="@(_uploading || _saving)"
                            OnChange="UploadLogo" />
                 <div id="branding-logo-help" class="form-text">
-                    Optional. PNG, JPEG or WebP, up to 1 MiB and 2048 x 2048 pixels. The image is converted to a small WebP logo.
+                    Optional. A still PNG, JPEG or WebP image (animated images are rejected), up to 1 MiB and 2048 x 2048 pixels. The image is converted to a small WebP logo.
                 </div>
                 <div id="branding-logo-status" class="form-text" role="status" aria-live="polite">@LogoStatus</div>
                 @if (_logoError is not null)
@@ -289,7 +289,7 @@ else
     {
         { StatusCode: HttpStatusCode.PreconditionFailed } => SaveErrorMessage(outcome),
         { StatusCode: HttpStatusCode.BadRequest } or { Kind: HttpOutcomeKind.ValidationProblem } =>
-            "The logo could not be used. Choose a PNG, JPEG or WebP image up to 1 MiB and 2048 x 2048 pixels.",
+            "The logo could not be used. Choose a still PNG, JPEG or WebP image (not animated) up to 1 MiB and 2048 x 2048 pixels.",
         { StatusCode: HttpStatusCode.ServiceUnavailable } => "The logo scanner is unavailable. Try again later.",
         _ => UserFacingErrorMessage.ForOperation("upload the logo")
     };

@@ -54,7 +54,7 @@ public sealed class BrandingProjectionPostgreSqlTests(PostgreSqlTestServerFixtur
         var logo = state.ShouldNotBeNull().Logo.ShouldNotBeNull();
         logo.Sha256.ShouldBe(DocumentLogoTestData.Sha256);
         logo.ContentType.ShouldBe("image/webp");
-        logo.Content.ShouldBe(DocumentLogoTestData.Content);
+        logo.Content.ToArray().ShouldBe(DocumentLogoTestData.Content);
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using System.Buffers.Binary;
 using Microsoft.Extensions.Logging;
 using PandaBear.BuildingBlocks;
 using PandaBear.ImageProcessing;
@@ -11,6 +11,7 @@ namespace ViajantesTurismo.Branding.Infrastructure;
 /// <summary>
 /// Turns an uploaded image into a Branding logo: validates the declared type and signature, bounds the size, scans
 /// for malware, decodes, and re-encodes it so metadata is stripped and dimensions and bytes are bounded.
+/// Animated WebP and APNG uploads are refused by a bounded chunk walk before anything is decoded.
 /// </summary>
 /// <param name="scanner">The malware scanner.</param>
 /// <param name="logger">The logger.</param>
@@ -20,6 +21,11 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
     private const string ScannerUnavailableDetail = "Logo upload scanner is unavailable.";
     private const string ContentField = "Content";
     private const int SignatureLength = 12;
+    private const int PngSignatureLength = 8;
+    private const int PngChunkHeaderLength = 8;
+    private const int PngChunkCrcLength = 4;
+    private const int WebPChunkHeaderLength = 8;
+    private const int WebPAnimationFlag = 0x02;
 
     private static readonly ImageProcessingLimits UploadLimits = new(
         BrandingLogoLimits.MaxUploadEdgePixels,
@@ -31,7 +37,7 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
         Variant(512, 90), Variant(512, 75), Variant(512, 60), Variant(384, 60), Variant(256, 60), Variant(192, 50), Variant(128, 50)
     ];
 
-    /// <summary>Validates, scans, decodes, and re-encodes an uploaded logo.</summary>
+    /// <summary>Validates, scans, decodes, and re-encodes an uploaded logo; animated images are refused.</summary>
     /// <param name="content">The upload body.</param>
     /// <param name="declaredContentType">The declared media type; only PNG, JPEG and WebP are accepted.</param>
     /// <param name="ct">The cancellation token.</param>
@@ -68,6 +74,11 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
             return Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, "Logo content does not match its declared image type.");
         }
 
+        if (IsAnimated(upload, declaredType))
+        {
+            return Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, "Logo must be a still image; animated images are not accepted.");
+        }
+
         var scan = await Scan(upload, ct).ConfigureAwait(false);
         if (scan is { } refused)
         {
@@ -102,10 +113,71 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
         };
     }
 
-    [SuppressMessage(
-        "Design",
-        "CA1031:Do not catch general exception types",
-        Justification = "Untrusted uploads must fail closed when a scanner implementation cannot make a decision.")]
+    private static bool IsAnimated(Stream upload, string declaredType)
+    {
+        try
+        {
+            return declaredType switch
+            {
+                "png" => HasAnimationControlChunk(upload),
+                "webp" => HasWebPAnimation(upload),
+                _ => false
+            };
+        }
+        finally
+        {
+            upload.Position = 0;
+        }
+    }
+
+    private static bool HasAnimationControlChunk(Stream upload)
+    {
+        Span<byte> header = stackalloc byte[PngChunkHeaderLength];
+        upload.Position = PngSignatureLength;
+        while (upload.ReadAtLeast(header, PngChunkHeaderLength, throwOnEndOfStream: false) == PngChunkHeaderLength)
+        {
+            var type = header[4..];
+            if (type.SequenceEqual("acTL"u8))
+            {
+                return true;
+            }
+
+            if (type.SequenceEqual("IDAT"u8) || type.SequenceEqual("IEND"u8))
+            {
+                return false;
+            }
+
+            upload.Position += BinaryPrimitives.ReadUInt32BigEndian(header) + (long)PngChunkCrcLength;
+        }
+
+        return false;
+    }
+
+    private static bool HasWebPAnimation(Stream upload)
+    {
+        Span<byte> header = stackalloc byte[WebPChunkHeaderLength];
+        upload.Position = SignatureLength;
+        while (upload.ReadAtLeast(header, WebPChunkHeaderLength, throwOnEndOfStream: false) == WebPChunkHeaderLength)
+        {
+            var type = header[..4];
+            if (type.SequenceEqual("ANIM"u8) || type.SequenceEqual("ANMF"u8))
+            {
+                return true;
+            }
+
+            var size = BinaryPrimitives.ReadUInt32LittleEndian(header[4..]);
+            var payloadStart = upload.Position;
+            if (type.SequenceEqual("VP8X"u8) && size > 0 && (upload.ReadByte() & WebPAnimationFlag) != 0)
+            {
+                return true;
+            }
+
+            upload.Position = payloadStart + size + (size & 1);
+        }
+
+        return false;
+    }
+
     private async ValueTask<Result<BrandingLogo>?> Scan(Stream upload, CancellationToken ct)
     {
         MalwareScanResult result;

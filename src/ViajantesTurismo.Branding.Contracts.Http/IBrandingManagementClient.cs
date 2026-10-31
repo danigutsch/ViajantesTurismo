@@ -33,7 +33,7 @@ public interface IBrandingManagementClient
     /// validates, scans and re-encodes the image; the response carries the generated logo URL.
     /// </summary>
     /// <param name="content">The raw image bytes.</param>
-    /// <param name="contentType">The declared image media type: PNG, JPEG or WebP.</param>
+    /// <param name="contentType">The declared image media type: PNG, JPEG or WebP; animated images are refused.</param>
     /// <param name="entityTag">The entity tag from the read the edit started from.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>
