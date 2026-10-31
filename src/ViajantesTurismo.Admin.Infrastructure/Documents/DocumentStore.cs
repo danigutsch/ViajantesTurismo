@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
@@ -35,8 +36,14 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
 
     private async ValueTask<DocumentPurgeCounts> PurgeExpiredDraftsCore(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
-        var purgeCandidates = await dbContext.DocumentDrafts
-            .Where(document => document.FinalizedAt == null && document.RetentionExpiresAt <= now)
+        var activeLineages = await ActiveHoldLineages.Find(dbContext, ct);
+        var expiredQuery = dbContext.DocumentDrafts
+            .Where(document => document.FinalizedAt == null && document.RetentionExpiresAt <= now);
+        var preHeldCount = activeLineages.Length == 0
+            ? 0
+            : await expiredQuery.CountAsync(document => activeLineages.Contains(document.DocumentLineageId), ct);
+        var purgeCandidates = await expiredQuery
+            .Where(document => !activeLineages.Contains(document.DocumentLineageId))
             .OrderBy(document => document.RetentionExpiresAt)
             .Select(document => new { document.Id, document.DocumentLineageId })
             .Take(PurgeBatchSize)
@@ -44,11 +51,11 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
 
         if (purgeCandidates.Length == 0)
         {
-            return new DocumentPurgeCounts(0, 0);
+            return new DocumentPurgeCounts(0, preHeldCount);
         }
 
         var held = await heldLineages([.. purgeCandidates.Select(candidate => candidate.DocumentLineageId).Distinct()], ct);
-        var heldCount = purgeCandidates.Count(candidate => held.Contains(candidate.DocumentLineageId));
+        var heldCount = preHeldCount + purgeCandidates.Count(candidate => held.Contains(candidate.DocumentLineageId));
         purgeCandidates = [.. purgeCandidates.Where(candidate => !held.Contains(candidate.DocumentLineageId))];
         if (purgeCandidates.Length == 0)
         {

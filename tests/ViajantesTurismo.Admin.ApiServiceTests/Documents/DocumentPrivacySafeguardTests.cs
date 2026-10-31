@@ -12,6 +12,7 @@ using PandaBear.Idempotency;
 using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -271,6 +272,8 @@ public sealed class DocumentPrivacySafeguardTests
             services.AddSingleton<IDocumentAuditStore>(auditStore);
             services.RemoveAll<IUnitOfWork>();
             services.AddSingleton<IUnitOfWork>(unitOfWork);
+            services.RemoveAll<IDocumentHoldQuery>();
+            services.AddSingleton<IDocumentHoldQuery>(new FakeDocumentHoldQuery(new InMemoryDispositionHoldStore()));
         });
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
@@ -296,6 +299,11 @@ public sealed class DocumentPrivacySafeguardTests
                 request.Content = new StringContent("{\"value\":\"Updated\"}", Encoding.UTF8, "application/json");
             }
 
+            if (Pattern.Contains("/holds", StringComparison.Ordinal) && string.Equals(Method, HttpMethod.Post.Method, StringComparison.Ordinal))
+            {
+                request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+            }
+
             using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
             outcomes.Add((Pattern, response.StatusCode, DocumentNoStoreHeaders.ArePresent(response)));
         }
@@ -304,7 +312,7 @@ public sealed class DocumentPrivacySafeguardTests
         outcomes.Count.ShouldBe(DocumentEndpointRouteCase.All.Count);
         outcomes.ShouldHaveSingleItem(outcome => outcome.Pattern.EndsWith("/contract-drafts", StringComparison.Ordinal))
             .StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        outcomes.Where(outcome => !outcome.Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal) && !outcome.Pattern.Contains("payment-instructions", StringComparison.Ordinal))
+        outcomes.Where(outcome => !outcome.Pattern.Contains("bookings/{bookingId:guid}", StringComparison.Ordinal) && !outcome.Pattern.Contains("payment-instructions", StringComparison.Ordinal) && !outcome.Pattern.Contains("/holds", StringComparison.Ordinal))
             .All(outcome => outcome.StatusCode == HttpStatusCode.NotFound)
             .ShouldBeTrue();
         foreach (var (Pattern, StatusCode, HasNoStoreHeaders) in outcomes.Where(outcome => outcome.Pattern.Contains("payment-instructions", StringComparison.Ordinal)))
@@ -313,6 +321,9 @@ public sealed class DocumentPrivacySafeguardTests
             assertionTarget1
                 .ShouldBeTrue($"Unexpected status for {Pattern}: {StatusCode}.");
         }
+        outcomes.Where(outcome => outcome.Pattern.Contains("/holds", StringComparison.Ordinal))
+            .All(outcome => outcome.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+            .ShouldBeTrue();
         outcomes.All(outcome => outcome.HasNoStoreHeaders).ShouldBeTrue();
     }
 
