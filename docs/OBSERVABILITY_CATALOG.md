@@ -57,7 +57,7 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | `authentication_events_total` | `PandaBear.AspNetCore` | `{event}` | outcome | Are sign-ins failing? | `http-platform` | keep |
 | `rate_limit_rejections_total` | `PandaBear.AspNetCore` | `{rejection}` | bounded | Are clients throttled? | `http-platform` | keep |
 | `handled_ui_failures_total` | `PandaBear.Blazor` | `{failure}` | `error_type`, `operation` | Which UI operation shows an error? | `http-platform` | keep |
-| `mediator.requests` | `SharedKernel.Mediator` | `{request}` | `mediator.request.name`, `mediator.outcome` | How are dispatched requests ending? `error` means an exception; a failed `Result` such as booking not found (404) counts as `success`. | `mediator` | keep |
+| `mediator.requests` | `SharedKernel.Mediator` | `{request}` | `mediator.request.name`, `mediator.outcome` | How are dispatched requests ending? `error` means an exception; a failed `Result` such as booking not found (404) counts as `success`, so use the `mediator.result` span attribute for domain failures. | `mediator` | keep |
 | `mediator.request.duration` | `SharedKernel.Mediator` | `ms` | `mediator.request.name`, `mediator.outcome` | Which request type is slow? | `mediator` | keep |
 | `mediator.notifications` | `SharedKernel.Mediator` | `{notification}` | `mediator.notification.name`, `mediator.outcome` | Do notification fan-outs succeed? | `mediator` | keep |
 | `mediator.notification.duration` | `SharedKernel.Mediator` | `ms` | `mediator.notification.name`, `mediator.outcome` | Is notification fan-out slow? | none yet | gap |
@@ -78,6 +78,7 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | --- | --- | --- | --- |
 | `mediator.send`, `mediator.stream`, `mediator.publish`, `mediator.notification.handle` | `SharedKernel.Mediator` | `traces` mediator spans. Only `mediator.send` observed live so far (attributes `mediator.request.name`, `mediator.handler.name`, `mediator.pipeline.depth`, `mediator.outcome`); the others need stream or notification traffic | keep |
 | One span per request type (for example `CompleteBookingCommand`, `CancelBookingCommand`) | `SharedKernel.Mediator` activity pipeline behavior | `traces` mediator spans; observed live, same trace as the HTTP server span and `mediator.send` | keep |
+| `mediator.result` attribute on request spans | `ResultTagBehavior` (Admin.Application) | `traces` "Failed mediator results" panel; domain failures that `mediator.outcome` counts as `success` | keep |
 | `eventsourcing.postgresql.append`, `.load`, `.checkpoint` | `SharedKernel.EventSourcing.Npgsql` | `traces` search | keep |
 | `DatabaseInitialization` | `ViajantesTurismo.MigrationService.DatabaseInitializationWorker` | startup diagnosis in Aspire; no metric yet | gap |
 

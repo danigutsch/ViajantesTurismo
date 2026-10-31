@@ -245,6 +245,9 @@ surface-owned tag contract.
 - `SharedKernel.Mediator` runtime pipeline spans require:
     - `sharedkernel.mediator.outcome`
     - `error.type` on failures only
+- Admin command request spans carry `mediator.result` (`ok` or `failed`), set by `ResultTagBehavior` for
+  `IResultLike` responses. It is a span attribute only, not a metric tag, because `mediator.outcome` already
+  covers the metric dimension and a failed `Result` still counts as `success` there.
 - `SharedKernel.Mediator` generated spans require:
     - `mediator.outcome`
     - `error.type` on failures only

@@ -187,6 +187,40 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Failed mediator results",
+      "description": "Request spans whose command returned a failed Result (mediator.result=\"failed\"), which mediator_outcome counts as success. Question: which commands end in a domain failure?",
+      "datasource": {
+        "type": "tempo",
+        "uid": "Tempo"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "Tempo"
+          },
+          "queryType": "traceql",
+          "query": "{ span.mediator.result = \"failed\" } | select(name)",
+          "expr": "{ span.mediator.result = \"failed\" } | select(name)",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
     }
   ],
   "refresh": "1m",
