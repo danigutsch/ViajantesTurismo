@@ -42,7 +42,7 @@ internal static class DocumentHoldEndpoints
             .RequireAuthorization(AdminAuthorization.DocumentHold)
             .Produces<GetDocumentHoldOverviewPageDto>()
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
-            .WithAdminMetadata("ListDocumentHoldOverview", "Lists holds across documents, oldest placement first, one bounded page at a time. Filters: state (Active is every unreleased hold, OverdueReview is unreleased with a review date before now, Released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Page defaults to 1 and pageSize to 25, at most 100.", "Lists holds across documents.");
+            .WithAdminMetadata("ListDocumentHoldOverview", "Lists holds across documents, oldest placement first, one bounded page at a time. Filters: state (the states are disjoint: Active is unreleased with a review date at or after now, OverdueReview is unreleased with a review date before now, Released is released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Page defaults to 1 and pageSize to 25, at most 100.", "Lists holds across documents.");
 
         group.MapPost("/{id:guid}/holds/{holdId:guid}/release", ReleaseHold)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)

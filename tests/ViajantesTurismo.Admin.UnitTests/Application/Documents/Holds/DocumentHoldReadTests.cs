@@ -73,18 +73,59 @@ public sealed class DocumentHoldReadTests
         // Arrange
         var harness = DocumentHoldHarness.Create();
         var before = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now - OneSecond);
-        var at = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now);
-        var after = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now + OneSecond);
+        _ = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now);
+        _ = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now + OneSecond);
         var releasedBefore = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now - OneSecond);
         releasedBefore.Release("actor-0002", "reason.case-closed", harness.Now - OneSecond);
 
         // Act
         var overdue = await DocumentHoldReadTestData.List(harness, DocumentHoldState.OverdueReview);
-        var active = await DocumentHoldReadTestData.List(harness, DocumentHoldState.Active);
 
         // Assert
         overdue.Value.Items.Select(item => item.Hold.Id).ShouldBe([before.Id]);
-        active.Value.Items.Select(item => item.Hold.Id).Order().ShouldBe(new[] { before.Id, at.Id, after.Id }.Order());
+    }
+
+    [Fact]
+    public async Task Active_means_unreleased_with_a_review_date_at_or_after_now()
+    {
+        // Arrange
+        var harness = DocumentHoldHarness.Create();
+        _ = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now - OneSecond);
+        var at = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now);
+        var after = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now + OneSecond);
+        var releasedAfter = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now + OneSecond);
+        releasedAfter.Release("actor-0002", "reason.case-closed", harness.Now);
+
+        // Act
+        var active = await DocumentHoldReadTestData.List(harness, DocumentHoldState.Active);
+
+        // Assert
+        active.Value.Items.Select(item => item.Hold.Id).Order().ShouldBe(new[] { at.Id, after.Id }.Order());
+    }
+
+    [Fact]
+    public async Task Every_hold_appears_in_exactly_one_state()
+    {
+        // Arrange
+        var harness = DocumentHoldHarness.Create();
+        var ids = new List<Guid>
+        {
+            DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now - OneSecond).Id,
+            DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now).Id,
+            DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now + OneSecond).Id,
+        };
+        var released = DocumentHoldReadTestData.AddHold(harness, harness.LineageId, harness.Now - OneSecond);
+        released.Release("actor-0002", "reason.case-closed", harness.Now - OneSecond);
+        ids.Add(released.Id);
+
+        // Act
+        var active = await DocumentHoldReadTestData.List(harness, DocumentHoldState.Active);
+        var overdue = await DocumentHoldReadTestData.List(harness, DocumentHoldState.OverdueReview);
+        var releasedState = await DocumentHoldReadTestData.List(harness, DocumentHoldState.Released);
+
+        // Assert
+        var listed = active.Value.Items.Concat(overdue.Value.Items).Concat(releasedState.Value.Items).Select(item => item.Hold.Id);
+        listed.Order().ShouldBe(ids.Order());
     }
 
     [Fact]

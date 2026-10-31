@@ -3,7 +3,7 @@ namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 /// <summary>Names the review states a hold can be filtered by in the cross-document overview.</summary>
 public enum DocumentHoldState
 {
-    /// <summary>The hold is not released, whether or not its review is due.</summary>
+    /// <summary>The hold is not released and its review date is at or after now.</summary>
     Active,
 
     /// <summary>The hold is not released and its review date is strictly before now.</summary>

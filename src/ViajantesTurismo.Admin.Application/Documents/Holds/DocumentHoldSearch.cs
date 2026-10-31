@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 /// <param name="State">Keeps only holds in this state, or every hold when <see langword="null" />.</param>
 /// <param name="Basis">Keeps only holds with this basis, or every basis when <see langword="null" />.</param>
 /// <param name="ReleasedSince">Keeps only holds released at or after this instant, or ignores release time when <see langword="null" />.</param>
-/// <param name="Now">The instant against which a review date is overdue.</param>
+/// <param name="Now">The instant against which a review date is overdue. The Active, OverdueReview and Released states are disjoint.</param>
 public sealed record DocumentHoldSearch(DocumentHoldState? State, HoldBasis? Basis, DateTimeOffset? ReleasedSince, DateTimeOffset Now)
 {
     /// <summary>Applies the filters and the stable order, oldest placement first and then by identifier.</summary>
@@ -22,7 +22,7 @@ public sealed record DocumentHoldSearch(DocumentHoldState? State, HoldBasis? Bas
         var now = Now;
         var filtered = State switch
         {
-            DocumentHoldState.Active => holds.Where(hold => hold.ReleasedAt == null),
+            DocumentHoldState.Active => holds.Where(hold => hold.ReleasedAt == null && hold.ReviewDueAt >= now),
             DocumentHoldState.OverdueReview => holds.Where(hold => hold.ReleasedAt == null && hold.ReviewDueAt < now),
             DocumentHoldState.Released => holds.Where(hold => hold.ReleasedAt != null),
             _ => holds,
