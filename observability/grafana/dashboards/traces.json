@@ -153,6 +153,40 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Mediator spans",
+      "description": "Traces with mediator send, publish and notification-handler spans. Question: are mediator dispatch spans exported and correlated with requests?",
+      "datasource": {
+        "type": "tempo",
+        "uid": "Tempo"
+      },
+      "verify": "data",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "Tempo"
+          },
+          "queryType": "traceql",
+          "query": "{ instrumentation:name = \"SharedKernel.Mediator\" } | select(name)",
+          "expr": "{ instrumentation:name = \"SharedKernel.Mediator\" } | select(name)",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
     }
   ],
   "refresh": "1m",

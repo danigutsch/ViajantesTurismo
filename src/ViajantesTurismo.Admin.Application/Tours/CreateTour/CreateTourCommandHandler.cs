@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Mappings;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;
 /// </summary>
 public sealed class CreateTourCommandHandler(
     ITourStore tourStore,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork) : ICommandHandler<CreateTourCommand, Result<Guid>>
 {
     /// <summary>
     /// Handles the CreateTourCommand and returns the ID of the created tour.
@@ -17,7 +18,7 @@ public sealed class CreateTourCommandHandler(
     /// <param name="command">The command containing tour data.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Result containing the tour ID if successful, or validation errors.</returns>
-    public async Task<Result<Guid>> Handle(CreateTourCommand command, CancellationToken ct)
+    public async ValueTask<Result<Guid>> Handle(CreateTourCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 

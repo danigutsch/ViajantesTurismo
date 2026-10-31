@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -29,7 +30,7 @@ internal static class BookingsCreateBookingEndpoint
 
     private static async Task<Results<Created<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> CreateBooking(
         [FromBody] CreateBookingDto dto,
-        [FromServices] CreateBookingCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
@@ -47,7 +48,7 @@ internal static class BookingsCreateBookingEndpoint
             dto.DiscountReason,
             dto.Notes);
 
-        var result = await handler.Handle(command, ct);
+        var result = await sender.Send(command, ct);
 
         if (result.IsFailure)
         {

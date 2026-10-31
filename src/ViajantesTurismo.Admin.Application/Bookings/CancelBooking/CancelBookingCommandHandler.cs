@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -8,7 +9,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 /// </summary>
 public sealed class CancelBookingCommandHandler(
     ITourStore tourStore,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork) : ICommandHandler<CancelBookingCommand, Result>
 {
     /// <summary>
     /// Handles the CancelBookingCommand and returns the result.
@@ -16,7 +17,7 @@ public sealed class CancelBookingCommandHandler(
     /// <param name="command">The command containing the booking ID to cancel.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Result indicating success or failure.</returns>
-    public async Task<Result> Handle(CancelBookingCommand command, CancellationToken ct)
+    public async ValueTask<Result> Handle(CancelBookingCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 

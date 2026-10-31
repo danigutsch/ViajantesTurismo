@@ -1,3 +1,5 @@
+using PandaBear.Mediator;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDiscount;
@@ -9,4 +11,4 @@ public sealed record UpdateBookingDiscountCommand(
     Guid BookingId,
     DiscountTypeDto DiscountType,
     decimal DiscountAmount,
-    string? DiscountReason);
+    string? DiscountReason) : ICommand<Result>, IBookingScopedCommand;

@@ -1,5 +1,6 @@
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -12,7 +13,7 @@ public sealed class CreateBookingCommandHandler(
     ITourStore tourStore,
     ICustomerStore customerStore,
     IUnitOfWork unitOfWork,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider) : ICommandHandler<CreateBookingCommand, Result<Guid>>
 {
     /// <summary>
     /// Handles the CreateBookingCommand and returns the ID of the created booking.
@@ -20,7 +21,7 @@ public sealed class CreateBookingCommandHandler(
     /// <param name="command">The command containing booking data.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Result containing the booking ID if successful, or validation errors.</returns>
-    public async Task<Result<Guid>> Handle(CreateBookingCommand command, CancellationToken ct)
+    public async ValueTask<Result<Guid>> Handle(CreateBookingCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 

@@ -12,8 +12,12 @@ Instructions for files under `src/ViajantesTurismo.Admin.Application/`.
 - Use one command record and one handler class per use case in a feature folder.
 - Commands are plain `sealed record` types.
 - Handlers are `sealed class` types using primary constructor dependency injection.
-- Do not introduce MediatR or mediator bus abstractions.
-- Register handlers with scoped lifetime in Application dependency injection.
+- Bookings commands (spike) implement `ICommand<Result>` / `ICommand<Result<T>>` and handlers implement
+  `ICommandHandler<TCommand, TResponse>` (`ValueTask<TResponse> Handle`) from `PandaBear.Mediator`; endpoints dispatch through `ISender`.
+  Handlers must be public; the assembly carries `[assembly: MediatorModule]` and the host calls `AddSharedKernelMediator()`.
+- Pipeline behaviors live in `Bookings/Pipeline`, must be open generic over exactly `<TRequest, TResponse>`,
+  and declare `[PipelineOrder(PipelineStage.X)]`.
+- Do not use MediatR. Other features keep plain handler classes registered with scoped lifetime in Application dependency injection.
 
 ## Handle method conventions
 

@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application.Mappings;
@@ -29,7 +30,7 @@ internal static class ToursUpdateTourEndpoint
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, ValidationProblem, Conflict<ProblemDetails>>> UpdateTour(
         Guid id,
         [FromBody] UpdateTourDto tourDto,
-        [FromServices] UpdateTourCommandHandler handler,
+        [FromServices] ISender sender,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(tourDto);
@@ -49,7 +50,7 @@ internal static class ToursUpdateTourEndpoint
             tourDto.MinCustomers,
             tourDto.MaxCustomers);
 
-        var result = await handler.Handle(command, ct);
+        var result = await sender.Send(command, ct);
 
         return result.IsSuccess
             ? TypedResults.NoContent()

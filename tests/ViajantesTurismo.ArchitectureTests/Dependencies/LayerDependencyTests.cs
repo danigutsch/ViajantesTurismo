@@ -244,13 +244,12 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Admin_projects_and_flow_documentation_should_not_describe_mediator_composition()
+    public void Admin_infrastructure_and_flow_documentation_should_not_describe_mediator_composition()
     {
         // Arrange
         var repositoryRoot = GetRepositoryRoot();
         var adminAssemblies = new[]
         {
-            Assembly.Load("ViajantesTurismo.Admin.Application"),
             Assembly.Load("ViajantesTurismo.Admin.Infrastructure")
         };
         var flows = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "architecture", "FLOWS.md"));

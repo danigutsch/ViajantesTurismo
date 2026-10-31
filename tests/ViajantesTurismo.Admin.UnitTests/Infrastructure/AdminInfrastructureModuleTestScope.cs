@@ -12,7 +12,6 @@ using PandaBear.Idempotency;
 using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours;
-using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -78,16 +77,16 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
     /// <summary>Gets the hosted services registered in the provider.</summary>
     public IReadOnlyList<IHostedService> HostedServices => [.. serviceProvider.GetServices<IHostedService>()];
 
-    /// <summary>Returns whether the create-tour handler is the same instance within a scope and a different instance across scopes.</summary>
-    public bool CreateTourHandlerHasScopedLifetime()
+    /// <summary>Returns whether the tour store is the same instance within a scope and a different instance across scopes.</summary>
+    public bool TourStoreHasScopedLifetime()
     {
         using var firstScope = serviceProvider.CreateScope();
         using var secondScope = serviceProvider.CreateScope();
-        var firstHandler = firstScope.ServiceProvider.GetRequiredService<CreateTourCommandHandler>();
-        var sameScopeHandler = firstScope.ServiceProvider.GetRequiredService<CreateTourCommandHandler>();
-        var secondHandler = secondScope.ServiceProvider.GetRequiredService<CreateTourCommandHandler>();
+        var firstStore = firstScope.ServiceProvider.GetRequiredService<ITourStore>();
+        var sameScopeStore = firstScope.ServiceProvider.GetRequiredService<ITourStore>();
+        var secondStore = secondScope.ServiceProvider.GetRequiredService<ITourStore>();
 
-        return ReferenceEquals(firstHandler, sameScopeHandler) && !ReferenceEquals(firstHandler, secondHandler);
+        return ReferenceEquals(firstStore, sameScopeStore) && !ReferenceEquals(firstStore, secondStore);
     }
 
     /// <summary>Returns whether sensitive data logging is enabled in the options of the given context type.</summary>

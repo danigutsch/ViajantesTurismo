@@ -1,21 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Application.Payments;
 using Microsoft.Extensions.Hosting;
-using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
-using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
-using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
-using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
-using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
-using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
-using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDiscount;
-using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Application.Documents;
-using ViajantesTurismo.Admin.Application.Tours.CreateTour;
-using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
-using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 
 namespace ViajantesTurismo.Admin.Application;
 
@@ -67,14 +56,6 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<RetirePaymentAccountCommandHandler>();
         builder.Services.AddScoped<WithdrawPaymentAccountVerificationCommandHandler>();
 
-        builder.Services.AddScoped<CancelBookingCommandHandler>();
-        builder.Services.AddScoped<CompleteBookingCommandHandler>();
-        builder.Services.AddScoped<ConfirmBookingCommandHandler>();
-        builder.Services.AddScoped<CreateBookingCommandHandler>();
-        builder.Services.AddScoped<DeleteBookingCommandHandler>();
-        builder.Services.AddScoped<UpdateBookingDetailsCommandHandler>();
-        builder.Services.AddScoped<UpdateBookingDiscountCommandHandler>();
-        builder.Services.AddScoped<UpdateBookingNotesCommandHandler>();
         builder.Services.AddScoped<CreateCustomerCommandHandler>();
         builder.Services.AddScoped<CustomerImportCommandHandler>();
         builder.Services.AddScoped<CustomerImportConflictDetector>();
@@ -95,9 +76,6 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<PurgeExpiredDraftsCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
         builder.Services.AddScoped<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();
-        builder.Services.AddScoped<CreateTourCommandHandler>();
-        builder.Services.AddScoped<DeleteTourCommandHandler>();
-        builder.Services.AddScoped<UpdateTourCommandHandler>();
         builder.Services.AddDomainEventProcessing();
 
         return builder;

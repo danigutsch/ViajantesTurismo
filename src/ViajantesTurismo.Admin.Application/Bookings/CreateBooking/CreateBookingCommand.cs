@@ -1,3 +1,5 @@
+using PandaBear.Mediator;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
@@ -15,4 +17,4 @@ public sealed record CreateBookingCommand(
     DiscountTypeDto DiscountType,
     decimal DiscountAmount,
     string? DiscountReason,
-    string? Notes);
+    string? Notes) : ICommand<Result<Guid>>;

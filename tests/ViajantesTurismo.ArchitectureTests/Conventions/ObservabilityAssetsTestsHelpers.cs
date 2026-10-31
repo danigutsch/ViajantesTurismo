@@ -11,7 +11,7 @@ internal static partial class ObservabilityAssetsTestsHelpers
     public static readonly string[] ExpectedDashboards =
     [
         "branding-cache", "catalog-pipeline", "collector-gateway", "event-store", "http-platform", "logs",
-        "media-accessibility", "platform-smoke", "postgresql-observability", "runtime", "traces"
+        "media-accessibility", "mediator", "platform-smoke", "postgresql-observability", "runtime", "traces"
     ];
 
     /// <summary>Meter argument expressions from other packages mapped to the meter names they resolve to.</summary>

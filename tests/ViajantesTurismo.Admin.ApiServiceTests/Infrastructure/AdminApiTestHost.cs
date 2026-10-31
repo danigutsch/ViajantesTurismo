@@ -4,24 +4,15 @@ using Microsoft.Extensions.Hosting;
 using PandaBear.AspNetCore;
 using PandaBear.MalwareScanning;
 using PandaBear.MalwareScanning.ClamAv;
+using PandaBear.Mediator;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
-using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
-using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
-using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
-using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
-using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
-using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDiscount;
-using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Tours;
-using ViajantesTurismo.Admin.Application.Tours.CreateTour;
-using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Resources;
 
@@ -116,20 +107,11 @@ internal static class AdminApiTestHost
 
         using var scope = factory.Services.CreateScope();
         _ = scope.ServiceProvider.GetRequiredService<IQueryService>();
-        _ = scope.ServiceProvider.GetRequiredService<CreateTourCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<UpdateTourCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<CreateCustomerCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<UpdateCustomerCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<CustomerImportWorkflowService>();
         _ = scope.ServiceProvider.GetRequiredService<IMalwareScanner>();
-        _ = scope.ServiceProvider.GetRequiredService<CreateBookingCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<ConfirmBookingCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<CancelBookingCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<UpdateBookingDetailsCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<UpdateBookingNotesCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<UpdateBookingDiscountCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<CompleteBookingCommandHandler>();
-        _ = scope.ServiceProvider.GetRequiredService<DeleteBookingCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<ISender>();
         scope.ServiceProvider.GetRequiredService<ITourCapacityMutationLock>()
             .ShouldBeOfType<NoOpTourCapacityMutationLock>();
     }

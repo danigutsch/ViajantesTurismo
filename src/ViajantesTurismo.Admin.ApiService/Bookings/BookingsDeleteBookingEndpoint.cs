@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 
 namespace ViajantesTurismo.Admin.ApiService.Bookings;
@@ -20,12 +21,12 @@ internal static class BookingsDeleteBookingEndpoint
 
     private static async Task<Results<NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>> DeleteBooking(
         [FromRoute] Guid id,
-        [FromServices] DeleteBookingCommandHandler handler,
+        [FromServices] ISender sender,
         CancellationToken ct)
     {
         var command = new DeleteBookingCommand(id);
 
-        var result = await handler.Handle(command, ct);
+        var result = await sender.Send(command, ct);
 
         if (result.IsFailure)
         {

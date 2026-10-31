@@ -29,6 +29,8 @@
         <PackageReference Include="PandaBear.SharedKernel.IO" />
         <PackageReference Include="PandaBear.SharedKernel.IO.Analyzers" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.Results" />
+        <PackageReference Include="PandaBear.SharedKernel.Mediator" />
+        <PackageReference Include="PandaBear.SharedKernel.Mediator.SourceGenerator" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.Results.AspNet" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" />

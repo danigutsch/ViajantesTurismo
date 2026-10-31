@@ -18,7 +18,7 @@ use is a removal candidate. Verdicts:
 
 | Meter | Registration | Dashboard |
 | --- | --- | --- |
-| `SharedKernel.Mediator` | `AddSharedKernelMediatorMetrics` | none yet, added with the first production dispatch |
+| `SharedKernel.Mediator` | `AddSharedKernelMediatorMetrics` | `mediator` |
 | `ViajantesTurismo.Catalog` | `AddCatalogMetrics` | `catalog-pipeline`, `media-accessibility` |
 | `ViajantesTurismo.Branding` | `AddBrandingMetrics` | `branding-cache` |
 | `PandaBear.AspNetCore` | `AddSharedKernelAspNetCoreMetrics` | `http-platform` |
@@ -57,6 +57,11 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | `authentication_events_total` | `PandaBear.AspNetCore` | `{event}` | outcome | Are sign-ins failing? | `http-platform` | keep |
 | `rate_limit_rejections_total` | `PandaBear.AspNetCore` | `{rejection}` | bounded | Are clients throttled? | `http-platform` | keep |
 | `handled_ui_failures_total` | `PandaBear.Blazor` | `{failure}` | `error_type`, `operation` | Which UI operation shows an error? | `http-platform` | keep |
+| `mediator.requests` | `SharedKernel.Mediator` | `{request}` | `mediator.request.name`, `mediator.outcome` | How are dispatched requests ending? `error` means an exception; a failed `Result` such as booking not found (404) counts as `success`. | `mediator` | keep |
+| `mediator.request.duration` | `SharedKernel.Mediator` | `ms` | `mediator.request.name`, `mediator.outcome` | Which request type is slow? | `mediator` | keep |
+| `mediator.notifications` | `SharedKernel.Mediator` | `{notification}` | `mediator.notification.name`, `mediator.outcome` | Do notification fan-outs succeed? | `mediator` | keep |
+| `mediator.notification.duration` | `SharedKernel.Mediator` | `ms` | `mediator.notification.name`, `mediator.outcome` | Is notification fan-out slow? | none yet | gap |
+| `mediator.streams` | `SharedKernel.Mediator` | `{request}` | `mediator.request.name`, `mediator.outcome` | Are stream requests dispatched? | none yet | gap |
 | `eventsourcing.postgresql.append.duration` | `SharedKernel.EventSourcing.Npgsql` | `ms` | outcome | Is append slow? | `event-store` | keep |
 | `eventsourcing.postgresql.load.duration` | `SharedKernel.EventSourcing.Npgsql` | `ms` | outcome | Is load slow? | `event-store` | keep |
 | `eventsourcing.postgresql.checkpoint.duration` | `SharedKernel.EventSourcing.Npgsql` | `ms` | outcome | Is checkpointing slow? | `event-store` | keep |
@@ -67,17 +72,12 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | `postgresql.index_health.assessments` | `SharedKernel.Observability.Npgsql` | `{assessment}` | action, reason | Is any index worth human review? | `postgresql-observability` | keep |
 | `AdminContractsClientTelemetry` outcomes | Admin contracts client | n/a | outcome | Which inter-service client calls fail? | none yet | gap |
 
-## Pending dispatch
-
-`SharedKernel.Mediator` (meter and `ActivitySource`, `mediator.*` metrics and spans) stays registered in
-`ServiceDefaults`. No production code dispatches through it yet, so the live stack shows no `mediator_*`
-series and no `mediator.*` spans. Admin commands and queries are being moved onto the mediator; the
-`mediator` dashboard and the per-metric rows land with the first production dispatch. Verdict: `gap`.
-
 ## Spans
 
 | Span | Source | Use | Verdict |
 | --- | --- | --- | --- |
+| `mediator.send`, `mediator.stream`, `mediator.publish`, `mediator.notification.handle` | `SharedKernel.Mediator` | `traces` mediator spans. Only `mediator.send` observed live so far (attributes `mediator.request.name`, `mediator.handler.name`, `mediator.pipeline.depth`, `mediator.outcome`); the others need stream or notification traffic | keep |
+| One span per request type (for example `CompleteBookingCommand`, `CancelBookingCommand`) | `SharedKernel.Mediator` activity pipeline behavior | `traces` mediator spans; observed live, same trace as the HTTP server span and `mediator.send` | keep |
 | `eventsourcing.postgresql.append`, `.load`, `.checkpoint` | `SharedKernel.EventSourcing.Npgsql` | `traces` search | keep |
 | `DatabaseInitialization` | `ViajantesTurismo.MigrationService.DatabaseInitializationWorker` | startup diagnosis in Aspire; no metric yet | gap |
 

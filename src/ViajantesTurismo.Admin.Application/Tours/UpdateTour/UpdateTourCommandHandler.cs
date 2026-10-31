@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 public sealed class UpdateTourCommandHandler(
     ITourStore tourStore,
     ITourCapacityMutationLock capacityMutationLock,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork) : ICommandHandler<UpdateTourCommand, Result>
 {
     /// <summary>
     /// Handles the UpdateTourCommand and updates the tour if validation passes.
@@ -17,7 +18,7 @@ public sealed class UpdateTourCommandHandler(
     /// <param name="command">The command containing the tour ID and updated values.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Result indicating success or validation errors.</returns>
-    public async Task<Result> Handle(UpdateTourCommand command, CancellationToken ct)
+    public async ValueTask<Result> Handle(UpdateTourCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 

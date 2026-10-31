@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
@@ -29,7 +30,7 @@ internal static class ToursCreateTourEndpoint
 
     private static async Task<Results<Created<GetTourDto>, NotFound<ProblemDetails>, ValidationProblem, Conflict<ProblemDetails>>> CreateTour(
         [FromBody] CreateTourDto tourDto,
-        [FromServices] CreateTourCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
@@ -49,7 +50,7 @@ internal static class ToursCreateTourEndpoint
             tourDto.MinCustomers,
             tourDto.MaxCustomers);
 
-        var result = await handler.Handle(command, ct);
+        var result = await sender.Send(command, ct);
 
         if (result.IsFailure)
         {
