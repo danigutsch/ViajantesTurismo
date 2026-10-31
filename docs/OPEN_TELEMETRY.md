@@ -127,9 +127,10 @@ the shared defaults path:
 - `src/SharedKernel/SharedKernel.Observability/ObservabilityBuilderExtensions.cs`
 - `builder.Logging.AddOpenTelemetry(...)`
 
-Exported logs carry message templates and structured attributes only: no formatted messages, no scopes,
-no exception payloads, and none of the attributes `TelemetryPrivacyAttributeClassifier` names. The
-application's privacy wiring lives in `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`.
+`ServiceDefaultsExtensions` then calls `AddTelemetryPrivacy(TelemetryPrivacyAttributeClassifier.IsSensitive)`.
+The call excludes formatted messages and scopes from OpenTelemetry logs and registers `LogRecordPrivacyProcessor`
+and `ActivityPrivacyProcessor`, with the application attribute policy added to the shared baseline. Exported logs
+therefore carry message templates and structured attributes only, without exception payloads.
 
 The .NET logging category remains the `ILogger<TCategoryName>` category, normally the fully
 qualified type name. Active trace context is exported with log records by the OpenTelemetry provider

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Instrumentation.AspNetCore;
-using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using PandaBear.Observability;
@@ -87,7 +86,7 @@ public static class ServiceDefaultsExtensions
 
         builder.Logging.ClearProviders();
         ObservabilityBuilderExtensions.ConfigureOpenTelemetry(builder);
-        builder.Logging.AddOpenTelemetry(ConfigureOpenTelemetryLogging);
+        builder.AddTelemetryPrivacy(TelemetryPrivacyAttributeClassifier.IsSensitive);
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(ConfigureOpenTelemetryMetrics)
@@ -98,13 +97,6 @@ public static class ServiceDefaultsExtensions
         builder.AddOpenTelemetryExporters();
 
         return builder;
-    }
-
-    private static void ConfigureOpenTelemetryLogging(OpenTelemetryLoggerOptions logging)
-    {
-        logging.IncludeFormattedMessage = false;
-        logging.IncludeScopes = false;
-        logging.AddProcessor(_ => new LogRecordPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive));
     }
 
     private static void ConfigureOpenTelemetryMetrics(MeterProviderBuilder metrics)
@@ -120,8 +112,7 @@ public static class ServiceDefaultsExtensions
 
     private static void ConfigureOpenTelemetryTracing(TracerProviderBuilder tracing, string applicationName)
     {
-        tracing.AddProcessor(new ActivityPrivacyProcessor(TelemetryPrivacyAttributeClassifier.IsSensitive))
-            .AddSource(applicationName, AdminContractsClientTelemetryName)
+        tracing.AddSource(applicationName, AdminContractsClientTelemetryName)
             .AddCatalogTracing()
             .AddSharedKernelMediatorTracing()
             .AddSharedKernelProviderTracing()
