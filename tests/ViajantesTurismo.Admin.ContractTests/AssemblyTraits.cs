@@ -3,4 +3,4 @@ using PandaBear.Testing;
 
 
 [assembly: TestScope(TestScope.Contract)]
-[assembly: Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AdminArea)]
+[assembly: Trait(TestTraitNames.AreaName, TestTraits.AdminArea)]

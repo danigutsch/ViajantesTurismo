@@ -6,8 +6,8 @@ using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
 [TestScope(TestScope.Component)]
 public sealed class EditPageSaveFailureTests : BunitContext
 {

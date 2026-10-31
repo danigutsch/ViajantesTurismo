@@ -11,9 +11,9 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Documents;
 
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.System)]
 public sealed class DocumentLifecycleTests(AspireSystemTestFixture fixture)
     : AspireSystemTestBase<AspireSystemTestFixture>(fixture)

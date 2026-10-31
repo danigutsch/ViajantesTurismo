@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies Management Web authentication startup configuration.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
 {

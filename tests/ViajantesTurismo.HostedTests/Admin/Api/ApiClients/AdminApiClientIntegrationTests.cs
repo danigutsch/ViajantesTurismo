@@ -9,7 +9,7 @@ using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.ApiClients;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class AdminApiClientIntegrationTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {

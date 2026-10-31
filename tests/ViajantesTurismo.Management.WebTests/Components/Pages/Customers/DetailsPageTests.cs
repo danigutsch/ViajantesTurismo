@@ -414,8 +414,8 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_validation_problem_shows_server_validation_errors()
     {
         // Arrange
@@ -455,8 +455,8 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_validation_problem_withholds_unknown_and_hostile_server_text()
     {
         // Arrange
@@ -498,8 +498,8 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_non_success_outcome_shows_sanitized_error()
     {
         // Arrange
@@ -532,8 +532,8 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_success_shows_confirmation_and_closes_form()
     {
         // Arrange

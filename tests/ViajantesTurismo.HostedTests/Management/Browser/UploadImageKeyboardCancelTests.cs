@@ -6,7 +6,7 @@ using ViajantesTurismo.Catalog.Contracts.Http;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser keyboard journey for cancelling a held Catalog image upload.</summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, "management-web")]
 [TestScope(TestScope.System)]
 public sealed class UploadImageKeyboardCancelTests : ManagementWebBrowserTestBase
 {

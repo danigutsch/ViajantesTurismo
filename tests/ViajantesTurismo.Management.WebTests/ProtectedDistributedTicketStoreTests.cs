@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies protected server-side authentication ticket storage.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 [TestScope(TestScope.Unit)]
 public sealed class ProtectedDistributedTicketStoreTests
 {

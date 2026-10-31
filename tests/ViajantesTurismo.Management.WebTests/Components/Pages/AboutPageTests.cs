@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages;
 public sealed class AboutPageTests : BunitContext
 {
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(TestTraitNames.CategoryName, "Regression")]
     public void Displays_the_effective_host_environment()
     {
         // Arrange

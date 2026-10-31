@@ -5,9 +5,9 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Authentication;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
+[Trait(TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
+[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
 [TestScope(TestScope.System)]
 public sealed class AuthenticatedApiClientFactoryTests(AspireSystemTestFixture fixture) : IClassFixture<AspireSystemTestFixture>
 {
