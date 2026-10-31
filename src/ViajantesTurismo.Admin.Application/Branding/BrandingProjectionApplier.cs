@@ -37,6 +37,12 @@ public sealed class BrandingProjectionApplier(
             if (recovery.Authorization is { } authorization
                 && authorization.Matches(integrationEvent.EventId, integrationEvent.SourceEpoch, integrationEvent.SourceRevision))
             {
+                if (!BrandingProjectionRules.HasValidLogo(integrationEvent))
+                {
+                    await Settle(integrationEvent, BrandingInboxOutcome.Rejected, "invalid-logo", ct).ConfigureAwait(false);
+                    return;
+                }
+
                 await Reseed(current, integrationEvent, authorization, ct).ConfigureAwait(false);
                 return;
             }
@@ -59,6 +65,7 @@ public sealed class BrandingProjectionApplier(
             BrandingProjectionDecision.Apply => (BrandingInboxOutcome.Applied, null),
             BrandingProjectionDecision.AlreadyApplied or BrandingProjectionDecision.Stale => (BrandingInboxOutcome.Stale, null),
             BrandingProjectionDecision.InvalidEnvelope => (BrandingInboxOutcome.Rejected, "invalid-envelope"),
+            BrandingProjectionDecision.InvalidLogo => (BrandingInboxOutcome.Rejected, "invalid-logo"),
             _ => throw new InvalidOperationException($"Unsupported Branding projection decision '{decision}'.")
         };
 

@@ -16,7 +16,10 @@ internal static class DocumentBrandingTestData
         new(new FakeBrandingProjectionStore { Current = projection, Recovery = recovery });
 
     /// <summary>Builds a branding projection state copying the settings at the given source revision.</summary>
-    public static BrandingProjectionState ProjectionMatching(BrandingSettingsDto settings, long sourceRevision) => new(
+    public static BrandingProjectionState ProjectionMatching(
+        BrandingSettingsDto settings,
+        long sourceRevision,
+        BrandingProjectionLogo? logo = null) => new(
         Guid.CreateVersion7(),
         sourceRevision,
         settings.BrandName,
@@ -26,5 +29,6 @@ internal static class DocumentBrandingTestData
         settings.TextColor,
         settings.HeadingFontFamily,
         settings.BodyFontFamily,
-        string.IsNullOrEmpty(settings.LogoUri) ? null : new Uri(settings.LogoUri, UriKind.RelativeOrAbsolute));
+        string.IsNullOrEmpty(settings.LogoUri) ? null : new Uri(settings.LogoUri, UriKind.RelativeOrAbsolute),
+        logo);
 }

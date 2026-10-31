@@ -1,5 +1,6 @@
 using PandaBear.Branding;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -38,7 +39,7 @@ internal static class DocumentDraftTestData
             ],
             "BRANDING-VERSION",
             "Viajantes Turismo",
-            brandingLogoUri ?? new Uri("/logo.svg", UriKind.Relative),
+            brandingLogoUri ?? DocumentLogoTestData.DataUri,
             createdAt);
 
         result.IsSuccess.ShouldBeTrue();

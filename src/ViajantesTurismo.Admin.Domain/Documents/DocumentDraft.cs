@@ -886,7 +886,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         }
 
         return brandingLogoUri is not null &&
-            WebAssetUriSanitizer.NormalizeRootRelativeOrHttps(brandingLogoUri.OriginalString, DocumentLimits.MaxBrandingLogoUriLength) is null
+            WebAssetUriSanitizer.NormalizeRasterDataImage(brandingLogoUri.OriginalString, DocumentLimits.MaxBrandingLogoUriLength) is null
                 ? DocumentErrors.InvalidValue("brandingLogoUri")
                 : Result.Ok();
     }

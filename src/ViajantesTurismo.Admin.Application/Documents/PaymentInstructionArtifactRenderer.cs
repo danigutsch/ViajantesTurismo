@@ -63,7 +63,7 @@ internal static class PaymentInstructionArtifactRenderer
             ]));
         }
         return new HtmlDocumentRenderer().Render(new DocumentRenderRequest("en", "Payment instructions", sections,
-            new DocumentBrandingSnapshot(document.BrandingVersion, document.BrandingName, document.BrandingLogoUri is { IsAbsoluteUri: false } uri ? uri : null,
+            new DocumentBrandingSnapshot(document.BrandingVersion, document.BrandingName, RasterDataLogo.From(document.BrandingLogoUri),
                 document.BrandingPrimaryColor, document.BrandingAccentColor, document.BrandingBackgroundColor, document.BrandingTextColor,
                 document.BrandingHeadingFontFamily, document.BrandingBodyFontFamily, document.BrandingFooterText)));
     }
