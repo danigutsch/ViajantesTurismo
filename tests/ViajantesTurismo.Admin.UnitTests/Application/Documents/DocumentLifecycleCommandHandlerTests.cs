@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -363,11 +364,13 @@ public sealed class DocumentLifecycleCommandHandlerTests
         store.Documents.Add(expired.Id, expired);
         store.Documents.Add(current.Id, current);
         // Act
-        var removedCount = await new PurgeExpiredDraftsCommandHandler(store, new FakeTimeProvider(now))
+        var clock = new FakeTimeProvider(now);
+        var gate = new DocumentHoldGate(new FakeDispositionHoldGuard(), new InMemoryDispositionHoldStore(), clock);
+        var counts = await new PurgeExpiredDraftsCommandHandler(store, new FakeDocumentDispositionTransaction(), gate, clock)
             .Handle(new PurgeExpiredDraftsCommand(), CancellationToken.None);
 
         // Assert
-        removedCount.ShouldBe(1);
+        counts.Purged.ShouldBe(1);
         store.Documents.ContainsKey(expired.Id).ShouldBeFalse();
         store.Documents.ContainsKey(current.Id).ShouldBeTrue();
     }

@@ -1,16 +1,28 @@
 using PandaBear.BuildingBlocks;
+using PandaBear.DispositionHold;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
 
-/// <summary>Purges document audit records only after their currently configured retention period.</summary>
+/// <summary>
+/// Purges document audit records only after their currently configured retention period and never those of a held
+/// document lineage. The hold check and the deletion share one explicit transaction, and an undecidable hold state
+/// refuses the purge.
+/// </summary>
 public sealed class PurgeExpiredDocumentAuditsCommandHandler(
     IDocumentAuditStore auditStore,
     IUnitOfWork unitOfWork,
+    IDocumentDispositionTransaction transaction,
+    DocumentHoldGate holdGate,
     TimeProvider timeProvider)
 {
-    /// <summary>Removes expired document audit records and records metadata-only evidence of the run in one save, and returns the count. A failed run discards its staged changes and records rejected evidence instead.</summary>
-    public async Task<int> Handle(PurgeExpiredDocumentAuditsCommand command, CancellationToken ct)
+    /// <summary>
+    /// Removes expired, unheld document audit records and records metadata-only evidence of the run in one save inside
+    /// one transaction, and returns the purged and held counts. A failed run discards its staged changes and records
+    /// rejected evidence; an undecidable hold state records refused evidence and rethrows. Neither removes anything.
+    /// </summary>
+    public async Task<DocumentPurgeCounts> Handle(PurgeExpiredDocumentAuditsCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(command.AuditContext);
@@ -18,29 +30,50 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
         var cutoff = timeProvider.GetUtcNow().UtcDateTime;
         try
         {
-            var purgedCount = await auditStore.PurgeExpiredRecords(cutoff, ct);
-            await RecordEvidence(command.AuditContext, purgedCount, cutoff, DocumentAuditOutcome.Succeeded, ct);
-            return purgedCount;
+            return await transaction.Execute([], () => PurgeAndRecordEvidence(command.AuditContext, cutoff, ct), ct);
+        }
+        catch (DispositionHoldStateUnknownException unknown)
+        {
+            await RecordFailureEvidence(command.AuditContext, cutoff, DocumentAuditOutcome.Refused, unknown);
+            throw;
         }
         catch (Exception purgeFailure) when (purgeFailure.ShouldHandleAsFailure(ct))
         {
-            auditStore.DiscardPendingChanges();
-            try
-            {
-                await RecordEvidence(command.AuditContext, 0, cutoff, DocumentAuditOutcome.Rejected, CancellationToken.None);
-            }
-            catch (Exception evidenceFailure)
-            {
-                throw new AggregateException(purgeFailure, evidenceFailure);
-            }
-
+            await RecordFailureEvidence(command.AuditContext, cutoff, DocumentAuditOutcome.Rejected, purgeFailure);
             throw;
+        }
+    }
+
+    private async Task<DocumentPurgeCounts> PurgeAndRecordEvidence(
+        DocumentAuditContext auditContext,
+        DateTime cutoff,
+        CancellationToken ct)
+    {
+        var counts = await auditStore.PurgeExpiredRecords(cutoff, holdGate.FindHeldLineages, ct);
+        await RecordEvidence(auditContext, counts, cutoff, DocumentAuditOutcome.Succeeded, ct);
+        return counts;
+    }
+
+    private async Task RecordFailureEvidence(
+        DocumentAuditContext auditContext,
+        DateTime cutoff,
+        DocumentAuditOutcome outcome,
+        Exception purgeFailure)
+    {
+        auditStore.DiscardPendingChanges();
+        try
+        {
+            await RecordEvidence(auditContext, default, cutoff, outcome, CancellationToken.None);
+        }
+        catch (Exception evidenceFailure)
+        {
+            throw new AggregateException(purgeFailure, evidenceFailure);
         }
     }
 
     private async Task RecordEvidence(
         DocumentAuditContext auditContext,
-        int purgedCount,
+        DocumentPurgeCounts counts,
         DateTime cutoff,
         DocumentAuditOutcome outcome,
         CancellationToken ct)
@@ -48,7 +81,8 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
         var record = DocumentAuditPurgeRecord.Create(
             auditContext.ActorId,
             auditContext.CorrelationId,
-            purgedCount,
+            counts.Purged,
+            counts.Held,
             cutoff,
             outcome,
             timeProvider.GetUtcNow().UtcDateTime);

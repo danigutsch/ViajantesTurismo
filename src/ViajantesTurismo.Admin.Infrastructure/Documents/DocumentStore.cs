@@ -23,13 +23,17 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
             .SingleOrDefaultAsync(lineage => lineage.Revisions.Any(revision => revision.Id == documentId), ct);
 
     /// <summary>Deletes one batch of expired unfinalized drafts, bumps or removes affected lineages, and returns the removed draft count.</summary>
-    public async Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct) =>
-        await EfCoreCommandTransactionScope.Execute(
-            dbContext,
-            () => PurgeExpiredDraftsCore(now, ct),
-            ct);
+    public async Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(heldLineages);
 
-    private async ValueTask<int> PurgeExpiredDraftsCore(DateTime now, CancellationToken ct)
+        return await EfCoreCommandTransactionScope.Execute(
+            dbContext,
+            () => PurgeExpiredDraftsCore(now, heldLineages, ct),
+            ct);
+    }
+
+    private async ValueTask<DocumentPurgeCounts> PurgeExpiredDraftsCore(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
         var purgeCandidates = await dbContext.DocumentDrafts
             .Where(document => document.FinalizedAt == null && document.RetentionExpiresAt <= now)
@@ -40,7 +44,15 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
 
         if (purgeCandidates.Length == 0)
         {
-            return 0;
+            return new DocumentPurgeCounts(0, 0);
+        }
+
+        var held = await heldLineages([.. purgeCandidates.Select(candidate => candidate.DocumentLineageId).Distinct()], ct);
+        var heldCount = purgeCandidates.Count(candidate => held.Contains(candidate.DocumentLineageId));
+        purgeCandidates = [.. purgeCandidates.Where(candidate => !held.Contains(candidate.DocumentLineageId))];
+        if (purgeCandidates.Length == 0)
+        {
+            return new DocumentPurgeCounts(0, heldCount);
         }
 
         var purgeIds = purgeCandidates.Select(candidate => candidate.Id).ToArray();
@@ -66,6 +78,6 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
                 .ExecuteDeleteAsync(ct);
         }
 
-        return removedCount;
+        return new DocumentPurgeCounts(removedCount, heldCount);
     }
 }

@@ -1,5 +1,6 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -14,13 +15,15 @@ public sealed class PurgeExpiredDocumentIdempotencyEntriesCommandHandlerTests
         // Arrange
         var now = new DateTimeOffset(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
         var store = new FakeDocumentIdempotencyRetentionStore { PurgedCount = 5 };
-        var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, new FakeTimeProvider(now));
+        var clock = new FakeTimeProvider(now);
+        var gate = new DocumentHoldGate(new FakeDispositionHoldGuard(), new InMemoryDispositionHoldStore(), clock);
+        var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, new FakeDocumentDispositionTransaction(), gate, clock);
 
         // Act
-        var removedCount = await handler.Handle(TestContext.Current.CancellationToken);
+        var counts = await handler.Handle(TestContext.Current.CancellationToken);
 
         // Assert
-        removedCount.ShouldBe(5);
+        counts.Purged.ShouldBe(5);
         store.PurgeCutoff.ShouldBe(now - DocumentCommandIdempotency.ReplayWindow);
     }
 }

@@ -53,15 +53,17 @@ internal sealed class FakeDocumentStore : IDocumentStore
     }
 
     /// <summary>Removes expired drafts as of the given time and returns how many were removed.</summary>
-    public Task<int> PurgeExpiredDrafts(DateTime now, CancellationToken ct)
+    public async Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
-        var expired = Documents.Values.Where(document => document.IsExpiredDraft(now)).ToArray();
+        var candidates = Documents.Values.Where(document => document.IsExpiredDraft(now)).ToArray();
+        var held = await heldLineages([.. candidates.Select(document => document.DocumentLineageId).Distinct()], ct);
+        var expired = candidates.Where(document => !held.Contains(document.DocumentLineageId)).ToArray();
         foreach (var document in expired)
         {
             AddedDocuments.Remove(document);
             Documents.Remove(document.Id);
         }
 
-        return Task.FromResult(expired.Length);
+        return new DocumentPurgeCounts(expired.Length, candidates.Length - expired.Length);
     }
 }

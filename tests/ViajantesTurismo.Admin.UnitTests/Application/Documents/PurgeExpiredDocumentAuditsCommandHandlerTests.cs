@@ -18,10 +18,10 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandlerTests
         var handler = DocumentAuditTestData.CreatePurgeHandler(auditStore, new FakeUnitOfWork(), Now);
 
         // Act
-        var removedCount = await handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken);
+        var counts = await handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken);
 
         // Assert
-        removedCount.ShouldBe(3);
+        counts.Purged.ShouldBe(3);
         auditStore.PurgeCalledAt.ShouldBe(Now.UtcDateTime);
     }
 

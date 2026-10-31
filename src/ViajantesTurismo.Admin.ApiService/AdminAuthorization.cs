@@ -21,6 +21,8 @@ internal static class AdminAuthorization
     public const string CustomerWrite = "customer.write";
     /// <summary>Permission to manage generated documents.</summary>
     public const string DocumentManage = "document.manage";
+    /// <summary>Permission to place, release and list disposition holds on document lineages; granted to Admin only by default.</summary>
+    public const string DocumentHold = "document.hold";
     /// <summary>Permission to read generated error documentation.</summary>
     public const string DocumentationRead = "documentation.read";
     /// <summary>Permission to manage payment accounts, schedules and instructions, including sensitive payment data.</summary>
@@ -51,6 +53,7 @@ internal static class AdminAuthorization
                 CustomerSensitiveRead,
                 CustomerWrite,
                 DocumentManage,
+                DocumentHold,
                 DocumentationRead,
                 PaymentManage,
                 PaymentRead,
