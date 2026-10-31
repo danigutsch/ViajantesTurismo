@@ -26,9 +26,6 @@ internal static class CatalogTestImages
     /// <summary>Creates a two-frame animated WebP of the given pixel size.</summary>
     public static byte[] CreateAnimatedWebP(uint width, uint height) => CreateAnimation(width, height, MagickFormat.WebP);
 
-    /// <summary>Creates a two-frame animated PNG (APNG) of the given pixel size.</summary>
-    public static byte[] CreateAnimatedPng(uint width, uint height) => CreateAnimation(width, height, MagickFormat.APng);
-
     private static byte[] CreateAnimation(uint width, uint height, MagickFormat format)
     {
         using var frames = new MagickImageCollection();

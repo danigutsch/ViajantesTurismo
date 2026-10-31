@@ -9,24 +9,16 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class MediaAnimatedImageProcessingTests
 {
     [Theory]
-    [InlineData("webp", ImageOutputFormat.WebP)]
-    [InlineData("webp", ImageOutputFormat.Jpeg)]
-    [InlineData("webp", ImageOutputFormat.Avif)]
-    [InlineData("apng", ImageOutputFormat.WebP)]
-    [InlineData("apng", ImageOutputFormat.Jpeg)]
-    [InlineData("apng", ImageOutputFormat.Avif)]
-    public void Process_turns_an_animated_input_into_a_single_frame_variant(string input, ImageOutputFormat format)
+    [InlineData(ImageOutputFormat.WebP)]
+    [InlineData(ImageOutputFormat.Jpeg)]
+    [InlineData(ImageOutputFormat.Avif)]
+    public void Process_turns_an_animated_webp_into_a_single_frame_variant(ImageOutputFormat format)
     {
         // Arrange
-        var animated = input == "webp" ? CatalogTestImages.CreateAnimatedWebP(64, 32) : CatalogTestImages.CreateAnimatedPng(64, 32);
-        if (input == "webp")
+        var animated = CatalogTestImages.CreateAnimatedWebP(64, 32);
+        using (var source = new MagickImageCollection(animated))
         {
-            using var source = new MagickImageCollection(animated);
             source.Count.ShouldBe(2);
-        }
-        else
-        {
-            System.Text.Encoding.Latin1.GetString(animated).ShouldContain("acTL", StringComparison.Ordinal);
         }
 
         // Act

@@ -58,11 +58,13 @@ cancelled request still removes its stored original; see
 
 ## Animated images
 
-Catalog gallery uploads may be animated PNG (APNG) or animated WebP, and are accepted by policy; there is no animation check.
+Catalog gallery uploads may be animated WebP or animated PNG (APNG), and are accepted by policy; there is no animation check.
 The pipeline reduces them to a still image: the decode probe and every variant (WebP, JPEG, AVIF, ICO) are built from the first
 frame only, so the stored original stays animated but no served rendition is (ICO is built the same way but is not covered by
 the test). `MediaAnimatedImageProcessingTests` shows a
-two-frame input producing a one-frame variant for each output format. This is current behaviour of
+two-frame animated WebP producing a one-frame variant for each output format (WebP, JPEG, AVIF). No test covers APNG input:
+Magick.NET cannot write APNG on every platform (the CI runner produced an empty file), and ImageMagick is documented to read
+only the default image of an APNG, which is unverified here. This is current behaviour of
 `MagickImageProcessor` in the pinned SharedKernel package and is not changed here. Animated AVIF sequences (the `avis` brand)
 are accepted by the signature check and are likewise not inspected. The Branding logo is different and refuses animation.
 
