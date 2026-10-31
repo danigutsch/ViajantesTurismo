@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PandaBear.Testing;
 using ViajantesTurismo.Branding.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -45,6 +46,23 @@ public sealed class ClientGeneratedKeyConventionTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
             .Options;
         using var context = new BrandingDbContext(options);
+
+        // Act
+        var violations = StoreGeneratedKeyScanner.FindGeneratedKeys(context.Model);
+
+        // Assert
+        context.Model.GetEntityTypes().ShouldNotBeEmpty();
+        violations.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void The_catalog_model_has_only_client_generated_keys()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<CatalogDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
+            .Options;
+        using var context = new CatalogDbContext(options);
 
         // Act
         var violations = StoreGeneratedKeyScanner.FindGeneratedKeys(context.Model);

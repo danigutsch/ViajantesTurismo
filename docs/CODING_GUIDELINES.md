@@ -464,9 +464,8 @@ rolled back
     configuration declares `ValueGeneratedNever()`. A replay then conflicts on the key instead of duplicating.
 - Do not rely on store-generated keys (identity columns) or on EF generating a default `Guid` on add for
     rows a command creates.
-- `ClientGeneratedKeyConventionTests` fails when a non-owned entity of the Admin or Branding model has a
-    key generated on add. The Catalog model is not covered yet: `CatalogTourReadModelEntity.CatalogTourId`
-    still relies on EF generating the key on add.
+- `ClientGeneratedKeyConventionTests` fails when a non-owned entity of the Admin, Branding or Catalog model
+    has a key generated on add.
 
 ### CreateSlimBuilder
 
