@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using PandaBear.AspNetCore;
 using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.HttpClients;
@@ -57,6 +58,7 @@ builder.Services.AddAdminOpenApiDocuments();
 builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
 
 builder.AddApplication();
+builder.Services.AddSharedKernelMediator();
 builder.AddInfrastructure();
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, ViajantesTurismo.Admin.Contracts.Application.PaymentAccountContractJsonContext.Default));

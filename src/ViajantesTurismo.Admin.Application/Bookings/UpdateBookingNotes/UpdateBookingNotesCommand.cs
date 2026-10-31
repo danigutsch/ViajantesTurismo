@@ -1,3 +1,6 @@
+using PandaBear.Mediator;
+using PandaBear.Results;
+
 namespace ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 
 /// <summary>
@@ -5,4 +8,4 @@ namespace ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 /// </summary>
 public sealed record UpdateBookingNotesCommand(
     Guid BookingId,
-    string? Notes);
+    string? Notes) : ICommand<Result>, IBookingScopedCommand;

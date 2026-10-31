@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -10,7 +11,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 public sealed class DeleteBookingCommandHandler(
     ITourStore tourStore,
     ITourCapacityMutationLock capacityMutationLock,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork) : ICommandHandler<DeleteBookingCommand, Result>
 {
     /// <summary>
     /// Handles the DeleteBookingCommand and returns the result.
@@ -18,7 +19,7 @@ public sealed class DeleteBookingCommandHandler(
     /// <param name="command">The command containing the booking ID to delete.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Result indicating success or failure.</returns>
-    public async Task<Result> Handle(DeleteBookingCommand command, CancellationToken ct)
+    public async ValueTask<Result> Handle(DeleteBookingCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 

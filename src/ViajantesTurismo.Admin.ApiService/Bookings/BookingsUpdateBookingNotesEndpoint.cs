@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -24,7 +25,7 @@ internal static class BookingsUpdateBookingNotesEndpoint
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>> UpdateBookingNotes(
         [FromRoute] Guid id,
         [FromBody] UpdateBookingNotesDto dto,
-        [FromServices] UpdateBookingNotesCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
@@ -32,7 +33,7 @@ internal static class BookingsUpdateBookingNotesEndpoint
 
         var command = new UpdateBookingNotesCommand(id, dto.Notes);
 
-        var result = await handler.Handle(command, ct);
+        var result = await sender.Send(command, ct);
 
         return await AdminEndpointResults.MatchNotFoundValidationBookingResponse<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>, ValidationProblem>>(
             result,
