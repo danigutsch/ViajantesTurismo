@@ -26,6 +26,5 @@ internal sealed class BrandingSettingsConfiguration : IEntityTypeConfiguration<B
         entity.HasOne<BrandingLogoRecord>().WithMany().HasForeignKey(settings => settings.LogoSha256).OnDelete(DeleteBehavior.Restrict);
         entity.Property(settings => settings.SourceEpoch).IsRequired();
         entity.Property(settings => settings.SourceRevision).IsRequired().IsConcurrencyToken();
-        entity.Ignore(settings => settings.IsRevisioned);
     }
 }

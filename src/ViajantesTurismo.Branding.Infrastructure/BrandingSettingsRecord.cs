@@ -93,31 +93,20 @@ internal sealed class BrandingSettingsRecord
         get; private set;
     }
 
-    /// <summary>Gets the authoritative source lineage; empty until revisions start.</summary>
+    /// <summary>Gets the authoritative source lineage.</summary>
     public Guid SourceEpoch
     {
         get; private set;
     }
 
-    /// <summary>Gets the monotonic revision within the source epoch; zero until revisions start.</summary>
+    /// <summary>Gets the monotonic positive revision within the source epoch.</summary>
     public long SourceRevision
     {
         get; private set;
     }
 
-    /// <summary>Whether revisions have started for this row.</summary>
-    public bool IsRevisioned => SourceRevision > 0;
-
-    /// <summary>Creates a revisioned record from settings, starting at revision 1 of the given epoch.</summary>
+    /// <summary>Creates a record from settings, starting at revision 1 of the given epoch.</summary>
     public static BrandingSettingsRecord StartLineage(BrandingSettings settings, Guid sourceEpoch)
-    {
-        var record = FromUnrevisionedSettings(settings);
-        record.StartRevisions(sourceEpoch);
-        return record;
-    }
-
-    /// <summary>Creates a record from settings that has not started revisions.</summary>
-    public static BrandingSettingsRecord FromUnrevisionedSettings(BrandingSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -131,7 +120,11 @@ internal sealed class BrandingSettingsRecord
             settings.HeadingFontFamily,
             settings.BodyFontFamily,
             null,
-            null);
+            null)
+        {
+            SourceEpoch = sourceEpoch,
+            SourceRevision = 1
+        };
     }
 
     /// <summary>Converts the record to validated settings, or null when persisted values are invalid.</summary>
@@ -141,26 +134,9 @@ internal sealed class BrandingSettingsRecord
         return result.IsSuccess ? result.Value : null;
     }
 
-    /// <summary>Starts revisions at revision 1 of the given epoch; throws if already started.</summary>
-    public void StartRevisions(Guid sourceEpoch)
-    {
-        if (IsRevisioned)
-        {
-            throw new InvalidOperationException("Branding settings revisions have already started.");
-        }
-
-        SourceEpoch = sourceEpoch;
-        SourceRevision = 1;
-    }
-
     /// <summary>Moves to a new non-empty source epoch and resets the revision to 1.</summary>
     public void RotateEpoch(Guid sourceEpoch)
     {
-        if (!IsRevisioned)
-        {
-            throw new InvalidOperationException("Branding settings revisions have not started; run the Branding bootstrap first.");
-        }
-
         if (sourceEpoch == Guid.Empty || sourceEpoch == SourceEpoch)
         {
             throw new ArgumentException("A rotated epoch must be new and non-empty.", nameof(sourceEpoch));
@@ -197,11 +173,6 @@ internal sealed class BrandingSettingsRecord
     /// <summary>Replaces the values with the given settings, keeping the logo they keep, and increments the source revision.</summary>
     public void ApplyRevision(BrandingSettings settings)
     {
-        if (!IsRevisioned)
-        {
-            throw new InvalidOperationException("Branding settings revisions have not started; run the Branding bootstrap first.");
-        }
-
         if (!AcceptsLogoUri(settings.LogoUri))
         {
             throw new ArgumentException("Branding settings may only keep or clear the stored logo.", nameof(settings));
@@ -214,11 +185,6 @@ internal sealed class BrandingSettingsRecord
     /// <summary>Points the settings at another logo, or clears it, and increments the source revision.</summary>
     public void ApplyLogoRevision(BrandingSettings settings, string? logoSha256)
     {
-        if (!IsRevisioned)
-        {
-            throw new InvalidOperationException("Branding settings revisions have not started; run the Branding bootstrap first.");
-        }
-
         ReplaceWith(settings, logoSha256);
         SourceRevision++;
     }

@@ -37,22 +37,4 @@ internal static class BrandingLogoWireFormatData
         logo is null ? null : "sha",
         logo is null ? null : "image/webp",
         logo);
-
-    /// <summary>Builds the previous byte-array payload with the same values.</summary>
-    public static LegacyByteArrayBrandingPayload CreatePrevious(byte[]? logo) => new(
-        EventId,
-        OccurredAt,
-        Epoch,
-        4,
-        "Viajantes",
-        "#0F766E",
-        "#F97316",
-        "#FFFBF5",
-        "#1F2937",
-        "Georgia",
-        "system-ui",
-        new Uri("/logo.svg", UriKind.Relative),
-        logo is null ? null : "sha",
-        logo is null ? null : "image/webp",
-        logo);
 }
