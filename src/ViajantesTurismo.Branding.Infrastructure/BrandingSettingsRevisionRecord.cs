@@ -15,6 +15,7 @@ internal sealed class BrandingSettingsRevisionRecord
         string headingFontFamily,
         string bodyFontFamily,
         string? logoUri,
+        string? logoSha256,
         DateTimeOffset committedAt)
     {
         Id = id;
@@ -28,6 +29,7 @@ internal sealed class BrandingSettingsRevisionRecord
         HeadingFontFamily = headingFontFamily;
         BodyFontFamily = bodyFontFamily;
         LogoUri = logoUri;
+        LogoSha256 = logoSha256;
         CommittedAt = committedAt;
     }
 
@@ -97,6 +99,12 @@ internal sealed class BrandingSettingsRevisionRecord
         get; private init;
     }
 
+    /// <summary>Content address of the logo at this revision, or null when no logo was set.</summary>
+    public string? LogoSha256
+    {
+        get; private init;
+    }
+
     /// <summary>When the revision was committed.</summary>
     public DateTimeOffset CommittedAt
     {
@@ -120,6 +128,7 @@ internal sealed class BrandingSettingsRevisionRecord
             current.HeadingFontFamily,
             current.BodyFontFamily,
             current.LogoUri,
+            current.LogoSha256,
             committedAt);
     }
 }

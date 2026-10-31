@@ -16,10 +16,22 @@ internal static class BrandingHttpCache
 
     private static readonly TimeSpan StaleWhileRevalidate = TimeSpan.FromSeconds(300);
 
+    /// <summary>How long a content-addressed response stays fresh: one year, the practical maximum.</summary>
+    public static readonly TimeSpan ImmutableFreshness = TimeSpan.FromDays(365);
+
     /// <summary>Sets public cache headers on the response.</summary>
     public static void SetPublicHeaders(HttpContext httpContext)
     {
         HttpCacheHeaders.SetPublic(httpContext, PublicFreshness, StaleWhileRevalidate);
+    }
+
+    /// <summary>Sets headers for bytes whose address is their content: shared caches and browsers never revalidate.</summary>
+    public static void SetImmutableHeaders(HttpContext httpContext)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        httpContext.Response.Headers.CacheControl = $"public, max-age={(int)ImmutableFreshness.TotalSeconds}, immutable";
+        httpContext.Response.Headers.XContentTypeOptions = "nosniff";
     }
 
 }
