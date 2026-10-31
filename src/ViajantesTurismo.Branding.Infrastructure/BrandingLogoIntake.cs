@@ -11,7 +11,7 @@ namespace ViajantesTurismo.Branding.Infrastructure;
 /// <summary>
 /// Turns an uploaded image into a Branding logo: validates the declared type and signature, bounds the size, scans
 /// for malware, decodes, and re-encodes it so metadata is stripped and dimensions and bytes are bounded.
-/// Animated WebP and APNG uploads are refused by a bounded chunk walk before anything is decoded.
+/// Animated WebP and APNG uploads are refused by a bounded chunk walk before the malware scan and the decode; a truncated or overrunning chunk is refused the same way.
 /// </summary>
 /// <param name="scanner">The malware scanner.</param>
 /// <param name="logger">The logger.</param>
@@ -25,6 +25,7 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
     private const int PngChunkHeaderLength = 8;
     private const int PngChunkCrcLength = 4;
     private const int WebPChunkHeaderLength = 8;
+    private const int WebPRiffSizeOffset = 4;
     private const int WebPAnimationFlag = 0x02;
 
     private static readonly ImageProcessingLimits UploadLimits = new(
@@ -133,9 +134,12 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
     private static bool HasAnimationControlChunk(Stream upload)
     {
         Span<byte> header = stackalloc byte[PngChunkHeaderLength];
-        upload.Position = PngSignatureLength;
-        while (upload.ReadAtLeast(header, PngChunkHeaderLength, throwOnEndOfStream: false) == PngChunkHeaderLength)
+        var length = upload.Length;
+        var position = (long)PngSignatureLength;
+        while (position + PngChunkHeaderLength <= length)
         {
+            upload.Position = position;
+            upload.ReadExactly(header);
             var type = header[4..];
             if (type.SequenceEqual("acTL"u8))
             {
@@ -147,18 +151,27 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
                 return false;
             }
 
-            upload.Position += BinaryPrimitives.ReadUInt32BigEndian(header) + (long)PngChunkCrcLength;
+            position += PngChunkHeaderLength + (long)BinaryPrimitives.ReadUInt32BigEndian(header) + PngChunkCrcLength;
+            if (position > length)
+            {
+                return true;
+            }
         }
 
-        return false;
+        return position != length;
     }
 
     private static bool HasWebPAnimation(Stream upload)
     {
         Span<byte> header = stackalloc byte[WebPChunkHeaderLength];
-        upload.Position = SignatureLength;
-        while (upload.ReadAtLeast(header, WebPChunkHeaderLength, throwOnEndOfStream: false) == WebPChunkHeaderLength)
+        upload.Position = WebPRiffSizeOffset;
+        upload.ReadExactly(header[..4]);
+        var end = Math.Min(upload.Length, WebPChunkHeaderLength + (long)BinaryPrimitives.ReadUInt32LittleEndian(header));
+        var position = (long)SignatureLength;
+        while (position + WebPChunkHeaderLength <= end)
         {
+            upload.Position = position;
+            upload.ReadExactly(header);
             var type = header[..4];
             if (type.SequenceEqual("ANIM"u8) || type.SequenceEqual("ANMF"u8))
             {
@@ -166,16 +179,21 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
             }
 
             var size = BinaryPrimitives.ReadUInt32LittleEndian(header[4..]);
-            var payloadStart = upload.Position;
+            var payloadStart = position + WebPChunkHeaderLength;
+            if (payloadStart + size > end)
+            {
+                return true;
+            }
+
             if (type.SequenceEqual("VP8X"u8) && size > 0 && (upload.ReadByte() & WebPAnimationFlag) != 0)
             {
                 return true;
             }
 
-            upload.Position = payloadStart + size + (size & 1);
+            position = payloadStart + size + (size & 1);
         }
 
-        return false;
+        return position < end;
     }
 
     private async ValueTask<Result<BrandingLogo>?> Scan(Stream upload, CancellationToken ct)

@@ -147,7 +147,7 @@ remove action; it has no logo address field.
 - `PUT /api/v1/branding/settings/logo` (`BrandingWrite`, `If-Match` required, 428 without it) takes the raw image
   with its content type. The intake checks the declared type against the file signature, refuses SVG and every
   other type, refuses animated WebP and APNG (400 on `Content`, nothing stored; the check walks the container chunks
-  before any decode), scans for malware (a hit is 400, an unavailable scanner is 503), decodes within 2048 x 2048 pixels and
+  before the malware scan and the decode), scans for malware (a hit is 400, an unavailable scanner is 503), decodes within 2048 x 2048 pixels and
   4,000,000 pixels, and re-encodes to WebP of at most 40 KiB. Metadata is stripped by the re-encode.
 - The result is stored once by lowercase SHA-256 in `branding."BrandingLogos"` and never updated; the same image
   uploaded again reuses the row. Settings and revisions keep the hash.
