@@ -30,6 +30,7 @@ internal static class TelemetryPrivacyAttributeClassifier
         "http.target",
         "http.url",
         "http.user_agent",
+        "KeyId",
         "db.connection_string",
         "db.npgsql.connection_id",
         "db.npgsql.data_source",

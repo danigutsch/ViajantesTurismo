@@ -29,6 +29,9 @@ internal static partial class PrivacyTestLogger
             new EventId(3, nameof(LogMixedCaseErrorType)),
             "Operation failed with {Error.Type}");
 
+    [LoggerMessage(LogLevel.Warning, "No XML encryptor configured. Key {KeyId:B} may be persisted to storage in unencrypted form.")]
+    public static partial void LogDataProtectionKey(ILogger logger, Guid keyId);
+
     [LoggerMessage(LogLevel.Error, "Customer {CustomerId} booking {BookingId} email {CustomerEmail} object {ObjectKey} failed with {Outcome}")]
     public static partial void LogFailure(
         ILogger logger,

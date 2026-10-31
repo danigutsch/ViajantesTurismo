@@ -407,6 +407,32 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
     }
 
     [Fact]
+    public void Log_export_removes_data_protection_key_identifiers()
+    {
+        // Arrange
+        var exportedLogs = new ConcurrentQueue<CapturedLogRecord>();
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+        builder.AddServiceDefaults();
+        builder.Logging.AddOpenTelemetry(logging =>
+            logging.AddProcessor(_ => new SimpleLogRecordExportProcessor(new CollectingLogRecordExporter(exportedLogs))));
+        using var host = builder.Build();
+        var logger = host.Services.GetRequiredService<ILogger<ServiceDefaultsPrivacyTelemetryTests>>();
+        var keyId = Guid.CreateVersion7();
+
+        // Act
+        PrivacyTestLogger.LogDataProtectionKey(logger, keyId);
+
+        // Assert
+        var exported = exportedLogs.ShouldHaveSingleItem(item => string.Equals(
+            item.CategoryName,
+            typeof(ServiceDefaultsPrivacyTelemetryTests).FullName,
+            StringComparison.Ordinal));
+        exported.Attributes.ShouldNotContain(static attribute =>
+            string.Equals(attribute.Key, "KeyId", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Log_export_replaces_existing_exception_type_case_insensitively()
     {
         // Arrange
