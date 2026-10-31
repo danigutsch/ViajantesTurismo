@@ -10,7 +10,7 @@ public sealed class DocumentAuditWriter(
     TimeProvider timeProvider)
 {
     /// <summary>Adds and persists an audit record when trusted request metadata is available.</summary>
-    public Task<Result> Add(
+    public async Task<Result> Add(
         DocumentAuditContext auditContext,
         DocumentAuditOperation operation,
         Guid? documentId,
@@ -18,7 +18,7 @@ public sealed class DocumentAuditWriter(
         int? documentRevision,
         DocumentAuditOutcome outcome,
         DocumentAuditReasonCode reasonCode,
-        CancellationToken ct) => Persist(
+        CancellationToken ct) => await Persist(
             auditContext,
             operation,
             documentId,
@@ -34,7 +34,7 @@ public sealed class DocumentAuditWriter(
     /// Adds and persists a hold audit record naming the hold and its basis, so the record commits with whatever the
     /// current unit of work already staged.
     /// </summary>
-    public Task<Result> AddHold(
+    public async Task<Result> AddHold(
         DocumentAuditContext auditContext,
         DocumentAuditOperation operation,
         Guid documentId,
@@ -42,7 +42,7 @@ public sealed class DocumentAuditWriter(
         string? holdBasis,
         DocumentAuditOutcome outcome,
         DocumentAuditReasonCode reasonCode,
-        CancellationToken ct) => Persist(
+        CancellationToken ct) => await Persist(
             auditContext,
             operation,
             documentId,
