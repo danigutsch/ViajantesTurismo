@@ -131,7 +131,7 @@ internal sealed class BrandingProjectionRecord
         LogoContent = state.Logo?.Content.ToArray();
     }
 
-    /// <summary>Converts the row back to an application projection state.</summary>
+    /// <summary>Converts the row back to an application projection state; the logo bytes are copied so the state never aliases the tracked entity buffer.</summary>
     public BrandingProjectionState ToState() => new(
         SourceEpoch,
         SourceRevision,
@@ -144,6 +144,6 @@ internal sealed class BrandingProjectionRecord
         BodyFontFamily,
         LogoUri is null ? null : new Uri(LogoUri, UriKind.RelativeOrAbsolute),
         LogoSha256 is { } sha256 && LogoContentType is { } contentType && LogoContent is { } content
-            ? new BrandingProjectionLogo(sha256, contentType, content)
+            ? new BrandingProjectionLogo(sha256, contentType, content.ToArray())
             : null);
 }

@@ -158,20 +158,202 @@ public sealed class BrandingLogoEndpointTests
     }
 
     [Fact]
-    public async Task A_still_png_with_the_same_chunk_layout_is_still_accepted()
+    public async Task A_still_png_with_the_animation_control_chunk_removed_is_accepted()
     {
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
         await using var factory = BrandingApiTestHost.Create(store);
         using var client = factory.CreateClient();
-        var still = BrandingTestImages.Create(MagickFormat.Png, 32, 32);
+        var upload = BrandingTestImages.CreateStillPngWithoutAnimationControl(32, 32);
 
         // Act
-        using var response = await BrandingLogoRequests.PutLogo(client, still, PngType, "*");
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, PngType, "*");
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         store.Logos.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task A_real_still_png_is_accepted()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.Create(MagickFormat.Png, 32, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, PngType, "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        store.Logos.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task A_real_still_webp_is_accepted()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.Create(MagickFormat.WebP, 32, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, "image/webp", "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        store.Logos.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task A_png_with_an_animation_control_chunk_after_the_image_data_is_accepted_as_still()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.CreatePngWithAnimationControlAfterImageData(32, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, PngType, "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        store.Logos.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task A_still_webp_followed_by_bytes_that_look_like_an_animation_frame_is_accepted()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.CreateStillWebPWithTrailingAnimationFrame(32, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, "image/webp", "*");
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        store.Logos.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task A_png_chunk_length_near_the_uint_maximum_is_refused()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.CreatePngWithOversizedChunk(32, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, PngType, "*");
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        store.Logos.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_png_with_a_truncated_chunk_header_is_refused()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.CreatePngWithTruncatedChunkHeader(32, 32);
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, PngType, "*");
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        store.Logos.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_webp_with_sizes_near_the_uint_maximum_is_refused()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.CreateWebPWithOversizedSizes();
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, "image/webp", "*");
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        store.Logos.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_webp_with_a_truncated_chunk_header_is_refused()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.CreateWebPWithTruncatedChunkHeader();
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, "image/webp", "*");
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        store.Logos.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_webp_with_the_animation_flag_set_is_refused()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.CreateWebPWithAnimationFlag();
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, "image/webp", "*");
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        store.Logos.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_webp_with_an_animation_frame_but_a_cleared_flag_is_refused()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var upload = BrandingTestImages.CreateWebPWithAnimationFrameButNoFlag();
+
+        // Act
+        using var response = await BrandingLogoRequests.PutLogo(client, upload, "image/webp", "*");
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        store.Logos.ShouldBeEmpty();
     }
 
     [Fact]
