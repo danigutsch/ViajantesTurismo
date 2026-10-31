@@ -50,9 +50,8 @@ that URI, so the finalized HTML contains the image itself, and the logo SHA-256 
 recorded branding version. A projection without a logo yields a brand-name-only header. Admin-typed, root-relative
 and external logo addresses are never captured and are never rendered, so opening an artifact loads nothing from a
 third party or from the Admin host, and replacing or deleting the logo later does not change a finalized artifact.
-Stored legacy values that are not data URIs read as no logo. The `WidenDocumentBrandingLogoUri` migration widens
-`DocumentDrafts.BrandingLogoUri` to 60,000 characters and is one-way in practice: narrowing it back fails once data
-URIs exist. Each captured revision can carry up to about 54 KB of logo text.
+`DocumentDrafts.BrandingLogoUri` holds only a validated raster data URI or null and is 60,000 characters wide
+(`DocumentLimits.MaxBrandingLogoUriLength`). Each captured revision can carry up to about 54 KB of logo text.
 
 ## Legal hold
 
@@ -96,9 +95,10 @@ purges that do exist: unfinalized drafts, document audit records and document id
 - A SQL pre-filter leaves lineages with an effective hold out of the candidate query before the batch limit, so held rows cannot
   starve a batch. It is an optimization only; the guard check on the final candidates stays the authoritative decision.
 - Audit records store their lineage so a hold placed after a revision was purged still covers that revision's audit records.
-  A record written before that column existed whose lineage could not be derived (its revision was already purged) is
-  undecidable: it is left out of the candidate query so it cannot occupy a batch, kept (fail closed), and counted separately as
-  `UndecidableCount` in the purge evidence. Whether to keep or purge such legacy records is a Product decision.
+  Every record is stamped when it is inserted: the lineage of its document, `Guid.Empty` (no lineage) when the document does not
+  exist at write time, or null only when the record names no document. The immutability trigger rejects every UPDATE and TRUNCATE,
+  and the check constraint `CK_DocumentAuditRecords_DocumentLineageStamped` (`DocumentId IS NULL OR DocumentLineageId IS NOT NULL`)
+  makes an unstamped record that names a document impossible.
 - Residual: an audit record written for a document that no longer exists is stamped as having no lineage and stays purgeable. A
   draft purged between the handler's read and the audit write could therefore leave one audit record that a later hold on the
   same lineage does not cover.

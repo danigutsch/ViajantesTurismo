@@ -351,11 +351,8 @@ one UTC instant; lease acquisition and completion capture separate instants. Exi
 payment audit columns remain UTC `DateTime` instants. UUIDv7 generation remains at each identity
 owner, and authentication keys continue to use cryptographic randomness directly.
 
-The `UseCivilDates` migration explicitly converts existing timestamps through UTC before taking
-the date, independent of the PostgreSQL session timezone. This conversion discards time-of-day.
-Rollback reconstructs UTC midnight; it cannot recover original times. Back up affected data before
-applying this migration to an existing database. Migration tests exercise both positive and negative
-timezone offsets and a forward/rollback/forward cycle.
+The `InitialAdmin` migration creates tour dates and customer birth dates as PostgreSQL `date`
+columns, so no timezone conversion applies. Hosted tests prove the dates round-trip.
 
 Management rejects tickets at or after `ExpiresUtc`. Tickets without explicit expiry use the
 configured relative cache lifetime. Its explicit expiry checks use the injected clock; cookie

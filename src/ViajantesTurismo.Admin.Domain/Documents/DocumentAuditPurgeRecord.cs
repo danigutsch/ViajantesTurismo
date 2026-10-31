@@ -12,7 +12,6 @@ public sealed class DocumentAuditPurgeRecord : IEntity<Guid>
         string correlationId,
         int purgedCount,
         int heldCount,
-        int undecidableCount,
         DateTime retentionCutoffUtc,
         DocumentAuditOutcome outcome,
         DateTime occurredAtUtc)
@@ -22,7 +21,6 @@ public sealed class DocumentAuditPurgeRecord : IEntity<Guid>
         CorrelationId = correlationId;
         PurgedCount = purgedCount;
         HeldCount = heldCount;
-        UndecidableCount = undecidableCount;
         RetentionCutoffUtc = retentionCutoffUtc;
         Outcome = outcome;
         OccurredAtUtc = occurredAtUtc;
@@ -58,12 +56,6 @@ public sealed class DocumentAuditPurgeRecord : IEntity<Guid>
         get; private init;
     }
 
-    /// <summary>Gets how many expired audit records the run kept because their lineage could not be determined.</summary>
-    public int UndecidableCount
-    {
-        get; private init;
-    }
-
     /// <summary>Gets the instant at or before which audit records were eligible for removal.</summary>
     public DateTime RetentionCutoffUtc
     {
@@ -90,8 +82,7 @@ public sealed class DocumentAuditPurgeRecord : IEntity<Guid>
         int heldCount,
         DateTime retentionCutoffUtc,
         DocumentAuditOutcome outcome,
-        DateTime occurredAtUtc,
-        int undecidableCount = 0)
+        DateTime occurredAtUtc)
     {
         if (string.IsNullOrWhiteSpace(actorId) || actorId.Length > DocumentAuditLimits.MaxActorIdLength)
         {
@@ -111,13 +102,12 @@ public sealed class DocumentAuditPurgeRecord : IEntity<Guid>
         if (!Enum.IsDefined(outcome) ||
             purgedCount < 0 ||
             heldCount < 0 ||
-            undecidableCount < 0 ||
-            (outcome != DocumentAuditOutcome.Succeeded && (purgedCount != 0 || heldCount != 0 || undecidableCount != 0)))
+            (outcome != DocumentAuditOutcome.Succeeded && (purgedCount != 0 || heldCount != 0)))
         {
             return DocumentAuditErrors.InvalidEvidence().ConvertError<DocumentAuditPurgeRecord>();
         }
 
         return Result.Ok(new DocumentAuditPurgeRecord(
-            actorId, correlationId, purgedCount, heldCount, undecidableCount, retentionCutoffUtc, outcome, occurredAtUtc));
+            actorId, correlationId, purgedCount, heldCount, retentionCutoffUtc, outcome, occurredAtUtc));
     }
 }

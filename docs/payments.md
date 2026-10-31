@@ -67,13 +67,12 @@ eligibility. Regeneration creates an immutable revision. Files already downloade
 
 ## Persistence and operation
 
-Apply migration `20261021132243_PaymentLifecycle` before enabling workflows. It creates protected
+Apply the `InitialAdmin` migration before enabling workflows. It creates protected
 accounts, financial histories, instruction snapshots and metadata-only audits. Nothing has been
-deployed, so the unpublished migration chain no longer creates the old `Payment` table and contains
-no import, currency backfill or compatibility workflow. Recreate any development database built
-with the earlier unpublished schema; old local payment rows are not imported. Database recreation
-discards its local data and requires the operator to choose when to perform it. A rollback with
-financial evidence still fails closed.
+deployed, so the migration chain contains no import, currency backfill or compatibility workflow.
+Recreate any development database built with an earlier schema; old local rows are not imported.
+Database recreation discards its local data and requires the operator to choose when to perform it.
+A rollback with financial evidence still fails closed.
 
 Receipts exist only inside the protected financial history. They retain settlement method, currency,
 gross, fees, net, creator and calendar payment date. Booking balances and status derive only from

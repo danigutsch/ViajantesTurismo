@@ -14,7 +14,8 @@ internal static class DocumentAuditLineage
 
     /// <summary>
     /// The stamp for a record whose document did not exist when it was written, so no lineage and therefore no hold can
-    /// ever cover it. A null stamp instead means the lineage was never determined, and such a record is never purged.
+    /// ever cover it. A record with no document carries a null stamp; the database rejects a null stamp on a record
+    /// that names a document.
     /// </summary>
     public static readonly Guid NoLineage = Guid.Empty;
 

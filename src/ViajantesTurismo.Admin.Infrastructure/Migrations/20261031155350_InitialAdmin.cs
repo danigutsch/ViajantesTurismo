@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -12,7 +13,13 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
+                name: "disposition_hold");
+
+            migrationBuilder.EnsureSchema(
                 name: "messaging");
+
+            migrationBuilder.EnsureSchema(
+                name: "branding_projection");
 
             migrationBuilder.AlterDatabase()
                 .Annotation("Npgsql:PostgresExtension:citext", ",,");
@@ -41,6 +48,24 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DocumentAuditPurgeRecords",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ActorId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    CorrelationId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    PurgedCount = table.Column<int>(type: "integer", nullable: false),
+                    HeldCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    RetentionCutoffUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Outcome = table.Column<string>(type: "text", nullable: false),
+                    OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentAuditPurgeRecords", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DocumentAuditRecords",
                 columns: table => new
                 {
@@ -54,11 +79,13 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     ReasonCode = table.Column<string>(type: "text", nullable: false),
                     CorrelationId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    RetentionExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    RetentionExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DocumentLineageId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DocumentAuditRecords", x => x.Id);
+                    table.CheckConstraint("CK_DocumentAuditRecords_DocumentLineageStamped", "\"DocumentId\" IS NULL OR \"DocumentLineageId\" IS NOT NULL");
                 });
 
             migrationBuilder.CreateTable(
@@ -79,6 +106,30 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "holds",
+                schema: "disposition_hold",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Scope = table.Column<string>(type: "character varying(193)", maxLength: 193, nullable: false),
+                    Basis = table.Column<string>(type: "character varying(48)", maxLength: 48, nullable: false),
+                    PurposeCode = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    AuthorityReference = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    PlacedBy = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    PlacedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    EffectiveFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReviewDueAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ReleasedBy = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
+                    ReleasedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ReleaseReasonCode = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_holds", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "idempotency_keys",
                 schema: "messaging",
                 columns: table => new
@@ -93,6 +144,23 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_idempotency_keys", x => new { x.Scope, x.Key });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "inbox_messages",
+                schema: "branding_projection",
+                columns: table => new
+                {
+                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SourceEpoch = table.Column<Guid>(type: "uuid", nullable: false),
+                    SourceRevision = table.Column<long>(type: "bigint", nullable: false),
+                    Outcome = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
+                    ReasonCode = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    ProcessedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_inbox_messages", x => x.EventId);
                 });
 
             migrationBuilder.CreateTable(
@@ -129,14 +197,119 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PaymentAccounts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Version = table.Column<long>(type: "bigint", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Revision = table.Column<int>(type: "integer", nullable: false),
+                    ProtectedState = table.Column<byte[]>(type: "bytea", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentAccounts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PaymentAudits",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Sequence = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    ResourceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TargetId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Revision = table.Column<long>(type: "bigint", nullable: false),
+                    ActorId = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    OccurredAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Operation = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Reason = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    SelfApproved = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentAudits", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "recovery",
+                schema: "branding_projection",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
+                    Reason = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Since = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    AuthorizedEventId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AuthorizedEpoch = table.Column<Guid>(type: "uuid", nullable: true),
+                    AuthorizedRevision = table.Column<long>(type: "bigint", nullable: true),
+                    AuthorizationReason = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    IncidentReference = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    AuthorizedBy = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    AuthorizedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_recovery", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "recovery_audit",
+                schema: "branding_projection",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Kind = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    OldEpoch = table.Column<Guid>(type: "uuid", nullable: true),
+                    OldRevision = table.Column<long>(type: "bigint", nullable: true),
+                    NewEpoch = table.Column<Guid>(type: "uuid", nullable: false),
+                    NewRevision = table.Column<long>(type: "bigint", nullable: false),
+                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Reason = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    IncidentReference = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    Actor = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    RecordedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_recovery_audit", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "settings",
+                schema: "branding_projection",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    SourceEpoch = table.Column<Guid>(type: "uuid", nullable: false),
+                    SourceRevision = table.Column<long>(type: "bigint", nullable: false),
+                    BrandName = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
+                    PrimaryColor = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    AccentColor = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    BackgroundColor = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    TextColor = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false),
+                    HeadingFontFamily = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
+                    BodyFontFamily = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
+                    LogoUri = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
+                    LogoSha256 = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    LogoContentType = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    LogoContent = table.Column<byte[]>(type: "bytea", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_settings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Tours",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Identifier = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     DoubleRoomSupplementPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     RegularBikePrice = table.Column<decimal>(type: "numeric", nullable: false),
@@ -164,6 +337,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     LastConsumeAttemptAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     NextConsumeAttemptAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     LastConsumeError = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    PoisonedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     ClaimedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     ClaimedUntil = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     EnvelopeSpec = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
@@ -315,7 +489,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     FirstName = table.Column<string>(type: "text", nullable: false),
                     LastName = table.Column<string>(type: "text", nullable: false),
                     Gender = table.Column<string>(type: "text", nullable: false),
-                    BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Nationality = table.Column<string>(type: "text", nullable: false),
                     Occupation = table.Column<string>(type: "text", nullable: false)
                 },
@@ -365,8 +539,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     SourceVersion = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     BrandingVersion = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    BrandingSourceRevision = table.Column<long>(type: "bigint", nullable: true),
                     BrandingName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    BrandingLogoUri = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
+                    BrandingLogoUri = table.Column<string>(type: "character varying(60000)", maxLength: 60000, nullable: true),
                     BrandingPrimaryColor = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     BrandingAccentColor = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     BrandingBackgroundColor = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
@@ -380,7 +555,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     FinalizedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     FinalizedArtifactName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
                     ReplacesDocumentId = table.Column<Guid>(type: "uuid", nullable: true),
-                    VoidReason = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    VoidReason = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     FinalizedArtifactContent = table.Column<byte[]>(type: "bytea", nullable: true)
                 },
                 constraints: table =>
@@ -451,6 +626,59 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "BookingPaymentHistories",
+                columns: table => new
+                {
+                    BookingId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Version = table.Column<long>(type: "bigint", nullable: false),
+                    ProtectedState = table.Column<byte[]>(type: "bytea", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BookingPaymentHistories", x => x.BookingId);
+                    table.ForeignKey(
+                        name: "FK_BookingPaymentHistories_Booking_BookingId",
+                        column: x => x.BookingId,
+                        principalTable: "Booking",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PaymentInstructionSnapshots",
+                columns: table => new
+                {
+                    DocumentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BookingId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AccountId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AccountRevisionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Revision = table.Column<int>(type: "integer", nullable: false),
+                    ProtectedSnapshot = table.Column<byte[]>(type: "bytea", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentInstructionSnapshots", x => x.DocumentId);
+                    table.ForeignKey(
+                        name: "FK_PaymentInstructionSnapshots_Booking_BookingId",
+                        column: x => x.BookingId,
+                        principalTable: "Booking",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PaymentInstructionSnapshots_DocumentDrafts_DocumentId",
+                        column: x => x.DocumentId,
+                        principalTable: "DocumentDrafts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PaymentInstructionSnapshots_PaymentAccounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "PaymentAccounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Booking_TourId",
                 table: "Booking",
@@ -461,6 +689,11 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 table: "CustomerContactInfo",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DocumentAuditRecords_DocumentLineageId",
+                table: "DocumentAuditRecords",
+                column: "DocumentLineageId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DocumentAuditRecords_RetentionExpiresAt",
@@ -485,25 +718,23 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 columns: new[] { "DocumentLineageId", "Revision" },
                 unique: true);
 
-            migrationBuilder.Sql(
-                """
-                ALTER TABLE "DocumentDrafts"
-                ADD COLUMN "ActiveFinalized" boolean
-                GENERATED ALWAYS AS (
-                    CASE WHEN "Status" = 'Finalized' THEN TRUE ELSE NULL END
-                ) STORED;
-
-                ALTER TABLE "DocumentDrafts"
-                ADD CONSTRAINT "UQ_DocumentDrafts_ActiveFinalizedLineage"
-                UNIQUE ("DocumentLineageId", "ActiveFinalized")
-                DEFERRABLE INITIALLY DEFERRED;
-                """);
-
             migrationBuilder.CreateIndex(
                 name: "UX_DocumentLineages_BookingId_Type",
                 table: "DocumentLineages",
                 columns: new[] { "BookingId", "Type" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_holds_Scope",
+                schema: "disposition_hold",
+                table: "holds",
+                column: "Scope");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_inbox_messages_Outcome",
+                schema: "branding_projection",
+                table: "inbox_messages",
+                column: "Outcome");
 
             migrationBuilder.CreateIndex(
                 name: "IX_outbox_messages_EventId",
@@ -524,6 +755,32 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 table: "outbox_messages",
                 columns: new[] { "PublishedAt", "NextPublishAttemptAt", "EnqueuedAt" });
 
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentAudits_ResourceId_OccurredAt",
+                table: "PaymentAudits",
+                columns: new[] { "ResourceId", "OccurredAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentAudits_Sequence",
+                table: "PaymentAudits",
+                column: "Sequence",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentInstructionSnapshots_AccountId",
+                table: "PaymentInstructionSnapshots",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentInstructionSnapshots_BookingId",
+                table: "PaymentInstructionSnapshots",
+                column: "BookingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_recovery_audit_Kind_OldEpoch",
+                schema: "branding_projection",
+                table: "recovery_audit",
+                columns: new[] { "Kind", "OldEpoch" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tours_Identifier",
@@ -545,6 +802,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_transport_messages_ConsumerName_PoisonedAt",
+                schema: "messaging",
+                table: "transport_messages",
+                columns: new[] { "ConsumerName", "PoisonedAt" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_transport_messages_ConsumerName_ProcessedAt_NextConsumeAtte~",
                 schema: "messaging",
                 table: "transport_messages",
@@ -552,26 +815,30 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             migrationBuilder.Sql(
                 """
-                CREATE OR REPLACE FUNCTION public."EnforceDocumentDraftBookingEligibility"()
-                RETURNS trigger
-                LANGUAGE plpgsql
-                AS $$
-                DECLARE
-                    booking_status text;
+                ALTER TABLE "DocumentDrafts"
+                ADD COLUMN "ActiveFinalized" boolean
+                GENERATED ALWAYS AS (
+                    CASE WHEN "Status" = 'Finalized' THEN TRUE ELSE NULL END
+                ) STORED;
+
+                ALTER TABLE "DocumentDrafts"
+                ADD CONSTRAINT "UQ_DocumentDrafts_ActiveFinalizedLineage"
+                UNIQUE ("DocumentLineageId", "ActiveFinalized")
+                DEFERRABLE INITIALLY DEFERRED;
+                """);
+
+            migrationBuilder.Sql(
+                """
+                CREATE FUNCTION public."EnforceDocumentDraftBookingEligibility"()
+                RETURNS trigger LANGUAGE plpgsql AS $$
+                DECLARE booking_status text;
                 BEGIN
-                    SELECT "Status"
-                    INTO booking_status
-                    FROM public."Booking"
-                    WHERE "Id" = NEW."BookingId"
-                    FOR SHARE;
-
-                    IF NOT FOUND OR booking_status NOT IN ('Confirmed', 'Completed') THEN
-                        RAISE EXCEPTION USING
-                            ERRCODE = '23514',
-                            CONSTRAINT = 'CK_DocumentDrafts_BookingEligibility',
-                            MESSAGE = 'Document drafts require an accepted booking.';
+                    SELECT "Status" INTO booking_status FROM public."Booking" WHERE "Id" = NEW."BookingId" FOR SHARE;
+                    IF NOT FOUND OR
+                        (NEW."Type" = 'PaymentInstructions' AND booking_status NOT IN ('Pending', 'Confirmed', 'Completed')) OR
+                        (NEW."Type" <> 'PaymentInstructions' AND booking_status NOT IN ('Confirmed', 'Completed')) THEN
+                        RAISE EXCEPTION USING ERRCODE = '23514', CONSTRAINT = 'CK_DocumentDrafts_BookingEligibility', MESSAGE = 'The document booking is ineligible.';
                     END IF;
-
                     RETURN NEW;
                 END;
                 $$;
@@ -583,7 +850,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             migrationBuilder.Sql(
                 """
-                CREATE OR REPLACE FUNCTION public."PreventDocumentAuditRecordMutation"()
+                CREATE FUNCTION public."PreventDocumentAuditRecordMutation"()
                 RETURNS trigger
                 LANGUAGE plpgsql
                 AS $$
@@ -612,23 +879,67 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 BEFORE TRUNCATE ON "DocumentAuditRecords"
                 FOR EACH STATEMENT EXECUTE FUNCTION public."PreventDocumentAuditRecordMutation"();
                 """);
+
+            migrationBuilder.Sql(
+                """
+                CREATE FUNCTION public."RejectPaymentHistoryMutation"()
+                RETURNS trigger LANGUAGE plpgsql AS $$
+                BEGIN
+                    RAISE EXCEPTION USING ERRCODE = '23514', MESSAGE = 'Payment records and audit evidence are append-only.';
+                END;
+                $$;
+                CREATE TRIGGER "TR_PaymentAudits_Immutable" BEFORE UPDATE OR DELETE ON "PaymentAudits"
+                    FOR EACH ROW EXECUTE FUNCTION public."RejectPaymentHistoryMutation"();
+                CREATE TRIGGER "TR_PaymentInstructions_Immutable" BEFORE UPDATE ON "PaymentInstructionSnapshots"
+                    FOR EACH ROW EXECUTE FUNCTION public."RejectPaymentHistoryMutation"();
+
+                CREATE FUNCTION public."EnforcePaymentVersionAdvance"()
+                RETURNS trigger LANGUAGE plpgsql AS $$
+                BEGIN
+                    IF NEW."Version" <= OLD."Version" THEN
+                        RAISE EXCEPTION USING ERRCODE = '23514', MESSAGE = 'Payment record versions must advance.';
+                    END IF;
+                    RETURN NEW;
+                END;
+                $$;
+                CREATE TRIGGER "TR_PaymentAccounts_Version" BEFORE UPDATE ON "PaymentAccounts"
+                    FOR EACH ROW EXECUTE FUNCTION public."EnforcePaymentVersionAdvance"();
+                CREATE TRIGGER "TR_BookingPaymentHistories_Version" BEFORE UPDATE ON "BookingPaymentHistories"
+                    FOR EACH ROW EXECUTE FUNCTION public."EnforcePaymentVersionAdvance"();
+                """);
         }
 
         /// <inheritdoc />
+        /// <remarks>A rollback must never erase financial history.</remarks>
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(
                 """
-                DROP TRIGGER IF EXISTS "TR_DocumentDrafts_EnforceBookingEligibility" ON public."DocumentDrafts";
-                DROP FUNCTION IF EXISTS public."EnforceDocumentDraftBookingEligibility"();
+                DO $$ BEGIN
+                    IF EXISTS (SELECT 1 FROM "PaymentAccounts") OR EXISTS (SELECT 1 FROM "BookingPaymentHistories")
+                        OR EXISTS (SELECT 1 FROM "PaymentAudits") OR EXISTS (SELECT 1 FROM "PaymentInstructionSnapshots") THEN
+                        RAISE EXCEPTION 'Payment history exists. Use an approved forward recovery or restore procedure.';
+                    END IF;
+                END $$;
                 """);
 
             migrationBuilder.Sql(
                 """
-                DROP TRIGGER IF EXISTS "TR_DocumentAuditRecords_RejectTruncate" ON "DocumentAuditRecords";
-                DROP TRIGGER IF EXISTS "TR_DocumentAuditRecords_RejectMutation" ON "DocumentAuditRecords";
-                DROP FUNCTION IF EXISTS public."PreventDocumentAuditRecordMutation"();
+                DROP TRIGGER "TR_BookingPaymentHistories_Version" ON "BookingPaymentHistories";
+                DROP TRIGGER "TR_PaymentAccounts_Version" ON "PaymentAccounts";
+                DROP TRIGGER "TR_PaymentInstructions_Immutable" ON "PaymentInstructionSnapshots";
+                DROP TRIGGER "TR_PaymentAudits_Immutable" ON "PaymentAudits";
+                DROP FUNCTION public."EnforcePaymentVersionAdvance"();
+                DROP FUNCTION public."RejectPaymentHistoryMutation"();
+                DROP TRIGGER "TR_DocumentAuditRecords_RejectTruncate" ON "DocumentAuditRecords";
+                DROP TRIGGER "TR_DocumentAuditRecords_RejectMutation" ON "DocumentAuditRecords";
+                DROP FUNCTION public."PreventDocumentAuditRecordMutation"();
+                DROP TRIGGER "TR_DocumentDrafts_EnforceBookingEligibility" ON public."DocumentDrafts";
+                DROP FUNCTION public."EnforceDocumentDraftBookingEligibility"();
                 """);
+
+            migrationBuilder.DropTable(
+                name: "BookingPaymentHistories");
 
             migrationBuilder.DropTable(
                 name: "CustomerAccommodationPreferences");
@@ -655,19 +966,47 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "CustomerPhysicalInfo");
 
             migrationBuilder.DropTable(
+                name: "DocumentAuditPurgeRecords");
+
+            migrationBuilder.DropTable(
                 name: "DocumentAuditRecords");
 
             migrationBuilder.DropTable(
                 name: "DocumentDraftFields");
 
             migrationBuilder.DropTable(
+                name: "holds",
+                schema: "disposition_hold");
+
+            migrationBuilder.DropTable(
                 name: "idempotency_keys",
                 schema: "messaging");
+
+            migrationBuilder.DropTable(
+                name: "inbox_messages",
+                schema: "branding_projection");
 
             migrationBuilder.DropTable(
                 name: "outbox_messages",
                 schema: "messaging");
 
+            migrationBuilder.DropTable(
+                name: "PaymentAudits");
+
+            migrationBuilder.DropTable(
+                name: "PaymentInstructionSnapshots");
+
+            migrationBuilder.DropTable(
+                name: "recovery",
+                schema: "branding_projection");
+
+            migrationBuilder.DropTable(
+                name: "recovery_audit",
+                schema: "branding_projection");
+
+            migrationBuilder.DropTable(
+                name: "settings",
+                schema: "branding_projection");
 
             migrationBuilder.DropTable(
                 name: "transport_messages",
@@ -677,17 +1016,19 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "Customers");
 
             migrationBuilder.DropTable(
-                name: "DocumentDrafts");
-
-            migrationBuilder.DropTable(
                 name: "Booking");
 
             migrationBuilder.DropTable(
-                name: "DocumentLineages");
+                name: "DocumentDrafts");
+
+            migrationBuilder.DropTable(
+                name: "PaymentAccounts");
 
             migrationBuilder.DropTable(
                 name: "Tours");
 
+            migrationBuilder.DropTable(
+                name: "DocumentLineages");
         }
     }
 }

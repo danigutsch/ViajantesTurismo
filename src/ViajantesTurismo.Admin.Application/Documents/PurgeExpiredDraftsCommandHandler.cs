@@ -12,7 +12,7 @@ public sealed class PurgeExpiredDraftsCommandHandler(
 {
     /// <summary>
     /// Removes expired unfinalized drafts of unheld lineages in one transaction with the hold check and returns the
-    /// purged and held counts. An undecidable hold state aborts the purge with an exception and removes nothing.
+    /// purged and held counts. An unknown hold state aborts the purge with an exception and removes nothing.
     /// </summary>
     public async Task<DocumentPurgeCounts> Handle(PurgeExpiredDraftsCommand command, CancellationToken ct)
     {

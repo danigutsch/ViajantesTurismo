@@ -114,8 +114,8 @@ is deployed or production-ready.
   watermark. Duplicate or older revisions are acknowledged without replacing state. Because every event carries
   full state, a newer revision may safely close a revision gap. An unexpected epoch fails closed into recovery;
   ordinary delivery never switches source lineage implicitly.
-- Only Admin document rows created before this rollout may have nullable `BrandingSourceRevision` provenance.
-  Null means the immutable document snapshot predates revision capture; it is not an event ordering rule and
+- An Admin document row may have a null `BrandingSourceRevision`.
+  Null means the immutable document snapshot carries no captured revision; it is not an event ordering rule and
   must not be synthesized into a `BrandingSettingsChangedIntegrationEvent` envelope.
 - Consumer health records the accepted source epoch, highest observed revision, highest applied revision, last
   successful apply time, retry state, and poison backlog. Operations compare producer delivery and consumer
@@ -285,8 +285,8 @@ expanded into Branding by this decision.
 - Worker tests cover failure before Admin commit and a crash after Admin inbox/projection/watermark commit but
   before transport `ProcessedAt`; redelivery must be idempotent and eventually acknowledge transport. Retry-limit
   tests prove transition to poison and audited replay.
-- Contract tests prove every `BrandingSettingsChangedIntegrationEvent` has a non-empty epoch and positive revision, while only
-  pre-rollout document rows may retain null Branding revision provenance.
+- Contract tests prove every `BrandingSettingsChangedIntegrationEvent` has a non-empty epoch and positive revision, while a
+  document row may carry a null Branding revision.
 - Management API/client/OpenAPI tests verify epoch/revision strong ETags, missing-header 428, malformed-syntax
   400, valid nonmatch 412, weak-tag strong comparison, existing-resource `*`, matching/nonmatching lists, no
   blind retry, omission of `ETag` from normalized `PUT` responses, follow-up `GET` validator refresh, and the
