@@ -30,6 +30,27 @@ public sealed class SharedKernelConsumerWorkflowTests
     }
 
     [Fact]
+    public void Lint_verifies_action_pins_against_the_shared_manifest_before_staging_the_candidate()
+    {
+        // Arrange
+        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "ci.yml");
+        var workflow = File.ReadAllText(path);
+
+        // Act
+        var lintJob = workflow.Split("  lint:", StringSplitOptions.None)[1];
+        var pinTool = lintJob.IndexOf("tool: SharedKernel.RepoConfig.Tool", StringComparison.Ordinal);
+        var verify = lintJob.IndexOf("verify-action-pins --root . --manifest", StringComparison.Ordinal);
+        var bootstrap = lintJob.IndexOf("uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
+
+        // Assert
+        pinTool.ShouldBeGreaterThanOrEqualTo(0);
+        verify.ShouldBeGreaterThan(pinTool);
+        bootstrap.ShouldBeGreaterThan(verify);
+        lintJob.ShouldContain("sparse-extra: .github", StringComparison.Ordinal);
+        lintJob.ShouldContain("\"$SHAREDKERNEL_SOURCE/.github/action-pins.json\" .github/action-pins.local.json", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Application_ci_does_not_repeat_library_source_API_validation()
     {
         // Arrange

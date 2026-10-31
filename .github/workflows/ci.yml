@@ -43,11 +43,6 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up CI selection SDK
-        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
-        with:
-          global-json-file: global.json
-
       - name: Build SharedKernel CI tool
         uses: ./.github/actions/build-sharedkernel-tool
         with:
@@ -366,12 +361,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-
-      - name: Set up coverage SDK
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
-        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
-        with:
-          global-json-file: global.json
 
       - name: Build SharedKernel CI tool
         if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
