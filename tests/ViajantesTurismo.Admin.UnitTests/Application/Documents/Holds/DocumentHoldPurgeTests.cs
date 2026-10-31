@@ -108,7 +108,7 @@ public sealed class DocumentHoldPurgeTests
         var guard = new FakeDispositionHoldGuard();
         guard.RestrainingHoldIds.Add(hold.Id);
         var clock = new FakeTimeProvider(Now);
-        var handler = new PurgeExpiredDraftsCommandHandler(store, new FakeDocumentDispositionTransaction(), new DocumentHoldGate(guard, holds, clock), clock);
+        var handler = new PurgeExpiredDraftsCommandHandler(store, DocumentPurgeTestData.CreateRunner(new FakeDocumentPurgeEvidenceStore(), clock), new DocumentHoldGate(guard, holds, clock), clock);
 
         // Act
         var counts = await handler.Handle(new PurgeExpiredDraftsCommand(), TestContext.Current.CancellationToken);
@@ -130,7 +130,7 @@ public sealed class DocumentHoldPurgeTests
         hold.Release("actor-2", "reason.closed", Now);
         holds.Holds.Add(hold);
         var clock = new FakeTimeProvider(Now);
-        var handler = new PurgeExpiredDraftsCommandHandler(store, new FakeDocumentDispositionTransaction(), new DocumentHoldGate(new FakeDispositionHoldGuard(), holds, clock), clock);
+        var handler = new PurgeExpiredDraftsCommandHandler(store, DocumentPurgeTestData.CreateRunner(new FakeDocumentPurgeEvidenceStore(), clock), new DocumentHoldGate(new FakeDispositionHoldGuard(), holds, clock), clock);
 
         // Act
         var counts = await handler.Handle(new PurgeExpiredDraftsCommand(), TestContext.Current.CancellationToken);
@@ -148,7 +148,7 @@ public sealed class DocumentHoldPurgeTests
         store.CandidateLineageIds.Add(Guid.CreateVersion7());
         var guard = new FakeDispositionHoldGuard { Failure = new DispositionHoldStateUnknownException() };
         var clock = new FakeTimeProvider(Now);
-        var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, new FakeDocumentDispositionTransaction(), new DocumentHoldGate(guard, new InMemoryDispositionHoldStore(), clock), clock);
+        var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, DocumentPurgeTestData.CreateRunner(new FakeDocumentPurgeEvidenceStore(), clock), new DocumentHoldGate(guard, new InMemoryDispositionHoldStore(), clock), clock);
 
         // Act
         Func<Task> purge = () => handler.Handle(TestContext.Current.CancellationToken);

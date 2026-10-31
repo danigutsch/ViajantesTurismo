@@ -597,6 +597,33 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("DocumentLineages");
                 });
 
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentRetentionPurgeRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("HeldCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PurgedCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DocumentRetentionPurgeRecords");
+                });
+
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.Booking", b =>
                 {
                     b.Property<Guid>("Id")

@@ -106,6 +106,22 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DocumentRetentionPurgeRecords",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Kind = table.Column<string>(type: "text", nullable: false),
+                    PurgedCount = table.Column<int>(type: "integer", nullable: false),
+                    HeldCount = table.Column<int>(type: "integer", nullable: false),
+                    Outcome = table.Column<string>(type: "text", nullable: false),
+                    OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentRetentionPurgeRecords", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "holds",
                 schema: "disposition_hold",
                 columns: table => new
@@ -1029,6 +1045,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "DocumentLineages");
+
+            migrationBuilder.DropTable(
+                name: "DocumentRetentionPurgeRecords");
         }
     }
 }
