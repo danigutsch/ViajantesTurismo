@@ -1,0 +1,101 @@
+<div class="modal-backdrop fade show"></div>
+<div class="modal fade show d-block" role="dialog" aria-modal="true" tabindex="-1"
+     aria-labelledby="release-hold-title" aria-describedby="release-hold-description"
+     @onkeydown="HandleKeyDown">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" novalidate @onsubmit="Submit">
+            <div class="modal-header">
+                <h2 id="release-hold-title" class="modal-title h5">Release document hold</h2>
+            </div>
+            <div class="modal-body">
+                <p id="release-hold-description">
+                    You are about to release hold <code>@HoldId</code> on document <code>@DocumentId</code>.
+                    Disposition that this hold restrains can proceed afterwards. Your account is recorded as the releasing actor.
+                </p>
+                <label for="release-reason-code" class="form-label">Release reason code</label>
+                <input id="release-reason-code"
+                       @ref="_reasonInput"
+                       class="form-control"
+                       maxlength="@ContractConstants.MaxDocumentHoldCodeLength"
+                       autocomplete="off"
+                       required
+                       aria-required="true"
+                       aria-invalid="@(_validationMessage is null ? null : "true")"
+                       aria-describedby="@ReasonDescribedBy"
+                       @bind="_reasonCode"
+                       @bind:event="oninput" />
+                <div id="release-reason-help" class="form-text">
+                    Opaque code: letters, digits and . _ : - only, up to @ContractConstants.MaxDocumentHoldCodeLength characters. Do not enter names or free text.
+                </div>
+                @if (_validationMessage is not null)
+                {
+                    <div id="release-reason-error" class="text-danger mt-1" role="alert">@_validationMessage</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    <div class="alert alert-danger mt-3 mb-0" role="alert">@ErrorMessage</div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" disabled="@Busy" @onclick="Cancel">Cancel</button>
+                <button type="submit" class="btn btn-danger" disabled="@Busy">Release hold</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@code {
+    private ElementReference _reasonInput;
+    private string _reasonCode = string.Empty;
+    private string? _validationMessage;
+
+    [Parameter, EditorRequired]
+    public Guid DocumentId { get; set; }
+
+    [Parameter, EditorRequired]
+    public Guid HoldId { get; set; }
+
+    [Parameter]
+    public bool Busy { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<string> OnConfirm { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback OnCancel { get; set; }
+
+    private string ReasonDescribedBy => _validationMessage is null
+        ? "release-reason-help"
+        : "release-reason-help release-reason-error";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _reasonInput.FocusAsync();
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && !Busy)
+        {
+            await Cancel();
+        }
+    }
+
+    private Task Cancel() => OnCancel.InvokeAsync();
+
+    private async Task Submit()
+    {
+        var code = _reasonCode.Trim();
+        _validationMessage = HoldCodeValidation.Validate(code, "Release reason code");
+        if (_validationMessage is null)
+        {
+            await OnConfirm.InvokeAsync(code);
+        }
+    }
+}

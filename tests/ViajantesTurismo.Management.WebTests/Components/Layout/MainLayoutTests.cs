@@ -14,6 +14,7 @@ public sealed class MainLayoutTests : BunitContext
     public MainLayoutTests()
     {
         Services.AddSingleton<IUiFailureReporter>(reporter);
+        AddAuthorization();
         SetRendererInfo(new RendererInfo("Server", true));
     }
 

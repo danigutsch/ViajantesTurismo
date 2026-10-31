@@ -5,7 +5,7 @@
 
 <PageTitle>Document Details</PageTitle>
 
-<div class="container-fluid">
+<div class="container-fluid" inert="@(_releasingHold is not null)">
     @if (_loading)
     {
         <h1>Document Details</h1>
@@ -99,8 +99,175 @@
                 <button type="button" class="btn btn-danger" @onclick="Void">Void</button>
             }
         </div>
+
+        <AuthorizeView Roles="Admin" Context="holdAuthorization">
+            <section class="card mt-4" aria-labelledby="document-holds-title">
+                <div class="card-header"><h2 id="document-holds-title" class="h5 mb-0" tabindex="-1" @ref="_holdsHeading">Legal holds</h2></div>
+                <div class="card-body">
+                    @if (!string.IsNullOrWhiteSpace(_holdStatusMessage))
+                    {
+                        <div class="alert alert-success" role="status">@_holdStatusMessage</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(_holdErrorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">@_holdErrorMessage</div>
+                    }
+                    @if (_holds is null)
+                    {
+                        <p><em>Holds are not available.</em></p>
+                    }
+                    else
+                    {
+                        @if (_holds.Any(hold => hold.IsRestraining))
+                        {
+                            <div class="alert alert-warning" role="status">
+                                <i class="bi bi-lock" aria-hidden="true"></i>
+                                <strong>A legal hold restrains this document.</strong>
+                                Deletion of this document and its audit records, any disposition that follows voiding, and anonymization
+                                are blocked until every hold is released or expires. A hold does not stop editing, review or voiding.
+                            </div>
+                        }
+                        @if (_holds.Count == 0)
+                        {
+                            <p>No holds have been placed on this document.</p>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <caption class="visually-hidden">Holds on this document</caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Basis</th>
+                                            <th scope="col">Purpose</th>
+                                            <th scope="col">Authority reference</th>
+                                            <th scope="col">Effective</th>
+                                            <th scope="col">Review due</th>
+                                            <th scope="col">Expires</th>
+                                            <th scope="col">Recorded</th>
+                                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var hold in _holds)
+                                        {
+                                            <tr data-hold-id="@hold.Id">
+                                                <td><HoldStatusBadge Hold="hold" /></td>
+                                                <td>@hold.Basis</td>
+                                                <td>@hold.PurposeCode</td>
+                                                <td>@hold.AuthorityReference</td>
+                                                <td>@FormatDate(hold.EffectiveFrom)</td>
+                                                <td>@FormatDate(hold.ReviewDueAt)</td>
+                                                <td>@(hold.ExpiresAt is { } expires ? FormatDate(expires) : "No expiry")</td>
+                                                <td>@DescribeRecord(hold)</td>
+                                                <td>
+                                                    @if (hold.ReleasedAt is null)
+                                                    {
+                                                        <ReleaseHoldButton HoldId="hold.Id"
+                                                                           OnRelease="() => OpenReleaseDialog(hold)"
+                                                                           OnReady="button => _releaseButtons[hold.Id] = button" />
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+
+                        @if (_confirmingPlacement)
+                        {
+                            <section class="border rounded p-3" tabindex="-1" aria-labelledby="place-hold-confirm-title" @ref="_placeConfirmation">
+                                <h3 id="place-hold-confirm-title" class="h6">Confirm placing a hold</h3>
+                                <p>
+                                    This restrains deletion, disposition and anonymization of document <code>@CurrentDocumentId</code> and its
+                                    revisions from the moment you confirm. Your account is recorded as the placing actor.
+                                </p>
+                                <dl class="row">
+                                    <dt class="col-sm-3">Basis</dt><dd class="col-sm-9">@_form.Basis</dd>
+                                    <dt class="col-sm-3">Purpose code</dt><dd class="col-sm-9">@_form.PurposeCode</dd>
+                                    <dt class="col-sm-3">Authority reference</dt><dd class="col-sm-9">@_form.AuthorityReference</dd>
+                                    <dt class="col-sm-3">Review due</dt><dd class="col-sm-9">@_form.ReviewDueDate</dd>
+                                    <dt class="col-sm-3">Expires</dt><dd class="col-sm-9">@(_form.ExpiryDate?.ToString() ?? "No expiry")</dd>
+                                </dl>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-danger" disabled="@_holdBusy" @onclick="ConfirmPlaceHold">Confirm placement</button>
+                                    <button type="button" class="btn btn-outline-secondary" disabled="@_holdBusy" @onclick="BackToPlaceForm">Back to edit</button>
+                                </div>
+                            </section>
+                        }
+                        else
+                        {
+                            <form novalidate aria-labelledby="place-hold-title" @onsubmit="ReviewPlacement">
+                                <h3 id="place-hold-title" class="h6">Place a hold</h3>
+                                <p class="form-text">
+                                    The hold takes effect when you confirm it. Enter opaque codes only: letters, digits and . _ : - up to
+                                    @ContractConstants.MaxDocumentHoldCodeLength characters. Do not enter names, e-mail addresses or free text.
+                                </p>
+                                @if (_placeErrors.Count > 0)
+                                {
+                                    <div class="alert alert-danger" role="alert">The hold cannot be placed yet: @_placeErrors.Count field(s) need attention.</div>
+                                }
+                                <div class="mb-3">
+                                    <label for="hold-basis" class="form-label">Basis</label>
+                                    <select id="hold-basis" class="form-select" required aria-required="true"
+                                            aria-invalid="@Invalid("basis")" aria-describedby="@Described("basis")"
+                                            @bind="_form.Basis">
+                                        <option value="">Select a basis</option>
+                                        @foreach (var basis in HoldBases)
+                                        {
+                                            <option value="@basis">@basis</option>
+                                        }
+                                    </select>
+                                    <FieldError Id="hold-basis-error" Message="@ErrorFor("basis")" />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="hold-purpose" class="form-label">Purpose code</label>
+                                    <input id="hold-purpose" class="form-control" required aria-required="true" autocomplete="off"
+                                           maxlength="@ContractConstants.MaxDocumentHoldCodeLength"
+                                           aria-invalid="@Invalid("purpose")" aria-describedby="@Described("purpose")"
+                                           @bind="_form.PurposeCode" />
+                                    <FieldError Id="hold-purpose-error" Message="@ErrorFor("purpose")" />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="hold-authority" class="form-label">Authority reference</label>
+                                    <input id="hold-authority" class="form-control" required aria-required="true" autocomplete="off"
+                                           maxlength="@ContractConstants.MaxDocumentHoldCodeLength"
+                                           aria-invalid="@Invalid("authority")" aria-describedby="@Described("authority")"
+                                           @bind="_form.AuthorityReference" />
+                                    <FieldError Id="hold-authority-error" Message="@ErrorFor("authority")" />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="hold-review" class="form-label">Review due date</label>
+                                    <input id="hold-review" type="date" class="form-control" required aria-required="true"
+                                           aria-invalid="@Invalid("review")" aria-describedby="@Described("review")"
+                                           @bind="_form.ReviewDueDate" />
+                                    <FieldError Id="hold-review-error" Message="@ErrorFor("review")" />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="hold-expiry" class="form-label">Expiry date (optional)</label>
+                                    <input id="hold-expiry" type="date" class="form-control" @bind="_form.ExpiryDate" />
+                                </div>
+                                <button type="submit" class="btn btn-primary">Review hold</button>
+                            </form>
+                        }
+                    }
+                </div>
+            </section>
+        </AuthorizeView>
     }
 </div>
+
+@if (_releasingHold is { } releasing)
+{
+    <ReleaseHoldDialog DocumentId="CurrentDocumentId"
+                       HoldId="releasing.Id"
+                       Busy="_holdBusy"
+                       ErrorMessage="@_releaseErrorMessage"
+                       OnConfirm="ConfirmRelease"
+                       OnCancel="CancelRelease" />
+}
 
 @code {
     [Parameter]
@@ -114,6 +281,28 @@
     private string? _loadErrorMessage;
     private (Guid ResourceId, string Key)? _regenerationAttempt;
     private bool _regenerating;
+    private static readonly string[] HoldBases =
+    [
+        ContractConstants.DocumentHoldBasisLegalClaim,
+        ContractConstants.DocumentHoldBasisLegalObligation,
+        ContractConstants.DocumentHoldBasisDataSubjectRestriction,
+        ContractConstants.DocumentHoldBasisRegulatoryInquiry,
+        ContractConstants.DocumentHoldBasisInvestigation
+    ];
+
+    private IReadOnlyList<GetDocumentHoldDto>? _holds;
+    private readonly PlaceHoldFormModel _form = new();
+    private readonly Dictionary<string, string> _placeErrors = new(StringComparer.Ordinal);
+    private readonly Dictionary<Guid, ElementReference> _releaseButtons = [];
+    private ElementReference _holdsHeading;
+    private ElementReference _placeConfirmation;
+    private Func<Task>? _pendingFocus;
+    private GetDocumentHoldDto? _releasingHold;
+    private bool _confirmingPlacement;
+    private bool _holdBusy;
+    private string? _holdStatusMessage;
+    private string? _holdErrorMessage;
+    private string? _releaseErrorMessage;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -146,6 +335,172 @@
         }
 
         _loading = false;
+        await LoadHolds();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingFocus is { } focus)
+        {
+            _pendingFocus = null;
+            await focus();
+        }
+    }
+
+    private async Task LoadHolds()
+    {
+        _holds = null;
+        _holdErrorMessage = null;
+        if (_document is null)
+        {
+            return;
+        }
+
+        var outcome = await DocumentsApi.ListHolds(_document.Id, CancellationToken.None);
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } holds })
+        {
+            _holds = holds;
+        }
+        else
+        {
+            _holdErrorMessage = new HttpOutcomeMessages("The holds of this document could not be loaded.").For(outcome.Kind);
+        }
+    }
+
+    private static string FormatDate(DateTimeOffset value) => value.UtcDateTime.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string DescribeRecord(GetDocumentHoldDto hold) => hold.ReleasedAt is { } releasedAt
+        ? $"Placed by {hold.PlacedBy} on {FormatDate(hold.PlacedAt)}; released by {hold.ReleasedBy} on {FormatDate(releasedAt)}, reason {hold.ReleaseReasonCode}"
+        : $"Placed by {hold.PlacedBy} on {FormatDate(hold.PlacedAt)}";
+
+    private string? ErrorFor(string field) => _placeErrors.GetValueOrDefault(field);
+
+    private string? Invalid(string field) => _placeErrors.ContainsKey(field) ? "true" : null;
+
+    private string? Described(string field) => _placeErrors.ContainsKey(field) ? $"hold-{field}-error" : null;
+
+    private void ReviewPlacement()
+    {
+        _holdStatusMessage = null;
+        _holdErrorMessage = null;
+        _placeErrors.Clear();
+        if (!HoldBases.Contains(_form.Basis, StringComparer.Ordinal))
+        {
+            _placeErrors["basis"] = "Basis is required.";
+        }
+
+        AddCodeError("purpose", _form.PurposeCode, "Purpose code");
+        AddCodeError("authority", _form.AuthorityReference, "Authority reference");
+        if (_form.ReviewDueDate is null)
+        {
+            _placeErrors["review"] = "Review due date is required.";
+        }
+
+        if (_placeErrors.Count == 0)
+        {
+            _confirmingPlacement = true;
+            _pendingFocus = () => _placeConfirmation.FocusAsync().AsTask();
+        }
+    }
+
+    private void AddCodeError(string field, string value, string label)
+    {
+        if (HoldCodeValidation.Validate(value.Trim(), label) is { } message)
+        {
+            _placeErrors[field] = message;
+        }
+    }
+
+    private void BackToPlaceForm() => _confirmingPlacement = false;
+
+    private async Task ConfirmPlaceHold()
+    {
+        if (_holdBusy || _form.ReviewDueDate is not { } reviewDue)
+        {
+            return;
+        }
+
+        _holdBusy = true;
+        _holdErrorMessage = null;
+        var dto = new CreateDocumentHoldDto
+        {
+            Basis = _form.Basis,
+            PurposeCode = _form.PurposeCode.Trim(),
+            AuthorityReference = _form.AuthorityReference.Trim(),
+            ReviewDueAt = ToUtcInstant(reviewDue),
+            ExpiresAt = _form.ExpiryDate is { } expiry ? ToUtcInstant(expiry) : null
+        };
+        try
+        {
+            var outcome = await DocumentsApi.PlaceHold(CurrentDocumentId, dto, CancellationToken.None);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } hold })
+            {
+                _holdStatusMessage = $"Hold {hold.Id} placed by {hold.PlacedBy} on {FormatDate(hold.PlacedAt)} and recorded in the audit trail.";
+                _confirmingPlacement = false;
+                _form.Basis = _form.PurposeCode = _form.AuthorityReference = string.Empty;
+                _form.ReviewDueDate = _form.ExpiryDate = null;
+                await LoadHolds();
+                _pendingFocus = () => _holdsHeading.FocusAsync().AsTask();
+            }
+            else
+            {
+                _holdErrorMessage = new HttpOutcomeMessages("The hold could not be placed.").For(outcome.Kind);
+            }
+        }
+        finally
+        {
+            _holdBusy = false;
+        }
+    }
+
+    private static DateTimeOffset ToUtcInstant(DateOnly date) => new(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+    private void OpenReleaseDialog(GetDocumentHoldDto hold)
+    {
+        _holdStatusMessage = null;
+        _holdErrorMessage = null;
+        _releaseErrorMessage = null;
+        _releasingHold = hold;
+    }
+
+    private void CancelRelease()
+    {
+        var hold = _releasingHold;
+        _releasingHold = null;
+        if (hold is not null && _releaseButtons.TryGetValue(hold.Id, out var opener))
+        {
+            _pendingFocus = () => opener.FocusAsync().AsTask();
+        }
+    }
+
+    private async Task ConfirmRelease(string reasonCode)
+    {
+        if (_holdBusy || _releasingHold is not { } hold)
+        {
+            return;
+        }
+
+        _holdBusy = true;
+        _releaseErrorMessage = null;
+        try
+        {
+            var outcome = await DocumentsApi.ReleaseHold(CurrentDocumentId, hold.Id, new ReleaseDocumentHoldDto { ReasonCode = reasonCode }, CancellationToken.None);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } released })
+            {
+                _holdStatusMessage = $"Hold {released.Id} released by {released.ReleasedBy} with reason {released.ReleaseReasonCode} and recorded in the audit trail.";
+                _releasingHold = null;
+                await LoadHolds();
+                _pendingFocus = () => _holdsHeading.FocusAsync().AsTask();
+            }
+            else
+            {
+                _releaseErrorMessage = new HttpOutcomeMessages("The hold could not be released.").For(outcome.Kind);
+            }
+        }
+        finally
+        {
+            _holdBusy = false;
+        }
     }
 
     private bool CanEdit(GetDocumentFieldDto field) =>

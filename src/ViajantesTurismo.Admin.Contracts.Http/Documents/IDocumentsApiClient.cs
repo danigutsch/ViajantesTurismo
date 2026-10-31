@@ -43,4 +43,19 @@ public interface IDocumentsApiClient
 
     /// <summary>Downloads a finalized HTML artifact through the Admin API.</summary>
     Task<DocumentArtifactResponse?> DownloadFinalizedArtifact(Guid documentId, CancellationToken ct);
+
+    /// <summary>Places a disposition hold on the lineage of a document.</summary>
+    Task<HttpOutcome<GetDocumentHoldDto>> PlaceHold(Guid documentId, CreateDocumentHoldDto dto, CancellationToken ct);
+
+    /// <summary>Lists every hold, released or not, on the lineage of a document.</summary>
+    Task<HttpOutcome<IReadOnlyList<GetDocumentHoldDto>>> ListHolds(Guid documentId, CancellationToken ct);
+
+    /// <summary>Releases a disposition hold with an opaque reason code.</summary>
+    Task<HttpOutcome<GetDocumentHoldDto>> ReleaseHold(Guid documentId, Guid holdId, ReleaseDocumentHoldDto dto, CancellationToken ct);
+
+    /// <summary>Lists one bounded page of holds across documents.</summary>
+    /// <param name="query">The state, basis, released-since and paging filters.</param>
+    /// <param name="ct">The caller cancellation token.</param>
+    /// <returns>The overview page HTTP outcome.</returns>
+    Task<HttpOutcome<GetDocumentHoldOverviewPageDto>> ListHoldOverview(DocumentHoldOverviewQuery query, CancellationToken ct);
 }

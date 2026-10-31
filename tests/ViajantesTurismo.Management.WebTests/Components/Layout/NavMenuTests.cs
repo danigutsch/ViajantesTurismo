@@ -6,6 +6,43 @@ namespace ViajantesTurismo.Management.WebTests.Components.Layout;
 [TestScope(TestScope.Component)]
 public class NavMenuTests : BunitContext
 {
+    private readonly BunitAuthorizationContext authorization;
+
+    public NavMenuTests()
+    {
+        authorization = AddAuthorization();
+    }
+
+    [Fact]
+    public void Renders_document_holds_NavLink_for_an_admin()
+    {
+        // Arrange
+        authorization.SetAuthorized("admin@example.test", AuthorizationState.Authorized);
+        authorization.SetRoles("Admin");
+
+        // Act
+        var cut = Render<NavMenu>();
+
+        // Assert
+        var holdsLink = cut.Find("a[href='documents/holds']");
+        holdsLink.TextContent.ShouldContain("Document holds", StringComparison.Ordinal);
+        holdsLink.InnerHtml.ShouldContain("bi-lock", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Hides_document_holds_NavLink_from_an_operator()
+    {
+        // Arrange
+        authorization.SetAuthorized("operator@example.test", AuthorizationState.Authorized);
+        authorization.SetRoles("Operator");
+
+        // Act
+        var cut = Render<NavMenu>();
+
+        // Assert
+        cut.FindAll("a[href='documents/holds']").ShouldBeEmpty();
+    }
+
     [Fact]
     public void Renders_brand_name()
     {
