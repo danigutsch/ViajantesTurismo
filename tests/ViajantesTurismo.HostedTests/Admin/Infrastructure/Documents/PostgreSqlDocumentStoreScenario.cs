@@ -543,6 +543,13 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await dbContext.DocumentAuditPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
     }
 
+    /// <summary>Reads the stored draft and idempotency purge evidence ordered by time.</summary>
+    public async ValueTask<DocumentRetentionPurgeRecord[]> GetRetentionPurgeEvidence(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentRetentionPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
+    }
+
     /// <summary>Resets the mutable tables while preserving document audit records.</summary>
     public async Task ResetMutableDataPreservingDocumentAudits(CancellationToken ct)
     {

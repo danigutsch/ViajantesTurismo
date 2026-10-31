@@ -366,7 +366,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         // Act
         var clock = new FakeTimeProvider(now);
         var gate = new DocumentHoldGate(new FakeDispositionHoldGuard(), new InMemoryDispositionHoldStore(), clock);
-        var counts = await new PurgeExpiredDraftsCommandHandler(store, new FakeDocumentDispositionTransaction(), gate, clock)
+        var counts = await new PurgeExpiredDraftsCommandHandler(store, DocumentPurgeTestData.CreateRunner(new FakeDocumentPurgeEvidenceStore(), clock), gate, clock)
             .Handle(new PurgeExpiredDraftsCommand(), CancellationToken.None);
 
         // Assert

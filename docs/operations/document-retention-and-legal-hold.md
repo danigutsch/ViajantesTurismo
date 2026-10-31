@@ -35,6 +35,7 @@ bytes and metadata, document lineages, document audit records, and document idem
 | Document audit record | Audit event occurrence | 24 months (`DocumentAuditLimits.RetentionMonths`) | Deleted by a daily worker in batches of 500. Database protections reject updates, truncation and pre-expiry deletion. |
 | Document idempotency entry | Completion, or start when never completed | 30 days (`DocumentCommandIdempotency.ReplayWindow`, equal to `DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500. The stored key is a SHA-256 digest of the caller key, so the raw value is never persisted. A replay after the window is treated as a new request; a replay after its document is purged returns `404 Not Found`. |
 | Document audit purge evidence | Each audit-retention purge run | Kept indefinitely | Metadata only: system actor, correlation id, purged count, retention cutoff, outcome and time. It is not removed by the audit-retention worker. |
+| Draft and idempotency purge evidence | Each draft or idempotency purge run | Kept indefinitely | Counts only: purge kind, purged count, held count, outcome (`Succeeded` or `Refused`) and time, in `DocumentRetentionPurgeRecords`. Written in the same transaction as the deletion. It is not removed by any worker. |
 
 Metadata-only audit records can contain linkable identifiers, which remain personal data where
 re-identification is possible. Callers must not place personal data or secrets in idempotency keys.
@@ -86,9 +87,9 @@ purges that do exist: unfinalized drafts, document audit records and document id
 - Every purge (draft, audit and idempotency) loads its candidates, calls `IDispositionHoldGuard.Check` once with all candidate
   lineage scopes, and deletes inside the same explicit database transaction at read committed. The package refuses any other
   isolation level and refuses to answer outside a transaction.
-- Held candidates are skipped and counted. The audit purge records the count (`HeldCount`) in its evidence; the other purges log
-  counts only. No data-subject identifier is logged.
-- If hold state cannot be determined (`DispositionHoldStateUnknownException`), the purge deletes nothing. The audit purge records
+- Held candidates are skipped and counted. Every purge records the count (`HeldCount`) in its evidence row; the draft and idempotency purges also log
+  it. No data-subject identifier is logged.
+- If hold state cannot be determined (`DispositionHoldStateUnknownException`), the purge deletes nothing. Each purge records
   `Refused` evidence and rethrows; the worker retries on its next run.
 - Lock order: take the locks a command declares first, hold locks last, one `Check` per purge, and no other advisory lock after
   it. Release takes a command lock on the hold identifier before it reads the hold.
