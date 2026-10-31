@@ -41,6 +41,7 @@ internal sealed class AdminWriteDbContext(
     {
         try
         {
+            await DocumentAuditLineage.StampAddedRecords(this, ct);
             _ = await SaveChangesAsync(ct);
         }
         catch (DbUpdateException exception) when (CustomerSchema.IsEmailConflict(exception))
