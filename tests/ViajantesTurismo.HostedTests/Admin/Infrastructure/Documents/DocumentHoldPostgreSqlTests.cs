@@ -100,8 +100,8 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
         await Scenario.Seed(lineage);
         _ = await Harness.Place(documentId, ct);
-        await Scenario.SeedIdempotencyEntry($"admin.documents.regenerate-draft:{documentId:N}", "held-1", now.AddDays(-40), now.AddDays(-39), ct);
-        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-1", now.AddDays(-40), now.AddDays(-39), ct);
+        await Scenario.SeedIdempotencyEntry($"admin.documents.regenerate-draft:{documentId:N}", "held-1", now.AddDays(-40), now.AddDays(-39), lineage.Id.ToString("N"), ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-1", now.AddDays(-40), now.AddDays(-39), Guid.CreateVersion7().ToString("N"), ct);
 
         // Act
         var counts = await Harness.PurgeIdempotencyEntries(ct);
@@ -150,7 +150,7 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         var lineage = DocumentDraftInfrastructureTestData.CreateLineage(now.UtcDateTime);
         var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
         await Scenario.Seed(lineage);
-        await Scenario.SeedIdempotencyEntry($"admin.documents.regenerate-draft:{documentId:N}", "free-1", now.AddDays(-40), now.AddDays(-39), ct);
+        await Scenario.SeedIdempotencyEntry($"admin.documents.regenerate-draft:{documentId:N}", "free-1", now.AddDays(-40), now.AddDays(-39), lineage.Id.ToString("N"), ct);
         await using var refusingHarness = DocumentHoldPostgreSqlHarness.Create(
             Scenario.ConnectionString, holdGuardFailure: new DispositionHoldStateUnknownException());
 
@@ -328,6 +328,52 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         counts.ShouldBe(new DocumentPurgeCounts(1, 0));
         var remaining = await Scenario.GetIdempotencyKeys(ct);
         remaining.ShouldBe(["payment"]);
+    }
+
+    [Fact]
+    public async Task A_lineage_the_guard_reports_as_held_keeps_its_entries_although_no_hold_was_in_the_snapshot()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = TimeProvider.System.GetUtcNow();
+        var lineageId = Guid.CreateVersion7();
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "late-hold", cutoff.AddDays(-40), cutoff.AddDays(-39), lineageId.ToString("N"), ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "clear", cutoff.AddDays(-40), cutoff.AddDays(-39), Guid.CreateVersion7().ToString("N"), ct);
+        IReadOnlyCollection<Guid>? asked = null;
+
+        // Act
+        var counts = await Scenario.PurgeExpiredIdempotencyEntries(
+            cutoff,
+            (lineages, _) =>
+            {
+                asked = lineages;
+                return Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { lineageId });
+            },
+            ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(1, 1));
+        asked.ShouldNotBeNull().ShouldContain(lineageId);
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["late-hold"]);
+    }
+
+    [Fact]
+    public async Task An_unknown_guard_state_deletes_no_idempotency_entry()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = TimeProvider.System.GetUtcNow();
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "kept", cutoff.AddDays(-40), cutoff.AddDays(-39), Guid.CreateVersion7().ToString("N"), ct);
+
+        // Act
+        Func<Task> purge = () => Scenario.PurgeExpiredIdempotencyEntries(
+            cutoff, (_, _) => throw new DispositionHoldStateUnknownException(), ct);
+
+        // Assert
+        await purge.ShouldThrow<DispositionHoldStateUnknownException>();
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["kept"]);
     }
 
     [Fact]

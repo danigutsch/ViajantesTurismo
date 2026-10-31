@@ -681,6 +681,13 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return (await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, NoHeldLineages.Filter, ct)).Purged;
     }
 
+    /// <summary>Purges document idempotency entries at or before the cutoff with the given hold filter and returns the counts.</summary>
+    public async Task<DocumentPurgeCounts> PurgeExpiredIdempotencyEntries(DateTimeOffset cutoff, HeldDocumentLineages heldLineages, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, heldLineages, ct);
+    }
+
     /// <summary>Returns the keys of the remaining idempotency entries.</summary>
     public async Task<string[]> GetIdempotencyKeys(CancellationToken ct)
     {

@@ -22,8 +22,8 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
 
     private static readonly CompositeFormat CandidatesSql = CompositeFormat.Parse(
         """
-        SELECT {1} AS "Scope", {2} AS "Key" FROM {0}
-        WHERE starts_with({1}, @prefix) AND COALESCE({3}, {4}) <= @cutoff AND {5} IS NOT NULL AND NOT ({5} = ANY(@heldOwners))
+        SELECT {1} AS "Scope", {2} AS "Key", {5} AS "RetentionOwner" FROM {0}
+        WHERE starts_with({1}, @prefix) AND COALESCE({3}, {4}) <= @cutoff AND {5} IS NOT NULL AND NOT ({5} = ANY(@activeOwners))
         ORDER BY COALESCE({3}, {4}), {1}, {2}
         LIMIT {6}
         """);
@@ -43,7 +43,7 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
     /// <summary>
     /// Deletes one batch of document-scoped entries completed, or never completed and started, at or before
     /// <paramref name="cutoff" />, except entries owned by a lineage that <paramref name="heldLineages" /> reports as held
-    /// and entries without an owner. The filter is called once with the lineages of every effective hold. Table and column
+    /// and entries without an owner. The filter is called once with the owners of the selected batch; effective holds known up front only pre-filter the batch. Table and column
     /// names come from the EF model, never from input, and values are bound as parameters.
     /// </summary>
     public async Task<DocumentPurgeCounts> PurgeExpiredEntries(DateTimeOffset cutoff, HeldDocumentLineages heldLineages, CancellationToken ct)
@@ -57,12 +57,10 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
         var key = Column(entityType, table, "Key");
         var owner = Column(entityType, table, "RetentionOwner");
 
-        var activeLineages = (await ActiveHoldLineages.Find(dbContext, ct)).OfType<Guid>().ToArray();
-        var held = await heldLineages(activeLineages, ct);
-        var heldOwners = held.Select(id => id.ToString("N")).ToArray();
+        var activeOwners = (await ActiveHoldLineages.Find(dbContext, ct)).OfType<Guid>().Select(id => id.ToString("N")).ToArray();
 
-        var heldCount = await Count(tableName, scope, table, entityType, $"{owner} = ANY(@heldOwners)", cutoff, heldOwners, ct);
-        var unattributedCount = await Count(tableName, scope, table, entityType, $"{owner} IS NULL", cutoff, heldOwners, ct);
+        var preHeldCount = await Count(tableName, scope, table, entityType, $"{owner} = ANY(@activeOwners)", cutoff, activeOwners, ct);
+        var unattributedCount = await Count(tableName, scope, table, entityType, $"{owner} IS NULL", cutoff, activeOwners, ct);
         var candidates = await dbContext.Database
             .SqlQueryRaw<ExpiredEntry>(
                 string.Format(
@@ -75,22 +73,30 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
                     Column(entityType, table, "StartedAt"),
                     owner,
                     PurgeBatchSize),
-                ExpiryParameters(cutoff, heldOwners))
+                ExpiryParameters(cutoff, activeOwners))
             .ToListAsync(ct);
 
-        if (candidates.Count > 0)
+        var held = await heldLineages(
+            [.. candidates.Select(entry => entry.RetentionOwner).Distinct().Select(ParseLineage)],
+            ct);
+        var purgeable = candidates.Where(entry => !held.Contains(ParseLineage(entry.RetentionOwner))).ToArray();
+
+        if (purgeable.Length > 0)
         {
             _ = await dbContext.Database.ExecuteSqlRawAsync(
                 string.Format(CultureInfo.InvariantCulture, DeleteSql, tableName, scope, key),
                 [
-                    new NpgsqlParameter("scopes", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = candidates.Select(entry => entry.Scope).ToArray() },
-                    new NpgsqlParameter("keys", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = candidates.Select(entry => entry.Key).ToArray() },
+                    new NpgsqlParameter("scopes", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = purgeable.Select(entry => entry.Scope).ToArray() },
+                    new NpgsqlParameter("keys", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = purgeable.Select(entry => entry.Key).ToArray() },
                 ],
                 ct);
         }
 
-        return new DocumentPurgeCounts(candidates.Count, heldCount, unattributedCount);
+        return new DocumentPurgeCounts(purgeable.Length, preHeldCount + candidates.Count - purgeable.Length, unattributedCount);
     }
+
+    private static Guid ParseLineage(string retentionOwner) =>
+        Guid.TryParseExact(retentionOwner, "N", out var lineageId) ? lineageId : Guid.Empty;
 
     private Task<int> Count(
         string tableName,
@@ -99,7 +105,7 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
         IEntityType entityType,
         string ownerPredicate,
         DateTimeOffset cutoff,
-        string[] heldOwners,
+        string[] activeOwners,
         CancellationToken ct) => dbContext.Database
             .SqlQueryRaw<int>(
                 string.Format(
@@ -111,14 +117,14 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
                     Column(entityType, table, "CompletedAt"),
                     Column(entityType, table, "StartedAt"),
                     ownerPredicate),
-                ExpiryParameters(cutoff, heldOwners))
+                ExpiryParameters(cutoff, activeOwners))
             .SingleAsync(ct);
 
-    private static NpgsqlParameter[] ExpiryParameters(DateTimeOffset cutoff, string[] heldOwners) =>
+    private static NpgsqlParameter[] ExpiryParameters(DateTimeOffset cutoff, string[] activeOwners) =>
     [
         new NpgsqlParameter("prefix", DocumentCommandIdempotency.ScopePrefix),
         new NpgsqlParameter("cutoff", cutoff),
-        new NpgsqlParameter("heldOwners", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = heldOwners },
+        new NpgsqlParameter("activeOwners", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = activeOwners },
     ];
 
     private static string Column(IEntityType entityType, StoreObjectIdentifier table, string propertyName) =>
@@ -130,5 +136,6 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
     /// <summary>The identifying columns of one expired entry; no request content.</summary>
     /// <param name="Scope">The idempotency scope.</param>
     /// <param name="Key">The digest of the caller key.</param>
-    internal sealed record ExpiredEntry(string Scope, string Key);
+    /// <param name="RetentionOwner">The owning document lineage in N format.</param>
+    internal sealed record ExpiredEntry(string Scope, string Key, string RetentionOwner);
 }
