@@ -70,7 +70,7 @@ public sealed class DocumentHoldHandlerTests
         var harness = DocumentHoldHarness.Create();
         var command = harness.CreatePlaceCommand() with
         {
-            ActorId = "Jane Doe"
+            AuditContext = DocumentHoldHarness.CreateAuditContext("Jane Doe")
         };
 
         // Act
@@ -89,7 +89,7 @@ public sealed class DocumentHoldHandlerTests
         var placed = await harness.Place.Handle(harness.CreatePlaceCommand(), TestContext.Current.CancellationToken);
         _ = await harness.Place.Handle(harness.CreatePlaceCommand("purpose.claim-002"), TestContext.Current.CancellationToken);
         _ = await harness.Release.Handle(
-            new ReleaseDocumentHoldCommand(harness.DocumentId, placed.Value.Id, "reason.case-closed", DocumentHoldHarness.ActorId),
+            harness.CreateReleaseCommand(placed.Value.Id),
             TestContext.Current.CancellationToken);
 
         // Act
@@ -107,7 +107,7 @@ public sealed class DocumentHoldHandlerTests
         // Arrange
         var harness = DocumentHoldHarness.Create();
         var placed = await harness.Place.Handle(harness.CreatePlaceCommand(), TestContext.Current.CancellationToken);
-        var command = new ReleaseDocumentHoldCommand(harness.DocumentId, placed.Value.Id, "reason.case-closed", "actor-0002");
+        var command = harness.CreateReleaseCommand(placed.Value.Id, "actor-0002");
 
         // Act
         var result = await harness.Release.Handle(command, TestContext.Current.CancellationToken);
@@ -127,10 +127,10 @@ public sealed class DocumentHoldHandlerTests
         // Arrange
         var harness = DocumentHoldHarness.Create();
         var placed = await harness.Place.Handle(harness.CreatePlaceCommand(), TestContext.Current.CancellationToken);
-        var first = new ReleaseDocumentHoldCommand(harness.DocumentId, placed.Value.Id, "reason.case-closed", "actor-0002");
+        var first = harness.CreateReleaseCommand(placed.Value.Id, "actor-0002");
         var second = first with
         {
-            ActorId = "actor-0003",
+            AuditContext = DocumentHoldHarness.CreateAuditContext("actor-0003"),
             ReasonCode = "reason.other"
         };
         _ = await harness.Release.Handle(first, TestContext.Current.CancellationToken);
@@ -151,7 +151,10 @@ public sealed class DocumentHoldHandlerTests
         var placed = await harness.Place.Handle(harness.CreatePlaceCommand(), TestContext.Current.CancellationToken);
         var otherDocument = Guid.CreateVersion7();
         harness.Query.LineageByDocument[otherDocument] = Guid.CreateVersion7();
-        var command = new ReleaseDocumentHoldCommand(otherDocument, placed.Value.Id, "reason.case-closed", DocumentHoldHarness.ActorId);
+        var command = harness.CreateReleaseCommand(placed.Value.Id) with
+        {
+            DocumentId = otherDocument
+        };
 
         // Act
         var result = await harness.Release.Handle(command, TestContext.Current.CancellationToken);

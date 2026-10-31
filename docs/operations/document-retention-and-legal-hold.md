@@ -72,6 +72,19 @@ purges that do exist: unfinalized drafts, document audit records and document id
   `POST /api/v1/documents/{id}/holds/{holdId}/release`, where `{id}` is any revision of the lineage. A second release of the
   same hold is `409 Conflict`; a hold of another lineage is `404 Not Found`.
 
+### Hold audit evidence
+
+- Placing and releasing a hold each add exactly one `DocumentAuditRecords` row (`PlaceHold`, `ReleaseHold`) in the same
+  transaction as the hold change. An audit record that cannot be formed persists nothing, so no hold changes without its record.
+- The row carries the opaque actor, correlation id, document id, hold id, hold basis name and a bounded audit reason code
+  (`ManualHoldPlacement`, `ManualHoldRelease`). It never carries the purpose code, authority reference, release reason code
+  or any request text. `HoldBasis` accepts ASCII letters only, at most 64 characters.
+- A rejected request (unknown document, unknown or foreign hold, double release, invalid field) changes no hold and adds one
+  `Rejected` row with `DocumentNotFound`, `HoldNotFound`, `StateConflict` or `ValidationRejected`. A request refused by
+  authorization never reaches the handler and adds nothing, like every other document route.
+- The rows are stamped with the document lineage and follow the 24-month audit retention; a hold on the lineage restrains
+  their purge like any other audit row.
+
 ### Who may place and release
 
 - Permission `document.hold` covers placing, releasing and listing. By default only the `Admin` role holds it; `Operator` and

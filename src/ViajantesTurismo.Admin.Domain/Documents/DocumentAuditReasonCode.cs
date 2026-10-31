@@ -37,5 +37,14 @@ public enum DocumentAuditReasonCode
     TourNotFound = 10,
 
     /// <summary>Branding could not be captured from a ready source, so no revision was created.</summary>
-    BrandingUnavailable = 11
+    BrandingUnavailable = 11,
+
+    /// <summary>A disposition hold was manually placed by authorized staff.</summary>
+    ManualHoldPlacement = 12,
+
+    /// <summary>A disposition hold was manually released by authorized staff.</summary>
+    ManualHoldRelease = 13,
+
+    /// <summary>A hold was not found on the lineage of the document.</summary>
+    HoldNotFound = 14
 }

@@ -421,4 +421,105 @@ public sealed class DocumentAuditRecordTests
         // Assert
         result.IsFailure.ShouldBeTrue();
     }
+
+    [Fact]
+    public void Create_accepts_a_succeeded_hold_place_with_hold_id_and_basis_only()
+    {
+        // Arrange
+        var holdId = Guid.CreateVersion7();
+
+        // Act
+        var result = DocumentAuditTestData.CreateHoldRecord(DocumentAuditOutcome.Succeeded, DocumentAuditReasonCode.ManualHoldPlacement, holdId, "LegalClaim");
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.HoldId.ShouldBe(holdId);
+        result.Value.HoldBasis.ShouldBe("LegalClaim");
+    }
+
+    [Theory]
+    [InlineData(null, "LegalClaim")]
+    [InlineData("00000000-0000-0000-0000-000000000001", null)]
+    [InlineData("00000000-0000-0000-0000-000000000001", "legal claim of Jane Doe")]
+    [InlineData("00000000-0000-0000-0000-000000000001", "Jane.Doe@example.invalid")]
+    public void Create_rejects_a_succeeded_hold_record_without_a_valid_hold_id_and_basis(string? holdId, string? basis)
+    {
+        // Arrange
+        Guid? id = holdId is null ? null : Guid.Parse(holdId);
+
+        // Act
+        var result = DocumentAuditTestData.CreateHoldRecord(DocumentAuditOutcome.Succeeded, DocumentAuditReasonCode.ManualHoldPlacement, id, basis);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Create_rejects_a_hold_record_with_a_booking_or_a_lifecycle_reason()
+    {
+        // Arrange
+        var holdId = Guid.CreateVersion7();
+
+        // Act
+        var lifecycleReason = DocumentAuditTestData.CreateHoldRecord(DocumentAuditOutcome.Succeeded, DocumentAuditReasonCode.ManualOperation, holdId, "LegalClaim");
+        var withBooking = DocumentAuditRecord.Create(
+            "actor-0001",
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            1,
+            DocumentAuditOperation.PlaceHold,
+            DocumentAuditOutcome.Succeeded,
+            DocumentAuditReasonCode.ManualHoldPlacement,
+            "9a3ca841b4354928861c660a6e4e1b99",
+            new DateTime(2026, 7, 16, 8, 30, 0, DateTimeKind.Utc),
+            holdId,
+            "LegalClaim");
+
+        // Assert
+        lifecycleReason.IsFailure.ShouldBeTrue();
+        withBooking.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Create_rejects_hold_metadata_on_a_non_hold_operation()
+    {
+        // Arrange
+        var result = DocumentAuditRecord.Create(
+            "actor-0001",
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            1,
+            DocumentAuditOperation.Finalize,
+            DocumentAuditOutcome.Succeeded,
+            DocumentAuditReasonCode.ManualFinalize,
+            "9a3ca841b4354928861c660a6e4e1b99",
+            new DateTime(2026, 7, 16, 8, 30, 0, DateTimeKind.Utc),
+            Guid.CreateVersion7(),
+            "LegalClaim");
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(DocumentAuditOperation.PlaceHold, DocumentAuditReasonCode.HoldNotFound)]
+    [InlineData(DocumentAuditOperation.PlaceHold, DocumentAuditReasonCode.StateConflict)]
+    [InlineData(DocumentAuditOperation.ReleaseHold, DocumentAuditReasonCode.ArtifactUnavailable)]
+    public void Create_rejects_a_hold_rejection_with_an_unsupported_reason(DocumentAuditOperation operation, DocumentAuditReasonCode reasonCode)
+    {
+        // Act
+        var result = DocumentAuditRecord.Create(
+            "actor-0001",
+            Guid.CreateVersion7(),
+            null,
+            null,
+            operation,
+            DocumentAuditOutcome.Rejected,
+            reasonCode,
+            "9a3ca841b4354928861c660a6e4e1b99",
+            new DateTime(2026, 7, 16, 8, 30, 0, DateTimeKind.Utc));
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
 }

@@ -1,4 +1,5 @@
 using PandaBear.DispositionHold;
+using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 /// <param name="AuthorityReference">The opaque reference to the authorizing record.</param>
 /// <param name="ReviewDueAt">When the hold is next due for review.</param>
 /// <param name="ExpiresAt">When the hold stops restraining by itself, or <see langword="null" />.</param>
-/// <param name="ActorId">The opaque id of the authenticated principal; never taken from a request body.</param>
+/// <param name="AuditContext">The trusted opaque actor and correlation ids; never taken from a request body.</param>
 public sealed record PlaceDocumentHoldCommand(
     Guid DocumentId,
     HoldBasis Basis,
@@ -17,4 +18,4 @@ public sealed record PlaceDocumentHoldCommand(
     string AuthorityReference,
     DateTimeOffset ReviewDueAt,
     DateTimeOffset? ExpiresAt,
-    string ActorId);
+    DocumentAuditContext AuditContext);

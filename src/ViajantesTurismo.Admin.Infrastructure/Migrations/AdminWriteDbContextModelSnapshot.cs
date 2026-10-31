@@ -394,6 +394,13 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<int?>("DocumentRevision")
                         .HasColumnType("integer");
 
+                    b.Property<string>("HoldBasis")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid?>("HoldId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("OccurredAtUtc")
                         .HasColumnType("timestamp with time zone");
 

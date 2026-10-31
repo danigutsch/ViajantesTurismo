@@ -66,6 +66,8 @@ public sealed class DocumentAuditStorePostgreSqlTests(PostgreSqlTestServerFixtur
             "DocumentId",
             "DocumentLineageId",
             "DocumentRevision",
+            "HoldBasis",
+            "HoldId",
             "Id",
             "OccurredAtUtc",
             "Operation",

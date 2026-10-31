@@ -194,4 +194,33 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         finishedEarly.ShouldBeFalse();
         held.ShouldContain(lineage.Id);
     }
+
+    [Fact]
+    public async Task Place_release_and_a_rejected_second_release_each_commit_one_audit_record()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+
+        // Act
+        var holdId = await Harness.Place(documentId, ct);
+        await Harness.Release(documentId, holdId, ct);
+        var second = await Harness.TryRelease(documentId, holdId, ct);
+        var unknown = await Harness.TryRelease(Guid.CreateVersion7(), holdId, ct);
+
+        // Assert
+        second.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        unknown.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        var records = await Scenario.GetDocumentAuditsForDocument(documentId, ct);
+        records.Select(record => (record.Operation, record.Outcome, record.ReasonCode)).ShouldBe(
+        [
+            (DocumentAuditOperation.PlaceHold, DocumentAuditOutcome.Succeeded, DocumentAuditReasonCode.ManualHoldPlacement),
+            (DocumentAuditOperation.ReleaseHold, DocumentAuditOutcome.Succeeded, DocumentAuditReasonCode.ManualHoldRelease),
+            (DocumentAuditOperation.ReleaseHold, DocumentAuditOutcome.Rejected, DocumentAuditReasonCode.StateConflict),
+        ]);
+        records.All(record => record.HoldId == holdId).ShouldBeTrue();
+        records[0].HoldBasis.ShouldBe(nameof(HoldBasis.LegalClaim));
+    }
 }
