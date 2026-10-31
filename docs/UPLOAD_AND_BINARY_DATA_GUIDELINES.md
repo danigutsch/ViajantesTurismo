@@ -220,32 +220,33 @@ The Branding intake bounds the body through the endpoint limit and the `Seekable
 All pages were read on 2026-10-31. Page summaries were produced with a small model, so quotations are paraphrase-grade;
 recheck a page before relying on its exact wording.
 
-- https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html
-- https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
-- https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/en/0x14-V5-File-Handling.md
-- https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-10.0
-- https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/options?view=aspnetcore-10.0
-- https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-10.0
-- https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0
-- https://learn.microsoft.com/en-us/dotnet/api/system.io.stream.read?view=net-10.0
-- https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2022
-- https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap
-- https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.return?view=net-10.0
-- https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/stackalloc
-- https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/memory-t-usage-guidelines
-- https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying
-- https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Content-Type-Options
-- https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Disposition
-- https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/sandbox
-- https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control
-- https://developer.mozilla.org/en-US/docs/Web/SVG/Guides/SVG_as_an_image
-- https://docs.clamav.net/manual/Usage/Scanning.html
-- https://www.w3.org/TR/png-3/
-- https://developers.google.com/speed/webp/docs/riff_container
-- https://cwe.mitre.org/data/definitions/190.html, /130.html, /20.html, /400.html, /409.html
-- https://imagemagick.org/security-policy/
-- https://www.postgresql.org/docs/current/storage-toast.html
-- https://www.npgsql.org/doc/types/basic.html
+- <https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html>
+- <https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html>
+- <https://raw.githubusercontent.com/OWASP/ASVS/v5.0.0/5.0/en/0x14-V5-File-Handling.md>
+- <https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-10.0>
+- <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/options?view=aspnetcore-10.0>
+- <https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/parameter-binding?view=aspnetcore-10.0>
+- <https://learn.microsoft.com/en-us/aspnet/core/security/anti-request-forgery?view=aspnetcore-10.0>
+- <https://learn.microsoft.com/en-us/dotnet/api/system.io.stream.read?view=net-10.0>
+- <https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca2022>
+- <https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap>
+- <https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.return?view=net-10.0>
+- <https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/stackalloc>
+- <https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/memory-t-usage-guidelines>
+- <https://learn.microsoft.com/en-us/ef/core/performance/efficient-querying>
+- <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Content-Type-Options>
+- <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Disposition>
+- <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/sandbox>
+- <https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control>
+- <https://developer.mozilla.org/en-US/docs/Web/SVG/Guides/SVG_as_an_image>
+- <https://docs.clamav.net/manual/Usage/Scanning.html>
+- <https://www.w3.org/TR/png-3/>
+- <https://developers.google.com/speed/webp/docs/riff_container>
+- <https://cwe.mitre.org/data/definitions/190.html>, <https://cwe.mitre.org/data/definitions/130.html>, <https://cwe.mitre.org/data/definitions/20.html>,
+    <https://cwe.mitre.org/data/definitions/400.html>, <https://cwe.mitre.org/data/definitions/409.html>
+- <https://imagemagick.org/security-policy/>
+- <https://www.postgresql.org/docs/current/storage-toast.html>
+- <https://www.npgsql.org/doc/types/basic.html>
 
 ## Unverified or project-policy items
 
