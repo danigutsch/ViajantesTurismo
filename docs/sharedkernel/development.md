@@ -6,19 +6,19 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.389.1` at clean library revision
-[`9ef862a978a3915b0c63944a83fc65f67fa4a8fb`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/9ef862a978a3915b0c63944a83fc65f67fa4a8fb).
-It adds the shared `Testing.Messaging` and `Testing.Domain` packages, `RecordingLoggerProvider`, and the extended
-`FakeBrowserFile` and `ThrowingDistributedCache` test doubles. The unchanged packages, symbol archives and manifest are
-published in GitHub prerelease
-[`v0.1.0-alpha.389.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.389.1), built by
-[CI run 41100507504](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41100507504).
+The published candidate is `0.1.0-alpha.396.1` at clean library revision
+[`079cd9fb28192d027fb14d959da9e29f7ab6d2a4`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/079cd9fb28192d027fb14d959da9e29f7ab6d2a4).
+It adds the approved consumer workflow actions to the shared pin manifest; the packages are otherwise unchanged from the
+previous candidate. The packages, symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.396.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.396.1), built by
+[CI run 41181486534](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41181486534).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.372.1` at revision `725be335280c3b7bdb659bf3043b2bfe747b9d12`,
+The previous previews `0.1.0-alpha.389.1` at revision `9ef862a978a3915b0c63944a83fc65f67fa4a8fb`,
+`0.1.0-alpha.372.1` at revision `725be335280c3b7bdb659bf3043b2bfe747b9d12`,
 `0.1.0-alpha.368.1` at revision `4d54ab830508be0d4d3189d86858e909c6ed8641`,
 `0.1.0-alpha.359.1` at revision `7893ca689c8aa10602cb8accb66f83a7ac2f6525`,
 `0.1.0-alpha.339.1` at revision `7c62d629ac152de5993653bbcabf7430c40cfd35` and
