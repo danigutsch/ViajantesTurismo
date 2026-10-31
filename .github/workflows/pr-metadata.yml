@@ -11,18 +11,10 @@ jobs:
   metadata:
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'PR Metadata' }}
     if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
-    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
-        with:
-          global-json-file: global.json
-      - name: Build pinned SharedKernel CI tool
-        uses: ./.github/actions/build-sharedkernel-tool
-        with:
-          tool: SharedKernel.CI.Tool
-      - name: Validate squash header
-        run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- verify-commit-message --event "$GITHUB_EVENT_PATH"
+    permissions:
+      contents: read
+    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/pr-metadata-reusable.yml@079cd9fb28192d027fb14d959da9e29f7ab6d2a4
+    with:
+      runner: ${{ vars.CI_UBUNTU_RUNNER }}
+      source-repository: danigutsch/PandaBear.SharedKernel
+      source-ref: 079cd9fb28192d027fb14d959da9e29f7ab6d2a4

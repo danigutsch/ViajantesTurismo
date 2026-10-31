@@ -125,6 +125,46 @@ The transfer preserves 37 guards in library test commit `3752abb54681e28f4d16abd
 application tests continue to verify domain dispatch, saved envelopes, registration, and schema policy
 through public package interfaces. This test-only commit does not change the pinned runtime artifacts.
 
+## Shared CI references and the pin bump
+
+Generic CI pieces come from SharedKernel's
+[reusable workflows and actions](
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/079cd9fb28192d027fb14d959da9e29f7ab6d2a4/docs/ci/reusable-workflows.md),
+referenced by full commit SHA. The workflow references currently use
+`079cd9fb28192d027fb14d959da9e29f7ab6d2a4`, while `.config/sharedkernel-candidate.json` still records the earlier
+`libraryRevision`; the next candidate bump moves `libraryRevision` to that revision or a later one. Every pin bump
+must change all of these in the same commit, and `SharedKernelConsumerWorkflowTests` fails when they disagree:
+
+| Reference | File |
+| --- | --- |
+| `.github/workflows/pr-metadata-reusable.yml@<sha>` and `source-ref` | `.github/workflows/pr-metadata.yml` |
+| `.github/workflows/actionlint-reusable.yml@<sha>` | `.github/workflows/actionlint.yml` |
+| `.github/workflows/dependency-snapshot-reusable.yml@<sha>` and `source-ref` | `.github/workflows/dependency-review.yml` |
+| `.github/workflows/dependency-review-reusable.yml@<sha>` and `source-ref` | `.github/workflows/dependency-review.yml` |
+| `.github/actions/setup-dotnet-tool@<sha>` | `.github/actions/build-sharedkernel-tool/action.yml` |
+| `revision:` of the action pin check | `.github/workflows/ci.yml` (Lint job) |
+| `.github/actions/setup-security-scanner@<libraryRevision>` | `.github/workflows/secret-scan.yml` |
+| `libraryRevision`, package version and hashes | `.config/sharedkernel-candidate.json` |
+
+`secret-scan.yml` stays a local workflow: SharedKernel offers only the scanner setup action, which it already uses,
+and the SARIF upload permission belongs to the caller. Its reference must equal `libraryRevision`. After the bump,
+also compare SharedKernel's `.github/action-pins.json` with the third-party pins and update the SHA and version
+comment of each differing reference in the same change.
+
+Callers keep the triggers, concurrency groups, ignored-label rules, change planning, license values and permissions.
+Because GitHub reports a reusable call as `<caller job> / <called job>`, the required checks change names:
+
+| Previous check | Check after adopting the shared workflow |
+| --- | --- |
+| `PR Metadata` | `PR Metadata / Validate squash header` |
+| `Dependency Review` | `Dependency Review / Review` |
+| `Dependency snapshot (base)` | `Dependency snapshot (base) / Snapshot` |
+| `Dependency snapshot (head)` | `Dependency snapshot (head) / Snapshot` |
+| `Actionlint` (not required) | `Actionlint / Actionlint` |
+
+Update the `main` ruleset to require the two new names; `Build and Test`, `Lint`, `Quality Gate` and `Secret Scan` are
+unchanged. Do not merge before the ruleset accepts the new names, or the old checks stay pending forever.
+
 ## CI and platform evidence
 
 Hosted Linux and Windows jobs stage the candidate through `.github/actions/setup-ci-prerequisites`.
@@ -136,6 +176,20 @@ there with a locked restore, and exports `SHAREDKERNEL_SOURCE`. The setup action
 from GitHub prerelease `v<packageVersion>` without a token. Missing assets, revision mismatches, and
 hash mismatches fail visibly; missing retired releases must not be recreated to unblock checks. The
 secret-scan workflow also pins the shared scanner action to an immutable library revision.
+
+`build-sharedkernel-tool` delegates the SDK, the lock-file NuGet cache and the locked restore and Release build to
+SharedKernel's `.github/actions/setup-dotnet-tool`, referenced by full SHA. It keeps the sparse checkout of the
+pinned `libraryRevision`, the library-root override and `SHAREDKERNEL_SOURCE`; `setup-ci-prerequisites` keeps
+`NUGET_PACKAGES`, candidate staging, `dotnet tool restore` and dev certificate trust. A stale lock file still fails
+the restore.
+
+## Action pins
+
+Every third-party action in `.github/workflows` and `.github/actions` pins the SHA and trailing version comment of
+SharedKernel's `.github/action-pins.json`. The CI Lint job builds the RepoConfig tool from the shared revision
+(`revision:` and `sparse-extra: .github` inputs of `build-sharedkernel-tool`) and runs `verify-action-pins`
+against that manifest. To bump an action, or to use a new one, change the SharedKernel manifest first, then every
+reference here in the same change.
 
 Optional repository variables `SHAREDKERNEL_LIBRARY_ROOT` and `SHAREDKERNEL_CANDIDATE_FEED` reach the
 setup action as explicit inputs. A library-root override skips the hosted checkout, requires a clean

@@ -19,8 +19,9 @@ Instructions for files under `.github/`.
   `dotnet run --project "$SHAREDKERNEL_SOURCE/tools/<tool>" -c Release --no-build -- <command>`.
 - Set `persist-credentials: false` on every checkout. Pass values to commands through `env:`, pass pull request text
   only through `--event "$GITHUB_EVENT_PATH"`, and set `GH_TOKEN` only on steps that call the GitHub API.
-- Pin `danigutsch/PandaBear.SharedKernel` action references to the `libraryRevision` in
-  `.config/sharedkernel-candidate.json`.
+- Pin `danigutsch/PandaBear.SharedKernel` scanner action references to the `libraryRevision` in
+  `.config/sharedkernel-candidate.json`. Shared workflow and `setup-dotnet-tool` references, `source-ref` and
+  `revision` inputs use one full SHA and move together with it; see `docs/sharedkernel/development.md`.
 - Keep each required check's job `name:` expression and `ci:rerun` ignored-label `if:` pattern; see
   `docs/ci/governance.md`.
 - `SharedKernelToolCallerTests` parses every SharedKernel tool command line; keep new command lines parseable without

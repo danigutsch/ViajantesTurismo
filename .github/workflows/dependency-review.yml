@@ -34,13 +34,10 @@ jobs:
     outputs:
       review_required: ${{ steps.plan.outputs.documentation_only == 'true' && 'false' || 'true' }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
-        with:
-          global-json-file: global.json
       - name: Build pinned SharedKernel CI tool
         uses: ./.github/actions/build-sharedkernel-tool
         with:
@@ -63,7 +60,7 @@ jobs:
             select --base "$BASE_SHA" --github-output "$GITHUB_OUTPUT"
       - name: Retain selection evidence
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dependency-review-selection
           path: TestResults/selection/**
@@ -79,124 +76,36 @@ jobs:
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.actor != 'dependabot[bot]'))
-    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
-    timeout-minutes: 20
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
         target: ${{ github.event_name == 'pull_request' && fromJSON('["base", "head"]') || fromJSON('["head"]') }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          persist-credentials: false
-
-      - name: Checkout exact dependency inputs
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
-          path: dependency-input
-          persist-credentials: false
-
-      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
-        with:
-          global-json-file: global.json
-
-      # One generator built from the pinned libraryRevision reads both base and head lock files,
-      # so retired candidates never need to be restored.
-      - name: Build pinned SharedKernel repository tool
-        uses: ./.github/actions/build-sharedkernel-tool
-        with:
-          tool: SharedKernel.RepoConfig.Tool
-
-      - name: Generate snapshot from committed lock files
-        env:
-          SNAPSHOT_SHA: ${{ matrix.target == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha || github.sha }}
-          SNAPSHOT_REF: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', matrix.target == 'base' && github.base_ref || github.head_ref) || github.ref }}
-          SNAPSHOT_JOB_ID: ${{ github.run_id }}
-        run: |
-          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.RepoConfig.Tool" -c Release --no-build -- \
-            dependency snapshot --root dependency-input --sha "$SNAPSHOT_SHA" --ref "$SNAPSHOT_REF" \
-            --job "$SNAPSHOT_JOB_ID" --correlator viajantes-solution-nuget --output TestResults/dependency-snapshot.json
-
-      - name: Submit complete committed dependency snapshot
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.RepoConfig.Tool" -c Release --no-build -- \
-            dependency submit --snapshot dependency-input/TestResults/dependency-snapshot.json \
-            --repository "$GITHUB_REPOSITORY" --force
-
-      - name: Retain committed snapshot evidence
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
-        with:
-          name: dependency-snapshot-${{ matrix.target }}
-          path: dependency-input/TestResults/dependency-snapshot.json
-          if-no-files-found: ignore
+    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/dependency-snapshot-reusable.yml@079cd9fb28192d027fb14d959da9e29f7ab6d2a4
+    with:
+      runner: ${{ vars.CI_UBUNTU_RUNNER }}
+      target: ${{ matrix.target }}
+      correlator: viajantes-solution-nuget
+      source-repository: danigutsch/PandaBear.SharedKernel
+      source-ref: 079cd9fb28192d027fb14d959da9e29f7ab6d2a4
 
   dependency-review:
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Dependency Review' }}
     needs: [plan, dependency-snapshots]
     if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')) }}
-    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
-    timeout-minutes: 15
-    steps:
-      - name: Require successful snapshot generation when applicable
-        env:
-          SNAPSHOT_RESULT: ${{ needs.dependency-snapshots.result }}
-          PLAN_RESULT: ${{ needs.plan.result }}
-        run: |
-          test "$PLAN_RESULT" = success
-          case "$SNAPSHOT_RESULT" in
-            success | skipped) ;;
-            *) echo "Dependency snapshot generation did not succeed." >&2; exit 1 ;;
-          esac
-
-      - name: Checkout repository
-        if: needs.plan.outputs.review_required == 'true'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          persist-credentials: false
-
-      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
-        if: needs.plan.outputs.review_required == 'true'
-        with:
-          global-json-file: global.json
-
-      - name: Build pinned SharedKernel repository tool
-        if: needs.plan.outputs.review_required == 'true'
-        uses: ./.github/actions/build-sharedkernel-tool
-        with:
-          tool: SharedKernel.RepoConfig.Tool
-
-      # The pinned Action ignores purl versions. Fail before emitting its exception if approval expires.
-      # .config/sharedkernel-repo.json holds the approval; evidence: docs/ci/dependency-license-evidence.md.
-      - name: Validate exact preview license approval
-        if: needs.plan.outputs.review_required == 'true'
-        id: preview-license
-        run: |
-          dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.RepoConfig.Tool" -c Release --no-build -- \
-            dependency verify-license-exceptions --github-output "$GITHUB_OUTPUT"
-
-      - name: Dependency Review
-        if: needs.plan.outputs.review_required == 'true'
-        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
-        with:
-          fail-on-severity: moderate
-          license-check: true
-          vulnerability-check: true
-          # Informational scorecards perform serial external lookups for repeated manifest entries.
-          show-openssf-scorecard: false
-          allow-dependencies-licenses: ${{ steps.preview-license.outputs.packages }}
-          allow-licenses: >-
-            MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, ISC, PostgreSQL, Zlib,
-            Unlicense, CC0-1.0
-
-      - name: Report unchanged dependency inputs
-        if: needs.plan.outputs.review_required == 'false'
-        run: echo "Only documentation changed; see the dependency-review-selection evidence."
+    permissions:
+      contents: read
+    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/dependency-review-reusable.yml@079cd9fb28192d027fb14d959da9e29f7ab6d2a4
+    with:
+      runner: ${{ vars.CI_UBUNTU_RUNNER }}
+      review-required: ${{ needs.plan.outputs.review_required }}
+      plan-result: ${{ needs.plan.result }}
+      snapshot-result: ${{ needs.dependency-snapshots.result }}
+      fail-on-severity: moderate
+      verify-license-exceptions: true
+      source-repository: danigutsch/PandaBear.SharedKernel
+      source-ref: 079cd9fb28192d027fb14d959da9e29f7ab6d2a4
+      allow-licenses: >-
+        MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, ISC, PostgreSQL, Zlib,
+        Unlicense, CC0-1.0

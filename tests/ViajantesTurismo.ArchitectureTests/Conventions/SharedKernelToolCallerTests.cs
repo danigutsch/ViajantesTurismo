@@ -31,7 +31,6 @@ public sealed class SharedKernelToolCallerTests
             ".github/workflows/ci.yml",
             ".github/workflows/dependency-review.yml",
             ".github/workflows/devcontainer-smoke.yml",
-            ".github/workflows/pr-metadata.yml",
             ".github/workflows/roadmap-maintenance.yml",
             ".github/workflows/sync-labels.yml",
             "opencode.json",

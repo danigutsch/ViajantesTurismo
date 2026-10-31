@@ -10,8 +10,20 @@ updates:
       timezone: "UTC"
     open-pull-requests-limit: 1
     ignore:
-      # SharedKernel action refs must equal libraryRevision in .config/sharedkernel-candidate.json; pin bumps move them.
+      # SharedKernel refs move with the SharedKernel pin bump: libraryRevision for the candidate and scanner action,
+      # one shared-workflow SHA for the reusable workflows and setup-dotnet-tool.
       - dependency-name: danigutsch/PandaBear.SharedKernel
+      # Third-party pins follow SharedKernel's .github/action-pins.json and
+      # verify-action-pins fails on drift, so bumps start from the manifest, not from Dependabot.
+      - dependency-name: actions/checkout
+      - dependency-name: actions/setup-dotnet
+      - dependency-name: actions/upload-artifact
+      - dependency-name: actions/download-artifact
+      - dependency-name: github/codeql-action
+      - dependency-name: actions/dependency-review-action
+      - dependency-name: actions/create-github-app-token
+      - dependency-name: DavidAnson/markdownlint-cli2-action
+      - dependency-name: tj-actions/changed-files
     groups:
       github-actions-minor-patch:
         applies-to: version-updates

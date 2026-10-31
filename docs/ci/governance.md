@@ -20,6 +20,11 @@ Branch protection and the active `main` ruleset require these status checks:
 - `Quality Gate` (from `.github/workflows/ci.yml`)
 - `PR Metadata` (from `.github/workflows/pr-metadata.yml`)
 
+`Dependency Review` and `PR Metadata` call shared reusable workflows, so GitHub reports them as
+`Dependency Review / Review` and `PR Metadata / Validate squash header`. The list above names the workflow
+jobs; the ruleset must require the reported names. Updating the ruleset is a manual step to do before the
+change that adopts the shared workflows merges. See [SharedKernel consumption](../sharedkernel/development.md#shared-ci-references-and-the-pin-bump).
+
 Branch protection and ruleset `14460324` require these checks with strict up-to-date checks,
 GitHub Actions check attribution (app `15368`), signed commits, additional review requirements,
 and no bypass.
@@ -87,7 +92,7 @@ settings aligned with this policy by enabling **Require signed commits** for `ma
 
 All external GitHub Actions used in repository workflows are pinned to immutable commit
 SHAs with the upstream release noted in an inline comment, for example
-`actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6`.
+`actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2`.
 
 ### Rationale
 
@@ -117,7 +122,8 @@ The workflow uses a small reviewed action set.
 Coverage collection uses `coverlet.MTP` 10.1.0 and the pinned local
 `dotnet-reportgenerator-globaltool` 5.5.11 for HTML and merged Cobertura. The C# repository tool
 owns changed-code threshold validation. No scanner or proprietary coverage local tool is needed.
-The workflow lint path installs pinned `actionlint` 1.7.9 directly.
+The workflow lint path runs SharedKernel's reusable actionlint workflow, which installs its default pinned
+`actionlint` release (currently 1.7.9) and verifies the archive checksum.
 
 ### Update process
 
@@ -128,6 +134,8 @@ evidence, compatibility checks, and stateful recovery.
   configuration covers `github-actions`, `nuget`, and `devcontainers` ecosystems with
   deliberately cautious schedules for routine version updates. SDK and SharedKernel action
   updates arrive only with a SharedKernel pin bump.
+- Third-party actions listed in SharedKernel's `.github/action-pins.json` are ignored by Dependabot: `verify-action-pins` in the Lint job fails on any
+  drift from that manifest, so a bump starts from the manifest and then updates every reference here.
 - When Dependabot proposes an action update, review both the release notes and the
   resolved SHA, then verify the affected workflows still pass before merging.
 - When upgrading across major action versions, review the migration guidance before
@@ -148,7 +156,7 @@ designated code owners. See `CODEOWNERS` for the current ownership mapping.
 
 | Ecosystem | Scope | Schedule | PR limit | Update shaping |
 | --- | --- | --- | --- | --- |
-| `github-actions` | Workflow action references | Monthly at 05:00 UTC | 1 | All action updates grouped into one PR; `danigutsch/PandaBear.SharedKernel` ignored |
+| `github-actions` | Workflow action references | Monthly at 05:00 UTC | 1 | `danigutsch/PandaBear.SharedKernel` and every manifest-pinned action ignored; bumps start from the SharedKernel manifest |
 | `dotnet-sdk` | Repository SDK pin | Monthly at 05:00 UTC | Not applicable | All updates ignored |
 | `nuget` | .NET package dependencies | Monthly at 05:00 UTC | 1 | Minor and patch updates grouped, security updates grouped, longer cooldown enabled |
 | `devcontainers` | Dev Container Features in valid `devcontainer.json` locations | Quarterly at 05:00 UTC | 1 | All feature updates grouped into one PR |
@@ -160,9 +168,10 @@ Two update streams move only with a SharedKernel pin bump, so Dependabot ignores
 - `global.json` must match the SharedKernel `global.json` at the pinned `libraryRevision` (same
   `sdk.version` and `rollForward`). The SharedKernel tool build and `stage-candidate` fail when
   they differ.
-- `danigutsch/PandaBear.SharedKernel` action references, such as `setup-security-scanner` in
-  `secret-scan.yml`, must equal the pinned `libraryRevision`. `SharedKernelConsumerWorkflowTests`
-  enforces this.
+- `danigutsch/PandaBear.SharedKernel` references have two roots. The candidate and scanner action
+  (`setup-security-scanner` in `secret-scan.yml`) equal the pinned `libraryRevision`. The reusable workflows,
+  `setup-dotnet-tool`, and the `source-ref` and `revision` inputs use one shared-workflow SHA that moves together
+  with `libraryRevision` in the pin bump. `SharedKernelConsumerWorkflowTests` enforces both.
 
 See the [pin update review workflow](pin-update-review.md) for the pin bump steps.
 

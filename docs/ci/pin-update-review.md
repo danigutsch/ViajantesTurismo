@@ -22,8 +22,8 @@ configuration, and the AppHost/resource extensions.
 | Location | Existing update coverage | Manual review gap and owner |
 | --- | --- | --- |
 | `.github/workflows/*.yml` external `uses:` | Dependabot `github-actions`, monthly grouped minor/patch proposals and security updates; full SHA plus release comment is current policy | CI maintainers verify upstream SHA, release diff, permissions, and transitive action behavior; major updates need explicit migration review |
-| `.github/actions/*/action.yml` external `uses:` | `setup-ci-prerequisites` uses `actions/setup-dotnet` and `build-sharedkernel-tool` uses `actions/checkout`, both SHA-pinned. The Dependabot `github-actions` entry scans `/` and `/.github/actions/*`, so these refs get the same grouped proposals as the workflows | Review composite shell and tool changes as source, and move a composite SHA with the matching workflow SHA |
-| `.config/sharedkernel-candidate.json` and `danigutsch/PandaBear.SharedKernel` action refs | Dependabot ignores SharedKernel actions and `dotnet-sdk`; `SharedKernelConsumerWorkflowTests` requires every SharedKernel action ref to equal `libraryRevision` | Maintainers follow the [SharedKernel pin bump](#sharedkernel-pin-bump) steps |
+| `.github/actions/*/action.yml` external `uses:` | `build-sharedkernel-tool` uses `actions/checkout`, SHA-pinned, and SharedKernel's `setup-dotnet-tool` by SHA. The Dependabot `github-actions` entry scans `/` and `/.github/actions/*`, so these refs get the same grouped proposals as the workflows | Review composite shell and tool changes as source, and move a composite SHA with the matching workflow SHA |
+| `.config/sharedkernel-candidate.json` and `danigutsch/PandaBear.SharedKernel` action refs | Dependabot ignores SharedKernel actions and `dotnet-sdk`; `SharedKernelConsumerWorkflowTests` requires the scanner action ref to equal `libraryRevision` and all shared workflow refs to use one SHA | Maintainers follow the [SharedKernel pin bump](#sharedkernel-pin-bump) steps |
 | `.devcontainer/devcontainer.json` base image | Tag-plus-digest pin; no Docker ecosystem entry is configured | Development-environment maintainers resolve and verify the base-image digest manually; do not assume feature-update coverage includes the base image |
 | `.devcontainer/devcontainer.json` Features | Dependabot `devcontainers` entry, quarterly; current feature references use digest-only keys | Development-environment maintainers verify whether each digest-only key is actually recognized and updated; treat coverage as unverified until a concrete proposal proves it |
 | `src/ViajantesTurismo.AppHost/AppHostResourceExtensions.cs` | Explicit PostgreSQL, PgWeb, Redis, RedisInsight, and Keycloak tag/digest constants | AppHost maintainers update manually; Dependabot does not parse these C# resource declarations |
@@ -90,8 +90,12 @@ for the resource changed. Dev Container image/Feature changes require its smoke 
    `libraryRevision` in `sdk.version` and `sdk.rollForward`; only this repository's `errorMessage`
    differs. The SharedKernel tool build and `stage-candidate` fail otherwise. Dependabot does not
    propose SDK updates.
-3. Set every `danigutsch/PandaBear.SharedKernel/...@<sha>` action reference, such as
-   `setup-security-scanner` in `secret-scan.yml`, to the new `libraryRevision`.
+3. Set every `danigutsch/PandaBear.SharedKernel/...@<sha>` reference to the new revision: `setup-security-scanner`
+   in `secret-scan.yml` and the shared references listed in
+   [SharedKernel consumption](../sharedkernel/development.md#shared-ci-references-and-the-pin-bump)
+   (`pr-metadata-reusable`, `actionlint-reusable`, `dependency-snapshot-reusable`, `dependency-review-reusable`,
+   `setup-dotnet-tool`), including their `source-ref` and `revision` inputs. Then compare SharedKernel's
+   `.github/action-pins.json` with the third-party pins.
 4. Stage and refresh locks: `bash setup-dev.sh`, then
    `dotnet restore ViajantesTurismo.slnx --force-evaluate` and
    `dotnet restore ViajantesTurismo.slnx --locked-mode`.

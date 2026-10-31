@@ -38,15 +38,10 @@ jobs:
       hosted-tests_required: ${{ steps.change-scope.outputs['hosted-tests_required'] }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
-
-      - name: Set up CI selection SDK
-        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
-        with:
-          global-json-file: global.json
 
       - name: Build SharedKernel CI tool
         uses: ./.github/actions/build-sharedkernel-tool
@@ -73,7 +68,7 @@ jobs:
             select --base "$BASE_SHA" --github-output "$GITHUB_OUTPUT"
 
       - name: Upload CI selection
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           if-no-files-found: error
           name: ci-selection
@@ -100,7 +95,7 @@ jobs:
       informational_version: ${{ steps.version.outputs.informational_version }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -169,7 +164,7 @@ jobs:
 
       - name: Checkout repository
         if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -218,7 +213,7 @@ jobs:
         run: dotnet --info
 
       - name: Upload test slice results
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ always() && steps.run-test-slice.outcome != 'skipped' }}
         with:
           if-no-files-found: ignore
@@ -238,7 +233,7 @@ jobs:
 
       - name: Upload warning report
         if: ${{ !cancelled() && steps.run-test-slice.outcome != 'skipped' }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           if-no-files-found: error
           name: warning-report-tests-${{ matrix.id }}
@@ -286,7 +281,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-ci-prerequisites
@@ -313,7 +308,7 @@ jobs:
         run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- warning-report --tool Build --outcome "${{ steps.build.outcome }}" --report TestResults/build-warnings.json
       - name: Upload warning reports
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           if-no-files-found: ignore
           name: warning-report-solution-build
@@ -324,7 +319,7 @@ jobs:
       - name: Record revision and symbol hashes
         run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- coverage record-symbols
       - name: Upload build evidence
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: solution-build-evidence
           if-no-files-found: error
@@ -362,16 +357,10 @@ jobs:
 
       - name: Checkout repository
         if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
-
-      - name: Set up coverage SDK
-        if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
-        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
-        with:
-          global-json-file: global.json
 
       - name: Build SharedKernel CI tool
         if: ${{ needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
@@ -405,7 +394,7 @@ jobs:
 
       - name: Upload quality evidence
         if: ${{ always() && needs.detect-changes.outputs.build_required == 'true' && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           if-no-files-found: error
           name: quality-evidence
@@ -424,7 +413,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-ci-prerequisites
@@ -461,7 +450,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -513,6 +502,19 @@ jobs:
             samples/**/*.md
           config: .markdownlint-cli2.jsonc
 
+      - name: Build SharedKernel repository tool with the action pin check
+        uses: ./.github/actions/build-sharedkernel-tool
+        with:
+          tool: SharedKernel.RepoConfig.Tool
+          revision: 079cd9fb28192d027fb14d959da9e29f7ab6d2a4
+          sparse-extra: .github
+
+      - name: Verify action pins
+        shell: bash
+        run: |
+          dotnet "$SHAREDKERNEL_SOURCE"/tools/SharedKernel.RepoConfig.Tool/bin/Release/*/SharedKernel.RepoConfig.Tool.dll \
+            verify-action-pins --root . --manifest "$SHAREDKERNEL_SOURCE/.github/action-pins.json"
+
       - name: Set up CI prerequisites
         uses: ./.github/actions/setup-ci-prerequisites
         with:
@@ -553,7 +555,7 @@ jobs:
 
       - name: Upload warning report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           if-no-files-found: error
           name: warning-report-lint

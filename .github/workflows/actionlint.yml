@@ -21,42 +21,8 @@ permissions:
 jobs:
   actionlint:
     name: Actionlint
-    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
-    env:
-      ACTIONLINT_VERSION: 1.7.9
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
-
-      - name: Install shellcheck
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes shellcheck
-
-      - name: Install actionlint
-        shell: bash
-        run: |
-          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
-          checksums="actionlint_${ACTIONLINT_VERSION}_checksums.txt"
-          base_url="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}"
-
-          curl_args=(
-            --fail
-            --silent
-            --show-error
-            --location
-            --proto '=https'
-            --proto-redir '=https'
-            --tlsv1.2
-          )
-
-          curl "${curl_args[@]}" --output "$archive" "$base_url/$archive"
-          curl "${curl_args[@]}" --output "$checksums" "$base_url/$checksums"
-          grep "  $archive$" "$checksums" | sha256sum --check --status
-          tar -xzf "$archive" actionlint
-          sudo install actionlint /usr/local/bin/actionlint
-
-      - name: Lint GitHub Actions workflows
-        run: actionlint -color
+    permissions:
+      contents: read
+    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/actionlint-reusable.yml@079cd9fb28192d027fb14d959da9e29f7ab6d2a4
+    with:
+      runner: ${{ vars.CI_UBUNTU_RUNNER }}

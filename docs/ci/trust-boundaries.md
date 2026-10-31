@@ -48,13 +48,17 @@ package version, and package SHA-256 hashes.
 - `.github/actions/build-sharedkernel-tool` requires a 40-character lowercase hexadecimal
   `libraryRevision`, checks out only `tools/<tool>` and `tools/Shared` from
   `danigutsch/PandaBear.SharedKernel` at that commit with `persist-credentials: false` and no token,
-  and builds the tool with a locked restore. It accepts only `SharedKernel.CI.Tool` and
-  `SharedKernel.RepoConfig.Tool`.
+  and builds the tool through SharedKernel's `setup-dotnet-tool` in locked restore mode. It accepts only
+  `SharedKernel.CI.Tool` and `SharedKernel.RepoConfig.Tool`. The optional `revision` input replaces
+  `libraryRevision` with another full SHA (the Lint action pin check uses the shared-workflow SHA), and the
+  optional `sparse-extra` input adds one more directory, such as `.github`, to the sparse checkout.
 - `sharedkernel-ci stage-candidate` requires the release `candidate.json` identity to equal the pin,
   downloads release assets over HTTPS without a token, and verifies every package hash before it
   enters `.local/sharedkernel-feed`. Package source mapping restores `PandaBear.SharedKernel.*` only
   from that feed.
-- `danigutsch/PandaBear.SharedKernel` action references must equal the pinned `libraryRevision`.
+- `danigutsch/PandaBear.SharedKernel` action references have two roots: the scanner action equals the pinned
+  `libraryRevision`; reusable workflows, `setup-dotnet-tool`, `source-ref` and `revision` use one shared-workflow SHA
+  that moves with it in the pin bump.
 - A pull request that changes the pin, the composite actions, or `.config/**` requires code-owner
   review; see [governance](governance.md#workflow-ownership).
 
