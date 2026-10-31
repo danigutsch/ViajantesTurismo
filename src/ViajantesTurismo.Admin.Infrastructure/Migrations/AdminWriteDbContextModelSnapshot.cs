@@ -388,6 +388,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<Guid?>("DocumentId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("DocumentLineageId")
+                        .HasColumnType("uuid");
+
                     b.Property<int?>("DocumentRevision")
                         .HasColumnType("integer");
 
@@ -410,6 +413,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DocumentLineageId");
 
                     b.HasIndex("RetentionExpiresAt")
                         .HasDatabaseName("IX_DocumentAuditRecords_RetentionExpiresAt");
