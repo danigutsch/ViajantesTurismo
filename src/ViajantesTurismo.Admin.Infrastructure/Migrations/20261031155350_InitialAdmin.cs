@@ -79,6 +79,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     ReasonCode = table.Column<string>(type: "text", nullable: false),
                     CorrelationId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    HoldId = table.Column<Guid>(type: "uuid", nullable: true),
+                    HoldBasis = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     RetentionExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DocumentLineageId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
