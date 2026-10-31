@@ -3,7 +3,7 @@ using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class ImportCustomersCancelRaceTests : BunitContext
 {

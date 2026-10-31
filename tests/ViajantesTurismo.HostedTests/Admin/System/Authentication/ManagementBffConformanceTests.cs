@@ -11,8 +11,8 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Authentication;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
+[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
 [TestScope(TestScope.System)]
 public sealed partial class ManagementBffConformanceTests(AspireSystemTestFixture fixture)
     : AspireSystemTestBase<AspireSystemTestFixture>(fixture)

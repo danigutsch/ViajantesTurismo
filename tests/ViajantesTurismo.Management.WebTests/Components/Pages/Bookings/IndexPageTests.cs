@@ -23,8 +23,8 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Load_failure_shows_a_sanitized_error_instead_of_an_empty_state()
     {
         // Arrange

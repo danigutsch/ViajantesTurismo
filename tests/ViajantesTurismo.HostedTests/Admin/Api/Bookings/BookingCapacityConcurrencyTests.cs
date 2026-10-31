@@ -7,8 +7,8 @@ using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.HostedTests.Admin.Api.Bookings;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.BookingsArea)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.AreaName, TestTraits.BookingsArea)]
 [TestScope(TestScope.Integration)]
 public sealed class BookingCapacityConcurrencyTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
