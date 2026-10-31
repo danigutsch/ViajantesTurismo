@@ -74,8 +74,14 @@ public sealed class DisposalTrackingStream(Stream inner, bool stallAfterFirstRea
         if (disposing)
         {
             IsDisposed = true;
-            inner.Dispose();
-            disposed.TrySetResult();
+            try
+            {
+                inner.Dispose();
+            }
+            finally
+            {
+                disposed.TrySetResult();
+            }
         }
 
         base.Dispose(disposing);

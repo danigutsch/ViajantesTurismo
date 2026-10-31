@@ -37,7 +37,7 @@ public sealed class BrandingLogoPublicationTests
         await scenario.CreateStore().ReplaceLogoIfMatch(logo, _ => true, ct);
 
         // Assert
-        var payload = scenario.ReadSnapshot().Outbox[^1].Payload.ShouldNotBeNull();
+        var payload = scenario.ReadSnapshot().Outbox.Select(row => row.Payload).Where(text => text is not null && text.Contains("LogoSha256", StringComparison.Ordinal)).ShouldHaveSingleItem()!;
         using var document = JsonDocument.Parse(payload);
         var root = document.RootElement;
         root.GetProperty("LogoSha256").GetString().ShouldBe(logo.Sha256);

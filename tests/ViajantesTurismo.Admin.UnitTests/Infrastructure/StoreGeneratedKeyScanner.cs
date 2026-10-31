@@ -13,7 +13,7 @@ internal static class StoreGeneratedKeyScanner
         return
         [
             .. model.GetEntityTypes()
-                .Where(entity => !entity.IsOwned() && entity.FindPrimaryKey() is not null)
+                .Where(entity => !entity.IsOwned() && entity.BaseType is null && entity.FindPrimaryKey() is not null)
                 .SelectMany(entity => entity.FindPrimaryKey()!.Properties
                     .Where(property => property.ValueGenerated.HasFlag(ValueGenerated.OnAdd))
                     .Select(property => $"{entity.DisplayName()}.{property.Name}"))

@@ -5,7 +5,6 @@ using ViajantesTurismo.Branding.Infrastructure;
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
-[TestScope(TestScope.Unit)]
 public sealed class ClientGeneratedKeyConventionTests
 {
     [Fact]
@@ -34,6 +33,7 @@ public sealed class ClientGeneratedKeyConventionTests
         var violations = StoreGeneratedKeyScanner.FindGeneratedKeys(scope.DbContext.Model);
 
         // Assert
+        scope.DbContext.Model.GetEntityTypes().ShouldNotBeEmpty();
         violations.ShouldBeEmpty();
     }
 
@@ -50,6 +50,7 @@ public sealed class ClientGeneratedKeyConventionTests
         var violations = StoreGeneratedKeyScanner.FindGeneratedKeys(context.Model);
 
         // Assert
+        context.Model.GetEntityTypes().ShouldNotBeEmpty();
         violations.ShouldBeEmpty();
     }
 }
