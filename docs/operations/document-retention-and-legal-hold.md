@@ -33,7 +33,7 @@ bytes and metadata, document lineages, document audit records, and document idem
 | Unfinalized draft and staff overrides | Creation, when never finalized | 30 days (`DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500; empty lineages are removed. |
 | Finalized, superseded and voided revisions | None | Kept indefinitely | Finalization clears `RetentionExpiresAt`. No automatic deletion and no deletion endpoint. |
 | Document audit record | Audit event occurrence | 24 months (`DocumentAuditLimits.RetentionMonths`) | Deleted by a daily worker in batches of 500. Database protections reject updates, truncation and pre-expiry deletion. |
-| Document idempotency entry | Completion, or start when never completed | 30 days (`DocumentCommandIdempotency.ReplayWindow`, equal to `DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500. The stored key is a SHA-256 digest of the caller key, so the raw value is never persisted. A replay after the window is treated as a new request; a replay after its document is purged returns `404 Not Found`. |
+| Document idempotency entry | Completion, or start when never completed | 30 days (`DocumentCommandIdempotency.ReplayWindow`, equal to `DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500. The stored key is a SHA-256 digest of the caller key, so the raw value is never persisted. A replay after the window is treated as a new request; a replay after its document is purged returns `404 Not Found`. Each entry records its document lineage as the retention owner when it starts. |
 | Document audit purge evidence | Each audit-retention purge run | Kept indefinitely | Metadata only: system actor, correlation id, purged count, retention cutoff, outcome and time. It is not removed by the audit-retention worker. |
 | Draft and idempotency purge evidence | Each draft or idempotency purge run | Kept indefinitely | Counts only: purge kind, purged count, held count, outcome (`Succeeded` or `Refused`) and time, in `DocumentRetentionPurgeRecords`. Written in the same transaction as the deletion. It is not removed by any worker. |
 
@@ -124,13 +124,25 @@ purges that do exist: unfinalized drafts, document audit records and document id
   exist at write time, or null only when the record names no document. The immutability trigger rejects every UPDATE and TRUNCATE,
   and the check constraint `CK_DocumentAuditRecords_DocumentLineageStamped` (`DocumentId IS NULL OR DocumentLineageId IS NOT NULL`)
   makes an unstamped record that names a document impossible.
-- Residual: an audit record written for a document that no longer exists is stamped as having no lineage and stays purgeable. A
-  draft purged between the handler's read and the audit write could therefore leave one audit record that a later hold on the
-  same lineage does not cover.
+- Residual (audit lineage): an audit record whose document row no longer exists when the record is written is stamped as having
+  no lineage and stays purgeable. Decision: no rule closes this, because the lineage is resolvable only through a document row,
+  and a purged lineage leaves nothing to look up (the lineage row is deleted with its last revision; the idempotency owner covers
+  only documents that were regenerated). The gap is bounded: it needs a revision that expired and was purged, a lineage that still
+  has other revisions (a hold can only be placed on an existing document), a request that audited the missing revision (a
+  concurrent purge between the handler's read and the audit write, or a later request naming the purged document), and a hold
+  placed afterwards. Only that one metadata record, which holds no document content, is then not covered; every other record,
+  revision and entry of the lineage is.
 - The held counts of the three purges come from the same pre-filter (effective holds by the database clock) plus any candidates
   the guard then reports as held, so a hold placed during the run is counted too. The guard check stays authoritative.
-- Idempotency entries are matched to a lineage through the document identifier in their scope or stored result. An entry whose
-  document row was already purged cannot be matched and is purged on schedule; it holds a hashed key and an identifier only.
+- Idempotency entries record the document lineage as their retention owner when they start (`IIdempotencyStore.TryStart` with
+  the lineage id in `N` format), so a hold keeps them after the revision rows were purged. The purge reads the owner column; it no
+  longer matches document identifiers inside scope or result strings. An expired entry in a document scope without an owner is
+  retained, counted as unattributed and logged as a count (fail-closed) instead of being purged. Such entries can only exist in
+  development databases that predate the owner column, because nothing is published (see the initial migration squash); they
+  stay until removed by hand. Entries outside document scopes are never touched by this purge.
+- Open follow-up: SharedKernel `IIdempotencyRetentionStore.PurgeExpired` is not used yet. It purges the expired entries of every
+  scope, including the payment entries that share the table, so it needs a scope restriction in SharedKernel first. This
+  repository keeps a document-scoped purge over the same owner column until then.
 
 ### Not done
 

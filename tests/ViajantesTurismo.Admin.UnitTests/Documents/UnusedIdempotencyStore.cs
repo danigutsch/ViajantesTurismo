@@ -13,6 +13,14 @@ internal sealed class UnusedIdempotencyStore : IIdempotencyStore
         CancellationToken ct) => throw new InvalidOperationException("The test did not expect idempotency persistence.");
 
     /// <summary>Always throws because the test did not expect idempotency persistence.</summary>
+    public ValueTask<IdempotencyStartResult> TryStart(
+        IdempotencyOperation operation,
+        DateTimeOffset startedAt,
+        TimeSpan? lockDuration,
+        string? retentionOwner,
+        CancellationToken ct) => throw new InvalidOperationException("The test did not expect idempotency persistence.");
+
+    /// <summary>Always throws because the test did not expect idempotency persistence.</summary>
     public ValueTask Complete(
         IdempotencyOperation operation,
         DateTimeOffset completedAt,

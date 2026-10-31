@@ -203,10 +203,11 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         var ct = TestContext.Current.CancellationToken;
         var cutoff = new DateTimeOffset(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
         const string DocumentScope = "admin.documents.generate-contract-draft:booking";
-        await Scenario.SeedIdempotencyEntry(DocumentScope, "before", cutoff.AddDays(-3), cutoff.AddSeconds(-1), ct);
-        await Scenario.SeedIdempotencyEntry(DocumentScope, "at", cutoff.AddDays(-3), cutoff, ct);
-        await Scenario.SeedIdempotencyEntry(DocumentScope, "after", cutoff.AddDays(-3), cutoff.AddSeconds(1), ct);
-        await Scenario.SeedIdempotencyEntry(DocumentScope, "abandoned", cutoff.AddSeconds(-1), null, ct);
+        var owner = Guid.CreateVersion7().ToString("N");
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "before", cutoff.AddDays(-3), cutoff.AddSeconds(-1), owner, ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "at", cutoff.AddDays(-3), cutoff, owner, ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "after", cutoff.AddDays(-3), cutoff.AddSeconds(1), owner, ct);
+        await Scenario.SeedIdempotencyEntry(DocumentScope, "abandoned", cutoff.AddSeconds(-1), null, owner, ct);
         await Scenario.SeedIdempotencyEntry("admin.payments.record:booking", "other-scope", cutoff.AddDays(-90), cutoff.AddDays(-90), ct);
 
         // Act

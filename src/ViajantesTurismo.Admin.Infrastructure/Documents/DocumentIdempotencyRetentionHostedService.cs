@@ -32,6 +32,11 @@ internal sealed class DocumentIdempotencyRetentionHostedService(
         var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();
         var counts = await handler.Handle(ct).ConfigureAwait(false);
         LogHeld(counts.Held);
+        if (counts.Unattributed > 0)
+        {
+            DocumentRetentionLog.KeptUnattributed(logger, DocumentIdempotencyRetentionServiceName, counts.Unattributed);
+        }
+
         return counts.Purged;
     }
 }

@@ -186,6 +186,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         audit.DocumentId.ShouldBe(document.Id);
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
+        idempotencyStore.StartedRetentionOwner.ShouldBe(store.LastLoadedLineage.ShouldNotBeNull().Id.ToString("N"));
         idempotencyStore.StageCompletionCallCount.ShouldBe(1);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(2);
     }

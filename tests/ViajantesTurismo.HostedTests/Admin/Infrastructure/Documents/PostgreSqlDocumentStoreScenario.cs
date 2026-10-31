@@ -645,12 +645,21 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return count == 1;
     }
 
-    /// <summary>Migrates the database to the latest and inserts one raw idempotency entry.</summary>
+    /// <summary>Migrates the database to the latest and inserts one raw idempotency entry without a retention owner.</summary>
+    public Task SeedIdempotencyEntry(
+        string scope,
+        string key,
+        DateTimeOffset startedAt,
+        DateTimeOffset? completedAt,
+        CancellationToken ct) => SeedIdempotencyEntry(scope, key, startedAt, completedAt, retentionOwner: null, ct);
+
+    /// <summary>Migrates the database to the latest and inserts one raw idempotency entry owned by a lineage, or by none.</summary>
     public async Task SeedIdempotencyEntry(
         string scope,
         string key,
         DateTimeOffset startedAt,
         DateTimeOffset? completedAt,
+        string? retentionOwner,
         CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -659,8 +668,8 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         var state = completedAt is null ? "Started" : "Completed";
         _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"""
-            INSERT INTO "messaging"."idempotency_keys" ("Scope", "Key", "State", "StartedAt", "CompletedAt")
-            VALUES ({scope}, {key}, {state}, {startedAt}, {completedAt})
+            INSERT INTO "messaging"."idempotency_keys" ("Scope", "Key", "State", "StartedAt", "CompletedAt", "RetentionOwner")
+            VALUES ({scope}, {key}, {state}, {startedAt}, {completedAt}, {retentionOwner})
             """,
             ct);
     }
@@ -775,6 +784,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             scope,
             key,
             requestFingerprint,
+            Guid.CreateVersion7(),
             async () =>
             {
                 operationWasInvoked = true;

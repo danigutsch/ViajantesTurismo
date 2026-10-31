@@ -21,6 +21,10 @@ internal sealed class UnstartedDocumentIdempotencyStore : IIdempotencyStore
     public ValueTask<IdempotencyStartResult> TryStart(IdempotencyOperation operation, DateTimeOffset startedAt, TimeSpan? lockDuration, CancellationToken ct) =>
         throw new InvalidOperationException("A missing document source must not start an idempotent operation.");
 
+    /// <summary>Always throws because a missing document source must not start an operation.</summary>
+    public ValueTask<IdempotencyStartResult> TryStart(IdempotencyOperation operation, DateTimeOffset startedAt, TimeSpan? lockDuration, string? retentionOwner, CancellationToken ct) =>
+        throw new InvalidOperationException("A missing document source must not start an idempotent operation.");
+
     /// <summary>Always throws because a missing document source must not complete an operation.</summary>
     public ValueTask Complete(IdempotencyOperation operation, DateTimeOffset completedAt, string? resultFingerprint, CancellationToken ct) =>
         throw new InvalidOperationException("A missing document source must not complete an idempotent operation.");

@@ -249,13 +249,15 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         await Scenario.Seed(lineage);
         _ = await Harness.Place(documentId, ct);
         var heldScope = $"admin.documents.regenerate-draft:{documentId:N}";
+        var heldOwner = lineage.Id.ToString("N");
+        var otherOwner = Guid.CreateVersion7().ToString("N");
         for (var index = 0; index < 501; index++)
         {
-            await Scenario.SeedIdempotencyEntry(heldScope, $"held-{index:D3}", cutoff.AddDays(-40), cutoff.AddDays(-39), ct);
+            await Scenario.SeedIdempotencyEntry(heldScope, $"held-{index:D3}", cutoff.AddDays(-40), cutoff.AddDays(-39), heldOwner, ct);
         }
 
-        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-1", cutoff.AddDays(-5), cutoff.AddDays(-4), ct);
-        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-2", cutoff.AddDays(-5), cutoff.AddDays(-4), ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-1", cutoff.AddDays(-5), cutoff.AddDays(-4), otherOwner, ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-2", cutoff.AddDays(-5), cutoff.AddDays(-4), otherOwner, ct);
 
         // Act
         var counts = await Harness.PurgeIdempotency(cutoff, ct);
@@ -264,6 +266,68 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         counts.ShouldBe(new DocumentPurgeCounts(2, 501));
         var remaining = await Scenario.GetIdempotencyKeys(ct);
         remaining.Length.ShouldBe(501);
+    }
+
+    [Fact]
+    public async Task A_held_lineage_keeps_its_idempotency_entries_after_the_document_row_was_purged()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var created = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays).AddSeconds(-30);
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineageWithRevisions(created, 2);
+        var purgedRevision = lineage.Revisions[0].Id;
+        await Scenario.Seed(lineage);
+        _ = await Harness.PurgeDrafts(ct);
+        _ = await Harness.Place(lineage.Revisions[1].Id, ct);
+        var cutoff = TimeProvider.System.GetUtcNow();
+        await Scenario.SeedIdempotencyEntry(
+            $"admin.documents.regenerate-draft:{purgedRevision:N}", "held", cutoff.AddDays(-40), cutoff.AddDays(-39), lineage.Id.ToString("N"), ct);
+
+        // Act
+        var counts = await Harness.PurgeIdempotency(cutoff, ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(0, 1));
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["held"]);
+    }
+
+    [Fact]
+    public async Task An_expired_document_entry_without_a_retention_owner_is_retained_and_counted_as_unattributed()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = TimeProvider.System.GetUtcNow();
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "unowned", cutoff.AddDays(-40), cutoff.AddDays(-39), ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "owned", cutoff.AddDays(-40), cutoff.AddDays(-39), Guid.CreateVersion7().ToString("N"), ct);
+
+        // Act
+        var counts = await Harness.PurgeIdempotency(cutoff, ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(1, 0, 1));
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["unowned"]);
+    }
+
+    [Fact]
+    public async Task Idempotency_entries_of_an_unheld_lineage_and_of_other_scopes_are_handled_independently()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = TimeProvider.System.GetUtcNow();
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(cutoff.UtcDateTime);
+        await Scenario.Seed(lineage);
+        await Scenario.SeedIdempotencyEntry("admin.documents.regenerate-draft:gone", "clear", cutoff.AddDays(-40), cutoff.AddDays(-39), lineage.Id.ToString("N"), ct);
+        await Scenario.SeedIdempotencyEntry("admin.payments.record:booking", "payment", cutoff.AddDays(-400), cutoff.AddDays(-399), ct);
+
+        // Act
+        var counts = await Harness.PurgeIdempotency(cutoff, ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(1, 0));
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["payment"]);
     }
 
     [Fact]

@@ -141,6 +141,7 @@ public sealed class GenerateContractDraftCommandHandler(
                 documentStore.Add(lineage);
                 return Task.FromResult(Result.Ok(draft.Id));
             },
+            lineage.Id,
             null,
             command.BookingId,
             null);

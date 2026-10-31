@@ -10,32 +10,28 @@ using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
-/// <summary>Entity Framework cleanup of document idempotency entries whose replay window elapsed.</summary>
+/// <summary>
+/// Entity Framework cleanup of document idempotency entries whose replay window elapsed. An entry belongs to the document
+/// lineage recorded as its retention owner when the entry started, so a hold keeps it after the lineage's revisions were
+/// purged. An expired document entry without an owner is retained and counted, never purged.
+/// </summary>
 internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbContext) : IDocumentIdempotencyRetentionStore
 {
     private const string IdempotencyEntityTypeName = "IdempotencyEntryEntity";
     private const int PurgeBatchSize = 500;
-    private const string RegenerateScopeSegment = "regenerate-draft:";
-    private const int GuidNLength = 32;
 
-    private static readonly CompositeFormat SelectExpiredSql = CompositeFormat.Parse(
+    private static readonly CompositeFormat CandidatesSql = CompositeFormat.Parse(
         """
-        SELECT {1} AS "Scope", {2} AS "Key", {4} AS "ResultFingerprint" FROM {0}
-        WHERE starts_with({1}, @prefix) AND COALESCE({5}, {3}) <= @cutoff AND NOT ({7})
-        ORDER BY {3}, {1}, {2}
+        SELECT {1} AS "Scope", {2} AS "Key" FROM {0}
+        WHERE starts_with({1}, @prefix) AND COALESCE({3}, {4}) <= @cutoff AND {5} IS NOT NULL AND NOT ({5} = ANY(@heldOwners))
+        ORDER BY COALESCE({3}, {4}), {1}, {2}
         LIMIT {6}
         """);
 
-    private static readonly CompositeFormat CountHeldSql = CompositeFormat.Parse(
+    private static readonly CompositeFormat CountSql = CompositeFormat.Parse(
         """
         SELECT count(*)::int AS "Value" FROM {0}
-        WHERE starts_with({1}, @prefix) AND COALESCE({5}, {3}) <= @cutoff AND ({7})
-        """);
-
-    private static readonly CompositeFormat HeldDocumentPredicate = CompositeFormat.Parse(
-        """
-        (position('regenerate-draft:' in {0}) > 0 AND right({0}, 32) = ANY(@heldDocuments))
-        OR ({1} IS NOT NULL AND right({1}, 32) = ANY(@heldDocuments))
+        WHERE starts_with({1}, @prefix) AND COALESCE({3}, {4}) <= @cutoff AND ({5})
         """);
 
     private static readonly CompositeFormat DeleteSql = CompositeFormat.Parse(
@@ -46,9 +42,9 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
 
     /// <summary>
     /// Deletes one batch of document-scoped entries completed, or never completed and started, at or before
-    /// <paramref name="cutoff" />, except entries whose document lineage <paramref name="heldLineages" /> reports as
-    /// held. The filter is called once with every candidate lineage. Table and column names come from the EF model,
-    /// never from input, and values are bound as parameters.
+    /// <paramref name="cutoff" />, except entries owned by a lineage that <paramref name="heldLineages" /> reports as held
+    /// and entries without an owner. The filter is called once with the lineages of every effective hold. Table and column
+    /// names come from the EF model, never from input, and values are bound as parameters.
     /// </summary>
     public async Task<DocumentPurgeCounts> PurgeExpiredEntries(DateTimeOffset cutoff, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
@@ -59,109 +55,71 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
         var tableName = QuoteTable(entityType.GetSchema(), entityType.GetTableName()!);
         var scope = Column(entityType, table, "Scope");
         var key = Column(entityType, table, "Key");
+        var owner = Column(entityType, table, "RetentionOwner");
 
-        var heldPredicate = string.Format(
-            CultureInfo.InvariantCulture,
-            HeldDocumentPredicate,
-            scope,
-            Column(entityType, table, "ResultFingerprint"));
-        var selectSql = string.Format(
-            CultureInfo.InvariantCulture,
-            SelectExpiredSql,
-            tableName,
-            scope,
-            key,
-            Column(entityType, table, "StartedAt"),
-            Column(entityType, table, "ResultFingerprint"),
-            Column(entityType, table, "CompletedAt"),
-            PurgeBatchSize,
-            heldPredicate);
-        var countSql = string.Format(
-            CultureInfo.InvariantCulture,
-            CountHeldSql,
-            tableName,
-            scope,
-            key,
-            Column(entityType, table, "StartedAt"),
-            Column(entityType, table, "ResultFingerprint"),
-            Column(entityType, table, "CompletedAt"),
-            PurgeBatchSize,
-            heldPredicate);
         var activeLineages = (await ActiveHoldLineages.Find(dbContext, ct)).OfType<Guid>().ToArray();
-        var heldDocuments = (await dbContext.DocumentDrafts
-            .AsNoTracking()
-            .Where(draft => activeLineages.Contains(draft.DocumentLineageId))
-            .Select(draft => draft.Id)
-            .ToListAsync(ct))
-            .Select(id => id.ToString("N"))
-            .ToArray();
-        var preHeldCount = await dbContext.Database
-            .SqlQueryRaw<int>(countSql, ExpiryParameters(cutoff, heldDocuments))
-            .SingleAsync(ct);
+        var held = await heldLineages(activeLineages, ct);
+        var heldOwners = held.Select(id => id.ToString("N")).ToArray();
+
+        var heldCount = await Count(tableName, scope, table, entityType, $"{owner} = ANY(@heldOwners)", cutoff, heldOwners, ct);
+        var unattributedCount = await Count(tableName, scope, table, entityType, $"{owner} IS NULL", cutoff, heldOwners, ct);
         var candidates = await dbContext.Database
-            .SqlQueryRaw<ExpiredEntry>(selectSql, ExpiryParameters(cutoff, heldDocuments))
+            .SqlQueryRaw<ExpiredEntry>(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    CandidatesSql,
+                    tableName,
+                    scope,
+                    key,
+                    Column(entityType, table, "CompletedAt"),
+                    Column(entityType, table, "StartedAt"),
+                    owner,
+                    PurgeBatchSize),
+                ExpiryParameters(cutoff, heldOwners))
             .ToListAsync(ct);
 
-        if (candidates.Count == 0)
+        if (candidates.Count > 0)
         {
-            return new DocumentPurgeCounts(0, preHeldCount);
-        }
-
-        var lineageByDocument = await FindLineages(candidates, ct);
-        var held = await heldLineages([.. lineageByDocument.Values.Distinct()], ct);
-        var purgeable = candidates
-            .Where(entry => !IsHeld(entry, lineageByDocument, held))
-            .ToArray();
-        if (purgeable.Length > 0)
-        {
-            var deleteSql = string.Format(CultureInfo.InvariantCulture, DeleteSql, tableName, scope, key);
             _ = await dbContext.Database.ExecuteSqlRawAsync(
-                deleteSql,
+                string.Format(CultureInfo.InvariantCulture, DeleteSql, tableName, scope, key),
                 [
-                    new NpgsqlParameter("scopes", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = purgeable.Select(entry => entry.Scope).ToArray() },
-                    new NpgsqlParameter("keys", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = purgeable.Select(entry => entry.Key).ToArray() },
+                    new NpgsqlParameter("scopes", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = candidates.Select(entry => entry.Scope).ToArray() },
+                    new NpgsqlParameter("keys", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = candidates.Select(entry => entry.Key).ToArray() },
                 ],
                 ct);
         }
 
-        return new DocumentPurgeCounts(purgeable.Length, preHeldCount + candidates.Count - purgeable.Length);
+        return new DocumentPurgeCounts(candidates.Count, heldCount, unattributedCount);
     }
 
-    private static NpgsqlParameter[] ExpiryParameters(DateTimeOffset cutoff, string[] heldDocuments) =>
+    private Task<int> Count(
+        string tableName,
+        string scope,
+        StoreObjectIdentifier table,
+        IEntityType entityType,
+        string ownerPredicate,
+        DateTimeOffset cutoff,
+        string[] heldOwners,
+        CancellationToken ct) => dbContext.Database
+            .SqlQueryRaw<int>(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    CountSql,
+                    tableName,
+                    scope,
+                    string.Empty,
+                    Column(entityType, table, "CompletedAt"),
+                    Column(entityType, table, "StartedAt"),
+                    ownerPredicate),
+                ExpiryParameters(cutoff, heldOwners))
+            .SingleAsync(ct);
+
+    private static NpgsqlParameter[] ExpiryParameters(DateTimeOffset cutoff, string[] heldOwners) =>
     [
         new NpgsqlParameter("prefix", DocumentCommandIdempotency.ScopePrefix),
         new NpgsqlParameter("cutoff", cutoff),
-        new NpgsqlParameter("heldDocuments", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = heldDocuments },
+        new NpgsqlParameter("heldOwners", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = heldOwners },
     ];
-
-    private async Task<Dictionary<Guid, Guid>> FindLineages(IEnumerable<ExpiredEntry> candidates, CancellationToken ct)
-    {
-        var documentIds = candidates.SelectMany(DocumentIds).Distinct().ToArray();
-        return await dbContext.DocumentDrafts
-            .AsNoTracking()
-            .Where(draft => documentIds.Contains(draft.Id))
-            .Select(draft => new { draft.Id, draft.DocumentLineageId })
-            .ToDictionaryAsync(draft => draft.Id, draft => draft.DocumentLineageId, ct);
-    }
-
-    private static bool IsHeld(ExpiredEntry entry, Dictionary<Guid, Guid> lineageByDocument, IReadOnlySet<Guid> held) =>
-        DocumentIds(entry).Any(id => lineageByDocument.TryGetValue(id, out var lineageId) && held.Contains(lineageId));
-
-    private static IEnumerable<Guid> DocumentIds(ExpiredEntry entry)
-    {
-        var scopeIndex = entry.Scope.IndexOf(RegenerateScopeSegment, StringComparison.Ordinal);
-        if (scopeIndex >= 0
-            && Guid.TryParseExact(entry.Scope.AsSpan(scopeIndex + RegenerateScopeSegment.Length), "N", out var regeneratedId))
-        {
-            yield return regeneratedId;
-        }
-
-        if (entry.ResultFingerprint is { Length: > GuidNLength } fingerprint
-            && Guid.TryParseExact(fingerprint.AsSpan(fingerprint.Length - GuidNLength), "N", out var resultId))
-        {
-            yield return resultId;
-        }
-    }
 
     private static string Column(IEntityType entityType, StoreObjectIdentifier table, string propertyName) =>
         $"\"{entityType.FindProperty(propertyName)!.GetColumnName(table)}\"";
@@ -172,6 +130,5 @@ internal sealed class DocumentIdempotencyRetentionStore(AdminWriteDbContext dbCo
     /// <summary>The identifying columns of one expired entry; no request content.</summary>
     /// <param name="Scope">The idempotency scope.</param>
     /// <param name="Key">The digest of the caller key.</param>
-    /// <param name="ResultFingerprint">The stored result fingerprint, or null when never completed.</param>
-    internal sealed record ExpiredEntry(string Scope, string Key, string? ResultFingerprint);
+    internal sealed record ExpiredEntry(string Scope, string Key);
 }
