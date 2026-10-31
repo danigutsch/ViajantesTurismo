@@ -1,3 +1,5 @@
+using PandaBear.Mediator;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
@@ -14,4 +16,4 @@ public sealed record UpdateCustomerCommand(
     PhysicalInfoDto PhysicalInfo,
     AccommodationPreferencesDto AccommodationPreferences,
     EmergencyContactDto EmergencyContact,
-    MedicalInfoDto MedicalInfo);
+    MedicalInfoDto MedicalInfo) : ICommand<Result>;

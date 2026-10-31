@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
@@ -77,7 +78,7 @@ internal static class CustomerEndpoints
     private static async Task<Results<Created<GetCustomerDto>, ValidationProblem, NotFound<ProblemDetails>, Conflict<ProblemDetails>>>
         CreateCustomer(
             [FromBody] CreateCustomerDto dto,
-            [FromServices] CreateCustomerCommandHandler handler,
+            [FromServices] ISender sender,
             [FromServices] IQueryService queryService,
             CancellationToken ct)
     {
@@ -93,7 +94,7 @@ internal static class CustomerEndpoints
             dto.EmergencyContact,
             dto.MedicalInfo);
 
-        var result = await handler.Handle(command, ct);
+        var result = await sender.Send(command, ct);
 
         if (result.IsFailure)
         {
@@ -129,7 +130,7 @@ internal static class CustomerEndpoints
         UpdateCustomer(
         [FromRoute] Guid id,
         [FromBody] UpdateCustomerDto dto,
-        [FromServices] UpdateCustomerCommandHandler handler,
+        [FromServices] ISender sender,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
@@ -145,7 +146,7 @@ internal static class CustomerEndpoints
             dto.EmergencyContact,
             dto.MedicalInfo);
 
-        var result = await handler.Handle(command, ct);
+        var result = await sender.Send(command, ct);
 
         if (result.IsFailure)
         {

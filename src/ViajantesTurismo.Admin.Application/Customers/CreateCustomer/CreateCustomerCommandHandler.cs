@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Customers;
 using PandaBear.Results;
@@ -11,7 +12,7 @@ namespace ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 public sealed class CreateCustomerCommandHandler(
     ICustomerStore customerStore,
     IUnitOfWork unitOfWork,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider) : ICommandHandler<CreateCustomerCommand, Result<Guid>>
 {
     /// <summary>
     /// Handles the CreateCustomerCommand and returns the ID of the created customer.
@@ -19,7 +20,7 @@ public sealed class CreateCustomerCommandHandler(
     /// <param name="command">The command containing customer data.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Result containing the customer ID if successful, or validation errors.</returns>
-    public async Task<Result<Guid>> Handle(CreateCustomerCommand command, CancellationToken ct)
+    public async ValueTask<Result<Guid>> Handle(CreateCustomerCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 
