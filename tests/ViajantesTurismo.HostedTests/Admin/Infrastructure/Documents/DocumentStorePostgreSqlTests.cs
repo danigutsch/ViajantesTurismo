@@ -197,6 +197,36 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task Legacy_root_relative_branding_logo_reads_as_a_missing_logo()
+    {
+        // Arrange
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(document);
+        await Scenario.SetBrandingLogoUri(document.Id, "/logo.svg", TestContext.Current.CancellationToken);
+
+        // Act
+        var documents = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+
+        // Assert
+        documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task A_stored_raster_data_uri_logo_round_trips_unchanged()
+    {
+        // Arrange
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);
+
+        // Act
+        await Scenario.Seed(document);
+        var documents = await Scenario.GetDocuments(TestContext.Current.CancellationToken);
+
+        // Assert
+        var logo = documents.ShouldHaveSingleItem().BrandingLogoUri.ShouldNotBeNull();
+        logo.OriginalString.ShouldBe(DocumentLogoTestData.DataUri.OriginalString);
+    }
+
+    [Fact]
     public async Task PurgeExpiredIdempotencyEntries_removes_only_document_entries_at_or_before_the_cutoff()
     {
         // Arrange
