@@ -365,6 +365,56 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task Handle_leaves_the_finalized_source_artifact_and_status_untouched_when_regenerating()
+    {
+        // Arrange
+        var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var document = DocumentDraftTestData.Create(now, bookingId: tourData.BookingId);
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        document.Finalize("finalized-artifact"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
+        var artifactBefore = document.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray();
+        var finalizedAtBefore = document.FinalizedAt;
+        var booking = DtoBuilders.BuildBookingDto(
+            id: document.BookingId,
+            tourId: tourData.TourId,
+            status: BookingStatusDto.Confirmed);
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new RegenerateDocumentDraftCommandHandler(
+            store,
+            new FakeQueryService(booking, DtoBuilders.BuildTourDto(id: tourData.TourId)),
+            tourData.TourStore,
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new RegenerateDocumentDraftCommand(
+                document.Id,
+                "booking-confirmation",
+                "2",
+                DocumentAuditTestData.CreateContext(),
+                IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
+            CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var lineage = store.LastLoadedLineage.ShouldNotBeNull();
+        lineage.Revisions.Count.ShouldBe(2);
+        document.Status.ShouldBe(DocumentStatus.Finalized);
+        document.FinalizedAt.ShouldBe(finalizedAtBefore);
+        document.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray().ShouldBe(artifactBefore);
+        var replacement = lineage.Revisions.Where(revision => revision.Id != document.Id).ShouldHaveSingleItem();
+        replacement.Status.ShouldBe(DocumentStatus.DraftGenerated);
+        replacement.CopyFinalizedArtifactContent().ShouldBeNull();
+    }
+
     [Theory]
     [InlineData(BookingStatus.Pending)]
     [InlineData(BookingStatus.Cancelled)]
