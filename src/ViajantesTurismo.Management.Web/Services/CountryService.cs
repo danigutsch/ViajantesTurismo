@@ -34,7 +34,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment) : ICou
     /// Gets the list of countries asynchronously.
     /// </summary>
     /// <returns>A list of country information.</returns>
-    /// <remarks>Falls back to a few common countries, as used in tests, when the data file is missing or malformed.</remarks>
+    /// <remarks>Falls back to a few common countries, as used in tests, when the data file is missing or malformed. The fallback is not cached, so a later call retries the file.</remarks>
     public async Task<CountryInfo[]> GetCountries(CancellationToken ct)
     {
         if (_countries is not null)
@@ -61,13 +61,11 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment) : ICou
         }
         catch (FileNotFoundException)
         {
-            _countries = GetFallbackCountries();
-            return _countries;
+            return GetFallbackCountries();
         }
         catch (JsonException)
         {
-            _countries = GetFallbackCountries();
-            return _countries;
+            return GetFallbackCountries();
         }
     }
 

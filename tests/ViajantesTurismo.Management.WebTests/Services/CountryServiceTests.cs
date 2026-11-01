@@ -63,6 +63,38 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetCountries_missing_file_then_file_appears_returns_the_real_list()
+    {
+        // Arrange
+        Directory.CreateDirectory(Path.Combine(_tempDir, "data"));
+        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
+        await sut.GetCountries(CancellationToken.None);
+        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"ar": {"name": "Argentina"}}""");
+
+        // Act
+        CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
+
+        // Assert
+        result.ShouldHaveSingleItem().Code.ShouldBe("AR");
+    }
+
+    [Fact]
+    public async Task GetCountries_invalid_Json_then_valid_file_returns_the_real_list()
+    {
+        // Arrange
+        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, "not valid json {{{");
+        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
+        await sut.GetCountries(CancellationToken.None);
+        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"ar": {"name": "Argentina"}}""");
+
+        // Act
+        CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
+
+        // Assert
+        result.ShouldHaveSingleItem().Code.ShouldBe("AR");
+    }
+
+    [Fact]
     public async Task GetCountries_invalid_Json_returns_fallback_countries()
     {
         // Arrange
