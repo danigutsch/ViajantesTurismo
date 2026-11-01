@@ -48,6 +48,9 @@ internal sealed class FakeDocumentsBrowserApiClient(GetDocumentDto document, Get
     public Task<HttpOutcome<GetDocumentDto>> RequestChanges(Guid documentId, CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
+    public Task<HttpOutcome<GetDocumentDto>> AcknowledgeChanges(Guid documentId, CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<HttpOutcome<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />

@@ -23,6 +23,28 @@ public sealed class DocumentMapperTests
     }
 
     [Fact]
+    public void A_document_projection_reports_whether_manual_review_is_required()
+    {
+        // Arrange
+        var now = new DateTime(2026, 1, 5, 10, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentLineageTestData.Create(now: now);
+        var initial = lineage.Revisions.ShouldHaveSingleItem();
+        var replacement = lineage.CreateRevision(
+            initial.Id,
+            DocumentLineageTestData.CreateContent("2"),
+            now,
+            DocumentAuditTestData.CreateContext()).Value;
+
+        // Act
+        var initialDto = DocumentMapper.MapToGetDocumentDto(initial);
+        var replacementDto = DocumentMapper.MapToGetDocumentDto(replacement);
+
+        // Assert
+        initialDto.RequiresManualReview.ShouldBeFalse();
+        replacementDto.RequiresManualReview.ShouldBeTrue();
+    }
+
+    [Fact]
     public void A_document_projection_rejects_a_missing_document()
     {
         // Arrange

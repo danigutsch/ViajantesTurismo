@@ -64,6 +64,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<DocumentAuditWriter>();
         builder.Services.AddScoped<BeginDocumentReviewCommandHandler>();
         builder.Services.AddScoped<RequestDocumentChangesCommandHandler>();
+        builder.Services.AddScoped<AcknowledgeDocumentChangesCommandHandler>();
         builder.Services.AddScoped<UpdateDocumentFieldCommandHandler>();
         builder.Services.AddScoped<ApproveDocumentCommandHandler>();
         builder.Services.AddScoped<FinalizeDocumentCommandHandler>();

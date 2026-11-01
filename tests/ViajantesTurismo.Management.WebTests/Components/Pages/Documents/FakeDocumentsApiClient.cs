@@ -161,6 +161,10 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
 
     /// <inheritdoc />
+    public Task<HttpOutcome<GetDocumentDto>> AcknowledgeChanges(Guid documentId, CancellationToken ct) =>
+        Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
+
+    /// <inheritdoc />
     public Task<HttpOutcome<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
     {
         LastUpdatedDocumentId = documentId;

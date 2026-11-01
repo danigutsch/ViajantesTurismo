@@ -80,4 +80,10 @@ public sealed record GetDocumentDto
     {
         get; init;
     }
+
+    /// <summary>Gets whether a reviewer must acknowledge source or template changes before approval.</summary>
+    public bool RequiresManualReview
+    {
+        get; init;
+    }
 }

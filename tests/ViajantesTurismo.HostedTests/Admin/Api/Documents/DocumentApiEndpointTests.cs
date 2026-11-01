@@ -7,6 +7,7 @@ using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using System.Text.Json;
 using PandaBear.Testing;
+using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
@@ -129,6 +130,8 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
         using var downloadResponse = await fixture.Client.GetAsync(
             new Uri($"/api/v1/documents/{generated.Id}/download", UriKind.Relative),
             cancellationToken);
+        using var completeResponse = await fixture.Client.CompleteBooking(booking.Id, cancellationToken);
+        completeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         using var regenerateResponse = await DocumentApiTestSetup.PostIdempotentCommand(
             fixture.Client,
             new Uri($"/api/v1/documents/{generated.Id}/regenerate", UriKind.Relative),
@@ -146,6 +149,10 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
             cancellationToken);
         using var resumeReviewResponse = await fixture.Client.PostAsync(
             new Uri($"/api/v1/documents/{replacement.Id}/review", UriKind.Relative),
+            null,
+            cancellationToken);
+        using var acknowledgeResponse = await fixture.Client.PostAsync(
+            new Uri($"/api/v1/documents/{replacement.Id}/changes-acknowledged", UriKind.Relative),
             null,
             cancellationToken);
         using var replacementApproveResponse = await fixture.Client.PostAsync(
@@ -172,6 +179,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
             beginReviewResponse,
             requestChangesResponse,
             resumeReviewResponse,
+            acknowledgeResponse,
             replacementApproveResponse,
             replacementFinalizeResponse,
             voidResponse,
@@ -202,6 +210,50 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
         coveredRoutes.ShouldBe(expectedRoutes);
         responses.All(response => response.IsSuccessStatusCode).ShouldBeTrue();
         responses.All(DocumentNoStoreHeaders.ArePresent).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Regenerating_after_the_source_changed_blocks_approval_until_the_changes_are_acknowledged()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-manual-review", "Document manual review", cancellationToken);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Manual review", cancellationToken);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, cancellationToken);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, cancellationToken);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var documents = new DocumentsApiClient(fixture.Client);
+        var generated = await documents.GenerateContractDraft(booking.Id, Guid.CreateVersion7().ToString("N"), cancellationToken).RequireSucceededValue();
+        using var completeResponse = await fixture.Client.CompleteBooking(booking.Id, cancellationToken);
+        completeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Act
+        var replacement = await documents.Regenerate(generated.Id, Guid.CreateVersion7().ToString("N"), cancellationToken).RequireSucceededValue();
+        _ = await documents.BeginReview(replacement.Id, cancellationToken).RequireSucceededValue();
+        var blocked = await documents.Approve(replacement.Id, cancellationToken);
+        var acknowledged = await documents.AcknowledgeChanges(replacement.Id, cancellationToken).RequireSucceededValue();
+        var acknowledgedAgain = await documents.AcknowledgeChanges(replacement.Id, cancellationToken);
+        var approved = await documents.Approve(replacement.Id, cancellationToken).RequireSucceededValue();
+        var audits = await fixture.GetDocumentAuditMetadata(replacement.Id, cancellationToken);
+
+        // Assert
+        generated.RequiresManualReview.ShouldBeFalse();
+        replacement.RequiresManualReview.ShouldBeTrue();
+        blocked.Kind.ShouldBe(HttpOutcomeKind.Conflict);
+        acknowledged.RequiresManualReview.ShouldBeFalse();
+        acknowledgedAgain.Kind.ShouldBe(HttpOutcomeKind.Conflict);
+        approved.Status.ShouldBe(DocumentStatusDto.Approved);
+        audits.Select(audit => (audit.Operation, audit.Outcome)).ShouldBe(
+        [
+            ("Regenerate", "Succeeded"),
+            ("BeginReview", "Succeeded"),
+            ("Approve", "Rejected"),
+            ("AcknowledgeChanges", "Succeeded"),
+            ("AcknowledgeChanges", "Rejected"),
+            ("Approve", "Succeeded"),
+        ]);
+        audits.ShouldHaveSingleItem(audit => audit.Operation == "AcknowledgeChanges" && audit.Outcome == "Succeeded")
+            .ReasonCode.ShouldBe("ManualAcknowledgement");
     }
 
     [Fact]
