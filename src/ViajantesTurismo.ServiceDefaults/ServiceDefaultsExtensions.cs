@@ -106,6 +106,7 @@ public static class ServiceDefaultsExtensions
             .AddBrandingMetrics()
             .AddSharedKernelMediatorMetrics()
             .AddSharedKernelProviderMetrics()
+            .AddNpgsqlProviderMetrics()
             .AddSharedKernelAspNetCoreMetrics()
             .AddSharedKernelBlazorMetrics();
     }

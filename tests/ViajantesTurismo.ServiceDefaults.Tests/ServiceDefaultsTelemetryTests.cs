@@ -127,6 +127,36 @@ public sealed class ServiceDefaultsTelemetryTests
     }
 
     [Fact]
+    public void Add_service_defaults_exports_the_native_npgsql_pool_metrics()
+    {
+        // Arrange
+        const string npgsqlMeterName = "Npgsql";
+        const string connectionCountMetric = "db.client.connection.count";
+        var exportedMetricNames = new ConcurrentQueue<string>();
+        using var meter = new Meter(npgsqlMeterName);
+        var counter = meter.CreateCounter<long>(connectionCountMetric);
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
+
+        builder.AddServiceDefaults();
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
+            });
+
+        using var host = builder.Build();
+        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
+
+        // Act
+        counter.Add(1);
+        meterProvider.ForceFlush();
+
+        // Assert
+        exportedMetricNames.ShouldContain(connectionCountMetric, StringComparer.Ordinal);
+    }
+
+    [Fact]
     public void Add_service_defaults_exports_the_handled_ui_failure_metric()
     {
         // Arrange
