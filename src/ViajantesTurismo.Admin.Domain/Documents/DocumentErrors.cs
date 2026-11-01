@@ -22,6 +22,14 @@ public static class DocumentErrors
     public static Result TemplateChangedSinceDraft() => Result.Conflict(
         detail: "The document template changed after this draft was generated. Regenerate the draft and review it again.");
 
+    /// <summary>Returns a conflict when approval is attempted before a reviewer acknowledged source or template changes.</summary>
+    public static Result ManualReviewRequired() => Result.Conflict(
+        detail: "The source data or template changed since the replaced revision. Acknowledge the changes before approving.");
+
+    /// <summary>Returns a conflict when there are no source or template changes awaiting acknowledgement.</summary>
+    public static Result NoManualReviewPending() => Result.Conflict(
+        detail: "No source or template changes await acknowledgement.");
+
     /// <summary>Returns an unclassified-field failure.</summary>
     public static Result UnclassifiedField(string fieldId) => Result.Invalid(
         detail: $"Document field '{fieldId}' must have a privacy classification.",

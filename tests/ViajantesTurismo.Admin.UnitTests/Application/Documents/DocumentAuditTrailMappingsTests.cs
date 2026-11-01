@@ -16,6 +16,7 @@ public sealed class DocumentAuditTrailMappingsTests
     [InlineData(DocumentAuditOperation.Finalize, DocumentAuditReasonCode.ManualFinalize)]
     [InlineData(DocumentAuditOperation.Regenerate, DocumentAuditReasonCode.ManualRegeneration)]
     [InlineData(DocumentAuditOperation.Void, DocumentAuditReasonCode.ManualVoid)]
+    [InlineData(DocumentAuditOperation.AcknowledgeChanges, DocumentAuditReasonCode.ManualAcknowledgement)]
     public void Map_uses_the_supported_lifecycle_reason_code(
         DocumentAuditOperation operation,
         DocumentAuditReasonCode expectedReasonCode)

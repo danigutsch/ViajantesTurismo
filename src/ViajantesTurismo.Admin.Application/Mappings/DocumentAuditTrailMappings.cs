@@ -35,6 +35,7 @@ internal static class DocumentAuditTrailMappings
         DocumentAuditOperation.Finalize => DocumentAuditReasonCode.ManualFinalize,
         DocumentAuditOperation.Regenerate => DocumentAuditReasonCode.ManualRegeneration,
         DocumentAuditOperation.Void => DocumentAuditReasonCode.ManualVoid,
+        DocumentAuditOperation.AcknowledgeChanges => DocumentAuditReasonCode.ManualAcknowledgement,
         DocumentAuditOperation.Generate or
             DocumentAuditOperation.BeginReview or
             DocumentAuditOperation.RequestChanges or

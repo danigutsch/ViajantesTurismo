@@ -7,10 +7,10 @@ namespace ViajantesTurismo.Admin.UnitTests.Documents;
 internal static class DocumentLineageTestData
 {
     /// <summary>Creates draft content for the service contract template at the given version.</summary>
-    public static DocumentDraftContent CreateContent(string templateVersion = "1") => new(
+    public static DocumentDraftContent CreateContent(string templateVersion = "1", string? sourceVersion = null) => new(
         "tour-service-contract",
         templateVersion,
-        $"SOURCE-VERSION-{templateVersion}",
+        sourceVersion ?? $"SOURCE-VERSION-{templateVersion}",
         [
             DocumentField.Create(
                 "booking-reference",

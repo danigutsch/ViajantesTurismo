@@ -293,6 +293,14 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
     public Result Approve(Guid documentId, DateTime now, DocumentAuditContext auditContext) =>
         Apply(documentId, revision => revision.Approve(now), DocumentAuditOperation.Approve, auditContext);
 
+    /// <summary>Acknowledges the source or template changes of one revision under active staff review.</summary>
+    public Result AcknowledgeChanges(Guid documentId, DateTime now, DocumentAuditContext auditContext) =>
+        Apply(
+            documentId,
+            revision => revision.AcknowledgeChanges(now),
+            DocumentAuditOperation.AcknowledgeChanges,
+            auditContext);
+
     /// <summary>Finalizes one revision while preserving monotonic lineage history.</summary>
     public Result Finalize(
         Guid documentId,

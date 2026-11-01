@@ -46,5 +46,8 @@ public enum DocumentAuditReasonCode
     ManualHoldRelease = 13,
 
     /// <summary>A hold was not found on the lineage of the document.</summary>
-    HoldNotFound = 14
+    HoldNotFound = 14,
+
+    /// <summary>A reviewer manually acknowledged source or template changes in a regenerated revision.</summary>
+    ManualAcknowledgement = 15
 }

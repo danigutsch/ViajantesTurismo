@@ -112,6 +112,40 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task Manual_review_state_round_trips_through_the_database()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var context = DocumentDraftInfrastructureTestData.CreateAuditContext();
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(now);
+        var initial = lineage.Revisions.ShouldHaveSingleItem();
+        var changed = lineage.CreateRevision(initial.Id, DocumentDraftInfrastructureTestData.CreateContent("2"), now, context).Value;
+        lineage.BeginReview(changed.Id, now, context).IsSuccess.ShouldBeTrue();
+        var acknowledged = lineage.CreateRevision(changed.Id, DocumentDraftInfrastructureTestData.CreateContent("3"), now, context).Value;
+        lineage.BeginReview(acknowledged.Id, now, context).IsSuccess.ShouldBeTrue();
+        lineage.AcknowledgeChanges(acknowledged.Id, now, context).IsSuccess.ShouldBeTrue();
+        lineage.ClearDomainEvents();
+        await Scenario.Seed(lineage);
+
+        // Act
+        var reloadedInitial = await Scenario.GetDocumentById(initial.Id, TestContext.Current.CancellationToken);
+        var reloadedChanged = await Scenario.GetDocumentById(changed.Id, TestContext.Current.CancellationToken);
+        var reloadedAcknowledged = await Scenario.GetDocumentById(acknowledged.Id, TestContext.Current.CancellationToken);
+        var projection = await Scenario.GetDocumentProjectionById(changed.Id, TestContext.Current.CancellationToken);
+
+        // Assert
+        reloadedInitial.ShouldNotBeNull().RequiresManualReview.ShouldBeFalse();
+        reloadedInitial.ManualReviewReasons.ShouldBe(DocumentManualReviewReasons.None);
+        reloadedChanged.ShouldNotBeNull().RequiresManualReview.ShouldBeTrue();
+        reloadedChanged.ManualReviewReasons.ShouldBe(
+            DocumentManualReviewReasons.SourceChanged | DocumentManualReviewReasons.TemplateChanged);
+        reloadedAcknowledged.ShouldNotBeNull().RequiresManualReview.ShouldBeFalse();
+        reloadedAcknowledged.ManualReviewReasons.ShouldBe(
+            DocumentManualReviewReasons.SourceChanged | DocumentManualReviewReasons.TemplateChanged);
+        projection.ShouldNotBeNull().RequiresManualReview.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task PurgeExpiredDrafts_invalidates_a_stale_surviving_lineage()
     {
         // Arrange
@@ -277,6 +311,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         replacementResult.IsSuccess.ShouldBeTrue();
         var replacement = replacementResult.Value;
         lineage.BeginReview(replacement.Id, reviewAt, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.AcknowledgeChanges(replacement.Id, reviewAt, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Approve(replacement.Id, approvedAt, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Finalize(replacement.Id, "artifact"u8.ToArray(), finalizedAt, auditContext)
             .IsSuccess.ShouldBeTrue();
@@ -329,6 +364,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         secondResult.IsSuccess.ShouldBeTrue();
         var second = secondResult.Value;
         lineage.BeginReview(second.Id, now.AddMinutes(2), auditContext).IsSuccess.ShouldBeTrue();
+        lineage.AcknowledgeChanges(second.Id, now.AddMinutes(2), auditContext).IsSuccess.ShouldBeTrue();
         lineage.Approve(second.Id, now.AddMinutes(3), auditContext).IsSuccess.ShouldBeTrue();
         lineage.Finalize(second.Id, "artifact"u8.ToArray(), now.AddMinutes(4), auditContext).IsSuccess.ShouldBeTrue();
         lineage.ClearDomainEvents();
@@ -346,7 +382,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         // Assert
         reloadedLineage.HighestFinalizedRevision.ShouldBe(2);
         reloadedLineage.HighestRevision.ShouldBe(3);
-        reloadedLineage.Version.ShouldBe(5);
+        reloadedLineage.Version.ShouldBe(6);
         thirdResult.IsSuccess.ShouldBeTrue();
         thirdResult.Value.Revision.ShouldBe(3);
     }

@@ -194,6 +194,7 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
                 DocumentAuditOperation.Void => reasonCode == DocumentAuditReasonCode.ManualVoid,
                 DocumentAuditOperation.PlaceHold => reasonCode == DocumentAuditReasonCode.ManualHoldPlacement,
                 DocumentAuditOperation.ReleaseHold => reasonCode == DocumentAuditReasonCode.ManualHoldRelease,
+                DocumentAuditOperation.AcknowledgeChanges => reasonCode == DocumentAuditReasonCode.ManualAcknowledgement,
                 DocumentAuditOperation.Read or DocumentAuditOperation.Download => reasonCode == DocumentAuditReasonCode.None,
                 _ => false,
             },
@@ -207,7 +208,8 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
                     DocumentAuditReasonCode.BrandingUnavailable,
                 DocumentAuditOperation.Read => reasonCode == DocumentAuditReasonCode.DocumentNotFound,
                 DocumentAuditOperation.BeginReview or
-                    DocumentAuditOperation.RequestChanges => reasonCode is
+                    DocumentAuditOperation.RequestChanges or
+                    DocumentAuditOperation.AcknowledgeChanges => reasonCode is
                         DocumentAuditReasonCode.DocumentNotFound or DocumentAuditReasonCode.StateConflict,
                 DocumentAuditOperation.Approve or
                     DocumentAuditOperation.Finalize => reasonCode is

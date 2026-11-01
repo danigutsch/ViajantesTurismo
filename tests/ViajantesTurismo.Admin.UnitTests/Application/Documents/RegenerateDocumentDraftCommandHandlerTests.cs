@@ -360,6 +360,8 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var lineage = store.LastLoadedLineage.ShouldNotBeNull();
         var replacement = lineage.Revisions.OrderBy(revision => revision.Revision).Last();
         replacement.ReplacesDocumentId.ShouldBe(document.Id);
+        replacement.RequiresManualReview.ShouldBeTrue();
+        replacement.ManualReviewReasons.HasFlag(DocumentManualReviewReasons.TemplateChanged).ShouldBeTrue();
         var auditEvent = lineage.GetDomainEvents().ShouldHaveSingleItem().ShouldBeOfType<DocumentLifecycleAuditDomainEvent>();
         auditEvent.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);

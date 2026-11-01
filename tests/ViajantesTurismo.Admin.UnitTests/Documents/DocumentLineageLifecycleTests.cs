@@ -18,6 +18,7 @@ public sealed class DocumentLineageLifecycleTests
         newerResult.IsSuccess.ShouldBeTrue();
         var newer = newerResult.Value;
         lineage.BeginReview(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.AcknowledgeChanges(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Approve(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Finalize(newer.Id, "newer"u8.ToArray(), now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Void(newer.Id, DocumentVoidReason.AdministrativeVoid, now, auditContext).IsSuccess.ShouldBeTrue();
@@ -49,6 +50,7 @@ public sealed class DocumentLineageLifecycleTests
         newerResult.IsSuccess.ShouldBeTrue();
         var newer = newerResult.Value;
         lineage.BeginReview(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.AcknowledgeChanges(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
         lineage.Approve(newer.Id, now, auditContext).IsSuccess.ShouldBeTrue();
 
         // Act
