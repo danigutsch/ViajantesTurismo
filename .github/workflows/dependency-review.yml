@@ -82,13 +82,13 @@ jobs:
       fail-fast: false
       matrix:
         target: ${{ github.event_name == 'pull_request' && fromJSON('["base", "head"]') || fromJSON('["head"]') }}
-    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/dependency-snapshot-reusable.yml@945d78101108f3e8f4841753fc4a6adcc9916424
+    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/dependency-snapshot-reusable.yml@c5c6f41ae061dfc85d1962d441e54274c1d29c68
     with:
       runner: ${{ vars.CI_UBUNTU_RUNNER }}
       target: ${{ matrix.target }}
       correlator: viajantes-solution-nuget
       source-repository: danigutsch/PandaBear.SharedKernel
-      source-ref: 945d78101108f3e8f4841753fc4a6adcc9916424
+      source-ref: c5c6f41ae061dfc85d1962d441e54274c1d29c68
 
   dependency-review:
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Dependency Review' }}
@@ -96,7 +96,7 @@ jobs:
     if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')) }}
     permissions:
       contents: read
-    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/dependency-review-reusable.yml@945d78101108f3e8f4841753fc4a6adcc9916424
+    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/dependency-review-reusable.yml@c5c6f41ae061dfc85d1962d441e54274c1d29c68
     with:
       runner: ${{ vars.CI_UBUNTU_RUNNER }}
       review-required: ${{ needs.plan.outputs.review_required }}
@@ -105,7 +105,7 @@ jobs:
       fail-on-severity: moderate
       verify-license-exceptions: true
       source-repository: danigutsch/PandaBear.SharedKernel
-      source-ref: 945d78101108f3e8f4841753fc4a6adcc9916424
+      source-ref: c5c6f41ae061dfc85d1962d441e54274c1d29c68
       allow-licenses: >-
         MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, 0BSD, ISC, PostgreSQL, Zlib,
         Unlicense, CC0-1.0
