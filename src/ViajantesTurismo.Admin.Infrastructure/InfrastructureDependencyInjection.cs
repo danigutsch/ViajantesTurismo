@@ -37,8 +37,7 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 public static class InfrastructureDependencyInjection
 {
     private const int TourCapacityLockMaximumPoolSize = 8;
-    private const string WriteDataSourceName = "admin-write";
-    private const string ReadDataSourceName = "admin-read";
+    private const string AdminDataSourceName = "admin";
     private const string BrandingTransportDataSourceName = "admin-branding-transport";
     private const string TourCapacityLockDataSourceName = "admin-tour-capacity-lock";
 
@@ -268,7 +267,7 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        ConfigureNpgsqlTracing(options, ReadDataSourceName);
+        ConfigureNpgsqlTracing(options, AdminDataSourceName);
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         builder.Services.ApplyDbContextOptionConfigurations<AdminReadDbContext>(options, builder.Environment.IsDevelopment());
     }
@@ -278,7 +277,7 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        ConfigureNpgsqlTracing(options, WriteDataSourceName);
+        ConfigureNpgsqlTracing(options, AdminDataSourceName);
         builder.Services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options, builder.Environment.IsDevelopment());
     }
 

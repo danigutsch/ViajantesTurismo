@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 public sealed class DataSourceNamingTests
 {
     [Fact]
-    public void Admin_infrastructure_names_the_write_and_tour_capacity_lock_data_sources()
+    public void Admin_infrastructure_names_the_shared_read_write_and_tour_capacity_lock_data_sources()
     {
         // Arrange
         using var scenario = DataSourceNamingScenario.ForAdmin();
@@ -15,7 +15,9 @@ public sealed class DataSourceNamingTests
         var poolNames = NpgsqlPoolMetricTagCapture.ObservePoolNames();
 
         // Assert
-        poolNames.ShouldContain("admin-write");
+        poolNames.ShouldContain("admin");
+        poolNames.ShouldNotContain("admin-write");
+        poolNames.ShouldNotContain("admin-read");
         poolNames.ShouldContain("admin-tour-capacity-lock");
     }
 
