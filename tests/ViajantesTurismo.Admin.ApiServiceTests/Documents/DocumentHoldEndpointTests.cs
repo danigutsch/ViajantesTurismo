@@ -352,6 +352,7 @@ public sealed class DocumentHoldEndpointTests
         using var document = System.Text.Json.JsonDocument.Parse(allJson);
         var item = document.RootElement.GetProperty("items").EnumerateArray().ShouldHaveSingleItem();
         item.GetProperty("hold").GetProperty("basis").GetString().ShouldBe("Investigation");
+        item.GetProperty("documentId").GetGuid().ShouldBe(documentId);
         document.RootElement.GetProperty("hasMore").GetBoolean().ShouldBeFalse();
         using var overdueDocument = System.Text.Json.JsonDocument.Parse(overdueJson);
         overdueDocument.RootElement.GetProperty("items").GetArrayLength().ShouldBe(0);

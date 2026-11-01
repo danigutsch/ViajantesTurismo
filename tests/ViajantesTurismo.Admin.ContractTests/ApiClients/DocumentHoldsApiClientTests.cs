@@ -118,7 +118,7 @@ public sealed class DocumentHoldsApiClientTests
         {
             captured = request;
             return ContractHttpClientTestHelper.JsonResponse(
-                $$"""{"items":[{"lineageId":"44444444-4444-4444-4444-444444444444","hold":{{HoldJson}}}],"page":2,"pageSize":10,"hasMore":true}""",
+                $$"""{"items":[{"lineageId":"44444444-4444-4444-4444-444444444444","documentId":"55555555-5555-5555-5555-555555555555","hold":{{HoldJson}}},{"lineageId":"66666666-6666-6666-6666-666666666666","documentId":null,"hold":{{HoldJson}}}],"page":2,"pageSize":10,"hasMore":true}""",
                 HttpStatusCode.OK);
         });
         var sut = new DocumentsApiClient(httpClient);
@@ -129,6 +129,8 @@ public sealed class DocumentHoldsApiClientTests
         // Assert
         captured!.RequestUri!.PathAndQuery.ShouldBe("/api/v1/documents/holds?state=OverdueReview&basis=LegalClaim&page=2&pageSize=10");
         outcome.Value!.HasMore.ShouldBeTrue();
-        outcome.Value.Items.ShouldHaveSingleItem();
+        outcome.Value.Items.Count.ShouldBe(2);
+        outcome.Value.Items[0].DocumentId.ShouldBe(Guid.Parse("55555555-5555-5555-5555-555555555555"));
+        outcome.Value.Items[1].DocumentId.ShouldBeNull();
     }
 }

@@ -318,8 +318,8 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         var unknown = await Harness.TryRelease(Guid.CreateVersion7(), holdId, ct);
 
         // Assert
-        second.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
-        unknown.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        second.Status.ShouldBe(ResultStatus.Conflict);
+        unknown.Status.ShouldBe(ResultStatus.NotFound);
         var records = await Scenario.GetDocumentAuditsForDocument(documentId, ct);
         records.Select(record => (record.Operation, record.Outcome, record.ReasonCode)).ShouldBe(
         [
@@ -382,5 +382,34 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         firstPage.Value.HasMore.ShouldBeTrue();
         secondPage.Value.Items.Select(item => item.Hold.Id).ShouldBe([secondHold]);
         secondPage.Value.HasMore.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task The_overview_resolves_the_newest_revision_per_lineage_and_leaves_a_purged_lineage_unlinked()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var recent = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var multi = DocumentDraftInfrastructureTestData.CreateLineageWithRevisions(recent, 3);
+        var single = DocumentDraftInfrastructureTestData.CreateLineage(recent);
+        var purged = DocumentDraftInfrastructureTestData.CreateLineage(recent.AddDays(-DocumentLimits.DraftRetentionDays - 1));
+        await Scenario.Seed(multi);
+        await Scenario.Seed(single);
+        await Scenario.Seed(purged);
+        _ = await Harness.Place(multi.Revisions[0].Id, ct);
+        _ = await Harness.Place(single.Revisions.ShouldHaveSingleItem().Id, ct);
+        var purgedHold = await Harness.Place(purged.Revisions.ShouldHaveSingleItem().Id, ct);
+        await Harness.Release(purged.Revisions.ShouldHaveSingleItem().Id, purgedHold, ct);
+        _ = await Harness.PurgeDrafts(ct);
+
+        // Act
+        var page = await Harness.Overview(new ListDocumentHoldOverviewQuery(null, null, null, 1, 10), ct);
+
+        // Assert
+        var byLineage = page.Value.Items.ToDictionary(item => item.LineageId, item => item.DocumentId);
+        byLineage.Count.ShouldBe(3);
+        byLineage[multi.Id].ShouldBe(multi.Revisions.OrderByDescending(revision => revision.Revision).First().Id);
+        byLineage[single.Id].ShouldBe(single.Revisions.ShouldHaveSingleItem().Id);
+        byLineage[purged.Id].ShouldBeNull();
     }
 }

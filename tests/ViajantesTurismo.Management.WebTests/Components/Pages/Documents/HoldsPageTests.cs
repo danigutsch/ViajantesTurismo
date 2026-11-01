@@ -163,4 +163,39 @@ public sealed class HoldsPageTests : BunitContext
         cut.Find("[role='alert']").TextContent.Trim().ShouldNotBeEmpty();
         cut.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Retry");
     }
+
+    [Fact]
+    public void A_row_with_a_document_id_links_to_the_document_with_an_accessible_name()
+    {
+        // Arrange
+        var hold = DocumentHoldTestData.Create();
+        var documentId = Guid.CreateVersion7();
+        documentsApiClient.OverviewHandler = _ => DocumentHoldTestData.OverviewPage([new GetDocumentHoldOverviewItemDto { LineageId = Guid.CreateVersion7(), DocumentId = documentId, Hold = hold }], hasMore: false);
+
+        // Act
+        var cut = Render<Holds>();
+
+        // Assert
+        var link = cut.Find("tbody tr a");
+        link.GetAttribute("href").ShouldBe($"/documents/{documentId}");
+        link.TextContent.ShouldContain(documentId.ToString(), StringComparison.Ordinal);
+        link.TextContent.ShouldContain("Open document", StringComparison.Ordinal);
+        link.GetAttribute("aria-label").ShouldNotBeNull().ShouldContain(hold.Id.ToString(), StringComparison.Ordinal);
+        link.GetAttribute("tabindex").ShouldBeNull();
+        cut.Find("thead").TextContent.ShouldContain("Document", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void A_row_without_a_document_id_shows_plain_text_and_no_link()
+    {
+        // Arrange
+        documentsApiClient.OverviewHandler = _ => DocumentHoldTestData.OverviewPage([new GetDocumentHoldOverviewItemDto { LineageId = Guid.CreateVersion7(), DocumentId = null, Hold = DocumentHoldTestData.Create() }], hasMore: false);
+
+        // Act
+        var cut = Render<Holds>();
+
+        // Assert
+        cut.FindAll("tbody tr a").ShouldBeEmpty();
+        cut.Find("tbody tr").TextContent.ShouldContain("No document available", StringComparison.Ordinal);
+    }
 }
