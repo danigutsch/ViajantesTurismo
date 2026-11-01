@@ -173,6 +173,22 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public async Task Names_the_advisory_lock_data_source_for_pool_metrics()
+    {
+        // Arrange
+        var configuration = ManagementAuthenticationTestConfiguration.Create();
+        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
+        await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
+
+        // Act
+        host.ResolveAdvisoryLockDataSource();
+        var poolNames = NpgsqlPoolNameObserver.Observe();
+
+        // Assert
+        poolNames.ShouldContain("management-advisory-lock");
+    }
+
+    [Fact]
     public async Task Configures_secure_server_side_management_sessions()
     {
         // Arrange
