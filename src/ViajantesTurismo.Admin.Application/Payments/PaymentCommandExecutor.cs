@@ -9,14 +9,14 @@ namespace ViajantesTurismo.Admin.Application.Payments;
 public sealed class PaymentCommandExecutor(IPaymentTransaction transaction, IIdempotencyStore idempotency, IUnitOfWork unitOfWork, TimeProvider clock)
 {
     /// <summary>Executes a canonically fingerprinted financial operation under its resource and idempotency locks.</summary>
-    public async Task<Result<Guid>> Execute(string scope, string? key, string fingerprint, IReadOnlyList<string> resources, Func<Task<Result<Guid>>> mutate, CancellationToken ct)
+    public async Task<Result<Guid>> Execute(string scope, IdempotencyKey key, string fingerprint, IReadOnlyList<string> resources, Func<Task<Result<Guid>>> mutate, CancellationToken ct)
     {
-        if (!IdempotencyKey.TryFrom(key, out var parsedKey))
+        if (key == default)
         {
             return Result.Invalid(detail: "A valid Idempotency-Key is required.", field: ContractConstants.IdempotencyKeyHeaderName, message: "A valid Idempotency-Key is required.").ConvertError<Guid>();
         }
-        var operation = new IdempotencyOperation(IdempotencyScope.From(scope), parsedKey);
-        var lockNames = resources.Append("admin:payment-operation:" + ApplicationRequestFingerprint.Create(scope, parsedKey.Value)).ToArray();
+        var operation = new IdempotencyOperation(IdempotencyScope.From(scope), key);
+        var lockNames = resources.Append("admin:payment-operation:" + ApplicationRequestFingerprint.Create(scope, key.Value)).ToArray();
         return await transaction.Execute(lockNames, async () =>
         {
             var start = await idempotency.TryStart(operation, clock.GetUtcNow(), TimeSpan.FromMinutes(5), ct);

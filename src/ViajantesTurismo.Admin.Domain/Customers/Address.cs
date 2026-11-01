@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using JetBrains.Annotations;
 using PandaBear.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
@@ -8,7 +9,7 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// <summary>
 /// Represents a physical address.
 /// </summary>
-public sealed class Address
+public sealed class Address : ValueObject
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Address"/> class.
@@ -170,5 +171,17 @@ public sealed class Address
         }
 
         return Result.Ok(new Address(sanitizedStreet!, sanitizedComplement, sanitizedNeighborhood!, sanitizedPostalCode!, sanitizedCity!, sanitizedState!, sanitizedCountry!));
+    }
+
+    /// <inheritdoc />
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Street;
+        yield return Complement;
+        yield return Neighborhood;
+        yield return PostalCode;
+        yield return City;
+        yield return State;
+        yield return Country;
     }
 }

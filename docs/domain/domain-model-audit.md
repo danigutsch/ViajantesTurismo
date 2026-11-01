@@ -18,7 +18,7 @@ Management Web code that calls them. This is a dated evidence record for the rul
 
 - **Purity**: clean. Both domain projects reference only domain-facing `PandaBear.SharedKernel.*` packages and
   `JetBrains.Annotations`; no EF Core, ASP.NET Core, serializer, DataAnnotations, logging, or HTTP usage. A new
-  architecture test now also bans those framework assemblies.
+  architecture test also bans those framework assemblies.
 - **Setters**: no non-private setters. Domain state uses `private set`, `private init`, or positional records.
 - **Collections**: every exposed collection is a read-only view over a private field.
 - **Aggregate boundary**: one leak, fixed in this change. `Booking` exposed `Create` and eight mutators publicly, and
@@ -51,6 +51,28 @@ Management Web code that calls them. This is a dated evidence record for the rul
 | C1 | `src/ViajantesTurismo.Catalog.Application/Tours/CatalogTourPresentationUpdate.cs` | Holds title, slug, and length rules that `CatalogTour.ChangePresentation` does not enforce | Rules in the domain | Fixed: the `CatalogTourPresentation` value object enforces them in `ChangePresentation` |
 | C2 | `src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs:115,166,179,218` | Throws exceptions for expected business outcomes | ADR-002 | Fixed: `ChangePresentation` and `Publish` return `Result` values from `CatalogTourErrors` |
 | C3 | `src/ViajantesTurismo.Catalog.Application/Media/MediaImageOriginalStoredIntegrationHandler.cs:45-66` | Chooses the next media processing status in the handler | Behavior over state | Fixed: `PublicMediaImage.CompleteProcessing` and `FailProcessing` |
+
+### Value-object follow-up, October 31, 2026
+
+`ContactInfo`, `Address`, and `Discount` compare their sanitized fields structurally through the existing
+SharedKernel `ValueObject` base. Their factories, private construction, persisted fields, and string comparisons stay
+unchanged. `ProfileValueEqualityTests` first demonstrated separate equivalent instances occupying distinct hash-set
+entries.
+
+`BookingPriceBreakdown` owns component price limits and the positive discounted-total invariant. The three
+`BookingPricingInvariantTests` first demonstrated room, companion, and bike changes accepting an existing absolute
+discount that exceeded the revised subtotal. Every service change validates the complete candidate price, and
+`Tour.UpdateBookingDetails` applies the complete selection atomically. `TourPricingInvariantTests` covers both a valid
+combined change whose intermediate room price would fail and rejection without partial changes.
+
+`TourPricing.Create` rejects undefined currency enum values while retaining BRL, EUR, USD, and the existing
+round-away-from-zero price policy. `TourPricingValidationTests` first demonstrated acceptance of undefined values;
+valid-currency and midpoint-rounding cases guard the unchanged behavior.
+
+The Management forms use `BookingPricePreview` to capture their incomplete draft inputs as one immutable display
+value. The preview retains its existing zero clamp and tolerance for unselected options; server-side booking
+acceptance remains a domain responsibility. This distinction avoids a Management-to-Domain dependency and does not
+change the existing tour-price rounding or exact payment-money policies.
 
 ## Domain enum inventory
 

@@ -85,6 +85,11 @@ public sealed class TourPricing : ValueObject
 
         var errors = new ValidationErrors();
 
+        if (!Enum.IsDefined(currency))
+        {
+            errors.Add(TourErrors.InvalidCurrency());
+        }
+
         if (basePrice <= 0)
         {
             errors.Add(TourErrors.InvalidPrice("Base price"));

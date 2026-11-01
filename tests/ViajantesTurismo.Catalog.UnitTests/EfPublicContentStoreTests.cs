@@ -4,6 +4,46 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 
 public sealed class EfPublicContentStoreTests
 {
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task Invalid_lookup_keys_still_honor_cancellation(string key)
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicContentStore(dbContext);
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        // Act
+        Func<Task> read = () => store.GetContent(key, cancellation.Token);
+
+        // Assert
+        await read.ShouldThrow<OperationCanceledException>();
+    }
+
+    [Theory]
+    [InlineData("Home.Hero", "HOME.HERO")]
+    [InlineData("home.i\u0307", "HOME.I\u0307")]
+    public async Task Store_materializes_the_same_canonical_identity_after_tracking_is_cleared(string input, string expected)
+    {
+        // Arrange
+        await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
+        var store = new EfPublicContentStore(dbContext);
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false, key: input);
+        await store.SaveContent(content, TestContext.Current.CancellationToken);
+        dbContext.ChangeTracker.Clear();
+
+        // Act
+        var loaded = await store.GetContent(content.ContentKey, TestContext.Current.CancellationToken);
+
+        // Assert
+        loaded.ShouldNotBeNull();
+        loaded.ContentKey.ShouldBe(content.ContentKey);
+        loaded.Key.ShouldBe(expected);
+        loaded.Id.ShouldBe(content.Id);
+    }
+
     [Fact]
     public async Task Store_persists_and_loads_content_by_sanitized_key()
     {

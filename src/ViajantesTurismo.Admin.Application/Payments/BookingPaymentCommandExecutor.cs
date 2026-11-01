@@ -1,3 +1,4 @@
+using PandaBear.Idempotency;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -7,7 +8,7 @@ namespace ViajantesTurismo.Admin.Application.Payments;
 public sealed class BookingPaymentCommandExecutor(ITourStore tours, IPaymentHistoryStore histories, PaymentCommandExecutor commands)
 {
     /// <summary>Executes one booking financial operation under a stable resource lock and durable idempotency ownership.</summary>
-    public Task<Result<Guid>> Execute(Guid bookingId, string operation, string? key, string fingerprint, Func<Tour, Task<Result<Guid>>> mutate, CancellationToken ct) =>
+    public Task<Result<Guid>> Execute(Guid bookingId, string operation, IdempotencyKey key, string fingerprint, Func<Tour, Task<Result<Guid>>> mutate, CancellationToken ct) =>
         commands.Execute("booking-payment:" + operation + ":" + bookingId.ToString("N"), key, fingerprint, ["admin:booking-finance:" + bookingId.ToString("N")], async () =>
         {
             var tour = await tours.GetByBookingId(bookingId, ct);

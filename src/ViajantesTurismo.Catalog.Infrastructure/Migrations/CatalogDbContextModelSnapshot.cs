@@ -333,10 +333,11 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Key")
+                    b.Property<string>("ContentKey")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("Key");
 
                     b.Property<string>("PublicationState")
                         .IsRequired()
@@ -348,8 +349,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Key")
-                        .IsUnique();
+                    b.HasIndex("ContentKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PublicContent_Key");
 
                     b.ToTable("PublicContent", (string)null);
                 });

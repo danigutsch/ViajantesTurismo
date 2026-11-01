@@ -16,6 +16,13 @@ public static class PublicContentErrors
         field: "key",
         message: "Key is required.");
 
+    /// <summary>Indicates that a content key contains Unicode text that cannot be normalized.</summary>
+    /// <returns>A key validation result without the submitted text.</returns>
+    public static Result InvalidKeyUnicode() => Result.Invalid(
+        detail: "Public content key must contain valid Unicode text.",
+        field: "key",
+        message: "Key must contain valid Unicode text.");
+
     /// <summary>
     /// Indicates that a content key is too long.
     /// </summary>

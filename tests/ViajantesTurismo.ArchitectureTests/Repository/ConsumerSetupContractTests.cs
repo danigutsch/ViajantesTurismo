@@ -189,6 +189,9 @@ public sealed class ConsumerSetupContractTests
         // Arrange
         var root = RepositoryTestProcess.GetRepositoryRoot();
         var path = Path.Combine(root, ".github", "actions", "build-sharedkernel-tool", "action.yml");
+        var candidatePath = Path.Combine(root, ".config", "sharedkernel-candidate.json");
+        using var candidate = JsonDocument.Parse(await File.ReadAllTextAsync(candidatePath, TestContext.Current.CancellationToken));
+        var revision = candidate.RootElement.GetProperty("libraryRevision").GetString();
 
         // Act
         var action = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
@@ -210,7 +213,8 @@ public sealed class ConsumerSetupContractTests
         action.ShouldContain("git -C $source status --porcelain", StringComparison.Ordinal);
         action.ShouldContain("WORKSPACE: ${{ github.workspace }}", StringComparison.Ordinal);
         action.ShouldContain("\"SHAREDKERNEL_SOURCE=$source\" >> $env:GITHUB_ENV", StringComparison.Ordinal);
-        action.ShouldContain("uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@c5c6f41ae061dfc85d1962d441e54274c1d29c68\n", StringComparison.Ordinal);
+        revision.ShouldNotBeNull();
+        action.ShouldContain($"uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@{revision}\n", StringComparison.Ordinal);
         shells.ShouldBe(runSteps);
         action.ShouldNotContain("token", StringComparison.OrdinalIgnoreCase);
         action.ShouldNotContain("secrets.", StringComparison.Ordinal);

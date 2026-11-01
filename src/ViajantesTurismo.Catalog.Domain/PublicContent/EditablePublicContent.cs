@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using PandaBear.Domain;
 using PandaBear.Results;
-using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 
@@ -22,18 +21,17 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     [UsedImplicitly]
     private EditablePublicContent()
     {
-        Key = string.Empty;
     }
 
     private EditablePublicContent(
         Guid id,
-        string key,
+        PublicContentKey key,
         PublicContentLanguage sourceLanguage,
         IEnumerable<PublicContentVariant> variants,
         PublicContentPublicationState publicationState)
     {
         Id = id;
-        Key = key;
+        ContentKey = key;
         SourceLanguage = sourceLanguage;
         _variants.AddRange(variants);
         PublicationState = publicationState;
@@ -50,10 +48,10 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     /// <summary>
     /// Gets the stable content key, such as a page or section identifier.
     /// </summary>
-    public string Key
-    {
-        get; private set;
-    }
+    public string Key => ContentKey.Value;
+
+    /// <summary>Gets the validated public-content identity.</summary>
+    public PublicContentKey ContentKey { get; private set; } = default!;
 
     /// <summary>
     /// Gets the language originally entered by the editor.
@@ -106,17 +104,13 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     {
         ArgumentNullException.ThrowIfNull(variants);
 
-        var sanitizedKey = StringSanitizer.Sanitize(key).ToUpperInvariant();
+        var contentKey = PublicContentKey.Create(key);
         var variantsArray = variants.ToArray();
         var errors = new ValidationErrors();
 
-        if (string.IsNullOrWhiteSpace(sanitizedKey))
+        if (contentKey.IsFailure)
         {
-            errors.Add(PublicContentErrors.EmptyKey());
-        }
-        else if (sanitizedKey.Length > CatalogDomainLimits.MaxDefaultLength)
-        {
-            errors.Add(PublicContentErrors.KeyTooLong(CatalogDomainLimits.MaxDefaultLength, sanitizedKey.Length));
+            errors.Add(contentKey);
         }
 
         ValidateSupportedSourceLanguage(errors, sourceLanguage);
@@ -126,7 +120,7 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
             ? errors.ToResult<EditablePublicContent>()
             : Result.Ok(new EditablePublicContent(
                 Guid.CreateVersion7(),
-                sanitizedKey,
+                contentKey.Value,
                 sourceLanguage,
                 variantsArray,
                 GetInitialPublicationState(variantsArray)));

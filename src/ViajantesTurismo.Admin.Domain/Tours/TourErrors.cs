@@ -82,6 +82,13 @@ public static class TourErrors
         field: "price",
         message: $"{GetSafePriceType(priceType)} must be greater than or equal to zero.");
 
+    /// <summary>Indicates that a pricing currency is not a defined domain selection.</summary>
+    /// <returns>A validation failure for the currency field.</returns>
+    public static Result InvalidCurrency() => Result.Invalid(
+        detail: "Currency must be a defined selection.",
+        field: "currency",
+        message: "Currency must be a defined selection.");
+
     /// <summary>
     /// Indicates that a price value exceeds the maximum allowed value.
     /// </summary>

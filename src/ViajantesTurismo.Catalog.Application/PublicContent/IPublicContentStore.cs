@@ -22,6 +22,16 @@ public interface IPublicContentStore
     /// <returns>The content entry, or <see langword="null" /> when missing.</returns>
     Task<EditablePublicContent?> GetContent(string key, CancellationToken ct);
 
+    /// <summary>Gets an editable public-content entry by its validated identity.</summary>
+    /// <param name="key">The canonical content key.</param>
+    /// <param name="ct">A token to cancel the operation.</param>
+    /// <returns>The content entry, or <see langword="null" /> when missing.</returns>
+    Task<EditablePublicContent?> GetContent(PublicContentKey key, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        return GetContent(key.Value, ct);
+    }
+
     /// <summary>
     /// Saves an editable public content entry.
     /// </summary>

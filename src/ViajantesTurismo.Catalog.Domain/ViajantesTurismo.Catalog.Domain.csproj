@@ -12,6 +12,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Domain.CodeFixes" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
+        <PackageReference Include="PandaBear.SharedKernel.ObjectStorage" />
     </ItemGroup>
 
     <ItemGroup>

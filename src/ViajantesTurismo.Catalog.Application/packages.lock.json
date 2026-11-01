@@ -208,6 +208,7 @@
           "PandaBear.SharedKernel.Domain": "[0.1.0-alpha.443.1, )",
           "PandaBear.SharedKernel.EventSourcing": "[0.1.0-alpha.443.1, )",
           "PandaBear.SharedKernel.InputNormalization": "[0.1.0-alpha.443.1, )",
+          "PandaBear.SharedKernel.ObjectStorage": "[0.1.0-alpha.443.1, )",
           "PandaBear.SharedKernel.Results": "[0.1.0-alpha.443.1, )"
         }
       },
