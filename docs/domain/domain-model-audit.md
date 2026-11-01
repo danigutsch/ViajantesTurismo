@@ -18,7 +18,7 @@ Management Web code that calls them. This is a dated evidence record for the rul
 
 - **Purity**: clean. Both domain projects reference only domain-facing `PandaBear.SharedKernel.*` packages and
   `JetBrains.Annotations`; no EF Core, ASP.NET Core, serializer, DataAnnotations, logging, or HTTP usage. A new
-  architecture test now also bans those framework assemblies.
+  architecture test also bans those framework assemblies.
 - **Setters**: no non-private setters. Domain state uses `private set`, `private init`, or positional records.
 - **Collections**: every exposed collection is a read-only view over a private field.
 - **Aggregate boundary**: one leak, fixed in this change. `Booking` exposed `Create` and eight mutators publicly, and
@@ -54,14 +54,14 @@ Management Web code that calls them. This is a dated evidence record for the rul
 
 ### Value-object follow-up, October 31, 2026
 
-`ContactInfo`, `Address`, and `Discount` now compare their sanitized fields structurally through the existing
+`ContactInfo`, `Address`, and `Discount` compare their sanitized fields structurally through the existing
 SharedKernel `ValueObject` base. Their factories, private construction, persisted fields, and string comparisons stay
 unchanged. `ProfileValueEqualityTests` first demonstrated separate equivalent instances occupying distinct hash-set
 entries.
 
-`BookingPriceBreakdown` now owns component price limits and the positive discounted-total invariant. The three
+`BookingPriceBreakdown` owns component price limits and the positive discounted-total invariant. The three
 `BookingPricingInvariantTests` first demonstrated room, companion, and bike changes accepting an existing absolute
-discount that exceeded the revised subtotal. Every service change now validates the complete candidate price, and
+discount that exceeded the revised subtotal. Every service change validates the complete candidate price, and
 `Tour.UpdateBookingDetails` applies the complete selection atomically. `TourPricingInvariantTests` covers both a valid
 combined change whose intermediate room price would fail and rejection without partial changes.
 
