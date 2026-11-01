@@ -84,8 +84,10 @@ public sealed class DocumentLineageLifecycleTests
     [Fact]
     public void Ensure_can_approve_and_finalize_report_an_unknown_revision_as_not_found()
     {
+        // Arrange
         var lineage = DocumentLineageTestData.Create();
 
+        // Act and Assert
         lineage.EnsureCanApprove(Guid.CreateVersion7()).Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         lineage.EnsureCanFinalize(Guid.CreateVersion7()).Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
     }

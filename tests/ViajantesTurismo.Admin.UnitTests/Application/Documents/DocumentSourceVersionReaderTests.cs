@@ -61,6 +61,8 @@ public sealed class DocumentSourceVersionReaderTests
         var bookingId = Guid.CreateVersion7();
         var tourId = Guid.CreateVersion7();
         var tour = DocumentSourceTestData.Tour(tourId);
+
+        // Act
         var original = await new DocumentSourceVersionReader(
                 new FakeQueryService(DocumentSourceTestData.Booking(bookingId, tourId), tour))
             .Read(bookingId, TestContext.Current.CancellationToken);

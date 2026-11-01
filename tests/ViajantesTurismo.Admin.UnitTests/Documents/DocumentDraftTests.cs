@@ -47,18 +47,23 @@ public sealed class DocumentDraftTests
     [Fact]
     public void EnsureSourceIsCurrent_accepts_the_version_the_draft_was_generated_from()
     {
+        // Arrange
         var draft = DocumentDraftTestData.Create(new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc));
 
+        // Act and Assert
         draft.EnsureSourceIsCurrent(draft.SourceVersion).IsSuccess.ShouldBeTrue();
     }
 
     [Fact]
     public void EnsureSourceIsCurrent_rejects_a_changed_source_version_as_conflict()
     {
+        // Arrange
         var draft = DocumentDraftTestData.Create(new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc));
 
+        // Act
         var result = draft.EnsureSourceIsCurrent("CHANGED-SOURCE-VERSION");
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
     }
 

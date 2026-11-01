@@ -140,6 +140,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [Fact]
     public async Task Approve_saves_document_in_review()
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -148,9 +149,11 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
 
+        // Act
         var result = await new ApproveDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader())
             .Handle(new ApproveDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
 
+        // Assert
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Approved);
         var auditEvent = store.LastLoadedLineage.ShouldNotBeNull().GetDomainEvents()
@@ -162,6 +165,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [Fact]
     public async Task Approve_rejects_a_stale_source_and_records_audit_without_mutating()
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -176,10 +180,12 @@ public sealed class DocumentLifecycleCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader("CHANGED-SOURCE-VERSION"));
 
+        // Act
         var result = await handler.Handle(
             new ApproveDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         document.Status.ShouldBe(DocumentStatus.InReview);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
@@ -190,6 +196,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [InlineData(true)]
     public async Task Approve_reports_the_state_conflict_before_a_changed_source_for_a_retired_document(bool voided)
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -212,10 +219,12 @@ public sealed class DocumentLifecycleCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader("CHANGED-SOURCE-VERSION"));
 
+        // Act
         var result = await handler.Handle(
             new ApproveDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(
             DocumentErrors.InvalidStatusTransition(status, DocumentStatus.Approved).ErrorDetails!.Detail);
@@ -226,6 +235,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [Fact]
     public async Task Approve_reports_a_missing_tour_with_the_tour_not_found_audit_reason()
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -240,10 +250,12 @@ public sealed class DocumentLifecycleCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader { MissingSource = DocumentSourceKind.Tour });
 
+        // Act
         var result = await handler.Handle(
             new ApproveDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         document.Status.ShouldBe(DocumentStatus.InReview);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.TourNotFound);
@@ -252,6 +264,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
     [Fact]
     public async Task Approve_reports_a_missing_source_and_records_audit_without_mutating()
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -266,10 +279,12 @@ public sealed class DocumentLifecycleCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader { MissingSource = DocumentSourceKind.Booking });
 
+        // Act
         var result = await handler.Handle(
             new ApproveDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         document.Status.ShouldBe(DocumentStatus.InReview);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);

@@ -43,6 +43,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     [Fact]
     public async Task Handle_rejects_a_stale_source_and_records_audit_without_sealing()
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -58,10 +59,12 @@ public sealed class FinalizeDocumentCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader("CHANGED-SOURCE-VERSION"));
 
+        // Act
         var result = await handler.Handle(
             new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         document.Status.ShouldBe(DocumentStatus.Approved);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
@@ -72,6 +75,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     [InlineData(true)]
     public async Task Handle_reports_the_state_conflict_before_a_changed_source_for_a_retired_document(bool voided)
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -94,10 +98,12 @@ public sealed class FinalizeDocumentCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader("CHANGED-SOURCE-VERSION"));
 
+        // Act
         var result = await handler.Handle(
             new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(
             DocumentErrors.InvalidStatusTransition(status, DocumentStatus.Finalized).ErrorDetails!.Detail);
@@ -108,6 +114,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     [Fact]
     public async Task Handle_reports_a_missing_tour_with_the_tour_not_found_audit_reason()
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -123,10 +130,12 @@ public sealed class FinalizeDocumentCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader { MissingSource = DocumentSourceKind.Tour });
 
+        // Act
         var result = await handler.Handle(
             new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         document.Status.ShouldBe(DocumentStatus.Approved);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.TourNotFound);
@@ -135,6 +144,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     [Fact]
     public async Task Handle_reports_a_missing_source_and_records_audit_without_sealing()
     {
+        // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
         var document = DocumentDraftTestData.Create(now);
         document.BeginReview(now).IsSuccess.ShouldBeTrue();
@@ -150,10 +160,12 @@ public sealed class FinalizeDocumentCommandHandlerTests
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader { MissingSource = DocumentSourceKind.Booking });
 
+        // Act
         var result = await handler.Handle(
             new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
             CancellationToken.None);
 
+        // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         document.Status.ShouldBe(DocumentStatus.Approved);
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
