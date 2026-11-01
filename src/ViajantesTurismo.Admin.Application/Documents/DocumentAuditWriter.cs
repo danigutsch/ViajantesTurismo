@@ -9,7 +9,10 @@ public sealed class DocumentAuditWriter(
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
 {
-    /// <summary>Adds and persists an audit record when trusted request metadata is available.</summary>
+    /// <summary>
+    /// Adds and persists an audit record when trusted request metadata is available. A rejection because the document
+    /// was not found records no resource identifiers, so every record that names a document can be tied to its lineage.
+    /// </summary>
     public async Task<Result> Add(
         DocumentAuditContext auditContext,
         DocumentAuditOperation operation,
@@ -71,11 +74,12 @@ public sealed class DocumentAuditWriter(
             return DocumentAuditErrors.AuditContextRequired();
         }
 
+        var unresolvedDocument = outcome == DocumentAuditOutcome.Rejected && reasonCode == DocumentAuditReasonCode.DocumentNotFound;
         var recordResult = DocumentAuditRecord.Create(
             auditContext.ActorId,
-            documentId,
-            bookingId,
-            documentRevision,
+            unresolvedDocument ? null : documentId,
+            unresolvedDocument ? null : bookingId,
+            unresolvedDocument ? null : documentRevision,
             operation,
             outcome,
             reasonCode,

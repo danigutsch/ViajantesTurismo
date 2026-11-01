@@ -157,7 +157,7 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
             !Enum.IsDefined(outcome) ||
             !Enum.IsDefined(reasonCode) ||
             !IsValidReasonCode(operation, outcome, reasonCode) ||
-            !HasValidResourceMetadata(documentId, bookingId, documentRevision, operation, outcome) ||
+            !HasValidResourceMetadata(documentId, bookingId, documentRevision, operation, outcome, reasonCode) ||
             !HasValidHoldMetadata(holdId, holdBasis, operation, outcome))
         {
             return DocumentAuditErrors.InvalidEvidence().ConvertError<DocumentAuditRecord>();
@@ -245,8 +245,14 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
         Guid? bookingId,
         int? documentRevision,
         DocumentAuditOperation operation,
-        DocumentAuditOutcome outcome)
+        DocumentAuditOutcome outcome,
+        DocumentAuditReasonCode reasonCode)
     {
+        if (IsUnresolvedDocument(outcome, reasonCode))
+        {
+            return documentId is null && bookingId is null && documentRevision is null;
+        }
+
         if (IsHoldOperation(operation))
         {
             return documentId is not null && bookingId is null && documentRevision is null;
@@ -266,6 +272,13 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
             ((bookingId is null && documentRevision is null) ||
              (bookingId is not null && documentRevision is not null));
     }
+
+    /// <summary>
+    /// Whether the record rejects a request because its document did not exist. Such a record names no resource: an
+    /// identifier that resolved to no document belongs to no lineage, so no hold could ever cover a record that kept it.
+    /// </summary>
+    private static bool IsUnresolvedDocument(DocumentAuditOutcome outcome, DocumentAuditReasonCode reasonCode) =>
+        outcome == DocumentAuditOutcome.Rejected && reasonCode == DocumentAuditReasonCode.DocumentNotFound;
 
     private static bool IsHoldOperation(DocumentAuditOperation operation) =>
         operation is DocumentAuditOperation.PlaceHold or DocumentAuditOperation.ReleaseHold;

@@ -43,20 +43,23 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
     {
         // Arrange
         var documentId = Guid.CreateVersion7();
+        var since = TimeProvider.System.GetUtcNow().UtcDateTime;
 
         // Act
         using var response = await fixture.Client.GetAsync(
             new Uri($"/api/v1/documents/{documentId}", UriKind.Relative),
             TestContext.Current.CancellationToken);
-        var audits = await fixture.GetDocumentAuditMetadata(documentId, TestContext.Current.CancellationToken);
+        var namedAudits = await fixture.GetDocumentAuditMetadata(documentId, TestContext.Current.CancellationToken);
+        var audits = await fixture.GetUnresolvedDocumentRejections("Read", since, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        namedAudits.ShouldBeEmpty();
         var audit = audits.ShouldHaveSingleItem();
         audit.Operation.ShouldBe("Read");
         audit.Outcome.ShouldBe("Rejected");
         audit.ReasonCode.ShouldBe("DocumentNotFound");
-        audit.DocumentId.ShouldBe(documentId);
+        audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         audit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);

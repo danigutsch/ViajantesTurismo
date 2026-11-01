@@ -75,7 +75,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         audit.Operation.ShouldBe(DocumentAuditOperation.BeginReview);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
-        audit.DocumentId.ShouldBe(documentId);
+        audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         audit.ActorId.ShouldBe(auditContext.ActorId);
@@ -206,7 +206,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         audit.Operation.ShouldBe(DocumentAuditOperation.Approve);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
-        audit.DocumentId.ShouldBe(documentId);
+        audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         audit.ActorId.ShouldBe(auditContext.ActorId);
@@ -286,7 +286,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         audit.Operation.ShouldBe(DocumentAuditOperation.RequestChanges);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
-        audit.DocumentId.ShouldBe(documentId);
+        audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         audit.ActorId.ShouldBe(auditContext.ActorId);
@@ -313,7 +313,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         audit.Operation.ShouldBe(DocumentAuditOperation.Void);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
-        audit.DocumentId.ShouldBe(documentId);
+        audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         audit.ActorId.ShouldBe(auditContext.ActorId);
@@ -503,7 +503,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         audit.Operation.ShouldBe(DocumentAuditOperation.UpdateField);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
-        audit.DocumentId.ShouldBe(documentId);
+        audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         audit.ActorId.ShouldBe(auditContext.ActorId);

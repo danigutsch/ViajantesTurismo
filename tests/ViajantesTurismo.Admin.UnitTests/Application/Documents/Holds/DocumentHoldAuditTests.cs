@@ -77,7 +77,7 @@ public sealed class DocumentHoldAuditTests
         record.Operation.ShouldBe(DocumentAuditOperation.PlaceHold);
         record.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         record.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
-        record.DocumentId.ShouldBe(unknown);
+        record.DocumentId.ShouldBeNull();
         record.HoldId.ShouldBeNull();
     }
 

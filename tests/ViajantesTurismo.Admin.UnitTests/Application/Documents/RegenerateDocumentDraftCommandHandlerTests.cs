@@ -315,7 +315,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         audit.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
-        audit.DocumentId.ShouldBe(documentId);
+        audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         audit.ActorId.ShouldBe(auditContext.ActorId);
