@@ -18,6 +18,10 @@ public static class DocumentErrors
     public static Result SourceChangedSinceDraft() => Result.Conflict(
         detail: "The source data changed after this draft was generated. Regenerate the draft and review it again.");
 
+    /// <summary>Returns a conflict when the template changed after the draft was generated.</summary>
+    public static Result TemplateChangedSinceDraft() => Result.Conflict(
+        detail: "The document template changed after this draft was generated. Regenerate the draft and review it again.");
+
     /// <summary>Returns an unclassified-field failure.</summary>
     public static Result UnclassifiedField(string fieldId) => Result.Invalid(
         detail: $"Document field '{fieldId}' must have a privacy classification.",

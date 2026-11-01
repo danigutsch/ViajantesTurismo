@@ -623,6 +623,13 @@ public sealed class DocumentDraft : IEntity<Guid>
             ? Result.Ok()
             : DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Finalized);
 
+    /// <summary>Checks that the template the draft was generated from is still the current version.</summary>
+    /// <returns>A success result when the template is current; otherwise, a conflict requiring regeneration.</returns>
+    internal Result EnsureTemplateIsCurrent() =>
+        DocumentTemplates.IsCurrent(TemplateId, TemplateVersion)
+            ? Result.Ok()
+            : DocumentErrors.TemplateChangedSinceDraft();
+
     /// <summary>Approves a document under active staff review.</summary>
     internal Result Approve(DateTime now)
     {

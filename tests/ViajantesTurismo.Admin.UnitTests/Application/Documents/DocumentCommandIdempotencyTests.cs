@@ -2,6 +2,7 @@ using PandaBear.Idempotency;
 using PandaBear.Results;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -195,8 +196,8 @@ public sealed class DocumentCommandIdempotencyTests
         var fingerprint = DocumentCommandIdempotency.CreateRequestFingerprint(generate.TemplateId, generate.TemplateVersion);
 
         // Assert
-        generate.TemplateId.ShouldBe("tour-service-contract");
-        generate.TemplateVersion.ShouldBe("1");
+        generate.TemplateId.ShouldBe(DocumentTemplates.TourServiceContractId);
+        generate.TemplateVersion.ShouldBe(DocumentTemplates.TourServiceContractVersion);
         regenerate.TemplateId.ShouldBe(generate.TemplateId);
         regenerate.TemplateVersion.ShouldBe(generate.TemplateVersion);
         generate.Scope.Value.ShouldBe($"admin.documents.generate-contract-draft:{bookingId:N}");

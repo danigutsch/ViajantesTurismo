@@ -282,6 +282,11 @@ the result:
   fields
 - template change: create a new draft revision and require staff review before finalization
 
+Approval and finalization reject a draft with a 409 conflict when its stored template version differs
+from the current version in the in-code registry (`DocumentTemplates`, error
+`DocumentErrors.TemplateChangedSinceDraft`). The rejection is audited with reason `StateConflict`.
+Bump the registered version whenever a template changes; generation stamps the same registry version.
+
 ## Privacy and security rules
 
 - Do not put personal data in logs, telemetry tags, metric dimensions, URL paths, file paths, object
