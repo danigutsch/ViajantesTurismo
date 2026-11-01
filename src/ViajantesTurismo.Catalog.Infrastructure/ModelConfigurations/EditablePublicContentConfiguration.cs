@@ -16,8 +16,13 @@ internal sealed class EditablePublicContentConfiguration : IEntityTypeConfigurat
         entity.HasKey(content => content.Id);
         entity.Property(content => content.Id).ValueGeneratedNever();
 
-        entity.HasIndex(content => content.Key).IsUnique();
-        entity.Property(content => content.Key).IsRequired().HasMaxLength(CatalogDomainLimits.MaxDefaultLength);
+        entity.Ignore(content => content.Key);
+        entity.HasIndex(content => content.ContentKey).IsUnique().HasDatabaseName("IX_PublicContent_Key");
+        entity.Property(content => content.ContentKey)
+            .HasConversion(key => key.Value, value => PublicContentKey.RequireCanonical(value))
+            .HasColumnName("Key")
+            .IsRequired()
+            .HasMaxLength(CatalogDomainLimits.MaxDefaultLength);
         entity.Property(content => content.SourceLanguage).HasConversion<string>().IsRequired();
         entity.Property(content => content.PublicationState).HasConversion<string>().IsRequired();
 

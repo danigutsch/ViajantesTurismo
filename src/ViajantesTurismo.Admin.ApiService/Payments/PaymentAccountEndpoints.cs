@@ -67,7 +67,12 @@ internal static class PaymentAccountEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new CreatePaymentAccountCommand(input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new CreatePaymentAccountCommand(input, actorId, key.Value), ct);
         return await Respond(result, queries, true, ct);
     }
 
@@ -78,7 +83,12 @@ internal static class PaymentAccountEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new UpdatePaymentAccountCommand(id, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new UpdatePaymentAccountCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 
@@ -89,7 +99,12 @@ internal static class PaymentAccountEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new VerifyPaymentAccountCommand(id, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new VerifyPaymentAccountCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 
@@ -100,7 +115,12 @@ internal static class PaymentAccountEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new ReviewPaymentAccountCommand(id, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new ReviewPaymentAccountCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 
@@ -111,7 +131,12 @@ internal static class PaymentAccountEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new RetirePaymentAccountCommand(id, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new RetirePaymentAccountCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 
@@ -122,7 +147,12 @@ internal static class PaymentAccountEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new WithdrawPaymentAccountVerificationCommand(id, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new WithdrawPaymentAccountVerificationCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 

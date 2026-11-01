@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies OIDC sign-in creates trusted token-session claims.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 [TestScope(TestScope.Unit)]
 public sealed class ManagementOpenIdConnectEventsTests
 {

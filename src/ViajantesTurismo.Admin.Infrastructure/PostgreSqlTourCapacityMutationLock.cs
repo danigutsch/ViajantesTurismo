@@ -12,11 +12,11 @@ internal sealed class PostgreSqlTourCapacityMutationLock(NpgsqlDataSource dataSo
 
     /// <inheritdoc />
     public ValueTask<IAsyncDisposable> Acquire(Guid tourId, CancellationToken ct) =>
-        PostgreSqlSessionAdvisoryLock.Acquire(dataSource, CreateLockKey(tourId), ct);
+        PostgreSqlSessionAdvisoryLock.AcquireKey(dataSource, CreateLockKey(tourId), ct);
 
-    private static long CreateLockKey(Guid tourId)
+    private static PostgreSqlLockKey CreateLockKey(Guid tourId)
     {
         var lockIdentity = string.Concat(LockPurpose, tourId.ToString("D", System.Globalization.CultureInfo.InvariantCulture));
-        return PostgreSqlAdvisoryLockKey.FromUtf8Sha256BigEndian(lockIdentity);
+        return PostgreSqlLockKey.FromIdentity(lockIdentity);
     }
 }

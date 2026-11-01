@@ -89,7 +89,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new DraftBookingPaymentScheduleCommand(bookingId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new DraftBookingPaymentScheduleCommand(bookingId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -100,7 +105,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new ApproveBookingPaymentScheduleCommand(bookingId, scheduleId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new ApproveBookingPaymentScheduleCommand(bookingId, scheduleId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -111,7 +121,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new DraftBookingPaymentQuoteCommand(bookingId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new DraftBookingPaymentQuoteCommand(bookingId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -122,7 +137,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new ApproveBookingPaymentQuoteCommand(bookingId, quoteId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new ApproveBookingPaymentQuoteCommand(bookingId, quoteId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -133,7 +153,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new RecordBookingReceiptCommand(bookingId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new RecordBookingReceiptCommand(bookingId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -144,7 +169,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new DraftBookingReceiptReconciliationCommand(bookingId, receiptId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new DraftBookingReceiptReconciliationCommand(bookingId, receiptId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -155,7 +185,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new ApproveBookingReceiptReconciliationCommand(bookingId, reconciliationId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new ApproveBookingReceiptReconciliationCommand(bookingId, reconciliationId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -166,7 +201,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new AllocateBookingPaymentCommand(bookingId, receiptId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new AllocateBookingPaymentCommand(bookingId, receiptId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -177,7 +217,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new ReleaseBookingPaymentAllocationsCommand(bookingId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new ReleaseBookingPaymentAllocationsCommand(bookingId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -188,7 +233,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new ReverseBookingReceiptCommand(bookingId, receiptId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new ReverseBookingReceiptCommand(bookingId, receiptId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -199,7 +249,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new DraftBookingPaymentRefundCommand(bookingId, receiptId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new DraftBookingPaymentRefundCommand(bookingId, receiptId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -210,7 +265,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new ApproveBookingPaymentRefundCommand(bookingId, refundId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new ApproveBookingPaymentRefundCommand(bookingId, refundId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -221,7 +281,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new CorrectBookingPaymentRefundCommand(bookingId, refundId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new CorrectBookingPaymentRefundCommand(bookingId, refundId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -232,7 +297,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new ReviewBookingFinancialRecordCommand(bookingId, targetId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new ReviewBookingFinancialRecordCommand(bookingId, targetId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
@@ -243,7 +313,12 @@ internal static class BookingFinancialEndpoints
         {
             return TypedResults.Unauthorized();
         }
-        var result = await handler.Handle(new WithdrawBookingFinancialApprovalCommand(bookingId, targetId, input, actorId, context.Request.Headers[ContractConstants.IdempotencyKeyHeaderName].ToString()), ct);
+        var key = PaymentEndpointPolicy.ReadIdempotencyKey(context);
+        if (key.IsFailure)
+        {
+            return key.ToValidationProblem();
+        }
+        var result = await handler.Handle(new WithdrawBookingFinancialApprovalCommand(bookingId, targetId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 

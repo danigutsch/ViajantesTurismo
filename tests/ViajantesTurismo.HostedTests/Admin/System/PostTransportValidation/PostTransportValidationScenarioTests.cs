@@ -6,8 +6,8 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.PostTransportValidation;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.PostTransportArea)]
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
+[Trait(TestTraitNames.AreaName, TestTraits.PostTransportArea)]
+[Trait(TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
 [TestScope(TestScope.System)]
 public sealed class PostTransportValidationScenarioTests
 {

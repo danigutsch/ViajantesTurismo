@@ -9,6 +9,7 @@ using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using PandaBear.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
+using ViajantesTurismo.Catalog.Domain;
 using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
@@ -136,7 +137,7 @@ public sealed partial class MediaImageUploadIntake(
         var checksum = ComputeChecksum(content);
         content.Position = 0;
         var stored = await objectStore.Put(
-            new ObjectWriteRequest(objectKey, content, canonicalContentType, actualLength, checksum),
+            ObjectWriteRequest.Create(objectKey, content, canonicalContentType, actualLength, checksum),
             ct).ConfigureAwait(false);
         var imageResult = PublicMediaImage.Create(
             new PublicMediaImageMetadata
@@ -158,7 +159,7 @@ public sealed partial class MediaImageUploadIntake(
             request.TourLinks);
         if (imageResult.IsFailure)
         {
-            await MediaObjectCompensation.Delete(objectStore, objectKey).ConfigureAwait(false);
+            await MediaObjectCompensation.Delete(objectStore, objectKey.Value).ConfigureAwait(false);
 
             return imageResult.ConvertError<PublicMediaImage, MediaImageUploadIntakeResult>();
         }
@@ -169,7 +170,7 @@ public sealed partial class MediaImageUploadIntake(
             Guid.CreateVersion7(),
             timeProvider.GetUtcNow(),
             request.MediaImageId,
-            objectKey,
+            objectKey.Value,
             1);
 
         try
@@ -184,11 +185,11 @@ public sealed partial class MediaImageUploadIntake(
         return Result.Ok(new MediaImageUploadIntakeResult(image, originalStoredEvent, scanResult.Status));
     }
 
-    private async ValueTask<MediaUploadScanResult> Scan(string objectKey, Stream content, string contentType, long length, CancellationToken ct)
+    private async ValueTask<MediaUploadScanResult> Scan(ObjectStorageKey objectKey, Stream content, string contentType, long length, CancellationToken ct)
     {
         try
         {
-            var result = await scanner.Scan(new MediaUploadScanRequest(objectKey, content, contentType, length), ct).ConfigureAwait(false);
+            var result = await scanner.Scan(new MediaUploadScanRequest(objectKey.Value, content, contentType, length), ct).ConfigureAwait(false);
             content.Position = 0;
             return result;
         }
@@ -207,7 +208,7 @@ public sealed partial class MediaImageUploadIntake(
     private async ValueTask StoreImageEventAndCompensateObject(
         PublicMediaImage image,
         MediaImageOriginalStoredIntegrationEvent originalStoredEvent,
-        string objectKey,
+        ObjectStorageKey objectKey,
         CancellationToken ct)
     {
         try
@@ -218,12 +219,12 @@ public sealed partial class MediaImageUploadIntake(
                     await outbox.Enqueue(originalStoredEvent, ct).ConfigureAwait(false);
                     await imageStore.Upsert(image, ct).ConfigureAwait(false);
                 },
-                _ => MediaObjectCompensation.Delete(objectStore, objectKey),
+                _ => MediaObjectCompensation.Delete(objectStore, objectKey.Value),
                 ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
-            await MediaObjectCompensation.Delete(objectStore, objectKey).ConfigureAwait(false);
+            await MediaObjectCompensation.Delete(objectStore, objectKey.Value).ConfigureAwait(false);
 
             throw;
         }
@@ -254,8 +255,10 @@ public sealed partial class MediaImageUploadIntake(
     [LoggerMessage(LogLevel.Warning, "Media upload scanner returned {ScanStatus}.")]
     private static partial void LogScanDiagnostic(ILogger logger, MediaUploadScanStatus scanStatus);
 
-    private static string CreateOriginalObjectKey(Guid mediaImageId, Guid uploadAttemptId, string contentType)
-        => string.Create(CultureInfo.InvariantCulture, $"media/{mediaImageId:N}/original-{uploadAttemptId:N}{GetFileExtension(contentType)}");
+    private static ObjectStorageKey CreateOriginalObjectKey(Guid mediaImageId, Guid uploadAttemptId, string contentType)
+        => ObjectStorageKey.From(
+            string.Create(CultureInfo.InvariantCulture, $"media/{mediaImageId:N}/original-{uploadAttemptId:N}{GetFileExtension(contentType)}"),
+            CatalogDomainLimits.MaxMediaObjectKeyLength);
 
     /// <summary>
     /// Maps the declared type to the canonical one. The validator has already matched the file signature, which is the format the

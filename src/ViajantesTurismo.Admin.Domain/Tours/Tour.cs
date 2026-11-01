@@ -754,19 +754,10 @@ public sealed partial class Tour : IAggregateRoot<Guid>
                 proposedCount);
         }
 
-        var updateRoomResult = booking.UpdateRoom(roomType, roomAdditionalCost, companionCustomer);
-        if (updateRoomResult.IsFailure)
-        {
-            return updateRoomResult;
-        }
-
-        var updateCompanionResult = booking.UpdateCompanion(companionCustomer);
-        if (updateCompanionResult.IsFailure)
-        {
-            return updateCompanionResult;
-        }
-
-        return booking.UpdatePrincipalBike(principalBikeType, principalBikePrice);
+        var principalCustomerResult = BookingCustomer.Create(booking.PrincipalCustomer.CustomerId, principalBikeType, principalBikePrice);
+        return principalCustomerResult.IsFailure
+            ? principalCustomerResult.ConvertError()
+            : booking.UpdateServices(new BookingRoom(roomType, roomAdditionalCost), principalCustomerResult.Value, companionCustomer);
     }
 
     private Result<Option<BookingCustomer>> ValidateAndCreateCompanionForUpdate(

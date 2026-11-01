@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using PandaBear.Results;
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// <summary>
 /// Represents contact information of a customer.
 /// </summary>
-public sealed partial class ContactInfo
+public sealed partial class ContactInfo : ValueObject
 {
     private ContactInfo(string email, string mobile, string? instagram, string? facebook)
     {
@@ -118,5 +119,14 @@ public sealed partial class ContactInfo
         }
 
         return Result.Ok(new ContactInfo(email, mobile, instagram, facebook));
+    }
+
+    /// <inheritdoc />
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Email;
+        yield return Mobile;
+        yield return Instagram;
+        yield return Facebook;
     }
 }

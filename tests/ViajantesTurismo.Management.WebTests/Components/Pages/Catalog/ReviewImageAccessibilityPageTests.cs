@@ -10,7 +10,7 @@ using ReviewImageAccessibility = ViajantesTurismo.Management.Web.Components.Page
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class ReviewImageAccessibilityPageTests : BunitContext
 {

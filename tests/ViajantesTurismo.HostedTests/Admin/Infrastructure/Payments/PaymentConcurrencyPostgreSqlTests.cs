@@ -1,3 +1,4 @@
+using PandaBear.Idempotency;
 using System.Text;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Payments;
@@ -34,8 +35,8 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             Reference = "receipt-race",
             ProposedAllocations = [new InstallmentAllocationDto { TargetId = InstallmentId, EuroAmount = 100m }]
         };
-        var one = new RecordBookingReceiptCommand(BookingId, input, "first", "record-first");
-        var two = new RecordBookingReceiptCommand(BookingId, input, "second", "record-second");
+        var one = new RecordBookingReceiptCommand(BookingId, input, "first", IdempotencyKey.From("record-first"));
+        var two = new RecordBookingReceiptCommand(BookingId, input, "second", IdempotencyKey.From("record-second"));
 
         // Act
         var results = await Task.WhenAll(first.RecordBookingReceipt.Handle(one, ct), second.RecordBookingReceipt.Handle(two, ct));
@@ -70,7 +71,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
                 Iban = "DE89370400440532013000",
                 Bic = "COBADEFFXXX"
             }
-        }, "owner", "same-command");
+        }, "owner", IdempotencyKey.From("same-command"));
 
         // Act
         var results = await Task.WhenAll(first.CreatePaymentAccount.Handle(command, ct), second.CreatePaymentAccount.Handle(command, ct));
@@ -116,13 +117,13 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             IndependentCheckAttested = true,
             Method = PaymentAccountVerificationMethodDto.BankStatement,
             CheckedAt = now
-        }, "second", "verify");
+        }, "second", IdempotencyKey.From("verify"));
         var retire = new RetirePaymentAccountCommand(account.Id, new RetirePaymentAccountDto
         {
             ExpectedVersion = account.Version,
             Confirmed = true,
             Reason = PaymentAccountReasonDto.NoLongerUsed
-        }, "first", "retire");
+        }, "first", IdempotencyKey.From("retire"));
 
         // Act
         var results = await Task.WhenAll(first.VerifyPaymentAccount.Handle(verify, ct), second.RetirePaymentAccount.Handle(retire, ct));
@@ -154,8 +155,8 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             Reason = FinancialReasonDto.AllocationSelected,
             Allocations = [new InstallmentAllocationDto { TargetId = InstallmentId, EuroAmount = 100m }]
         };
-        var one = new AllocateBookingPaymentCommand(BookingId, ReceiptId, input, "first", "allocate-first");
-        var two = new AllocateBookingPaymentCommand(BookingId, ReceiptId, input, "second", "allocate-second");
+        var one = new AllocateBookingPaymentCommand(BookingId, ReceiptId, input, "first", IdempotencyKey.From("allocate-first"));
+        var two = new AllocateBookingPaymentCommand(BookingId, ReceiptId, input, "second", IdempotencyKey.From("allocate-second"));
 
         // Act
         var results = await Task.WhenAll(first.AllocateBookingPayment.Handle(one, ct), second.AllocateBookingPayment.Handle(two, ct));
@@ -192,7 +193,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             PerformedAt = scenario.Clock.GetUtcNow(),
             ReversedAllocations = []
         };
-        var draftOne = await first.DraftBookingPaymentRefund.Handle(new DraftBookingPaymentRefundCommand(BookingId, ReceiptId, input, "first", "refund-draft-one"), ct);
+        var draftOne = await first.DraftBookingPaymentRefund.Handle(new DraftBookingPaymentRefundCommand(BookingId, ReceiptId, input, "first", IdempotencyKey.From("refund-draft-one")), ct);
         draftOne.IsSuccess.ShouldBeTrue();
         var refreshed = await first.Financials.GetByBookingId(BookingId, ct);
         refreshed.ShouldNotBeNull();
@@ -201,15 +202,15 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             {
                 ExpectedVersion = refreshed.Version,
                 Reference = "second-performed"
-            }, "second", "refund-draft-two"), ct);
+            }, "second", IdempotencyKey.From("refund-draft-two")), ct);
         draftTwo.IsSuccess.ShouldBeTrue();
         var latest = await first.Financials.GetByBookingId(BookingId, ct);
         latest.ShouldNotBeNull();
         var approval = new ApproveFinancialRecordDto { ExpectedVersion = latest.Version, Confirmed = true, Reason = FinancialReasonDto.RefundPerformed };
 
         // Act
-        var results = await Task.WhenAll(first.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(BookingId, draftOne.Value, approval, "first", "refund-approve-one"), ct),
-            second.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(BookingId, draftTwo.Value, approval, "second", "refund-approve-two"), ct));
+        var results = await Task.WhenAll(first.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(BookingId, draftOne.Value, approval, "first", IdempotencyKey.From("refund-approve-one")), ct),
+            second.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(BookingId, draftTwo.Value, approval, "second", IdempotencyKey.From("refund-approve-two")), ct));
 
         // Assert
         results.Count(result => result.IsSuccess).ShouldBe(1);
@@ -241,11 +242,11 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         };
 
         // Act
-        var rejected = await session.VerifyPaymentAccount.Handle(new VerifyPaymentAccountCommand(account.Id, input, "owner", "rollback-proof"), ct);
+        var rejected = await session.VerifyPaymentAccount.Handle(new VerifyPaymentAccountCommand(account.Id, input, "owner", IdempotencyKey.From("rollback-proof")), ct);
         var accepted = await session.VerifyPaymentAccount.Handle(new VerifyPaymentAccountCommand(account.Id, input with
         {
             Confirmed = true
-        }, "owner", "rollback-proof"), ct);
+        }, "owner", IdempotencyKey.From("rollback-proof")), ct);
 
         // Assert
         rejected.IsFailure.ShouldBeTrue();
@@ -282,9 +283,9 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         };
 
         // Act
-        var generation = first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(BookingId, null, input, "first", "generation-race"), ct);
+        var generation = first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(BookingId, null, input, "first", IdempotencyKey.From("generation-race")), ct);
         var retirement = second.RetirePaymentAccount.Handle(new RetirePaymentAccountCommand(account.Id,
-            new RetirePaymentAccountDto { ExpectedVersion = account.Version, Confirmed = true, Reason = PaymentAccountReasonDto.NoLongerUsed }, "second", "retirement-race"), ct);
+            new RetirePaymentAccountDto { ExpectedVersion = account.Version, Confirmed = true, Reason = PaymentAccountReasonDto.NoLongerUsed }, "second", IdempotencyKey.From("retirement-race")), ct);
         await Task.WhenAll(generation, retirement);
 
         // Assert
@@ -300,14 +301,14 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             instruction.ShouldNotBeNull();
             instruction.Eligible.ShouldBeFalse();
             var approval = await first.ApprovePaymentInstructions.Handle(new ApprovePaymentInstructionsCommand(instruction.Document.Id,
-                new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = instruction.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionApproved }, "first", "approve-retired-source"), ct);
+                new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = instruction.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionApproved }, "first", IdempotencyKey.From("approve-retired-source")), ct);
             approval.IsFailure.ShouldBeTrue();
         }
         var blocked = await first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(BookingId, null,
             input with
             {
                 ExpectedAccountVersion = retired.Version
-            }, "first", "generation-after-retirement"), ct);
+            }, "first", IdempotencyKey.From("generation-after-retirement")), ct);
         blocked.IsFailure.ShouldBeTrue();
     }
 }

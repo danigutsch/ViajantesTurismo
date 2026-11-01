@@ -1,3 +1,4 @@
+using PandaBear.Idempotency;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
@@ -7,7 +8,7 @@ namespace ViajantesTurismo.Admin.Application.Payments;
 public sealed class PaymentAccountCommandExecutor(IPaymentAccountStore store, PaymentCommandExecutor commands)
 {
     /// <summary>Applies one revision-preconditioned domain mutation under the account lock.</summary>
-    public Task<Result<Guid>> Change(Guid id, string operation, string? key, string fingerprint, Func<PaymentAccount, Result> mutate, CancellationToken ct) =>
+    public Task<Result<Guid>> Change(Guid id, string operation, IdempotencyKey key, string fingerprint, Func<PaymentAccount, Result> mutate, CancellationToken ct) =>
         commands.Execute("payment-account:" + operation + ":" + id.ToString("N"), key, fingerprint, ["admin:payment-account:" + id.ToString("N")], async () =>
         {
             var account = await store.GetById(id, ct);

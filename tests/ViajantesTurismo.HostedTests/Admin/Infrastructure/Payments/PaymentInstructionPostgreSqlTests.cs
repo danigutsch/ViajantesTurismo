@@ -1,3 +1,4 @@
+using PandaBear.Idempotency;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -55,7 +56,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                     ExpectedAccountVersion = account.Version,
                     QuoteId = quoteId,
                     InstallmentIds = [installment.Id]
-                }, "owner", "instruction-generate"), ct);
+                }, "owner", IdempotencyKey.From("instruction-generate")), ct);
             generated.IsSuccess.ShouldBeTrue();
             documentId = generated.Value;
         }
@@ -69,7 +70,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
         instruction.Approval.CreatedAt.ShouldBe(now);
         instruction.Eligible.ShouldBeTrue();
         var approved = await restarted.ApprovePaymentInstructions.Handle(new ApprovePaymentInstructionsCommand(documentId,
-            new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = instruction.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionApproved }, "owner", "instruction-approve"), ct);
+            new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = instruction.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionApproved }, "owner", IdempotencyKey.From("instruction-approve")), ct);
         approved.IsSuccess.ShouldBeTrue();
         var current = await restarted.Instructions.GetById(documentId, ct);
         current.ShouldNotBeNull();
@@ -82,7 +83,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                 ExpectedAccountVersion = account.Version,
                 QuoteId = quoteId,
                 InstallmentIds = [installment.Id]
-            }, "owner", "instruction-generate"), ct);
+            }, "owner", IdempotencyKey.From("instruction-generate")), ct);
         replay.IsSuccess.ShouldBeTrue();
         replay.Value.ShouldBe(documentId);
         var duplicateGeneration = await restarted.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(booking.Id, null,
@@ -93,10 +94,10 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                 ExpectedAccountVersion = account.Version,
                 QuoteId = quoteId,
                 InstallmentIds = [installment.Id]
-            }, "owner", "different-generation-key"), ct);
+            }, "owner", IdempotencyKey.From("different-generation-key")), ct);
         duplicateGeneration.IsFailure.ShouldBeTrue();
         var finalized = await restarted.FinalizePaymentInstructions.Handle(new FinalizePaymentInstructionsCommand(documentId,
-            new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = current.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionFinalized }, "owner", "instruction-finalize"), ct);
+            new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = current.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionFinalized }, "owner", IdempotencyKey.From("instruction-finalize")), ct);
         finalized.IsSuccess.ShouldBeTrue();
         var downloaded = await restarted.Instructions.Download(documentId, "owner", ct);
         downloaded.IsSuccess.ShouldBeTrue();
@@ -127,7 +128,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                     Method = PaymentMethodDto.BankTransfer,
                     Reference = current.PaymentReference,
                     ProposedAllocations = [new InstallmentAllocationDto { TargetId = installment.Id, EuroAmount = 100m }]
-                }, "owner", "brl-receipt"), ct);
+                }, "owner", IdempotencyKey.From("brl-receipt")), ct);
             receipt.IsSuccess.ShouldBeTrue();
             var beforeReconciliation = await restarted.Financials.GetByBookingId(booking.Id, ct);
             beforeReconciliation.ShouldNotBeNull();
@@ -140,12 +141,12 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                     QuoteId = quoteId,
                     InstructionId = documentId,
                     Allocations = [new InstallmentAllocationDto { TargetId = installment.Id, EuroAmount = 100m }]
-                }, "owner", "brl-reconciliation"), ct);
+                }, "owner", IdempotencyKey.From("brl-reconciliation")), ct);
             reconciliation.IsSuccess.ShouldBeTrue();
             var beforeApproval = await restarted.Financials.GetByBookingId(booking.Id, ct);
             beforeApproval.ShouldNotBeNull();
             var exact = await restarted.ApproveBookingReceiptReconciliation.Handle(new ApproveBookingReceiptReconciliationCommand(booking.Id, reconciliation.Value,
-                new ApproveFinancialRecordDto { ExpectedVersion = beforeApproval.Version, Confirmed = true, Reason = FinancialReasonDto.ExactReceipt }, "owner", "brl-exact"), ct);
+                new ApproveFinancialRecordDto { ExpectedVersion = beforeApproval.Version, Confirmed = true, Reason = FinancialReasonDto.ExactReceipt }, "owner", IdempotencyKey.From("brl-exact")), ct);
             exact.IsSuccess.ShouldBeTrue();
             var paid = await restarted.Financials.GetByBookingId(booking.Id, ct);
             paid.ShouldNotBeNull();
@@ -161,12 +162,12 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                     ForRefund = true,
                     AgreedAt = refundAgreedAt,
                     ExpiresAt = refundAgreedAt.AddHours(1)
-                }, "owner", "brl-refund-quote"), ct);
+                }, "owner", IdempotencyKey.From("brl-refund-quote")), ct);
             refundQuote.IsSuccess.ShouldBeTrue();
             var beforeQuoteApproval = await restarted.Financials.GetByBookingId(booking.Id, ct);
             beforeQuoteApproval.ShouldNotBeNull();
             var quoteApproved = await restarted.ApproveBookingPaymentQuote.Handle(new ApproveBookingPaymentQuoteCommand(booking.Id, refundQuote.Value,
-                new ApproveFinancialRecordDto { ExpectedVersion = beforeQuoteApproval.Version, Confirmed = true, Reason = FinancialReasonDto.QuoteAgreed }, "owner", "brl-refund-quote-approved"), ct);
+                new ApproveFinancialRecordDto { ExpectedVersion = beforeQuoteApproval.Version, Confirmed = true, Reason = FinancialReasonDto.QuoteAgreed }, "owner", IdempotencyKey.From("brl-refund-quote-approved")), ct);
             quoteApproved.IsSuccess.ShouldBeTrue();
             var beforeRefund = await restarted.Financials.GetByBookingId(booking.Id, ct);
             beforeRefund.ShouldNotBeNull();
@@ -182,12 +183,12 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                     Reference = "already performed refund",
                     PerformedAt = refundAgreedAt,
                     ReversedAllocations = [new InstallmentAllocationDto { TargetId = beforeRefund.Allocations.ShouldHaveSingleItem().Id, EuroAmount = 100m }]
-                }, "owner", "brl-refund"), ct);
+                }, "owner", IdempotencyKey.From("brl-refund")), ct);
             refund.IsSuccess.ShouldBeTrue();
             var beforeRefundApproval = await restarted.Financials.GetByBookingId(booking.Id, ct);
             beforeRefundApproval.ShouldNotBeNull();
             var refundApproved = await restarted.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(booking.Id, refund.Value,
-                new ApproveFinancialRecordDto { ExpectedVersion = beforeRefundApproval.Version, Confirmed = true, Reason = FinancialReasonDto.RefundPerformed }, "owner", "brl-refund-approved"), ct);
+                new ApproveFinancialRecordDto { ExpectedVersion = beforeRefundApproval.Version, Confirmed = true, Reason = FinancialReasonDto.RefundPerformed }, "owner", IdempotencyKey.From("brl-refund-approved")), ct);
             refundApproved.IsSuccess.ShouldBeTrue();
             var refunded = await restarted.Financials.GetByBookingId(booking.Id, ct);
             refunded.ShouldNotBeNull();
@@ -212,7 +213,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                     Method = PaymentMethodDto.BankTransfer,
                     Reference = current.PaymentReference,
                     ProposedAllocations = [new InstallmentAllocationDto { TargetId = installment.Id, EuroAmount = 100m }]
-                }, "owner", "late-receipt"), ct);
+                }, "owner", IdempotencyKey.From("late-receipt")), ct);
             receipt.IsSuccess.ShouldBeTrue();
             var beforeReconciliation = await restarted.Financials.GetByBookingId(booking.Id, ct);
             beforeReconciliation.ShouldNotBeNull();
@@ -224,19 +225,19 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                     QuoteId = null,
                     InstructionId = documentId,
                     Allocations = [new InstallmentAllocationDto { TargetId = installment.Id, EuroAmount = 100m }]
-                }, "owner", "late-reconciliation"), ct);
+                }, "owner", IdempotencyKey.From("late-reconciliation")), ct);
             reconciliation.IsSuccess.ShouldBeTrue();
             var beforeApproval = await restarted.Financials.GetByBookingId(booking.Id, ct);
             beforeApproval.ShouldNotBeNull();
             var exact = await restarted.ApproveBookingReceiptReconciliation.Handle(new ApproveBookingReceiptReconciliationCommand(booking.Id, reconciliation.Value,
-                new ApproveFinancialRecordDto { ExpectedVersion = beforeApproval.Version, Confirmed = true, Reason = FinancialReasonDto.ExactReceipt }, "owner", "incorrect-exact"), ct);
+                new ApproveFinancialRecordDto { ExpectedVersion = beforeApproval.Version, Confirmed = true, Reason = FinancialReasonDto.ExactReceipt }, "owner", IdempotencyKey.From("incorrect-exact")), ct);
             exact.IsFailure.ShouldBeTrue();
             var late = await restarted.ApproveBookingReceiptReconciliation.Handle(new ApproveBookingReceiptReconciliationCommand(booking.Id, reconciliation.Value,
-                new ApproveFinancialRecordDto { ExpectedVersion = beforeApproval.Version, Confirmed = true, Reason = FinancialReasonDto.LateReceipt }, "owner", "explicit-late"), ct);
+                new ApproveFinancialRecordDto { ExpectedVersion = beforeApproval.Version, Confirmed = true, Reason = FinancialReasonDto.LateReceipt }, "owner", IdempotencyKey.From("explicit-late")), ct);
             late.IsSuccess.ShouldBeTrue();
         }
         var retirement = await restarted.RetirePaymentAccount.Handle(new RetirePaymentAccountCommand(account.Id,
-            new RetirePaymentAccountDto { ExpectedVersion = account.Version, Confirmed = true, Reason = PaymentAccountReasonDto.NoLongerUsed }, "owner", "retire-after-download"), ct);
+            new RetirePaymentAccountDto { ExpectedVersion = account.Version, Confirmed = true, Reason = PaymentAccountReasonDto.NoLongerUsed }, "owner", IdempotencyKey.From("retire-after-download")), ct);
         retirement.IsSuccess.ShouldBeTrue();
         var blocked = await restarted.Instructions.Download(documentId, "owner", ct);
         blocked.IsFailure.ShouldBeTrue();

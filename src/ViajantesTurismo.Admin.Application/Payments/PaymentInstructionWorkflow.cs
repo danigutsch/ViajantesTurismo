@@ -1,3 +1,4 @@
+using PandaBear.Idempotency;
 using System.Security.Cryptography;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -15,7 +16,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
 {
     /// <summary>Applies an explicit confirmed lifecycle action; independent review uses a separate operation.</summary>
     /// <remarks>Finalization rechecks eligibility after all preparation, so no expired quote or retired recipient may be finalized.</remarks>
-    public async Task<Result<Guid>> Change(Guid documentId, UpdatePaymentInstructionsDto input, string actorId, string? key, PaymentInstructionAuditOperation operation, CancellationToken ct)
+    public async Task<Result<Guid>> Change(Guid documentId, UpdatePaymentInstructionsDto input, string actorId, IdempotencyKey key, PaymentInstructionAuditOperation operation, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(input);
         var expectedReason = operation switch
@@ -114,7 +115,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
     }
 
     /// <summary>Records optional independent review without invoking document approval withdrawal.</summary>
-    public async Task<Result<Guid>> Review(Guid documentId, ReviewPaymentInstructionsDto input, string actorId, string? key, CancellationToken ct)
+    public async Task<Result<Guid>> Review(Guid documentId, ReviewPaymentInstructionsDto input, string actorId, IdempotencyKey key, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(input);
         var initial = await instructions.GetSnapshot(documentId, ct);

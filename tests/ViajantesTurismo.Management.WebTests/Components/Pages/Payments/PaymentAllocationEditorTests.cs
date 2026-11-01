@@ -3,7 +3,7 @@ using ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class PaymentAllocationEditorTests : BunitContext
 {

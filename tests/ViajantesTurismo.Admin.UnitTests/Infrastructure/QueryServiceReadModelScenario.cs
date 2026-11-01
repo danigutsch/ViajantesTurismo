@@ -70,6 +70,13 @@ internal sealed class QueryServiceReadModelScenario : IAsyncDisposable
     /// </summary>
     public async Task Save(CancellationToken ct) => await writeContext.SaveChangesAsync(ct);
 
+    /// <summary>Models a historical stored booking price without invoking current domain write guards.</summary>
+    public async Task PersistHistoricalBookingBasePrice(Booking booking, decimal basePrice, CancellationToken ct)
+    {
+        writeContext.Entry(booking).Property(static item => item.BasePrice).CurrentValue = basePrice;
+        await writeContext.SaveChangesAsync(ct);
+    }
+
     /// <summary>
     /// Disposes the read and write contexts and the payment protection.
     /// </summary>

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using PandaBear.Results;
 using PandaBear.InputNormalization;
+using PandaBear.ObjectStorage;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.Domain.Media;
@@ -663,7 +664,7 @@ public sealed class PublicMediaImage
     private static bool IsInvalidObjectKey(string? objectKey)
     {
         var sanitized = StringSanitizer.Sanitize(objectKey);
-        return !ObjectStorageKeyValidator.IsValidRelativeKey(sanitized, CatalogDomainLimits.MaxMediaObjectKeyLength);
+        return !ObjectStorageKey.TryFrom(sanitized, out _, CatalogDomainLimits.MaxMediaObjectKeyLength);
     }
 
     private static void ValidateRequiredText(

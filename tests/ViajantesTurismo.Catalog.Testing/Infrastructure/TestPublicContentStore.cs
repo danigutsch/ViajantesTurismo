@@ -1,13 +1,12 @@
 using System.Collections.Concurrent;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
-using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 public sealed class TestPublicContentStore : IPublicContentStore
 {
-    private readonly ConcurrentDictionary<string, EditablePublicContent> contentByKey = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<PublicContentKey, EditablePublicContent> contentByKey = new();
 
     public Task<IReadOnlyCollection<EditablePublicContent>> ListContent(CancellationToken ct)
     {
@@ -20,8 +19,8 @@ public sealed class TestPublicContentStore : IPublicContentStore
     {
         ct.ThrowIfCancellationRequested();
 
-        var sanitizedKey = StringSanitizer.Sanitize(key).ToUpperInvariant();
-        contentByKey.TryGetValue(sanitizedKey, out var content);
+        var contentKey = PublicContentKey.Create(key);
+        var content = contentKey.IsSuccess ? contentByKey.GetValueOrDefault(contentKey.Value) : null;
 
         return Task.FromResult(content);
     }
@@ -31,7 +30,7 @@ public sealed class TestPublicContentStore : IPublicContentStore
         ArgumentNullException.ThrowIfNull(content);
         ct.ThrowIfCancellationRequested();
 
-        contentByKey[content.Key] = content;
+        contentByKey[content.ContentKey] = content;
 
         return Task.CompletedTask;
     }

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
-using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -15,7 +14,7 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
     public async Task<IReadOnlyCollection<EditablePublicContent>> ListContent(CancellationToken ct)
     {
         return await dbContext.PublicContent
-            .OrderBy(content => content.Key)
+            .OrderBy(content => content.ContentKey)
             .ToArrayAsync(ct)
             .ConfigureAwait(false);
     }
@@ -23,11 +22,22 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
     /// <inheritdoc />
     public async Task<EditablePublicContent?> GetContent(string key, CancellationToken ct)
     {
-        var sanitizedKey = StringSanitizer.Sanitize(key).ToUpperInvariant();
+        ct.ThrowIfCancellationRequested();
+        var contentKey = PublicContentKey.Create(key);
+        if (contentKey.IsFailure)
+        {
+            return null;
+        }
 
-        return await dbContext.PublicContent
-            .SingleOrDefaultAsync(content => content.Key == sanitizedKey, ct)
-            .ConfigureAwait(false);
+        return await GetContent(contentKey.Value, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task<EditablePublicContent?> GetContent(PublicContentKey key, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+
+        return dbContext.PublicContent.SingleOrDefaultAsync(content => content.ContentKey == key, ct);
     }
 
     /// <inheritdoc />
@@ -36,7 +46,7 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
         ArgumentNullException.ThrowIfNull(content);
 
         var existing = await dbContext.PublicContent
-            .SingleOrDefaultAsync(current => current.Key == content.Key, ct)
+            .SingleOrDefaultAsync(current => current.ContentKey == content.ContentKey, ct)
             .ConfigureAwait(false);
 
         if (existing is not null)

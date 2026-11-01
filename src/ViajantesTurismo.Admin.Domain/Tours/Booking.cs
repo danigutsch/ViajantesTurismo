@@ -171,7 +171,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// The subtotal before discount (base price + room cost + bike prices).
     /// </summary>
-    public decimal Subtotal => CalculateSubtotal(BasePrice, RoomAdditionalCost, PrincipalCustomer, CompanionCustomer);
+    public decimal Subtotal => BookingPriceBreakdown.CalculateSubtotal(BasePrice, RoomAdditionalCost, PrincipalCustomer.BikePrice, CompanionCustomer?.BikePrice ?? 0m);
 
     /// <summary>
     /// The total price of the booking (subtotal minus discount).
@@ -236,22 +236,6 @@ public sealed partial class Booking : IEntity<Guid>
     /// </summary>
     public bool CanBeRemoved => IsPending && !HasFinancialHistory;
 
-    private static decimal CalculateSubtotal(
-        decimal basePrice,
-        decimal roomAdditionalCost,
-        BookingCustomer principalCustomer,
-        BookingCustomer? companionCustomer)
-    {
-        var subtotal = basePrice + roomAdditionalCost + principalCustomer.BikePrice;
-
-        if (companionCustomer is not null)
-        {
-            subtotal += companionCustomer.BikePrice;
-        }
-
-        return subtotal;
-    }
-
     /// <summary>
     /// Creates a new booking with validation and sanitisation.
     /// </summary>
@@ -289,24 +273,10 @@ public sealed partial class Booking : IEntity<Guid>
             errors.Add(BookingErrors.InvalidRoomType(roomType));
         }
 
-        if (basePrice <= 0)
+        var priceComponents = BookingPriceBreakdown.ValidateComponents(basePrice, roomAdditionalCost, principalCustomer.BikePrice, companionCustomer?.BikePrice ?? 0m);
+        if (priceComponents.IsFailure)
         {
-            errors.Add(BookingErrors.ZeroOrNegativeBasePrice());
-        }
-
-        if (basePrice > AdminDomainLimits.MaxPrice)
-        {
-            errors.Add(BookingErrors.BasePriceExceedsMaximum());
-        }
-
-        if (roomAdditionalCost < 0)
-        {
-            errors.Add(BookingErrors.NegativeRoomCost());
-        }
-
-        if (roomAdditionalCost > AdminDomainLimits.MaxPrice)
-        {
-            errors.Add(BookingErrors.RoomCostExceedsMaximum());
+            errors.Add(priceComponents);
         }
 
         if (notes?.Length > AdminDomainLimits.MaxBookingNotesLength)
@@ -324,17 +294,10 @@ public sealed partial class Booking : IEntity<Guid>
             return errors.ToResult<Booking>();
         }
 
-        var subtotal = CalculateSubtotal(basePrice, roomAdditionalCost, principalCustomer, companionCustomer);
-
-        if (discount.Type == DiscountType.Absolute && discount.Amount > subtotal)
+        var pricing = BookingPriceBreakdown.Create(basePrice, roomAdditionalCost, principalCustomer.BikePrice, companionCustomer?.BikePrice ?? 0m, discount);
+        if (pricing.IsFailure)
         {
-            return DiscountErrors.AbsoluteDiscountExceedsSubtotal().ConvertError<Booking>();
-        }
-
-        var finalPrice = subtotal - discount.CalculateDiscountAmount(subtotal);
-        if (finalPrice <= 0)
-        {
-            return DiscountErrors.FinalPriceNotPositive().ConvertError<Booking>();
+            return pricing.ConvertError<BookingPriceBreakdown, Booking>();
         }
 
         return Result.Ok(new Booking(tourId, basePrice, new BookingRoom(roomType, roomAdditionalCost), principalCustomer, companionCustomer,
@@ -440,15 +403,10 @@ public sealed partial class Booking : IEntity<Guid>
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
         }
 
-        if (discount.Type == DiscountType.Absolute && discount.Amount > Subtotal)
+        var priceValidation = BookingPriceBreakdown.Create(BasePrice, RoomAdditionalCost, PrincipalCustomer.BikePrice, CompanionCustomer?.BikePrice ?? 0m, discount);
+        if (priceValidation.IsFailure)
         {
-            return DiscountErrors.AbsoluteDiscountExceedsSubtotal();
-        }
-
-        var finalPrice = Subtotal - discount.CalculateDiscountAmount(Subtotal);
-        if (finalPrice <= 0)
-        {
-            return DiscountErrors.FinalPriceNotPositive();
+            return priceValidation.ConvertError();
         }
 
         Discount = discount;
@@ -462,87 +420,14 @@ public sealed partial class Booking : IEntity<Guid>
     /// <param name="roomAdditionalCost">The new room additional cost.</param>
     /// <param name="companionCustomer">The companion customer details (null if no companion).</param>
     /// <returns>A result indicating success or failure.</returns>
-    internal Result UpdateRoom(RoomType roomType, decimal roomAdditionalCost, BookingCustomer? companionCustomer)
-    {
-        if (!CanModifyBookedServices)
-        {
-            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
-        }
+    internal Result UpdateRoom(RoomType roomType, decimal roomAdditionalCost, BookingCustomer? companionCustomer) =>
+        UpdateServices(new BookingRoom(roomType, roomAdditionalCost), PrincipalCustomer, companionCustomer);
 
-        roomAdditionalCost = NumericSanitizer.SanitizePrice(roomAdditionalCost);
+    /// <summary>Updates the companion only when the whole proposed service selection remains valid.</summary>
+    internal Result UpdateCompanion(BookingCustomer? companionCustomer) =>
+        UpdateServices(new BookingRoom(RoomType, RoomAdditionalCost), PrincipalCustomer, companionCustomer);
 
-        var errors = new ValidationErrors();
-
-        if (!Enum.IsDefined(roomType))
-        {
-            errors.Add(BookingErrors.InvalidRoomType(roomType));
-        }
-
-        if (roomAdditionalCost < 0)
-        {
-            errors.Add(BookingErrors.NegativeRoomCost());
-        }
-
-        if (roomAdditionalCost > AdminDomainLimits.MaxPrice)
-        {
-            errors.Add(BookingErrors.RoomCostExceedsMaximum());
-        }
-
-        if (roomType == RoomType.SingleOccupancy && companionCustomer is not null)
-        {
-            errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult();
-        }
-
-        RoomType = roomType;
-        RoomAdditionalCost = roomAdditionalCost;
-
-        return Result.Ok();
-    }
-
-    /// <summary>
-    /// Updates the companion customer for the booking.
-    /// </summary>
-    /// <param name="companionCustomer">The companion customer details (null to remove).</param>
-    /// <returns>A result indicating success or failure.</returns>
-    internal Result UpdateCompanion(BookingCustomer? companionCustomer)
-    {
-        if (!CanModifyBookedServices)
-        {
-            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
-        }
-
-        var errors = new ValidationErrors();
-
-        if (companionCustomer is not null && PrincipalCustomer.CustomerId == companionCustomer.CustomerId)
-        {
-            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame());
-        }
-
-        if (RoomType == RoomType.SingleOccupancy && companionCustomer is not null)
-        {
-            errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
-        }
-
-        if (errors.HasErrors)
-        {
-            return errors.ToResult();
-        }
-
-        CompanionCustomer = companionCustomer;
-        return Result.Ok();
-    }
-
-    /// <summary>
-    /// Updates the principal customer's bike details.
-    /// </summary>
-    /// <param name="principalBikeType">The updated bike type.</param>
-    /// <param name="principalBikePrice">The updated bike price.</param>
-    /// <returns>A result indicating success or failure.</returns>
+    /// <summary>Updates the principal bike only when the whole proposed service selection remains valid.</summary>
     internal Result UpdatePrincipalBike(BikeType principalBikeType, decimal principalBikePrice)
     {
         if (!CanModifyBookedServices)
@@ -550,23 +435,42 @@ public sealed partial class Booking : IEntity<Guid>
             return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
         }
 
-        var errors = new ValidationErrors();
+        var principal = BookingCustomer.Create(PrincipalCustomer.CustomerId, principalBikeType, principalBikePrice);
+        return principal.IsFailure
+            ? principal.ConvertError()
+            : UpdateServices(new BookingRoom(RoomType, RoomAdditionalCost), principal.Value, CompanionCustomer);
+    }
 
-        var principalCustomerResult = BookingCustomer.Create(
-            PrincipalCustomer.CustomerId,
-            principalBikeType,
-            principalBikePrice);
-
-        if (principalCustomerResult.IsFailure)
+    /// <summary>Applies room and traveler changes atomically after validating their combined price.</summary>
+    internal Result UpdateServices(BookingRoom room, BookingCustomer principalCustomer, BookingCustomer? companionCustomer)
+    {
+        ArgumentNullException.ThrowIfNull(principalCustomer);
+        if (!CanModifyBookedServices)
         {
-            if (principalCustomerResult.Status == ResultStatus.Invalid)
-            {
-                errors.Add(principalCustomerResult);
-            }
-            else
-            {
-                return principalCustomerResult.ConvertError();
-            }
+            return BookingErrors.CannotModifyCancelledOrCompletedBooking(Status);
+        }
+
+        var roomAdditionalCost = NumericSanitizer.SanitizePrice(room.AdditionalCost);
+        var errors = new ValidationErrors();
+        if (!Enum.IsDefined(room.RoomType))
+        {
+            errors.Add(BookingErrors.InvalidRoomType(room.RoomType));
+        }
+
+        if (companionCustomer is not null && principalCustomer.CustomerId == companionCustomer.CustomerId)
+        {
+            errors.Add(BookingErrors.PrincipalAndCompanionCannotBeSame());
+        }
+
+        if (room.RoomType == RoomType.SingleOccupancy && companionCustomer is not null)
+        {
+            errors.Add(BookingErrors.SingleRoomCannotHaveCompanion());
+        }
+
+        var pricing = BookingPriceBreakdown.Create(BasePrice, roomAdditionalCost, principalCustomer.BikePrice, companionCustomer?.BikePrice ?? 0m, Discount);
+        if (pricing.IsFailure)
+        {
+            errors.Add(pricing);
         }
 
         if (errors.HasErrors)
@@ -574,8 +478,10 @@ public sealed partial class Booking : IEntity<Guid>
             return errors.ToResult();
         }
 
-        PrincipalCustomer = principalCustomerResult.Value;
+        RoomType = room.RoomType;
+        RoomAdditionalCost = roomAdditionalCost;
+        PrincipalCustomer = principalCustomer;
+        CompanionCustomer = companionCustomer;
         return Result.Ok();
     }
-
 }

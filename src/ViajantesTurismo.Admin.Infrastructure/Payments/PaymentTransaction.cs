@@ -21,9 +21,9 @@ internal sealed class PaymentTransaction(AdminWriteDbContext context) : IPayment
         {
             context.ChangeTracker.Clear();
             await using var transaction = await context.Database.BeginTransactionAsync(ct);
-            foreach (var key in lockNames.Select(PostgreSqlAdvisoryLockKey.FromUtf8Sha256BigEndian).Distinct().Order())
+            foreach (var key in lockNames.Select(PostgreSqlLockKey.FromIdentity).Distinct().Order())
             {
-                await PostgreSqlTransactionAdvisoryLock.Acquire((NpgsqlConnection)context.Database.GetDbConnection(), (NpgsqlTransaction)transaction.GetDbTransaction(), key, ct);
+                await PostgreSqlTransactionAdvisoryLock.AcquireKey((NpgsqlConnection)context.Database.GetDbConnection(), (NpgsqlTransaction)transaction.GetDbTransaction(), key, ct);
             }
             foreach (var name in lockNames.Where(name => name.StartsWith("admin:booking-finance:", StringComparison.Ordinal)).Order(StringComparer.Ordinal))
             {

@@ -1,12 +1,34 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Behavior;
+using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class QueryServiceReadModelFactsTests
 {
+    [Fact]
+    public async Task Historical_overdiscounted_bookings_remain_readable_without_clamping_the_stored_total()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = QueryServiceReadModelScenario.Create();
+        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(BasePrice: 100, RegularBikePrice: 20)));
+        var booking = await scenario.AddTourWithSingleBooking(tour, ct);
+        tour.UpdateBookingDiscount(booking.Id, DiscountType.Absolute, 119, "Historical discount evidence").IsSuccess.ShouldBeTrue();
+        await scenario.Save(ct);
+        await scenario.PersistHistoricalBookingBasePrice(booking, 1, ct);
+
+        // Act
+        var dto = await scenario.QueryService.GetBookingById(booking.Id, ct);
+
+        // Assert
+        booking.Subtotal.ShouldBe(21m);
+        dto.ShouldNotBeNull().TotalPrice.ShouldBe(-98m);
+        dto.DiscountAmount.ShouldBe(119m);
+    }
+
     [Fact]
     public async Task Tour_read_model_carries_the_domain_capacity_facts()
     {

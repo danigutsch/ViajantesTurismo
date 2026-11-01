@@ -21,7 +21,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+    [Trait(TestTraitNames.CategoryName, "Regression")]
     public void Defaults_schedule_dates_from_the_controlled_utc_business_date()
     {
         // Arrange
@@ -176,8 +176,8 @@ public class AddPageTests : BunitContext
     }
 
     [Theory]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     [InlineData("/api/v1/route")]
     [InlineData("/api/v1/tours-malformed/relative-id")]
     public async Task Successful_submission_preserves_API_prefix_when_tours_path_prefix_does_not_match(
@@ -294,8 +294,8 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Validation_problem_outcome_shows_server_validation_errors()
     {
         // Arrange

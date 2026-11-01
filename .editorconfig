@@ -152,6 +152,9 @@ dotnet_diagnostic.SKSTYLE002.severity = warning
 dotnet_diagnostic.SKSTYLE003.severity = warning
 dotnet_diagnostic.SKSTYLE004.severity = warning
 dotnet_diagnostic.SKSTYLE017.severity = warning
+# Stage the newly introduced exception-doc rule; owner: application maintainers.
+# Promote after the existing exception-documentation backlog is addressed.
+dotnet_diagnostic.SKSTYLE018.severity = suggestion
 dotnet_diagnostic.SKTEST001.severity = warning
 dotnet_diagnostic.SKTEST002.severity = warning
 dotnet_diagnostic.SKTEST003.severity = warning

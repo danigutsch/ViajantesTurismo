@@ -8,6 +8,27 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 [Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class LocalMediaObjectStoreTests
 {
+    [Theory]
+    [InlineData(" ", "images/photo.jpg")]
+    [InlineData("images///", "images/photo.jpg")]
+    [InlineData("ima", "images/photo.jpg")]
+    public async Task Listing_preserves_local_empty_and_trailing_slash_prefix_semantics(string prefix, string expected)
+    {
+        // Arrange
+        using var directory = TemporaryMediaDirectory.Create();
+        Directory.CreateDirectory(Path.Combine(directory.Path, "images"));
+        await File.WriteAllBytesAsync(Path.Combine(directory.Path, "images", "photo.jpg"), [1], TestContext.Current.CancellationToken);
+        var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
+
+        // Act
+        var keys = await store.ListKeys(prefix, TestContext.Current.CancellationToken);
+        var objects = await store.ListObjects(prefix, TestContext.Current.CancellationToken);
+
+        // Assert
+        keys.ShouldBe([expected]);
+        objects.ShouldHaveSingleItem().ObjectKey.ShouldBe(expected);
+    }
+
     [Fact]
     public async Task Put_writes_object_under_configured_media_root()
     {

@@ -52,6 +52,28 @@ Management Web code that calls them. This is a dated evidence record for the rul
 | C2 | `src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs:115,166,179,218` | Throws exceptions for expected business outcomes | ADR-002 | Fixed: `ChangePresentation` and `Publish` return `Result` values from `CatalogTourErrors` |
 | C3 | `src/ViajantesTurismo.Catalog.Application/Media/MediaImageOriginalStoredIntegrationHandler.cs:45-66` | Chooses the next media processing status in the handler | Behavior over state | Fixed: `PublicMediaImage.CompleteProcessing` and `FailProcessing` |
 
+### Value-object follow-up, October 31, 2026
+
+`ContactInfo`, `Address`, and `Discount` now compare their sanitized fields structurally through the existing
+SharedKernel `ValueObject` base. Their factories, private construction, persisted fields, and string comparisons stay
+unchanged. `ProfileValueEqualityTests` first demonstrated separate equivalent instances occupying distinct hash-set
+entries.
+
+`BookingPriceBreakdown` now owns component price limits and the positive discounted-total invariant. The three
+`BookingPricingInvariantTests` first demonstrated room, companion, and bike changes accepting an existing absolute
+discount that exceeded the revised subtotal. Every service change now validates the complete candidate price, and
+`Tour.UpdateBookingDetails` applies the complete selection atomically. `TourPricingInvariantTests` covers both a valid
+combined change whose intermediate room price would fail and rejection without partial changes.
+
+`TourPricing.Create` rejects undefined currency enum values while retaining BRL, EUR, USD, and the existing
+round-away-from-zero price policy. `TourPricingValidationTests` first demonstrated acceptance of undefined values;
+valid-currency and midpoint-rounding cases guard the unchanged behavior.
+
+The Management forms use `BookingPricePreview` to capture their incomplete draft inputs as one immutable display
+value. The preview retains its existing zero clamp and tolerance for unselected options; server-side booking
+acceptance remains a domain responsibility. This distinction avoids a Management-to-Domain dependency and does not
+change the existing tour-price rounding or exact payment-money policies.
+
 ## Domain enum inventory
 
 Twenty-five public enums live in the domain projects. Thirty branch sites exist outside the domain. Most are seed data,

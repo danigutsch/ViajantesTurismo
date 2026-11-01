@@ -6,14 +6,30 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.421.1` at clean library revision
+The proposed candidate is `0.1.0-alpha.vo.20261031.3` at clean library revision
+[`873d6aa4edba461d95b2582d9519110ab40c5035`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/873d6aa4edba461d95b2582d9519110ab40c5035).
+It adds validated object-storage keys and prefixes, typed PostgreSQL advisory lock keys, and stronger
+storage-text validation. The application carries these values internally while retaining its wire
+contracts. The library change is [SharedKernel PR #305](https://github.com/danigutsch/PandaBear.SharedKernel/pull/305).
+
+The candidate was built once locally and staged from the hash-verified local feed. API validation,
+Linux package consumption, and Linux NativeAOT passed; Windows evidence remains pending. It has not
+been published as a GitHub prerelease. CI staging through `--repository` requires separately authorized
+publication of these exact packages and `candidate.json` to `v0.1.0-alpha.vo.20261031.3` before adoption can merge.
+No registry publication or stable promotion is authorized by this pin.
+
+The previous published candidate is `0.1.0-alpha.421.1` at revision
 [`2c9a17f0cdb035bd9d1690547e3877cfe9b71b61`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/2c9a17f0cdb035bd9d1690547e3877cfe9b71b61).
-It adds `ResultTransactionBehavior`, `ITransactionLockDeclaration`, `IAfterCommit` and `IAfterRollback` to
-`PandaBear.SharedKernel.Mediator.EntityFrameworkCore`; the other packages are unchanged in behavior.
-The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.421.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.421.1), built by
-[CI run 41214524810](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41214524810).
-The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
+Its unchanged packages and manifest remain available in
+[GitHub prerelease `v0.1.0-alpha.421.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.421.1)
+for rollback subject to compatibility validation.
+
+`SKSTYLE018`, newly introduced by this candidate, starts at `suggestion` for application adoption.
+Existing exception-documentation guidance remains active; application maintainers will promote the
+diagnostic after documenting the existing backlog. Warnings-as-errors and all previously enforced
+diagnostics remain unchanged. The existing license exceptions for unchanged
+`StreamJsonRpc` `2.25.29` and `Magick.NET-Q8-AnyCPU` `15.0.0` remain restricted to this exact candidate
+version and source revision in `.config/sharedkernel-repo.json`; no package or license exception is added.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
@@ -132,9 +148,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/2c9a17f0cdb035bd9d1690547e3877cfe9b71b61/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/873d6aa4edba461d95b2582d9519110ab40c5035/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`2c9a17f0cdb035bd9d1690547e3877cfe9b71b61`, which equals the `libraryRevision` in
+`873d6aa4edba461d95b2582d9519110ab40c5035`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
 using PandaBear.InputNormalization;
 
@@ -7,7 +8,7 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// Represents a discount applied to a booking.
 /// Value object that encapsulates discount type, amount, and optional reason.
 /// </summary>
-public sealed class Discount
+public sealed class Discount : ValueObject
 {
     private Discount(DiscountType type, decimal amount, string? reason)
     {
@@ -114,5 +115,13 @@ public sealed class Discount
         }
 
         return Result.Ok(new Discount(type, sanitizedAmount, sanitizedReason));
+    }
+
+    /// <inheritdoc />
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Type;
+        yield return Amount;
+        yield return Reason;
     }
 }
