@@ -26,7 +26,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -38,6 +38,60 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
         html.ShouldBeWellFormedHtmlDocument();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Handle_rejects_a_stale_source_and_records_audit_without_sealing()
+    {
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var document = DocumentDraftTestData.Create(now);
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader("CHANGED-SOURCE-VERSION"));
+
+        var result = await handler.Handle(
+            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        document.Status.ShouldBe(DocumentStatus.Approved);
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+    }
+
+    [Fact]
+    public async Task Handle_reports_a_missing_source_and_records_audit_without_sealing()
+    {
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var document = DocumentDraftTestData.Create(now);
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader { SourceMissing = true });
+
+        var result = await handler.Handle(
+            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        document.Status.ShouldBe(DocumentStatus.Approved);
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
     }
 
     [Fact]
@@ -71,7 +125,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork), new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -93,7 +147,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -118,7 +172,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
         var auditContext = DocumentAuditTestData.CreateContext();
 
         // Act
@@ -150,7 +204,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, null!), CancellationToken.None);
 
@@ -193,7 +247,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(document.Id, document);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -218,7 +272,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var auditContext = DocumentAuditTestData.CreateContext();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, auditContext), CancellationToken.None);
@@ -248,7 +302,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var store = new FakeDocumentStore();
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(documentId, auditContext), CancellationToken.None);
@@ -290,11 +344,13 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(previous.Id, previous);
         store.Documents.Add(replacement.Id, replacement);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+        var sourceVersions = new FakeDocumentSourceVersionReader();
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork), sourceVersions);
         var context = DocumentAuditTestData.CreateContext();
         var firstFinalization = await handler.Handle(new FinalizeDocumentCommand(previous.Id, context), CancellationToken.None);
         firstFinalization.IsSuccess.ShouldBeTrue();
         var finalizedBefore = previous.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray();
+        sourceVersions.Version = "SOURCE-VERSION-2";
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id, context), CancellationToken.None);
@@ -322,7 +378,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork), new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -369,7 +425,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(replacement.Id, replacement);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -429,7 +485,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader("SOURCE-VERSION-3"));
 
         // Act
         var result = await handler.Handle(
@@ -472,7 +529,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(replacement.Id, replacement);
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -519,7 +576,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(
@@ -571,7 +629,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(

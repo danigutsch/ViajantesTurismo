@@ -59,6 +59,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<CustomerImportWorkflowService>();
         builder.Services.AddScoped<GenerateContractDraftCommandHandler>();
         builder.Services.AddScoped<DocumentBrandingSource>();
+        builder.Services.AddScoped<IDocumentSourceVersionReader, DocumentSourceVersionReader>();
         builder.Services.AddScoped<DocumentCommandIdempotency>();
         builder.Services.AddScoped<DocumentAuditWriter>();
         builder.Services.AddScoped<BeginDocumentReviewCommandHandler>();

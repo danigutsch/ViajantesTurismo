@@ -603,6 +603,14 @@ public sealed class DocumentDraft : IEntity<Guid>
         return Result.Ok();
     }
 
+    /// <summary>Checks that the source data the draft was generated from is still current.</summary>
+    /// <param name="currentSourceVersion">The version of the current source data.</param>
+    /// <returns>A success result when the versions match; otherwise, a conflict requiring regeneration.</returns>
+    internal Result EnsureSourceIsCurrent(string currentSourceVersion) =>
+        string.Equals(SourceVersion, currentSourceVersion, StringComparison.Ordinal)
+            ? Result.Ok()
+            : DocumentErrors.SourceChangedSinceDraft();
+
     /// <summary>Approves a document under active staff review.</summary>
     internal Result Approve(DateTime now)
     {

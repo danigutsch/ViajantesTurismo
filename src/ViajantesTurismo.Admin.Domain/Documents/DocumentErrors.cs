@@ -14,6 +14,10 @@ public static class DocumentErrors
     public static Result BookingIsNotAccepted() => Result.Conflict(
         detail: "A customer-facing document draft requires a confirmed or completed booking.");
 
+    /// <summary>Returns a conflict when the source data changed after the draft was generated.</summary>
+    public static Result SourceChangedSinceDraft() => Result.Conflict(
+        detail: "The source data changed after this draft was generated. Regenerate the draft and review it again.");
+
     /// <summary>Returns an unclassified-field failure.</summary>
     public static Result UnclassifiedField(string fieldId) => Result.Invalid(
         detail: $"Document field '{fieldId}' must have a privacy classification.",

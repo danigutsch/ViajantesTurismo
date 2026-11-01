@@ -45,6 +45,24 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void EnsureSourceIsCurrent_accepts_the_version_the_draft_was_generated_from()
+    {
+        var draft = DocumentDraftTestData.Create(new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc));
+
+        draft.EnsureSourceIsCurrent(draft.SourceVersion).IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EnsureSourceIsCurrent_rejects_a_changed_source_version_as_conflict()
+    {
+        var draft = DocumentDraftTestData.Create(new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc));
+
+        var result = draft.EnsureSourceIsCurrent("CHANGED-SOURCE-VERSION");
+
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+    }
+
+    [Fact]
     public void UpdateField_allows_only_classified_editable_fields()
     {
         // Arrange

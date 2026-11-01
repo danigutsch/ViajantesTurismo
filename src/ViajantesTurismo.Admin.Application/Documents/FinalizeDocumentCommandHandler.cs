@@ -8,7 +8,8 @@ public sealed class FinalizeDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    DocumentAuditWriter documentAuditWriter)
+    DocumentAuditWriter documentAuditWriter,
+    IDocumentSourceVersionReader sourceVersionReader)
 {
     /// <summary>Finalizes the artifact and supersedes older finalized revisions only after success.</summary>
     public async Task<Result> Handle(FinalizeDocumentCommand command, CancellationToken ct)
@@ -38,6 +39,32 @@ public sealed class FinalizeDocumentCommandHandler(
         if (document.RequiresPaymentInstructionWorkflow)
         {
             return Domain.Payments.FinancialErrors.Invalid("paymentInstructionLifecycle");
+        }
+
+        var sourceVersionResult = await sourceVersionReader.Read(document.BookingId, ct);
+        if (sourceVersionResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                sourceVersionResult.ConvertError(),
+                auditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.BookingNotFound,
+                ct);
+        }
+
+        var freshnessResult = lineage.EnsureSourceIsCurrent(document.Id, sourceVersionResult.Value);
+        if (freshnessResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                freshnessResult,
+                auditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
         }
 
         var result = lineage.Finalize(document.Id, DocumentArtifactRenderer.Render(document), now, auditContext);

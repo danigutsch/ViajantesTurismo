@@ -207,10 +207,13 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
                     DocumentAuditReasonCode.BrandingUnavailable,
                 DocumentAuditOperation.Read => reasonCode == DocumentAuditReasonCode.DocumentNotFound,
                 DocumentAuditOperation.BeginReview or
-                    DocumentAuditOperation.RequestChanges or
-                    DocumentAuditOperation.Approve or
-                    DocumentAuditOperation.Finalize => reasonCode is
+                    DocumentAuditOperation.RequestChanges => reasonCode is
                         DocumentAuditReasonCode.DocumentNotFound or DocumentAuditReasonCode.StateConflict,
+                DocumentAuditOperation.Approve or
+                    DocumentAuditOperation.Finalize => reasonCode is
+                        DocumentAuditReasonCode.DocumentNotFound or
+                        DocumentAuditReasonCode.BookingNotFound or
+                        DocumentAuditReasonCode.StateConflict,
                 DocumentAuditOperation.Void => reasonCode is
                     DocumentAuditReasonCode.DocumentNotFound or
                     DocumentAuditReasonCode.ValidationRejected or

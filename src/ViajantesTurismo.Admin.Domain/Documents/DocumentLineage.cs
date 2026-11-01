@@ -264,6 +264,13 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
             DocumentAuditOperation.UpdateField,
             auditContext);
 
+    /// <summary>Checks that the source data one revision was generated from is still current.</summary>
+    /// <param name="documentId">The document revision identifier.</param>
+    /// <param name="currentSourceVersion">The version of the current source data.</param>
+    /// <returns>A success result when the revision is fresh; otherwise, a conflict requiring regeneration.</returns>
+    public Result EnsureSourceIsCurrent(Guid documentId, string currentSourceVersion) =>
+        GetRevision(documentId)?.EnsureSourceIsCurrent(currentSourceVersion) ?? DocumentErrors.DocumentNotFound();
+
     /// <summary>Approves one revision under active staff review.</summary>
     public Result Approve(Guid documentId, DateTime now, DocumentAuditContext auditContext) =>
         Apply(documentId, revision => revision.Approve(now), DocumentAuditOperation.Approve, auditContext);
