@@ -149,6 +149,7 @@ public sealed class RegenerateDocumentDraftCommandHandler(
 
                 return Result.Ok(replacementResult.Value.Id);
             },
+            lineage.Id,
             current.Id,
             current.BookingId,
             current.Revision);

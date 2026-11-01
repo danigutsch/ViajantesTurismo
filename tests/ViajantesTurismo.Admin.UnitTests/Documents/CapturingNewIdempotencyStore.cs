@@ -86,15 +86,30 @@ internal sealed class CapturingNewIdempotencyStore(
         get; private set;
     }
 
+    /// <summary>Retention owner passed to the last <c>TryStart</c>, or null when none was passed.</summary>
+    internal string? StartedRetentionOwner
+    {
+        get; private set;
+    }
+
     /// <summary>Captures the arguments, then reports the competing entry as already started or starts a new entry.</summary>
     public ValueTask<IdempotencyStartResult> TryStart(
         IdempotencyOperation operation,
         DateTimeOffset startedAt,
         TimeSpan? lockDuration,
+        CancellationToken ct) => TryStart(operation, startedAt, lockDuration, retentionOwner: null, ct);
+
+    /// <summary>Captures the arguments including the retention owner, then reports the competing entry or starts a new entry.</summary>
+    public ValueTask<IdempotencyStartResult> TryStart(
+        IdempotencyOperation operation,
+        DateTimeOffset startedAt,
+        TimeSpan? lockDuration,
+        string? retentionOwner,
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         TryStartCallCount++;
+        StartedRetentionOwner = retentionOwner;
         StartedOperation = operation;
         StartedAt = startedAt;
         LockDuration = lockDuration;

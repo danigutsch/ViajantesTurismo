@@ -182,6 +182,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
         audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBe(bookingId);
         audit.DocumentRevision.ShouldBeNull();
+        idempotencyStore.StartedRetentionOwner.ShouldBe(store.AddedLineages.ShouldHaveSingleItem().Id.ToString("N"));
         idempotencyStore.StageCompletionCallCount.ShouldBe(1);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(2);
     }
