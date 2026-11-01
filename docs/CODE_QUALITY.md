@@ -227,6 +227,12 @@ enabled) and follows the latest built-in SDK analyzer wave with `AnalysisLevel=l
 
 See `Directory.Build.props` for complete build configuration.
 
+#### Format Verification
+
+CI runs `dotnet format ViajantesTurismo.slnx --no-restore --verify-no-changes` in the `Format` job. Some
+style rules, such as IDE0001 and IDE0002, are never enforced by the build, so run the same command before
+pushing. See `docs/ci/quality-gates.md` for the rationale.
+
 ### Guard-Clause Analyzer Enforcement
 
 Enable guard checks for production code.
