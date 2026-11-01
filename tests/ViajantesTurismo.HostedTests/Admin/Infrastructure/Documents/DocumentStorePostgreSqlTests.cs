@@ -435,6 +435,61 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task Concurrent_finalization_of_one_revision_commits_exactly_once()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentDraftInfrastructureTestData.CreateApprovedLineage(now);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+        var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
+
+        // Act
+        var errors = await Scenario.SaveLineageMutationsConcurrently(
+            documentId,
+            loaded => loaded.Finalize(documentId, "first"u8.ToArray(), now.AddMinutes(1), auditContext),
+            loaded => loaded.Finalize(documentId, "second"u8.ToArray(), now.AddMinutes(2), auditContext),
+            TestContext.Current.CancellationToken);
+        var persisted = await Scenario.GetDocumentById(documentId, TestContext.Current.CancellationToken);
+
+        // Assert
+        errors.Count(error => error is null).ShouldBe(1);
+        errors.ShouldHaveSingleItem(error => error is DocumentRevisionConflictException or DbUpdateConcurrencyException);
+        var document = persisted.ShouldNotBeNull();
+        document.Status.ShouldBe(DocumentStatus.Finalized);
+        var artifact = document.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray();
+        artifact.ShouldBeOneOf("first"u8.ToArray(), "second"u8.ToArray());
+    }
+
+    [Fact]
+    public async Task Concurrent_field_edit_and_finalization_never_commit_together()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentDraftInfrastructureTestData.CreateApprovedLineage(now);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+        var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
+
+        // Act
+        var errors = await Scenario.SaveLineageMutationsConcurrently(
+            documentId,
+            loaded => loaded.UpdateField(documentId, "greeting", "Edited greeting", now.AddMinutes(1), auditContext),
+            loaded => loaded.Finalize(documentId, "artifact"u8.ToArray(), now.AddMinutes(2), auditContext),
+            TestContext.Current.CancellationToken);
+        var persisted = await Scenario.GetDocumentById(documentId, TestContext.Current.CancellationToken);
+
+        // Assert
+        errors.Count(error => error is null).ShouldBe(1);
+        errors.ShouldHaveSingleItem(error => error is DocumentRevisionConflictException or DbUpdateConcurrencyException);
+        var document = persisted.ShouldNotBeNull();
+        var editCommitted = errors[0] is null;
+        document.Status.ShouldBe(editCommitted ? DocumentStatus.InReview : DocumentStatus.Finalized);
+        document.Fields.Where(field => field.FieldId == "greeting").ShouldHaveSingleItem().Value
+            .ShouldBe(editCommitted ? "Edited greeting" : "Dear customer");
+    }
+
+    [Fact]
     public async Task Concurrent_same_key_generation_persists_one_success_one_conflict_and_no_replay_audit()
     {
         // Arrange

@@ -300,6 +300,28 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await Task.WhenAll(firstSave, secondSave);
     }
 
+    /// <summary>Races two mutations of one lineage and returns the conflict each save captured, or <see langword="null" /> when it succeeded.</summary>
+    public async Task<Exception?[]> SaveLineageMutationsConcurrently(
+        Guid documentId,
+        Func<DocumentLineage, Result> firstMutation,
+        Func<DocumentLineage, Result> secondMutation,
+        CancellationToken ct)
+    {
+        var barrier = new DocumentSaveBarrierInterceptor();
+        var firstSave = CaptureConcurrentLineageMutation(documentId, firstMutation, barrier, ct);
+        var secondSave = CaptureConcurrentLineageMutation(documentId, secondMutation, barrier, ct);
+        try
+        {
+            await barrier.BothSaving.WaitAsync(TimeSpan.FromSeconds(10), ct);
+        }
+        finally
+        {
+            barrier.Release();
+        }
+
+        return await Task.WhenAll(firstSave, secondSave);
+    }
+
     /// <summary>Races two generation attempts on the same idempotency key and returns both outcomes plus the replayed result.</summary>
     public async Task<(Result<Guid>[] Attempts, Result<Guid> Replay)> GenerateWithSameKeyConcurrently(
         DocumentDraft first,
@@ -751,6 +773,20 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             createdAt,
             DocumentDraftInfrastructureTestData.CreateAuditContext());
         replacement.IsSuccess.ShouldBeTrue();
+        loadedLineage.ClearDomainEvents();
+        return await CaptureExpectedConflict(() => dbContext.SaveEntities(ct));
+    }
+
+    private async Task<Exception?> CaptureConcurrentLineageMutation(
+        Guid documentId,
+        Func<DocumentLineage, Result> mutation,
+        DocumentSaveBarrierInterceptor barrier,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext(saveBarrier: barrier);
+        var lineage = await new DocumentStore(dbContext).GetByDocumentId(documentId, ct);
+        var loadedLineage = lineage.ShouldNotBeNull();
+        mutation(loadedLineage).IsSuccess.ShouldBeTrue();
         loadedLineage.ClearDomainEvents();
         return await CaptureExpectedConflict(() => dbContext.SaveEntities(ct));
     }
