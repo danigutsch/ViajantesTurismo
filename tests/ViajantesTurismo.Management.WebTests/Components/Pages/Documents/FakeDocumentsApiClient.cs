@@ -50,6 +50,21 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         get; set;
     }
 
+    /// <summary>Ids received by acknowledge-changes calls.</summary>
+    public List<Guid> AcknowledgedDocumentIds { get; } = [];
+
+    /// <summary>Document returned by an acknowledge-changes call instead of the stored one.</summary>
+    public GetDocumentDto? AcknowledgedDocument
+    {
+        get; set;
+    }
+
+    /// <summary>When set, an acknowledge-changes call returns this failure kind.</summary>
+    public HttpOutcomeKind? AcknowledgeFailure
+    {
+        get; set;
+    }
+
     /// <summary>Id passed to the last begin-review call.</summary>
     public Guid? LastBeginReviewDocumentId
     {
@@ -161,8 +176,13 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
 
     /// <inheritdoc />
-    public Task<HttpOutcome<GetDocumentDto>> AcknowledgeChanges(Guid documentId, CancellationToken ct) =>
-        Task.FromResult(DocumentOutcome(GetRequiredDocument(documentId)));
+    public Task<HttpOutcome<GetDocumentDto>> AcknowledgeChanges(Guid documentId, CancellationToken ct)
+    {
+        AcknowledgedDocumentIds.Add(documentId);
+        return Task.FromResult(AcknowledgeFailure is { } failure
+            ? Failed<GetDocumentDto>(failure)
+            : DocumentOutcome(AcknowledgedDocument ?? GetRequiredDocument(documentId)));
+    }
 
     /// <inheritdoc />
     public Task<HttpOutcome<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)

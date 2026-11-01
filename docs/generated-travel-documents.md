@@ -308,6 +308,9 @@ requirement, keeps the recorded reasons, and writes an `AcknowledgeChanges` audi
 code `ManualAcknowledgement`; rejected attempts record `DocumentNotFound` or `StateConflict`.
 Acknowledging a revision with nothing pending returns `409 Conflict`. The document read model exposes
 `requiresManualReview` so reviewers can see the pending requirement.
+While the revision is `InReview` and the requirement is pending, the Management Web document page shows a
+"Manual review required" notice with an **Acknowledge changes** button and disables **Approve**; a
+rejected acknowledgement shows the page's error alert.
 
 ## Privacy and security rules
 
