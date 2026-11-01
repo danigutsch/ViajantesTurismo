@@ -22,23 +22,23 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.vo.20261031.3, )",
-        "resolved": "0.1.0-alpha.vo.20261031.3",
-        "contentHash": "PoECCcOFSEkRqo+fM4DNJ6hGMu2iM27vZgzbjk1XHgR65kDnJX9ZZbc7WoTmsCrpHS/DIShwCQGdT9gEyb/h0A=="
+        "requested": "[0.1.0-alpha.443.1, )",
+        "resolved": "0.1.0-alpha.443.1",
+        "contentHash": "NNqqDU1/F1rY4qekjOJXZWSqm9Fe3N8E0MuvwmCTQ61/CKI9eRJ2coikRJUtm2Vh8uJTHi2YJ68/UQkN8DLocQ=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.vo.20261031.3, )",
-        "resolved": "0.1.0-alpha.vo.20261031.3",
-        "contentHash": "kzot4FpmDALhvtVzaKHwavpjmmvf8fpq0IQ68s5rlCpaRi0GqsvZKYQTi6//tHJ9PXtFGom2EZSAF9DzArwQAw=="
+        "requested": "[0.1.0-alpha.443.1, )",
+        "resolved": "0.1.0-alpha.443.1",
+        "contentHash": "efHOVYcO2VBBZx8rmptsIO7TWI3xzp9m7q0V7+nYoYX7Rng6qmtWsetrpxNhPy7WsA8bLo+I/f9Eb2w/DpsTXQ=="
       },
       "PandaBear.SharedKernel.Tabular": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.vo.20261031.3, )",
-        "resolved": "0.1.0-alpha.vo.20261031.3",
-        "contentHash": "nbeRPV5KpHJHLbYh2Tz9SejvBZmlvL+L3amaV9uNvXW04/SrqejQ62aYcSb0cVy7UKJFKehL5CHdRsPxstD0Ag==",
+        "requested": "[0.1.0-alpha.443.1, )",
+        "resolved": "0.1.0-alpha.443.1",
+        "contentHash": "VsyVKOe1GQs7ZX4agxMHzu+rO0KY9o7D2+mb9uV1UQlzsj4fpJeUlcFq/qfckNvRStfQ+Il5SVACmbZqKW2vGQ==",
         "dependencies": {
-          "PandaBear.SharedKernel.Results": "0.1.0-alpha.vo.20261031.3"
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.443.1"
         }
       },
       "BenchmarkDotNet.Annotations": {
@@ -198,9 +198,9 @@
       },
       "PandaBear.SharedKernel.Results": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.vo.20261031.3, )",
-        "resolved": "0.1.0-alpha.vo.20261031.3",
-        "contentHash": "Lww2PiVEzq52vyjHGhSuzsP6jdQchzGdZbmLKO0+bjRqXagFTVcNE935wp9YNINT3l+vIlC+FOe1c7qQ/93eyw=="
+        "requested": "[0.1.0-alpha.443.1, )",
+        "resolved": "0.1.0-alpha.443.1",
+        "contentHash": "TvAl1SYGcFmYUQ+FRBxAQQxK9lbUFmDa9KWmmoME7SXxtwkGXKv2a7+KQk3bfSb7sKxpNjin5LUmgIlhd+74Dw=="
       }
     }
   }

@@ -6,17 +6,17 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The proposed candidate is `0.1.0-alpha.vo.20261031.3` at clean library revision
-[`873d6aa4edba461d95b2582d9519110ab40c5035`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/873d6aa4edba461d95b2582d9519110ab40c5035).
+The proposed candidate is `0.1.0-alpha.443.1` at clean library revision
+[`c5c6f41ae061dfc85d1962d441e54274c1d29c68`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/c5c6f41ae061dfc85d1962d441e54274c1d29c68).
 It adds validated object-storage keys and prefixes, typed PostgreSQL advisory lock keys, and stronger
-storage-text validation. The application carries these values internally while retaining its wire
-contracts. The library change is [SharedKernel PR #305](https://github.com/danigutsch/PandaBear.SharedKernel/pull/305).
+storage-text validation. The application carries these values internally while retaining its wire contracts.
 
-The candidate was built once locally and staged from the hash-verified local feed. API validation,
-Linux package consumption, and Linux NativeAOT passed; Windows evidence remains pending. It has not
-been published as a GitHub prerelease. CI staging through `--repository` requires separately authorized
-publication of these exact packages and `candidate.json` to `v0.1.0-alpha.vo.20261031.3` before adoption can merge.
-No registry publication or stable promotion is authorized by this pin.
+The exact 90 packages and manifest come from
+[successful CI run 41310801945](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41310801945).
+Linux and Windows package consumption and NativeAOT evidence from that run is merged into the pin.
+Application compatibility is recorded separately. CI stages this pin through GitHub prerelease
+`v0.1.0-alpha.443.1`, which must contain these unchanged packages and `candidate.json`.
+Publishing that prerelease requires separate authorization; registry publication and stable promotion remain deferred.
 
 `SKSTYLE018`, newly introduced by this candidate, starts at `suggestion` for application adoption.
 Existing exception-documentation guidance remains active; application maintainers will promote the
@@ -25,7 +25,10 @@ diagnostics remain unchanged. The existing license exceptions for unchanged `Str
 and `Magick.NET-Q8-AnyCPU` `15.0.0` remain restricted to this exact candidate version and source revision
 in `.config/sharedkernel-repo.json`; no package or license exception is added.
 
-The previous published candidate is `0.1.0-alpha.425.1` at clean library revision
+Candidate `0.1.0-alpha.439.1` at source `945d78101108f3e8f4841753fc4a6adcc9916424` adds retention purge
+scope filtering and retains the earlier storage API. Validated storage keys require the proposed candidate.
+
+The earlier published candidate is `0.1.0-alpha.425.1` at clean library revision
 [`c82b4469c099604587ed8314709ad30686f18b0c`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/c82b4469c099604587ed8314709ad30686f18b0c).
 It adds a retention owner to the idempotency packages: `IIdempotencyStore.TryStart` takes an optional retention owner and
 `IIdempotencyRetentionStore.PurgeExpired` retains entries of held owners and unattributed entries of tracked scopes; the other
@@ -133,7 +136,7 @@ those changes, and record compatibility using:
 
 ```sh
 dotnet tool run sharedkernel-version -- verify-consumer --candidate .local/sharedkernel-feed/candidate.json -- \
-  bash -c 'dotnet tool restore && dotnet tool run sharedkernel-ci -- openapi generate && dotnet test --solution ViajantesTurismo.slnx -c Release'
+  bash -c 'dotnet tool restore && dotnet restore ViajantesTurismo.slnx --locked-mode && dotnet tool run sharedkernel-ci -- openapi generate && dotnet test --solution ViajantesTurismo.slnx -c Release'
 ```
 
 The example uses Bash on Unix. Run tool restore and OpenAPI generation inside the verified command,
@@ -158,9 +161,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/873d6aa4edba461d95b2582d9519110ab40c5035/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/c5c6f41ae061dfc85d1962d441e54274c1d29c68/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`873d6aa4edba461d95b2582d9519110ab40c5035`, which equals the `libraryRevision` in
+`c5c6f41ae061dfc85d1962d441e54274c1d29c68`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 
