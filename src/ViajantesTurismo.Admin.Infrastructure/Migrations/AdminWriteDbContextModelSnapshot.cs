@@ -515,8 +515,20 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<DateTime?>("FinalizedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("ManualReviewReasons")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasDefaultValue("None");
+
                     b.Property<Guid?>("ReplacesDocumentId")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("RequiresManualReview")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<DateTime?>("RetentionExpiresAt")
                         .HasColumnType("timestamp with time zone");

@@ -38,6 +38,9 @@ public static class DocumentLimits
     /// <summary>The maximum persisted void reason code length.</summary>
     public const int MaxVoidReasonLength = 64;
 
+    /// <summary>The maximum persisted manual review reasons length.</summary>
+    public const int MaxManualReviewReasonsLength = 64;
+
     /// <summary>The retention period for unfinalized drafts.</summary>
     public const int DraftRetentionDays = 30;
 
