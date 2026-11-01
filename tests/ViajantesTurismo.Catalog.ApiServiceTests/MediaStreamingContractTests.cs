@@ -70,12 +70,7 @@ public sealed class MediaStreamingContractTests
         var stream = scenario.ObjectStore.OpenedStreams.ShouldHaveSingleItem();
         await stream.StalledReadStarted.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         response.Dispose();
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(10));
-        while (!stream.IsDisposed)
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
-        }
+        await stream.Disposed.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         // Assert
         stream.StalledReadWasCancelled.ShouldBeTrue();

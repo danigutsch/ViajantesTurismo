@@ -1,0 +1,22 @@
+<button type="button" class="btn btn-sm btn-outline-danger" aria-label="Release hold @HoldId" @ref="_button" @onclick="OnRelease">Release</button>
+
+@code {
+    private ElementReference _button;
+
+    [Parameter, EditorRequired]
+    public Guid HoldId { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback OnRelease { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<ElementReference> OnReady { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await OnReady.InvokeAsync(_button);
+        }
+    }
+}

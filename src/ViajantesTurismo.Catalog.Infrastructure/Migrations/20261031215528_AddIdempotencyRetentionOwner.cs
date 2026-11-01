@@ -5,7 +5,7 @@
 namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCatalogIdempotencyRetentionOwner : Migration
+    public partial class AddIdempotencyRetentionOwner : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -19,6 +19,24 @@ internal static class DocumentAuditTestData
         FakeDocumentAuditStore auditStore,
         FakeUnitOfWork unitOfWork) => new(auditStore, unitOfWork, TimeProvider.System);
 
+    /// <summary>Creates a hold place audit record for a document with fixed actor, correlation and time.</summary>
+    public static PandaBear.Results.Result<DocumentAuditRecord> CreateHoldRecord(
+        DocumentAuditOutcome outcome,
+        DocumentAuditReasonCode reasonCode,
+        Guid? holdId,
+        string? basis) => DocumentAuditRecord.Create(
+            "actor-0001",
+            Guid.CreateVersion7(),
+            null,
+            null,
+            DocumentAuditOperation.PlaceHold,
+            outcome,
+            reasonCode,
+            "9a3ca841b4354928861c660a6e4e1b99",
+            new DateTime(2026, 7, 16, 8, 30, 0, DateTimeKind.Utc),
+            holdId,
+            basis);
+
     /// <summary>Creates a purge command with the fixed audit context.</summary>
     public static PurgeExpiredDocumentAuditsCommand CreatePurgeCommand() => new(CreateContext());
 

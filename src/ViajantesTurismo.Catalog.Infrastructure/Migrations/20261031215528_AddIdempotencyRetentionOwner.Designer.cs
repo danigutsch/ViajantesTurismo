@@ -13,8 +13,8 @@ using ViajantesTurismo.Catalog.Infrastructure;
 namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20261031221313_AddCatalogIdempotencyRetentionOwner")]
-    partial class AddCatalogIdempotencyRetentionOwner
+    [Migration("20261031215528_AddIdempotencyRetentionOwner")]
+    partial class AddIdempotencyRetentionOwner
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -336,11 +336,10 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ContentKey")
+                    b.Property<string>("Key")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("Key");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("PublicationState")
                         .IsRequired()
@@ -352,9 +351,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContentKey")
-                        .IsUnique()
-                        .HasDatabaseName("IX_PublicContent_Key");
+                    b.HasIndex("Key")
+                        .IsUnique();
 
                     b.ToTable("PublicContent", (string)null);
                 });

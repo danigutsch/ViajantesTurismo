@@ -161,7 +161,13 @@ else
     private void ShowSummary() => _summaryItems = ValidationSummaryItems.From(FormContext, FieldIds);
 
     /// <inheritdoc />
-    public void Dispose() => _binder?.Dispose();
+    public void Dispose()
+    {
+        _lifetime.Cancel();
+        _binder?.Dispose();
+    }
+
+    private readonly CancellationTokenSource _lifetime = new();
 
     private string? _entityTag;
     private bool _loading = true;
@@ -214,14 +220,18 @@ else
         {
             var file = args.File;
             await using var content = file.OpenReadStream(MaxLogoUploadBytes);
-            var uploaded = await BrandingApi.UploadLogo(content, file.ContentType, _entityTag, CancellationToken.None);
+            var uploaded = await BrandingApi.UploadLogo(content, file.ContentType, _entityTag, _lifetime.Token);
             await ApplyLogoOutcome(uploaded, "Logo uploaded.");
+        }
+        catch (OperationCanceledException)
+        {
+            return;
         }
         catch (IOException)
         {
             _logoError = LogoTooLargeMessage;
         }
-        catch (InvalidOperationException)
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or FormatException)
         {
             _logoError = UserFacingErrorMessage.ForOperation("upload the logo");
         }
@@ -244,8 +254,12 @@ else
         _uploading = true;
         try
         {
-            var removed = await BrandingApi.RemoveLogo(_entityTag, CancellationToken.None);
+            var removed = await BrandingApi.RemoveLogo(_entityTag, _lifetime.Token);
             await ApplyLogoOutcome(removed, "Logo removed.");
+        }
+        catch (OperationCanceledException)
+        {
+            return;
         }
         finally
         {
@@ -272,7 +286,7 @@ else
             return;
         }
 
-        var reloaded = await BrandingApi.GetSettings(CancellationToken.None);
+        var reloaded = await BrandingApi.GetSettings(_lifetime.Token);
         if (reloaded is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
         {
             _model.LogoUri = document.Settings.LogoUri?.OriginalString ?? string.Empty;

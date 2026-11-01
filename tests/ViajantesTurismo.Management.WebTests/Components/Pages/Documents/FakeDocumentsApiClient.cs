@@ -86,6 +86,48 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         get; set;
     }
 
+    /// <summary>Holds returned by a list-holds call.</summary>
+    public List<GetDocumentHoldDto> Holds { get; } = [];
+
+    /// <summary>When set, a hold placement returns this failure kind instead of creating a hold.</summary>
+    public HttpOutcomeKind? PlaceHoldFailure
+    {
+        get; set;
+    }
+
+    /// <summary>When set, a hold release returns this failure kind instead of releasing.</summary>
+    public HttpOutcomeKind? ReleaseHoldFailure
+    {
+        get; set;
+    }
+
+    /// <summary>When set, a list-holds call returns this failure kind.</summary>
+    public HttpOutcomeKind? ListHoldsFailure
+    {
+        get; set;
+    }
+
+    /// <summary>Requests received by place-hold calls.</summary>
+    public List<(Guid DocumentId, CreateDocumentHoldDto Dto)> PlacedHolds { get; } = [];
+
+    /// <summary>Requests received by release-hold calls.</summary>
+    public List<(Guid DocumentId, Guid HoldId, ReleaseDocumentHoldDto Dto)> ReleasedHolds { get; } = [];
+
+    /// <summary>Queries received by overview calls.</summary>
+    public List<DocumentHoldOverviewQuery> OverviewQueries { get; } = [];
+
+    /// <summary>Handler that answers overview calls; the default returns an empty page.</summary>
+    public Func<DocumentHoldOverviewQuery, GetDocumentHoldOverviewPageDto>? OverviewHandler
+    {
+        get; set;
+    }
+
+    /// <summary>When set, an overview call returns this failure kind.</summary>
+    public HttpOutcomeKind? OverviewFailure
+    {
+        get; set;
+    }
+
     /// <summary>Stores a document, keyed by its id, for later lookups.</summary>
     public void AddDocument(GetDocumentDto document) => _documents.Add(document.Id, document);
 
@@ -151,6 +193,64 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
         DownloadArtifactHandler is null
             ? Task.FromResult(Artifact)
             : DownloadArtifactHandler(documentId, ct);
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetDocumentHoldDto>> PlaceHold(Guid documentId, CreateDocumentHoldDto dto, CancellationToken ct)
+    {
+        PlacedHolds.Add((documentId, dto));
+        if (PlaceHoldFailure is { } failure)
+        {
+            return Task.FromResult(Failed<GetDocumentHoldDto>(failure));
+        }
+
+        var hold = DocumentHoldTestData.Create(basis: dto.Basis, purposeCode: dto.PurposeCode, authorityReference: dto.AuthorityReference);
+        Holds.Add(hold);
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, hold));
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<IReadOnlyList<GetDocumentHoldDto>>> ListHolds(Guid documentId, CancellationToken ct) =>
+        Task.FromResult(ListHoldsFailure is { } failure
+            ? Failed<IReadOnlyList<GetDocumentHoldDto>>(failure)
+            : HttpOutcomeMapper.Succeeded<IReadOnlyList<GetDocumentHoldDto>>(HttpStatusCode.OK, [.. Holds]));
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetDocumentHoldDto>> ReleaseHold(Guid documentId, Guid holdId, ReleaseDocumentHoldDto dto, CancellationToken ct)
+    {
+        ReleasedHolds.Add((documentId, holdId, dto));
+        if (ReleaseHoldFailure is { } failure)
+        {
+            return Task.FromResult(Failed<GetDocumentHoldDto>(failure));
+        }
+
+        var index = Holds.FindIndex(hold => hold.Id == holdId);
+        var released = Holds[index] with
+        {
+            IsRestraining = false,
+            ReleasedBy = "actor-release",
+            ReleasedAt = TimeProvider.System.GetUtcNow(),
+            ReleaseReasonCode = dto.ReasonCode
+        };
+        Holds[index] = released;
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, released));
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetDocumentHoldOverviewPageDto>> ListHoldOverview(DocumentHoldOverviewQuery query, CancellationToken ct)
+    {
+        OverviewQueries.Add(query);
+        if (OverviewFailure is { } failure)
+        {
+            return Task.FromResult(Failed<GetDocumentHoldOverviewPageDto>(failure));
+        }
+
+        var page = OverviewHandler?.Invoke(query)
+            ?? new GetDocumentHoldOverviewPageDto { Items = [], Page = query.Page, PageSize = query.PageSize, HasMore = false };
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, page));
+    }
+
+    private static HttpOutcome<T> Failed<T>(HttpOutcomeKind kind) where T : class =>
+        HttpOutcomeMapper.Status<T>(kind, kind == HttpOutcomeKind.Forbidden ? HttpStatusCode.Forbidden : HttpStatusCode.BadRequest);
 
     private GetDocumentDto GetRequiredDocument(Guid id) =>
         _documents.GetValueOrDefault(id) ?? throw new InvalidOperationException("The configured document was not found.");

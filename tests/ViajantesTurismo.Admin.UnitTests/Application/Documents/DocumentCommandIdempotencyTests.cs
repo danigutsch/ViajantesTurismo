@@ -60,6 +60,7 @@ public sealed class DocumentCommandIdempotencyTests
             Guid.CreateVersion7(), DocumentAuditTestData.CreateContext(),
             IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
         var mutationWasInvoked = false;
+        var lineageId = Guid.CreateVersion7();
 
         // Act
         Func<Task> action = async () => await coordinator.Execute(
@@ -68,7 +69,7 @@ public sealed class DocumentCommandIdempotencyTests
                 mutationWasInvoked = true;
                 await cancellation.CancelAsync();
                 return Result.Ok(Guid.CreateVersion7());
-            }, null, command.BookingId, null), cancellation.Token);
+            }, lineageId, null, command.BookingId, null), cancellation.Token);
         var exception = await action.ShouldThrow<OperationCanceledException>();
 
         // Assert
@@ -123,6 +124,7 @@ public sealed class DocumentCommandIdempotencyTests
             Guid.CreateVersion7(), DocumentAuditTestData.CreateContext(),
             IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
         var documentId = Guid.CreateVersion7();
+        var lineageId = Guid.CreateVersion7();
         var ownershipCountBeforePreparation = -1;
         var ownershipCountAtMutation = -1;
 
@@ -134,7 +136,7 @@ public sealed class DocumentCommandIdempotencyTests
             {
                 ownershipCountAtMutation = store.TryStartCallCount;
                 return Task.FromResult(Result.Ok(documentId));
-            }, null, command.BookingId, null);
+            }, lineageId, null, command.BookingId, null);
         }, CancellationToken.None);
 
         // Assert
@@ -144,6 +146,7 @@ public sealed class DocumentCommandIdempotencyTests
         ownershipCountAtMutation.ShouldBe(1);
         var key = DocumentCommandIdempotency.DigestKey(command.IdempotencyKey);
         store.StartedOperation.ShouldBe(new IdempotencyOperation(command.Scope, key));
+        store.StartedRetentionOwner.ShouldBe(lineageId.ToString("N"));
         store.StagedResultFingerprint.ShouldBe($"{RequestFingerprint}:{documentId:N}");
         store.WasCompletionStagedBeforeSave.ShouldBeTrue();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
@@ -225,6 +228,7 @@ public sealed class DocumentCommandIdempotencyTests
             scope,
             key,
             RequestFingerprint,
+            Guid.CreateVersion7(),
             () =>
             {
                 operationCallCount++;
@@ -271,6 +275,7 @@ public sealed class DocumentCommandIdempotencyTests
             scope,
             key,
             RequestFingerprint,
+            Guid.CreateVersion7(),
             () =>
             {
                 operationWasInvoked = true;
@@ -301,6 +306,7 @@ public sealed class DocumentCommandIdempotencyTests
             scope,
             key,
             RequestFingerprint,
+            Guid.CreateVersion7(),
             () =>
             {
                 operationCallCount++;
@@ -343,6 +349,7 @@ public sealed class DocumentCommandIdempotencyTests
             scope,
             key,
             RequestFingerprint,
+            Guid.CreateVersion7(),
             () =>
             {
                 operationWasInvoked = true;
@@ -376,6 +383,7 @@ public sealed class DocumentCommandIdempotencyTests
             scope,
             default,
             string.Empty,
+            Guid.CreateVersion7(),
             () =>
             {
                 operationCallCount++;
@@ -447,6 +455,7 @@ public sealed class DocumentCommandIdempotencyTests
             scope,
             key,
             RequestFingerprint,
+            Guid.CreateVersion7(),
             () =>
             {
                 operationWasInvoked = true;

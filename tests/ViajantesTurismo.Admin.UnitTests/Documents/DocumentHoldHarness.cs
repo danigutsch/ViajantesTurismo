@@ -1,4 +1,6 @@
+using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
+using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
@@ -9,6 +11,9 @@ internal sealed class DocumentHoldHarness
     /// <summary>The synthetic actor id used by default.</summary>
     public const string ActorId = "actor-0001";
 
+    /// <summary>The synthetic correlation id used by default.</summary>
+    public const string CorrelationId = "9a3ca841b4354928861c660a6e4e1b99";
+
     private DocumentHoldHarness(DateTimeOffset now)
     {
         Now = now;
@@ -18,9 +23,13 @@ internal sealed class DocumentHoldHarness
         Query.LineageByDocument[DocumentId] = LineageId;
         UnitOfWork = new FakeUnitOfWork();
         Transaction = new FakeDocumentDispositionTransaction();
-        Place = new PlaceDocumentHoldCommandHandler(Query, Store, UnitOfWork, Transaction, Clock);
-        Release = new ReleaseDocumentHoldCommandHandler(Query, Store, UnitOfWork, Transaction, Clock);
+        AuditStore = new FakeDocumentAuditStore();
+        var auditWriter = new DocumentAuditWriter(AuditStore, UnitOfWork, Clock);
+        Place = new PlaceDocumentHoldCommandHandler(Query, Store, Transaction, Clock, auditWriter);
+        Release = new ReleaseDocumentHoldCommandHandler(Query, Store, Transaction, Clock, auditWriter);
         List = new ListDocumentHoldsQueryHandler(Query, Clock);
+        Get = new GetDocumentHoldQueryHandler(Query, Clock);
+        Overview = new ListDocumentHoldOverviewQueryHandler(Query, Clock);
     }
 
     /// <summary>Gets the synthetic document revision id.</summary>
@@ -43,6 +52,12 @@ internal sealed class DocumentHoldHarness
 
     /// <summary>Gets the in-memory hold store.</summary>
     public InMemoryDispositionHoldStore Store
+    {
+        get;
+    }
+
+    /// <summary>Gets the document audit store fake.</summary>
+    public FakeDocumentAuditStore AuditStore
     {
         get;
     }
@@ -83,6 +98,18 @@ internal sealed class DocumentHoldHarness
         get;
     }
 
+    /// <summary>Gets the single-hold handler.</summary>
+    public GetDocumentHoldQueryHandler Get
+    {
+        get;
+    }
+
+    /// <summary>Gets the cross-document overview handler.</summary>
+    public ListDocumentHoldOverviewQueryHandler Overview
+    {
+        get;
+    }
+
     /// <summary>Creates a harness at a fixed time.</summary>
     public static DocumentHoldHarness Create() => new(new DateTimeOffset(2026, 10, 31, 12, 0, 0, TimeSpan.Zero));
 
@@ -94,5 +121,15 @@ internal sealed class DocumentHoldHarness
         "authority:case-0001",
         Now.AddDays(90),
         null,
-        ActorId);
+        CreateAuditContext(ActorId));
+
+    /// <summary>Creates a valid release command for a hold on the synthetic document.</summary>
+    public ReleaseDocumentHoldCommand CreateReleaseCommand(Guid holdId, string actorId = ActorId) => new(
+        DocumentId,
+        holdId,
+        "reason.case-closed",
+        CreateAuditContext(actorId));
+
+    /// <summary>Creates a document audit context for the given actor.</summary>
+    public static DocumentAuditContext CreateAuditContext(string actorId) => DocumentAuditContext.Create(actorId, CorrelationId).Value;
 }

@@ -79,6 +79,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     ReasonCode = table.Column<string>(type: "text", nullable: false),
                     CorrelationId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    HoldId = table.Column<Guid>(type: "uuid", nullable: true),
+                    HoldBasis = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     RetentionExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DocumentLineageId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
@@ -103,6 +105,22 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DocumentLineages", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DocumentRetentionPurgeRecords",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Kind = table.Column<string>(type: "text", nullable: false),
+                    PurgedCount = table.Column<int>(type: "integer", nullable: false),
+                    HeldCount = table.Column<int>(type: "integer", nullable: false),
+                    Outcome = table.Column<string>(type: "text", nullable: false),
+                    OccurredAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DocumentRetentionPurgeRecords", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -139,7 +157,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     State = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     StartedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CompletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ResultFingerprint = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true)
+                    ResultFingerprint = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    RetentionOwner = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -731,6 +750,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 column: "Scope");
 
             migrationBuilder.CreateIndex(
+                name: "IX_idempotency_keys_RetentionOwner",
+                schema: "messaging",
+                table: "idempotency_keys",
+                column: "RetentionOwner");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_inbox_messages_Outcome",
                 schema: "branding_projection",
                 table: "inbox_messages",
@@ -1029,6 +1054,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "DocumentLineages");
+
+            migrationBuilder.DropTable(
+                name: "DocumentRetentionPurgeRecords");
         }
     }
 }

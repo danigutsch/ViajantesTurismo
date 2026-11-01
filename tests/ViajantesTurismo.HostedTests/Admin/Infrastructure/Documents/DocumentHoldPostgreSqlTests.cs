@@ -1,5 +1,7 @@
 using PandaBear.DispositionHold;
+using PandaBear.Results;
 using PandaBear.Testing;
+using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
@@ -61,6 +63,110 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         afterRelease.ShouldBe(new DocumentPurgeCounts(1, 0));
         var remainingAfterRelease = await Scenario.GetDocuments(ct);
         remainingAfterRelease.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Draft_purge_persists_evidence_with_the_held_count_and_then_the_purged_count()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var created = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays - 1);
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(created);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+        var holdId = await Harness.Place(documentId, ct);
+
+        // Act
+        _ = await Harness.PurgeDrafts(ct);
+        await Harness.Release(documentId, holdId, ct);
+        _ = await Harness.PurgeDrafts(ct);
+
+        // Assert
+        var evidence = await Scenario.GetRetentionPurgeEvidence(ct);
+        evidence.Length.ShouldBe(2);
+        evidence.Select(record => record.Kind).Distinct().ShouldBe([DocumentRetentionPurgeKind.Drafts]);
+        evidence.Select(record => record.Outcome).Distinct().ShouldBe([DocumentRetentionPurgeOutcome.Succeeded]);
+        evidence.Select(record => record.PurgedCount).ShouldBe([0, 1]);
+        evidence.Select(record => record.HeldCount).ShouldBe([1, 0]);
+    }
+
+    [Fact]
+    public async Task Idempotency_purge_persists_evidence_with_the_held_and_purged_counts()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow();
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(now.UtcDateTime);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+        _ = await Harness.Place(documentId, ct);
+        await Scenario.SeedIdempotencyEntry($"admin.documents.regenerate-draft:{documentId:N}", "held-1", now.AddDays(-40), now.AddDays(-39), lineage.Id.ToString("N"), ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-1", now.AddDays(-40), now.AddDays(-39), Guid.CreateVersion7().ToString("N"), ct);
+
+        // Act
+        var counts = await Harness.PurgeIdempotencyEntries(ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(1, 1));
+        var allEvidence = await Scenario.GetRetentionPurgeEvidence(ct);
+        var record = allEvidence.ShouldHaveSingleItem();
+        record.Kind.ShouldBe(DocumentRetentionPurgeKind.IdempotencyEntries);
+        record.Outcome.ShouldBe(DocumentRetentionPurgeOutcome.Succeeded);
+        record.PurgedCount.ShouldBe(1);
+        record.HeldCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task A_refused_draft_purge_deletes_nothing_and_persists_refused_evidence()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var created = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays - 1);
+        await Scenario.Seed(DocumentDraftInfrastructureTestData.CreateLineage(created));
+        await using var refusingHarness = DocumentHoldPostgreSqlHarness.Create(
+            Scenario.ConnectionString, holdGuardFailure: new DispositionHoldStateUnknownException());
+
+        // Act
+        Func<Task> purge = () => refusingHarness.PurgeDrafts(ct);
+
+        // Assert
+        await purge.ShouldThrow<DispositionHoldStateUnknownException>();
+        var allEvidence = await Scenario.GetRetentionPurgeEvidence(ct);
+        var evidence = allEvidence.ShouldHaveSingleItem();
+        evidence.Kind.ShouldBe(DocumentRetentionPurgeKind.Drafts);
+        evidence.Outcome.ShouldBe(DocumentRetentionPurgeOutcome.Refused);
+        evidence.PurgedCount.ShouldBe(0);
+        evidence.HeldCount.ShouldBe(0);
+        var remaining = await Scenario.GetDocuments(ct);
+        remaining.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task A_refused_idempotency_purge_deletes_nothing_and_persists_refused_evidence()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow();
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(now.UtcDateTime);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+        await Scenario.SeedIdempotencyEntry($"admin.documents.regenerate-draft:{documentId:N}", "free-1", now.AddDays(-40), now.AddDays(-39), lineage.Id.ToString("N"), ct);
+        await using var refusingHarness = DocumentHoldPostgreSqlHarness.Create(
+            Scenario.ConnectionString, holdGuardFailure: new DispositionHoldStateUnknownException());
+
+        // Act
+        Func<Task> purge = () => refusingHarness.PurgeIdempotencyEntries(ct);
+
+        // Assert
+        await purge.ShouldThrow<DispositionHoldStateUnknownException>();
+        var allEvidence = await Scenario.GetRetentionPurgeEvidence(ct);
+        var evidence = allEvidence.ShouldHaveSingleItem();
+        evidence.Kind.ShouldBe(DocumentRetentionPurgeKind.IdempotencyEntries);
+        evidence.Outcome.ShouldBe(DocumentRetentionPurgeOutcome.Refused);
+        evidence.PurgedCount.ShouldBe(0);
+        evidence.HeldCount.ShouldBe(0);
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -143,13 +249,15 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         await Scenario.Seed(lineage);
         _ = await Harness.Place(documentId, ct);
         var heldScope = $"admin.documents.regenerate-draft:{documentId:N}";
+        var heldOwner = lineage.Id.ToString("N");
+        var otherOwner = Guid.CreateVersion7().ToString("N");
         for (var index = 0; index < 501; index++)
         {
-            await Scenario.SeedIdempotencyEntry(heldScope, $"held-{index:D3}", cutoff.AddDays(-40), cutoff.AddDays(-39), ct);
+            await Scenario.SeedIdempotencyEntry(heldScope, $"held-{index:D3}", cutoff.AddDays(-40), cutoff.AddDays(-39), heldOwner, ct);
         }
 
-        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-1", cutoff.AddDays(-5), cutoff.AddDays(-4), ct);
-        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-2", cutoff.AddDays(-5), cutoff.AddDays(-4), ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-1", cutoff.AddDays(-5), cutoff.AddDays(-4), otherOwner, ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "free-2", cutoff.AddDays(-5), cutoff.AddDays(-4), otherOwner, ct);
 
         // Act
         var counts = await Harness.PurgeIdempotency(cutoff, ct);
@@ -158,6 +266,114 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         counts.ShouldBe(new DocumentPurgeCounts(2, 501));
         var remaining = await Scenario.GetIdempotencyKeys(ct);
         remaining.Length.ShouldBe(501);
+    }
+
+    [Fact]
+    public async Task A_held_lineage_keeps_its_idempotency_entries_after_the_document_row_was_purged()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var created = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays).AddSeconds(-30);
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineageWithRevisions(created, 2);
+        var purgedRevision = lineage.Revisions[0].Id;
+        await Scenario.Seed(lineage);
+        _ = await Harness.PurgeDrafts(ct);
+        _ = await Harness.Place(lineage.Revisions[1].Id, ct);
+        var cutoff = TimeProvider.System.GetUtcNow();
+        await Scenario.SeedIdempotencyEntry(
+            $"admin.documents.regenerate-draft:{purgedRevision:N}", "held", cutoff.AddDays(-40), cutoff.AddDays(-39), lineage.Id.ToString("N"), ct);
+
+        // Act
+        var counts = await Harness.PurgeIdempotency(cutoff, ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(0, 1));
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["held"]);
+    }
+
+    [Fact]
+    public async Task An_expired_document_entry_without_a_retention_owner_is_retained_and_counted_as_unattributed()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = TimeProvider.System.GetUtcNow();
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "unowned", cutoff.AddDays(-40), cutoff.AddDays(-39), ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "owned", cutoff.AddDays(-40), cutoff.AddDays(-39), Guid.CreateVersion7().ToString("N"), ct);
+
+        // Act
+        var counts = await Harness.PurgeIdempotency(cutoff, ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(1, 0, 1));
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["unowned"]);
+    }
+
+    [Fact]
+    public async Task Idempotency_entries_of_an_unheld_lineage_and_of_other_scopes_are_handled_independently()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = TimeProvider.System.GetUtcNow();
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(cutoff.UtcDateTime);
+        await Scenario.Seed(lineage);
+        await Scenario.SeedIdempotencyEntry("admin.documents.regenerate-draft:gone", "clear", cutoff.AddDays(-40), cutoff.AddDays(-39), lineage.Id.ToString("N"), ct);
+        await Scenario.SeedIdempotencyEntry("admin.payments.record:booking", "payment", cutoff.AddDays(-400), cutoff.AddDays(-399), ct);
+
+        // Act
+        var counts = await Harness.PurgeIdempotency(cutoff, ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(1, 0));
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["payment"]);
+    }
+
+    [Fact]
+    public async Task A_lineage_the_guard_reports_as_held_keeps_its_entries_although_no_hold_was_in_the_snapshot()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = TimeProvider.System.GetUtcNow();
+        var lineageId = Guid.CreateVersion7();
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "late-hold", cutoff.AddDays(-40), cutoff.AddDays(-39), lineageId.ToString("N"), ct);
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "clear", cutoff.AddDays(-40), cutoff.AddDays(-39), Guid.CreateVersion7().ToString("N"), ct);
+        IReadOnlyCollection<Guid>? asked = null;
+
+        // Act
+        var counts = await Scenario.PurgeExpiredIdempotencyEntries(
+            cutoff,
+            (lineages, _) =>
+            {
+                asked = lineages;
+                return Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { lineageId });
+            },
+            ct);
+
+        // Assert
+        counts.ShouldBe(new DocumentPurgeCounts(1, 1));
+        asked.ShouldNotBeNull().ShouldContain(lineageId);
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["late-hold"]);
+    }
+
+    [Fact]
+    public async Task An_unknown_guard_state_deletes_no_idempotency_entry()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var cutoff = TimeProvider.System.GetUtcNow();
+        await Scenario.SeedIdempotencyEntry("admin.documents.generate-contract-draft:booking", "kept", cutoff.AddDays(-40), cutoff.AddDays(-39), Guid.CreateVersion7().ToString("N"), ct);
+
+        // Act
+        Func<Task> purge = () => Scenario.PurgeExpiredIdempotencyEntries(
+            cutoff, (_, _) => throw new DispositionHoldStateUnknownException(), ct);
+
+        // Assert
+        await purge.ShouldThrow<DispositionHoldStateUnknownException>();
+        var remaining = await Scenario.GetIdempotencyKeys(ct);
+        remaining.ShouldBe(["kept"]);
     }
 
     [Fact]
@@ -186,12 +402,124 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         var check = Harness.CheckInTransaction(lineage.Id, ct);
 
         // Act
-        var finishedEarly = await Task.WhenAny(check, Task.Delay(TimeSpan.FromSeconds(1), ct)) == check;
+        await Scenario.WaitForBlockedSession(ct);
+        var finishedWhileBlocked = check.IsCompleted;
         await commit();
         var held = await check;
 
         // Assert
-        finishedEarly.ShouldBeFalse();
+        finishedWhileBlocked.ShouldBeFalse();
         held.ShouldContain(lineage.Id);
+    }
+
+    [Fact]
+    public async Task Place_release_and_a_rejected_second_release_each_commit_one_audit_record()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+
+        // Act
+        var holdId = await Harness.Place(documentId, ct);
+        await Harness.Release(documentId, holdId, ct);
+        var second = await Harness.TryRelease(documentId, holdId, ct);
+        var unknown = await Harness.TryRelease(Guid.CreateVersion7(), holdId, ct);
+
+        // Assert
+        second.Status.ShouldBe(ResultStatus.Conflict);
+        unknown.Status.ShouldBe(ResultStatus.NotFound);
+        var records = await Scenario.GetDocumentAuditsForDocument(documentId, ct);
+        records.Select(record => (record.Operation, record.Outcome, record.ReasonCode)).ShouldBe(
+        [
+            (DocumentAuditOperation.PlaceHold, DocumentAuditOutcome.Succeeded, DocumentAuditReasonCode.ManualHoldPlacement),
+            (DocumentAuditOperation.ReleaseHold, DocumentAuditOutcome.Succeeded, DocumentAuditReasonCode.ManualHoldRelease),
+            (DocumentAuditOperation.ReleaseHold, DocumentAuditOutcome.Rejected, DocumentAuditReasonCode.StateConflict),
+        ]);
+        records.All(record => record.HoldId == holdId).ShouldBeTrue();
+        records[0].HoldBasis.ShouldBe(nameof(HoldBasis.LegalClaim));
+    }
+
+    [Fact]
+    public async Task One_hold_is_read_only_through_its_own_document_lineage()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        var other = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(lineage);
+        await Scenario.Seed(other);
+        var holdId = await Harness.Place(documentId, ct);
+
+        // Act
+        var found = await Harness.Get(documentId, holdId, ct);
+        var wrongDocument = await Harness.Get(other.Revisions.ShouldHaveSingleItem().Id, holdId, ct);
+        var unknown = await Harness.Get(documentId, Guid.CreateVersion7(), ct);
+
+        // Assert
+        found.Value.Id.ShouldBe(holdId);
+        wrongDocument.Status.ShouldBe(ResultStatus.NotFound);
+        unknown.Status.ShouldBe(ResultStatus.NotFound);
+    }
+
+    [Fact]
+    public async Task The_overview_filters_and_pages_holds_across_lineages_in_a_stable_order()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var first = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var second = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(first);
+        await Scenario.Seed(second);
+        var firstHold = await Harness.Place(first.Revisions.ShouldHaveSingleItem().Id, ct);
+        var secondHold = await Harness.Place(second.Revisions.ShouldHaveSingleItem().Id, ct);
+        await Harness.Release(second.Revisions.ShouldHaveSingleItem().Id, secondHold, ct);
+
+        // Act
+        var active = await Harness.Overview(new ListDocumentHoldOverviewQuery(DocumentHoldState.Active, null, null, 1, 10), ct);
+        var released = await Harness.Overview(new ListDocumentHoldOverviewQuery(DocumentHoldState.Released, HoldBasis.LegalClaim, TimeProvider.System.GetUtcNow().AddMinutes(-5), 1, 10), ct);
+        var overdue = await Harness.Overview(new ListDocumentHoldOverviewQuery(DocumentHoldState.OverdueReview, null, null, 1, 10), ct);
+        var firstPage = await Harness.Overview(new ListDocumentHoldOverviewQuery(null, null, null, 1, 1), ct);
+        var secondPage = await Harness.Overview(new ListDocumentHoldOverviewQuery(null, null, null, 2, 1), ct);
+
+        // Assert
+        active.Value.Items.Select(item => item.Hold.Id).ShouldBe([firstHold]);
+        released.Value.Items.Select(item => item.Hold.Id).ShouldBe([secondHold]);
+        overdue.Value.Items.ShouldBeEmpty();
+        firstPage.Value.Items.Select(item => item.Hold.Id).ShouldBe([firstHold]);
+        firstPage.Value.HasMore.ShouldBeTrue();
+        secondPage.Value.Items.Select(item => item.Hold.Id).ShouldBe([secondHold]);
+        secondPage.Value.HasMore.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task The_overview_resolves_the_newest_revision_per_lineage_and_leaves_a_purged_lineage_unlinked()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var recent = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var multi = DocumentDraftInfrastructureTestData.CreateLineageWithRevisions(recent, 3);
+        var single = DocumentDraftInfrastructureTestData.CreateLineage(recent);
+        var purged = DocumentDraftInfrastructureTestData.CreateLineage(recent.AddDays(-DocumentLimits.DraftRetentionDays - 1));
+        await Scenario.Seed(multi);
+        await Scenario.Seed(single);
+        await Scenario.Seed(purged);
+        _ = await Harness.Place(multi.Revisions[0].Id, ct);
+        _ = await Harness.Place(single.Revisions.ShouldHaveSingleItem().Id, ct);
+        var purgedHold = await Harness.Place(purged.Revisions.ShouldHaveSingleItem().Id, ct);
+        await Harness.Release(purged.Revisions.ShouldHaveSingleItem().Id, purgedHold, ct);
+        _ = await Harness.PurgeDrafts(ct);
+
+        // Act
+        var page = await Harness.Overview(new ListDocumentHoldOverviewQuery(null, null, null, 1, 10), ct);
+
+        // Assert
+        var byLineage = page.Value.Items.ToDictionary(item => item.LineageId, item => item.DocumentId);
+        byLineage.Count.ShouldBe(3);
+        byLineage[multi.Id].ShouldBe(multi.Revisions.OrderByDescending(revision => revision.Revision).First().Id);
+        byLineage[single.Id].ShouldBe(single.Revisions.ShouldHaveSingleItem().Id);
+        byLineage[purged.Id].ShouldBeNull();
     }
 }

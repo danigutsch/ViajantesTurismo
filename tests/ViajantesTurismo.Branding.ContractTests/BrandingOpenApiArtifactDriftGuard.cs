@@ -10,7 +10,7 @@ internal static class BrandingOpenApiArtifactDriftGuard
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
     private const string GeneratedArtifactPrefix = "ViajantesTurismo.Catalog.ApiService_";
-    private const string RefreshHint = "Refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target branding` when the HTTP contract changes intentionally.";
+    private const string RefreshHint = "Generate with `dotnet tool run sharedkernel-ci -- openapi generate --target branding` in a fresh clone or worktree; refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target branding` after intentional HTTP contract changes.";
 
     /// <summary>Creates the snapshot set that compares canonical Branding OpenAPI artifacts with the generated ones.</summary>
     public static JsonSnapshotArtifactSet CreateSnapshotSet()

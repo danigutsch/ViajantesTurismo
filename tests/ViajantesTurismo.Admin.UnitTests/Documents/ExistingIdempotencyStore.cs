@@ -13,6 +13,14 @@ internal sealed class ExistingIdempotencyStore(IdempotencyEntry entry) : IIdempo
         IdempotencyOperation operation,
         DateTimeOffset startedAt,
         TimeSpan? lockDuration,
+        CancellationToken ct) => TryStart(operation, startedAt, lockDuration, retentionOwner: null, ct);
+
+    /// <summary>Reports the entry as already started after checking the operation matches.</summary>
+    public ValueTask<IdempotencyStartResult> TryStart(
+        IdempotencyOperation operation,
+        DateTimeOffset startedAt,
+        TimeSpan? lockDuration,
+        string? retentionOwner,
         CancellationToken ct)
     {
         EnsureExpectedOperation(operation);

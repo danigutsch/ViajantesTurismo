@@ -18,23 +18,29 @@ been published as a GitHub prerelease. CI staging through `--repository` require
 publication of these exact packages and `candidate.json` to `v0.1.0-alpha.vo.20261031.3` before adoption can merge.
 No registry publication or stable promotion is authorized by this pin.
 
-The previous published candidate is `0.1.0-alpha.421.1` at revision
-[`2c9a17f0cdb035bd9d1690547e3877cfe9b71b61`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/2c9a17f0cdb035bd9d1690547e3877cfe9b71b61).
-Its unchanged packages and manifest remain available in
-[GitHub prerelease `v0.1.0-alpha.421.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.421.1)
-for rollback subject to compatibility validation.
-
 `SKSTYLE018`, newly introduced by this candidate, starts at `suggestion` for application adoption.
 Existing exception-documentation guidance remains active; application maintainers will promote the
 diagnostic after documenting the existing backlog. Warnings-as-errors and all previously enforced
-diagnostics remain unchanged. The existing license exceptions for unchanged
-`StreamJsonRpc` `2.25.29` and `Magick.NET-Q8-AnyCPU` `15.0.0` remain restricted to this exact candidate
-version and source revision in `.config/sharedkernel-repo.json`; no package or license exception is added.
+diagnostics remain unchanged. The existing license exceptions for unchanged `StreamJsonRpc` `2.25.29`
+and `Magick.NET-Q8-AnyCPU` `15.0.0` remain restricted to this exact candidate version and source revision
+in `.config/sharedkernel-repo.json`; no package or license exception is added.
+
+The previous published candidate is `0.1.0-alpha.425.1` at clean library revision
+[`c82b4469c099604587ed8314709ad30686f18b0c`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/c82b4469c099604587ed8314709ad30686f18b0c).
+It adds a retention owner to the idempotency packages: `IIdempotencyStore.TryStart` takes an optional retention owner and
+`IIdempotencyRetentionStore.PurgeExpired` retains entries of held owners and unattributed entries of tracked scopes; the other
+packages are unchanged in behavior. The EF store adds a nullable `RetentionOwner` column with an index, so the host migrates it:
+the Admin initial migration carries it and Catalog has `AddIdempotencyRetentionOwner`.
+The packages, symbol archives and manifest are published in GitHub prerelease
+[`v0.1.0-alpha.425.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.425.1), built by
+[CI run 41238019521](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41238019521).
+The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.418.1` at revision `b5bcfed6a35b40eb82d5e2cb7baa76d98fcf41cc`,
+The previous previews `0.1.0-alpha.421.1` at revision `2c9a17f0cdb035bd9d1690547e3877cfe9b71b61`,
+`0.1.0-alpha.418.1` at revision `b5bcfed6a35b40eb82d5e2cb7baa76d98fcf41cc`,
 `0.1.0-alpha.396.1` at revision `079cd9fb28192d027fb14d959da9e29f7ab6d2a4`,
 `0.1.0-alpha.389.1` at revision `9ef862a978a3915b0c63944a83fc65f67fa4a8fb`,
 `0.1.0-alpha.372.1` at revision `725be335280c3b7bdb659bf3043b2bfe747b9d12`,

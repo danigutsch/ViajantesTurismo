@@ -20,6 +20,15 @@ Cognitive complexity and duplicate-code detection are intentionally not enforced
 them, and an external tool would add a supply-chain dependency for a signal that review and the complexity
 limit already cover. Review those concerns explicitly rather than reading a passing build as proof of them.
 
+## Formatting
+
+The `Format` job in `ci.yml` runs `dotnet format ViajantesTurismo.slnx --no-restore --verify-no-changes` in
+parallel with `Solution Build`, and `Quality Gate` requires it, so no ruleset change is needed. It is a
+separate job because Roslyn does not enforce some style rules on build: IDE0001 and IDE0002 are
+`EnforceOnBuild.Never`, so the build passes while `dotnet format` reports them. Running it beside the build
+keeps the build's critical path unchanged at the cost of a second restore. Reproduce locally with the same
+command after `dotnet restore`; fix findings with `dotnet format` or `dotnet format style --diagnostics <ids>`.
+
 ## Coverage collection
 
 `coverlet.MTP` 10.1.0 replaces the Microsoft coverage extension and runs with xUnit v3 on

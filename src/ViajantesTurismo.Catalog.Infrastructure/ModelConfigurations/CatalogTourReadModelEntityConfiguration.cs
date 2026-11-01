@@ -12,6 +12,7 @@ internal sealed class CatalogTourReadModelEntityConfiguration : IEntityTypeConfi
     {
         entity.ToTable("CatalogTourReadModels");
         entity.HasKey(tour => tour.CatalogTourId);
+        entity.Property(tour => tour.CatalogTourId).ValueGeneratedNever();
         entity.HasIndex(tour => tour.AdminTourId).IsUnique();
         entity.HasIndex(tour => tour.Slug).IsUnique();
 

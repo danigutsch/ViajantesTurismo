@@ -111,6 +111,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
+        builder.Services.AddScoped<IDocumentPurgeEvidenceStore, DocumentPurgeEvidenceStore>();
         builder.Services.AddScoped<IDocumentDispositionTransaction, DocumentDispositionTransaction>();
         builder.Services.AddScoped<IDocumentHoldQuery, DocumentHoldQuery>();
         builder.Services.AddScoped<IDocumentIdempotencyRetentionStore, DocumentIdempotencyRetentionStore>();

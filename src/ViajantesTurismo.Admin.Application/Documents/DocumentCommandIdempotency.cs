@@ -128,10 +128,10 @@ public sealed class DocumentCommandIdempotency(
                 conflictResult, auditWriter, auditContext, auditOperation, documentId, bookingId, null, ct);
         }
 
-        return await prepare(async (operation, preparedDocumentId, preparedBookingId, preparedRevision) =>
+        return await prepare(async (operation, lineageId, preparedDocumentId, preparedBookingId, preparedRevision) =>
         {
             var operationWasInvoked = false;
-            var result = await Execute(scope, storedKey, requestFingerprint, () =>
+            var result = await Execute(scope, storedKey, requestFingerprint, lineageId, () =>
             {
                 operationWasInvoked = true;
                 return operation();
@@ -203,6 +203,10 @@ public sealed class DocumentCommandIdempotency(
     /// <param name="scope">The resource-specific operation scope.</param>
     /// <param name="key">The required caller-supplied idempotency key.</param>
     /// <param name="requestFingerprint">The privacy-safe fingerprint of the operation input.</param>
+    /// <param name="lineageId">
+    /// The document lineage that owns the entry. It is recorded as the retention owner so a hold on the lineage keeps the entry
+    /// after the lineage's revisions were purged.
+    /// </param>
     /// <param name="operation">The document command to execute when ownership is acquired.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The created document identifier, a completed replay, or a conflict.</returns>
@@ -210,6 +214,7 @@ public sealed class DocumentCommandIdempotency(
         IdempotencyScope scope,
         IdempotencyKey key,
         string requestFingerprint,
+        Guid lineageId,
         Func<Task<Result<Guid>>> operation,
         CancellationToken ct)
     {
@@ -226,6 +231,7 @@ public sealed class DocumentCommandIdempotency(
             idempotencyOperation,
             timeProvider.GetUtcNow(),
             ProcessingLockDuration,
+            lineageId.ToString("N"),
             ct);
         if (!startResult.Started)
         {

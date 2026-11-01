@@ -328,12 +328,36 @@ jobs:
             src/**/bin/Release/**/*.pdb
           retention-days: 7
 
+  format:
+    name: Format
+    needs: detect-changes
+    if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && needs.detect-changes.outputs.build_required == 'true' }}
+    runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-ci-prerequisites
+        with:
+          sharedkernel-library-root: ${{ vars.SHAREDKERNEL_LIBRARY_ROOT }}
+          sharedkernel-candidate-feed: ${{ vars.SHAREDKERNEL_CANDIDATE_FEED }}
+          restore-local-tools: "false"
+          trust-dev-certificate: "false"
+      - name: Restore all solution projects
+        run: dotnet restore ViajantesTurismo.slnx --locked-mode
+      - name: Verify formatting
+        run: dotnet format ViajantesTurismo.slnx --no-restore --verify-no-changes
+
   quality-gate:
     name: ${{ github.event.action == 'labeled' && github.event.label.name != 'ci:rerun' && 'Ignored label event' || 'Quality Gate' }}
     needs:
       - detect-changes
       - test-slices
       - solution-build
+      - format
     if: ${{ (github.event.action != 'labeled' || github.event.label.name == 'ci:rerun') && (always()) }}
     runs-on: ${{ vars.CI_UBUNTU_RUNNER }}
     timeout-minutes: 10
@@ -347,11 +371,12 @@ jobs:
           TEST_RESULT: ${{ needs.test-slices.result }}
           BUILD_REQUIRED: ${{ needs.detect-changes.outputs.build_required }}
           BUILD_RESULT: ${{ needs.solution-build.result }}
+          FORMAT_RESULT: ${{ needs.format.result }}
         run: |
           test "$SELECTION_RESULT" = success
           case "$BUILD_REQUIRED" in
-            true) test "$TEST_RESULT" = success && test "$BUILD_RESULT" = success ;;
-            false) test "$TEST_RESULT" = skipped && test "$BUILD_RESULT" = skipped ;;
+            true) test "$TEST_RESULT" = success && test "$BUILD_RESULT" = success && test "$FORMAT_RESULT" = success ;;
+            false) test "$TEST_RESULT" = skipped && test "$BUILD_RESULT" = skipped && test "$FORMAT_RESULT" = skipped ;;
             *) echo "Missing build selection evidence." >&2; exit 1 ;;
           esac
 

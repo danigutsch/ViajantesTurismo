@@ -21,7 +21,7 @@ internal sealed class AlwaysAuthenticatedHandler(
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, "browser-test")], SchemeName);
+        var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, "browser-test"), new Claim(ClaimTypes.Role, "Admin")], SchemeName);
         return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName)));
     }
 }

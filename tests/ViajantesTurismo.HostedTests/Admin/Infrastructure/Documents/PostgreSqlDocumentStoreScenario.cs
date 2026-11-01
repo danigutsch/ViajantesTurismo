@@ -385,6 +385,16 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Reads the audit records that name a document ordered by occurrence time.</summary>
+    public async Task<DocumentAuditRecord[]> GetDocumentAuditsForDocument(Guid documentId, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentAuditRecords
+            .Where(record => record.DocumentId == documentId)
+            .OrderBy(record => record.Id)
+            .ToArrayAsync(ct);
+    }
+
     /// <summary>Reads the stored idempotency state for the document generation scope of a booking and key, or <see langword="null" /> when absent.</summary>
     public async Task<string?> GetIdempotencyState(
         Guid bookingId,
@@ -543,6 +553,13 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await dbContext.DocumentAuditPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
     }
 
+    /// <summary>Reads the stored draft and idempotency purge evidence ordered by time.</summary>
+    public async ValueTask<DocumentRetentionPurgeRecord[]> GetRetentionPurgeEvidence(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentRetentionPurgeRecords.AsNoTracking().OrderBy(record => record.OccurredAtUtc).ToArrayAsync(ct);
+    }
+
     /// <summary>Resets the mutable tables while preserving document audit records.</summary>
     public async Task ResetMutableDataPreservingDocumentAudits(CancellationToken ct)
     {
@@ -591,6 +608,25 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             ct);
     }
 
+    /// <summary>
+    /// Appends the record through the audit trail sink during a plain SaveChanges, as the save pipeline does after the
+    /// pre-save stamp has run, and returns the stored lineage stamp.
+    /// </summary>
+    public async Task<Guid?> AppendAuditThroughSinkAndReadLineage(DocumentAuditRecord record, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        using (CurrentSaveChangesDbContext.Enter(dbContext))
+        {
+            await new DocumentAuditTrailSink().Append(record, ct);
+        }
+
+        _ = await dbContext.SaveChangesAsync(ct);
+        return await dbContext.DocumentAuditRecords
+            .Where(audit => audit.Id == record.Id)
+            .Select(audit => EF.Property<Guid?>(audit, "DocumentLineageId"))
+            .SingleAsync(ct);
+    }
+
     /// <summary>Returns whether the partial retention index on unfinalized drafts exists.</summary>
     public async ValueTask<bool> HasRetentionIndex(CancellationToken ct)
     {
@@ -609,12 +645,21 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return count == 1;
     }
 
-    /// <summary>Migrates the database to the latest and inserts one raw idempotency entry.</summary>
+    /// <summary>Migrates the database to the latest and inserts one raw idempotency entry without a retention owner.</summary>
+    public Task SeedIdempotencyEntry(
+        string scope,
+        string key,
+        DateTimeOffset startedAt,
+        DateTimeOffset? completedAt,
+        CancellationToken ct) => SeedIdempotencyEntry(scope, key, startedAt, completedAt, retentionOwner: null, ct);
+
+    /// <summary>Migrates the database to the latest and inserts one raw idempotency entry owned by a lineage, or by none.</summary>
     public async Task SeedIdempotencyEntry(
         string scope,
         string key,
         DateTimeOffset startedAt,
         DateTimeOffset? completedAt,
+        string? retentionOwner,
         CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
@@ -623,8 +668,8 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         var state = completedAt is null ? "Started" : "Completed";
         _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"""
-            INSERT INTO "messaging"."idempotency_keys" ("Scope", "Key", "State", "StartedAt", "CompletedAt")
-            VALUES ({scope}, {key}, {state}, {startedAt}, {completedAt})
+            INSERT INTO "messaging"."idempotency_keys" ("Scope", "Key", "State", "StartedAt", "CompletedAt", "RetentionOwner")
+            VALUES ({scope}, {key}, {state}, {startedAt}, {completedAt}, {retentionOwner})
             """,
             ct);
     }
@@ -636,6 +681,13 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return (await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, NoHeldLineages.Filter, ct)).Purged;
     }
 
+    /// <summary>Purges document idempotency entries at or before the cutoff with the given hold filter and returns the counts.</summary>
+    public async Task<DocumentPurgeCounts> PurgeExpiredIdempotencyEntries(DateTimeOffset cutoff, HeldDocumentLineages heldLineages, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await new DocumentIdempotencyRetentionStore(dbContext).PurgeExpiredEntries(cutoff, heldLineages, ct);
+    }
+
     /// <summary>Returns the keys of the remaining idempotency entries.</summary>
     public async Task<string[]> GetIdempotencyKeys(CancellationToken ct)
     {
@@ -643,6 +695,32 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await dbContext.Database
             .SqlQueryRaw<string>("""SELECT "Key" AS "Value" FROM "messaging"."idempotency_keys" ORDER BY "Key" """)
             .ToArrayAsync(ct);
+    }
+
+    /// <summary>Waits until a session of the scenario database is blocked waiting for a lock.</summary>
+    public async Task WaitForBlockedSession(CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(30));
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(20));
+        do
+        {
+            await using var dbContext = CreateDbContext();
+            var blocked = await dbContext.Database
+                .SqlQueryRaw<bool>(
+                    """
+                    SELECT EXISTS (
+                        SELECT 1 FROM pg_stat_activity
+                        WHERE datname = current_database()
+                          AND wait_event_type = 'Lock') AS "Value"
+                    """)
+                .SingleAsync(timeout.Token);
+            if (blocked)
+            {
+                return;
+            }
+        }
+        while (await timer.WaitForNextTickAsync(timeout.Token));
     }
 
     /// <summary>Disposes the fixture-issued database.</summary>
@@ -713,6 +791,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             scope,
             key,
             requestFingerprint,
+            Guid.CreateVersion7(),
             async () =>
             {
                 operationWasInvoked = true;

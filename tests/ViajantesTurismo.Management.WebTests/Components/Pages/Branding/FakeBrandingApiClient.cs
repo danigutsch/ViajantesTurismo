@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -149,7 +150,17 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
         get; set;
     }
 
-    /// <summary>Reads and records the upload, then stores a generated logo URL or applies the configured failure.</summary>
+    /// <summary>Cancellation token received by the latest upload call.</summary>
+    public CancellationToken UploadedToken
+    {
+        get; private set;
+    }
+
+    /// <summary>
+    /// Validates the declared type like the real client, so a blank value throws <see cref="ArgumentException"/> and a
+    /// malformed one <see cref="FormatException"/>; then reads and records the upload, then stores a generated logo URL
+    /// or applies the configured failure.
+    /// </summary>
     public async Task<HttpOutcome<BrandingManagementSettingsDto>> UploadLogo(
         Stream content,
         string contentType,
@@ -157,6 +168,9 @@ internal sealed class FakeBrandingApiClient : IBrandingManagementClient
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(content);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentType);
+        _ = new MediaTypeHeaderValue(contentType);
+        UploadedToken = ct;
         using var buffer = new MemoryStream();
         await content.CopyToAsync(buffer, ct);
         UploadedContent = buffer.ToArray();

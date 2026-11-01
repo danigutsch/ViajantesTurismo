@@ -359,7 +359,6 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
             modelBuilder.Entity("ViajantesTurismo.Catalog.Infrastructure.CatalogTourReadModelEntity", b =>
                 {
                     b.Property<Guid>("CatalogTourId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("AdminTourId")

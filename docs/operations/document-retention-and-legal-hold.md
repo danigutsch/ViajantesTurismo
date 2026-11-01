@@ -33,8 +33,9 @@ bytes and metadata, document lineages, document audit records, and document idem
 | Unfinalized draft and staff overrides | Creation, when never finalized | 30 days (`DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500; empty lineages are removed. |
 | Finalized, superseded and voided revisions | None | Kept indefinitely | Finalization clears `RetentionExpiresAt`. No automatic deletion and no deletion endpoint. |
 | Document audit record | Audit event occurrence | 24 months (`DocumentAuditLimits.RetentionMonths`) | Deleted by a daily worker in batches of 500. Database protections reject updates, truncation and pre-expiry deletion. |
-| Document idempotency entry | Completion, or start when never completed | 30 days (`DocumentCommandIdempotency.ReplayWindow`, equal to `DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500. The stored key is a SHA-256 digest of the caller key, so the raw value is never persisted. A replay after the window is treated as a new request; a replay after its document is purged returns `404 Not Found`. |
+| Document idempotency entry | Completion, or start when never completed | 30 days (`DocumentCommandIdempotency.ReplayWindow`, equal to `DocumentLimits.DraftRetentionDays`) | Deleted by a daily worker in batches of 500. The stored key is a SHA-256 digest of the caller key, so the raw value is never persisted. A replay after the window is treated as a new request; a replay after its document is purged returns `404 Not Found`. Each entry records its document lineage as the retention owner when it starts. |
 | Document audit purge evidence | Each audit-retention purge run | Kept indefinitely | Metadata only: system actor, correlation id, purged count, retention cutoff, outcome and time. It is not removed by the audit-retention worker. |
+| Draft and idempotency purge evidence | Each draft or idempotency purge run | Kept indefinitely | Counts only: purge kind, purged count, held count, outcome (`Succeeded` or `Refused`) and time, in `DocumentRetentionPurgeRecords`. Written in the same transaction as the deletion. It is not removed by any worker. |
 
 Metadata-only audit records can contain linkable identifiers, which remain personal data where
 re-identification is possible. Callers must not place personal data or secrets in idempotency keys.
@@ -72,6 +73,19 @@ purges that do exist: unfinalized drafts, document audit records and document id
   `POST /api/v1/documents/{id}/holds/{holdId}/release`, where `{id}` is any revision of the lineage. A second release of the
   same hold is `409 Conflict`; a hold of another lineage is `404 Not Found`.
 
+### Hold audit evidence
+
+- Placing and releasing a hold each add exactly one `DocumentAuditRecords` row (`PlaceHold`, `ReleaseHold`) in the same
+  transaction as the hold change. An audit record that cannot be formed persists nothing, so no hold changes without its record.
+- The row carries the opaque actor, correlation id, document id, hold id, hold basis name and a bounded audit reason code
+  (`ManualHoldPlacement`, `ManualHoldRelease`). It never carries the purpose code, authority reference, release reason code
+  or any request text. `HoldBasis` accepts ASCII letters only, at most 64 characters.
+- A rejected request (unknown document, unknown or foreign hold, double release, invalid field) changes no hold and adds one
+  `Rejected` row with `DocumentNotFound`, `HoldNotFound`, `StateConflict` or `ValidationRejected`. A request refused by
+  authorization never reaches the handler and adds nothing, like every other document route.
+- The rows are stamped with the document lineage and follow the 24-month audit retention; a hold on the lineage restrains
+  their purge like any other audit row.
+
 ### Who may place and release
 
 - Permission `document.hold` covers placing, releasing and listing. By default only the `Admin` role holds it; `Operator` and
@@ -81,14 +95,27 @@ purges that do exist: unfinalized drafts, document audit records and document id
 - The placing and releasing actor is the opaque subject identifier of the authenticated principal. It is never read from the
   request body.
 
+### Management UI
+
+- The document details page (`/documents/{id}`) shows each hold's state, basis, review date and recorded actors, and states
+  that an active hold blocks deletion, disposition after voiding and anonymization. Admins place a hold through a form
+  (basis, purpose code, authority reference, review date, optional expiry) with an explicit confirmation step, and release
+  one through a modal dialog that restates the document and hold identifiers and requires an opaque reason code.
+- The holds overview (`/documents/holds`, Admin only) lists active, overdue-review and recently released holds (the last 30
+  days), filterable by basis and paged. It shows the opaque lineage identifier and links each row to the document page
+  of the newest revision (`documentId` in the API item). A lineage with no remaining document, for example one already
+  purged, is listed without a link and `documentId` is `null`.
+- The UI sends and shows opaque codes, dates and subject identifiers only. A hold takes effect when it is placed; the API has
+  no separate effective date.
+
 ### Purge behavior and lock order
 
 - Every purge (draft, audit and idempotency) loads its candidates, calls `IDispositionHoldGuard.Check` once with all candidate
   lineage scopes, and deletes inside the same explicit database transaction at read committed. The package refuses any other
   isolation level and refuses to answer outside a transaction.
-- Held candidates are skipped and counted. The audit purge records the count (`HeldCount`) in its evidence; the other purges log
-  counts only. No data-subject identifier is logged.
-- If hold state cannot be determined (`DispositionHoldStateUnknownException`), the purge deletes nothing. The audit purge records
+- Held candidates are skipped and counted. Every purge records the count (`HeldCount`) in its evidence row; the draft and idempotency purges also log
+  it. No data-subject identifier is logged.
+- If hold state cannot be determined (`DispositionHoldStateUnknownException`), the purge deletes nothing. Each purge records
   `Refused` evidence and rethrows; the worker retries on its next run.
 - Lock order: take the locks a command declares first, hold locks last, one `Check` per purge, and no other advisory lock after
   it. Release takes a command lock on the hold identifier before it reads the hold.
@@ -99,17 +126,28 @@ purges that do exist: unfinalized drafts, document audit records and document id
   exist at write time, or null only when the record names no document. The immutability trigger rejects every UPDATE and TRUNCATE,
   and the check constraint `CK_DocumentAuditRecords_DocumentLineageStamped` (`DocumentId IS NULL OR DocumentLineageId IS NOT NULL`)
   makes an unstamped record that names a document impossible.
-- Residual: an audit record written for a document that no longer exists is stamped as having no lineage and stays purgeable. A
-  draft purged between the handler's read and the audit write could therefore leave one audit record that a later hold on the
-  same lineage does not cover.
+- Residual (audit lineage): an audit record whose document row no longer exists when the record is written is stamped as having
+  no lineage and stays purgeable. Decision: no rule closes this, because the lineage is resolvable only through a document row,
+  and a purged lineage leaves nothing to look up (the lineage row is deleted with its last revision; the idempotency owner covers
+  only documents that were regenerated). The gap is bounded: it needs a revision that expired and was purged, a lineage that still
+  has other revisions (a hold can only be placed on an existing document), a request that audited the missing revision (a
+  concurrent purge between the handler's read and the audit write, or a later request naming the purged document), and a hold
+  placed afterwards. Only that one metadata record, which holds no document content, is then not covered; every other record,
+  revision and entry of the lineage is.
 - The held counts of the three purges come from the same pre-filter (effective holds by the database clock) plus any candidates
   the guard then reports as held, so a hold placed during the run is counted too. The guard check stays authoritative.
-- Idempotency entries are matched to a lineage through the document identifier in their scope or stored result. An entry whose
-  document row was already purged cannot be matched and is purged on schedule; it holds a hashed key and an identifier only.
+- Idempotency entries record the document lineage as their retention owner when they start (`IIdempotencyStore.TryStart` with
+  the lineage id in `N` format), so a hold keeps them after the revision rows were purged. The purge reads the owner column; it no
+  longer matches document identifiers inside scope or result strings. An expired entry in a document scope without an owner is
+  retained, counted as unattributed and logged as a count (fail-closed) instead of being purged. Such entries can only exist in
+  development databases that predate the owner column, because nothing is published (see the initial migration squash); they
+  stay until removed by hand. Entries outside document scopes are never touched by this purge.
+- Open follow-up: SharedKernel `IIdempotencyRetentionStore.PurgeExpired` is not used yet. It purges the expired entries of every
+  scope, including the payment entries that share the table, so it needs a scope restriction in SharedKernel first. This
+  repository keeps a document-scoped purge over the same owner column until then.
 
 ### Not done
 
-- Management UI for holds.
 - Backup rotation and restore suppression for held data.
 - Retention of finalized artifacts and any deletion workflow for them. Do not add one without checking holds.
 - Retention periods, jurisdiction-specific rules and review reminders.
@@ -125,7 +163,6 @@ Deletion is not complete until every covered store and copy has the approved out
 
 Each gap above is tracked as an issue instead of a placeholder in this policy:
 
-- Hold management UI.
 - Document-specific backup rotation and restore suppression.
 - Finalized-artifact retention.
 

@@ -123,6 +123,51 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
         }
     }
 
+    /// <inheritdoc />
+    public async Task<HttpOutcome<GetDocumentHoldDto>> PlaceHold(Guid documentId, CreateDocumentHoldDto dto, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{RoutePrefix}/{documentId}/holds", UriKind.Relative))
+        {
+            Content = JsonContent.Create(dto, Json.CreateDocumentHoldDto)
+        };
+        return await HttpOutcomeMapper.Send(httpClient, request, HttpStatusCode.Created, Json.GetDocumentHoldDto, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<IReadOnlyList<GetDocumentHoldDto>>> ListHolds(Guid documentId, CancellationToken ct) =>
+        await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/{documentId}/holds", UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.IReadOnlyListGetDocumentHoldDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<GetDocumentHoldDto>> ReleaseHold(Guid documentId, Guid holdId, ReleaseDocumentHoldDto dto, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{RoutePrefix}/{documentId}/holds/{holdId}/release", UriKind.Relative))
+        {
+            Content = JsonContent.Create(dto, Json.ReleaseDocumentHoldDto)
+        };
+        return await HttpOutcomeMapper.Send(httpClient, request, HttpStatusCode.OK, Json.GetDocumentHoldDto, Json.ContractValidationProblemDto, ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<GetDocumentHoldOverviewPageDto>> ListHoldOverview(DocumentHoldOverviewQuery query, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/holds{query.ToQueryString()}", UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.GetDocumentHoldOverviewPageDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+    }
+
     private Task<HttpOutcome<GetDocumentDto>> PostCommand(
         string requestUri,
         HttpStatusCode successStatusCode,
