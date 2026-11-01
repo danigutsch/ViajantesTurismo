@@ -94,7 +94,7 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
     }
 
     /// <summary>Releases a hold as a synthetic actor and returns the outcome without asserting success.</summary>
-    public async Task<PandaBear.Results.Result<Hold>> TryRelease(Guid documentId, Guid holdId, CancellationToken ct)
+    public async Task<Result<Hold>> TryRelease(Guid documentId, Guid holdId, CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
         var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", AuditContext("actor-0003"));

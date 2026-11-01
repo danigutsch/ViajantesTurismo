@@ -318,8 +318,8 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         var unknown = await Harness.TryRelease(Guid.CreateVersion7(), holdId, ct);
 
         // Assert
-        second.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
-        unknown.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        second.Status.ShouldBe(ResultStatus.Conflict);
+        unknown.Status.ShouldBe(ResultStatus.NotFound);
         var records = await Scenario.GetDocumentAuditsForDocument(documentId, ct);
         records.Select(record => (record.Operation, record.Outcome, record.ReasonCode)).ShouldBe(
         [
