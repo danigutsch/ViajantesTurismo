@@ -721,6 +721,26 @@ public sealed class DocumentDraftTests
         finalized.RetentionExpiresAt.ShouldBeNull();
     }
 
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    public void Draft_becomes_eligible_for_purge_exactly_at_its_retention_expiry(int offsetTicks, bool expected)
+    {
+        // Arrange
+        var createdAt = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(createdAt);
+        var expiresAt = draft.RetentionExpiresAt.ShouldNotBeNull();
+        var now = expiresAt.AddTicks(offsetTicks);
+
+        // Act
+        var eligible = draft.IsExpiredDraft(now);
+
+        // Assert
+        expiresAt.ShouldBe(createdAt.AddDays(DocumentLimits.DraftRetentionDays));
+        eligible.ShouldBe(expected);
+    }
+
     [Fact]
     public void Finalized_artifact_is_available_only_after_finalization()
     {
