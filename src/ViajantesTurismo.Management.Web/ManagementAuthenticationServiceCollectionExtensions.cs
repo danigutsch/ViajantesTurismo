@@ -18,6 +18,8 @@ namespace ViajantesTurismo.Management.Web;
 /// </summary>
 internal static class ManagementAuthenticationServiceCollectionExtensions
 {
+    private const string AdvisoryLockDataSourceName = "management-advisory-lock";
+
     /// <summary>
     /// Registers cookie, OIDC, data protection and token exchange services for the Management Web BFF.
     /// </summary>
@@ -55,7 +57,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             environment);
 
         services.AddManagementSecurityPersistence(connectionString!);
-        services.AddSingleton(_ => NpgsqlDataSource.Create(connectionString!));
+        services.AddSingleton(_ => CreateAdvisoryLockDataSource(connectionString!));
         services.TryAddSingleton(TimeProvider.System);
         services.AddHttpClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName)
             .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
@@ -203,5 +205,15 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             throw new InvalidOperationException(
                 $"{configurationKey} must be an HTTPS absolute URI outside an explicitly configured Development environment.");
         }
+    }
+
+    private static NpgsqlDataSource CreateAdvisoryLockDataSource(string connectionString)
+    {
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString)
+        {
+            Name = AdvisoryLockDataSourceName
+        };
+
+        return dataSourceBuilder.Build();
     }
 }

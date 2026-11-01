@@ -25,6 +25,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 public static class InfrastructureDependencyInjection
 {
     private const int CatalogSlugLockMaximumPoolSize = 8;
+    private const string CatalogDataSourceName = "catalog";
+    private const string CatalogLockDataSourceName = "catalog-lock";
+    private const string CatalogTransportDataSourceName = "catalog-integration-transport";
 
     /// <summary>
     /// ponytail: a fixed attempt budget; make it configurable when operations sets a per-environment retry SLO.
@@ -156,12 +159,12 @@ public static class InfrastructureDependencyInjection
     {
         builder.AddNpgsqlDataSource(
             ResourceNames.CatalogDatabase,
-            configureDataSourceBuilder: ConfigureNpgsqlDataSource);
+            configureDataSourceBuilder: dataSourceBuilder => ConfigureNpgsqlDataSource(dataSourceBuilder, CatalogDataSourceName));
         builder.AddKeyedNpgsqlDataSource(
             ResourceNames.CatalogDatabase,
             configureDataSourceBuilder: dataSourceBuilder =>
             {
-                ConfigureNpgsqlDataSource(dataSourceBuilder);
+                ConfigureNpgsqlDataSource(dataSourceBuilder, CatalogLockDataSourceName);
                 dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = Math.Min(
                     CatalogSlugLockMaximumPoolSize,
                     dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize);
@@ -225,12 +228,14 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(ConfigureNpgsqlDataSource));
+        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(
+            dataSourceBuilder => ConfigureNpgsqlDataSource(dataSourceBuilder, CatalogTransportDataSourceName)));
         ConfigureDevelopmentDatabaseOptions<CatalogIntegrationTransportDbContext, TApplicationBuilder>(builder, options);
     }
 
-    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder, string dataSourceName)
     {
+        dataSourceBuilder.Name = dataSourceName;
         dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 

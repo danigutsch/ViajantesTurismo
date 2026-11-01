@@ -27,8 +27,9 @@ use is a removal candidate. Verdicts:
 | `PandaBear.Blazor` | `AddSharedKernelBlazorMetrics` | `http-platform` |
 | `SharedKernel.EventSourcing.Npgsql` | `AddSharedKernelProviderMetrics` | `event-store` |
 | `SharedKernel.Observability.Npgsql` | `DatabaseObservabilityHostConfiguration` | `postgresql-observability` |
+| `Npgsql` | `AddNpgsqlProviderMetrics` | none yet; pool panels are planned |
 
-Platform meters (ASP.NET Core, HttpClient, Kestrel, .NET runtime, Npgsql, AWS SDK) are consumed
+Platform meters (ASP.NET Core, HttpClient, Kestrel, .NET runtime, AWS SDK) are consumed
 through the `http-platform` and `runtime` dashboards. Collector self-telemetry (`otelcol_*`) is consumed
 by `collector-gateway`.
 

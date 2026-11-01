@@ -9,6 +9,7 @@ internal static class OpenTelemetryBuilderExtensions
     private const string BrandingTelemetryName = "ViajantesTurismo.Branding";
     private const string SharedKernelAspNetCoreName = "PandaBear.AspNetCore";
     private const string SharedKernelBlazorName = "PandaBear.Blazor";
+    private const string NpgsqlProviderMeterName = "Npgsql";
     private const string SharedKernelNpgsqlEventSourcingName = "SharedKernel.EventSourcing.Npgsql";
 
     /// <summary>Adds the SharedKernel mediator meter.</summary>
@@ -57,6 +58,14 @@ internal static class OpenTelemetryBuilderExtensions
         ArgumentNullException.ThrowIfNull(metrics);
 
         return metrics.AddMeter(SharedKernelBlazorName);
+    }
+
+    /// <summary>Adds the native Npgsql provider meter (<c>Npgsql</c>) for connection-pool and command metrics.</summary>
+    public static MeterProviderBuilder AddNpgsqlProviderMetrics(this MeterProviderBuilder metrics)
+    {
+        ArgumentNullException.ThrowIfNull(metrics);
+
+        return metrics.AddMeter(NpgsqlProviderMeterName);
     }
 
     /// <summary>Adds the Catalog meter.</summary>

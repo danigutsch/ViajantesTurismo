@@ -16,6 +16,7 @@ namespace ViajantesTurismo.Branding.Infrastructure;
 /// </summary>
 public static class BrandingInfrastructureDependencyInjection
 {
+    private const string DataSourceName = "branding";
     private const string MigrationsHistoryTable = "__EFMigrationsHistory_Branding";
 
     /// <summary>
@@ -109,6 +110,7 @@ public static class BrandingInfrastructureDependencyInjection
 
     private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
     {
+        dataSourceBuilder.Name = DataSourceName;
         dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 }
