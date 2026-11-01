@@ -8,9 +8,9 @@ documentation configuration, CI and coverage policy, setup scripts, and compatib
 
 The published candidate is `0.1.0-alpha.439.1` at clean library revision
 [`945d78101108f3e8f4841753fc4a6adcc9916424`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/945d78101108f3e8f4841753fc4a6adcc9916424).
-`IIdempotencyRetentionStore.PurgeExpired` takes an optional `scopePrefix`, storage and lock key values are validated, and the
-analyzers `SKSTYLE018` (undocumented thrown exceptions) and `SKIO003` (upload endpoints without a request size limit) are new;
-the other packages are unchanged in behavior.
+`IIdempotencyRetentionStore.PurgeExpired` takes an optional `scopePrefix`, and the analyzers `SKSTYLE018` (undocumented thrown
+exceptions; not enforced in this repository) and `SKIO003` (upload endpoints without a request size limit) are new; the other
+packages are unchanged in behavior.
 The packages, symbol archives and manifest are published in GitHub prerelease
 [`v0.1.0-alpha.439.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.439.1), built by
 [CI run 41302544284](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41302544284).
