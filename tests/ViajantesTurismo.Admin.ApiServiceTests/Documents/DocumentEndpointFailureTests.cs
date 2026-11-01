@@ -195,7 +195,7 @@ public sealed class DocumentEndpointFailureTests
         audit.Operation.ShouldBe(expectedOperation);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
-        audit.DocumentId.ShouldBe(documentId);
+        audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         audit.ActorId.ShouldBe("test-user");

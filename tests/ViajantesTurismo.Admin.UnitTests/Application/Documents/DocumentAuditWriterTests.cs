@@ -70,6 +70,56 @@ public sealed class DocumentAuditWriterTests
     }
 
     [Fact]
+    public async Task Add_records_a_not_found_rejection_without_the_unresolved_document_id()
+    {
+        // Arrange
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var writer = new DocumentAuditWriter(auditStore, unitOfWork, TimeProvider.System);
+
+        // Act
+        var result = await writer.Add(
+            DocumentAuditTestData.CreateContext(),
+            DocumentAuditOperation.Approve,
+            Guid.CreateVersion7(),
+            null,
+            null,
+            DocumentAuditOutcome.Rejected,
+            DocumentAuditReasonCode.DocumentNotFound,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var record = auditStore.Records.ShouldHaveSingleItem();
+        record.DocumentId.ShouldBeNull();
+        record.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
+    }
+
+    [Fact]
+    public async Task AddHold_records_a_not_found_rejection_without_the_unresolved_document_id()
+    {
+        // Arrange
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var writer = new DocumentAuditWriter(auditStore, unitOfWork, TimeProvider.System);
+
+        // Act
+        var result = await writer.AddHold(
+            DocumentAuditTestData.CreateContext(),
+            DocumentAuditOperation.PlaceHold,
+            Guid.CreateVersion7(),
+            null,
+            null,
+            DocumentAuditOutcome.Rejected,
+            DocumentAuditReasonCode.DocumentNotFound,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        auditStore.Records.ShouldHaveSingleItem().DocumentId.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Add_does_not_persist_invalid_record_metadata()
     {
         // Arrange
@@ -82,10 +132,10 @@ public sealed class DocumentAuditWriterTests
             DocumentAuditTestData.CreateContext(),
             DocumentAuditOperation.Read,
             Guid.Empty,
-            null,
-            null,
-            DocumentAuditOutcome.Rejected,
-            DocumentAuditReasonCode.DocumentNotFound,
+            Guid.CreateVersion7(),
+            1,
+            DocumentAuditOutcome.Succeeded,
+            DocumentAuditReasonCode.None,
             TestContext.Current.CancellationToken);
 
         // Assert

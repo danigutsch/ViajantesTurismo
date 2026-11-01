@@ -41,6 +41,34 @@ internal static class DocumentAuditMetadataReader
         return await Read(command, ct);
     }
 
+    /// <summary>
+    /// Reads the not-found rejections of an operation recorded since a time. They name no document, so they can only be
+    /// found by operation and time.
+    /// </summary>
+    internal static async Task<IReadOnlyList<DocumentAuditEntry>> ReadUnresolvedDocumentRejections(
+        NpgsqlDataSource dataSource,
+        string operation,
+        DateTime sinceUtc,
+        CancellationToken ct)
+    {
+        await using var command = dataSource.CreateCommand(
+            """
+            SELECT "Operation", "Outcome", "ReasonCode", "DocumentId", "ActorId", "CorrelationId", "BookingId", "DocumentRevision", "OccurredAtUtc", "RetentionExpiresAt"
+            FROM "DocumentAuditRecords"
+            WHERE "DocumentId" IS NULL
+              AND "BookingId" IS NULL
+              AND "Operation" = @operation
+              AND "Outcome" = 'Rejected'
+              AND "ReasonCode" = 'DocumentNotFound'
+              AND "OccurredAtUtc" >= @sinceUtc
+            ORDER BY "OccurredAtUtc", "Id";
+            """);
+        command.Parameters.AddWithValue("operation", operation);
+        command.Parameters.AddWithValue("sinceUtc", sinceUtc);
+
+        return await Read(command, ct);
+    }
+
     private static async Task<IReadOnlyList<DocumentAuditEntry>> Read(NpgsqlCommand command, CancellationToken ct)
     {
         var audits = new List<DocumentAuditEntry>();

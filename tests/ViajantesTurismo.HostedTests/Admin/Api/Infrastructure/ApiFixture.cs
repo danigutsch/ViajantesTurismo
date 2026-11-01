@@ -111,6 +111,13 @@ public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admi
         return await DocumentAuditMetadataReader.ReadByDocumentId(dataSource, documentId, ct);
     }
 
+    /// <summary>Reads the not-found rejections of <paramref name="operation"/> recorded since <paramref name="sinceUtc"/>; they name no document.</summary>
+    internal async Task<IReadOnlyList<DocumentAuditEntry>> GetUnresolvedDocumentRejections(string operation, DateTime sinceUtc, CancellationToken ct)
+    {
+        await using var dataSource = NpgsqlDataSource.Create(GetDatabaseConnectionString());
+        return await DocumentAuditMetadataReader.ReadUnresolvedDocumentRejections(dataSource, operation, sinceUtc, ct);
+    }
+
     /// <summary>Reads the document audit records for <paramref name="bookingId"/>.</summary>
     internal async Task<IReadOnlyList<DocumentAuditEntry>> GetDocumentAuditMetadataForBooking(Guid bookingId, CancellationToken ct)
     {

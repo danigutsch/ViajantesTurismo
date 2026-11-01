@@ -145,6 +145,7 @@ public sealed partial class ManagementBffConformanceTests(AspireSystemTestFixtur
     {
         // Arrange
         var documentId = Guid.CreateVersion7();
+        var since = TimeProvider.System.GetUtcNow().UtcDateTime;
 
         // Act
         await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
@@ -153,7 +154,7 @@ public sealed partial class ManagementBffConformanceTests(AspireSystemTestFixtur
         Page.Url.ShouldBe(expectedUrl);
         var missingDocumentAlert = Page.GetByRole(AriaRole.Alert);
         await Expect(missingDocumentAlert).ToContainTextAsync("Document not found.");
-        var actorId = await Fixture.GetRejectedDocumentReadAuditActor(documentId, TestContext.Current.CancellationToken);
+        var actorId = await Fixture.GetRejectedDocumentReadAuditActor(since, TestContext.Current.CancellationToken);
 
         // Assert
         actorId.ShouldBe(Fixture.ConformanceUserId);

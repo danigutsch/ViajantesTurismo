@@ -48,12 +48,11 @@ public sealed class DocumentAuditRecordTests
         // Arrange
         var occurredAt = new DateTime(2026, 7, 16, 8, 30, 0, DateTimeKind.Utc);
         var actorId = "9c5ff2e6-8b35-4f78-9df3-ef15af8e92a4";
-        var documentId = Guid.CreateVersion7();
 
         // Act
         var result = DocumentAuditRecord.Create(
             actorId,
-            documentId,
+            null,
             null,
             null,
             DocumentAuditOperation.Read,
@@ -65,7 +64,7 @@ public sealed class DocumentAuditRecordTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         var record = result.Value;
-        record.DocumentId.ShouldBe(documentId);
+        record.DocumentId.ShouldBeNull();
         record.BookingId.ShouldBeNull();
         record.DocumentRevision.ShouldBeNull();
     }
@@ -329,7 +328,8 @@ public sealed class DocumentAuditRecordTests
         DocumentAuditReasonCode reasonCode)
     {
         // Arrange
-        var documentId = operation == DocumentAuditOperation.Generate ? null : (Guid?)Guid.CreateVersion7();
+        var unresolved = reasonCode == DocumentAuditReasonCode.DocumentNotFound;
+        var documentId = operation == DocumentAuditOperation.Generate || unresolved ? null : (Guid?)Guid.CreateVersion7();
         Guid? bookingId = operation == DocumentAuditOperation.Generate ? Guid.CreateVersion7() : null;
 
         // Act
@@ -521,5 +521,27 @@ public sealed class DocumentAuditRecordTests
 
         // Assert
         result.IsFailure.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(DocumentAuditOperation.Read)]
+    [InlineData(DocumentAuditOperation.Approve)]
+    [InlineData(DocumentAuditOperation.PlaceHold)]
+    public void Create_requires_no_resource_ids_on_a_not_found_rejection(DocumentAuditOperation operation)
+    {
+        // Arrange
+        var occurredAt = new DateTime(2026, 7, 16, 8, 30, 0, DateTimeKind.Utc);
+
+        // Act
+        var withId = DocumentAuditRecord.Create(
+            "actor", Guid.CreateVersion7(), null, null, operation, DocumentAuditOutcome.Rejected,
+            DocumentAuditReasonCode.DocumentNotFound, "correlation", occurredAt);
+        var withoutId = DocumentAuditRecord.Create(
+            "actor", null, null, null, operation, DocumentAuditOutcome.Rejected,
+            DocumentAuditReasonCode.DocumentNotFound, "correlation", occurredAt);
+
+        // Assert
+        withId.IsFailure.ShouldBeTrue();
+        withoutId.IsSuccess.ShouldBeTrue();
     }
 }
