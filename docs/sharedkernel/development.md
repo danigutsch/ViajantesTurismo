@@ -133,8 +133,12 @@ those changes, and record compatibility using:
 
 ```sh
 dotnet tool run sharedkernel-version -- verify-consumer --candidate .local/sharedkernel-feed/candidate.json -- \
-  dotnet test --solution ViajantesTurismo.slnx -c Release
+  bash -c 'dotnet tool restore && dotnet tool run sharedkernel-ci -- openapi generate && dotnet test --solution ViajantesTurismo.slnx -c Release'
 ```
+
+The example uses Bash on Unix. Run tool restore and OpenAPI generation inside the verified command,
+using the equivalent fail-fast command sequence in the platform shell on Windows. Generated OpenAPI
+files in the working checkout are ignored and are not copied into the fresh verification clone.
 
 Compatibility records both committed repository revisions and package hashes in
 `TestResults/consumer-compatibility.json` as `passed`, `failed`, or `pending` (uncommitted changes run
