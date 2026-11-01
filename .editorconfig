@@ -152,6 +152,9 @@ dotnet_diagnostic.SKSTYLE002.severity = warning
 dotnet_diagnostic.SKSTYLE003.severity = warning
 dotnet_diagnostic.SKSTYLE004.severity = warning
 dotnet_diagnostic.SKSTYLE017.severity = warning
+# SKSTYLE018 is not enforced in this repository (SharedKernel enforces it): hundreds of ArgumentNullException and
+# ArgumentOutOfRangeException guard tags would be churn.
+dotnet_diagnostic.SKSTYLE018.severity = none
 dotnet_diagnostic.SKTEST001.severity = warning
 dotnet_diagnostic.SKTEST002.severity = warning
 dotnet_diagnostic.SKTEST003.severity = warning
