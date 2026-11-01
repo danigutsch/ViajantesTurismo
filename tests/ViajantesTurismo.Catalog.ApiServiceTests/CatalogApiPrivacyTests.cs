@@ -99,8 +99,51 @@ public sealed class CatalogApiPrivacyTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         propertyNames.ShouldNotBeEmpty();
-        propertyNames
-            .Where(name => AdminOnlyPiiFieldNames.All.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase)))
-            .ShouldBeEmpty();
+        AdminOnlyPiiFieldNames.Matching(propertyNames).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Public_content_payload_does_not_expose_admin_only_customer_or_booking_fields()
+    {
+        // Arrange
+        var publicContentStore = new TestPublicContentStore();
+        await publicContentStore.SaveContent(
+            CatalogApiCachingTestData.CreatePublishedContent("Welcome"),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), publicContentStore);
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/api/v1/public/catalog/content/home.hero?culture=en-US", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var propertyNames = JsonPropertyNames.Collect(body);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        propertyNames.ShouldNotBeEmpty();
+        AdminOnlyPiiFieldNames.Matching(propertyNames).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Public_branding_payload_does_not_expose_admin_only_customer_or_booking_fields()
+    {
+        // Arrange
+        await using var factory = BrandingApiTestHost.CreateAnonymous(new TestBrandingSettingsStore());
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/api/v1/{BrandingRoutes.PublicSettingsPath}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var propertyNames = JsonPropertyNames.Collect(body);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        propertyNames.ShouldNotBeEmpty();
+        AdminOnlyPiiFieldNames.Matching(propertyNames).ShouldBeEmpty();
     }
 }
