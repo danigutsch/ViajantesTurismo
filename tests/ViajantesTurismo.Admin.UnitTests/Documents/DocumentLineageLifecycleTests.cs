@@ -60,4 +60,33 @@ public sealed class DocumentLineageLifecycleTests
         older.Status.ShouldBe(DocumentStatus.Superseded);
         newer.Status.ShouldBe(DocumentStatus.Finalized);
     }
+
+    [Fact]
+    public void Ensure_can_approve_and_finalize_follow_the_revision_status_without_mutating()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentLineageTestData.Create();
+        var auditContext = DocumentAuditTestData.CreateContext();
+        var revision = lineage.Revisions.ShouldHaveSingleItem();
+        lineage.EnsureCanApprove(revision.Id).Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        lineage.BeginReview(revision.Id, now, auditContext).IsSuccess.ShouldBeTrue();
+
+        // Act and Assert
+        lineage.EnsureCanApprove(revision.Id).IsSuccess.ShouldBeTrue();
+        lineage.EnsureCanFinalize(revision.Id).Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        lineage.Approve(revision.Id, now, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.EnsureCanApprove(revision.Id).Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        lineage.EnsureCanFinalize(revision.Id).IsSuccess.ShouldBeTrue();
+        revision.Status.ShouldBe(DocumentStatus.Approved);
+    }
+
+    [Fact]
+    public void Ensure_can_approve_and_finalize_report_an_unknown_revision_as_not_found()
+    {
+        var lineage = DocumentLineageTestData.Create();
+
+        lineage.EnsureCanApprove(Guid.CreateVersion7()).Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        lineage.EnsureCanFinalize(Guid.CreateVersion7()).Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+    }
 }

@@ -67,6 +67,44 @@ public sealed class FinalizeDocumentCommandHandlerTests
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Handle_reports_the_state_conflict_before_a_changed_source_for_a_retired_document(bool voided)
+    {
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var document = DocumentDraftTestData.Create(now);
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        document.Finalize("artifact"u8.ToArray(), now).IsSuccess.ShouldBeTrue();
+        if (voided)
+        {
+            document.Void(DocumentVoidReason.AdministrativeVoid, now).IsSuccess.ShouldBeTrue();
+        }
+
+        var status = document.Status;
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader("CHANGED-SOURCE-VERSION"));
+
+        var result = await handler.Handle(
+            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(
+            DocumentErrors.InvalidStatusTransition(status, DocumentStatus.Finalized).ErrorDetails!.Detail);
+        document.Status.ShouldBe(status);
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+    }
+
     [Fact]
     public async Task Handle_reports_a_missing_source_and_records_audit_without_sealing()
     {

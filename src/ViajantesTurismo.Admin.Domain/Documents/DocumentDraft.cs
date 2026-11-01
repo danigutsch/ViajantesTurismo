@@ -611,12 +611,25 @@ public sealed class DocumentDraft : IEntity<Guid>
             ? Result.Ok()
             : DocumentErrors.SourceChangedSinceDraft();
 
+    /// <summary>Checks that the document is under active staff review, which approval requires.</summary>
+    internal Result EnsureCanApprove() =>
+        Status == DocumentStatus.InReview
+            ? Result.Ok()
+            : DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Approved);
+
+    /// <summary>Checks that the document is approved, which finalization requires.</summary>
+    internal Result EnsureCanFinalize() =>
+        Status == DocumentStatus.Approved
+            ? Result.Ok()
+            : DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Finalized);
+
     /// <summary>Approves a document under active staff review.</summary>
     internal Result Approve(DateTime now)
     {
-        if (Status != DocumentStatus.InReview)
+        var canApprove = EnsureCanApprove();
+        if (canApprove.IsFailure)
         {
-            return DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Approved);
+            return canApprove;
         }
 
         Status = DocumentStatus.Approved;
@@ -629,9 +642,10 @@ public sealed class DocumentDraft : IEntity<Guid>
     {
         ArgumentNullException.ThrowIfNull(artifactContent);
 
-        if (Status != DocumentStatus.Approved)
+        var canFinalize = EnsureCanFinalize();
+        if (canFinalize.IsFailure)
         {
-            return DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Finalized);
+            return canFinalize;
         }
 
         if (artifactContent.Length == 0)

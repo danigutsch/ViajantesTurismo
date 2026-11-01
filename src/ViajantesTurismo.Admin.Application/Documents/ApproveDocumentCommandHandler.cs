@@ -40,6 +40,19 @@ public sealed class ApproveDocumentCommandHandler(
             return Domain.Payments.FinancialErrors.Invalid("paymentInstructionLifecycle");
         }
 
+        var stateResult = lineage.EnsureCanApprove(document.Id);
+        if (stateResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                stateResult,
+                command.AuditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
+        }
+
         var sourceVersionResult = await sourceVersionReader.Read(document.BookingId, ct);
         if (sourceVersionResult.IsFailure)
         {
