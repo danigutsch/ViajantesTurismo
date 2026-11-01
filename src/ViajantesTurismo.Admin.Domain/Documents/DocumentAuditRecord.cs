@@ -213,6 +213,7 @@ public sealed class DocumentAuditRecord : IEntity<Guid>, IAuditTrailEntry
                     DocumentAuditOperation.Finalize => reasonCode is
                         DocumentAuditReasonCode.DocumentNotFound or
                         DocumentAuditReasonCode.BookingNotFound or
+                        DocumentAuditReasonCode.TourNotFound or
                         DocumentAuditReasonCode.StateConflict,
                 DocumentAuditOperation.Void => reasonCode is
                     DocumentAuditReasonCode.DocumentNotFound or

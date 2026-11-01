@@ -15,7 +15,8 @@ public sealed class DocumentSourceVersionReaderTests
         var result = await reader.Read(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.Result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.MissingSource.ShouldBe(DocumentSourceKind.Booking);
     }
 
     [Fact]
@@ -30,7 +31,8 @@ public sealed class DocumentSourceVersionReaderTests
         var result = await reader.Read(bookingId, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.Result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.MissingSource.ShouldBe(DocumentSourceKind.Tour);
     }
 
     [Fact]
@@ -47,8 +49,9 @@ public sealed class DocumentSourceVersionReaderTests
         var result = await reader.Read(bookingId, TestContext.Current.CancellationToken);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(ContractDocumentDraftFactory.CreateSourceVersion(booking, tour));
+        result.Result.IsSuccess.ShouldBeTrue();
+        result.MissingSource.ShouldBeNull();
+        result.Result.Value.ShouldBe(ContractDocumentDraftFactory.CreateSourceVersion(booking, tour));
     }
 
     [Fact]
@@ -66,6 +69,6 @@ public sealed class DocumentSourceVersionReaderTests
             .Read(bookingId, TestContext.Current.CancellationToken);
 
         // Assert
-        changed.Value.ShouldNotBe(original.Value);
+        changed.Result.Value.ShouldNotBe(original.Result.Value);
     }
 }

@@ -1,4 +1,3 @@
-using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
@@ -7,20 +6,20 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 internal sealed class DocumentSourceVersionReader(IQueryService queryService) : IDocumentSourceVersionReader
 {
     /// <inheritdoc />
-    public async Task<Result<string>> Read(Guid bookingId, CancellationToken ct)
+    public async Task<DocumentSourceVersionRead> Read(Guid bookingId, CancellationToken ct)
     {
         var booking = await queryService.GetBookingById(bookingId, ct);
         if (booking is null)
         {
-            return BookingErrors.BookingNotFound().ConvertError<string>();
+            return DocumentSourceVersionRead.Missing(DocumentSourceKind.Booking, BookingErrors.BookingNotFound());
         }
 
         var tour = await queryService.GetTourById(booking.TourId, ct);
         if (tour is null)
         {
-            return TourErrors.TourNotFound().ConvertError<string>();
+            return DocumentSourceVersionRead.Missing(DocumentSourceKind.Tour, TourErrors.TourNotFound());
         }
 
-        return Result.Ok(ContractDocumentDraftFactory.CreateSourceVersion(booking, tour));
+        return DocumentSourceVersionRead.Found(ContractDocumentDraftFactory.CreateSourceVersion(booking, tour));
     }
 }

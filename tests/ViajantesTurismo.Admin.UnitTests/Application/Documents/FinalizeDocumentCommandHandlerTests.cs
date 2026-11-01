@@ -106,6 +106,33 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_reports_a_missing_tour_with_the_tour_not_found_audit_reason()
+    {
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var document = DocumentDraftTestData.Create(now);
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader { MissingSource = DocumentSourceKind.Tour });
+
+        var result = await handler.Handle(
+            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        document.Status.ShouldBe(DocumentStatus.Approved);
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.TourNotFound);
+    }
+
+    [Fact]
     public async Task Handle_reports_a_missing_source_and_records_audit_without_sealing()
     {
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
@@ -121,7 +148,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             unitOfWork,
             TimeProvider.System,
             DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
-            new FakeDocumentSourceVersionReader { SourceMissing = true });
+            new FakeDocumentSourceVersionReader { MissingSource = DocumentSourceKind.Booking });
 
         var result = await handler.Handle(
             new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),

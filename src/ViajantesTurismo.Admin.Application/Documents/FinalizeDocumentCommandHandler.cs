@@ -54,20 +54,20 @@ public sealed class FinalizeDocumentCommandHandler(
                 ct);
         }
 
-        var sourceVersionResult = await sourceVersionReader.Read(document.BookingId, ct);
-        if (sourceVersionResult.IsFailure)
+        var sourceVersionRead = await sourceVersionReader.Read(document.BookingId, ct);
+        if (sourceVersionRead.Result.IsFailure)
         {
             return await RecordAndReturn(
-                sourceVersionResult.ConvertError(),
+                sourceVersionRead.Result.ConvertError(),
                 auditContext,
                 document.Id,
                 document.BookingId,
                 document.Revision,
-                DocumentAuditReasonCode.BookingNotFound,
+                sourceVersionRead.AuditReasonCode,
                 ct);
         }
 
-        var freshnessResult = lineage.EnsureSourceIsCurrent(document.Id, sourceVersionResult.Value);
+        var freshnessResult = lineage.EnsureSourceIsCurrent(document.Id, sourceVersionRead.Result.Value);
         if (freshnessResult.IsFailure)
         {
             return await RecordAndReturn(
