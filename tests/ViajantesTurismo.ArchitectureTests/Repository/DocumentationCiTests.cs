@@ -50,14 +50,17 @@ public sealed class DocumentationCiTests
     }
 
     [Theory]
-    [InlineData("true", "success", "success", 0)]
-    [InlineData("true", "failure", "success", 1)]
-    [InlineData("true", "success", "failure", 1)]
-    [InlineData("false", "skipped", "skipped", 0)]
-    [InlineData("false", "failure", "skipped", 1)]
-    [InlineData("", "skipped", "skipped", 1)]
+    [InlineData("true", "success", "success", "success", 0)]
+    [InlineData("true", "failure", "success", "success", 1)]
+    [InlineData("true", "success", "failure", "success", 1)]
+    [InlineData("true", "success", "success", "failure", 1)]
+    [InlineData("true", "success", "success", "skipped", 1)]
+    [InlineData("false", "skipped", "skipped", "skipped", 0)]
+    [InlineData("false", "failure", "skipped", "skipped", 1)]
+    [InlineData("false", "skipped", "skipped", "failure", 1)]
+    [InlineData("", "skipped", "skipped", "skipped", 1)]
     public async Task Quality_gate_accepts_documentation_skips_but_rejects_failures_and_missing_selection(
-        string required, string tests, string build, int expected)
+        string required, string tests, string build, string format, int expected)
     {
         // Arrange
         var root = RepositoryTestProcess.GetRepositoryRoot();
@@ -75,6 +78,7 @@ public sealed class DocumentationCiTests
                 ["SELECTION_RESULT"] = "success",
                 ["TEST_RESULT"] = tests,
                 ["BUILD_RESULT"] = build,
+                ["FORMAT_RESULT"] = format,
                 ["BUILD_REQUIRED"] = required
             });
 
