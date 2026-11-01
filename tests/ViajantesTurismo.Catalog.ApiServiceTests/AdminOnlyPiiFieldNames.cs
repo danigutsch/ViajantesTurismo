@@ -31,4 +31,13 @@ internal static class AdminOnlyPiiFieldNames
             .Concat(BookingRelationship)
             .Concat(Payment)
             .Concat(AuthenticationMaterial);
+
+    /// <summary>Returns the property names that contain any classified admin-only fragment.</summary>
+    /// <param name="propertyNames">The JSON property names of a public payload.</param>
+    public static IReadOnlyList<string> Matching(IEnumerable<string> propertyNames)
+    {
+        ArgumentNullException.ThrowIfNull(propertyNames);
+
+        return [.. propertyNames.Where(name => All.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase)))];
+    }
 }

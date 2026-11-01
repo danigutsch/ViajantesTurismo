@@ -78,6 +78,23 @@ client ID, and client-secret configuration plus
 Keycloak-compatible RFC 8693 token endpoint. API bearer validation and authorization remain
 provider-neutral.
 
+The deployment contract is the set of `Authentication__*` variables listed in
+[`docs/CONFIGURATION.md`](../../docs/CONFIGURATION.md). The AppHost supplies the client ID, the client
+secret parameter, and the token-exchange settings in every mode, and supplies authority, issuer, and
+the HTTP-authority opt-in only in run mode. The publish-mode AppHost test asserts that split.
+
+Standard for local-only resources:
+
+- Gate the resource on `builder.ExecutionContext.IsRunMode` inside one helper that returns `null` in
+  publish mode, as `AddRunModeIdentityProvider` does. Do not branch at each call site.
+- Pass the optional resource to consumers as a nullable argument and add its references and
+  environment variables only when it is present.
+- Create credentials that only a local-only resource uses with `AddLocalSecret` inside the same
+  run-mode gate, so publish mode declares no parameter for them. Credentials that published services
+  also need, such as the Management Web client secret, stay outside the gate.
+- Cover each local-only resource with a publish-mode model test that proves it is absent and a
+  run-mode test that proves it is present.
+
 Use these Aspire 13.4 integration points for release work:
 
 - `PublishAsDockerFile(...)` on project resources that should be built as application containers

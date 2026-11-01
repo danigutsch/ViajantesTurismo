@@ -47,6 +47,18 @@ internal static class DocumentDraftInfrastructureTestData
         return result.Value;
     }
 
+    /// <summary>Creates a lineage whose single revision is approved and ready to finalize.</summary>
+    public static DocumentLineage CreateApprovedLineage(DateTime createdAt)
+    {
+        var lineage = CreateLineage(createdAt);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        var auditContext = CreateAuditContext();
+        lineage.BeginReview(documentId, createdAt, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.Approve(documentId, createdAt, auditContext).IsSuccess.ShouldBeTrue();
+        lineage.ClearDomainEvents();
+        return lineage;
+    }
+
     /// <summary>Creates a lineage with the given number of revisions, one minute apart, each with a distinct template version.</summary>
     public static DocumentLineage CreateLineageWithRevisions(DateTime firstCreatedAt, int revisionCount)
     {

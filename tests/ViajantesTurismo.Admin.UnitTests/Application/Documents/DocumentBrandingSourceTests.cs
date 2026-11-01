@@ -164,7 +164,7 @@ public sealed class DocumentBrandingSourceTests
         var documents = new FakeDocumentStore();
         documents.Documents.Add(document.Id, document);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(documents, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+        var handler = new FinalizeDocumentCommandHandler(documents, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork), new FakeDocumentSourceVersionReader());
         var finalization = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
         finalization.IsSuccess.ShouldBeTrue();
         var before = document.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray();

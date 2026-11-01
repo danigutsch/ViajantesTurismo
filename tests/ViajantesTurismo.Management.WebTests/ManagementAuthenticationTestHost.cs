@@ -40,6 +40,12 @@ internal sealed class ManagementAuthenticationTestHost : IAsyncDisposable
     /// <summary>Configured authorization options.</summary>
     public AuthorizationOptions AuthorizationOptions => _provider.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
 
+    /// <summary>Resolves the registered advisory lock data source so its pool metrics are reported.</summary>
+    public void ResolveAdvisoryLockDataSource()
+    {
+        _ = _provider.GetRequiredService<Npgsql.NpgsqlDataSource>();
+    }
+
     /// <summary>Creates the HTTP client used for Keycloak token exchange.</summary>
     public HttpClient CreateKeycloakTokenExchangeClient()
     {

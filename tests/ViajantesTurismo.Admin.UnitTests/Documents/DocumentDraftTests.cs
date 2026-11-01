@@ -45,6 +45,29 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void EnsureSourceIsCurrent_accepts_the_version_the_draft_was_generated_from()
+    {
+        // Arrange
+        var draft = DocumentDraftTestData.Create(new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc));
+
+        // Act and Assert
+        draft.EnsureSourceIsCurrent(draft.SourceVersion).IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EnsureSourceIsCurrent_rejects_a_changed_source_version_as_conflict()
+    {
+        // Arrange
+        var draft = DocumentDraftTestData.Create(new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc));
+
+        // Act
+        var result = draft.EnsureSourceIsCurrent("CHANGED-SOURCE-VERSION");
+
+        // Assert
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+    }
+
+    [Fact]
     public void UpdateField_allows_only_classified_editable_fields()
     {
         // Arrange
@@ -701,6 +724,26 @@ public sealed class DocumentDraftTests
         expiredDraft.ShouldBeTrue();
         expiredFinalized.ShouldBeFalse();
         finalized.RetentionExpiresAt.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    public void Draft_becomes_eligible_for_purge_exactly_at_its_retention_expiry(int offsetTicks, bool expected)
+    {
+        // Arrange
+        var createdAt = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(createdAt);
+        var expiresAt = draft.RetentionExpiresAt.ShouldNotBeNull();
+        var now = expiresAt.AddTicks(offsetTicks);
+
+        // Act
+        var eligible = draft.IsExpiredDraft(now);
+
+        // Assert
+        expiresAt.ShouldBe(createdAt.AddDays(DocumentLimits.DraftRetentionDays));
+        eligible.ShouldBe(expected);
     }
 
     [Fact]

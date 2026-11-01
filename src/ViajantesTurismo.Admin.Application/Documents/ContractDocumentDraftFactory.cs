@@ -86,7 +86,8 @@ internal static class ContractDocumentDraftFactory
         return Result.Ok<IReadOnlyList<DocumentField>>(fields);
     }
 
-    private static string CreateSourceVersion(GetBookingDto booking, GetTourDto tour)
+    /// <summary>Computes the deterministic version of the booking and tour data a draft is generated from.</summary>
+    internal static string CreateSourceVersion(GetBookingDto booking, GetTourDto tour)
     {
         var source = string.Join("\n",
             booking.Id.ToString("N"),

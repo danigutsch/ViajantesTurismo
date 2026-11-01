@@ -8,7 +8,8 @@ public sealed class FinalizeDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    DocumentAuditWriter documentAuditWriter)
+    DocumentAuditWriter documentAuditWriter,
+    IDocumentSourceVersionReader sourceVersionReader)
 {
     /// <summary>Finalizes the artifact and supersedes older finalized revisions only after success.</summary>
     public async Task<Result> Handle(FinalizeDocumentCommand command, CancellationToken ct)
@@ -38,6 +39,45 @@ public sealed class FinalizeDocumentCommandHandler(
         if (document.RequiresPaymentInstructionWorkflow)
         {
             return Domain.Payments.FinancialErrors.Invalid("paymentInstructionLifecycle");
+        }
+
+        var stateResult = lineage.EnsureCanFinalize(document.Id);
+        if (stateResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                stateResult,
+                auditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
+        }
+
+        var sourceVersionRead = await sourceVersionReader.Read(document.BookingId, ct);
+        if (sourceVersionRead.Result.IsFailure)
+        {
+            return await RecordAndReturn(
+                sourceVersionRead.Result.ConvertError(),
+                auditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                sourceVersionRead.AuditReasonCode,
+                ct);
+        }
+
+        var freshnessResult = lineage.EnsureSourceIsCurrent(document.Id, sourceVersionRead.Result.Value);
+        if (freshnessResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                freshnessResult,
+                auditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
         }
 
         var result = lineage.Finalize(document.Id, DocumentArtifactRenderer.Render(document), now, auditContext);

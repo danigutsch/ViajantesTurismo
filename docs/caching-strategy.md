@@ -24,6 +24,44 @@ documents a narrower safe exception.
 - Branding management reads and writes and all mutating Catalog responses return
   `Cache-Control: no-store`.
 
+## Cache candidates and non-candidates
+
+A review of every Management Web catalog read and every Admin `QueryService` read classified each as
+cacheable or not from the code. Reads are cached only when the result is identical for all callers and a
+stale value is harmless. Prefer pagination and projection over caching when a read is slow.
+
+### Management Web catalog reads
+
+| Read | Verdict | Reason |
+| --- | --- | --- |
+| Catalog tour list, tour edit, tour images, public content editor | Not cacheable | Editors save and immediately re-read; a stale list shows the wrong publish state or image readiness |
+| Branding management settings | Not cacheable | `no-store` plus an ETag that is the `If-Match` concurrency token for saves |
+| Country list (`CountryService`) | Cacheable, in process | Static reference data from `wwwroot/data/countries.json`; registered as a singleton so it loads once per process |
+| Currency formatting | Nothing to cache | `CurrencyFormatter` is a static switch with no I/O |
+
+Management Web registers the output cache, but no endpoint or page opts in, so it caches nothing today.
+
+### Admin `QueryService` reads
+
+None of the eight `QueryService` reads is cacheable.
+
+| Read | Verdict | Reason |
+| --- | --- | --- |
+| `GetAllTours`, `GetTourById` | Not cacheable | Include bookings, so every booking write changes the result; `GetTourById` is also read inside document commands |
+| `GetAllCustomers`, `GetCustomerDetailsById` | Not cacheable | Personal data, including national id and medical information; edits must show immediately |
+| `GetAllBookings`, `GetBookingById` | Not cacheable | Personal and payment ledger data; `GetBookingById` is read inside document generation, where a stale value would put wrong figures in a contract |
+| `GetBookingsByTourId`, `GetBookingsByCustomerId` | Not cacheable | Same data, invalidated by every booking write |
+
+`GetAllBookings` and `GetAllTours` are the heaviest reads. If measurement shows a need, reduce their cost with
+pagination and column projection rather than caching. The repository has no measurement of call frequency or
+latency yet.
+
+### Already cached
+
+Anonymous public catalog tours, public content, and public branding settings are output-cached for 60 seconds
+per instance with tag eviction from the mutating endpoints. A read-model change that arrives from an Admin
+integration event does not evict, so the public view can lag by up to the 60-second lifetime. This is accepted.
+
 ## Eventual consistency
 
 Catalog and Branding mutations evict same-process public API output-cache entries before returning

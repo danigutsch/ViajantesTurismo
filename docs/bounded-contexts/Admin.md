@@ -89,6 +89,68 @@ for specific invariants.
 - **Contracts:** split across `ViajantesTurismo.Admin.Contracts.Application`,
   `ViajantesTurismo.Admin.Contracts.Http`, and `ViajantesTurismo.Admin.Contracts.IntegrationEvents`
 
+## Country and Currency Reference Data
+
+Inventory of where country and currency data is used, and where each concern belongs.
+
+### Country usages
+
+| Project | Usage | Kind |
+| --- | --- | --- |
+| `Management.Web` `wwwroot/data/countries.json` | ISO 3166 alpha-2 code keyed list with names and metadata | Static data file |
+| `Management.Web` `CountryService`, `ICountryService` | Loads the list once, falls back to ten common countries, maps demonyms to names | Lookup, singleton |
+| `Management.Web` `CountrySelector` | Nationality and identification-country pickers on customer create and edit pages | UI |
+| `Management.Web` customer import | Header matching for a `Country` column | Import mapping |
+| `Admin.Domain` `Address`, `PersonalInfo`, `IdentificationInfo` | Free text, required, sanitized, 128 characters at most | Domain validation |
+| `Admin.Contracts.Application` `AddressDto`, customer DTOs | Plain string, no code list | Contract |
+
+The domain accepts any non-empty string, so a stored value may be a name, a demonym, or a code.
+Only the Management Web picker constrains input, and only for people using that form.
+
+### Currency usages
+
+| Project | Usage | Kind |
+| --- | --- | --- |
+| `Admin.Domain` `Currency` | `Real`, `Euro`, `UsDollar`; tour pricing carries one currency | Domain enum |
+| `Admin.Domain` payments | Settlement is EUR or BRL only; BRL needs an approved FX quote; `AgreedFxQuote` rounds to cents | Business rules |
+| `Admin.Contracts.Application` `CurrencyDto` | Mirror of the enum for the HTTP contract | Contract |
+| `Admin.Application` `TourMapper` | Maps `Currency` to `CurrencyDto` for tours | Mapping |
+| `Admin.Infrastructure` payment configurations | Persist the enum on payment account and payment history rows | Persistence |
+| `Management.Web` `CurrencyFormatter` | Symbol, symbol position, and two decimals in invariant culture | Formatting |
+| `Management.Web` tour and payment pages | Currency pickers and labels per enum value | UI |
+
+Catalog, Branding, and Public Web hold no country or currency data.
+
+### Ownership boundary
+
+| Concern | Owner | Notes |
+| --- | --- | --- |
+| Which currencies exist and which settle payments | `Admin.Domain` | A business rule, not reference data; keep it in the enum and payment types |
+| Rounding, FX conversion, per-currency validity | `Admin.Domain` | Already encapsulated in payment types |
+| Currency symbol, symbol position, number format | `Management.Web` | Presentation only; depends on the viewer, not the data |
+| ISO country list and display names | `Management.Web` | Static lookup for pickers; not a domain concept today |
+| Whether a stored country must be a valid code | Undecided | Today a UI-only constraint; the domain would need a code type to enforce it |
+
+### Lifetime and caching
+
+- The country list is immutable per deployment, so a process-lifetime singleton loaded on first use is
+  enough. No expiry or invalidation is needed. `CountryService` is registered that way.
+- Currency symbols and positions are compile-time constants and need no cache.
+- Neither list is served over HTTP, so the response caching rules in
+  [Caching strategy](../caching-strategy.md) do not apply.
+
+### Follow-up suggestions
+
+These are suggestions, not committed work.
+
+- Decide whether the domain should store a country as an ISO code value object. This changes persistence,
+  import, and existing free-text rows, so it needs a migration plan and an owner decision first.
+- Move the demonym table out of `CountryService` if the code decision above is taken, since codes make it
+  unnecessary for new data.
+- Add a currency-to-symbol parity test over every `CurrencyDto` value, so a new currency cannot fall
+  through to the generic symbol in `CurrencyFormatter`.
+- Keep a shared library out of scope until a second application needs the same list.
+
 ## Testing
 
 Admin behavior, unit, API, contract, infrastructure, integration, and system test projects validate
