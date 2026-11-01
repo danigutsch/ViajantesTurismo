@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.Web.Services;
 /// Service for loading and managing country data.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="CountryService"/> class.
+/// Registered as a singleton: the loaded list is shared across scopes. Concurrent first calls may each read the file once with equivalent results.
 /// </remarks>
 /// <param name="hostEnvironment">The web host environment.</param>
 internal sealed class CountryService(IWebHostEnvironment hostEnvironment) : ICountryService
@@ -28,7 +28,7 @@ internal sealed class CountryService(IWebHostEnvironment hostEnvironment) : ICou
         { "Mexican", "Mexico" }
     };
 
-    private CountryInfo[]? _countries;
+    private volatile CountryInfo[]? _countries;
 
     /// <summary>
     /// Gets the list of countries asynchronously.
