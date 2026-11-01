@@ -71,4 +71,36 @@ public sealed class CatalogApiPrivacyTests
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         body.ShouldNotContain(sensitiveMessage, StringComparison.Ordinal);
     }
+
+    [Theory]
+    [InlineData("/api/v1/public/catalog/tours")]
+    [InlineData("/api/v1/public/catalog/tours/privacy-tour")]
+    public async Task Public_tour_payloads_do_not_expose_admin_only_customer_or_booking_fields(string path)
+    {
+        // Arrange
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            CatalogApiCachingTestData.CreatePublishedTour(tourId, "Privacy Tour", "privacy-tour"),
+            TestContext.Current.CancellationToken);
+        var imageStore = new TestPublicMediaImageStore();
+        await imageStore.Upsert(
+            PublicMediaImageTestFactory.CreateReadyImage(tourId, "source.jpg", "public.jpg", "sha256:privacy", "Cyclists", 0, true),
+            TestContext.Current.CancellationToken);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), imageStore);
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = null;
+
+        // Act
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var propertyNames = JsonPropertyNames.Collect(body);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        propertyNames.ShouldNotBeEmpty();
+        propertyNames
+            .Where(name => AdminOnlyPiiFieldNames.All.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase)))
+            .ShouldBeEmpty();
+    }
 }
