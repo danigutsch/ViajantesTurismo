@@ -87,18 +87,22 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         await PostgreSqlEventSourcingSchemaReset.Reset(catalogConnection, ct);
     }
 
-    /// <summary>Gets the actor id of the latest rejected not-found document read audit record, or <see langword="null" /> when none exists.</summary>
-    internal async Task<string?> GetRejectedDocumentReadAuditActor(Guid documentId, CancellationToken ct)
+    /// <summary>
+    /// Gets the actor id of the latest rejected not-found document read audit record since the given time, or
+    /// <see langword="null" /> when none exists. The record names no document, so it is found by time.
+    /// </summary>
+    internal async Task<string?> GetRejectedDocumentReadAuditActor(DateTime sinceUtc, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(_databaseConnectionString);
 
         const string sql = """
             SELECT "ActorId"
             FROM "DocumentAuditRecords"
-            WHERE "DocumentId" = @documentId
+            WHERE "DocumentId" IS NULL
               AND "Operation" = 'Read'
               AND "Outcome" = 'Rejected'
               AND "ReasonCode" = 'DocumentNotFound'
+              AND "OccurredAtUtc" >= @sinceUtc
             ORDER BY "OccurredAtUtc" DESC
             LIMIT 1;
             """;
@@ -106,7 +110,7 @@ public sealed class AspireSystemTestFixture(HostedTestFixture shared) : IAspireS
         await using var connection = new NpgsqlConnection(_databaseConnectionString);
         await connection.OpenAsync(ct);
         await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.AddWithValue("documentId", documentId);
+        command.Parameters.AddWithValue("sinceUtc", sinceUtc);
         return await command.ExecuteScalarAsync(ct) as string;
     }
 

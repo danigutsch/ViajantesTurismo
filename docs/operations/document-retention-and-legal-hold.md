@@ -126,14 +126,13 @@ purges that do exist: unfinalized drafts, document audit records and document id
   exist at write time, or null only when the record names no document. The immutability trigger rejects every UPDATE and TRUNCATE,
   and the check constraint `CK_DocumentAuditRecords_DocumentLineageStamped` (`DocumentId IS NULL OR DocumentLineageId IS NOT NULL`)
   makes an unstamped record that names a document impossible.
-- Residual (audit lineage): an audit record whose document row no longer exists when the record is written is stamped as having
-  no lineage and stays purgeable. Decision: no rule closes this, because the lineage is resolvable only through a document row,
-  and a purged lineage leaves nothing to look up (the lineage row is deleted with its last revision; the idempotency owner covers
-  only documents that were regenerated). The gap is bounded: it needs a revision that expired and was purged, a lineage that still
-  has other revisions (a hold can only be placed on an existing document), a request that audited the missing revision (a
-  concurrent purge between the handler's read and the audit write, or a later request naming the purged document), and a hold
-  placed afterwards. Only that one metadata record, which holds no document content, is then not covered; every other record,
-  revision and entry of the lineage is.
+- A request naming a document that does not exist is audited without a document identifier: the record keeps the operation, the
+  actor, the `DocumentNotFound` reason and the correlation, and names no resource. The domain rejects a `DocumentNotFound`
+  rejection that carries a document, booking or revision identifier, and `DocumentAuditWriter` drops them before it creates the
+  record. An identifier that resolved to no document belongs to no lineage, so no hold has anything to cover, and a purged
+  revision of a held lineage can no longer leave an audit record that a later hold cannot reach. A request that did load its
+  document before a concurrent purge still stamps the lineage it loaded, because the stamp reads the tracked draft first. The
+  `Guid.Empty` stamp stays only as a fail-closed fallback for a document that vanished between that read and the save.
 - The held counts of the three purges come from the same pre-filter (effective holds by the database clock) plus any candidates
   the guard then reports as held, so a hold placed during the run is counted too. The guard check stays authoritative.
 - Idempotency entries record the document lineage as their retention owner when they start (`IIdempotencyStore.TryStart` with
