@@ -37,6 +37,10 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 public static class InfrastructureDependencyInjection
 {
     private const int TourCapacityLockMaximumPoolSize = 8;
+    private const string WriteDataSourceName = "admin-write";
+    private const string ReadDataSourceName = "admin-read";
+    private const string BrandingTransportDataSourceName = "admin-branding-transport";
+    private const string TourCapacityLockDataSourceName = "admin-tour-capacity-lock";
 
     /// <summary>
     /// Applies Admin migrations from the dedicated database initialization application.
@@ -193,7 +197,7 @@ public static class InfrastructureDependencyInjection
             ResourceNames.CatalogDatabase,
             configureDbContextOptions: options =>
             {
-                ConfigureNpgsqlTracing(options);
+                ConfigureNpgsqlTracing(options, BrandingTransportDataSourceName);
                 builder.Services.ApplyDbContextOptionConfigurations<AdminBrandingTransportDbContext>(
                     options,
                     builder.Environment.IsDevelopment());
@@ -241,7 +245,7 @@ public static class InfrastructureDependencyInjection
             ResourceNames.AdminDatabase,
             configureDataSourceBuilder: dataSourceBuilder =>
             {
-                ConfigureNpgsqlDataSource(dataSourceBuilder);
+                ConfigureNpgsqlDataSource(dataSourceBuilder, TourCapacityLockDataSourceName);
                 dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = Math.Min(
                     TourCapacityLockMaximumPoolSize,
                     dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize);
@@ -264,7 +268,7 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        ConfigureNpgsqlTracing(options);
+        ConfigureNpgsqlTracing(options, ReadDataSourceName);
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         builder.Services.ApplyDbContextOptionConfigurations<AdminReadDbContext>(options, builder.Environment.IsDevelopment());
     }
@@ -274,17 +278,19 @@ public static class InfrastructureDependencyInjection
         DbContextOptionsBuilder options)
         where TApplicationBuilder : IHostApplicationBuilder
     {
-        ConfigureNpgsqlTracing(options);
+        ConfigureNpgsqlTracing(options, WriteDataSourceName);
         builder.Services.ApplyDbContextOptionConfigurations<AdminWriteDbContext>(options, builder.Environment.IsDevelopment());
     }
 
-    private static void ConfigureNpgsqlTracing(DbContextOptionsBuilder options)
+    private static void ConfigureNpgsqlTracing(DbContextOptionsBuilder options, string dataSourceName)
     {
-        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(ConfigureNpgsqlDataSource));
+        options.UseNpgsql(providerOptions => providerOptions.ConfigureDataSource(
+            dataSourceBuilder => ConfigureNpgsqlDataSource(dataSourceBuilder, dataSourceName)));
     }
 
-    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+    private static void ConfigureNpgsqlDataSource(NpgsqlDataSourceBuilder dataSourceBuilder, string dataSourceName)
     {
+        dataSourceBuilder.Name = dataSourceName;
         dataSourceBuilder.ConfigureTracingWithoutFirstResponseEvent();
     }
 

@@ -33,6 +33,8 @@ For Admin test taxonomy and seam guidance, treat `tests/README.md` as the canoni
   `[diagram]` directive, which parses without running the command.
 - `SharedKernelConsumerWorkflowTests` — Keeps `danigutsch/PandaBear.SharedKernel` action references at the pinned
   `libraryRevision`.
+- `TestCoverageMatrixTests` — Requires every solution `src/` project to be directly referenced by a test project of its
+  category (contract, API service, web, unit/behavior, infrastructure) with a named baseline of exceptions.
 - `RequiredCheckContractTests` — Matches every required check in `docs/ci/governance.md` to a workflow job that keeps
   the `ci:rerun` ignored-label pattern.
 

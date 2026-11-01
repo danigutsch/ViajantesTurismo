@@ -4,7 +4,6 @@ using PandaBear.Blazor;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Management.Web.Services;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 
@@ -23,7 +22,7 @@ builder.Services.AddUiFailureReporting();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<CustomerCreationState>();
-builder.Services.AddScoped<ICountryService, CountryService>();
+builder.Services.AddCountryService();
 
 builder.Services.AddHttpClient<IToursApiClient, ToursApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
     .AddUserAccessTokenHandler()
