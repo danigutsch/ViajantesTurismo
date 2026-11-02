@@ -33,7 +33,9 @@ public static class DocumentMapper
             UpdatedAt = document.UpdatedAt,
             FinalizedAt = document.FinalizedAt,
             ReplacesDocumentId = document.ReplacesDocumentId,
-            HasFinalizedArtifact = document.HasAvailableFinalizedArtifact
+            HasFinalizedArtifact = document.HasAvailableFinalizedArtifact,
+            RequiresManualReview = document.RequiresManualReview,
+            ManualReviewReasons = MapToDocumentManualReviewReasonsDto(document.ManualReviewReasons)
         };
     }
 
@@ -51,5 +53,17 @@ public static class DocumentMapper
             DocumentStatus.Voided => DocumentStatusDto.Voided,
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Invalid document status value.")
         };
+    }
+
+    /// <summary>Maps the manual review reasons to their public DTO representation.</summary>
+    public static DocumentManualReviewReasonsDto MapToDocumentManualReviewReasonsDto(DocumentManualReviewReasons reasons)
+    {
+        const DocumentManualReviewReasons known = DocumentManualReviewReasons.SourceChanged | DocumentManualReviewReasons.TemplateChanged;
+        if ((reasons & ~known) != DocumentManualReviewReasons.None)
+        {
+            throw new ArgumentOutOfRangeException(nameof(reasons), reasons, "Invalid document manual review reasons value.");
+        }
+
+        return (DocumentManualReviewReasonsDto)(int)reasons;
     }
 }

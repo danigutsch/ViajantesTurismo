@@ -40,6 +40,10 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
         await PostCommand($"{RoutePrefix}/{documentId}/changes-requested", HttpStatusCode.OK, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
+    public async Task<HttpOutcome<GetDocumentDto>> AcknowledgeChanges(Guid documentId, CancellationToken ct) =>
+        await PostCommand($"{RoutePrefix}/{documentId}/changes-acknowledged", HttpStatusCode.OK, ct).ConfigureAwait(false);
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fieldId);

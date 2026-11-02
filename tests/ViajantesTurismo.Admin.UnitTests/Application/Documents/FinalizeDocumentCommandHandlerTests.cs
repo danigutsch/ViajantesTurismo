@@ -70,6 +70,37 @@ public sealed class FinalizeDocumentCommandHandlerTests
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
     }
 
+    [Fact]
+    public async Task Handle_rejects_a_stale_template_and_records_audit_without_sealing()
+    {
+        // Arrange
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var document = DocumentDraftTestData.Create(now, templateVersion: "0");
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        document.Approve(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new FinalizeDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader());
+
+        // Act
+        var result = await handler.Handle(
+            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(DocumentErrors.TemplateChangedSinceDraft().ErrorDetails!.Detail);
+        document.Status.ShouldBe(DocumentStatus.Approved);
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -408,7 +439,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         previous.Approve(now).IsSuccess.ShouldBeTrue();
         var replacement = previous.CreateRevision(
             "tour-service-contract",
-            "2",
+            DocumentTemplates.TourServiceContractVersion,
             "SOURCE-VERSION-2",
             [DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value],
             "BRANDING-VERSION-2",
@@ -486,7 +517,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         ];
         var replacementResult = previous.CreateRevision(
             "tour-service-contract",
-            "2",
+            DocumentTemplates.TourServiceContractVersion,
             "SOURCE-VERSION-2",
             replacementFields,
             "BRANDING-VERSION",
@@ -530,7 +561,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         ];
         var secondResult = first.CreateRevision(
             "tour-service-contract",
-            "2",
+            DocumentTemplates.TourServiceContractVersion,
             "SOURCE-VERSION-2",
             fields,
             "BRANDING-VERSION",
@@ -541,7 +572,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var second = secondResult.Value;
         var thirdResult = second.CreateRevision(
             "tour-service-contract",
-            "3",
+            DocumentTemplates.TourServiceContractVersion,
             "SOURCE-VERSION-3",
             fields,
             "BRANDING-VERSION",
@@ -591,7 +622,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         ];
         var replacementResult = previous.CreateRevision(
             "tour-service-contract",
-            "2",
+            DocumentTemplates.TourServiceContractVersion,
             "SOURCE-VERSION-2",
             replacementFields,
             "BRANDING-VERSION",
@@ -630,7 +661,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         ];
         var newerResult = older.CreateRevision(
             "tour-service-contract",
-            "2",
+            DocumentTemplates.TourServiceContractVersion,
             "SOURCE-VERSION-2",
             replacementFields,
             "BRANDING-VERSION",
@@ -682,7 +713,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         ];
         var newerResult = older.CreateRevision(
             "tour-service-contract",
-            "2",
+            DocumentTemplates.TourServiceContractVersion,
             "SOURCE-VERSION-2",
             replacementFields,
             "BRANDING-VERSION",

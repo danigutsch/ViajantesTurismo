@@ -191,6 +191,36 @@ public sealed class DocumentLifecycleCommandHandlerTests
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
     }
 
+    [Fact]
+    public async Task Approve_rejects_a_stale_template_and_records_audit_without_mutating()
+    {
+        // Arrange
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var document = DocumentDraftTestData.Create(now, templateVersion: "0");
+        document.BeginReview(now).IsSuccess.ShouldBeTrue();
+        var store = new FakeDocumentStore();
+        store.Documents.Add(document.Id, document);
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new ApproveDocumentCommandHandler(
+            store,
+            unitOfWork,
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            new FakeDocumentSourceVersionReader());
+
+        // Act
+        var result = await handler.Handle(
+            new ApproveDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
+            CancellationToken.None);
+
+        // Assert
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(DocumentErrors.TemplateChangedSinceDraft().ErrorDetails!.Detail);
+        document.Status.ShouldBe(DocumentStatus.InReview);
+        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

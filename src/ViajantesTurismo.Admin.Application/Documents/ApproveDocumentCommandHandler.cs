@@ -79,6 +79,19 @@ public sealed class ApproveDocumentCommandHandler(
                 ct);
         }
 
+        var templateResult = lineage.EnsureTemplateIsCurrent(document.Id);
+        if (templateResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                templateResult,
+                command.AuditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
+        }
+
         var result = lineage.Approve(document.Id, now, command.AuditContext);
         if (result.IsFailure)
         {

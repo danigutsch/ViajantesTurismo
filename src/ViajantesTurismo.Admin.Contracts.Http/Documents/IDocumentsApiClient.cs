@@ -22,6 +22,9 @@ public interface IDocumentsApiClient
     /// <summary>Requests changes to a document draft.</summary>
     Task<HttpOutcome<GetDocumentDto>> RequestChanges(Guid documentId, CancellationToken ct);
 
+    /// <summary>Acknowledges the source or template changes of a regenerated document draft.</summary>
+    Task<HttpOutcome<GetDocumentDto>> AcknowledgeChanges(Guid documentId, CancellationToken ct);
+
     /// <summary>Updates one staff-editable document field.</summary>
     Task<HttpOutcome<GetDocumentDto>> UpdateField(Guid documentId, string fieldId, UpdateDocumentFieldDto dto, CancellationToken ct);
 

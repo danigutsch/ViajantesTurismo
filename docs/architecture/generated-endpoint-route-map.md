@@ -61,6 +61,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/documents/bookings/{bookingId:guid}/contract-drafts` | GenerateDocumentContractDraft | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
 | `GET` | `/api/v1/documents/{id:guid}` | GetDocumentById | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
 | `POST` | `/api/v1/documents/{id:guid}/approve` | ApproveDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/changes-acknowledged` | AcknowledgeDocumentChanges | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
 | `POST` | `/api/v1/documents/{id:guid}/changes-requested` | RequestDocumentChanges | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
 | `GET` | `/api/v1/documents/{id:guid}/download` | DownloadDocumentArtifact | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
 | `PATCH` | `/api/v1/documents/{id:guid}/fields/{fieldId}` | UpdateDocumentField | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |

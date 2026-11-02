@@ -257,6 +257,118 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Theory]
+    [InlineData(DocumentStatusDto.InReview, true, true)]
+    [InlineData(DocumentStatusDto.InReview, false, false)]
+    [InlineData(DocumentStatusDto.DraftGenerated, true, false)]
+    [InlineData(DocumentStatusDto.Approved, true, false)]
+    public async Task Manual_review_notice_shows_only_when_required_and_in_review(
+        DocumentStatusDto status,
+        bool requiresManualReview,
+        bool expectsNotice)
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(status, requiresManualReview: requiresManualReview);
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        cut.FindAll("[role='status'] #manual-review-heading").Count.ShouldBe(expectsNotice ? 1 : 0);
+        cut.FindAll("button").Count(button => button.TextContent.Trim() == "Acknowledge changes").ShouldBe(expectsNotice ? 1 : 0);
+        if (expectsNotice)
+        {
+            cut.Find("#manual-review-reason").TextContent.ShouldContain("source data or the template changed", StringComparison.Ordinal);
+        }
+    }
+
+    [Theory]
+    [InlineData(DocumentManualReviewReasonsDto.SourceChanged, "The source data changed since the previous revision.")]
+    [InlineData(DocumentManualReviewReasonsDto.TemplateChanged, "The template changed since the previous revision.")]
+    [InlineData(
+        DocumentManualReviewReasonsDto.SourceChanged | DocumentManualReviewReasonsDto.TemplateChanged,
+        "The source data and the template changed since the previous revision.")]
+    public async Task Manual_review_notice_lists_the_reasons_that_apply(
+        DocumentManualReviewReasonsDto reasons,
+        string expectedSentence)
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(
+            DocumentStatusDto.InReview,
+            requiresManualReview: true,
+            manualReviewReasons: reasons);
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        cut.Find("#manual-review-reason").TextContent.ShouldStartWith(expectedSentence, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Approve_is_disabled_and_explained_while_changes_are_unacknowledged()
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(DocumentStatusDto.InReview, requiresManualReview: true);
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        var approve = ManualReviewPageActions.ApproveButton(cut);
+        approve.HasAttribute("disabled").ShouldBeTrue();
+        approve.GetAttribute("aria-describedby").ShouldBe("manual-review-reason");
+    }
+
+    [Fact]
+    public async Task Clicking_acknowledge_changes_reloads_the_document_and_enables_approve()
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(DocumentStatusDto.InReview, requiresManualReview: true);
+        documentsApiClient.AddDocument(document);
+        documentsApiClient.AcknowledgedDocument = document with
+        {
+            RequiresManualReview = false
+        };
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Act
+        await cut.InvokeAsync(() => ManualReviewPageActions.AcknowledgeButton(cut).Click());
+
+        // Assert
+        documentsApiClient.AcknowledgedDocumentIds.ShouldBe([document.Id]);
+        cut.FindAll("#manual-review-heading").ShouldBeEmpty();
+        ManualReviewPageActions.ApproveButton(cut).HasAttribute("disabled").ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(HttpOutcomeKind.Conflict)]
+    [InlineData(HttpOutcomeKind.NotFound)]
+    public async Task Acknowledge_failure_is_surfaced_and_keeps_approve_blocked(HttpOutcomeKind failure)
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(DocumentStatusDto.InReview, requiresManualReview: true);
+        documentsApiClient.AddDocument(document);
+        documentsApiClient.AcknowledgeFailure = failure;
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Act
+        await cut.InvokeAsync(() => ManualReviewPageActions.AcknowledgeButton(cut).Click());
+
+        // Assert
+        cut.Find(".alert-danger[role='alert']").TextContent.ShouldContain("The document changes could not be acknowledged.", StringComparison.Ordinal);
+        cut.Find("#manual-review-heading").ShouldNotBeNull();
+        ManualReviewPageActions.ApproveButton(cut).HasAttribute("disabled").ShouldBeTrue();
+    }
+
+    [Theory]
     [InlineData(DocumentStatusDto.DraftGenerated, "Start review", true)]
     [InlineData(DocumentStatusDto.InReview, "Request changes|Approve", true)]
     [InlineData(DocumentStatusDto.ChangesRequested, "Start review", true)]

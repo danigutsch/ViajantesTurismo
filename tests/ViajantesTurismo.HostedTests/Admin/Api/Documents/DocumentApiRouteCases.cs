@@ -16,6 +16,7 @@ internal static class DocumentApiRouteCases
         (HttpMethod.Get.Method, $"/api/v1/documents/{DocumentId}"),
         (HttpMethod.Post.Method, $"/api/v1/documents/{DocumentId}/review"),
         (HttpMethod.Post.Method, $"/api/v1/documents/{DocumentId}/changes-requested"),
+        (HttpMethod.Post.Method, $"/api/v1/documents/{DocumentId}/changes-acknowledged"),
         (HttpMethod.Patch.Method, $"/api/v1/documents/{DocumentId}/fields/greeting"),
         (HttpMethod.Post.Method, $"/api/v1/documents/{DocumentId}/approve"),
         (HttpMethod.Post.Method, $"/api/v1/documents/{DocumentId}/finalize"),

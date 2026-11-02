@@ -270,6 +270,7 @@ public sealed class DocumentAuditRecordTests
     [InlineData(DocumentAuditOperation.Finalize, DocumentAuditReasonCode.ManualFinalize)]
     [InlineData(DocumentAuditOperation.Regenerate, DocumentAuditReasonCode.ManualRegeneration)]
     [InlineData(DocumentAuditOperation.Void, DocumentAuditReasonCode.ManualVoid)]
+    [InlineData(DocumentAuditOperation.AcknowledgeChanges, DocumentAuditReasonCode.ManualAcknowledgement)]
     [InlineData(DocumentAuditOperation.Download, DocumentAuditReasonCode.None)]
     public void Create_accepts_supported_success_reason_codes(
         DocumentAuditOperation operation,
@@ -325,6 +326,8 @@ public sealed class DocumentAuditRecordTests
     [InlineData(DocumentAuditOperation.Void, DocumentAuditReasonCode.DocumentNotFound)]
     [InlineData(DocumentAuditOperation.Void, DocumentAuditReasonCode.StateConflict)]
     [InlineData(DocumentAuditOperation.Void, DocumentAuditReasonCode.ValidationRejected)]
+    [InlineData(DocumentAuditOperation.AcknowledgeChanges, DocumentAuditReasonCode.DocumentNotFound)]
+    [InlineData(DocumentAuditOperation.AcknowledgeChanges, DocumentAuditReasonCode.StateConflict)]
     [InlineData(DocumentAuditOperation.Download, DocumentAuditReasonCode.DocumentNotFound)]
     [InlineData(DocumentAuditOperation.Download, DocumentAuditReasonCode.ArtifactUnavailable)]
     public void Create_accepts_supported_rejection_reason_codes(

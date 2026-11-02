@@ -44,6 +44,12 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.BrandingBodyFontFamily).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
         entity.Property(document => document.BrandingFooterText).HasMaxLength(DocumentLimits.MaxBrandingTokenLength).IsRequired();
         entity.Property(document => document.Status).HasConversion<string>().IsRequired();
+        entity.Property(document => document.RequiresManualReview).HasDefaultValue(false).IsRequired();
+        entity.Property(document => document.ManualReviewReasons)
+            .HasConversion<string>()
+            .HasMaxLength(DocumentLimits.MaxManualReviewReasonsLength)
+            .HasDefaultValue(DocumentManualReviewReasons.None)
+            .IsRequired();
         entity.Property(document => document.CreatedAt).IsRequired();
         entity.Property(document => document.UpdatedAt).IsRequired();
         entity.Property(document => document.RetentionExpiresAt);

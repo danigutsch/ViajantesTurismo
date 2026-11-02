@@ -68,6 +68,31 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void EnsureTemplateIsCurrent_accepts_the_registry_version()
+    {
+        // Arrange
+        var draft = DocumentDraftTestData.Create(new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc));
+
+        // Act and Assert
+        draft.EnsureTemplateIsCurrent().IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EnsureTemplateIsCurrent_rejects_an_older_template_version_as_conflict()
+    {
+        // Arrange
+        var draft = DocumentDraftTestData.Create(
+            new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc),
+            templateVersion: "0");
+
+        // Act
+        var result = draft.EnsureTemplateIsCurrent();
+
+        // Assert
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+    }
+
+    [Fact]
     public void UpdateField_allows_only_classified_editable_fields()
     {
         // Arrange

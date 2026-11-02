@@ -199,6 +199,18 @@ public sealed class DocumentDraft : IEntity<Guid>
         get; private init;
     }
 
+    /// <summary>Gets whether a reviewer must acknowledge source or template changes before this revision can be approved.</summary>
+    public bool RequiresManualReview
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets why this revision needed manual review, kept after the reviewer acknowledged the changes.</summary>
+    public DocumentManualReviewReasons ManualReviewReasons
+    {
+        get; private set;
+    }
+
     /// <summary>Gets the bounded reason code recorded when the document was voided.</summary>
     public DocumentVoidReason? VoidReason
     {
@@ -525,6 +537,7 @@ public sealed class DocumentDraft : IEntity<Guid>
                 index,
                 _fields.FirstOrDefault(previous => previous.FieldId == field.FieldId)))
             .ToList();
+        var manualReviewReasons = ClassifyManualReview(content);
         return Result.Ok(new DocumentDraft(
             BookingId,
             Type,
@@ -548,8 +561,26 @@ public sealed class DocumentDraft : IEntity<Guid>
             Id,
             DocumentLineageId)
         {
-            BrandingSourceRevision = content.BrandingSourceRevision
+            BrandingSourceRevision = content.BrandingSourceRevision,
+            ManualReviewReasons = manualReviewReasons,
+            RequiresManualReview = RequiresManualReview || manualReviewReasons != DocumentManualReviewReasons.None
         });
+    }
+
+    private DocumentManualReviewReasons ClassifyManualReview(DocumentDraftContent content)
+    {
+        var reasons = RequiresManualReview ? ManualReviewReasons : DocumentManualReviewReasons.None;
+        if (!string.Equals(SourceVersion, content.SourceVersion, StringComparison.Ordinal))
+        {
+            reasons |= DocumentManualReviewReasons.SourceChanged;
+        }
+
+        if (!string.Equals(TemplateVersion, content.TemplateVersion, StringComparison.Ordinal))
+        {
+            reasons |= DocumentManualReviewReasons.TemplateChanged;
+        }
+
+        return reasons;
     }
 
     /// <summary>Starts or restarts staff review.</summary>
@@ -623,6 +654,31 @@ public sealed class DocumentDraft : IEntity<Guid>
             ? Result.Ok()
             : DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.Finalized);
 
+    /// <summary>Checks that the template the draft was generated from is still the current version.</summary>
+    /// <returns>A success result when the template is current; otherwise, a conflict requiring regeneration.</returns>
+    internal Result EnsureTemplateIsCurrent() =>
+        DocumentTemplates.IsCurrent(TemplateId, TemplateVersion)
+            ? Result.Ok()
+            : DocumentErrors.TemplateChangedSinceDraft();
+
+    /// <summary>Acknowledges the source or template changes of a revision under active staff review.</summary>
+    internal Result AcknowledgeChanges(DateTime now)
+    {
+        if (Status != DocumentStatus.InReview)
+        {
+            return DocumentErrors.InvalidStatusTransition(Status, DocumentStatus.InReview);
+        }
+
+        if (!RequiresManualReview)
+        {
+            return DocumentErrors.NoManualReviewPending();
+        }
+
+        RequiresManualReview = false;
+        UpdatedAt = now;
+        return Result.Ok();
+    }
+
     /// <summary>Approves a document under active staff review.</summary>
     internal Result Approve(DateTime now)
     {
@@ -630,6 +686,11 @@ public sealed class DocumentDraft : IEntity<Guid>
         if (canApprove.IsFailure)
         {
             return canApprove;
+        }
+
+        if (RequiresManualReview)
+        {
+            return DocumentErrors.ManualReviewRequired();
         }
 
         Status = DocumentStatus.Approved;

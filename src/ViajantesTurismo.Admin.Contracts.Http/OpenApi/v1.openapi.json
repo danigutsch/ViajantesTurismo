@@ -3093,6 +3093,70 @@
         ]
       }
     },
+    "/api/v1/documents/{id}/changes-acknowledged": {
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Acknowledges document changes.",
+        "description": "Acknowledges the source or template changes of a regenerated document draft so it can be approved.",
+        "operationId": "AcknowledgeDocumentChanges",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDocumentDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/documents/{id}/fields/{fieldId}": {
       "patch": {
         "tags": [
@@ -6215,6 +6279,9 @@
       "DiscountTypeDto": {
         "type": "integer"
       },
+      "DocumentManualReviewReasonsDto": {
+        "type": "integer"
+      },
       "DocumentStatusDto": {
         "type": "integer"
       },
@@ -6864,6 +6931,12 @@
           },
           "hasFinalizedArtifact": {
             "type": "boolean"
+          },
+          "requiresManualReview": {
+            "type": "boolean"
+          },
+          "manualReviewReasons": {
+            "$ref": "#/components/schemas/DocumentManualReviewReasonsDto"
           }
         }
       },

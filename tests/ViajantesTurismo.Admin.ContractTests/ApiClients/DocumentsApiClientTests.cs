@@ -4,6 +4,7 @@ using System.Text;
 using PandaBear.HttpClients;
 using PandaBear.Testing;
 using PandaBear.Testing.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
@@ -23,9 +24,37 @@ public sealed class DocumentsApiClientTests
           "fields":[{"fieldId":"greeting","label":"Greeting","renderedValue":"Dear customer","isEditable":true}],
           "createdAt":"2026-07-16T09:00:00Z",
           "updatedAt":"2026-07-16T09:00:00Z",
-          "hasFinalizedArtifact":false
+          "hasFinalizedArtifact":false,
+          "requiresManualReview":true,
+          "manualReviewReasons":3
         }
         """;
+
+    [Fact]
+    public async Task Acknowledging_changes_posts_to_the_changes_acknowledged_route_and_reads_the_review_requirement()
+    {
+        // Arrange
+        HttpRequestMessage? captured = null;
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(request =>
+        {
+            captured = request;
+            return ContractHttpClientTestHelper.JsonResponse(DocumentJson, HttpStatusCode.OK);
+        });
+        var sut = new DocumentsApiClient(httpClient);
+        var id = Guid.CreateVersion7();
+
+        // Act
+        var outcome = await sut.AcknowledgeChanges(id, TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        outcome.Value.ShouldNotBeNull().RequiresManualReview.ShouldBeTrue();
+        outcome.Value.ManualReviewReasons.ShouldBe(
+            DocumentManualReviewReasonsDto.SourceChanged | DocumentManualReviewReasonsDto.TemplateChanged);
+        var request = captured.ShouldNotBeNull();
+        request.Method.ShouldBe(HttpMethod.Post);
+        request.RequestUri.ShouldNotBeNull().ToString().ShouldEndWith($"/{id}/changes-acknowledged", StringComparison.Ordinal);
+    }
 
     [Theory]
     [InlineData(false)]

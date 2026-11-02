@@ -37,5 +37,8 @@ public enum DocumentAuditOperation
     PlaceHold = 10,
 
     /// <summary>A disposition hold on a document lineage was released.</summary>
-    ReleaseHold = 11
+    ReleaseHold = 11,
+
+    /// <summary>A reviewer acknowledged that the source or template changed since the replaced revision.</summary>
+    AcknowledgeChanges = 12
 }

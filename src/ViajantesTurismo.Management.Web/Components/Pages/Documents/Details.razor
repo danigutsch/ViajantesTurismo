@@ -34,6 +34,15 @@
             <div class="alert alert-danger" role="alert">@_errorMessage</div>
         }
 
+        @if (AwaitsChangeAcknowledgement)
+        {
+            <div class="alert alert-warning" role="status" aria-labelledby="manual-review-heading">
+                <h2 id="manual-review-heading" class="h5">Manual review required</h2>
+                <p id="manual-review-reason" class="mb-2">@ManualReviewReasonText Acknowledge the changes after reviewing them; this document cannot be approved until then.</p>
+                <button type="button" class="btn btn-warning" aria-describedby="manual-review-reason" disabled="@_acknowledging" @onclick="AcknowledgeChanges">Acknowledge changes</button>
+            </div>
+        }
+
         <div class="card mb-4">
             <div class="card-body">
                 <dl class="row mb-0">
@@ -79,7 +88,7 @@
             @if (_document.Status == DocumentStatusDto.InReview)
             {
                 <button type="button" class="btn btn-outline-secondary" @onclick="RequestChanges">Request changes</button>
-                <button type="button" class="btn btn-success" @onclick="Approve">Approve</button>
+                <button type="button" class="btn btn-success" disabled="@AwaitsChangeAcknowledgement" aria-describedby="@(AwaitsChangeAcknowledgement ? "manual-review-reason" : null)" @onclick="Approve">Approve</button>
             }
             @if (_document.Status == DocumentStatusDto.Approved)
             {
@@ -278,6 +287,7 @@
     private bool _loading = true;
     private bool _notFound;
     private string? _errorMessage;
+    private bool _acknowledging;
     private string? _loadErrorMessage;
     private (Guid ResourceId, string Key)? _regenerationAttempt;
     private bool _regenerating;
@@ -509,11 +519,39 @@
 
     private static string FieldInputId(string fieldId) => $"document-field-{fieldId}";
 
+    private string ManualReviewReasonText => _document?.ManualReviewReasons switch
+    {
+        DocumentManualReviewReasonsDto.SourceChanged => "The source data changed since the previous revision.",
+        DocumentManualReviewReasonsDto.TemplateChanged => "The template changed since the previous revision.",
+        DocumentManualReviewReasonsDto.SourceChanged | DocumentManualReviewReasonsDto.TemplateChanged => "The source data and the template changed since the previous revision.",
+        _ => "The source data or the template changed since the previous revision."
+    };
+
+    private bool AwaitsChangeAcknowledgement => _document is { Status: DocumentStatusDto.InReview, RequiresManualReview: true };
+
     private Guid CurrentDocumentId => _document?.Id ?? Id;
 
     private async Task BeginReview() => await ExecuteAction(() => DocumentsApi.BeginReview(CurrentDocumentId, CancellationToken.None), "The document review could not be started.");
 
     private async Task RequestChanges() => await ExecuteAction(() => DocumentsApi.RequestChanges(CurrentDocumentId, CancellationToken.None), "Document changes could not be requested.");
+
+    private async Task AcknowledgeChanges()
+    {
+        if (_acknowledging)
+        {
+            return;
+        }
+
+        _acknowledging = true;
+        try
+        {
+            await ExecuteAction(() => DocumentsApi.AcknowledgeChanges(CurrentDocumentId, CancellationToken.None), "The document changes could not be acknowledged.");
+        }
+        finally
+        {
+            _acknowledging = false;
+        }
+    }
 
     private async Task Approve() => await ExecuteAction(() => DocumentsApi.Approve(CurrentDocumentId, CancellationToken.None), "The document could not be approved.");
 

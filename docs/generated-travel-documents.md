@@ -228,6 +228,8 @@ Rules:
 - Review must show the source-data timestamp/version used by the draft.
 - Staff edits must be limited to fields declared editable for the document type.
 - High-risk source data changes require updating the source record first, then regenerating.
+- A regenerated revision whose source or template version changed cannot be approved until a reviewer
+  acknowledges the changes (see [Regeneration](#regeneration)).
 - Finalization must be explicit; opening or saving a draft cannot finalize an artifact.
 - Finalized artifacts are immutable. Corrections create a new revision.
 - Download and view events are audited without logging document content.
@@ -281,6 +283,36 @@ the result:
 - conflicting source change: create a new draft revision and require staff review of conflicting
   fields
 - template change: create a new draft revision and require staff review before finalization
+
+Approval and finalization check a document in a fixed order and stop at the first failure:
+
+1. audit context, then the document lookup (`DocumentNotFound`)
+2. payment-instruction workflow documents are rejected
+3. lifecycle state: `InReview` to approve, `Approved` to finalize (`StateConflict`)
+4. source freshness: the booking's current source version must equal the draft's
+   (`DocumentErrors.SourceChangedSinceDraft`)
+5. template freshness: the draft's stored template version must equal the current version in the
+   in-code registry (`DocumentTemplates`, `DocumentErrors.TemplateChangedSinceDraft`)
+6. approval only: the manual review requirement must be acknowledged (`ManualReviewRequired`)
+
+Each rejection is a 409 conflict audited with reason `StateConflict`. Bump the registered template
+version whenever a template changes; generation stamps the same registry version.
+
+The Domain enforces the last two cases without a new lifecycle status. When a regenerated revision's
+source version or template version differs from the revision it replaces, the new revision is marked
+`RequiresManualReview` with the reasons `SourceChanged`, `TemplateChanged`, or both. A revision that
+replaces one with an unacknowledged requirement keeps it. Approval of such a revision returns a
+`409 Conflict` ("Acknowledge the changes before approving") until a reviewer who has the revision
+`InReview` calls `POST /api/v1/documents/{id}/changes-acknowledged`. The acknowledgement clears the
+requirement, keeps the recorded reasons, and writes an `AcknowledgeChanges` audit record with reason
+code `ManualAcknowledgement`; rejected attempts record `DocumentNotFound` or `StateConflict`.
+Acknowledging a revision with nothing pending returns `409 Conflict`. The document read model exposes
+`requiresManualReview` and the typed `manualReviewReasons` flags (`SourceChanged = 1`,
+`TemplateChanged = 2`) so reviewers can see the pending requirement. The Management Web notice names each
+reason that applies and falls back to a generic sentence only when no reason is recorded.
+While the revision is `InReview` and the requirement is pending, the Management Web document page shows a
+"Manual review required" notice with an **Acknowledge changes** button and disables **Approve**; a
+rejected acknowledgement shows the page's error alert.
 
 ## Privacy and security rules
 

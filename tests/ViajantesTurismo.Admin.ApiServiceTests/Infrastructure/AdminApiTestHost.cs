@@ -123,6 +123,7 @@ internal static class AdminApiTestHost
         _ = scope.ServiceProvider.GetRequiredService<GenerateContractDraftCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<BeginDocumentReviewCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<RequestDocumentChangesCommandHandler>();
+        _ = scope.ServiceProvider.GetRequiredService<AcknowledgeDocumentChangesCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<UpdateDocumentFieldCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<ApproveDocumentCommandHandler>();
         _ = scope.ServiceProvider.GetRequiredService<FinalizeDocumentCommandHandler>();

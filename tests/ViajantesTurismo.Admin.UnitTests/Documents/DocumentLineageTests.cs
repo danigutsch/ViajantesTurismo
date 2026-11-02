@@ -8,6 +8,26 @@ namespace ViajantesTurismo.Admin.UnitTests.Documents;
 public sealed class DocumentLineageTests
 {
     [Fact]
+    public void EnsureTemplateIsCurrent_reports_missing_stale_and_current_revisions()
+    {
+        // Arrange
+        var lineage = DocumentLineageTestData.Create();
+        var current = lineage.Revisions.ShouldHaveSingleItem();
+        var stale = DocumentLineage.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            DocumentLineageTestData.CreateContent("0"),
+            new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc),
+            DocumentAuditTestData.CreateContext()).Value;
+
+        // Act and Assert
+        lineage.EnsureTemplateIsCurrent(current.Id).IsSuccess.ShouldBeTrue();
+        lineage.EnsureTemplateIsCurrent(Guid.CreateVersion7()).Status.ShouldBe(ResultStatus.NotFound);
+        stale.EnsureTemplateIsCurrent(stale.Revisions.ShouldHaveSingleItem().Id).Status.ShouldBe(ResultStatus.Conflict);
+    }
+
+    [Fact]
     public void Create_assigns_persistent_identity_and_lineage_key()
     {
         // Arrange

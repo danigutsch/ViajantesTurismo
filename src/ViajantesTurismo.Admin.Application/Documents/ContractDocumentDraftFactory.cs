@@ -13,9 +13,9 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 internal static class ContractDocumentDraftFactory
 {
     /// <summary>Template identifier of the default tour service contract.</summary>
-    public const string DefaultTemplateId = "tour-service-contract";
+    public const string DefaultTemplateId = DocumentTemplates.TourServiceContractId;
     /// <summary>Version of the default tour service contract template.</summary>
-    public const string DefaultTemplateVersion = "1";
+    public const string DefaultTemplateVersion = DocumentTemplates.TourServiceContractVersion;
 
     /// <summary>Creates the draft content for a booking and tour, or a failure when a field is invalid.</summary>
     public static Result<DocumentDraftContent> Create(

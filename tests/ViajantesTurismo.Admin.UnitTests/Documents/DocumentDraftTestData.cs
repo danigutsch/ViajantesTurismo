@@ -24,14 +24,15 @@ internal static class DocumentDraftTestData
         DateTime createdAt,
         Uri? brandingLogoUri = null,
         DocumentType type = DocumentType.BookingConfirmationContract,
-        Guid? bookingId = null)
+        Guid? bookingId = null,
+        string templateVersion = "1")
     {
         var result = DocumentDraft.Create(
             bookingId ?? Guid.CreateVersion7(),
             type,
             DocumentAudience.Customer,
             "tour-service-contract",
-            "1",
+            templateVersion,
             "SOURCE-VERSION",
             [
                 DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,

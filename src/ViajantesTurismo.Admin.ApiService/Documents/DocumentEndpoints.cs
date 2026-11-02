@@ -53,6 +53,14 @@ internal static class DocumentEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
             .WithAdminMetadata("RequestDocumentChanges", "Records requested changes for a document draft.", "Requests document changes.");
 
+        documentsGroup.MapPost("/{id:guid}/changes-acknowledged", AcknowledgeChanges)
+            .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(AdminAuthorization.DocumentManage)
+            .Produces<GetDocumentDto>()
+            .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
+            .Produces<ProblemDetails>(StatusCodes.Status409Conflict)
+            .WithAdminMetadata("AcknowledgeDocumentChanges", "Acknowledges the source or template changes of a regenerated document draft so it can be approved.", "Acknowledges document changes.");
+
         documentsGroup.MapPatch("/{id:guid}/fields/{fieldId}", UpdateField)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
@@ -208,6 +216,26 @@ internal static class DocumentEndpoints
             await ExecuteDocumentCommand(
                 () => handler.Handle(new RequestDocumentChangesCommand(id, auditContext), ct),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.RequestChanges, id, null),
+                scopeFactory,
+                ct),
+            id,
+            queryService,
+            ct);
+    }
+
+    private static async Task<IResult> AcknowledgeChanges(
+        [FromRoute] Guid id,
+        [FromServices] AcknowledgeDocumentChangesCommandHandler handler,
+        [FromServices] IDocumentQueryService queryService,
+        [FromServices] IServiceScopeFactory scopeFactory,
+        HttpContext httpContext,
+        CancellationToken ct)
+    {
+        var auditContext = CreateAuditContext(httpContext);
+        return await GetDocumentAfterCommand(
+            await ExecuteDocumentCommand(
+                () => handler.Handle(new AcknowledgeDocumentChangesCommand(id, auditContext), ct),
+                new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.AcknowledgeChanges, id, null),
                 scopeFactory,
                 ct),
             id,

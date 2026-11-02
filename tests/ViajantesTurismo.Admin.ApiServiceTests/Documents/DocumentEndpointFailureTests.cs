@@ -142,6 +142,7 @@ public sealed class DocumentEndpointFailureTests
     [InlineData("GET", "", DocumentAuditOperation.Read)]
     [InlineData("POST", "/review", DocumentAuditOperation.BeginReview)]
     [InlineData("POST", "/changes-requested", DocumentAuditOperation.RequestChanges)]
+    [InlineData("POST", "/changes-acknowledged", DocumentAuditOperation.AcknowledgeChanges)]
     [InlineData("PATCH", "/fields/greeting", DocumentAuditOperation.UpdateField)]
     [InlineData("POST", "/approve", DocumentAuditOperation.Approve)]
     [InlineData("POST", "/finalize", DocumentAuditOperation.Finalize)]

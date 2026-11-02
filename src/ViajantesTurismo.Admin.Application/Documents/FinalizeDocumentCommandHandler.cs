@@ -80,6 +80,19 @@ public sealed class FinalizeDocumentCommandHandler(
                 ct);
         }
 
+        var templateResult = lineage.EnsureTemplateIsCurrent(document.Id);
+        if (templateResult.IsFailure)
+        {
+            return await RecordAndReturn(
+                templateResult,
+                auditContext,
+                document.Id,
+                document.BookingId,
+                document.Revision,
+                DocumentAuditReasonCode.StateConflict,
+                ct);
+        }
+
         var result = lineage.Finalize(document.Id, DocumentArtifactRenderer.Render(document), now, auditContext);
         if (result.IsFailure)
         {

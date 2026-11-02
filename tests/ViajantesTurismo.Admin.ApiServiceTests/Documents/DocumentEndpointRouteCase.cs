@@ -26,6 +26,7 @@ internal static class DocumentEndpointRouteCase
         (HttpMethod.Get.Method, "api/v1/documents/{id:guid}", $"/api/v1/documents/{DocumentId}"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/review", $"/api/v1/documents/{DocumentId}/review"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/changes-requested", $"/api/v1/documents/{DocumentId}/changes-requested"),
+        (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/changes-acknowledged", $"/api/v1/documents/{DocumentId}/changes-acknowledged"),
         (HttpMethod.Patch.Method, "api/v1/documents/{id:guid}/fields/{fieldId}", $"/api/v1/documents/{DocumentId}/fields/greeting"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/approve", $"/api/v1/documents/{DocumentId}/approve"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/finalize", $"/api/v1/documents/{DocumentId}/finalize"),
