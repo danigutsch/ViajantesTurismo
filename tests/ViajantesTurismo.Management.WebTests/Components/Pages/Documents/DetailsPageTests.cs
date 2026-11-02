@@ -283,6 +283,31 @@ public sealed class DetailsPageTests : BunitContext
         }
     }
 
+    [Theory]
+    [InlineData(DocumentManualReviewReasonsDto.SourceChanged, "The source data changed since the previous revision.")]
+    [InlineData(DocumentManualReviewReasonsDto.TemplateChanged, "The template changed since the previous revision.")]
+    [InlineData(
+        DocumentManualReviewReasonsDto.SourceChanged | DocumentManualReviewReasonsDto.TemplateChanged,
+        "The source data and the template changed since the previous revision.")]
+    public async Task Manual_review_notice_lists_the_reasons_that_apply(
+        DocumentManualReviewReasonsDto reasons,
+        string expectedSentence)
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(
+            DocumentStatusDto.InReview,
+            requiresManualReview: true,
+            manualReviewReasons: reasons);
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        cut.Find("#manual-review-reason").TextContent.ShouldStartWith(expectedSentence, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Approve_is_disabled_and_explained_while_changes_are_unacknowledged()
     {

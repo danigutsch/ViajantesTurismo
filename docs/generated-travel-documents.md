@@ -307,7 +307,9 @@ replaces one with an unacknowledged requirement keeps it. Approval of such a rev
 requirement, keeps the recorded reasons, and writes an `AcknowledgeChanges` audit record with reason
 code `ManualAcknowledgement`; rejected attempts record `DocumentNotFound` or `StateConflict`.
 Acknowledging a revision with nothing pending returns `409 Conflict`. The document read model exposes
-`requiresManualReview` so reviewers can see the pending requirement.
+`requiresManualReview` and the typed `manualReviewReasons` flags (`SourceChanged = 1`,
+`TemplateChanged = 2`) so reviewers can see the pending requirement. The Management Web notice names each
+reason that applies and falls back to a generic sentence only when no reason is recorded.
 While the revision is `InReview` and the requirement is pending, the Management Web document page shows a
 "Manual review required" notice with an **Acknowledge changes** button and disables **Approve**; a
 rejected acknowledgement shows the page's error alert.

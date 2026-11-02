@@ -4,6 +4,7 @@ using System.Text;
 using PandaBear.HttpClients;
 using PandaBear.Testing;
 using PandaBear.Testing.Contracts;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
@@ -24,7 +25,8 @@ public sealed class DocumentsApiClientTests
           "createdAt":"2026-07-16T09:00:00Z",
           "updatedAt":"2026-07-16T09:00:00Z",
           "hasFinalizedArtifact":false,
-          "requiresManualReview":true
+          "requiresManualReview":true,
+          "manualReviewReasons":3
         }
         """;
 
@@ -47,6 +49,8 @@ public sealed class DocumentsApiClientTests
         // Assert
         outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         outcome.Value.ShouldNotBeNull().RequiresManualReview.ShouldBeTrue();
+        outcome.Value.ManualReviewReasons.ShouldBe(
+            DocumentManualReviewReasonsDto.SourceChanged | DocumentManualReviewReasonsDto.TemplateChanged);
         var request = captured.ShouldNotBeNull();
         request.Method.ShouldBe(HttpMethod.Post);
         request.RequestUri.ShouldNotBeNull().ToString().ShouldEndWith($"/{id}/changes-acknowledged", StringComparison.Ordinal);

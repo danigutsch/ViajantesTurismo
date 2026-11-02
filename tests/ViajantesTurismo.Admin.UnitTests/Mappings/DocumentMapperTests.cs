@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.UnitTests.Documents;
@@ -42,6 +43,45 @@ public sealed class DocumentMapperTests
         // Assert
         initialDto.RequiresManualReview.ShouldBeFalse();
         replacementDto.RequiresManualReview.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("1", "SOURCE-VERSION-1", DocumentManualReviewReasonsDto.None)]
+    [InlineData("1", "SOURCE-VERSION-NEW", DocumentManualReviewReasonsDto.SourceChanged)]
+    [InlineData("2", "SOURCE-VERSION-1", DocumentManualReviewReasonsDto.TemplateChanged)]
+    [InlineData("2", "SOURCE-VERSION-NEW", DocumentManualReviewReasonsDto.SourceChanged | DocumentManualReviewReasonsDto.TemplateChanged)]
+    public void A_document_projection_reports_the_manual_review_reasons(
+        string templateVersion,
+        string sourceVersion,
+        DocumentManualReviewReasonsDto expected)
+    {
+        // Arrange
+        var now = new DateTime(2026, 1, 5, 10, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentLineageTestData.Create(now: now);
+        var replacement = lineage.CreateRevision(
+            lineage.Revisions.ShouldHaveSingleItem().Id,
+            DocumentLineageTestData.CreateContent(templateVersion, sourceVersion),
+            now,
+            DocumentAuditTestData.CreateContext()).Value;
+
+        // Act
+        var dto = DocumentMapper.MapToGetDocumentDto(replacement);
+
+        // Assert
+        dto.ManualReviewReasons.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void An_undefined_manual_review_reason_is_rejected_with_its_value()
+    {
+        // Arrange
+        Func<object?> map = () => DocumentMapper.MapToDocumentManualReviewReasonsDto((DocumentManualReviewReasons)64);
+
+        // Act
+        var exception = map.ShouldThrow<ArgumentOutOfRangeException>();
+
+        // Assert
+        exception.ParamName.ShouldBe("reasons");
     }
 
     [Fact]

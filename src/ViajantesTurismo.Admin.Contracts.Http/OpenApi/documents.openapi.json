@@ -1950,6 +1950,9 @@
       "CurrencyDto": {
         "type": "integer"
       },
+      "DocumentManualReviewReasonsDto": {
+        "type": "integer"
+      },
       "DocumentStatusDto": {
         "type": "integer"
       },
@@ -2134,6 +2137,9 @@
           },
           "requiresManualReview": {
             "type": "boolean"
+          },
+          "manualReviewReasons": {
+            "$ref": "#/components/schemas/DocumentManualReviewReasonsDto"
           }
         }
       },

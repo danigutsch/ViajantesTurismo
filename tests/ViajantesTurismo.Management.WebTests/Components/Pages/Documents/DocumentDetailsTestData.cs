@@ -8,6 +8,7 @@ internal static class DocumentDetailsTestData
         DocumentStatusDto status,
         bool hasFinalizedArtifact = false,
         bool requiresManualReview = false,
+        DocumentManualReviewReasonsDto manualReviewReasons = DocumentManualReviewReasonsDto.None,
         IReadOnlyList<GetDocumentFieldDto>? fields = null) => new()
         {
             Id = Guid.CreateVersion7(),
@@ -35,6 +36,7 @@ internal static class DocumentDetailsTestData
                 ? TimeProvider.System.GetUtcNow().UtcDateTime
                 : null,
             HasFinalizedArtifact = hasFinalizedArtifact,
-            RequiresManualReview = requiresManualReview
+            RequiresManualReview = requiresManualReview,
+            ManualReviewReasons = manualReviewReasons
         };
 }

@@ -38,7 +38,7 @@
         {
             <div class="alert alert-warning" role="status" aria-labelledby="manual-review-heading">
                 <h2 id="manual-review-heading" class="h5">Manual review required</h2>
-                <p id="manual-review-reason" class="mb-2">The source data or the template changed since the previous revision. Acknowledge the changes after reviewing them; this document cannot be approved until then.</p>
+                <p id="manual-review-reason" class="mb-2">@ManualReviewReasonText Acknowledge the changes after reviewing them; this document cannot be approved until then.</p>
                 <button type="button" class="btn btn-warning" aria-describedby="manual-review-reason" disabled="@_acknowledging" @onclick="AcknowledgeChanges">Acknowledge changes</button>
             </div>
         }
@@ -518,6 +518,14 @@
         && _document?.Status is not (DocumentStatusDto.Finalized or DocumentStatusDto.Superseded or DocumentStatusDto.Voided);
 
     private static string FieldInputId(string fieldId) => $"document-field-{fieldId}";
+
+    private string ManualReviewReasonText => _document?.ManualReviewReasons switch
+    {
+        DocumentManualReviewReasonsDto.SourceChanged => "The source data changed since the previous revision.",
+        DocumentManualReviewReasonsDto.TemplateChanged => "The template changed since the previous revision.",
+        DocumentManualReviewReasonsDto.SourceChanged | DocumentManualReviewReasonsDto.TemplateChanged => "The source data and the template changed since the previous revision.",
+        _ => "The source data or the template changed since the previous revision."
+    };
 
     private bool AwaitsChangeAcknowledgement => _document is { Status: DocumentStatusDto.InReview, RequiresManualReview: true };
 
