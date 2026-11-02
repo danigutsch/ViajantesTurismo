@@ -57,16 +57,31 @@ Use nested `AGENTS.md` files for scoped rules.
     use Conventional Commits, keep the header at or under 100 characters,
     and wrap every body line to 100 characters or less.
 - Put test-host arguments after `--` when required.
-- .NET formatting: `dotnet format`.
+- .NET formatting: `dotnet format`. CI gates `dotnet format ViajantesTurismo.slnx --no-restore --verify-no-changes` in the
+    `Format` job and requires 80% coverage of changed lines in `Quality Gate`; run the format check before pushing and
+    give every new branch a test. See `docs/ci/quality-gates.md`.
 - Docs/scripts/spec quality checks run in the CI Lint job: shellcheck, markdownlint,
     `sharedkernel-repo verify-text-encoding|verify-line-endings|verify-json|verify-links|verify-gherkin|verify-dependabot|verify`,
     and `sharedkernel-docs verify|check`.
 
 ## Local worktrees
 
-- Agents should always work from repository-local Git worktrees under `.worktrees/`.
-- `.worktrees/` is a local-only workspace area and is ignored by Git at the repository root.
+- Agents should always work from repository-local Git worktrees under `.worktrees/` or, when the Claude Code tooling
+    creates them, `.claude/worktrees/`. Both are local-only workspace areas ignored by Git at the repository root.
+- Several sessions can share the repository: only remove worktrees and branches you created.
 - Do not add committed documentation or code that depends on a specific `.worktrees/*` path.
+
+## Common CI traps
+
+- `tests/ViajantesTurismo.ArchitectureTests/Repository/DocumentationCiTests.cs` runs the `Quality Gate` script from
+    `.github/workflows/ci.yml`; changing that script (for example adding a required job result) needs the test updated.
+- After changing `ci.yml`, refresh the generated diagrams:
+    `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`.
+- A new rejection path in a document command handler needs its reason code allowed for that operation in
+    `DocumentAuditRecord`; otherwise the audit write fails and hides the real result.
+- Documentation must not contain bare `#NNN` issue references; the link check rejects them.
+- Test conventions (Arrange/Act/Assert comments, no raw `ServiceProvider` in test methods) are in
+    `docs/TEST_GUIDELINES.md`.
 
 ## Agent skills
 
