@@ -6,11 +6,11 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
-/// <summary>Helpers for tests of the local developer payment configuration in the AppHost.</summary>
-internal static class AppHostLocalPaymentsTestsHelpers
+/// <summary>Helpers for tests of the payment configuration in the AppHost.</summary>
+internal static class AppHostPaymentsTestsHelpers
 {
     /// <summary>Configuration key that redirects generated payment material to a test directory.</summary>
-    internal const string DirectoryConfigurationKey = "Payments:LocalDevelopmentDirectory";
+    internal const string DirectoryConfigurationKey = "Payments:GeneratedDirectory";
 
     /// <summary>Creates a run-mode builder that keeps generated payment material in the given directory.</summary>
     internal static IDistributedApplicationBuilder CreateBuilder(string directory)

@@ -232,8 +232,8 @@ public sealed class HostedTestFixture : IAsyncLifetime
             ["HostedTests:SeaweedFs:SecretKey"] = SeaweedSecretKey,
             ["HostedTests:SeaweedFs:Bucket"] = $"{stack}-{RunId}",
             ["HostedTests:OtlpEndpoint"] = (await telemetry).ToString(),
-            // The AppHost generates disposable payment protection material for every run; keep it inside this run's work directory.
-            ["Payments:LocalDevelopmentDirectory"] = Path.Combine(WorkDirectory, "payments"),
+            // The AppHost generates payment protection material for every run; keep it inside this run's work directory.
+            ["Payments:GeneratedDirectory"] = Path.Combine(WorkDirectory, "payments"),
         };
         if (includesCache)
         {

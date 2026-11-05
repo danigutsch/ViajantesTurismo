@@ -1,11 +1,11 @@
 using System.Security.Cryptography.X509Certificates;
 using ViajantesTurismo.Resources;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostLocalPaymentsTestsHelpers;
+using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostPaymentsTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
-public sealed class AppHostLocalPaymentsTests : IDisposable
+public sealed class AppHostPaymentsTests : IDisposable
 {
     private readonly string _directory = Path.Combine(Path.GetTempPath(), $"vt-local-payments-{Guid.NewGuid():N}");
 
@@ -18,7 +18,7 @@ public sealed class AppHostLocalPaymentsTests : IDisposable
     }
 
     [Fact]
-    public async Task Developer_run_enables_payments_with_generated_protection_material()
+    public async Task Run_enables_payments_with_generated_protection_material()
     {
         // Arrange
         var builder = CreateBuilder(_directory);
@@ -38,7 +38,7 @@ public sealed class AppHostLocalPaymentsTests : IDisposable
     }
 
     [Fact]
-    public async Task Developer_run_reuses_the_generated_certificate_and_key_ring()
+    public async Task Run_reuses_the_generated_certificate_and_key_ring()
     {
         // Arrange
         var first = CreateBuilder(_directory);
@@ -60,7 +60,7 @@ public sealed class AppHostLocalPaymentsTests : IDisposable
     }
 
     [Fact]
-    public async Task Developer_run_replaces_an_unusable_certificate_and_backs_up_its_unreadable_key_ring()
+    public async Task Run_replaces_an_unusable_certificate_and_backs_up_its_unreadable_key_ring()
     {
         // Arrange
         var first = CreateBuilder(_directory);
@@ -86,7 +86,7 @@ public sealed class AppHostLocalPaymentsTests : IDisposable
     }
 
     [Fact]
-    public async Task Developer_run_renews_a_certificate_close_to_expiry_and_keeps_the_old_key_ring_as_a_backup()
+    public async Task Run_renews_a_certificate_close_to_expiry_and_keeps_the_old_key_ring_as_a_backup()
     {
         // Arrange
         var first = CreateBuilder(_directory);
@@ -112,7 +112,7 @@ public sealed class AppHostLocalPaymentsTests : IDisposable
     }
 
     [Fact]
-    public async Task Developer_configured_payments_are_left_untouched()
+    public async Task Configured_payments_are_left_untouched()
     {
         // Arrange
         var builder = CreateBuilder(_directory);

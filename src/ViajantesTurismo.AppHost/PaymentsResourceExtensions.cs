@@ -4,20 +4,20 @@ using Microsoft.Extensions.Configuration;
 
 namespace ViajantesTurismo.AppHost;
 
-/// <summary>Enables the payment workflow for the local developer run with machine-local protection material.</summary>
+/// <summary>Enables the payment workflow on the Admin API with generated protection material when running.</summary>
 /// <remarks>
-/// The workflow stays disabled by default in deployments. A developer run needs it enabled to exercise the Payment
-/// accounts and booking finance pages, and the protection material it requires (key ring directory and encryption
-/// certificate) is generated here rather than provisioned by hand. Nothing generated is a secret of any
-/// deployment: the certificate is self-signed, has no password and lives only in the developer's local data directory.
+/// The workflow stays disabled by default in deployments, which provide their own protection material. A run needs
+/// it enabled, and the protection material it requires (key ring directory and encryption certificate) is generated
+/// here rather than provisioned by hand. The certificate is self-signed, has no password and lives only in the local
+/// application data directory.
 /// </remarks>
-internal static class LocalPaymentsResourceExtensions
+internal static class PaymentsResourceExtensions
 {
-    private const string DirectoryConfigurationKey = "Payments:LocalDevelopmentDirectory";
-    private const string DirectoryName = "payments-development";
+    private const string DirectoryConfigurationKey = "Payments:GeneratedDirectory";
+    private const string DirectoryName = "payments";
     private const string ApplicationDirectoryName = "ViajantesTurismo";
     private const string KeyRingDirectoryName = "keys";
-    private const string CertificateFileName = "payments-development.pfx";
+    private const string CertificateFileName = "payments.pfx";
     private const string CertificateSubject = "CN=ViajantesTurismo local development payments";
     private const string BusinessTimeZone = "UTC";
     private const int CertificateYears = 10;
@@ -32,16 +32,16 @@ internal static class LocalPaymentsResourceExtensions
 
     /// <summary>Enables payments on the Admin API with generated, reusable protection material in run mode.</summary>
     /// <remarks>
-    /// Leaves payments to the developer's own configuration when any of the enablement or protection settings is
+    /// Leaves payments to the existing configuration when any of the enablement or protection settings is
     /// already present in the AppHost configuration, so an existing setup is never overridden or orphaned.
     /// </remarks>
     /// <param name="api">The Admin API resource.</param>
     /// <returns>The same resource builder.</returns>
-    public static IResourceBuilder<ProjectResource> WithLocalPayments(this IResourceBuilder<ProjectResource> api)
+    public static IResourceBuilder<ProjectResource> WithPayments(this IResourceBuilder<ProjectResource> api)
     {
         ArgumentNullException.ThrowIfNull(api);
 
-        if (!api.ApplicationBuilder.ExecutionContext.IsRunMode || IsConfiguredByDeveloper(api.ApplicationBuilder.Configuration))
+        if (!api.ApplicationBuilder.ExecutionContext.IsRunMode || IsConfigured(api.ApplicationBuilder.Configuration))
         {
             return api;
         }
@@ -57,7 +57,7 @@ internal static class LocalPaymentsResourceExtensions
             .WithEnvironment("Payments__Protection__CertificatePath", certificatePath);
     }
 
-    private static bool IsConfiguredByDeveloper(ConfigurationManager configuration) =>
+    private static bool IsConfigured(ConfigurationManager configuration) =>
         ConfiguredPaymentKeys.Any(key => !string.IsNullOrWhiteSpace(configuration[key]));
 
     private static string ResolveRoot(ConfigurationManager configuration)
