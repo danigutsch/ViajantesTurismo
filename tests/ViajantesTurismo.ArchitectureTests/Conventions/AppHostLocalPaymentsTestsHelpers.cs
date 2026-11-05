@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using ViajantesTurismo.Resources;
@@ -16,6 +18,27 @@ internal static class AppHostLocalPaymentsTestsHelpers
         var builder = DistributedApplication.CreateBuilder([]);
         builder.Configuration[DirectoryConfigurationKey] = directory;
         return builder;
+    }
+
+    /// <summary>Creates a publish-mode builder that keeps generated payment material in the given directory.</summary>
+    internal static IDistributedApplicationBuilder CreatePublishBuilder(string directory)
+    {
+        var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
+        {
+            Args = ["--operation", "publish", "--publisher", "manifest"],
+        });
+        builder.Configuration[DirectoryConfigurationKey] = directory;
+        return builder;
+    }
+
+    /// <summary>Writes a passwordless PFX with a private key that stays valid for the given number of days.</summary>
+    internal static void WriteCertificateValidFor(string path, int days)
+    {
+        using var rsa = RSA.Create(2048);
+        var request = new CertificateRequest("CN=expiring", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var now = TimeProvider.System.GetUtcNow();
+        using var certificate = request.CreateSelfSigned(now.AddDays(-1), now.AddDays(days));
+        File.WriteAllBytes(path, certificate.Export(X509ContentType.Pfx));
     }
 
     /// <summary>

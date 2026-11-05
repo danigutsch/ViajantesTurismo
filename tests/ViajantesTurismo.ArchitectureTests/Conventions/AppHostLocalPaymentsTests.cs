@@ -60,7 +60,7 @@ public sealed class AppHostLocalPaymentsTests : IDisposable
     }
 
     [Fact]
-    public async Task Developer_run_replaces_an_unusable_certificate_and_its_unreadable_key_ring()
+    public async Task Developer_run_replaces_an_unusable_certificate_and_backs_up_its_unreadable_key_ring()
     {
         // Arrange
         var first = CreateBuilder(_directory);
@@ -82,6 +82,62 @@ public sealed class AppHostLocalPaymentsTests : IDisposable
         certificate.HasPrivateKey.ShouldBeTrue();
         File.Exists(markerPath).ShouldBeFalse();
         Directory.Exists(keyDirectory).ShouldBeTrue();
+        Directory.GetFiles(_directory, "stale-key.xml", SearchOption.AllDirectories).Length.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Developer_run_renews_a_certificate_close_to_expiry_and_keeps_the_old_key_ring_as_a_backup()
+    {
+        // Arrange
+        var first = CreateBuilder(_directory);
+        AppHost.AppHostComposition.AddProductResources(first, HostedProfile.Full);
+        var firstEnvironment = await ApiEnvironment(first);
+        var certificatePath = firstEnvironment["Payments__Protection__CertificatePath"];
+        var keyDirectory = firstEnvironment["Payments__Protection__KeyDirectory"];
+        await File.WriteAllTextAsync(Path.Combine(keyDirectory, "old-key.xml"), "old", TestContext.Current.CancellationToken);
+        WriteCertificateValidFor(certificatePath, days: 5);
+        var second = CreateBuilder(_directory);
+
+        // Act
+        AppHost.AppHostComposition.AddProductResources(second, HostedProfile.Full);
+        _ = await ApiEnvironment(second);
+
+        // Assert
+        using var certificate = X509CertificateLoader.LoadPkcs12FromFile(certificatePath, null);
+        certificate.NotAfter.ToUniversalTime().ShouldBeGreaterThan(TimeProvider.System.GetUtcNow().UtcDateTime.AddYears(1));
+        File.Exists(Path.Combine(keyDirectory, "old-key.xml")).ShouldBeFalse();
+        Directory.GetDirectories(_directory, "keys.bak-*").Length.ShouldBe(1);
+        File.Exists(Path.Combine(Directory.GetDirectories(_directory, "keys.bak-*")[0], "old-key.xml")).ShouldBeTrue();
+        Directory.GetFiles(_directory, "*.tmp").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Developer_configured_payments_are_left_untouched()
+    {
+        // Arrange
+        var builder = CreateBuilder(_directory);
+        builder.Configuration["Payments:Enabled"] = "false";
+
+        // Act
+        AppHost.AppHostComposition.AddProductResources(builder, HostedProfile.Full);
+        var environment = await ApiEnvironment(builder);
+
+        // Assert
+        environment.Keys.ShouldNotContain(key => key.StartsWith("Payments__", StringComparison.Ordinal));
+        Directory.Exists(_directory).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Publishing_never_generates_protection_material()
+    {
+        // Arrange
+        var builder = CreatePublishBuilder(_directory);
+
+        // Act
+        AppHost.AppHostComposition.AddProductResources(builder, HostedProfile.Full);
+
+        // Assert
+        Directory.Exists(_directory).ShouldBeFalse();
     }
 
     [Fact]

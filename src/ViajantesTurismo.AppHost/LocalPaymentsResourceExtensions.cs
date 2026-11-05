@@ -23,14 +23,25 @@ internal static class LocalPaymentsResourceExtensions
     private const int CertificateYears = 10;
     private const int RenewalWindowDays = 30;
 
+    private static readonly string[] ConfiguredPaymentKeys =
+    [
+        "Payments:Enabled",
+        "Payments:Protection:KeyDirectory",
+        "Payments:Protection:CertificatePath"
+    ];
+
     /// <summary>Enables payments on the Admin API with generated, reusable protection material in run mode.</summary>
+    /// <remarks>
+    /// Leaves payments to the developer's own configuration when any of the enablement or protection settings is
+    /// already present in the AppHost configuration, so an existing setup is never overridden or orphaned.
+    /// </remarks>
     /// <param name="api">The Admin API resource.</param>
     /// <returns>The same resource builder.</returns>
     public static IResourceBuilder<ProjectResource> WithLocalPayments(this IResourceBuilder<ProjectResource> api)
     {
         ArgumentNullException.ThrowIfNull(api);
 
-        if (!api.ApplicationBuilder.ExecutionContext.IsRunMode)
+        if (!api.ApplicationBuilder.ExecutionContext.IsRunMode || IsConfiguredByDeveloper(api.ApplicationBuilder.Configuration))
         {
             return api;
         }
@@ -45,6 +56,9 @@ internal static class LocalPaymentsResourceExtensions
             .WithEnvironment("Payments__Protection__KeyDirectory", keyDirectory)
             .WithEnvironment("Payments__Protection__CertificatePath", certificatePath);
     }
+
+    private static bool IsConfiguredByDeveloper(ConfigurationManager configuration) =>
+        ConfiguredPaymentKeys.Any(key => !string.IsNullOrWhiteSpace(configuration[key]));
 
     private static string ResolveRoot(ConfigurationManager configuration)
     {
@@ -61,10 +75,10 @@ internal static class LocalPaymentsResourceExtensions
         if (!HasUsableCertificate(certificatePath))
         {
             // A key ring is only readable with the certificate that protected it, so a replaced certificate
-            // orphans its keys. This directory is generated here and holds no records worth keeping.
+            // orphans its keys. They are moved aside rather than deleted so nothing is lost irreversibly.
             if (Directory.Exists(keyDirectory))
             {
-                Directory.Delete(keyDirectory, recursive: true);
+                Directory.Move(keyDirectory, $"{keyDirectory}.bak-{TimeProvider.System.GetUtcNow():yyyyMMddHHmmssfff}");
             }
 
             WriteCertificate(certificatePath);
@@ -100,7 +114,7 @@ internal static class LocalPaymentsResourceExtensions
         using var certificate = request.CreateSelfSigned(now.AddDays(-1), now.AddYears(CertificateYears));
         var options = new FileStreamOptions
         {
-            Mode = FileMode.Create,
+            Mode = FileMode.CreateNew,
             Access = FileAccess.Write,
             Share = FileShare.None
         };
@@ -109,18 +123,24 @@ internal static class LocalPaymentsResourceExtensions
             options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
         }
 
-        using var stream = new FileStream(path, options);
-        stream.Write(certificate.Export(X509ContentType.Pfx));
+        // Written to a new file and moved into place, so a concurrent AppHost or an interrupted write never
+        // exposes a partial certificate, and the final file always gets the owner-only mode of a new file.
+        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        using (var stream = new FileStream(temporaryPath, options))
+        {
+            stream.Write(certificate.Export(X509ContentType.Pfx));
+        }
+
+        File.Move(temporaryPath, path, overwrite: true);
     }
 
     private static void CreatePrivateDirectory(string path)
     {
-        if (OperatingSystem.IsWindows())
+        Directory.CreateDirectory(path);
+        if (!OperatingSystem.IsWindows())
         {
-            Directory.CreateDirectory(path);
-            return;
+            // Also tightens a directory that already existed with broader permissions.
+            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
-
-        Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
     }
 }
