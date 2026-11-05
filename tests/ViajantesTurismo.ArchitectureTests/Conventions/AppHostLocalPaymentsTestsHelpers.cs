@@ -1,0 +1,42 @@
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+using ViajantesTurismo.Resources;
+
+namespace ViajantesTurismo.ArchitectureTests.Conventions;
+
+/// <summary>Helpers for tests of the local developer payment configuration in the AppHost.</summary>
+internal static class AppHostLocalPaymentsTestsHelpers
+{
+    /// <summary>Configuration key that redirects generated payment material to a test directory.</summary>
+    internal const string DirectoryConfigurationKey = "Payments:LocalDevelopmentDirectory";
+
+    /// <summary>Creates a run-mode builder that keeps generated payment material in the given directory.</summary>
+    internal static IDistributedApplicationBuilder CreateBuilder(string directory)
+    {
+        var builder = DistributedApplication.CreateBuilder([]);
+        builder.Configuration[DirectoryConfigurationKey] = directory;
+        return builder;
+    }
+
+    /// <summary>
+    /// Collects the plain-text environment variables the Admin API resource receives.
+    /// </summary>
+    /// <remarks>
+    /// Runs the environment callbacks without resolving references, because a run-mode connection string waits for
+    /// endpoints that only exist once the application is started.
+    /// </remarks>
+    internal static async Task<Dictionary<string, string>> ApiEnvironment(IDistributedApplicationBuilder builder)
+    {
+        var api = builder.Resources.OfType<ProjectResource>().Single(project => project.Name == ResourceNames.Api);
+        var variables = new Dictionary<string, object>(StringComparer.Ordinal);
+        var context = new EnvironmentCallbackContext(builder.ExecutionContext, api, variables);
+        foreach (var annotation in api.Annotations.OfType<EnvironmentCallbackAnnotation>())
+        {
+            await annotation.Callback(context);
+        }
+
+        return variables
+            .Where(static variable => variable.Value is string)
+            .ToDictionary(static variable => variable.Key, static variable => (string)variable.Value, StringComparer.Ordinal);
+    }
+}

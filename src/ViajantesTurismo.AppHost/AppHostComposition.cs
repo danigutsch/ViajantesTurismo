@@ -46,6 +46,10 @@ internal static class AppHostComposition
         var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
         builder.AddAdminIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
         var apiService = builder.AddAdminApi(adminDatabase, migrationService, clamAv, identityProvider);
+        if (includeDeveloperTooling)
+        {
+            apiService.WithLocalPayments();
+        }
 
         if (profile is HostedProfile.Admin)
         {
