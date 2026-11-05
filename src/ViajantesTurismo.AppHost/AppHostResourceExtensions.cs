@@ -290,7 +290,8 @@ internal static class AppHostResourceExtensions
             .WithReference(adminDatabase)
             .WaitFor(adminDatabase)
             .WaitForCompletion(migrationService)
-            .WithLocalIdentityProvider(identityProvider);
+            .WithLocalIdentityProvider(identityProvider)
+            .WithPayments();
 
         return clamAv is null ? api : api.WithClamAvReference(clamAv).WaitFor(clamAv);
     }
