@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Nodes;
 using Aspire.Hosting.Testing;
 using Microsoft.Extensions.Configuration;
@@ -233,6 +232,8 @@ public sealed class HostedTestFixture : IAsyncLifetime
             ["HostedTests:SeaweedFs:SecretKey"] = SeaweedSecretKey,
             ["HostedTests:SeaweedFs:Bucket"] = $"{stack}-{RunId}",
             ["HostedTests:OtlpEndpoint"] = (await telemetry).ToString(),
+            // The AppHost generates disposable payment protection material for every run; keep it inside this run's work directory.
+            ["Payments:LocalDevelopmentDirectory"] = Path.Combine(WorkDirectory, "payments"),
         };
         if (includesCache)
         {
@@ -246,23 +247,6 @@ public sealed class HostedTestFixture : IAsyncLifetime
                 settings.Configuration ??= new ConfigurationManager();
                 settings.Configuration.AddInMemoryCollection(values);
             }, ct);
-        if (profile is HostedProfile.System)
-        {
-            var paymentDirectory = Directory.CreateDirectory(Path.Combine(WorkDirectory, "payments"));
-            var keys = Directory.CreateDirectory(Path.Combine(paymentDirectory.FullName, "keys"));
-            var certificatePath = Path.Combine(paymentDirectory.FullName, "test.pfx");
-            using var rsa = RSA.Create(2048);
-            var request = new CertificateRequest("CN=VT isolated system payment test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            var now = TimeProvider.System.GetUtcNow();
-            using var certificate = request.CreateSelfSigned(now.AddDays(-1), now.AddDays(1));
-            await File.WriteAllBytesAsync(certificatePath, certificate.Export(X509ContentType.Pfx), ct);
-            var api = builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == ResourceNames.Api);
-            builder.CreateResourceBuilder(api).WithEnvironment("Payments__Enabled", "true")
-                .WithEnvironment("Payments__BusinessTimeZone", "UTC")
-                .WithEnvironment("Payments__Protection__KeyDirectory", keys.FullName)
-                .WithEnvironment("Payments__Protection__CertificatePath", certificatePath);
-        }
-
         try
         {
             return await AspireTestApplication.Start(builder,

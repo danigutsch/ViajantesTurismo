@@ -140,18 +140,20 @@ public sealed class AppHostLocalPaymentsTests : IDisposable
         Directory.Exists(_directory).ShouldBeFalse();
     }
 
-    [Fact]
-    public async Task Admin_only_profile_leaves_payments_to_its_own_configuration()
+    [Theory]
+    [InlineData(HostedProfile.Full)]
+    [InlineData(HostedProfile.System)]
+    [InlineData(HostedProfile.Admin)]
+    public async Task Every_profile_enables_payments_in_a_run(HostedProfile profile)
     {
         // Arrange
         var builder = CreateBuilder(_directory);
 
         // Act
-        AppHost.AppHostComposition.AddProductResources(builder, HostedProfile.Admin);
+        AppHost.AppHostComposition.AddProductResources(builder, profile);
         var environment = await ApiEnvironment(builder);
 
         // Assert
-        environment.ContainsKey("Payments__Enabled").ShouldBeFalse();
-        Directory.Exists(_directory).ShouldBeFalse();
+        environment["Payments__Enabled"].ShouldBe("true");
     }
 }
