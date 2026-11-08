@@ -5771,7 +5771,7 @@
             "format": "int64"
           },
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "gross": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
@@ -6199,7 +6199,9 @@
             "format": "double"
           },
           "currency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
           },
           "includedServices": {
             "type": "array",
@@ -6228,9 +6230,6 @@
             "format": "int32"
           }
         }
-      },
-      "CurrencyDto": {
-        "type": "integer"
       },
       "CustomerDetailsDto": {
         "required": [
@@ -6549,7 +6548,7 @@
             ]
           },
           "currency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "notes": {
             "type": [
@@ -6610,7 +6609,7 @@
             "format": "int64"
           },
           "obligationCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "termsStale": {
             "type": "boolean"
@@ -6723,7 +6722,7 @@
             "format": "uuid"
           },
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "gross": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
@@ -7265,7 +7264,7 @@
         "type": "object",
         "properties": {
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "id": {
             "type": "string",
@@ -7517,7 +7516,7 @@
             "format": "double"
           },
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "paymentReference": {
             "type": "string"
@@ -7863,7 +7862,7 @@
             "format": "double"
           },
           "currency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "includedServices": {
             "type": "array",
@@ -8193,7 +8192,7 @@
         "type": "object",
         "properties": {
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "kind": {
             "$ref": "#/components/schemas/PaymentAccountKindDto"
@@ -8753,7 +8752,9 @@
             "format": "double"
           },
           "currency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
           },
           "includedServices": {
             "type": "array",

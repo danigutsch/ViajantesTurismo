@@ -1,6 +1,5 @@
 using PandaBear.Mediator;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 namespace ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 
 /// <summary>
@@ -16,7 +15,7 @@ public sealed record UpdateTourCommand(
     decimal SingleRoomSupplementPrice,
     decimal RegularBikePrice,
     decimal EBikePrice,
-    Currency Currency,
+    string Currency,
     IReadOnlyCollection<string> IncludedServices,
     int MinCustomers,
     int MaxCustomers) : ICommand<Result>;

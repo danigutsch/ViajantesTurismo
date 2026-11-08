@@ -1,3 +1,5 @@
+using PandaBear.BuildingBlocks;
+
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 
@@ -16,7 +18,7 @@ public sealed class TourUpdateBasePriceSteps(TourContext tourContext)
             500.00m,
             100.00m,
             200.00m,
-            Currency.UsDollar,
+            Currency.Usd,
             4,
             12,
             ["Hotel", "Breakfast"])).Value;

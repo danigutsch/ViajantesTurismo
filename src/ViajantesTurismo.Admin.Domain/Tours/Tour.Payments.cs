@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Payments;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
@@ -111,7 +112,7 @@ public sealed partial class Tour
         ArgumentNullException.ThrowIfNull(account);
         ArgumentNullException.ThrowIfNull(installmentIds);
         var booking = _bookings.SingleOrDefault(item => item.Id == bookingId);
-        return Pricing.Currency == Currency.Euro && booking?.FinancialHistory is { } history ? FrozenPaymentInstruction.Create(history, booking.TotalPrice, booking.Status, account, installmentIds, quoteId, reference, now)
+        return Pricing.Currency == Currency.Eur && booking?.FinancialHistory is { } history ? FrozenPaymentInstruction.Create(history, booking.TotalPrice, booking.Status, account, installmentIds, quoteId, reference, now)
             : FinancialErrors.Unavailable().ConvertError<FrozenPaymentInstruction>();
     }
 
@@ -121,7 +122,7 @@ public sealed partial class Tour
         ArgumentNullException.ThrowIfNull(instruction);
         ArgumentNullException.ThrowIfNull(account);
         var booking = _bookings.SingleOrDefault(item => item.Id == instruction.BookingId);
-        return Pricing.Currency == Currency.Euro && booking?.FinancialHistory is { } history && instruction.CanDeliver(history, booking.TotalPrice, booking.Status, account, now);
+        return Pricing.Currency == Currency.Eur && booking?.FinancialHistory is { } history && instruction.CanDeliver(history, booking.TotalPrice, booking.Status, account, now);
     }
 
     /// <summary>Attaches loaded financial history to the matching booking of this tour; throws when no booking matches.</summary>
@@ -134,7 +135,7 @@ public sealed partial class Tour
 
     private Result<Guid> ApplyBookingFinancialChange(Guid bookingId, DateTimeOffset now, Func<Booking, BookingFinancialHistory, Result<Guid>> operation)
     {
-        if (Pricing.Currency != Currency.Euro)
+        if (Pricing.Currency != Currency.Eur)
         {
             return FinancialErrors.Invalid("obligationCurrency").ConvertError<Guid>();
         }

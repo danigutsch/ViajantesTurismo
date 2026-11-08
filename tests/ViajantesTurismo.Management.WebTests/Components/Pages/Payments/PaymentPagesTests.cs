@@ -31,7 +31,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _bookings.AddBooking(booking);
 
@@ -56,7 +56,7 @@ public sealed class PaymentPagesTests : BunitContext
         authorization.SetRoles("Operator");
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _bookings.AddBooking(booking);
 
@@ -77,7 +77,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _bookings.AddBooking(booking);
         Handler.FailNextSubmission = true;
@@ -218,7 +218,7 @@ public sealed class PaymentPagesTests : BunitContext
         page.WaitForAssertion(() => Handler.Keys.Count.ShouldBe(1));
         using var payload = JsonDocument.Parse(Handler.Payloads[0]);
         var recipient = payload.RootElement.GetProperty("recipient");
-        recipient.GetProperty("settlementCurrency").GetInt32().ShouldBe(kind == "Iban" ? 1 : 0);
+        recipient.GetProperty("settlementCurrency").GetString().ShouldBe(kind == "Iban" ? "EUR" : "BRL");
         if (edit)
         {
             payload.RootElement.GetProperty("expectedVersion").GetInt64().ShouldBe(7);
@@ -246,7 +246,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _bookings.AddBooking(booking);
         Handler.FinancialHistory = PaymentPageData.History;
@@ -289,7 +289,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _bookings.AddBooking(booking);
         Handler.FinancialHistory = PaymentPageData.History;
@@ -397,7 +397,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _bookings.AddBooking(booking);
         Handler.FinancialHistory = PaymentPageData.History;
@@ -451,7 +451,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro,
+            Currency = "EUR",
             FinancialVersion = 4
         };
         _bookings.AddBooking(booking);
@@ -476,7 +476,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _bookings.AddBooking(booking);
         Handler.FinancialHistory = PaymentPageData.History;
@@ -547,7 +547,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _bookings.AddBooking(booking);
         Handler.FinancialHistory = PaymentPageData.History;
@@ -592,7 +592,7 @@ public sealed class PaymentPagesTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro,
+            Currency = "EUR",
             FinancialVersion = 4
         };
         _bookings.AddBooking(booking);

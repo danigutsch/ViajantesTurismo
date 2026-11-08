@@ -13,7 +13,7 @@
 @if (_submission.HasPending) { <p role="alert">The submission outcome is unknown. Retry the same command before editing.</p><button type="button" @onclick="Retry" disabled="@_submission.IsBusy">Retry same submission</button> }
 <button type="button" @onclick="Load" disabled="@_submission.IsBusy">Refresh</button>
 <AuthorizeView Roles="Admin"><button type="button" @onclick="LoadEvidence" disabled="@Blocked">View sensitive evidence references (audited)</button></AuthorizeView>
-@if (_booking is { Currency: not CurrencyDto.Euro }) { <p>Payment obligations require a tour priced in EUR.</p> }
+@if (_booking is { Currency: not CurrencyFormatter.Eur }) { <p>Payment obligations require a tour priced in EUR.</p> }
 else if (_booking is not null)
 {
     <p>Booking price: @_booking.TotalPrice EUR. Status: @_booking.Status. Financial revision: @Version.</p>
@@ -90,7 +90,7 @@ else if (_booking is not null)
     }
     <fieldset disabled="@Blocked"><legend>Record actual receipt pending reconciliation</legend>
         <p>Recording cash does not approve EUR credit. Select proposed installment allocations explicitly.</p>
-        <label for="receipt-currency">Settlement currency</label><InputSelect id="receipt-currency" @bind-Value="_receipt.SettlementCurrency"><option value="@CurrencyDto.Euro">EUR</option><option value="@CurrencyDto.Real">BRL</option></InputSelect>
+        <label for="receipt-currency">Settlement currency</label><InputSelect id="receipt-currency" @bind-Value="_receipt.SettlementCurrency">@foreach (var isoCode in CurrencyFormatter.SettlementCurrencies) { <option value="@isoCode">@isoCode</option> }</InputSelect>
         <label for="receipt-gross">Gross</label><InputNumber id="receipt-gross" @bind-Value="_receipt.Gross" step="0.01" />
         <label for="receipt-fees">Fees</label><InputNumber id="receipt-fees" @bind-Value="_receipt.Fees" step="0.01" />
         <label for="receipt-date">Calendar payment date</label><InputDate id="receipt-date" @bind-Value="_receipt.PaymentDate" />

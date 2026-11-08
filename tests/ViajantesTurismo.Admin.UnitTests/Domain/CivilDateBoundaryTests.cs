@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -44,7 +45,7 @@ public sealed class CivilDateBoundaryTests
         // Act
         var scenario = new PaymentAccounts.PaymentScenario();
         var result = scenario.Tour.RecordBookingReceipt(scenario.Booking.Id, 0,
-            Admin.Domain.Payments.ReceiptSettlement.Create(Currency.Euro, 100m, 0m).Value,
+            Admin.Domain.Payments.ReceiptSettlement.Create(Currency.Eur, 100m, 0m).Value,
             date, null, PaymentMethod.Cash, "calendar-test", [], "owner", now, DateOnly.FromDateTime(now.UtcDateTime));
         // Assert
         result.IsSuccess.ShouldBe(valid);

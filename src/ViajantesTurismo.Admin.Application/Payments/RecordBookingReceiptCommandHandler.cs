@@ -1,5 +1,7 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Payments;
 using ViajantesTurismo.Admin.Application.Mappings;
 
@@ -22,11 +24,16 @@ public sealed class RecordBookingReceiptCommandHandler(BookingPaymentCommandExec
         {
             ProposedAllocations = [.. input.ProposedAllocations.OrderBy(item => item.TargetId)]
         };
-        if (!Enum.IsDefined(input.SettlementCurrency) || !Enum.IsDefined(input.Method))
+        var currency = Currency.Create(input.SettlementCurrency);
+        if (currency.IsFailure || !FinancialCurrencies.IsSupported(currency.Value) || !Enum.IsDefined(input.Method))
         {
             return Task.FromResult(FinancialErrors.Invalid("settlement").ConvertError<Guid>());
         }
-        var settlement = ReceiptSettlement.Create(TourMapper.MapToCurrency(input.SettlementCurrency), input.Gross, input.Fees);
+        input = input with
+        {
+            SettlementCurrency = currency.Value.Code
+        };
+        var settlement = ReceiptSettlement.Create(currency.Value, input.Gross, input.Fees);
         if (settlement.IsFailure)
         {
             return Task.FromResult(settlement.ConvertError<ReceiptSettlement, Guid>());

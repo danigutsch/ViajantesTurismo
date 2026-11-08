@@ -113,7 +113,7 @@ else
         _errorMessage = new HttpOutcomeMessages("Tours could not be loaded. Try again later.").For(outcome.Kind);
     }
 
-    private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);
+    private static string FormatPrice(decimal price, string currency) => CurrencyFormatter.Format(price, currency);
 
     private static string GetTourDetailsUrl(Guid tourId) => $"/tours/{tourId}";
 

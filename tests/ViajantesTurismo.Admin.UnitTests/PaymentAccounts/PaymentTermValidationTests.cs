@@ -1,4 +1,5 @@
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Payments;
 
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
@@ -173,17 +174,17 @@ public sealed class PaymentTermValidationTests
     {
         // Arrange
         var now = PaymentScenario.Now;
-        var euro = PaymentMoney.Create(100m, Admin.Domain.Tours.Currency.Euro).Value;
-        var real = PaymentMoney.Create(100m, Admin.Domain.Tours.Currency.Real).Value;
+        var euro = PaymentMoney.Create(100m, Currency.Eur).Value;
+        var real = PaymentMoney.Create(100m, Currency.Brl).Value;
         var quote = AgreedFxQuote.Create(5m, "bank", "agreement", now, now.AddHours(1), now).Value;
         var approval = FinancialApproval.Create("owner", now, FinancialReason.InitialObligation, true).Value;
-        var receipt = ReceiptSettlement.Create(Admin.Domain.Tours.Currency.Euro, 100m, 1m).Value;
+        var receipt = ReceiptSettlement.Create(Currency.Eur, 100m, 1m).Value;
 
         // Act
-        var sameMoney = PaymentMoney.Create(100m, Admin.Domain.Tours.Currency.Euro).Value;
+        var sameMoney = PaymentMoney.Create(100m, Currency.Eur).Value;
         var sameQuote = AgreedFxQuote.Create(5m, "bank", "agreement", now, now.AddHours(1), now).Value;
         var sameApproval = FinancialApproval.Create("owner", now, FinancialReason.InitialObligation, true).Value;
-        var sameReceipt = ReceiptSettlement.Create(Admin.Domain.Tours.Currency.Euro, 100m, 1m).Value;
+        var sameReceipt = ReceiptSettlement.Create(Currency.Eur, 100m, 1m).Value;
 
         // Assert
         euro.ShouldBe(sameMoney);

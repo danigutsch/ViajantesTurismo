@@ -430,7 +430,7 @@ public class BookingCreateFormTests : BunitContext
     public void Shows_price_breakdown_when_tour_selected()
     {
         // Arrange
-        var tour = BuildTourDto(price: 1000m, currency: CurrencyDto.Euro);
+        var tour = BuildTourDto(price: 1000m, currency: "EUR");
         var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel
         {
@@ -459,7 +459,7 @@ public class BookingCreateFormTests : BunitContext
     public void Price_breakdown_shows_discount_when_applied()
     {
         // Arrange
-        var tour = BuildTourDto(price: 1000m, currency: CurrencyDto.Euro);
+        var tour = BuildTourDto(price: 1000m, currency: "EUR");
         var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel
         {
@@ -492,7 +492,7 @@ public class BookingCreateFormTests : BunitContext
         // Arrange
         var tour = BuildTourDto(
             price: 1000m,
-            currency: CurrencyDto.UsDollar,
+            currency: "USD",
             regularBikePrice: 50m,
             eBikePrice: 100m,
             singleRoomSupplementPrice: 200m);
@@ -727,7 +727,7 @@ public class BookingCreateFormTests : BunitContext
     public void Displays_price_breakdown_with_currency_symbol()
     {
         // Arrange
-        var tour = BuildTourDto(price: 1500m, currency: CurrencyDto.Euro);
+        var tour = BuildTourDto(price: 1500m, currency: "EUR");
         var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel
         {

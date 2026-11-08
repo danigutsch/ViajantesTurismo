@@ -1,5 +1,5 @@
-using PandaBear.Results;
 using PandaBear.BuildingBlocks;
+using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 
@@ -85,7 +85,7 @@ public sealed class TourPricing : ValueObject
 
         var errors = new ValidationErrors();
 
-        if (!Enum.IsDefined(currency))
+        if (!FinancialCurrencies.IsTourCurrency(currency))
         {
             errors.Add(TourErrors.InvalidCurrency());
         }

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;
 
@@ -108,8 +108,8 @@ public sealed partial class BookingFinancialHistory
             if (receipt is null || !ExactEuro(reconciliation.EuroCredit) || !Creator(reconciliation.CreatedBy, reconciliation.CreatedAt, state.LastChangedAt)
                 || !ValidStoredSelections(reconciliation.Allocations) || reconciliation.Allocations.Sum(item => item.EuroAmount) > reconciliation.EuroCredit
                 || reconciliation.Allocations.Any(item => !state.Schedules.SelectMany(schedule => schedule.Installments).Any(installment => installment.Id == item.TargetId))
-                || receipt.Currency == Currency.Euro && reconciliation.QuoteId is not null
-                || receipt.Currency == Currency.Real && !state.Quotes.Any(item => item.Id == reconciliation.QuoteId && !item.ForRefund && item.Approval is not null)
+                || receipt.Currency == Currency.Eur && reconciliation.QuoteId is not null
+                || receipt.Currency == Currency.Brl && !state.Quotes.Any(item => item.Id == reconciliation.QuoteId && !item.ForRefund && item.Approval is not null)
                 || reconciliation.Approval is { } approval && (!ValidApproval(approval, reconciliation.CreatedAt)
                     || approval.Reason is not (FinancialReason.ExactReceipt or FinancialReason.LateReceipt or FinancialReason.ShortReceipt or FinancialReason.ExcessReceipt or FinancialReason.FeeDifference or FinancialReason.MismatchedReceipt)))
             {
@@ -155,11 +155,11 @@ public sealed partial class BookingFinancialHistory
             {
                 return false;
             }
-            if (receipt.Currency == Currency.Euro && (refund.QuoteId is not null || refund.EuroCashPayable != refund.OriginalCashBasis || refund.ActualSettlement != refund.OriginalCashBasis))
+            if (receipt.Currency == Currency.Eur && (refund.QuoteId is not null || refund.EuroCashPayable != refund.OriginalCashBasis || refund.ActualSettlement != refund.OriginalCashBasis))
             {
                 return false;
             }
-            if (receipt.Currency == Currency.Real && !ValidRealRefundQuote(state, refund))
+            if (receipt.Currency == Currency.Brl && !ValidRealRefundQuote(state, refund))
             {
                 return false;
             }

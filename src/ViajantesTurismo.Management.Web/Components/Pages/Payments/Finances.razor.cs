@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 using PandaBear.Blazor;
+using ViajantesTurismo.Management.Web.Helpers;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
@@ -72,7 +73,7 @@ public partial class Finances
                 return;
             }
             _booking = value;
-            if (value.Currency != CurrencyDto.Euro)
+            if (value.Currency != CurrencyFormatter.Eur)
             {
                 return;
             }

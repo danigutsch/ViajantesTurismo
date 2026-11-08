@@ -1,4 +1,5 @@
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Payments;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -19,7 +20,7 @@ public sealed class PaymentRefundTests
             AgreedFxQuote.Create(5m, "recipient", "original", now, now.AddHours(1), now).Value, false, "owner", now).Value;
         scenario.Tour.ApproveBookingPaymentQuote(scenario.Booking.Id, scenario.History.Version, quote,
             FinancialApproval.Create("owner", now, FinancialReason.QuoteAgreed, true).Value).IsSuccess.ShouldBeTrue();
-        var receipt = scenario.Tour.RecordBookingReceipt(scenario.Booking.Id, scenario.History.Version, ReceiptSettlement.Create(Currency.Real, 500m, 0m).Value,
+        var receipt = scenario.Tour.RecordBookingReceipt(scenario.Booking.Id, scenario.History.Version, ReceiptSettlement.Create(Currency.Brl, 500m, 0m).Value,
             new DateOnly(2030, 1, 5), now, PaymentMethod.BankTransfer, "received", [InstallmentAllocation.Create(installment.Id, 100m).Value], "owner", now, new DateOnly(2030, 1, 5)).Value;
         var reconciliation = scenario.Tour.DraftBookingReceiptReconciliation(scenario.Booking.Id, scenario.History.Version, receipt, 100m, quote,
             [InstallmentAllocation.Create(installment.Id, 100m).Value], "owner", now).Value;

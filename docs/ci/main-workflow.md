@@ -82,7 +82,8 @@ This is the required non-secret aggregate in the `main` branch-protection rule. 
 test-slice matrix before succeeding. The component rows remain parallel; the aggregate only reports
 their combined result. It uses no analysis secrets and blocks a failing test slice on fork pull requests.
 
-NuGet lock files (`packages.lock.json`) are committed for the projects in this repository so
+NuGet lock files (`packages.lock.json`) are committed for the projects in this repository, except the
+lock-exempt libraries listed in `.config/sharedkernel-repo.json`, so
 that CI can combine `actions/setup-dotnet` built-in caching with locked-mode restore. This
 keeps the dependency graph reproducible across pull requests and merge commits while giving
 the cache a stable key source.

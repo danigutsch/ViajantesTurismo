@@ -56,7 +56,7 @@
             <label for="account-kind">Recipient format</label><InputSelect id="account-kind" class="form-select" @bind-Value="_model.Kind"><option value="@PaymentAccountKindDto.Iban">IBAN/BIC</option><option value="@PaymentAccountKindDto.BrazilianBank">Brazilian bank</option><option value="@PaymentAccountKindDto.Pix">Pix</option></InputSelect>
             @if (_model.Kind == PaymentAccountKindDto.Iban)
             {
-                <label for="account-currency">Bank-checked settlement currency</label><InputSelect id="account-currency" class="form-select" @bind-Value="_model.SettlementCurrency"><option value="@CurrencyDto.Euro">EUR</option><option value="@CurrencyDto.Real">BRL</option></InputSelect>
+                <label for="account-currency">Bank-checked settlement currency</label><InputSelect id="account-currency" class="form-select" @bind-Value="_model.SettlementCurrency">@foreach (var isoCode in CurrencyFormatter.SettlementCurrencies) { <option value="@isoCode">@isoCode</option> }</InputSelect>
                 <label for="account-iban">IBAN (uppercase, no spaces)</label><InputText id="account-iban" class="form-control" autocomplete="off" @bind-Value="_model.Iban" />
                 <label for="account-bic">BIC (uppercase)</label><InputText id="account-bic" class="form-control" autocomplete="off" @bind-Value="_model.Bic" />
             }

@@ -24,7 +24,7 @@ internal sealed class PaymentAccountQueryProbe : IPaymentAccountQueryService
         Label = "EUR account",
         Kind = PaymentAccountKindDto.Iban,
         Status = PaymentAccountStatusDto.Verified,
-        SettlementCurrency = CurrencyDto.Euro,
+        SettlementCurrency = "EUR",
         MaskedIdentifier = "DE…3000",
         CreatedBy = "owner",
         CreatedAt = new DateTimeOffset(2030, 1, 5, 12, 0, 0, TimeSpan.Zero),
@@ -54,7 +54,7 @@ internal sealed class PaymentAccountQueryProbe : IPaymentAccountQueryService
             Recipient = new PaymentRecipientDto
             {
                 Kind = PaymentAccountKindDto.Iban,
-                SettlementCurrency = CurrencyDto.Euro,
+                SettlementCurrency = "EUR",
                 RecipientName = "Recipient",
                 Iban = "DE89370400440532013000",
                 Bic = "COBADEFFXXX"

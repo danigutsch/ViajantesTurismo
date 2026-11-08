@@ -274,7 +274,7 @@ else if (_booking is not null)
                     <div class="card bg-light">
                         <div class="card-body py-2 text-center">
                             <div class="text-muted small">Amount Paid</div>
-                            <div class="h5 mb-0 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyDto.Euro)</div>
+                            <div class="h5 mb-0 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyFormatter.Eur)</div>
                         </div>
                     </div>
                 </div>
@@ -282,7 +282,7 @@ else if (_booking is not null)
                     <div class="card bg-light">
                         <div class="card-body py-2 text-center">
                             <div class="text-muted small">Remaining Balance</div>
-                            <div class="h5 mb-0 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyDto.Euro)</div>
+                            <div class="h5 mb-0 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyFormatter.Eur)</div>
                         </div>
                     </div>
                 </div>

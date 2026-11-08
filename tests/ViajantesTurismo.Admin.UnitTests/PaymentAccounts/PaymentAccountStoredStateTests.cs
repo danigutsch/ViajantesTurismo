@@ -1,4 +1,5 @@
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
@@ -47,7 +48,7 @@ public sealed class PaymentAccountStoredStateTests
     {
         // Arrange
         var now = PaymentScenario.Now;
-        var recipient = PaymentRecipientDetails.CreateIban("Checked recipient", "DE89370400440532013000", "COBADEFFXXX").Value;
+        var recipient = PaymentRecipientDetails.CreateIban("Checked recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value;
         var account = PaymentAccount.Create("Checked account", recipient, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         account.Review(account.Version, "reviewer", now, PaymentAccountReviewOutcome.ChangesRequested).IsSuccess.ShouldBeTrue();
@@ -92,7 +93,7 @@ public sealed class PaymentAccountStoredStateTests
             "review-before-creation" => state with { Reviews = [state.Reviews[0] with { ReviewedAt = first.CreatedAt.AddSeconds(-1) }] },
             "review-creator" => state with { Reviews = [state.Reviews[0] with { ReviewerId = first.CreatedBy }] },
             "review-outcome" => state with { Reviews = [state.Reviews[0] with { Outcome = PaymentAccountReviewOutcome.None }] },
-            "recipient-currency" => state with { Revisions = [first with { Recipient = first.Recipient with { SettlementCurrency = Admin.Domain.Tours.Currency.UsDollar } }, second] },
+            "recipient-currency" => state with { Revisions = [first with { Recipient = first.Recipient with { SettlementCurrency = Currency.Usd } }, second] },
             _ => throw new ArgumentOutOfRangeException(nameof(change))
         };
 

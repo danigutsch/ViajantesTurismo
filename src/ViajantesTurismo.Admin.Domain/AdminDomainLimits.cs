@@ -16,6 +16,11 @@ public static class AdminDomainLimits
     public const int MaxNameLength = 128;
 
     /// <summary>
+    /// The length of an ISO 4217 currency code.
+    /// </summary>
+    public const int CurrencyCodeLength = 3;
+
+    /// <summary>
     /// The maximum length for service names in the included services list.
     /// </summary>
     public const int MaxServiceDescriptionLength = 256;

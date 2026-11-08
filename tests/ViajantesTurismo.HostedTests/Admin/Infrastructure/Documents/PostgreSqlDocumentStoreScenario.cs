@@ -966,7 +966,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                     "MinCustomers", "MaxCustomers", "IncludedServices")
                 VALUES (
                     {tourId}, {tourIdentifier}, {tourIdentifier}, {bookingDate.AddDays(30)},
-                    {bookingDate.AddDays(37)}, 0, 0, 0, 0, 'UsDollar', 1, 1, ARRAY['Document']);
+                    {bookingDate.AddDays(37)}, 0, 0, 0, 0, 'USD', 1, 1, ARRAY['Document']);
                 """,
                 ct);
 

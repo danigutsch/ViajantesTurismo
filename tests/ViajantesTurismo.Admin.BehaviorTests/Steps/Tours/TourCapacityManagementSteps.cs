@@ -1,4 +1,5 @@
 
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
@@ -27,7 +28,7 @@ public sealed class TourCapacityManagementSteps(
             500.00m,
             100.00m,
             200.00m,
-            Currency.UsDollar,
+            Currency.Usd,
             minCustomers,
             maxCustomers,
             ["Hotel", "Breakfast"])).Value;
@@ -97,7 +98,7 @@ public sealed class TourCapacityManagementSteps(
             tourContext.SingleRoomSupplementPrice,
             tourContext.RegularBikePrice,
             tourContext.EBikePrice,
-            Currency.UsDollar,
+            Currency.Usd,
             minCustomers,
             maxCustomers,
             ["Hotel", "Breakfast"]));

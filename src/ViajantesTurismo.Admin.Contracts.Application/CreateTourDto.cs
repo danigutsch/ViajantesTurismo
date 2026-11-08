@@ -80,10 +80,10 @@ public sealed record CreateTourDto : IValidatableObject
     }
 
     /// <summary>
-    /// The currency information for all prices.
+    /// The ISO 4217 code of the currency for all prices; BRL, EUR or USD.
     /// </summary>
-    [Required]
-    public required CurrencyDto Currency
+    [Required, StringLength(3, MinimumLength = 3)]
+    public required string Currency
     {
         get; init;
     }

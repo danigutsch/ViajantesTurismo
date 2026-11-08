@@ -304,7 +304,7 @@ public void Maps_currency_values_for_the_response_model()
 public void Creates_a_tour_when_the_request_is_valid()
 
 // Bad
-public void MapToCurrencyDto_ShouldMapAllValidValues()  // Inconsistent
+public void Currency_ShouldBeValid()  // Inconsistent
 public void TestCreateTour()  // Not descriptive
 ```
 
@@ -425,11 +425,11 @@ Use `[Theory]` with `[InlineData]` for multiple inputs:
 
 ```csharp
 [Theory]
-[InlineData(Currency.Real, CurrencyDto.Real)]
-[InlineData(Currency.Euro, CurrencyDto.Euro)]
-public void Maps_all_supported_currency_values(Currency domain, CurrencyDto expected)
+[InlineData("BRL", "R$")]
+[InlineData("EUR", "€")]
+public void Presents_the_symbol_of_every_supported_currency_code(string code, string expected)
 {
-    var result = TourMapper.MapToCurrencyDto(domain);
+    var result = CurrencyFormatter.GetSymbol(code);
     result.ShouldBe(expected);
 }
 ```
@@ -440,13 +440,11 @@ Ensure all enum values are handled:
 
 ```csharp
 [Fact]
-public void Map_To_Currency_Dto_Should_Cover_All_Enum_Values()
+public void Every_tour_currency_has_a_symbol()
 {
-    var allDomainValues = Enum.GetValues<Currency>();
-    foreach (var domainValue in allDomainValues)
+    foreach (var code in CurrencyFormatter.TourCurrencies)
     {
-        var mappedEnum = TourMapper.MapToCurrencyDto(domainValue);
-        Enum.IsDefined(mappedEnum).ShouldBeTrue();
+        CurrencyFormatter.GetSymbol(code).ShouldNotBe("¤");
     }
 }
 ```
@@ -457,12 +455,11 @@ Always test error conditions:
 
 ```csharp
 [Fact]
-public void Map_With_Invalid_Value_Should_Throw_Argument_Out_Of_Range_Exception()
+public async Task Creating_a_tour_with_an_unsupported_currency_code_reports_a_currency_error()
 {
-    const Currency invalidValue = (Currency)999;
-    Action action = () => TourMapper.MapToCurrencyDto(invalidValue);
-    action.ShouldThrow<ArgumentOutOfRangeException>()
-        .Message.ShouldContain("Invalid currency value");
+    var result = await handler.Handle(CreateCommand("JPY"), CancellationToken.None);
+    result.IsFailure.ShouldBeTrue();
+    result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull().Keys.ShouldBe(["currency"]);
 }
 ```
 

@@ -707,9 +707,6 @@
           }
         }
       },
-      "CurrencyDto": {
-        "type": "integer"
-      },
       "GetPaymentAccountDetailsDto": {
         "required": [
           "account",
@@ -746,7 +743,7 @@
         "type": "object",
         "properties": {
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "id": {
             "type": "string",
@@ -909,7 +906,7 @@
         "type": "object",
         "properties": {
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "kind": {
             "$ref": "#/components/schemas/PaymentAccountKindDto"

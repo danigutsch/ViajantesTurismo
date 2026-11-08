@@ -1,9 +1,9 @@
 using System.Globalization;
+using PandaBear.BuildingBlocks;
 using PandaBear.DocumentRendering;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
-using ViajantesTurismo.Admin.Domain.Tours;
 using RenderField = PandaBear.DocumentRendering.DocumentField;
 using RenderPrivacy = PandaBear.DocumentRendering.DocumentPrivacyClassification;
 
@@ -16,7 +16,7 @@ internal static class PaymentInstructionArtifactRenderer
     public static byte[] Render(DocumentDraft document, PaymentInstructionSnapshot snapshot)
     {
         var terms = snapshot.Terms;
-        var currency = terms.Currency == Currency.Euro ? "EUR" : "BRL";
+        var currency = terms.Currency == Currency.Eur ? "EUR" : "BRL";
         var fields = new List<RenderField>
         {
             new("Payment reference", terms.Reference, RenderPrivacy.Operational),

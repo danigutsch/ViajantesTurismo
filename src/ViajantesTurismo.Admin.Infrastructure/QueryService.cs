@@ -35,7 +35,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                     SingleRoomSupplementPrice = tour.Pricing.SingleRoomSupplementPrice,
                     RegularBikePrice = tour.Pricing.RegularBikePrice,
                     EBikePrice = tour.Pricing.EBikePrice,
-                    Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency),
+                    Currency = tour.Pricing.Currency.Code,
                     IncludedServices = [..tour.IncludedServices],
                     MinCustomers = tour.Capacity.MinCustomers,
                     MaxCustomers = tour.Capacity.MaxCustomers,
@@ -68,7 +68,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                 SingleRoomSupplementPrice = tour.Pricing.SingleRoomSupplementPrice,
                 RegularBikePrice = tour.Pricing.RegularBikePrice,
                 EBikePrice = tour.Pricing.EBikePrice,
-                Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency),
+                Currency = tour.Pricing.Currency.Code,
                 IncludedServices = [.. tour.IncludedServices],
                 MinCustomers = tour.Capacity.MinCustomers,
                 MaxCustomers = tour.Capacity.MaxCustomers,
@@ -232,7 +232,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                     ApprovedObligationEuro = b.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
                     AmountPaid = b.AmountPaid,
                     RemainingBalance = b.RemainingBalance,
-                    Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency)
+                    Currency = tour.Pricing.Currency.Code
                 };
             })
         ];
@@ -295,7 +295,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             ApprovedObligationEuro = booking.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
             AmountPaid = booking.AmountPaid,
             RemainingBalance = booking.RemainingBalance,
-            Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency)
+            Currency = tour.Pricing.Currency.Code
         };
     }
 
@@ -366,7 +366,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                     ApprovedObligationEuro = b.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
                         AmountPaid = b.AmountPaid,
                         RemainingBalance = b.RemainingBalance,
-                        Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency)
+                        Currency = tour.Pricing.Currency.Code
                     };
                 })
         ];
@@ -440,7 +440,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                     ApprovedObligationEuro = b.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
                     AmountPaid = b.AmountPaid,
                     RemainingBalance = b.RemainingBalance,
-                    Currency = TourMapper.MapToCurrencyDto(tour.Pricing.Currency)
+                    Currency = tour.Pricing.Currency.Code
                 };
             })
         ];

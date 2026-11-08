@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -18,7 +19,7 @@ public sealed class EntityIdGenerationTests
             500m,
             100m,
             200m,
-            Currency.UsDollar,
+            Currency.Usd,
             4,
             12,
             ["Hotel", "Breakfast"]));

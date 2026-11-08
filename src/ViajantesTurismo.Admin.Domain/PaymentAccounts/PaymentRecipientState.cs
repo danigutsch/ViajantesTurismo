@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Domain.Tours;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
@@ -18,7 +18,7 @@ namespace ViajantesTurismo.Admin.Domain.PaymentAccounts;
 /// <param name="SettlementCurrency">The currency in which the recipient is paid.</param>
 internal sealed record PaymentRecipientState(
     PaymentAccountKind Kind, string RecipientName, string? Iban, string? Bic,
-    PandaBear.BuildingBlocks.PixKeyType PixType, string? PixKey, string? Ispb,
+    PixKeyType PixType, string? PixKey, string? Ispb,
     string? Branch, string? AccountNumber, BrazilianAccountType AccountType, string? TaxId, Currency SettlementCurrency)
 {
     public override string ToString() => "PaymentRecipientState [redacted]";

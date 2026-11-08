@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Bookings;
@@ -14,7 +15,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a pending booking exists")]
     public void GivenAPendingBookingExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
@@ -28,7 +29,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a confirmed booking exists")]
     public void GivenAConfirmedBookingExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
@@ -43,7 +44,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a confirmed booking with a companion exists")]
     public void GivenAConfirmedBookingWithACompanionExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
         var principalCustomerId = Guid.CreateVersion7();
         var companionCustomerId = Guid.CreateVersion7();
         var result = tourContext.Tour.AddBooking(new TourBookingRequest(
@@ -63,7 +64,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a cancelled booking exists")]
     public void GivenACancelledBookingExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
         var addResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,
@@ -79,7 +80,7 @@ public sealed class BookingLifecycleSteps(BookingContext bookingContext, TourCon
     [Given("a completed booking exists")]
     public void GivenACompletedBookingExists()
     {
-        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
         var addResult = tourContext.Tour.AddBooking(new TourBookingRequest(
             Guid.CreateVersion7(),
             BikeType.Regular,

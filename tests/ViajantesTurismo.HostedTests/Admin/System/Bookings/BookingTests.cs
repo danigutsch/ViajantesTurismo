@@ -6,7 +6,6 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using PandaBear.Testing.Playwright;
 using System.Globalization;
-using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Bookings;
 
@@ -17,7 +16,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
     public async Task Can_create_booking_and_show_initial_details()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.UsDollar });
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = "USD" });
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
@@ -45,7 +44,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
     public async Task Can_apply_discount_confirm_booking_and_approve_receipt_credit()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.Euro });
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = "EUR" });
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
@@ -78,7 +77,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
     public async Task Can_complete_booking_and_persist_final_state()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.Euro });
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = "EUR" });
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var booking = await ApiClient.CreateConfirmedPaidBooking(tour.Id, customer.Id);

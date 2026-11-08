@@ -122,16 +122,16 @@
                             <dd class="col-sm-8">@CurrencyFormatter.Format(_booking.TotalPrice, _booking.Currency)</dd>
 
                             <dt class="col-sm-4">Amount Paid</dt>
-                            <dd class="col-sm-8 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyDto.Euro)</dd>
+                            <dd class="col-sm-8 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyFormatter.Eur)</dd>
 
                             <dt class="col-sm-4">Remaining Balance</dt>
-                            <dd class="col-sm-8 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyDto.Euro)</dd>
+                            <dd class="col-sm-8 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyFormatter.Eur)</dd>
 
                             <dt class="col-sm-4">Discount</dt>
                             <dd class="col-sm-8">
                                 @if (_booking.DiscountType != DiscountTypeDto.None)
                                 {
-                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : EnumFormatter.Format(_booking.Currency))</span>
+                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : CurrencyFormatter.GetDisplayName(_booking.Currency))</span>
                                     @if (!string.IsNullOrEmpty(_booking.DiscountReason))
                                     {
                                         <br /><small class="text-muted">Reason: @_booking.DiscountReason</small>

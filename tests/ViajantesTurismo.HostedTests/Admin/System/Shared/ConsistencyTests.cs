@@ -3,7 +3,6 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using PandaBear.Testing.Playwright;
-using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
@@ -14,7 +13,7 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
     public async Task Tour_details_show_expected_currency_and_date_formatting()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.Real });
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = "BRL" });
 
         // Act
         await NavigateTo($"/tours/{tour.Id}");
@@ -29,7 +28,7 @@ public class ConsistencyTests(AspireSystemTestFixture fixture) : AspireSystemTes
     public async Task Booking_list_and_details_show_consistent_status_and_payment_badges()
     {
         // Arrange
-        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = CurrencyDto.Euro });
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = "EUR" });
         var pendingCustomer = await ApiClient.CreateCustomer();
         var paidCustomer = await ApiClient.CreateCustomer();
 

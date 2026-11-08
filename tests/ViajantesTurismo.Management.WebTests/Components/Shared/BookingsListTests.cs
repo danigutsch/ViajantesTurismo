@@ -267,7 +267,7 @@ public class BookingsListTests : BunitContext
                 discountReason: "Group Discount",
                 status: BookingStatusDto.Pending,
                 paymentStatus: PaymentStatusDto.Unpaid,
-                currency: CurrencyDto.Real)
+                currency: "BRL")
         };
 
         // Act
@@ -281,10 +281,10 @@ public class BookingsListTests : BunitContext
     }
 
     [Theory]
-    [InlineData(CurrencyDto.Real, "R$")]
-    [InlineData(CurrencyDto.Euro, "€")]
-    [InlineData(CurrencyDto.UsDollar, "$")]
-    public void Displays_discount_with_correct_currency_symbol(CurrencyDto currency, string expectedSymbol)
+    [InlineData("BRL", "R$")]
+    [InlineData("EUR", "€")]
+    [InlineData("USD", "$")]
+    public void Displays_discount_with_correct_currency_symbol(string currency, string expectedSymbol)
     {
         // Arrange
         var bookings = new[]

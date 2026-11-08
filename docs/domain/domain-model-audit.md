@@ -65,8 +65,8 @@ discount that exceeded the revised subtotal. Every service change validates the 
 `Tour.UpdateBookingDetails` applies the complete selection atomically. `TourPricingInvariantTests` covers both a valid
 combined change whose intermediate room price would fail and rejection without partial changes.
 
-`TourPricing.Create` rejects undefined currency enum values while retaining BRL, EUR, USD, and the existing
-round-away-from-zero price policy. `TourPricingValidationTests` first demonstrated acceptance of undefined values;
+`TourPricing.Create` rejects currencies outside BRL, EUR and USD (the `FinancialCurrencies` tour set) while retaining the
+existing round-away-from-zero price policy. `TourPricingValidationTests` first demonstrated acceptance of undefined values;
 valid-currency and midpoint-rounding cases guard the unchanged behavior.
 
 The Management forms use `BookingPricePreview` to capture their incomplete draft inputs as one immutable display
@@ -82,7 +82,7 @@ and A15, all fixed.
 
 | Category | Enums | Decision |
 | --- | --- | --- |
-| Stable labels | `BikeType`, `RoomType`, `BedType`, `Currency`, `PaymentMethod`, `DiscountType`, `DocumentType`, `DocumentAudience`, `DocumentPrivacyClassification`, `PublicContentLanguage`, `PaymentAccountKind`, `BrazilianAccountType`, `PaymentAccountVerificationMethod` | Keep as enums |
+| Stable labels | `BikeType`, `RoomType`, `BedType`, `PaymentMethod`, `DiscountType`, `DocumentType`, `DocumentAudience`, `DocumentPrivacyClassification`, `PublicContentLanguage`, `PaymentAccountKind`, `BrazilianAccountType`, `PaymentAccountVerificationMethod` | Keep as enums |
 | Reasons and audit vocabulary | `DocumentAuditOutcome`, `DocumentAuditReasonCode`, `DocumentAuditOperation`, `FinancialReason`, `PaymentAccountReason`, `PaymentAccountReviewOutcome` | Keep as enums |
 | Lifecycle states | `BookingStatus`, `PaymentStatus`, `DocumentStatus`, `PaymentAccountStatus`, `MediaImageProcessingStatus`, `PublicContentPublicationState` | Keep public for display, mapping, and filtering; move decisions behind domain predicates |
 

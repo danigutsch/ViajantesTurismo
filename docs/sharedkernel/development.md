@@ -6,20 +6,20 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.443.1` at clean library revision
-[`c5c6f41ae061dfc85d1962d441e54274c1d29c68`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/c5c6f41ae061dfc85d1962d441e54274c1d29c68).
-`IIdempotencyRetentionStore.PurgeExpired` takes an optional `scopePrefix`, storage and advisory-lock key values are validated,
-and the analyzers `SKSTYLE018` (undocumented thrown exceptions; not enforced in this repository) and `SKIO003` (upload endpoints
-without a request size limit) are new; the other packages are unchanged in behavior.
+The published candidate is `0.1.0-alpha.461.1` at clean library revision
+[`7ca972bc5a3559cf255e380f832f8152abde843b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/7ca972bc5a3559cf255e380f832f8152abde843b).
+It adds contact and money primitives, `Restore` factories and new analyzers, lets the host guard the selected idempotency
+retention purge batch, supports `lockExemptProjects` in the repository configuration, and pins SDK 10.0.403.
 The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.443.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.443.1), built by
-[CI run 41310801945](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/41310801945).
+[`v0.1.0-alpha.461.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.461.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.439.1` at revision `945d78101108f3e8f4841753fc4a6adcc9916424`,
+The previous previews `0.1.0-alpha.443.1` at revision
+`c5c6f41ae061dfc85d1962d441e54274c1d29c68`,
+`0.1.0-alpha.439.1` at revision `945d78101108f3e8f4841753fc4a6adcc9916424`,
 `0.1.0-alpha.425.1` at revision `c82b4469c099604587ed8314709ad30686f18b0c`,
 `0.1.0-alpha.421.1` at revision `2c9a17f0cdb035bd9d1690547e3877cfe9b71b61`,
 `0.1.0-alpha.418.1` at revision `b5bcfed6a35b40eb82d5e2cb7baa76d98fcf41cc`,
@@ -140,9 +140,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/c5c6f41ae061dfc85d1962d441e54274c1d29c68/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/7ca972bc5a3559cf255e380f832f8152abde843b/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`c5c6f41ae061dfc85d1962d441e54274c1d29c68`, which equals the `libraryRevision` in
+`7ca972bc5a3559cf255e380f832f8152abde843b`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

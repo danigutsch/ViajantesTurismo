@@ -19,12 +19,33 @@
     {"name": "risk: breaking-change", "color": "b60205", "description": "Work that may introduce or govern breaking changes"},
     {"name": "ci:rerun", "color": "1d76db", "description": "Explicitly restart required PR validation; remove and reapply for another attempt."}
   ],
+  "lockExemptProjects": [
+    "src/ViajantesTurismo.Admin.Contracts.Application/ViajantesTurismo.Admin.Contracts.Application.csproj",
+    "src/ViajantesTurismo.Admin.Contracts.Http/ViajantesTurismo.Admin.Contracts.Http.csproj",
+    "src/ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Branding.AspNetCore/ViajantesTurismo.Branding.AspNetCore.csproj",
+    "src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj",
+    "src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Branding.Infrastructure/ViajantesTurismo.Branding.Infrastructure.csproj",
+    "src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj",
+    "src/ViajantesTurismo.Catalog.Contracts.Application/ViajantesTurismo.Catalog.Contracts.Application.csproj",
+    "src/ViajantesTurismo.Catalog.Contracts.Http/ViajantesTurismo.Catalog.Contracts.Http.csproj",
+    "src/ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj",
+    "src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj",
+    "src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj",
+    "src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj",
+    "src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj",
+    "tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj",
+    "tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj",
+    "tests/ViajantesTurismo.UploadWire.Testing/ViajantesTurismo.UploadWire.Testing.csproj"
+  ],
   "licenseExceptions": {
     "approval": {
       "file": ".config/sharedkernel-candidate.json",
       "values": {
-        "packageVersion": "0.1.0-alpha.443.1",
-        "libraryRevision": "c5c6f41ae061dfc85d1962d441e54274c1d29c68",
+        "packageVersion": "0.1.0-alpha.461.1",
+        "libraryRevision": "7ca972bc5a3559cf255e380f832f8152abde843b",
         "libraryDirty": false
       }
     },

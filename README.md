@@ -326,7 +326,8 @@ dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
 
 **Dependency graph and lock files:**
 
-This repository commits `packages.lock.json` for reproducible NuGet restores. After an intentional
+This repository commits `packages.lock.json` for reproducible NuGet restores, except for the libraries
+listed in `lockExemptProjects` of `.config/sharedkernel-repo.json`, whose packages other locks already cover. After an intentional
 NuGet, SDK, local-tool, or project-reference graph change—or a related rebase conflict—run:
 
 ```bash

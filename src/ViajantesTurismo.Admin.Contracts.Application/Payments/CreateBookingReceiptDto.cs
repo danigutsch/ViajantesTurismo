@@ -11,8 +11,8 @@ public sealed record CreateBookingReceiptDto
     {
         get; init;
     }
-    /// <summary>Gets SettlementCurrency.</summary>
-    public required CurrencyDto SettlementCurrency
+    /// <summary>Gets the ISO 4217 settlement currency code, EUR or BRL.</summary>
+    public required string SettlementCurrency
     {
         get; init;
     }

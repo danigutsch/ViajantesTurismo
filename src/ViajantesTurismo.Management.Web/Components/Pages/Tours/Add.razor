@@ -61,9 +61,10 @@
     <div class="mb-3">
         <label for="currency" class="form-label">Currency</label>
         <InputSelect id="currency" class="form-control" @bind-Value="_model.Currency">
-            <option value="@CurrencyDto.Real">Brazilian Real (BRL)</option>
-            <option value="@CurrencyDto.Euro">Euro (EUR)</option>
-            <option value="@CurrencyDto.UsDollar">US Dollar (USD)</option>
+            @foreach (var isoCode in CurrencyFormatter.TourCurrencies)
+            {
+                <option value="@isoCode">@CurrencyFormatter.GetDisplayName(isoCode)</option>
+            }
         </InputSelect>
     </div>
 
@@ -250,7 +251,7 @@ Bike rental"/>
         public DateOnly EndDate { get; set; }
 
         [Required]
-        public CurrencyDto Currency { get; set; } = CurrencyDto.Euro;
+        public string Currency { get; set; } = CurrencyFormatter.Eur;
 
         [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Base Price")]
         public decimal Price { get; set; }

@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using PandaBear.BuildingBlocks;
 using PandaBear.Results;
@@ -142,16 +143,17 @@ public static class PaymentAccountMappings
     public static Result<PaymentRecipientDetails> ToRecipient(PaymentRecipientDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        if (dto.SettlementCurrency is not (CurrencyDto.Euro or CurrencyDto.Real) || !Enum.IsDefined(dto.Kind) || !Enum.IsDefined(dto.PixKeyType) || !Enum.IsDefined(dto.AccountType))
+        var currency = Currency.Create(dto.SettlementCurrency);
+        if (currency.IsFailure || !FinancialCurrencies.IsSupported(currency.Value) || !Enum.IsDefined(dto.Kind) || !Enum.IsDefined(dto.PixKeyType) || !Enum.IsDefined(dto.AccountType))
         {
             return PaymentAccountErrors.Invalid("recipient").ConvertError<PaymentRecipientDetails>();
         }
         var emptyBank = dto.Ispb is null && dto.Branch is null && dto.AccountNumber is null && dto.TaxId is null && dto.AccountType == BrazilianAccountTypeDto.None;
         return dto.Kind switch
         {
-            PaymentAccountKindDto.Iban when emptyBank && dto.PixKey is null && dto.PixKeyType == PixKeyTypeDto.None => PaymentRecipientDetails.CreateIban(dto.RecipientName, dto.Iban, dto.Bic, TourMapper.MapToCurrency(dto.SettlementCurrency)),
-            PaymentAccountKindDto.Pix when dto.SettlementCurrency == CurrencyDto.Real && emptyBank && dto.Iban is null && dto.Bic is null => PaymentRecipientDetails.CreatePix(dto.RecipientName, Map(dto.PixKeyType), dto.PixKey),
-            PaymentAccountKindDto.BrazilianBank when dto.SettlementCurrency == CurrencyDto.Real && dto.Iban is null && dto.Bic is null && dto.PixKey is null && dto.PixKeyType == PixKeyTypeDto.None => PaymentRecipientDetails.CreateBrazilian(dto.RecipientName, dto.Ispb, dto.Branch, dto.AccountNumber, Map(dto.AccountType), dto.TaxId),
+            PaymentAccountKindDto.Iban when emptyBank && dto.PixKey is null && dto.PixKeyType == PixKeyTypeDto.None => PaymentRecipientDetails.CreateIban(dto.RecipientName, dto.Iban, dto.Bic, currency.Value),
+            PaymentAccountKindDto.Pix when currency.Value == Currency.Brl && emptyBank && dto.Iban is null && dto.Bic is null => PaymentRecipientDetails.CreatePix(dto.RecipientName, Map(dto.PixKeyType), dto.PixKey),
+            PaymentAccountKindDto.BrazilianBank when currency.Value == Currency.Brl && dto.Iban is null && dto.Bic is null && dto.PixKey is null && dto.PixKeyType == PixKeyTypeDto.None => PaymentRecipientDetails.CreateBrazilian(dto.RecipientName, dto.Ispb, dto.Branch, dto.AccountNumber, Map(dto.AccountType), dto.TaxId),
             _ => PaymentAccountErrors.Invalid("recipient").ConvertError<PaymentRecipientDetails>()
         };
     }
@@ -162,7 +164,7 @@ public static class PaymentAccountMappings
         ArgumentNullException.ThrowIfNull(account);
         return new GetPaymentAccountDto
         {
-            SettlementCurrency = TourMapper.MapToCurrencyDto(account.Current.Recipient.SettlementCurrency),
+            SettlementCurrency = account.Current.Recipient.SettlementCurrency.Code,
             Id = account.Id,
             Version = account.Version,
             Label = account.Label,

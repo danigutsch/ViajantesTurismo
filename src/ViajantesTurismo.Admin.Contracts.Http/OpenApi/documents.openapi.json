@@ -1947,9 +1947,6 @@
           }
         }
       },
-      "CurrencyDto": {
-        "type": "integer"
-      },
       "DocumentManualReviewReasonsDto": {
         "type": "integer"
       },
@@ -2391,7 +2388,7 @@
             "format": "double"
           },
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "paymentReference": {
             "type": "string"

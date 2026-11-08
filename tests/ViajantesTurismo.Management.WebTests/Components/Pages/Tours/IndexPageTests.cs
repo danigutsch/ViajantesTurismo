@@ -42,7 +42,7 @@ public class IndexPageTests : BunitContext
     public void Renders_price_with_real_currency_symbol()
     {
         // Arrange
-        var tour = BuildTourDto(price: 1500m, currency: CurrencyDto.Real);
+        var tour = BuildTourDto(price: 1500m, currency: "BRL");
         _fakeToursApi.AddTour(tour);
 
         // Act
@@ -60,7 +60,7 @@ public class IndexPageTests : BunitContext
     public void Renders_price_with_euro_currency_symbol()
     {
         // Arrange
-        var tour = BuildTourDto(price: 1200m, currency: CurrencyDto.Euro);
+        var tour = BuildTourDto(price: 1200m, currency: "EUR");
         _fakeToursApi.AddTour(tour);
 
         // Act
@@ -75,7 +75,7 @@ public class IndexPageTests : BunitContext
     public void Renders_price_with_usdollar_currency_symbol()
     {
         // Arrange
-        var tour = BuildTourDto(price: 1800m, currency: CurrencyDto.UsDollar);
+        var tour = BuildTourDto(price: 1800m, currency: "USD");
         _fakeToursApi.AddTour(tour);
 
         // Act

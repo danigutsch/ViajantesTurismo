@@ -26,7 +26,7 @@ internal static class DocumentSourceTestData
         TotalPrice = totalPrice,
         DiscountType = default,
         DiscountAmount = 0m,
-        Currency = default,
+        Currency = "BRL",
         AmountPaid = 0m,
         RemainingBalance = totalPrice
     };
@@ -45,7 +45,7 @@ internal static class DocumentSourceTestData
         SingleRoomSupplementPrice = 0m,
         RegularBikePrice = 0m,
         EBikePrice = 0m,
-        Currency = default,
+        Currency = "BRL",
         IncludedServices = ["Guide"],
         MinCustomers = 1,
         MaxCustomers = 10,

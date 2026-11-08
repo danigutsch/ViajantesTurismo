@@ -136,7 +136,7 @@ private static async Task<Results<Created<GetTourDto>, ValidationProblem>> Creat
         dto.SingleRoomSupplementPrice,
         dto.RegularBikePrice,
         dto.EBikePrice,
-        TourMapper.MapToCurrency(dto.Currency),
+        currency.Value, // from Currency.Create(dto.Currency), validated by the command handler
         dto.IncludedServices
     );
 

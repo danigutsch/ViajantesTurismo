@@ -1,6 +1,7 @@
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
@@ -18,6 +19,8 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
     /// <summary>Creates a scenario over a database issued by <paramref name="fixture" />.</summary>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The scenario owns and disposes its fixture-issued test database.")]
     public static async Task<PostgreSqlPaymentScenario> Create(PostgreSqlTestServerFixture fixture, CancellationToken ct) => new(await fixture.CreateDatabase(ct));
+    /// <summary>Gets the connection string of the scenario database.</summary>
+    public string ConnectionString => _database.ConnectionString;
     /// <summary>Opens a payment test session against the scenario database.</summary>
     public PaymentTestSession Open() => PaymentTestSession.Create(_database.ConnectionString, _protection, Clock);
     /// <summary>Seeds a tour with an approved schedule and a 120 euro receipt against a 100 euro installment, leaving 20 euro of customer credit, and returns the booking, receipt and installment ids.</summary>
@@ -25,14 +28,14 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
     {
         var now = Clock.GetUtcNow();
         var tour = ViajantesTurismo.Admin.Testing.Behavior.EntityBuilders.BuildTour(new ViajantesTurismo.Admin.Testing.Behavior.TourOptions(
-            Pricing: new ViajantesTurismo.Admin.Testing.Behavior.TourPricingOptions(Currency: ViajantesTurismo.Admin.Domain.Tours.Currency.Euro)));
+            Pricing: new ViajantesTurismo.Admin.Testing.Behavior.TourPricingOptions(Currency: Currency.Eur)));
         var booking = ViajantesTurismo.Admin.Testing.Behavior.BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
         var installment = ViajantesTurismo.Admin.Domain.Payments.PaymentInstallment.Create(100m, new DateOnly(2030, 1, 10)).Value;
         var schedule = tour.DraftBookingPaymentSchedule(booking.Id, 0, 100m, [installment], "owner", now).Value;
         tour.ApproveBookingPaymentSchedule(booking.Id, booking.FinancialHistory?.Version ?? 0, schedule,
             ViajantesTurismo.Admin.Domain.Payments.FinancialApproval.Create("owner", now, ViajantesTurismo.Admin.Domain.Payments.FinancialReason.InitialObligation, true).Value).IsSuccess.ShouldBeTrue();
         var receipt = tour.RecordBookingReceipt(booking.Id, booking.FinancialHistory?.Version ?? 0,
-            ViajantesTurismo.Admin.Domain.Payments.ReceiptSettlement.Create(ViajantesTurismo.Admin.Domain.Tours.Currency.Euro, 120m, 0m).Value, new DateOnly(2030, 1, 5), now,
+            ViajantesTurismo.Admin.Domain.Payments.ReceiptSettlement.Create(Currency.Eur, 120m, 0m).Value, new DateOnly(2030, 1, 5), now,
             ViajantesTurismo.Admin.Domain.Tours.PaymentMethod.BankTransfer, "receipt", [ViajantesTurismo.Admin.Domain.Payments.InstallmentAllocation.Create(installment.Id, 100m).Value], "owner", now, new DateOnly(2030, 1, 5)).Value;
         var reconciliation = tour.DraftBookingReceiptReconciliation(booking.Id, booking.FinancialHistory?.Version ?? 0, receipt, 120m, null, [], "owner", now).Value;
         tour.ApproveBookingReceiptReconciliation(booking.Id, booking.FinancialHistory?.Version ?? 0, reconciliation,
@@ -47,7 +50,7 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
     {
         var now = Clock.GetUtcNow();
         var tour = ViajantesTurismo.Admin.Testing.Behavior.EntityBuilders.BuildTour(new ViajantesTurismo.Admin.Testing.Behavior.TourOptions(
-            Pricing: new ViajantesTurismo.Admin.Testing.Behavior.TourPricingOptions(Currency: ViajantesTurismo.Admin.Domain.Tours.Currency.Euro)));
+            Pricing: new ViajantesTurismo.Admin.Testing.Behavior.TourPricingOptions(Currency: Currency.Eur)));
         var booking = ViajantesTurismo.Admin.Testing.Behavior.BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
         var installment = ViajantesTurismo.Admin.Domain.Payments.PaymentInstallment.Create(100m, new DateOnly(2030, 1, 10)).Value;
         var schedule = tour.DraftBookingPaymentSchedule(booking.Id, 0, 100m, [installment], "owner", now).Value;
@@ -83,7 +86,7 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
     }
     private static Guid RecordReceipt(ViajantesTurismo.Admin.Domain.Tours.Tour tour, ViajantesTurismo.Admin.Domain.Tours.Booking booking, ViajantesTurismo.Admin.Domain.Payments.PaymentInstallment installment, decimal gross, DateTimeOffset now) =>
         tour.RecordBookingReceipt(booking.Id, booking.FinancialHistory?.Version ?? 0,
-            ViajantesTurismo.Admin.Domain.Payments.ReceiptSettlement.Create(ViajantesTurismo.Admin.Domain.Tours.Currency.Euro, gross, 0m).Value, new DateOnly(2030, 1, 5), now,
+            ViajantesTurismo.Admin.Domain.Payments.ReceiptSettlement.Create(Currency.Eur, gross, 0m).Value, new DateOnly(2030, 1, 5), now,
             ViajantesTurismo.Admin.Domain.Tours.PaymentMethod.BankTransfer, "receipt", [ViajantesTurismo.Admin.Domain.Payments.InstallmentAllocation.Create(installment.Id, Math.Min(gross, installment.Amount.Amount)).Value], "owner", now, new DateOnly(2030, 1, 5)).Value;
     /// <summary>Disposes payment protection and the test database.</summary>
     public async ValueTask DisposeAsync()

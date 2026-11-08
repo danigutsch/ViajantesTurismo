@@ -34,7 +34,7 @@ internal sealed class PaymentAccountQueryService(IPaymentAccountStore store, IUn
         var state = account.Current.Recipient.ExportState();
         var recipient = new PaymentRecipientDto
         {
-            SettlementCurrency = TourMapper.MapToCurrencyDto(state.SettlementCurrency),
+            SettlementCurrency = state.SettlementCurrency.Code,
             Kind = PaymentAccountMappings.Map(state.Kind),
             RecipientName = state.RecipientName,
             Iban = state.Iban,

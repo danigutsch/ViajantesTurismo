@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Payments;
@@ -52,7 +53,7 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
             {
                 BookingId = bookingId,
                 Version = 0,
-                ObligationCurrency = TourMapper.MapToCurrencyDto(currency),
+                ObligationCurrency = currency.Code,
                 TermsStale = true,
                 ApprovedObligationEuro = 0,
                 OutstandingEuro = 0,
@@ -74,7 +75,7 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
         {
             BookingId = bookingId,
             Version = history.Version,
-            ObligationCurrency = CurrencyDto.Euro,
+            ObligationCurrency = Currency.Eur.Code,
             TermsStale = history.TermsAreStale(booking.TotalPrice),
             ApprovedObligationEuro = history.ApprovedSchedule?.Obligation.Amount ?? 0,
             OutstandingEuro = history.OutstandingEuro,
@@ -114,7 +115,7 @@ internal sealed class PaymentFinancialQueryService(AdminReadDbContext reads, Adm
             Receipts = [.. state.Receipts.Select(item => new GetBookingReceiptDto
             {
                 Id = item.Id,
-                SettlementCurrency = TourMapper.MapToCurrencyDto(item.Currency),
+                SettlementCurrency = item.Currency.Code,
                 Gross = item.Gross,
                 Fees = item.Fees,
                 Net = item.Gross - item.Fees,

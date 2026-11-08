@@ -69,7 +69,7 @@ public class DetailsPageTests : BunitContext
     public void Renders_pricing_information_with_real_currency()
     {
         // Arrange
-        var tour = BuildTourDto(currency: CurrencyDto.Real);
+        var tour = BuildTourDto(currency: "BRL");
 
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
@@ -90,7 +90,7 @@ public class DetailsPageTests : BunitContext
     public void Renders_pricing_information_with_euro_currency()
     {
         // Arrange
-        var tour = BuildTourDto(currency: CurrencyDto.Euro);
+        var tour = BuildTourDto(currency: "EUR");
 
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 
@@ -109,7 +109,7 @@ public class DetailsPageTests : BunitContext
     public void Renders_pricing_information_with_usdollar_currency()
     {
         // Arrange
-        var tour = BuildTourDto(currency: CurrencyDto.UsDollar);
+        var tour = BuildTourDto(currency: "USD");
 
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
 

@@ -13,8 +13,8 @@ public sealed record GetBookingFinancialHistoryDto
     {
         get; init;
     }
-    /// <summary>Gets ObligationCurrency.</summary>
-    public required CurrencyDto ObligationCurrency
+    /// <summary>Gets the ISO 4217 obligation currency code.</summary>
+    public required string ObligationCurrency
     {
         get; init;
     }

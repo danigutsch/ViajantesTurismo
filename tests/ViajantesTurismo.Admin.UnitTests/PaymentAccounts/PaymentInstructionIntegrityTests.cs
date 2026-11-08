@@ -1,4 +1,5 @@
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Payments;
 
@@ -19,7 +20,7 @@ public sealed class PaymentInstructionIntegrityTests
         var schedule = scenario.Tour.DraftBookingPaymentSchedule(scenario.Booking.Id, 0, 100m, [one, two], "owner", now).Value;
         scenario.Tour.ApproveBookingPaymentSchedule(scenario.Booking.Id, scenario.History.Version, schedule,
             FinancialApproval.Create("owner", now, FinancialReason.InitialObligation, true).Value).IsSuccess.ShouldBeTrue();
-        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "owner", now).Value;
+        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         var original = scenario.Tour.CreateBookingPaymentInstruction(scenario.Booking.Id, account, [one.Id, two.Id], null, "reference", now).Value.ExportState();
         var corrupt = original with
@@ -41,7 +42,7 @@ public sealed class PaymentInstructionIntegrityTests
         var scenario = new PaymentScenario();
         var installment = scenario.ApproveSchedule();
         var now = PaymentScenario.Now;
-        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "owner", now).Value;
+        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         var instruction = scenario.Tour.CreateBookingPaymentInstruction(scenario.Booking.Id, account, [installment.Id], null, "reference", now).Value;
 
@@ -67,13 +68,13 @@ public sealed class PaymentInstructionIntegrityTests
         var scenario = new PaymentScenario();
         var installment = scenario.ApproveSchedule();
         var now = PaymentScenario.Now;
-        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "owner", now).Value;
+        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         var instruction = scenario.Tour.CreateBookingPaymentInstruction(scenario.Booking.Id, account, [installment.Id], null, "reference", now).Value;
 
         // Act
-        var exact = instruction.MatchesReceipt(scenario.Booking.Id, Admin.Domain.Tours.Currency.Euro, gross, fees, new DateOnly(2030, 1, 5), evidence ? now : null, reference, 100m, null);
-        var late = instruction.MatchesReceipt(scenario.Booking.Id, Admin.Domain.Tours.Currency.Euro, gross, fees, PaymentScenario.DueDate.AddDays(1), evidence ? now : null, reference, 100m, null);
+        var exact = instruction.MatchesReceipt(scenario.Booking.Id, Currency.Eur, gross, fees, new DateOnly(2030, 1, 5), evidence ? now : null, reference, 100m, null);
+        var late = instruction.MatchesReceipt(scenario.Booking.Id, Currency.Eur, gross, fees, PaymentScenario.DueDate.AddDays(1), evidence ? now : null, reference, 100m, null);
 
         // Assert
         exact.ShouldBe(expected);

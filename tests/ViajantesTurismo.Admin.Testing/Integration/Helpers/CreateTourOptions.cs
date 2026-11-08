@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Testing.Integration.Helpers;
 
@@ -20,7 +19,7 @@ public sealed class CreateTourOptions
     /// <summary>
     /// Gets the tour currency.
     /// </summary>
-    public CurrencyDto Currency { get; init; } = CurrencyDto.Euro;
+    public string Currency { get; init; } = "EUR";
 
     /// <summary>
     /// Gets the optional tour identifier override.

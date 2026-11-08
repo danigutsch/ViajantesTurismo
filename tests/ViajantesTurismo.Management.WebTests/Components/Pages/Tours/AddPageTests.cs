@@ -80,6 +80,7 @@ public class AddPageTests : BunitContext
         var options = currencySelect.QuerySelectorAll("option");
 
         options.Length.ShouldBe(3);
+        options.Select(option => option.GetAttribute("value")).ToArray().ShouldBe(["BRL", "EUR", "USD"]);
         options.ShouldContain(o => o.TextContent.Contains("Brazilian Real", StringComparison.Ordinal));
         options.ShouldContain(o => o.TextContent.Contains("Euro", StringComparison.Ordinal));
         options.ShouldContain(o => o.TextContent.Contains("US Dollar", StringComparison.Ordinal));

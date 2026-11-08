@@ -1194,7 +1194,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto() with
         {
-            Currency = CurrencyDto.Euro
+            Currency = "EUR"
         };
         _fakeBookingsApi.AddBooking(booking);
 

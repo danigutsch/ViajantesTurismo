@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PandaBear.BuildingBlocks;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -58,7 +59,7 @@ internal sealed class DevelopmentDataInitializerScenario : IAsyncDisposable
             "EXIST001",
             "Existing Tour",
             new TourScheduleDefinition(DateOnly.FromDateTime(CurrentTime.UtcDateTime.AddDays(1)), DateOnly.FromDateTime(CurrentTime.UtcDateTime.AddDays(7))),
-            new TourPricingDefinition(1000m, 100m, 100m, 200m, Currency.Real),
+            new TourPricingDefinition(1000m, 100m, 100m, 200m, Currency.Brl),
             new TourCapacityDefinition(1, 10),
             ["Hotel"])).Value;
         DbContext.Tours.Add(tour);

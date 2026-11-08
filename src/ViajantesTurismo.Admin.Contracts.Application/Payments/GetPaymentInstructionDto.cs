@@ -43,8 +43,8 @@ public sealed record GetPaymentInstructionDto
     {
         get; init;
     }
-    /// <summary>Gets the explicit settlement currency.</summary>
-    public required CurrencyDto SettlementCurrency
+    /// <summary>Gets the ISO 4217 explicit settlement currency code.</summary>
+    public required string SettlementCurrency
     {
         get; init;
     }

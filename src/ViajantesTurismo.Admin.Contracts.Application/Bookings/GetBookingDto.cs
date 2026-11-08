@@ -157,8 +157,8 @@ public sealed record GetBookingDto
         get; init;
     }
 
-    /// <summary>The currency of the booking price; approved payment obligations are in EUR.</summary>
-    public required CurrencyDto Currency
+    /// <summary>The ISO 4217 code of the booking price currency; approved payment obligations are in EUR.</summary>
+    public required string Currency
     {
         get; init;
     }

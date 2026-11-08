@@ -1,7 +1,6 @@
 using PandaBear.Mediator;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.Contracts.Application;
 using PandaBear.Results;
@@ -45,7 +44,7 @@ internal static class ToursUpdateTourEndpoint
             tourDto.SingleRoomSupplementPrice,
             tourDto.RegularBikePrice,
             tourDto.EBikePrice,
-            TourMapper.MapToCurrency(tourDto.Currency),
+            tourDto.Currency,
             [.. tourDto.IncludedServices],
             tourDto.MinCustomers,
             tourDto.MaxCustomers);

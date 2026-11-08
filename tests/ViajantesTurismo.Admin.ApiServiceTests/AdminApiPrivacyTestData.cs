@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests;
@@ -18,7 +19,7 @@ internal static class AdminApiPrivacyTestData
             500m,
             100m,
             200m,
-            Currency.UsDollar,
+            Currency.Usd,
             4,
             12,
             ["Hotel", "Breakfast"]));

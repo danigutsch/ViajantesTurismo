@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Results;
@@ -29,35 +30,35 @@ public sealed class DevelopmentDataInitializer
             "CITY001",
             "City Highlights",
             new TourScheduleDefinition(DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(1)), DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(7))),
-            new TourPricingDefinition(1500m, 300m, 100m, 200m, Currency.Real),
+            new TourPricingDefinition(1500m, 300m, 100m, 200m, Currency.Brl),
             new TourCapacityDefinition(6, 15),
             [HotelService, BreakfastService, "City Tour"])).Value,
         Tour.Create(new TourDefinition(
             "HIST002",
             "Historical Landmarks",
             new TourScheduleDefinition(DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(4)), DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(10))),
-            new TourPricingDefinition(2000m, 400m, 150m, 250m, Currency.Euro),
+            new TourPricingDefinition(2000m, 400m, 150m, 250m, Currency.Eur),
             new TourCapacityDefinition(8, 20),
             [HotelService, BreakfastService, "Museum Tickets"])).Value,
         Tour.Create(new TourDefinition(
             "CULT001",
             "Cultural Experience",
             new TourScheduleDefinition(DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(7)), DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(13))),
-            new TourPricingDefinition(1800m, 350m, 120m, 220m, Currency.UsDollar),
+            new TourPricingDefinition(1800m, 350m, 120m, 220m, Currency.Usd),
             new TourCapacityDefinition(4, 12),
             [HotelService, BreakfastService, "Cultural Show"])).Value,
         Tour.Create(new TourDefinition(
             "NATR001",
             "Nature and Adventure",
             new TourScheduleDefinition(DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(11)), DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(17))),
-            new TourPricingDefinition(2200m, 450m, 180m, 280m, Currency.Real),
+            new TourPricingDefinition(2200m, 450m, 180m, 280m, Currency.Brl),
             new TourCapacityDefinition(5, 18),
             [HotelService, BreakfastService, "Hiking Tour"])).Value,
         Tour.Create(new TourDefinition(
             "FOWI003",
             "Food and Wine Tour",
             new TourScheduleDefinition(DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(16)), DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(22))),
-            new TourPricingDefinition(2500m, 500m, 200m, 300m, Currency.Euro),
+            new TourPricingDefinition(2500m, 500m, 200m, 300m, Currency.Eur),
             new TourCapacityDefinition(6, 16),
             [HotelService, BreakfastService, "Wine Tasting"])).Value
     ];
