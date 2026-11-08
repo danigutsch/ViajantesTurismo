@@ -531,7 +531,7 @@ jobs:
         uses: ./.github/actions/build-sharedkernel-tool
         with:
           tool: SharedKernel.RepoConfig.Tool
-          revision: c5c6f41ae061dfc85d1962d441e54274c1d29c68
+          revision: 7ca972bc5a3559cf255e380f832f8152abde843b
           sparse-extra: .github
 
       - name: Verify action pins
