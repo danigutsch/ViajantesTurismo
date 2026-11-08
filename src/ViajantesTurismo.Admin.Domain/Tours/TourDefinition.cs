@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

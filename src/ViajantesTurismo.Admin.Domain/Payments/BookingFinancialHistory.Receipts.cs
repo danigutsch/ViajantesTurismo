@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -46,8 +47,8 @@ public sealed partial class BookingFinancialHistory
         var receipt = _state.Receipts.SingleOrDefault(item => item.Id == receiptId);
         if (receipt is null || Reversed(receiptId) || !ExactEuro(euroCredit) || !ValidSelections(allocations)
             || !SelectionsFit(allocations, euroCredit) || Reconciliation(receiptId) is { } original && original.QuoteId != quoteId
-            || receipt.Currency == Currency.Real && (quoteId is null || !_state.Quotes.Any(item => item.Id == quoteId && !item.ForRefund && item.Approval is not null))
-            || receipt.Currency == Currency.Euro && quoteId is not null
+            || receipt.Currency == Currency.Brl && (quoteId is null || !_state.Quotes.Any(item => item.Id == quoteId && !item.ForRefund && item.Approval is not null))
+            || receipt.Currency == Currency.Eur && quoteId is not null
             || quoteId is { } selectedQuote && QuoteTerms(_state.Quotes.Single(item => item.Id == selectedQuote)).Settle(euroCredit).IsFailure)
         {
             return FinancialErrors.Invalid("reconciliation").ConvertError<Guid>();
@@ -239,7 +240,7 @@ public sealed partial class BookingFinancialHistory
         {
             return false;
         }
-        var converted = quote is null ? PaymentMoney.Create(prior + draft.EuroCredit, Currency.Euro) : QuoteTerms(quote).Settle(prior + draft.EuroCredit);
+        var converted = quote is null ? PaymentMoney.Create(prior + draft.EuroCredit, Currency.Eur) : QuoteTerms(quote).Settle(prior + draft.EuroCredit);
         if (converted.IsFailure)
         {
             return false;

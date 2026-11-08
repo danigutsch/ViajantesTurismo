@@ -1,5 +1,5 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Mappings;
 
@@ -15,9 +15,9 @@ public static class TourMapper
     {
         return currencyDto switch
         {
-            CurrencyDto.Real => Currency.Real,
-            CurrencyDto.Euro => Currency.Euro,
-            CurrencyDto.UsDollar => Currency.UsDollar,
+            CurrencyDto.Real => Currency.Brl,
+            CurrencyDto.Euro => Currency.Eur,
+            CurrencyDto.UsDollar => Currency.Usd,
             _ => throw new ArgumentOutOfRangeException(nameof(currencyDto), currencyDto, "Invalid currency value.")
         };
     }
@@ -27,11 +27,13 @@ public static class TourMapper
     /// </summary>
     public static CurrencyDto MapToCurrencyDto(Currency currency)
     {
-        return currency switch
+        ArgumentNullException.ThrowIfNull(currency);
+
+        return currency.Code switch
         {
-            Currency.Real => CurrencyDto.Real,
-            Currency.Euro => CurrencyDto.Euro,
-            Currency.UsDollar => CurrencyDto.UsDollar,
+            "BRL" => CurrencyDto.Real,
+            "EUR" => CurrencyDto.Euro,
+            "USD" => CurrencyDto.UsDollar,
             _ => throw new ArgumentOutOfRangeException(nameof(currency), currency, "Invalid currency value.")
         };
     }

@@ -1,6 +1,6 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Mediator;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 namespace ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 
 /// <summary>

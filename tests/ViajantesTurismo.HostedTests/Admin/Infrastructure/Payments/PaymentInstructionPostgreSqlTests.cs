@@ -1,10 +1,10 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Idempotency;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Payments;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
@@ -24,7 +24,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
         scenario.Clock.CurrentInstant = scenario.Clock.CurrentInstant.AddTicks(7);
         var now = scenario.Clock.GetUtcNow();
-        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
+        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
         var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
         var installment = PaymentInstallment.Create(100m, new DateOnly(2030, 1, 10)).Value;
         var schedule = tour.DraftBookingPaymentSchedule(booking.Id, 0, 100m, [installment], "owner", now).Value;
@@ -38,7 +38,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
             tour.ApproveBookingPaymentQuote(booking.Id, booking.FinancialHistory?.Version ?? 0, quoteId.Value,
                 FinancialApproval.Create("owner", now, FinancialReason.QuoteAgreed, true).Value).IsSuccess.ShouldBeTrue();
         }
-        var recipient = brl ? PaymentRecipientDetails.CreatePix("Recipient", PandaBear.BuildingBlocks.PixKeyType.Email, "payment@example.test").Value
+        var recipient = brl ? PaymentRecipientDetails.CreatePix("Recipient", PixKeyType.Email, "payment@example.test").Value
             : PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value;
         var account = PaymentAccount.Create("Recipient", recipient, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();

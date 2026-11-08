@@ -1,4 +1,5 @@
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
@@ -92,7 +93,7 @@ public sealed class PaymentAccountStoredStateTests
             "review-before-creation" => state with { Reviews = [state.Reviews[0] with { ReviewedAt = first.CreatedAt.AddSeconds(-1) }] },
             "review-creator" => state with { Reviews = [state.Reviews[0] with { ReviewerId = first.CreatedBy }] },
             "review-outcome" => state with { Reviews = [state.Reviews[0] with { Outcome = PaymentAccountReviewOutcome.None }] },
-            "recipient-currency" => state with { Revisions = [first with { Recipient = first.Recipient with { SettlementCurrency = Admin.Domain.Tours.Currency.UsDollar } }, second] },
+            "recipient-currency" => state with { Revisions = [first with { Recipient = first.Recipient with { SettlementCurrency = Currency.Usd } }, second] },
             _ => throw new ArgumentOutOfRangeException(nameof(change))
         };
 

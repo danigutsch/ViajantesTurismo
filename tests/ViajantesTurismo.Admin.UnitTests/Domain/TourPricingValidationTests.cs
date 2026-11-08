@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
@@ -6,10 +7,13 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public sealed class TourPricingValidationTests
 {
     [Theory]
-    [InlineData((Currency)(-1))]
-    [InlineData((Currency)999)]
-    public void Rejects_undefined_currency_values(Currency currency)
+    [InlineData("XXX")]
+    [InlineData("JPY")]
+    public void Rejects_currencies_a_tour_cannot_be_priced_in(string code)
     {
+        // Arrange
+        var currency = Currency.Restore(code);
+
         // Act
         var result = TourPricing.Create(100, 10, 20, 30, currency);
 
@@ -19,11 +23,14 @@ public sealed class TourPricingValidationTests
     }
 
     [Theory]
-    [InlineData(Currency.Real)]
-    [InlineData(Currency.Euro)]
-    [InlineData(Currency.UsDollar)]
-    public void Preserves_defined_currencies_and_rounds_prices_away_from_zero(Currency currency)
+    [InlineData("BRL")]
+    [InlineData("EUR")]
+    [InlineData("USD")]
+    public void Preserves_defined_currencies_and_rounds_prices_away_from_zero(string code)
     {
+        // Arrange
+        var currency = Currency.Create(code).Value;
+
         // Act
         var result = TourPricing.Create(100.005m, 10.005m, 20.005m, 30.005m, currency);
 

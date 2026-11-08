@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Payments;
 using ViajantesTurismo.Admin.Domain.Shared;
 
@@ -18,7 +19,7 @@ public sealed class PaymentLedgerSteps(TourContext tourContext, BookingContext b
     [Given("an EUR booking priced at 100 with no approved payment terms")]
     public void GivenAnEurBookingWithoutApprovedTerms()
     {
-        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(BasePrice: 99m, RegularBikePrice: 1m, Currency: Currency.Euro)));
+        tourContext.Tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(BasePrice: 99m, RegularBikePrice: 1m, Currency: Currency.Eur)));
         bookingContext.Booking = tourContext.Tour.AddBooking(TourBookingRequest.CreateSingle(Guid.CreateVersion7(), BikeType.Regular, RoomType.DoubleOccupancy), Now.UtcDateTime).Value;
     }
 
@@ -52,10 +53,10 @@ public sealed class PaymentLedgerSteps(TourContext tourContext, BookingContext b
     [When("an Operator records actual cash of {decimal} in {word}")]
     public void WhenTheOperatorRecordsCash(decimal amount, string currency)
     {
-        var settlementCurrency = currency == "BRL" ? Currency.Real : Currency.Euro;
+        var settlementCurrency = currency == "BRL" ? Currency.Brl : Currency.Eur;
         _receiptId = tourContext.Tour.RecordBookingReceipt(bookingContext.Booking.Id, History.Version,
             ReceiptSettlement.Create(settlementCurrency, amount, 0).Value, Today, Now, PaymentMethod.BankTransfer, "recipient-receipt",
-            [InstallmentAllocation.Create(Installment.Id, settlementCurrency == Currency.Euro ? Math.Min(amount, 100m) : 100m).Value],
+            [InstallmentAllocation.Create(Installment.Id, settlementCurrency == Currency.Eur ? Math.Min(amount, 100m) : 100m).Value],
             "operator", Now, Today).Value;
     }
 

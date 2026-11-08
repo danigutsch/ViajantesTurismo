@@ -425,11 +425,11 @@ Use `[Theory]` with `[InlineData]` for multiple inputs:
 
 ```csharp
 [Theory]
-[InlineData(Currency.Real, CurrencyDto.Real)]
-[InlineData(Currency.Euro, CurrencyDto.Euro)]
-public void Maps_all_supported_currency_values(Currency domain, CurrencyDto expected)
+[InlineData("BRL", CurrencyDto.Real)]
+[InlineData("EUR", CurrencyDto.Euro)]
+public void Maps_all_supported_currency_values(string code, CurrencyDto expected)
 {
-    var result = TourMapper.MapToCurrencyDto(domain);
+    var result = TourMapper.MapToCurrencyDto(Currency.Create(code).Value);
     result.ShouldBe(expected);
 }
 ```

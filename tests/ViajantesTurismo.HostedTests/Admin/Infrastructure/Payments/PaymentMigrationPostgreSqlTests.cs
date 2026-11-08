@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
+using PandaBear.BuildingBlocks;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -20,12 +21,12 @@ public sealed class PaymentMigrationPostgreSqlTests(PostgreSqlTestServerFixture 
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
         await using var session = scenario.Open();
         await session.Migrate(ct);
-        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
+        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
         var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
         var now = scenario.Clock.GetUtcNow();
         var date = DateOnly.FromDateTime(now.UtcDateTime).AddDays(-1);
         var result = tour.RecordBookingReceipt(booking.Id, 0,
-            ViajantesTurismo.Admin.Domain.Payments.ReceiptSettlement.Create(Currency.Euro, 123.45m, 1m).Value,
+            ViajantesTurismo.Admin.Domain.Payments.ReceiptSettlement.Create(Currency.Eur, 123.45m, 1m).Value,
             date, now, PaymentMethod.Cash, "calendar-receipt", [], "operator", now, DateOnly.FromDateTime(now.UtcDateTime));
         result.IsSuccess.ShouldBeTrue();
         await session.Seed(tour, ct);

@@ -1,3 +1,5 @@
+using PandaBear.BuildingBlocks;
+
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 
@@ -19,9 +21,9 @@ public sealed class TourUpdatePricingSteps(TourContext tourContext)
     {
         var currency = currencyCode switch
         {
-            "USD" => Currency.UsDollar,
-            "EUR" => Currency.Euro,
-            "BRL" => Currency.Real,
+            "USD" => Currency.Usd,
+            "EUR" => Currency.Eur,
+            "BRL" => Currency.Brl,
             _ => throw new ArgumentException($"Unknown currency: {currencyCode}")
         };
 

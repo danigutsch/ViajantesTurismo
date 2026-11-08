@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Domain.Tours;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Testing.Behavior;
 

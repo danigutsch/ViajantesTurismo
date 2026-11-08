@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -32,7 +33,7 @@ public static class EntityBuilders
                 pricingOptions.SingleRoomSupplementPrice ?? 500.00m,
                 pricingOptions.RegularBikePrice ?? 100.00m,
                 pricingOptions.EBikePrice ?? 200.00m,
-                pricingOptions.Currency ?? Currency.UsDollar),
+                pricingOptions.Currency ?? Currency.Usd),
             new TourCapacityDefinition(
                 capacityOptions.MinCustomers ?? 4,
                 capacityOptions.MaxCustomers ?? 12),
@@ -85,9 +86,9 @@ public static class EntityBuilders
     {
         return currencyCode switch
         {
-            "USD" => Currency.UsDollar,
-            "EUR" => Currency.Euro,
-            "BRL" => Currency.Real,
+            "USD" => Currency.Usd,
+            "EUR" => Currency.Eur,
+            "BRL" => Currency.Brl,
             _ => throw new ArgumentException($"Unknown currency: {currencyCode}", nameof(currencyCode))
         };
     }

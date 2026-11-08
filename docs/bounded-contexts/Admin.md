@@ -111,11 +111,11 @@ Only the Management Web picker constrains input, and only for people using that 
 
 | Project | Usage | Kind |
 | --- | --- | --- |
-| `Admin.Domain` `Currency` | `Real`, `Euro`, `UsDollar`; tour pricing carries one currency | Domain enum |
+| `PandaBear.BuildingBlocks` `Currency` | ISO 4217 value object; tour pricing carries one of BRL, EUR or USD; payments accept EUR and BRL | Domain value object |
 | `Admin.Domain` payments | Settlement is EUR or BRL only; BRL needs an approved FX quote; `AgreedFxQuote` rounds to cents | Business rules |
-| `Admin.Contracts.Application` `CurrencyDto` | Mirror of the enum for the HTTP contract | Contract |
+| `Admin.Contracts.Application` `CurrencyDto` | Enum for the HTTP contract (`Real`, `Euro`, `UsDollar`); unchanged by the shared type | Contract |
 | `Admin.Application` `TourMapper` | Maps `Currency` to `CurrencyDto` for tours | Mapping |
-| `Admin.Infrastructure` payment configurations | Persist the enum on payment account and payment history rows | Persistence |
+| `Admin.Infrastructure` payment configurations | Persist the currency inside protected payment state as its legacy enum number (`StoredCurrency`) and the tour column as its legacy enum name | Persistence |
 | `Management.Web` `CurrencyFormatter` | Symbol, symbol position, and two decimals in invariant culture | Formatting |
 | `Management.Web` tour and payment pages | Currency pickers and labels per enum value | UI |
 

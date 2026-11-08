@@ -33,7 +33,7 @@ internal sealed class TourConfiguration : IEntityTypeConfiguration<Tour>
                 .IsRequired();
             pricing.Property(p => p.RegularBikePrice).HasColumnName("RegularBikePrice").IsRequired();
             pricing.Property(p => p.EBikePrice).HasColumnName("EBikePrice").IsRequired();
-            pricing.Property(p => p.Currency).HasColumnName("Currency").HasConversion<string>().IsRequired();
+            pricing.Property(p => p.Currency).HasColumnName("Currency").HasConversion(currency => StoredCurrency.ToName(currency), name => StoredCurrency.FromName(name)).IsRequired();
         });
 
         entity.OwnsOne(tour => tour.Capacity, capacity =>

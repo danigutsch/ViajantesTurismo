@@ -1,7 +1,7 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
-using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
@@ -50,7 +50,7 @@ public sealed class PaymentQueryPostgreSqlTests(PostgreSqlTestServerFixture fixt
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
         await using var seed = scenario.Open();
         await seed.Migrate(ct);
-        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Euro)));
+        var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
         var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
         await seed.Seed(tour, ct);
         var originalAudits = await seed.AuditCount(ct);

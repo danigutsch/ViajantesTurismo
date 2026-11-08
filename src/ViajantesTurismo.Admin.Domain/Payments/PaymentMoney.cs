@@ -1,6 +1,5 @@
 using PandaBear.BuildingBlocks;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;
 
@@ -23,7 +22,7 @@ public sealed class PaymentMoney : ValueObject
         get;
     }
     /// <summary>Validates a canonical amount without changing its value.</summary>
-    public static Result<PaymentMoney> Create(decimal amount, Currency currency) => amount >= 0 && decimal.Round(amount, 2) == amount && currency is Currency.Euro or Currency.Real
+    public static Result<PaymentMoney> Create(decimal amount, Currency currency) => amount >= 0 && decimal.Round(amount, 2) == amount && FinancialCurrencies.IsSupported(currency)
         ? Result.Ok(new PaymentMoney(amount, currency)) : FinancialErrors.Invalid("amount").ConvertError<PaymentMoney>();
     /// <inheritdoc />
     public override string ToString() => "PaymentMoney [redacted]";

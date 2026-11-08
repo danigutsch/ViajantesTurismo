@@ -1,6 +1,6 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Mappings;
 
@@ -15,10 +15,10 @@ public class TourMapperTests
         foreach (var dtoValue in allDtoValues)
         {
             // Act
-            var mappedEnum = TourMapper.MapToCurrency(dtoValue);
+            var mapped = TourMapper.MapToCurrency(dtoValue);
 
             // Assert
-            Enum.IsDefined(mappedEnum).ShouldBeTrue();
+            TourMapper.MapToCurrencyDto(mapped).ShouldBe(dtoValue);
         }
     }
 
@@ -38,7 +38,7 @@ public class TourMapperTests
     public void Map_to_currency_dto_should_cover_all_enum_values()
     {
         // Arrange
-        var allDomainValues = Enum.GetValues<Currency>();
+        Currency[] allDomainValues = [Currency.Brl, Currency.Eur, Currency.Usd];
 
         foreach (var domainValue in allDomainValues)
         {
@@ -47,6 +47,7 @@ public class TourMapperTests
 
             // Assert
             Enum.IsDefined(mappedEnum).ShouldBeTrue();
+            TourMapper.MapToCurrency(mappedEnum).ShouldBe(domainValue);
         }
     }
 
@@ -54,7 +55,7 @@ public class TourMapperTests
     public void Map_to_currency_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
-        const Currency invalidValue = (Currency)999;
+        var invalidValue = Currency.Restore("XXX");
 
         // Act
         // Assert

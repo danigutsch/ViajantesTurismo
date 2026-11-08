@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Payments;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;
@@ -39,7 +40,7 @@ public sealed class BookingContext
             FinancialApproval.Create("admin", now, FinancialReason.InitialObligation, true).Value).IsSuccess.ShouldBeTrue();
         InstallmentAllocation[] allocations = [InstallmentAllocation.Create(installment.Id, amount).Value];
         var receipt = tour.RecordBookingReceipt(Booking.Id, Booking.FinancialHistory.Version,
-            ReceiptSettlement.Create(Currency.Euro, amount, 0).Value, today, now, PaymentMethod.Cash, "receipt", allocations, "operator", now, today).Value;
+            ReceiptSettlement.Create(Currency.Eur, amount, 0).Value, today, now, PaymentMethod.Cash, "receipt", allocations, "operator", now, today).Value;
         var reconciliation = tour.DraftBookingReceiptReconciliation(Booking.Id, Booking.FinancialHistory.Version,
             receipt, amount, null, allocations, "admin", now).Value;
         tour.ApproveBookingReceiptReconciliation(Booking.Id, Booking.FinancialHistory.Version, reconciliation,

@@ -1,5 +1,5 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;
 
@@ -30,7 +30,7 @@ public sealed class PaymentInstallment
     /// <summary>Creates one validated installment.</summary>
     public static Result<PaymentInstallment> Create(decimal amount, DateOnly dueDate)
     {
-        var money = PaymentMoney.Create(amount, Currency.Euro);
+        var money = PaymentMoney.Create(amount, Currency.Eur);
         return money.IsFailure || amount <= 0 || dueDate == default
             ? FinancialErrors.Invalid("installment").ConvertError<PaymentInstallment>() : Result.Ok(new PaymentInstallment(Guid.CreateVersion7(), money.Value, dueDate));
     }

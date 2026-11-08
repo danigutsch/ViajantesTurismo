@@ -42,7 +42,7 @@ public sealed class BookingFinancialHistoryTests
         tour.ApproveBookingPaymentSchedule(booking.Id, scenario.History.Version, schedule, approval).IsSuccess.ShouldBeTrue();
         scenario.History.ApprovedSchedule.ShouldNotBeNull();
         scenario.History.ApprovedSchedule.SelfApproved.ShouldBeTrue();
-        var receipt = tour.RecordBookingReceipt(booking.Id, scenario.History.Version, ReceiptSettlement.Create(Currency.Euro, 120m, 0m).Value,
+        var receipt = tour.RecordBookingReceipt(booking.Id, scenario.History.Version, ReceiptSettlement.Create(Currency.Eur, 120m, 0m).Value,
             new DateOnly(2030, 1, 5), now, PaymentMethod.BankTransfer, "transfer", [InstallmentAllocation.Create(installment.Id, 100m).Value], "owner", now, new DateOnly(2030, 1, 5)).Value;
         booking.AmountPaid.ShouldBe(0);
         var reconciliation = tour.DraftBookingReceiptReconciliation(booking.Id, scenario.History.Version, receipt, 120m, null,
@@ -83,7 +83,7 @@ public sealed class BookingFinancialHistoryTests
         var schedule = scenario.Tour.DraftBookingPaymentSchedule(booking.Id, 0, 100m, [original], "first", now).Value;
         scenario.Tour.ApproveBookingPaymentSchedule(booking.Id, scenario.History.Version, schedule,
             FinancialApproval.Create("second", now, FinancialReason.InitialObligation, true).Value).IsSuccess.ShouldBeTrue();
-        var receipt = scenario.Tour.RecordBookingReceipt(booking.Id, scenario.History.Version, ReceiptSettlement.Create(Currency.Euro, 100m, 0m).Value,
+        var receipt = scenario.Tour.RecordBookingReceipt(booking.Id, scenario.History.Version, ReceiptSettlement.Create(Currency.Eur, 100m, 0m).Value,
             new DateOnly(2030, 1, 5), now, PaymentMethod.BankTransfer, "original", [InstallmentAllocation.Create(original.Id, 100m).Value], "first", now, new DateOnly(2030, 1, 5)).Value;
         var reconciliation = scenario.Tour.DraftBookingReceiptReconciliation(booking.Id, scenario.History.Version, receipt, 100m, null,
             [InstallmentAllocation.Create(original.Id, 100m).Value], "first", now).Value;
@@ -224,11 +224,11 @@ public sealed class BookingFinancialHistoryTests
         var original = scenario.Tour.Pricing;
 
         // Act
-        var changed = scenario.Tour.UpdatePricing(original.SingleRoomSupplementPrice, original.RegularBikePrice, original.EBikePrice, Currency.Real);
+        var changed = scenario.Tour.UpdatePricing(original.SingleRoomSupplementPrice, original.RegularBikePrice, original.EBikePrice, Currency.Brl);
 
         // Assert
         changed.IsFailure.ShouldBeTrue();
-        scenario.Tour.Pricing.Currency.ShouldBe(Currency.Euro);
+        scenario.Tour.Pricing.Currency.ShouldBe(Currency.Eur);
         scenario.History.ApprovedSchedule.ShouldNotBeNull();
         scenario.History.ApprovedSchedule.Obligation.Amount.ShouldBe(100m);
     }
@@ -240,7 +240,7 @@ public sealed class BookingFinancialHistoryTests
         var now = PaymentScenario.Now;
         var installment = PaymentInstallment.Create(100m, PaymentScenario.DueDate).Value;
         scenario.Tour.DraftBookingPaymentSchedule(scenario.Booking.Id, 0, 100m, [installment], "owner", now).IsSuccess.ShouldBeTrue();
-        var settlement = ReceiptSettlement.Create(Currency.Euro, 100m, 0m).Value;
+        var settlement = ReceiptSettlement.Create(Currency.Eur, 100m, 0m).Value;
 
         // Act
         var unselected = scenario.Tour.RecordBookingReceipt(scenario.Booking.Id, scenario.History.Version, settlement,

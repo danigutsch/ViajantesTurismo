@@ -1,4 +1,5 @@
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Payments;
 
@@ -72,8 +73,8 @@ public sealed class PaymentInstructionIntegrityTests
         var instruction = scenario.Tour.CreateBookingPaymentInstruction(scenario.Booking.Id, account, [installment.Id], null, "reference", now).Value;
 
         // Act
-        var exact = instruction.MatchesReceipt(scenario.Booking.Id, Admin.Domain.Tours.Currency.Euro, gross, fees, new DateOnly(2030, 1, 5), evidence ? now : null, reference, 100m, null);
-        var late = instruction.MatchesReceipt(scenario.Booking.Id, Admin.Domain.Tours.Currency.Euro, gross, fees, PaymentScenario.DueDate.AddDays(1), evidence ? now : null, reference, 100m, null);
+        var exact = instruction.MatchesReceipt(scenario.Booking.Id, Currency.Eur, gross, fees, new DateOnly(2030, 1, 5), evidence ? now : null, reference, 100m, null);
+        var late = instruction.MatchesReceipt(scenario.Booking.Id, Currency.Eur, gross, fees, PaymentScenario.DueDate.AddDays(1), evidence ? now : null, reference, 100m, null);
 
         // Assert
         exact.ShouldBe(expected);

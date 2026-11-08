@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -55,7 +56,7 @@ public sealed class FrozenPaymentInstruction
         var currency = account.Current.Recipient.SettlementCurrency;
         var quoteState = quoteId is { } id ? history.ExportState().Quotes.SingleOrDefault(item => item.Id == id) : null;
         var quote = quoteId is { } approvedId ? history.ApprovedQuote(approvedId) : null;
-        if (currency == Currency.Euro && quoteId is not null || currency == Currency.Real && (quote is null || quoteState is not { ForRefund: false } || !quote.IsTimely(now)))
+        if (currency == Currency.Eur && quoteId is not null || currency == Currency.Brl && (quote is null || quoteState is not { ForRefund: false } || !quote.IsTimely(now)))
         {
             return FinancialErrors.Unavailable().ConvertError<FrozenPaymentInstruction>();
         }
@@ -66,8 +67,8 @@ public sealed class FrozenPaymentInstruction
         {
             var euro = history.OutstandingFor(item.Id);
             cumulativeEuro += euro;
-            var current = currency == Currency.Euro ? PaymentMoney.Create(cumulativeEuro, currency) : quote!.Settle(cumulativeEuro);
-            var individuallyRounded = currency == Currency.Euro ? PaymentMoney.Create(euro, currency) : quote!.Settle(euro);
+            var current = currency == Currency.Eur ? PaymentMoney.Create(cumulativeEuro, currency) : quote!.Settle(cumulativeEuro);
+            var individuallyRounded = currency == Currency.Eur ? PaymentMoney.Create(euro, currency) : quote!.Settle(euro);
             if (current.IsFailure || individuallyRounded.IsFailure)
             {
                 return FinancialErrors.Invalid("settlement").ConvertError<FrozenPaymentInstruction>();
@@ -89,7 +90,7 @@ public sealed class FrozenPaymentInstruction
         now >= _state.CreatedAt && now >= history.ExportState().LastChangedAt && now.Offset == TimeSpan.Zero && account.Current.VerifiedAt is { } verifiedAt && now >= verifiedAt
         && history.BookingId == BookingId && account.Id == AccountId && account.CanDeliver(AccountRevisionId)
         && account.Current.Recipient.SettlementCurrency == Currency && history.CanInstruct(bookingPrice, status) && history.ApprovedSchedule?.Id == ScheduleId
-        && (Currency == Currency.Euro || _state.QuoteId is { } quoteId && history.ApprovedQuote(quoteId)?.IsTimely(now) == true)
+        && (Currency == Currency.Eur || _state.QuoteId is { } quoteId && history.ApprovedQuote(quoteId)?.IsTimely(now) == true)
         && _state.Installments.All(item => history.OutstandingFor(item.InstallmentId) == item.EuroAmount);
 
     /// <summary>Checks that a payment made on the business date is on or before the earliest due date.</summary>
@@ -118,14 +119,14 @@ public sealed class FrozenPaymentInstruction
     private static Result<FrozenPaymentInstruction> RestoreValidated(PaymentInstructionTermsState? state)
     {
         if (state is null || state.BookingId == Guid.Empty || state.ScheduleId == Guid.Empty || state.AccountId == Guid.Empty || state.AccountRevisionId == Guid.Empty
-            || state.Currency is not (Currency.Euro or Currency.Real) || state.CreatedAt == default || state.CreatedAt.Offset != TimeSpan.Zero
+            || !FinancialCurrencies.IsSupported(state.Currency) || state.CreatedAt == default || state.CreatedAt.Offset != TimeSpan.Zero
             || string.IsNullOrWhiteSpace(state.Reference) || state.Reference.Length > 128 || state.Reference.Any(char.IsControl)
             || state.Installments is not { Length: > 0 } || state.Installments.Any(item => item is null || item.InstallmentId == Guid.Empty || item.EuroAmount <= 0
                 || decimal.Round(item.EuroAmount, 2) != item.EuroAmount || item.DueDate == default || item.SettlementAmount < 0 || decimal.Round(item.SettlementAmount, 2) != item.SettlementAmount)
             || state.Installments.Select(item => item.InstallmentId).Distinct().Count() != state.Installments.Length
             || state.EuroAmount != state.Installments.Sum(item => item.EuroAmount) || state.SettlementAmount <= 0 || state.SettlementAmount != state.Installments.Sum(item => item.SettlementAmount)
-            || state.Currency == Currency.Euro && (state.Quote is not null || state.QuoteId is not null || state.EuroAmount != state.SettlementAmount)
-            || state.Currency == Currency.Real && (state.Quote is not { Approval: not null, ForRefund: false } || state.Quote.Id != state.QuoteId))
+            || state.Currency == Currency.Eur && (state.Quote is not null || state.QuoteId is not null || state.EuroAmount != state.SettlementAmount)
+            || state.Currency == Currency.Brl && (state.Quote is not { Approval: not null, ForRefund: false } || state.Quote.Id != state.QuoteId))
         {
             return FinancialErrors.Invalid("storedInstruction").ConvertError<FrozenPaymentInstruction>();
         }
@@ -143,8 +144,8 @@ public sealed class FrozenPaymentInstruction
         foreach (var item in state.Installments)
         {
             euroTotal += item.EuroAmount;
-            var cumulative = state.Quote is { } agreed ? QuoteAmount(agreed, euroTotal) : PaymentMoney.Create(euroTotal, Currency.Euro);
-            var individual = state.Quote is { } rate ? QuoteAmount(rate, item.EuroAmount) : PaymentMoney.Create(item.EuroAmount, Currency.Euro);
+            var cumulative = state.Quote is { } agreed ? QuoteAmount(agreed, euroTotal) : PaymentMoney.Create(euroTotal, Currency.Eur);
+            var individual = state.Quote is { } rate ? QuoteAmount(rate, item.EuroAmount) : PaymentMoney.Create(item.EuroAmount, Currency.Eur);
             if (cumulative.IsFailure || individual.IsFailure || item.SettlementAmount != cumulative.Value.Amount - settlementTotal
                 || item.RoundingAdjustment != item.SettlementAmount - individual.Value.Amount || previousDueDate is { } due && item.DueDate < due)
             {

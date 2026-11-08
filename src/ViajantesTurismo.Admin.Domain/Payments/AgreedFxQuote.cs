@@ -1,6 +1,5 @@
 using PandaBear.BuildingBlocks;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;
 
@@ -60,7 +59,7 @@ public sealed class AgreedFxQuote : ValueObject
         {
             return FinancialErrors.Invalid("settlement").ConvertError<PaymentMoney>();
         }
-        return PaymentMoney.Create(decimal.Round(euroAmount * BrlPerEuro, 2, MidpointRounding.AwayFromZero), Currency.Real);
+        return PaymentMoney.Create(decimal.Round(euroAmount * BrlPerEuro, 2, MidpointRounding.AwayFromZero), Currency.Brl);
     }
     /// <inheritdoc />
     public override string ToString() => "AgreedFxQuote [redacted]";

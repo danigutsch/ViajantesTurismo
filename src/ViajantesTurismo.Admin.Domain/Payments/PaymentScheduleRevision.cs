@@ -1,5 +1,5 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;
 
@@ -68,8 +68,8 @@ public sealed class PaymentScheduleRevision
     /// <summary>Validates and creates a draft schedule revision.</summary>
     internal static Result<PaymentScheduleRevision> Create(int number, decimal obligation, decimal bookingPrice, IReadOnlyList<PaymentInstallment> installments, string actorId, DateTimeOffset now)
     {
-        var money = PaymentMoney.Create(obligation, Currency.Euro);
-        var price = PaymentMoney.Create(bookingPrice, Currency.Euro);
+        var money = PaymentMoney.Create(obligation, Currency.Eur);
+        var price = PaymentMoney.Create(bookingPrice, Currency.Eur);
         if (money.IsFailure || price.IsFailure || obligation < 0 || bookingPrice <= 0 || number < 1 || !FinancialApproval.ValidActor(actorId)
             || now == default || now.Offset != TimeSpan.Zero || installments is null || obligation > 0 && installments.Count == 0 || installments.Any(item => item is null)
             || installments.Select(item => item.Id).Distinct().Count() != installments.Count)
@@ -80,7 +80,7 @@ public sealed class PaymentScheduleRevision
         DateOnly previousDate = default;
         foreach (var installment in installments)
         {
-            if (installment.Amount.Amount <= 0 || installment.Amount.Currency != Currency.Euro || installment.Amount.Amount > obligation - sum || installment.DueDate < previousDate)
+            if (installment.Amount.Amount <= 0 || installment.Amount.Currency != Currency.Eur || installment.Amount.Amount > obligation - sum || installment.DueDate < previousDate)
             {
                 return FinancialErrors.Invalid("installments").ConvertError<PaymentScheduleRevision>();
             }

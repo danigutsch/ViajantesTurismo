@@ -5,6 +5,7 @@ using ViajantesTurismo.Admin.Domain.Payments;
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
 /// <summary>Source-generated JSON metadata for protected payment persistence state.</summary>
+[JsonSourceGenerationOptions(Converters = [typeof(StoredCurrencyJsonConverter)])]
 [JsonSerializable(typeof(PaymentInstructionSnapshotState))]
 [JsonSerializable(typeof(PaymentAccountState))]
 [JsonSerializable(typeof(BookingFinancialState))]

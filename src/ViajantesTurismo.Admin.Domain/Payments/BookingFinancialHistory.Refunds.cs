@@ -1,5 +1,5 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;
 
@@ -23,7 +23,7 @@ public sealed partial class BookingFinancialHistory
             return FinancialErrors.Invalid("refund").ConvertError<Guid>();
         }
         decimal actual;
-        if (receipt.Currency == Currency.Euro)
+        if (receipt.Currency == Currency.Eur)
         {
             if (refundQuoteId is not null || euroCashPayable != originalCashBasis)
             {

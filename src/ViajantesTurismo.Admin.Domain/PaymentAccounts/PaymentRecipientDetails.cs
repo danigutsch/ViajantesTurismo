@@ -1,6 +1,5 @@
 using PandaBear.BuildingBlocks;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
@@ -53,8 +52,8 @@ public sealed class PaymentRecipientDetails : ValueObject
     /// <param name="bic">The canonical ISO 9362 BIC.</param>
     /// <param name="settlementCurrency">The bank-checked EUR or BRL account currency.</param>
     /// <returns>Validated details or an input-independent failure.</returns>
-    public static Result<PaymentRecipientDetails> CreateIban(string recipientName, string? iban, string? bic, Currency settlementCurrency = Currency.Euro) =>
-        Restore(new PaymentRecipientState(PaymentAccountKind.Iban, recipientName, iban, bic, PixKeyType.None, null, null, null, null, BrazilianAccountType.None, null, settlementCurrency));
+    public static Result<PaymentRecipientDetails> CreateIban(string recipientName, string? iban, string? bic, Currency? settlementCurrency = null) =>
+        Restore(new PaymentRecipientState(PaymentAccountKind.Iban, recipientName, iban, bic, PixKeyType.None, null, null, null, null, BrazilianAccountType.None, null, settlementCurrency ?? Currency.Eur));
 
     /// <summary>Creates a recipient addressed through an explicitly selected Pix key type.</summary>
     /// <param name="recipientName">The recipient's bank-recorded name.</param>
@@ -62,7 +61,7 @@ public sealed class PaymentRecipientDetails : ValueObject
     /// <param name="key">The canonical key.</param>
     /// <returns>Validated details or an input-independent failure.</returns>
     public static Result<PaymentRecipientDetails> CreatePix(string recipientName, PixKeyType keyType, string? key) =>
-        Restore(new PaymentRecipientState(PaymentAccountKind.Pix, recipientName, null, null, keyType, key, null, null, null, BrazilianAccountType.None, null, Currency.Real));
+        Restore(new PaymentRecipientState(PaymentAccountKind.Pix, recipientName, null, null, keyType, key, null, null, null, BrazilianAccountType.None, null, Currency.Brl));
 
     /// <summary>Creates Brazilian bank details using BCB DICT field formats and taxpayer check digits.</summary>
     /// <param name="recipientName">The recipient's bank-recorded name.</param>
@@ -74,7 +73,7 @@ public sealed class PaymentRecipientDetails : ValueObject
     /// <returns>Validated details; bank-specific account ownership/checks still require attestation.</returns>
     public static Result<PaymentRecipientDetails> CreateBrazilian(
         string recipientName, string? ispb, string? branch, string? accountNumber, BrazilianAccountType accountType, string? taxId) =>
-        Restore(new PaymentRecipientState(PaymentAccountKind.BrazilianBank, recipientName, null, null, PixKeyType.None, null, ispb, branch, accountNumber, accountType, taxId, Currency.Real));
+        Restore(new PaymentRecipientState(PaymentAccountKind.BrazilianBank, recipientName, null, null, PixKeyType.None, null, ispb, branch, accountNumber, accountType, taxId, Currency.Brl));
 
     /// <summary>Exports the recipient details as a persistence snapshot.</summary>
     internal PaymentRecipientState ExportState() => _state;
@@ -82,7 +81,7 @@ public sealed class PaymentRecipientDetails : ValueObject
     /// <summary>Validates untrusted persisted state and rebuilds the recipient details, failing when invalid.</summary>
     internal static Result<PaymentRecipientDetails> Restore(PaymentRecipientState? state)
     {
-        if (state is null || state.SettlementCurrency is not (Currency.Euro or Currency.Real) || string.IsNullOrWhiteSpace(state.RecipientName)
+        if (state is null || !FinancialCurrencies.IsSupported(state.SettlementCurrency) || string.IsNullOrWhiteSpace(state.RecipientName)
             || state.RecipientName.Length > AdminDomainLimits.MaxNameLength
             || state.RecipientName.Any(char.IsControl) || state.RecipientName != state.RecipientName.Trim())
         {
@@ -93,9 +92,9 @@ public sealed class PaymentRecipientDetails : ValueObject
         {
             PaymentAccountKind.Iban => Iban.Create(state.Iban).IsSuccess && Bic.Create(state.Bic).IsSuccess
                 && state.PixKey is null && state.PixType == PixKeyType.None && BankFieldsEmpty(state),
-            PaymentAccountKind.Pix => state.SettlementCurrency == Currency.Real && PixKey.Create(state.PixType, state.PixKey).IsSuccess
+            PaymentAccountKind.Pix => state.SettlementCurrency == Currency.Brl && PixKey.Create(state.PixType, state.PixKey).IsSuccess
                 && state.Iban is null && state.Bic is null && BankFieldsEmpty(state),
-            PaymentAccountKind.BrazilianBank => state.SettlementCurrency == Currency.Real && CanonicalAlphanumeric(state.Ispb, 8, 8)
+            PaymentAccountKind.BrazilianBank => state.SettlementCurrency == Currency.Brl && CanonicalAlphanumeric(state.Ispb, 8, 8)
                 && (state.Branch is null || state.Branch.Length is >= 1 and <= 4
                     && state.Branch.All(char.IsAsciiDigit))
                 && CanonicalAlphanumeric(state.AccountNumber, 1, 20)

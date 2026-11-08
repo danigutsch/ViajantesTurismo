@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 using ViajantesTurismo.Admin.Domain.Shared;
@@ -19,7 +20,7 @@ public class BookingDiscountsSteps(TourContext tourContext, BookingContext booki
             singleRoomSupplement,
             regularBikePrice,
             eBikePrice,
-            Currency.UsDollar,
+            Currency.Usd,
             4,
             12,
             ["Hotel", "Breakfast"])).Value;

@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts.Application;
 
@@ -18,7 +19,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             500.00m,
             100.00m,
             200.00m,
-            Currency.UsDollar,
+            Currency.Usd,
             4,
             12,
             ["Accommodation", "Meals"])).Value;
@@ -88,7 +89,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             500.00m,
             100.00m,
             200.00m,
-            Currency.UsDollar,
+            Currency.Usd,
             4,
             12,
             services)).Value;
@@ -222,7 +223,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             tourContext.SingleRoomSupplementPrice,
             tourContext.RegularBikePrice,
             tourContext.EBikePrice,
-            Currency.UsDollar,
+            Currency.Usd,
             4,
             12,
             [.. services]));
