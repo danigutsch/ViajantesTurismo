@@ -1,5 +1,4 @@
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
-using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Tours;
@@ -21,7 +20,7 @@ public sealed class CreateTourCommandHandlerTests
             250m,
             100m,
             180m,
-            CurrencyDto.Euro,
+            "EUR",
             ["Guide"],
             4,
             12);

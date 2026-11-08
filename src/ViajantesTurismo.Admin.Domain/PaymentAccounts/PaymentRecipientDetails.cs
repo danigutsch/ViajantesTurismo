@@ -52,8 +52,8 @@ public sealed class PaymentRecipientDetails : ValueObject
     /// <param name="bic">The canonical ISO 9362 BIC.</param>
     /// <param name="settlementCurrency">The bank-checked EUR or BRL account currency.</param>
     /// <returns>Validated details or an input-independent failure.</returns>
-    public static Result<PaymentRecipientDetails> CreateIban(string recipientName, string? iban, string? bic, Currency? settlementCurrency = null) =>
-        Restore(new PaymentRecipientState(PaymentAccountKind.Iban, recipientName, iban, bic, PixKeyType.None, null, null, null, null, BrazilianAccountType.None, null, settlementCurrency ?? Currency.Eur));
+    public static Result<PaymentRecipientDetails> CreateIban(string recipientName, string? iban, string? bic, Currency settlementCurrency) =>
+        Restore(new PaymentRecipientState(PaymentAccountKind.Iban, recipientName, iban, bic, PixKeyType.None, null, null, null, null, BrazilianAccountType.None, null, settlementCurrency));
 
     /// <summary>Creates a recipient addressed through an explicitly selected Pix key type.</summary>
     /// <param name="recipientName">The recipient's bank-recorded name.</param>

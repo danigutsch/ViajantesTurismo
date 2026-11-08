@@ -54,7 +54,7 @@ public sealed class PaymentMigrationPostgreSqlTests(PostgreSqlTestServerFixture 
         await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
         await using var session = scenario.Open();
         await session.Migrate(ct);
-        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "owner", scenario.Clock.GetUtcNow()).Value;
+        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value, "owner", scenario.Clock.GetUtcNow()).Value;
         await session.SeedAccount(account, ct);
 
         // Act

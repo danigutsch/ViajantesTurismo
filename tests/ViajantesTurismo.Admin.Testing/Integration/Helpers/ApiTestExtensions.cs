@@ -320,7 +320,7 @@ public static class ApiTestExtensions
         var receipt = Confirm(await payments.RecordReceipt(bookingId, new CreateBookingReceiptDto
         {
             ExpectedVersion = history.Version,
-            SettlementCurrency = CurrencyDto.Euro,
+            SettlementCurrency = "EUR",
             Gross = amount,
             Fees = 0,
             PaymentDate = today,

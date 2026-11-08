@@ -2383,7 +2383,7 @@
             "format": "int64"
           },
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "gross": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
@@ -2642,9 +2642,6 @@
           }
         }
       },
-      "CurrencyDto": {
-        "type": "integer"
-      },
       "DiscountTypeDto": {
         "type": "integer"
       },
@@ -2835,7 +2832,7 @@
             ]
           },
           "currency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "notes": {
             "type": [
@@ -2896,7 +2893,7 @@
             "format": "int64"
           },
           "obligationCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "termsStale": {
             "type": "boolean"
@@ -3009,7 +3006,7 @@
             "format": "uuid"
           },
           "settlementCurrency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "gross": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",

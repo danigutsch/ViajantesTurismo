@@ -48,7 +48,7 @@ public sealed class PaymentAccountStoredStateTests
     {
         // Arrange
         var now = PaymentScenario.Now;
-        var recipient = PaymentRecipientDetails.CreateIban("Checked recipient", "DE89370400440532013000", "COBADEFFXXX").Value;
+        var recipient = PaymentRecipientDetails.CreateIban("Checked recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value;
         var account = PaymentAccount.Create("Checked account", recipient, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         account.Review(account.Version, "reviewer", now, PaymentAccountReviewOutcome.ChangesRequested).IsSuccess.ShouldBeTrue();

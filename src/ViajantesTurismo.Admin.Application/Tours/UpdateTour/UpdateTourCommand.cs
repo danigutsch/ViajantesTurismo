@@ -1,4 +1,3 @@
-using PandaBear.BuildingBlocks;
 using PandaBear.Mediator;
 using PandaBear.Results;
 namespace ViajantesTurismo.Admin.Application.Tours.UpdateTour;
@@ -16,7 +15,7 @@ public sealed record UpdateTourCommand(
     decimal SingleRoomSupplementPrice,
     decimal RegularBikePrice,
     decimal EBikePrice,
-    Currency Currency,
+    string Currency,
     IReadOnlyCollection<string> IncludedServices,
     int MinCustomers,
     int MaxCustomers) : ICommand<Result>;

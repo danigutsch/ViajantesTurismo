@@ -32,7 +32,7 @@ public class TourTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<A
         await Page.Locator("#startDate").FillAndExpectValue(startDate);
         await Page.Locator("#endDate").FillAndExpectValue(endDate);
 
-        await Page.SelectOptionAsync("#currency", "Euro");
+        await Page.SelectOptionAsync("#currency", "EUR");
         await Page.Locator("#price").FillAndExpectValue("1200");
         await Page.Locator("#singleRoom").FillAndExpectValue("250");
         await Page.Locator("#regularBike").FillAndExpectValue("80");

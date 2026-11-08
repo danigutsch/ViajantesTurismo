@@ -5,8 +5,8 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 /// <summary>Contains sensitive recipient inputs; never include it in telemetry.</summary>
 public sealed record PaymentRecipientDto
 {
-    /// <summary>Gets the independently checked account settlement currency.</summary>
-    public required CurrencyDto SettlementCurrency
+    /// <summary>Gets the ISO 4217 code, EUR or BRL, of the independently checked account settlement currency.</summary>
+    public required string SettlementCurrency
     {
         get; init;
     }

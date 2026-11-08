@@ -1,6 +1,5 @@
 using PandaBear.Mediator;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;
 
@@ -16,7 +15,7 @@ public sealed record CreateTourCommand(
     decimal SingleRoomSupplementPrice,
     decimal RegularBikePrice,
     decimal EBikePrice,
-    CurrencyDto Currency,
+    string Currency,
     ICollection<string> IncludedServices,
     int MinCustomers,
     int MaxCustomers) : ICommand<Result<Guid>>;

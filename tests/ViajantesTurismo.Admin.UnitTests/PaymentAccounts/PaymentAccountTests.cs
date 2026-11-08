@@ -14,7 +14,7 @@ public sealed class PaymentAccountTests
     {
         // Arrange
         var now = DateTimeOffset.FromUnixTimeSeconds(1_800_000_000);
-        var recipient = PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value;
+        var recipient = PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value;
         var account = PaymentAccount.Create("EUR account", recipient, "admin", now).Value;
         var revision = account.Current.Id;
 
@@ -103,7 +103,7 @@ public sealed class PaymentAccountTests
     {
         // Arrange
         var now = DateTimeOffset.FromUnixTimeSeconds(1_800_000_000);
-        var recipient = PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value;
+        var recipient = PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value;
         var account = PaymentAccount.Create("EUR account", recipient, "admin", now).Value;
         account.Verify(account.Version, "admin", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         var revision = account.Current.Id;
@@ -123,7 +123,7 @@ public sealed class PaymentAccountTests
     {
         // Arrange
         var now = DateTimeOffset.FromUnixTimeSeconds(1_800_000_000);
-        var recipient = PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value;
+        var recipient = PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value;
         var account = PaymentAccount.Create("EUR account", recipient, "admin", now).Value;
         account.Verify(account.Version, "admin", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         var state = account.ExportState();
@@ -171,7 +171,7 @@ public sealed class PaymentAccountTests
     public void Ordinary_diagnostics_mask_identifiers_and_invalid_taxpayer_checksums_fail()
     {
         // Arrange
-        var recipient = PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value;
+        var recipient = PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value;
 
         // Act
         var invalid = PaymentRecipientDetails.CreateBrazilian("Recipient", "12345678", "1234", "123456", BrazilianAccountType.Checking, "11122233300");

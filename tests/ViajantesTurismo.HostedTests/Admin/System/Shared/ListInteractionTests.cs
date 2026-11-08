@@ -5,7 +5,6 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using PandaBear.Testing.Playwright;
-using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
@@ -38,7 +37,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
             Name = descendingSentinelName,
             StartDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(40),
             EndDate = TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(47),
-            Currency = CurrencyDto.Real,
+            Currency = "BRL",
             Price = 1500m
         });
 

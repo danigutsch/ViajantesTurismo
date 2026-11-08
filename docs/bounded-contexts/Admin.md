@@ -113,13 +113,21 @@ Only the Management Web picker constrains input, and only for people using that 
 | --- | --- | --- |
 | `PandaBear.BuildingBlocks` `Currency` | ISO 4217 value object; tour pricing carries one of BRL, EUR or USD; payments accept EUR and BRL | Domain value object |
 | `Admin.Domain` payments | Settlement is EUR or BRL only; BRL needs an approved FX quote; `AgreedFxQuote` rounds to cents | Business rules |
-| `Admin.Contracts.Application` `CurrencyDto` | Enum for the HTTP contract (`Real`, `Euro`, `UsDollar`); unchanged by the shared type | Contract |
-| `Admin.Application` `TourMapper` | Maps `Currency` to `CurrencyDto` for tours | Mapping |
-| `Admin.Infrastructure` payment configurations | Persist the currency inside protected payment state as its legacy enum number (`StoredCurrency`) and the tour column as its legacy enum name | Persistence |
-| `Management.Web` `CurrencyFormatter` | Symbol, symbol position, and two decimals in invariant culture | Formatting |
-| `Management.Web` tour and payment pages | Currency pickers and labels per enum value | UI |
+| HTTP contracts (`Admin.Contracts.Application`) | Every currency field is the ISO 4217 code string (`BRL`, `EUR`, `USD`); there is no currency enum | Contract |
+| `Admin.Application` command handlers and `PaymentAccountMappings` | Parse request codes with `Currency.Create` and apply `FinancialCurrencies` (tours BRL/EUR/USD, payments EUR/BRL); an invalid code is a field validation error | Validation |
+| `Admin.Infrastructure` tour and payment persistence | The tour `Currency` column (`varchar(3)`) and the currency inside protected payment state both store the ISO code | Persistence |
+| `Management.Web` `CurrencyFormatter` | Symbol, display name, selectable code lists, symbol position, and two decimals in invariant culture, all keyed by code | Formatting |
+| `Management.Web` tour and payment pages | Currency pickers list codes from `CurrencyFormatter`; labels come from the display-name mapping | UI |
 
 Catalog, Branding, and Public Web hold no country or currency data.
+
+### Currency storage migration note
+
+Currencies are stored and exchanged only as ISO 4217 codes. The `TourCurrencyIsoCode` migration rewrites the tour
+`Currency` column from the former enum names (`Real`, `Euro`, `UsDollar`) to `BRL`, `EUR` and `USD` and narrows it
+to `varchar(3)`; its `Down` restores the names. Protected payment state used to store the currency as a number
+(0, 1, 2). Nothing is deployed, so the application does not read that form: recreate any development database
+that holds payment accounts, financial histories or instruction snapshots written before this change.
 
 ### Ownership boundary
 
@@ -147,8 +155,8 @@ These are suggestions, not committed work.
   import, and existing free-text rows, so it needs a migration plan and an owner decision first.
 - Move the demonym table out of `CountryService` if the code decision above is taken, since codes make it
   unnecessary for new data.
-- Add a currency-to-symbol parity test over every `CurrencyDto` value, so a new currency cannot fall
-  through to the generic symbol in `CurrencyFormatter`.
+- Keep the currency-to-symbol parity test over `CurrencyFormatter.TourCurrencies`, so a new currency cannot fall
+  through to the generic symbol.
 - Keep a shared library out of scope until a second application needs the same list.
 
 ## Testing

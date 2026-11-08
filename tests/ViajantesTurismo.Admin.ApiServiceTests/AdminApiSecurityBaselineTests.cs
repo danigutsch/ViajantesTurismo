@@ -32,7 +32,7 @@ public sealed class AdminApiSecurityBaselineTests
             SingleRoomSupplementPrice = 1m,
             RegularBikePrice = 1m,
             EBikePrice = 1m,
-            Currency = CurrencyDto.UsDollar,
+            Currency = "USD",
             IncludedServices = ["Hotel"],
             MinCustomers = 1,
             MaxCustomers = 1

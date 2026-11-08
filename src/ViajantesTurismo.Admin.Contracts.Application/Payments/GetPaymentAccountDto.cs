@@ -3,8 +3,8 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 /// <summary>Contains masked recipient information and approval/review metadata.</summary>
 public sealed record GetPaymentAccountDto
 {
-    /// <summary>Gets the account settlement currency.</summary>
-    public required CurrencyDto SettlementCurrency
+    /// <summary>Gets the ISO 4217 account settlement currency code, EUR or BRL.</summary>
+    public required string SettlementCurrency
     {
         get; init;
     }

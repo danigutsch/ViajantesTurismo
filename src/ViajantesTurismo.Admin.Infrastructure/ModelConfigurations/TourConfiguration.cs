@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Domain;
 
@@ -33,7 +34,7 @@ internal sealed class TourConfiguration : IEntityTypeConfiguration<Tour>
                 .IsRequired();
             pricing.Property(p => p.RegularBikePrice).HasColumnName("RegularBikePrice").IsRequired();
             pricing.Property(p => p.EBikePrice).HasColumnName("EBikePrice").IsRequired();
-            pricing.Property(p => p.Currency).HasColumnName("Currency").HasConversion(currency => StoredCurrency.ToName(currency), name => StoredCurrency.FromName(name)).IsRequired();
+            pricing.Property(p => p.Currency).HasColumnName("Currency").HasMaxLength(AdminDomainLimits.CurrencyCodeLength).HasConversion(currency => currency.Code, code => Currency.Restore(code)).IsRequired();
         });
 
         entity.OwnsOne(tour => tour.Capacity, capacity =>

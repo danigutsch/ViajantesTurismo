@@ -320,7 +320,9 @@
             "format": "double"
           },
           "currency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
           },
           "includedServices": {
             "type": "array",
@@ -349,9 +351,6 @@
             "format": "int32"
           }
         }
-      },
-      "CurrencyDto": {
-        "type": "integer"
       },
       "GetTourDto": {
         "required": [
@@ -423,7 +422,7 @@
             "format": "double"
           },
           "currency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "type": "string"
           },
           "includedServices": {
             "type": "array",
@@ -632,7 +631,9 @@
             "format": "double"
           },
           "currency": {
-            "$ref": "#/components/schemas/CurrencyDto"
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
           },
           "includedServices": {
             "type": "array",

@@ -20,7 +20,7 @@ public sealed class PaymentRecipientContractTests
         var input = new PaymentRecipientDto
         {
             Kind = PaymentAccountKindDto.Pix,
-            SettlementCurrency = CurrencyDto.Real,
+            SettlementCurrency = "BRL",
             RecipientName = "Checked recipient",
             PixKeyType = type,
             PixKey = key
@@ -46,7 +46,7 @@ public sealed class PaymentRecipientContractTests
         var input = new PaymentRecipientDto
         {
             Kind = PaymentAccountKindDto.BrazilianBank,
-            SettlementCurrency = CurrencyDto.Real,
+            SettlementCurrency = "BRL",
             RecipientName = "Checked recipient",
             AccountType = type,
             Ispb = "00000000",
@@ -77,20 +77,26 @@ public sealed class PaymentRecipientContractTests
     [InlineData("mixed-account-type")]
     [InlineData("mixed-pix-type")]
     [InlineData("undefined-rail")]
+    [InlineData("currency-malformed")]
+    [InlineData("currency-unknown")]
+    [InlineData("currency-empty")]
     public void Recipient_contracts_reject_undefined_labels_and_fields_from_another_rail(string field)
     {
         // Arrange
         var input = new PaymentRecipientDto
         {
             Kind = PaymentAccountKindDto.Iban,
-            SettlementCurrency = CurrencyDto.Euro,
+            SettlementCurrency = "EUR",
             RecipientName = "Checked recipient",
             Iban = "DE89370400440532013000",
             Bic = "COBADEFFXXX"
         };
         input = field switch
         {
-            "currency" => input with { SettlementCurrency = CurrencyDto.UsDollar },
+            "currency" => input with { SettlementCurrency = "USD" },
+            "currency-malformed" => input with { SettlementCurrency = "E1R" },
+            "currency-unknown" => input with { SettlementCurrency = "ZZZ" },
+            "currency-empty" => input with { SettlementCurrency = "" },
             "kind" => input with { Kind = (PaymentAccountKindDto)999 },
             "pix-type" => input with { PixKeyType = (PixKeyTypeDto)999 },
             "account-type" => input with { AccountType = (BrazilianAccountTypeDto)999 },
@@ -130,7 +136,7 @@ public sealed class PaymentRecipientContractTests
         var pix = new PaymentRecipientDto
         {
             Kind = PaymentAccountKindDto.Pix,
-            SettlementCurrency = CurrencyDto.Real,
+            SettlementCurrency = "BRL",
             RecipientName = "Checked recipient",
             PixKeyType = PixKeyTypeDto.Cpf,
             PixKey = "52998224725"
@@ -138,7 +144,7 @@ public sealed class PaymentRecipientContractTests
         var bank = new PaymentRecipientDto
         {
             Kind = PaymentAccountKindDto.BrazilianBank,
-            SettlementCurrency = CurrencyDto.Real,
+            SettlementCurrency = "BRL",
             RecipientName = "Checked recipient",
             AccountType = BrazilianAccountTypeDto.Checking,
             Ispb = "00000000",
@@ -148,11 +154,11 @@ public sealed class PaymentRecipientContractTests
         };
         var input = field switch
         {
-            "pix-in-euro" => pix with { SettlementCurrency = CurrencyDto.Euro },
+            "pix-in-euro" => pix with { SettlementCurrency = "EUR" },
             "pix-with-iban" => pix with { Iban = "DE89370400440532013000" },
             "pix-with-bic" => pix with { Bic = "COBADEFFXXX" },
             "pix-with-bank-field" => pix with { Branch = "0001" },
-            "bank-in-euro" => bank with { SettlementCurrency = CurrencyDto.Euro },
+            "bank-in-euro" => bank with { SettlementCurrency = "EUR" },
             "bank-with-iban" => bank with { Iban = "DE89370400440532013000" },
             "bank-with-bic" => bank with { Bic = "COBADEFFXXX" },
             "bank-with-pix-key" => bank with { PixKey = "52998224725" },
@@ -198,5 +204,26 @@ public sealed class PaymentRecipientContractTests
         nullInstallment.IsFailure.ShouldBeTrue();
         invalidAllocation.IsFailure.ShouldBeTrue();
         invalidInstallment.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Currency_codes_are_normalized_to_upper_case_before_validation()
+    {
+        // Arrange
+        var input = new PaymentRecipientDto
+        {
+            Kind = PaymentAccountKindDto.Iban,
+            SettlementCurrency = " eur ",
+            RecipientName = "Checked recipient",
+            Iban = "DE89370400440532013000",
+            Bic = "COBADEFFXXX"
+        };
+
+        // Act
+        var recipient = PaymentAccountMappings.ToRecipient(input);
+
+        // Assert
+        recipient.IsSuccess.ShouldBeTrue();
+        recipient.Value.SettlementCurrency.Code.ShouldBe("EUR");
     }
 }

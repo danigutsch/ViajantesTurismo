@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -34,6 +35,12 @@ public sealed class UpdateTourCommandHandler(
             return TourErrors.IdentifierAlreadyExists();
         }
 
+        var currency = Currency.Create(command.Currency);
+        if (currency.IsFailure)
+        {
+            return currency.ConvertError();
+        }
+
         var reviseResult = tour.Revise(new TourDefinition(
             command.Identifier,
             command.Name,
@@ -43,7 +50,7 @@ public sealed class UpdateTourCommandHandler(
             command.SingleRoomSupplementPrice,
             command.RegularBikePrice,
             command.EBikePrice,
-            command.Currency,
+            currency.Value,
             command.MinCustomers,
             command.MaxCustomers,
             command.IncludedServices));

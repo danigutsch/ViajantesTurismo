@@ -60,7 +60,7 @@ else if (_tour != null)
                         <dd class="col-sm-8">@((_tour.EndDate.DayNumber - _tour.StartDate.DayNumber)) days</dd>
 
                         <dt class="col-sm-4">Currency:</dt>
-                        <dd class="col-sm-8">@EnumFormatter.Format(_tour.Currency)</dd>
+                        <dd class="col-sm-8">@CurrencyFormatter.GetDisplayName(_tour.Currency)</dd>
                     </dl>
                 </div>
 
@@ -292,6 +292,6 @@ else if (_tour != null)
         }
     }
 
-    private static string FormatPrice(decimal price, CurrencyDto currency) => CurrencyFormatter.Format(price, currency);
+    private static string FormatPrice(decimal price, string currency) => CurrencyFormatter.Format(price, currency);
 
 }

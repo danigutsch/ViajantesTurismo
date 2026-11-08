@@ -301,6 +301,6 @@
         await OnValidSubmit.InvokeAsync(Model);
     }
 
-    private static string FormatPrice(decimal amount, CurrencyDto currency) => CurrencyFormatter.Format(amount, currency);
+    private static string FormatPrice(decimal amount, string currency) => CurrencyFormatter.Format(amount, currency);
 
 }

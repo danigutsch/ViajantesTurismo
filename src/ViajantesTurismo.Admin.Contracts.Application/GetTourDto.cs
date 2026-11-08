@@ -79,9 +79,9 @@ public sealed record GetTourDto
     }
 
     /// <summary>
-    /// Currency information for the tour prices.
+    /// The ISO 4217 code of the currency for the tour prices.
     /// </summary>
-    public required CurrencyDto Currency
+    public required string Currency
     {
         get; init;
     }

@@ -29,7 +29,7 @@ internal sealed class PaymentPageHttpHandler : HttpMessageHandler
     }
     /// <summary>JSON body returned for booking financial history reads.</summary>
     public string FinancialHistory { get; set; } = """
-        {"bookingId":"11111111-1111-1111-1111-111111111111","version":0,"obligationCurrency":1,"termsStale":true,
+        {"bookingId":"11111111-1111-1111-1111-111111111111","version":0,"obligationCurrency":"EUR","termsStale":true,
         "approvedObligationEuro":0,"outstandingEuro":0,"unallocatedEuroCredit":0,"businessDate":"2030-01-05","overdue":false,
         "schedules":[],"quotes":[],"receipts":[],"reconciliations":[],"allocations":[],"refunds":[],"reversals":[],"reviews":[]}
         """;

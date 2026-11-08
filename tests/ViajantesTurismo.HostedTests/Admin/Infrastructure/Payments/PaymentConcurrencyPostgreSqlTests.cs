@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Idempotency;
 using System.Text;
 using PandaBear.Testing;
@@ -26,7 +27,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         var input = new CreateBookingReceiptDto
         {
             ExpectedVersion = history.Version,
-            SettlementCurrency = CurrencyDto.Euro,
+            SettlementCurrency = "EUR",
             Gross = 100m,
             Fees = 0m,
             PaymentDate = new DateOnly(2030, 1, 5),
@@ -66,7 +67,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             Recipient = new PaymentRecipientDto
             {
                 Kind = PaymentAccountKindDto.Iban,
-                SettlementCurrency = CurrencyDto.Euro,
+                SettlementCurrency = "EUR",
                 RecipientName = "Recipient",
                 Iban = "DE89370400440532013000",
                 Bic = "COBADEFFXXX"
@@ -108,7 +109,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         await using var second = scenario.Open();
         await first.Migrate(ct);
         var now = scenario.Clock.GetUtcNow();
-        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "first", now).Value;
+        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value, "first", now).Value;
         await first.SeedAccount(account, ct);
         var verify = new VerifyPaymentAccountCommand(account.Id, new VerifyPaymentAccountDto
         {
@@ -230,7 +231,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         await using var session = scenario.Open();
         await session.Migrate(ct);
         var now = scenario.Clock.GetUtcNow();
-        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "owner", now).Value;
+        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value, "owner", now).Value;
         await session.SeedAccount(account, ct);
         var input = new VerifyPaymentAccountDto
         {
@@ -268,7 +269,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         await using var first = scenario.Open();
         await using var second = scenario.Open();
         var now = scenario.Clock.GetUtcNow();
-        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "owner", now).Value;
+        var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         await first.SeedAccount(account, ct);
         var history = await first.Financials.GetByBookingId(BookingId, ct);

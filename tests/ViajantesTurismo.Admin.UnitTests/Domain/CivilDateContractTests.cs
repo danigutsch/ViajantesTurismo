@@ -36,7 +36,7 @@ public sealed class CivilDateContractTests
         var receipt = new Admin.Contracts.Application.CreateBookingReceiptDto
         {
             ExpectedVersion = 0,
-            SettlementCurrency = Admin.Contracts.Application.CurrencyDto.Euro,
+            SettlementCurrency = "EUR",
             Gross = 100m,
             Fees = 0m,
             PaymentDate = date,

@@ -21,7 +21,7 @@ internal static class AdminApiClientTestsHelpers
           "singleRoomSupplementPrice":300,
           "regularBikePrice":80,
           "eBikePrice":160,
-          "currency":1,
+          "currency":"EUR",
           "includedServices":["Guide"],
           "minCustomers":4,
           "maxCustomers":12,
@@ -49,7 +49,7 @@ internal static class AdminApiClientTestsHelpers
           "totalPrice":1200,
           "discountType":0,
           "discountAmount":0,
-          "currency":1,
+          "currency":"EUR",
           "payments":[],
           "amountPaid":0,
           "remainingBalance":1200
@@ -70,7 +70,7 @@ internal static class AdminApiClientTestsHelpers
             SingleRoomSupplementPrice = 300,
             RegularBikePrice = 80,
             EBikePrice = 160,
-            Currency = CurrencyDto.Euro,
+            Currency = "EUR",
             IncludedServices = ["Guide"],
             MinCustomers = 4,
             MaxCustomers = 12
@@ -90,7 +90,7 @@ internal static class AdminApiClientTestsHelpers
             SingleRoomSupplementPrice = 350,
             RegularBikePrice = 90,
             EBikePrice = 170,
-            Currency = CurrencyDto.Euro,
+            Currency = "EUR",
             IncludedServices = ["Guide", "Hotel"],
             MinCustomers = 4,
             MaxCustomers = 12

@@ -1,6 +1,5 @@
 using PandaBear.BuildingBlocks;
 using PandaBear.Testing;
-using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
@@ -20,7 +19,7 @@ public sealed class PaymentQueryPostgreSqlTests(PostgreSqlTestServerFixture fixt
         await using var seed = scenario.Open();
         await seed.Migrate(ct);
         var account = PaymentAccount.Create("EUR", PaymentRecipientDetails.CreateIban(
-            "Recipient", "DE89370400440532013000", "COBADEFFXXX").Value, "owner", scenario.Clock.GetUtcNow()).Value;
+            "Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value, "owner", scenario.Clock.GetUtcNow()).Value;
         await seed.SeedAccount(account, ct);
         var originalAudits = await seed.AuditCount(ct);
 
@@ -63,7 +62,7 @@ public sealed class PaymentQueryPostgreSqlTests(PostgreSqlTestServerFixture fixt
         // Assert
         history.BookingId.ShouldBe(booking.Id);
         history.Version.ShouldBe(0);
-        history.ObligationCurrency.ShouldBe(CurrencyDto.Euro);
+        history.ObligationCurrency.ShouldBe("EUR");
         history.TermsStale.ShouldBeTrue();
         history.ApprovedObligationEuro.ShouldBe(0m);
         history.OutstandingEuro.ShouldBe(0m);

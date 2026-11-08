@@ -72,6 +72,8 @@ accounts, financial histories, instruction snapshots and metadata-only audits. N
 deployed, so the migration chain contains no import, currency backfill or compatibility workflow.
 Recreate any development database built with an earlier schema; old local rows are not imported.
 Database recreation discards its local data and requires the operator to choose when to perform it.
+Payment state now stores currencies as ISO 4217 codes instead of the former enum numbers and is not read in the
+old form, so databases created before that change must be recreated as well.
 A rollback with financial evidence still fails closed.
 
 Receipts exist only inside the protected financial history. They retain settlement method, currency,

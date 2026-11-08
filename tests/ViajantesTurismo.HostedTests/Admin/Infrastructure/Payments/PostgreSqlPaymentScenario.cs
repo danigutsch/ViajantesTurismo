@@ -19,6 +19,8 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
     /// <summary>Creates a scenario over a database issued by <paramref name="fixture" />.</summary>
     [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The scenario owns and disposes its fixture-issued test database.")]
     public static async Task<PostgreSqlPaymentScenario> Create(PostgreSqlTestServerFixture fixture, CancellationToken ct) => new(await fixture.CreateDatabase(ct));
+    /// <summary>Gets the connection string of the scenario database.</summary>
+    public string ConnectionString => _database.ConnectionString;
     /// <summary>Opens a payment test session against the scenario database.</summary>
     public PaymentTestSession Open() => PaymentTestSession.Create(_database.ConnectionString, _protection, Clock);
     /// <summary>Seeds a tour with an approved schedule and a 120 euro receipt against a 100 euro installment, leaving 20 euro of customer credit, and returns the booking, receipt and installment ids.</summary>

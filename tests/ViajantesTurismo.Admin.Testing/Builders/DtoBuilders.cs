@@ -28,7 +28,7 @@ public static class DtoBuilders
         decimal? singleRoomSupplementPrice = null,
         decimal? regularBikePrice = null,
         decimal? eBikePrice = null,
-        CurrencyDto? currency = null,
+        string? currency = null,
         ICollection<string>? includedServices = null,
         int? minCustomers = null,
         int? maxCustomers = null,
@@ -48,7 +48,7 @@ public static class DtoBuilders
             SingleRoomSupplementPrice = singleRoomSupplementPrice ?? 300.00m,
             RegularBikePrice = regularBikePrice ?? 100.00m,
             EBikePrice = eBikePrice ?? 250.00m,
-            Currency = currency ?? CurrencyDto.Real,
+            Currency = currency ?? "BRL",
             IncludedServices = includedServices ?? new List<string> { "Breakfast", "Bike rental" },
             MinCustomers = minCustomers ?? 10,
             MaxCustomers = maxCustomers ?? 30,
@@ -112,7 +112,7 @@ public static class DtoBuilders
         string? notes = null,
         decimal? amountPaid = null,
         decimal? remainingBalance = null,
-        CurrencyDto? currency = null,
+        string? currency = null,
         RoomTypeDto? roomType = null,
         BikeTypeDto? principalBikeType = null,
         BikeTypeDto? companionBikeType = null)
@@ -143,7 +143,7 @@ public static class DtoBuilders
             Notes = notes,
             AmountPaid = bookingAmountPaid,
             RemainingBalance = remainingBalance ?? 0m,
-            Currency = currency ?? CurrencyDto.Real
+            Currency = currency ?? "BRL"
         });
     }
 
@@ -258,7 +258,7 @@ public static class DtoBuilders
         decimal? eBikePrice = null,
         int? minCustomers = null,
         int? maxCustomers = null,
-        CurrencyDto? currency = null,
+        string? currency = null,
         string[]? includedServices = null)
     {
         var tourIdentifier = identifier ?? UniqueTourIdentifier();
@@ -277,7 +277,7 @@ public static class DtoBuilders
             EBikePrice = eBikePrice ?? DefaultEBikePrice,
             MinCustomers = minCustomers ?? DefaultMinCustomers,
             MaxCustomers = maxCustomers ?? DefaultMaxCustomers,
-            Currency = currency ?? CurrencyDto.UsDollar,
+            Currency = currency ?? "USD",
             IncludedServices = includedServices ?? ["Hotel", "Breakfast", "Bike"]
         };
     }
@@ -296,7 +296,7 @@ public static class DtoBuilders
         decimal? eBikePrice = null,
         int? minCustomers = null,
         int? maxCustomers = null,
-        CurrencyDto? currency = null,
+        string? currency = null,
         string[]? includedServices = null)
     {
         var tourIdentifier = identifier ?? UniqueTourIdentifier();
@@ -315,7 +315,7 @@ public static class DtoBuilders
             EBikePrice = eBikePrice ?? DefaultEBikePrice,
             MinCustomers = minCustomers ?? DefaultMinCustomers,
             MaxCustomers = maxCustomers ?? DefaultMaxCustomers,
-            Currency = currency ?? CurrencyDto.UsDollar,
+            Currency = currency ?? "USD",
             IncludedServices = includedServices ?? ["Hotel", "Breakfast", "Bike"]
         };
     }

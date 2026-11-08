@@ -1,6 +1,5 @@
 using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
-using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;
 
@@ -39,7 +38,7 @@ public sealed class TourManagementSteps(TourContext tourContext)
             600.00m,
             120.00m,
             220.00m,
-            CurrencyDto.UsDollar,
+            "USD",
             ["Accommodation", "Meals"],
             4,
             12);

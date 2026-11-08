@@ -238,7 +238,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
             Eligible = !current.Document.IsRetired && await Eligible(current, ct),
             EuroAmount = current.Snapshot.Terms.EuroAmount,
             SettlementAmount = current.Snapshot.Terms.SettlementAmount,
-            SettlementCurrency = TourMapper.MapToCurrencyDto(current.Snapshot.Terms.Currency),
+            SettlementCurrency = current.Snapshot.Terms.Currency.Code,
             PaymentReference = current.Snapshot.Terms.Reference,
             QuoteExpiresAt = current.Snapshot.Terms.QuoteExpiresAt,
             Approval = new FinancialApprovalDto

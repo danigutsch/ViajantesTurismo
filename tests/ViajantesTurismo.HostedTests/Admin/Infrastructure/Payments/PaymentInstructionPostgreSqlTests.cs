@@ -39,7 +39,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                 FinancialApproval.Create("owner", now, FinancialReason.QuoteAgreed, true).Value).IsSuccess.ShouldBeTrue();
         }
         var recipient = brl ? PaymentRecipientDetails.CreatePix("Recipient", PixKeyType.Email, "payment@example.test").Value
-            : PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX").Value;
+            : PaymentRecipientDetails.CreateIban("Recipient", "DE89370400440532013000", "COBADEFFXXX", Currency.Eur).Value;
         var account = PaymentAccount.Create("Recipient", recipient, "owner", now).Value;
         account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
         Guid documentId;
@@ -120,7 +120,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                 new CreateBookingReceiptDto
                 {
                     ExpectedVersion = beforeReceipt.Version,
-                    SettlementCurrency = CurrencyDto.Real,
+                    SettlementCurrency = "BRL",
                     Gross = 555.56m,
                     Fees = 0m,
                     PaymentDate = new DateOnly(2030, 1, 5),
@@ -205,7 +205,7 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
                 new CreateBookingReceiptDto
                 {
                     ExpectedVersion = beforeReceipt.Version,
-                    SettlementCurrency = CurrencyDto.Euro,
+                    SettlementCurrency = "EUR",
                     Gross = 100m,
                     Fees = 0m,
                     PaymentDate = new DateOnly(2030, 1, 5),

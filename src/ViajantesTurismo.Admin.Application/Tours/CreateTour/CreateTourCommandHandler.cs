@@ -1,5 +1,5 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Mediator;
-using ViajantesTurismo.Admin.Application.Mappings;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
@@ -27,7 +27,13 @@ public sealed class CreateTourCommandHandler(
             return TourErrors.IdentifierAlreadyExists().ConvertError<Guid>();
         }
 
-        var currency = TourMapper.MapToCurrency(command.Currency);
+        var currencyResult = Currency.Create(command.Currency);
+        if (currencyResult.IsFailure)
+        {
+            return currencyResult.ConvertError<Currency, Guid>();
+        }
+
+        var currency = currencyResult.Value;
 
         var tourResult = Tour.Create(new TourDefinition(
             command.Identifier,

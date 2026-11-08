@@ -28,17 +28,6 @@ internal static partial class EnumFormatter
         _ => bikeType.ToString()
     };
 
-    /// <summary>
-    /// Formats a <see cref="CurrencyDto"/> value into a human-readable label.
-    /// </summary>
-    public static string Format(CurrencyDto currency) => currency switch
-    {
-        CurrencyDto.Real => "Brazilian Real (BRL)",
-        CurrencyDto.Euro => "Euro (EUR)",
-        CurrencyDto.UsDollar => "US Dollar (USD)",
-        _ => currency.ToString()
-    };
-
     [GeneratedRegex(@"(?<=\p{Ll})(?=\p{Lu})")]
     private static partial Regex PascalCaseBoundary();
 }
