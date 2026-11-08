@@ -55,7 +55,9 @@ public static class SharedKernelConsumptionTests
         using var tools = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "dotnet-tools.json")));
 
         // Act
+        var exempt = LockFilePolicyFiles.ReadExemptProjects();
         var lockPaths = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(root, "*.csproj")
+            .Where(project => !exempt.Contains(Path.GetRelativePath(root, project).Replace('\\', '/')))
             .Select(project => Path.Combine(Path.GetDirectoryName(project).ShouldNotBeNull(), "packages.lock.json"))
             .ToArray();
 

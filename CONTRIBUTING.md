@@ -163,6 +163,13 @@ with the dependency input that caused it. The refresh does not edit declared pac
 and never auto-commits changes. Package-version inputs remain review-driven through Dependabot or an
 intentional dependency update.
 
+Lock files exist for the projects that build, test and run in CI. A library under `src` whose every
+package version is also locked by another project is listed in `lockExemptProjects` of
+`.config/sharedkernel-repo.json`, sets `<RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>` and
+keeps no `packages.lock.json`; the dependency snapshot still lists its packages through the other locks.
+`LockFilePolicyTests` keeps the list, the project files and the lock files consistent. A new project is
+locked until you opt it out, and a library that resolves a package no other lock covers keeps its lock file.
+
 When resolving a rebase or merge conflict that affects dependency inputs or lock files:
 
 1. Resolve the authoritative dependency inputs first.

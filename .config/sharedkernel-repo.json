@@ -19,6 +19,21 @@
     {"name": "risk: breaking-change", "color": "b60205", "description": "Work that may introduce or govern breaking changes"},
     {"name": "ci:rerun", "color": "1d76db", "description": "Explicitly restart required PR validation; remove and reapply for another attempt."}
   ],
+  "lockExemptProjects": [
+    "src/ViajantesTurismo.Admin.Contracts.Application/ViajantesTurismo.Admin.Contracts.Application.csproj",
+    "src/ViajantesTurismo.Admin.Contracts.Http/ViajantesTurismo.Admin.Contracts.Http.csproj",
+    "src/ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Branding.AspNetCore/ViajantesTurismo.Branding.AspNetCore.csproj",
+    "src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj",
+    "src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj",
+    "src/ViajantesTurismo.Catalog.Contracts.Application/ViajantesTurismo.Catalog.Contracts.Application.csproj",
+    "src/ViajantesTurismo.Catalog.Contracts.Http/ViajantesTurismo.Catalog.Contracts.Http.csproj",
+    "src/ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj",
+    "src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj",
+    "src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj"
+  ],
   "licenseExceptions": {
     "approval": {
       "file": ".config/sharedkernel-candidate.json",
