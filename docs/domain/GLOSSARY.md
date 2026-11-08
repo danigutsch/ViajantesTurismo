@@ -53,7 +53,7 @@ Add and update terms here. Use exact terms in code, docs, and tests.
 | RoomType      | Accommodation room configuration.            | DoubleOccupancy(0), SingleOccupancy(1)                                 | Affects pricing (single occupancy has supplement).        |
 | DiscountType  | Type of discount applied to a booking.       | None(0), Percentage(1), Absolute(2)                                    | Percentage limited to max 100%. Absolute is fixed amount. |
 | BedType       | Bed configuration preference within a room.  | SingleBed(0), DoubleBed(1)                                             | Used in accommodation preferences.                        |
-| Currency      | Currency for financial amounts.              | `PandaBear.BuildingBlocks.Currency` (ISO 4217); tours use BRL, EUR or USD   | All prices in a tour use same currency.                   |
+| Currency      | Currency for financial amounts.              | `BuildingBlocks.Currency` (ISO 4217): BRL, EUR, USD for tours          | All prices in a tour use same currency.                   |
 
 ## Domain Operations
 
