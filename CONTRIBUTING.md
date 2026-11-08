@@ -164,11 +164,18 @@ and never auto-commits changes. Package-version inputs remain review-driven thro
 intentional dependency update.
 
 Lock files exist for the projects that build, test and run in CI. A library under `src` whose every
-package version is also locked by another project is listed in `lockExemptProjects` of
+package version is also locked by a project that keeps a lock file is listed in `lockExemptProjects` of
 `.config/sharedkernel-repo.json`, sets `<RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>` and
 keeps no `packages.lock.json`; the dependency snapshot still lists its packages through the other locks.
-`LockFilePolicyTests` keeps the list, the project files and the lock files consistent. A new project is
-locked until you opt it out, and a library that resolves a package no other lock covers keeps its lock file.
+Applications, workers, tests, benchmarks and tools always keep their lock. Choose the exempt libraries
+deterministically: start with those projects as retained, examine the remaining libraries in ordinal
+path order and retain a library only when its lock holds a package version that no retained project locks,
+then drop any retained library that the others now cover, one at a time in the same order, until none is
+left. The result is a function of the lock files and the sorted order, and the union of all retained locks
+equals the union of every lock, so no package leaves the snapshot. `LockFilePolicyTests` keeps the list, the
+project files and the lock files consistent, requires the restored packages of each exempt project to be
+locked elsewhere (run `dotnet restore ViajantesTurismo.slnx` first) and fails when a retained library
+is redundant. A new project is locked until you opt it out.
 
 When resolving a rebase or merge conflict that affects dependency inputs or lock files:
 

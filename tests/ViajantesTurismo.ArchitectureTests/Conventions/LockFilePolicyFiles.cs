@@ -65,4 +65,18 @@ internal static class LockFilePolicyFiles
                 .Select(library => library.Name)
         ];
     }
+
+    /// <summary>Indicates whether the restored assets of <paramref name="project"/> exist.</summary>
+    public static bool HasRestoreAssets(string project) =>
+        File.Exists(Path.Combine(Root, Path.GetDirectoryName(project)!, "obj", "project.assets.json"));
+
+    /// <summary>Indicates whether <paramref name="project"/> is an application, worker, AppHost or other executable.</summary>
+    public static bool IsExecutable(string project)
+    {
+        var document = XDocument.Load(Path.Combine(Root, project));
+        var sdk = document.Root?.Attribute("Sdk")?.Value ?? string.Empty;
+        var outputType = document.Descendants("OutputType").LastOrDefault()?.Value;
+        return sdk is not "Microsoft.NET.Sdk" and not "Microsoft.NET.Sdk.Razor"
+            || outputType is "Exe" or "WinExe";
+    }
 }

@@ -59,24 +59,51 @@ public static class LockFilePolicyTests
     }
 
     [Fact]
-    public static void Every_package_of_an_exempt_project_is_resolved_by_a_locked_project()
+    public static void Every_package_of_an_exempt_project_is_resolved_by_a_project_that_keeps_a_lock()
     {
         // Arrange
-        var exempt = LockFilePolicyFiles.ReadExemptProjects().ToHashSet(StringComparer.Ordinal);
-        var coveredBy = LockFilePolicyFiles.ReadProjects()
-            .Where(project => !exempt.Contains(project) && LockFilePolicyFiles.HasLockFile(project))
+        var exempt = LockFilePolicyFiles.ReadExemptProjects();
+        var withoutAssets = exempt.Where(project => !LockFilePolicyFiles.HasRestoreAssets(project)).ToArray();
+        string.Join(", ", withoutAssets).ShouldBe(
+            string.Empty,
+            "Run 'dotnet restore ViajantesTurismo.slnx' first: the restored obj/project.assets.json of a lock-exempt project is missing.");
+
+        var locked = LockFilePolicyFiles.ReadProjects()
+            .Where(project => LockFilePolicyFiles.HasLockFile(project))
             .SelectMany(LockFilePolicyFiles.ReadLockedPackages)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         // Act
         var uncovered = exempt
             .SelectMany(project => LockFilePolicyFiles.ReadResolvedPackages(project).Select(package => $"{project}: {package}"))
-            .Where(entry => !coveredBy.Contains(entry[(entry.IndexOf(": ", StringComparison.Ordinal) + 2)..]))
+            .Where(entry => !locked.Contains(entry[(entry.IndexOf(": ", StringComparison.Ordinal) + 2)..]))
             .ToArray();
 
         // Assert
         string.Join("\n", uncovered).ShouldBe(
             string.Empty,
-            "A lock-exempt project may only resolve package versions that a locked project also locks, or the dependency snapshot loses them.");
+            "A lock-exempt project may only resolve package versions that a project with a lock file also locks, or the dependency snapshot loses them.");
+    }
+
+    [Fact]
+    public static void Every_library_that_keeps_a_lock_file_resolves_a_package_that_no_other_lock_covers()
+    {
+        // Arrange
+        var locked = LockFilePolicyFiles.ReadProjects().Where(project => LockFilePolicyFiles.HasLockFile(project)).ToArray();
+        var libraries = locked.Where(project => project.StartsWith("src/", StringComparison.Ordinal) && !LockFilePolicyFiles.IsExecutable(project)).ToArray();
+
+        // Act
+        var redundant = libraries
+            .Where(library =>
+            {
+                var others = locked.Where(project => project != library).SelectMany(LockFilePolicyFiles.ReadLockedPackages).ToHashSet(StringComparer.OrdinalIgnoreCase);
+                return LockFilePolicyFiles.ReadLockedPackages(library).All(others.Contains);
+            })
+            .ToArray();
+
+        // Assert
+        string.Join(", ", redundant).ShouldBe(
+            string.Empty,
+            "A library lock file that every other lock covers adds nothing: list the project in lockExemptProjects, opt it out and delete the lock. Remove one redundant library at a time in sorted order and check again.");
     }
 }

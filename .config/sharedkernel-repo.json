@@ -26,10 +26,13 @@
     "src/ViajantesTurismo.Branding.AspNetCore/ViajantesTurismo.Branding.AspNetCore.csproj",
     "src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj",
     "src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Branding.Infrastructure/ViajantesTurismo.Branding.Infrastructure.csproj",
     "src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj",
     "src/ViajantesTurismo.Catalog.Contracts.Application/ViajantesTurismo.Catalog.Contracts.Application.csproj",
     "src/ViajantesTurismo.Catalog.Contracts.Http/ViajantesTurismo.Catalog.Contracts.Http.csproj",
     "src/ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj",
+    "src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj",
     "src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj",
     "src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj",
     "src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj"

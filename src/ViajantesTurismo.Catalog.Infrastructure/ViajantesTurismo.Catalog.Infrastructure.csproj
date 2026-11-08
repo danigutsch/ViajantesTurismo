@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
         <!-- EF Core DbContext and configuration binding are not Native AOT-compatible. -->
         <IsAotCompatible>false</IsAotCompatible>
     </PropertyGroup>
