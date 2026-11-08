@@ -70,13 +70,18 @@ internal static class LockFilePolicyFiles
     public static bool HasRestoreAssets(string project) =>
         File.Exists(Path.Combine(Root, Path.GetDirectoryName(project)!, "obj", "project.assets.json"));
 
-    /// <summary>Indicates whether <paramref name="project"/> is an application, worker, AppHost or other executable.</summary>
+    /// <summary>Indicates whether <paramref name="project"/> is an application, worker, AppHost, test runner or other executable.</summary>
     public static bool IsExecutable(string project)
     {
         var document = XDocument.Load(Path.Combine(Root, project));
         var sdk = document.Root?.Attribute("Sdk")?.Value ?? string.Empty;
         var outputType = document.Descendants("OutputType").LastOrDefault()?.Value;
+        var isTestProject = document.Descendants("IsTestProject").LastOrDefault()?.Value == "true";
+        var referencesRunner = document.Descendants("PackageReference")
+            .Any(reference => reference.Attribute("Include")?.Value.StartsWith("xunit.v3", StringComparison.OrdinalIgnoreCase) == true);
         return sdk is not "Microsoft.NET.Sdk" and not "Microsoft.NET.Sdk.Razor"
-            || outputType is "Exe" or "WinExe";
+            || outputType is "Exe" or "WinExe"
+            || isTestProject
+            || referencesRunner;
     }
 }

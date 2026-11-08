@@ -1,13 +1,14 @@
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>
-/// Guards the lock file policy: a library under <c>src</c> may drop its <c>packages.lock.json</c> only when it is listed in
-/// <c>lockExemptProjects</c> of <c>.config/sharedkernel-repo.json</c> and opts out in its project file; every other project is locked.
+/// Guards the lock file policy: a library may drop its <c>packages.lock.json</c> only when it is listed in
+/// <c>lockExemptProjects</c> of <c>.config/sharedkernel-repo.json</c> and opts out in its project file; applications, workers, tests and
+/// benchmarks always keep their lock file, as does every library that resolves a package no other retained project locks.
 /// </summary>
 public static class LockFilePolicyTests
 {
     [Fact]
-    public static void Exempt_project_list_names_existing_unique_source_projects_in_order()
+    public static void Exempt_project_list_names_existing_unique_projects_in_order()
     {
         // Arrange
         var exempt = LockFilePolicyFiles.ReadExemptProjects();
@@ -15,12 +16,10 @@ public static class LockFilePolicyTests
 
         // Act
         var unknown = exempt.Where(project => !projects.Contains(project)).ToArray();
-        var outsideSource = exempt.Where(project => !project.StartsWith("src/", StringComparison.Ordinal)).ToArray();
 
         // Assert
         exempt.ShouldNotBeEmpty();
         string.Join(", ", unknown).ShouldBe(string.Empty, "Every lockExemptProjects entry must be an existing project file.");
-        string.Join(", ", outsideSource).ShouldBe(string.Empty, "Only libraries under src may be lock-exempt.");
         string.Join("\n", exempt).ShouldBe(
             string.Join("\n", exempt.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)),
             "Keep lockExemptProjects unique and sorted.");
@@ -90,7 +89,7 @@ public static class LockFilePolicyTests
     {
         // Arrange
         var locked = LockFilePolicyFiles.ReadProjects().Where(project => LockFilePolicyFiles.HasLockFile(project)).ToArray();
-        var libraries = locked.Where(project => project.StartsWith("src/", StringComparison.Ordinal) && !LockFilePolicyFiles.IsExecutable(project)).ToArray();
+        var libraries = locked.Where(project => !LockFilePolicyFiles.IsExecutable(project)).ToArray();
 
         // Act
         var redundant = libraries

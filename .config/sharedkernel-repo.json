@@ -35,7 +35,10 @@
     "src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj",
     "src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj",
     "src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj",
-    "src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj"
+    "src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj",
+    "tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj",
+    "tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj",
+    "tests/ViajantesTurismo.UploadWire.Testing/ViajantesTurismo.UploadWire.Testing.csproj"
   ],
   "licenseExceptions": {
     "approval": {
