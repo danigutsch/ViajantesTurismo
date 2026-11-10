@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Authentication;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Management.Web;
 

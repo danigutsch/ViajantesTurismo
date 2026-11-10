@@ -1,4 +1,5 @@
 using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.RateLimiting;
 
 namespace ViajantesTurismo.Branding.AspNetCore;
 

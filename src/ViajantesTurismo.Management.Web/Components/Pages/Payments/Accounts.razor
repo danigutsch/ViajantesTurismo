@@ -1,4 +1,4 @@
-@using PandaBear.AspNetCore
+@using PandaBear.AspNetCore.Authentication
 @page "/payment-accounts"
 @attribute [Authorize(Roles = "Admin,Operator")]
 @inject IPaymentAccountsApiClient AccountsApi

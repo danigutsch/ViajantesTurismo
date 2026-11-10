@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
-using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Authentication;
 using ViajantesTurismo.Management.Security;
 using System.Security.Cryptography.X509Certificates;
 using ViajantesTurismo.Resources;

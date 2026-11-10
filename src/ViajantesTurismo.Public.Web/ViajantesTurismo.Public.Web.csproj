@@ -9,6 +9,8 @@
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Seo" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" />
         <PackageReference Include="PandaBear.SharedKernel.HttpClients" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Http\ViajantesTurismo.Catalog.Contracts.Http.csproj"/>

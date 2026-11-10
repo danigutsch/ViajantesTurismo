@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Threading.RateLimiting;
 using Microsoft.Extensions.Http.Resilience;
-using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.RateLimiting;
 using Polly;
 
 namespace ViajantesTurismo.Public.Web;

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Authentication;
 using PandaBear.MalwareScanning;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Mediator;

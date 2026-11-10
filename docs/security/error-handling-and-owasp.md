@@ -70,7 +70,7 @@ Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exerci
 | Global exception handler on every service | Partial | The Admin and Catalog API hosts (the Catalog API also hosts Branding) register `AddUnhandledExceptionHandler` and `UseExceptionHandler` in their `Program.cs`; Management.Web and Public.Web keep `/Error` pages |
 | Consistent 4xx/5xx mapping and monitoring | Partial | The mapping exists; the API hosts export `unhandled_exceptions_total`, but no alert or 5xx ratio rule consumes it yet |
 | Validation text authored by us, no echo of input | Implemented | Domain errors echo only domain enum names, integers and limits, never caller-supplied text; see the rule under Tier 2 and [ADR-043](../adr/20261028-domain-error-messages-may-echo-domain-terms.md). The documentation 404 uses a fixed detail |
-| Log security events (authentication, authorization, rate limit, validation failures) | Partial | The Admin and Catalog API hosts call `AddSecurityEventTelemetry` (JWT bearer failure, challenge, forbidden, rate-limit rejection; `EventId` 4101 and 4102); validation failures are not logged as security events |
+| Log security events (authentication, authorization, rate limit, validation failures) | Partial | The Admin and Catalog API hosts call `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry` (JWT bearer failure, challenge, forbidden, rate-limit rejection; `EventId` 4101 and 4102); validation failures are not logged as security events |
 | Handle UI-level errors without losing the session | Implemented | `src/ViajantesTurismo.Management.Web/Components/Layout/MainLayout.razor` wraps page content in the SharedKernel `RecoveryErrorBoundary`, which shows fixed recovery copy, resets on navigation and logs through `IUiFailureReporter`; `blazor-error-ui` remains as the last resort. Handled failures are logged and counted in `handled_ui_failures_total` (meter `PandaBear.Blazor`, tags `error_type` and `operation`) |
 | Incident response process | Partial | Notes only in `docs/operations/production-readiness.md`; `SECURITY.md` covers vulnerability reporting only |
 | Protect logs from tampering and unauthorized access | Partial | The observability stack under `observability/` is local-only |
@@ -93,7 +93,7 @@ Triage uses regular telemetry only. There is no separate error-tracking system.
 Current state:
 
 - Adopted in the Admin and Catalog API hosts: the SharedKernel exception handler (`AddUnhandledExceptionHandler`), which answers 500 with an RFC 9457
-  `application/problem+json` body holding only `status`, `title`, `type`, and `traceId`; and `AddSecurityEventTelemetry` for authentication events and
+  `application/problem+json` body holding only `status`, `title`, `type`, and `traceId`; and `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry` for authentication and rate-limit events and
   rate-limit rejections. `ServiceDefaults` exports the `PandaBear.AspNetCore` meter, so `unhandled_exceptions_total`, `authentication_events_total`,
   and `rate_limit_rejections_total` reach the OpenTelemetry pipeline.
 - Existing RFC 9457 error bodies and the error documentation links are unchanged; the handler only covers exceptions that no endpoint maps.

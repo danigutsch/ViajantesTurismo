@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Seo;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Public.Web.Components;
 

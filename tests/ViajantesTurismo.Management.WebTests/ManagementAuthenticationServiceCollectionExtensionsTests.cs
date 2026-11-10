@@ -1,7 +1,7 @@
 using PandaBear.Testing;
 using System.Net;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Authentication;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;

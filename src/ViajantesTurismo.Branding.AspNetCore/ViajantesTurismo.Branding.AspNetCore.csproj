@@ -26,6 +26,8 @@
     <ItemGroup>
         <PackageReference Include="PandaBear.SharedKernel.ApiVersioning.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Authentication" />
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" />

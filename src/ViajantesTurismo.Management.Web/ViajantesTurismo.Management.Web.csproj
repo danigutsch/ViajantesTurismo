@@ -12,6 +12,9 @@
 
     <ItemGroup>
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.Idempotency.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Seo" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Authentication" />
         <PackageReference Include="PandaBear.SharedKernel.Blazor" />
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
