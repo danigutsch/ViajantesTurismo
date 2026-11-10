@@ -403,3 +403,19 @@ across all lock files adds nothing and removes nothing. The workflow still permi
 `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability threshold or
 native distribution gate was relaxed. Registry publication and the native distribution obligations remain outside
 this approval.
+
+## AspNetCore split candidate
+
+Candidate `0.1.0-alpha.511.1` uses clean library revision `2fa85f6ddc03e0ad854c5b34f5c3628f1ef67e54`. It splits
+`PandaBear.SharedKernel.AspNetCore` into a core, `AspNetCore.Authentication`, `AspNetCore.RateLimiting`,
+`AspNetCore.Seo` and `Idempotency.AspNetCore`, and adds the Testing.Http success assertions, versioned REST helpers and
+the other changes merged since `0.1.0-alpha.461.1`. All 103 package hashes were verified by `stage-candidate` against the
+pin, which is the unedited `candidate.json` of CI run
+[42700134714](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/42700134714) and the GitHub prerelease.
+The pin records NativeAOT and stable promotion as `pending`.
+
+Against application main `9613b3ff` (candidate `0.1.0-alpha.461.1`), the external package version set across all lock
+files adds nothing and removes nothing; only the first-party `PandaBear.SharedKernel.AspNetCore.Authentication`,
+`.RateLimiting`, `.Seo` and `Idempotency.AspNetCore` packages are new, and JwtBearer stays only in the Authentication
+package. The workflow still permits only the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0`
+metadata exceptions; no license category, vulnerability threshold or native distribution gate was relaxed.
