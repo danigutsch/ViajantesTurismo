@@ -1,4 +1,4 @@
-using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;

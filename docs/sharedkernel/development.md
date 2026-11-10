@@ -6,12 +6,15 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.461.1` at clean library revision
-[`7ca972bc5a3559cf255e380f832f8152abde843b`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/7ca972bc5a3559cf255e380f832f8152abde843b).
-It adds contact and money primitives, `Restore` factories and new analyzers, lets the host guard the selected idempotency
-retention purge batch, supports `lockExemptProjects` in the repository configuration, and pins SDK 10.0.403.
+The published candidate is `0.1.0-alpha.511.1` at clean library revision
+[`2fa85f6ddc03e0ad854c5b34f5c3628f1ef67e54`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/2fa85f6ddc03e0ad854c5b34f5c3628f1ef67e54).
+It splits `PandaBear.SharedKernel.AspNetCore` into a core plus `AspNetCore.Authentication`, `AspNetCore.RateLimiting`,
+`AspNetCore.Seo` and `Idempotency.AspNetCore` (new namespaces `PandaBear.AspNetCore.Authentication`, `.RateLimiting`, `.Seo` and
+`PandaBear.Idempotency.AspNetCore`; `AddSecurityEventTelemetry` became `AddAuthenticationEventTelemetry` and
+`AddRateLimitEventTelemetry`), and adds the Testing.Http success assertions, versioned REST helpers, `Result.Stale` and
+`CountingTimeProvider` on top of `0.1.0-alpha.461.1`. It keeps `lockExemptProjects` and SDK 10.0.403.
 The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.461.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.461.1).
+[`v0.1.0-alpha.511.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.511.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
@@ -140,9 +143,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/7ca972bc5a3559cf255e380f832f8152abde843b/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/2fa85f6ddc03e0ad854c5b34f5c3628f1ef67e54/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`7ca972bc5a3559cf255e380f832f8152abde843b`, which equals the `libraryRevision` in
+`2fa85f6ddc03e0ad854c5b34f5c3628f1ef67e54`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

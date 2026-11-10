@@ -20,7 +20,7 @@ public sealed class PaymentRequestBindingTests
         }, environment: environment, configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
-        client.DefaultRequestHeaders.Add(PandaBear.AspNetCore.IdempotencyKeyHeader.Name, Guid.CreateVersion7().ToString("N"));
+        client.DefaultRequestHeaders.Add(PandaBear.Idempotency.AspNetCore.IdempotencyKeyHeader.Name, Guid.CreateVersion7().ToString("N"));
         using var input = new StringContent("{", Encoding.UTF8, "application/json");
 
         // Act

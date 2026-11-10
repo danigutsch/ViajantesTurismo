@@ -1,8 +1,11 @@
-using PandaBear.Mediator;
 using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Authentication;
+using PandaBear.AspNetCore.RateLimiting;
+using PandaBear.AspNetCore.Seo;
 using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.HttpClients;
 using PandaBear.MalwareScanning.ClamAv;
+using PandaBear.Mediator;
 using PandaBear.OpenApi;
 using ViajantesTurismo.Admin.ApiService;
 using ViajantesTurismo.Admin.ApiService.Bookings;
@@ -29,7 +32,8 @@ builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddProblemDetails();
 builder.Services.AddUnhandledExceptionHandler();
-builder.Services.AddSecurityEventTelemetry();
+builder.Services.AddAuthenticationEventTelemetry();
+builder.Services.AddRateLimitEventTelemetry();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddAdminSecurityBaseline(builder.Configuration);
 builder.Services.AddApiSecurity(

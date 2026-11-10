@@ -1,4 +1,5 @@
-using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Authentication;
+using PandaBear.AspNetCore.Seo;
 using PandaBear.HttpCaching.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;

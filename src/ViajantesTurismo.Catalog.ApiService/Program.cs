@@ -1,4 +1,7 @@
 using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Authentication;
+using PandaBear.AspNetCore.RateLimiting;
+using PandaBear.AspNetCore.Seo;
 using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.OpenApi;
 using ViajantesTurismo.Branding.AspNetCore;
@@ -14,7 +17,8 @@ builder.WebHost.UseKestrelHttpsConfiguration();
 builder.AddServiceDefaults();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddUnhandledExceptionHandler();
-builder.Services.AddSecurityEventTelemetry();
+builder.Services.AddAuthenticationEventTelemetry();
+builder.Services.AddRateLimitEventTelemetry();
 builder.Services.AddCatalogOpenApiDocuments();
 builder.Services.AddOutputCache();
 builder.Services.AddCatalogSecurityBaseline(builder.Configuration);
