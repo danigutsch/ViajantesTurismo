@@ -10,10 +10,7 @@
     <Card Title="@Tour.Title"
           HeadingLevel="HeadingLevel"
           Href="@TourLink"
-          ImageSrc="@LinkTarget.FromString(TourImageRenditions.Path(LinkGenerator, coverImage.Id, cardVariant))"
-          ImageAlt="@Alternative(coverImage)"
-          ImageWidth="cardVariant.Width"
-          ImageHeight="cardVariant.Height">
+          Image="@ResponsiveImage.Create(LinkTarget.FromString(TourImageRenditions.Path(LinkGenerator, coverImage.Id, cardVariant)), cardVariant.Width, cardVariant.Height, Alternative(coverImage))">
         <p>@Tour.Summary</p>
     </Card>
 }
