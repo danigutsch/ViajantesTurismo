@@ -1,4 +1,5 @@
 using Microsoft.Playwright;
+using PandaBear.Testing.Playwright;
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
 /// <summary>Signs the conformance user in to the management web app through the Keycloak login page.</summary>
@@ -24,18 +25,16 @@ internal sealed class ManagementLoginWorkflow(IPage page)
                 await page.Locator("#username").FillAsync(ConformanceUsername);
                 await page.Locator("#password").FillAsync(password);
                 await page.Locator("#kc-login").ClickAsync();
-                await page.WaitForURLAsync(
-                    url => Uri.TryCreate(url, UriKind.Absolute, out var uri)
-                           && uri.Host.Equals(managementWebUrl.Host, StringComparison.OrdinalIgnoreCase)
-                           && uri.Port == managementWebUrl.Port,
-                    new PageWaitForURLOptions { WaitUntil = WaitUntilState.NetworkIdle });
+                // The login redirects to the returnUrl, the home page. ExpectPath polls the address: WaitForURLAsync can lose a
+                // navigation that lands while it subscribes (microsoft/playwright-dotnet#3364).
+                await page.ExpectPath(managementWebUrl, "/");
                 return;
             }
             catch (PlaywrightException exception) when (IsRetryableNetworkChange(exception) && attempt < MaxLoginNavigationAttempts)
             {
                 // Retry the complete OIDC redirect after transient AppHost loopback endpoint changes.
             }
-            catch (TimeoutException) when (attempt < MaxLoginNavigationAttempts)
+            catch (Exception exception) when (exception is TimeoutException or PlaywrightException && attempt < MaxLoginNavigationAttempts)
             {
                 // Retry when the OIDC redirect is interrupted before the web app regains control.
             }
