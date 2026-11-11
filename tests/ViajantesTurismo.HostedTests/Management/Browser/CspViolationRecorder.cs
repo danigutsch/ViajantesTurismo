@@ -46,4 +46,12 @@ internal sealed class CspViolationRecorder
         var events = await page.EvaluateAsync<string[]>("() => window.cspViolations");
         return [.. events, .. console];
     }
+
+    /// <summary>Gets the recorded violations of the <c>style-src</c> directive family.</summary>
+    /// <returns>The style violations.</returns>
+    public async Task<IReadOnlyList<string>> StyleViolations()
+    {
+        var violations = await Violations();
+        return [.. violations.Where(violation => violation.Contains("style-src", StringComparison.Ordinal))];
+    }
 }

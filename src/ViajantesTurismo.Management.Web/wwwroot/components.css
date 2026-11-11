@@ -99,3 +99,24 @@
     vertical-align: baseline;
     border-radius: 0.25rem;
 }
+
+/* Presentation helpers: the Content-Security-Policy blocks inline style attributes */
+.label-column {
+    width: 200px;
+}
+
+.text-pre-wrap {
+    white-space: pre-wrap;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.dropdown-menu-scrollable {
+    max-height: 300px;
+}
