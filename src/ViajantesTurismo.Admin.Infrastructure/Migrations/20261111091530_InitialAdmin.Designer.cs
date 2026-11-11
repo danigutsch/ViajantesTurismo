@@ -12,8 +12,8 @@ using ViajantesTurismo.Admin.Infrastructure;
 namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 {
     [DbContext(typeof(AdminWriteDbContext))]
-    [Migration("20261101154756_DocumentManualReview")]
-    partial class DocumentManualReview
+    [Migration("20261111091530_InitialAdmin")]
+    partial class InitialAdmin
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1077,7 +1077,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Country")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(2)
+                                .HasColumnType("character(2)")
+                                .IsFixedLength();
 
                             b1.Property<string>("Neighborhood")
                                 .IsRequired()
@@ -1120,7 +1122,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Mobile")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(16)
+                                .HasColumnType("character varying(16)");
 
                             b1.HasKey("CustomerId");
 
@@ -1141,7 +1144,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Mobile")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(16)
+                                .HasColumnType("character varying(16)");
 
                             b1.Property<string>("Name")
                                 .IsRequired()
@@ -1450,7 +1454,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Currency")
                                 .IsRequired()
-                                .HasColumnType("text")
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
                                 .HasColumnName("Currency");
 
                             b1.Property<decimal>("EBikePrice")

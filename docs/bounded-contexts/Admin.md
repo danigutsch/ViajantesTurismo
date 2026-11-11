@@ -121,13 +121,12 @@ Only the Management Web picker constrains input, and only for people using that 
 
 Catalog, Branding, and Public Web hold no country or currency data.
 
-### Currency storage migration note
+### Currency storage
 
-Currencies are stored and exchanged only as ISO 4217 codes. The `TourCurrencyIsoCode` migration rewrites the tour
-`Currency` column from the former enum names (`Real`, `Euro`, `UsDollar`) to `BRL`, `EUR` and `USD` and narrows it
-to `varchar(3)`; its `Down` restores the names. Protected payment state used to store the currency as a number
-(0, 1, 2). Nothing is deployed, so the application does not read that form: recreate any development database
-that holds payment accounts, financial histories or instruction snapshots written before this change.
+Currencies are stored and exchanged only as ISO 4217 codes. The tour `Currency` column is `varchar(3)` and holds
+`BRL`, `EUR` or `USD`; protected payment state uses the same codes. The migration history was reset before launch
+(see the EF Core migrations section of `docs/CODING_GUIDELINES.md`), so no migration converts the former enum
+names.
 
 ### Ownership boundary
 

@@ -1074,7 +1074,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Country")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(2)
+                                .HasColumnType("character(2)")
+                                .IsFixedLength();
 
                             b1.Property<string>("Neighborhood")
                                 .IsRequired()
@@ -1117,7 +1119,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Mobile")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(16)
+                                .HasColumnType("character varying(16)");
 
                             b1.HasKey("CustomerId");
 
@@ -1138,7 +1141,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Mobile")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(16)
+                                .HasColumnType("character varying(16)");
 
                             b1.Property<string>("Name")
                                 .IsRequired()

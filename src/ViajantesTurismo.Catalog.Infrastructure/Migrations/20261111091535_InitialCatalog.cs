@@ -24,7 +24,15 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     Identifier = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Title = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Slug = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    Summary = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
+                    Description = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
+                    Itinerary = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
+                    SeoTitle = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    SeoDescription = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
                     IsPublished = table.Column<bool>(type: "boolean", nullable: false),
+                    StreamVersion = table.Column<long>(type: "bigint", nullable: false, defaultValue: 1L),
+                    PresentationPosition = table.Column<long>(type: "bigint", nullable: false),
+                    PublicationPosition = table.Column<long>(type: "bigint", nullable: false),
                     Position = table.Column<long>(type: "bigint", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -43,7 +51,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     State = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     StartedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CompletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ResultFingerprint = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true)
+                    ResultFingerprint = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
+                    RetentionOwner = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -89,7 +98,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Key = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-                    SourceLanguage = table.Column<string>(type: "text", nullable: false),
+                    SourceLanguage = table.Column<string>(type: "character varying(35)", maxLength: 35, nullable: false),
                     PublicationState = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
@@ -124,10 +133,45 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "transport_messages",
+                schema: "messaging",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ConsumerName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    ReceivedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ProcessedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ConsumeAttempts = table.Column<int>(type: "integer", nullable: false),
+                    LastConsumeAttemptAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    NextConsumeAttemptAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LastConsumeError = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    PoisonedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ClaimedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ClaimedUntil = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    EnvelopeSpec = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    EnvelopeSpecVersion = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    EventId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Source = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    EventType = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    EventVersion = table.Column<int>(type: "integer", nullable: true),
+                    Time = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Subject = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    DataContentType = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    DataSchema = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
+                    Payload = table.Column<string>(type: "text", nullable: true),
+                    PayloadEncoding = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ExtensionAttributesJson = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_transport_messages", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PublicContentVariants",
                 columns: table => new
                 {
-                    Language = table.Column<string>(type: "text", nullable: false),
+                    Language = table.Column<string>(type: "character varying(35)", maxLength: 35, nullable: false),
                     PublicContentId = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Body = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
@@ -151,13 +195,14 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 name: "PublicMediaImageAccessibilityTexts",
                 columns: table => new
                 {
-                    Language = table.Column<string>(type: "text", nullable: false),
+                    Language = table.Column<string>(type: "character varying(35)", maxLength: 35, nullable: false),
                     PublicMediaImageId = table.Column<Guid>(type: "uuid", nullable: false),
                     AltText = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Caption = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     IsDecorative = table.Column<bool>(type: "boolean", nullable: false),
                     RequiresHumanReview = table.Column<bool>(type: "boolean", nullable: false),
-                    IsAiGenerated = table.Column<bool>(type: "boolean", nullable: false)
+                    IsAiGenerated = table.Column<bool>(type: "boolean", nullable: false),
+                    PendingDraftCreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -226,6 +271,12 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_idempotency_keys_RetentionOwner",
+                schema: "messaging",
+                table: "idempotency_keys",
+                column: "RetentionOwner");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_outbox_messages_EventId",
                 schema: "messaging",
                 table: "outbox_messages",
@@ -262,6 +313,25 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 table: "PublicMediaImageTourLinks",
                 columns: new[] { "CatalogTourId", "DisplayOrder" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_transport_messages_ConsumerName_EventId",
+                schema: "messaging",
+                table: "transport_messages",
+                columns: new[] { "ConsumerName", "EventId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_transport_messages_ConsumerName_PoisonedAt",
+                schema: "messaging",
+                table: "transport_messages",
+                columns: new[] { "ConsumerName", "PoisonedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_transport_messages_ConsumerName_ProcessedAt_NextConsumeAtte~",
+                schema: "messaging",
+                table: "transport_messages",
+                columns: new[] { "ConsumerName", "ProcessedAt", "NextConsumeAttemptAt", "ReceivedAt" });
         }
 
         /// <inheritdoc />
@@ -289,6 +359,10 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "PublicMediaImageTourLinks");
+
+            migrationBuilder.DropTable(
+                name: "transport_messages",
+                schema: "messaging");
 
             migrationBuilder.DropTable(
                 name: "PublicContent");

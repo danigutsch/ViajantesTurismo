@@ -333,7 +333,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     DoubleRoomSupplementPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     RegularBikePrice = table.Column<decimal>(type: "numeric", nullable: false),
                     EBikePrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    Currency = table.Column<string>(type: "text", nullable: false),
+                    Currency = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
                     MinCustomers = table.Column<int>(type: "integer", nullable: false),
                     MaxCustomers = table.Column<int>(type: "integer", nullable: false),
                     IncludedServices = table.Column<string[]>(type: "text[]", nullable: false)
@@ -409,7 +409,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     PostalCode = table.Column<string>(type: "text", nullable: false),
                     City = table.Column<string>(type: "text", nullable: false),
                     State = table.Column<string>(type: "text", nullable: false),
-                    Country = table.Column<string>(type: "text", nullable: false)
+                    Country = table.Column<string>(type: "character(2)", fixedLength: true, maxLength: 2, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -428,7 +428,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 {
                     CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Email = table.Column<string>(type: "citext", nullable: false),
-                    Mobile = table.Column<string>(type: "text", nullable: false),
+                    Mobile = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     Instagram = table.Column<string>(type: "text", nullable: true),
                     Facebook = table.Column<string>(type: "text", nullable: true)
                 },
@@ -449,7 +449,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 {
                     CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Mobile = table.Column<string>(type: "text", nullable: false)
+                    Mobile = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -574,6 +574,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     FinalizedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     FinalizedArtifactName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
                     ReplacesDocumentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RequiresManualReview = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    ManualReviewReasons = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false, defaultValue: "None"),
                     VoidReason = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     FinalizedArtifactContent = table.Column<byte[]>(type: "bytea", nullable: true)
                 },
@@ -1000,6 +1002,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                 name: "DocumentDraftFields");
 
             migrationBuilder.DropTable(
+                name: "DocumentRetentionPurgeRecords");
+
+            migrationBuilder.DropTable(
                 name: "holds",
                 schema: "disposition_hold");
 
@@ -1054,9 +1059,6 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "DocumentLineages");
-
-            migrationBuilder.DropTable(
-                name: "DocumentRetentionPurgeRecords");
         }
     }
 }

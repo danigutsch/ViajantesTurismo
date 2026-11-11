@@ -345,7 +345,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
 
                     b.Property<string>("SourceLanguage")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(35)
+                        .HasColumnType("character varying(35)");
 
                     b.HasKey("Id");
 
@@ -533,7 +534,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("Language")
-                                .HasColumnType("text");
+                                .HasMaxLength(35)
+                                .HasColumnType("character varying(35)");
 
                             b1.Property<string>("AltText")
                                 .HasMaxLength(256)
@@ -581,7 +583,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("Language")
-                                .HasColumnType("text");
+                                .HasMaxLength(35)
+                                .HasColumnType("character varying(35)");
 
                             b1.Property<string>("Body")
                                 .IsRequired()
