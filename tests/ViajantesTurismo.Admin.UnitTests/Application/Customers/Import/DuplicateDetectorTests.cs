@@ -14,8 +14,8 @@ public class DuplicateDetectorTests
         var headers = new[] { "FirstName", "LastName", "Email" };
         var rows = new[]
         {
-            CsvRow.Parse("John,Doe,john.doe@example.com"),
-            CsvRow.Parse("Jane,Doe,  JOHN.DOE@example.com  ")
+            CsvRow.Create(["John", "Doe", "john.doe@example.com"]),
+            CsvRow.Create(["Jane", "Doe", "JOHN.DOE@example.com"])
         };
 
         var documentResult = CsvDocument.Create(headers, rows);
@@ -36,8 +36,8 @@ public class DuplicateDetectorTests
         var headers = new[] { "FirstName", "LastName", "Email" };
         var rows = new[]
         {
-            CsvRow.Parse("José,Silva,jose.silva@example.com"),
-            CsvRow.Parse("Jose,Silva,jose2.silva@example.com")
+            CsvRow.Create(["José", "Silva", "jose.silva@example.com"]),
+            CsvRow.Create(["Jose", "Silva", "jose2.silva@example.com"])
         };
 
         var documentResult = CsvDocument.Create(headers, rows);

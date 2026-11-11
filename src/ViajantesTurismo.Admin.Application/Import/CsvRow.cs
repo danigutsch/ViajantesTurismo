@@ -32,14 +32,14 @@ public sealed class CsvRow : ValueObject, IImportRow
         Row.TryGetByHeader(headers, headerName, out value);
 
     /// <summary>
-    /// Parses a CSV line into a CsvRow.
+    /// Creates a row from field values, kept exactly as given.
     /// </summary>
-    /// <param name="csvLine">The CSV line to parse.</param>
-    /// <returns>A CsvRow with parsed values.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when csvLine is null.</exception>
-    public static CsvRow Parse(string csvLine)
+    /// <param name="values">The field values.</param>
+    /// <returns>A CsvRow holding the values.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when values or one of its values is null.</exception>
+    public static CsvRow Create(IEnumerable<string> values)
     {
-        return new CsvRow(PandaBear.Tabular.CsvRow.Parse(csvLine));
+        return new CsvRow(PandaBear.Tabular.CsvRow.Create(values));
     }
 
     /// <inheritdoc />

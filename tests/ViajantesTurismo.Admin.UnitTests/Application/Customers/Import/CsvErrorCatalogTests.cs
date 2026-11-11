@@ -32,6 +32,6 @@ public sealed class CsvErrorCatalogTests
     public void Csv_rows_with_different_text_are_not_equal()
     {
         // Assert
-        CsvRow.Parse("a,b").ShouldNotBe(CsvRow.Parse("a,c"));
+        CsvRow.Create(["a", "b"]).ShouldNotBe(CsvRow.Create(["a", "c"]));
     }
 }

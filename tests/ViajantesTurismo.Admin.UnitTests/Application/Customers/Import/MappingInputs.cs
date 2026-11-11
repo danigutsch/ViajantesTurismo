@@ -58,7 +58,7 @@ internal static class MappingInputs
     {
         var effectiveHeaders = headers ?? CompleteHeaders;
         var values = BuildRowValues(overrides);
-        var row = CsvRow.Parse(string.Join(",", effectiveHeaders.Select(header => values[header])));
+        var row = CsvRow.Create(effectiveHeaders.Select(header => values[header].Trim()));
         var documentResult = CsvDocument.Create([.. effectiveHeaders], [row]);
 
         return documentResult.IsFailure

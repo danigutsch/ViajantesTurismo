@@ -9,7 +9,7 @@ public class CsvDocumentTests
     {
         // Arrange
         string[] headers = ["FirstName", "LastName", "Email"];
-        CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
+        CsvRow[] rows = [CsvRow.Create(["John", "Doe", "john.doe@example.com"])];
 
         // Act
         var documentResult = CsvDocument.Create(headers, rows);
@@ -88,11 +88,11 @@ public class CsvDocumentTests
     public void Create_with_rows_of_different_lengths_fails()
     {
         // Arrange
-        var differentLengthRow = CsvRow.Parse("Alice,alice.johnson@example.com");
+        var differentLengthRow = CsvRow.Create(["Alice", "alice.johnson@example.com"]);
         CsvRow[] rows =
         [
-            CsvRow.Parse("John,Doe,john.doe@example.com"),
-            CsvRow.Parse("Jane,Smith,jane.smith@example.com"),
+            CsvRow.Create(["John", "Doe", "john.doe@example.com"]),
+            CsvRow.Create(["Jane", "Smith", "jane.smith@example.com"]),
             differentLengthRow
         ];
 
@@ -110,7 +110,7 @@ public class CsvDocumentTests
     {
         // Arrange
         string[] headers = [];
-        CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
+        CsvRow[] rows = [CsvRow.Create(["John", "Doe", "john.doe@example.com"])];
 
         // Act
         var documentResult = CsvDocument.Create(headers, rows);
@@ -126,7 +126,7 @@ public class CsvDocumentTests
     {
         // Arrange
         string[] headers = ["FirstName", "LastName", "Email", "Phone"];
-        CsvRow[] rows = [CsvRow.Parse("John,Doe,john.doe@example.com")];
+        CsvRow[] rows = [CsvRow.Create(["John", "Doe", "john.doe@example.com"])];
 
         // Act
         var documentResult = CsvDocument.Create(headers, rows);
@@ -217,8 +217,8 @@ public class CsvDocumentTests
         // Arrange
         CsvRow[] rows =
         [
-            CsvRow.Parse("John,Doe,john.doe@example.com"),
-            CsvRow.Parse("Jane,jane.smith@example.com")
+            CsvRow.Create(["John", "Doe", "john.doe@example.com"]),
+            CsvRow.Create(["Jane", "jane.smith@example.com"])
         ];
 
         // Act
@@ -236,7 +236,7 @@ public class CsvDocumentTests
         // Arrange
         var documentResult = CsvDocument.Create(
             headers: ["FirstName", "LastName", "Email"],
-            rows: [CsvRow.Parse("John,Doe,john.doe@example.com")]
+            rows: [CsvRow.Create(["John", "Doe", "john.doe@example.com"])]
         );
 
         var document = documentResult.Value;
@@ -255,7 +255,7 @@ public class CsvDocumentTests
         // Arrange
         var documentResult = CsvDocument.Create(
             headers: ["FirstName", "LastName", "Email"],
-            rows: [CsvRow.Parse("John,Doe,john.doe@example.com")]
+            rows: [CsvRow.Create(["John", "Doe", "john.doe@example.com"])]
         );
 
         var document = documentResult.Value;
