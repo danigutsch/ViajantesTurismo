@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Models;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
@@ -14,6 +15,7 @@ public sealed class AddressPageTests : BunitContext
     public AddressPageTests()
     {
         Services.AddSingleton(_state);
+        Services.AddSingleton<ICountryService>(new FakeCountryService());
     }
 
     [Fact]
@@ -28,7 +30,7 @@ public sealed class AddressPageTests : BunitContext
             PostalCode = "01000-000",
             City = "São Paulo",
             State = "SP",
-            Country = "Brazil",
+            Country = "BR",
         });
 
         // Act
@@ -41,7 +43,7 @@ public sealed class AddressPageTests : BunitContext
         cut.Find("#postalCode").GetAttribute("value").ShouldBe("01000-000");
         cut.Find("#city").GetAttribute("value").ShouldBe("São Paulo");
         cut.Find("#state").GetAttribute("value").ShouldBe("SP");
-        cut.Find("#country").GetAttribute("value").ShouldBe("Brazil");
+        cut.Find("#country").TextContent.ShouldContain("Brazil", StringComparison.Ordinal);
         _state.CurrentStep.ShouldBe(4);
     }
 
@@ -59,7 +61,8 @@ public sealed class AddressPageTests : BunitContext
         await cut.InvokeAsync(() => cut.Find("#postalCode").Change("01000-000"));
         await cut.InvokeAsync(() => cut.Find("#city").Change("São Paulo"));
         await cut.InvokeAsync(() => cut.Find("#state").Change("SP"));
-        await cut.InvokeAsync(() => cut.Find("#country").Change("Brazil"));
+        await cut.InvokeAsync(() => cut.Find("#country").Click());
+        await cut.InvokeAsync(() => cut.FindAll(".country-dropdown-item").First(item => item.TextContent.Contains("Brazil", StringComparison.Ordinal)).Click());
         await cut.InvokeAsync(async () => await cut.Find("form").SubmitAsync());
 
         // Assert
@@ -71,7 +74,7 @@ public sealed class AddressPageTests : BunitContext
         _state.Address.PostalCode.ShouldBe("01000-000");
         _state.Address.City.ShouldBe("São Paulo");
         _state.Address.State.ShouldBe("SP");
-        _state.Address.Country.ShouldBe("Brazil");
+        _state.Address.Country.ShouldBe("BR");
         _state.CurrentStep.ShouldBe(5);
     }
 

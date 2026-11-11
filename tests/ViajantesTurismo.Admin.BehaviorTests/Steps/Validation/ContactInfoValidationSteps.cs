@@ -32,7 +32,8 @@ public sealed class ContactInfoValidationSteps(CustomerContext context)
     [When(@"I create contact info with email of (\d+) characters")]
     public void WhenICreateContactInfoWithEmailOfDCharacters(int length)
     {
-        var email = new string('a', length - 12) + "@example.com";
+        // The local part stays within the 64 characters an address allows; the domain fills the rest.
+        var email = "customer@" + new string('d', length - 13) + ".com";
         context.ContactInfoResult = ContactInfo.Create(email, "+1234567890", null, null);
     }
 
@@ -109,13 +110,13 @@ public sealed class ContactInfoValidationSteps(CustomerContext context)
     [Then(@"the email should be ""(.*)""")]
     public void ThenTheEmailShouldBe(string expectedEmail)
     {
-        context.ContactInfoResult.Value.Email.ShouldBe(expectedEmail);
+        context.ContactInfoResult.Value.Email.Value.ShouldBe(expectedEmail);
     }
 
     [Then(@"the mobile should be ""(.*)""")]
     public void ThenTheMobileShouldBe(string expectedMobile)
     {
-        context.ContactInfoResult.Value.Mobile.ShouldBe(expectedMobile);
+        context.ContactInfoResult.Value.Mobile.Value.ShouldBe(expectedMobile);
     }
 
     [Then(@"the instagram should be ""(.*)""")]
@@ -231,6 +232,16 @@ public sealed class ContactInfoValidationSteps(CustomerContext context)
             .Where(kvp => kvp.Key.Equals(normalizedFieldName, StringComparison.OrdinalIgnoreCase))
             .SelectMany(kvp => kvp.Value)
             .ShouldContain(m => m.Contains(maxLength.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal));
+    }
+
+    [Then("I should be informed that mobile must be a valid phone number")]
+    public void ThenIShouldBeInformedThatMobileMustBeAValidPhoneNumber()
+    {
+        context.ContactInfoResult.IsFailure.ShouldBeTrue();
+        var errors = context.ContactInfoResult.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        errors.Keys.ShouldContain("Mobile");
+        errors["Mobile"].ShouldContain(
+            "Mobile must be a phone number of 7 to 15 digits, optionally led by +, separated only by spaces, hyphens, dots or parentheses.");
     }
 
     [Then("I should be informed that email must be in a valid format")]

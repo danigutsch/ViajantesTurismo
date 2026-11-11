@@ -128,15 +128,15 @@ public static class CustomerMapper
                 personal.Nationality, personal.Occupation),
             new IdentificationInfoDefinition(customer.IdentificationInfo.NationalId,
                 customer.IdentificationInfo.IdNationality),
-            new ContactInfoDefinition(customer.ContactInfo.Email, customer.ContactInfo.Mobile,
+            new ContactInfoDefinition(customer.ContactInfo.Email.Value, customer.ContactInfo.Mobile.Value,
                 customer.ContactInfo.Instagram, customer.ContactInfo.Facebook),
             new AddressDefinition(address.Street, address.Complement, address.Neighborhood, address.PostalCode,
-                address.City, address.State, address.Country),
+                address.City, address.State, address.Country.Value),
             new PhysicalInfoDefinition(customer.PhysicalInfo.WeightKg, customer.PhysicalInfo.HeightCentimeters,
                 customer.PhysicalInfo.BikeType),
             new AccommodationPreferencesDefinition(customer.AccommodationPreferences.RoomType,
                 customer.AccommodationPreferences.BedType, customer.AccommodationPreferences.CompanionId),
-            new CustomerHealthDefinition(customer.EmergencyContact.Name, customer.EmergencyContact.Mobile,
+            new CustomerHealthDefinition(customer.EmergencyContact.Name, customer.EmergencyContact.Mobile.Value,
                 customer.MedicalInfo.Allergies, customer.MedicalInfo.AdditionalInfo));
     }
 }

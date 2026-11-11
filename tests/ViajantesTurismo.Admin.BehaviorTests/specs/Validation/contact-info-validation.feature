@@ -12,8 +12,9 @@ and emergency notifications. All contact details must be validated to ensure we
 can reach customers when needed.
 
 Business Rules:
-- Email is required and must be valid format (max 128 characters)
-- Mobile phone is required and properly formatted (max 64 characters)
+- Email is required and must be valid format (max 128 characters); it is stored in lower case
+- Mobile phone is required: 7 to 15 digits, optionally led by +, separated only by spaces, hyphens, dots or parentheses
+  (max 64 characters as typed); it is stored as the digits with the optional leading +
 - Social media handles (Instagram, Facebook) are optional (max 64 characters each)
 - Whitespace is trimmed from all fields
 - Empty or whitespace-only optional fields become null
@@ -100,11 +101,31 @@ Business Rules:
             And I should be informed that mobile cannot exceed 64 characters
 
         @Invariant:INV-CUST-016
+        @error_case
+        Scenario Outline: Mobile must be a phone number
+            When I attempt to create contact info with mobile "<mobile>"
+            Then I should not be able to create the contact info
+            And I should be informed that mobile must be a valid phone number
+
+            Examples:
+              | mobile           |
+              | 123456           |
+              | 1234567890123456 |
+              | 11 9876-5432 x12 |
+              | 11+987654321     |
+
+        @Invariant:INV-CUST-016
         @happy_path
-        @edge_case
-        Scenario: Mobile at maximum length is accepted
-            When I create contact info with mobile of 64 characters
+        Scenario: Mobile is stored as its digits with the leading plus
+            When I create contact info with mobile "+55 (11) 98765-4321"
             Then the contact info should be created successfully
+            And the mobile should be "+5511987654321"
+
+        @happy_path
+        Scenario: Email is stored in lower case
+            When I create contact info with email "Customer@Example.COM"
+            Then the contact info should be created successfully
+            And the email should be "customer@example.com"
 
     Rule: Social media handles are optional with length limits
     Instagram and Facebook handles are optional but if provided must be

@@ -21,7 +21,7 @@ internal static class CustomerImportCsvHelpers
 
         return $"Jane,Smith,Female,1988-03-15,Brazilian,Designer,{nationalId},BR," +
                $"{email},{mobile},Rua B 456,Centro," +
-        $"01310-100,São Paulo,SP,Brazil,60,165,Regular,DoubleOccupancy,SingleBed," +
+        $"01310-100,São Paulo,SP,BR,60,165,Regular,DoubleOccupancy,SingleBed," +
         $"Carlos Silva,+5511777776666";
     }
 

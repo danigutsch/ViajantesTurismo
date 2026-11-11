@@ -202,7 +202,18 @@ else
 
                         <div class="mb-3">
                             <label for="country" class="form-label">Country</label>
-                            <InputText id="country" class="form-control" @bind-Value="_model.Address.Country"/>
+                            @if (_countries == null)
+                            {
+                                <div class="form-control" role="status" aria-live="polite" aria-busy="true">
+                                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                                    Loading countries...
+                                </div>
+                            }
+                            else
+                            {
+                                <CountrySelector id="country" @bind-Value="_model.Address.Country" Countries="_countries"
+                                                 BindCode="true"/>
+                            }
                         </div>
                     </div>
                 </div>

@@ -87,14 +87,15 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.Locator("#postalCode").FillAndExpectValue("54321-000");
         await Page.Locator("#city").FillAndExpectValue("E2ECity");
         await Page.Locator("#state").FillAndExpectValue("TS");
-        await Page.Locator("#country").FillAndExpectValue("Brazil");
-        await Page.Locator("#country").BlurAsync();
+        await Page.Locator("#country").ClickAsync();
+        await Page.Locator(".country-dropdown-menu input").FillAsync("Brazil");
+        await Page.Locator(".country-dropdown-item", new PageLocatorOptions { HasText = "Brazil" }).First.ClickAsync();
         await Expect(Page.Locator("#street")).ToHaveValueAsync(street);
         await Expect(Page.Locator("#neighborhood")).ToHaveValueAsync("TestVille");
         await Expect(Page.Locator("#postalCode")).ToHaveValueAsync("54321-000");
         await Expect(Page.Locator("#city")).ToHaveValueAsync("E2ECity");
         await Expect(Page.Locator("#state")).ToHaveValueAsync("TS");
-        await Expect(Page.Locator("#country")).ToHaveValueAsync("Brazil");
+        await Expect(Page.Locator("#country")).ToContainTextAsync("Brazil");
 
         await Page.GetButton("Next").ClickAsync();
 

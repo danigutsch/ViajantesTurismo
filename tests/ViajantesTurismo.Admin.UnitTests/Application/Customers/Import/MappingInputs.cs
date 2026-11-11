@@ -38,7 +38,7 @@ internal static class MappingInputs
         ["PostalCode"] = "12345-678",
         ["City"] = "Sao Paulo",
         ["State"] = "SP",
-        ["Country"] = "Brazil",
+        ["Country"] = "BR",
         ["WeightKg"] = "75.5",
         ["HeightCentimeters"] = "180",
         ["BikeType"] = "Regular",

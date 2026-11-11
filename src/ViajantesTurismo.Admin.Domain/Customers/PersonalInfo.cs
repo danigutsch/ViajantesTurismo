@@ -1,3 +1,5 @@
+using PandaBear.BuildingBlocks;
+using SharedBirthDate = PandaBear.BuildingBlocks.BirthDate;
 using PandaBear.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 using PandaBear.InputNormalization;
@@ -9,6 +11,9 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public sealed class PersonalInfo
 {
+    /// <summary>Customers have no maximum age; <see cref="SharedBirthDate"/> requires one, so the largest value is passed.</summary>
+    private const int NoMaximumAgeYears = int.MaxValue;
+
     private PersonalInfo(string firstName, string lastName, string gender, DateOnly birthDate, string nationality, string occupation)
     {
         FirstName = firstName;
@@ -83,22 +88,10 @@ public sealed class PersonalInfo
 
         var errors = new ValidationErrors();
 
-        if (string.IsNullOrWhiteSpace(firstName))
+        var name = PersonName.Create(firstName, lastName);
+        if (name.IsFailure)
         {
-            errors.Add(EmptyFirstName());
-        }
-        else if (firstName.Length > AdminDomainLimits.MaxNameLength)
-        {
-            errors.Add(FirstNameTooLong());
-        }
-
-        if (string.IsNullOrWhiteSpace(lastName))
-        {
-            errors.Add(EmptyLastName());
-        }
-        else if (lastName.Length > AdminDomainLimits.MaxNameLength)
-        {
-            errors.Add(LastNameTooLong());
+            AddNameErrors(errors, name.ErrorDetails.ValidationErrors);
         }
 
         if (string.IsNullOrWhiteSpace(gender))
@@ -128,17 +121,9 @@ public sealed class PersonalInfo
             errors.Add(OccupationTooLong());
         }
 
-        if (birthDate > today)
+        if (SharedBirthDate.Create(birthDate, today, AdminDomainLimits.MinCustomerAgeYears, NoMaximumAgeYears).IsFailure)
         {
-            errors.Add(FutureBirthDate());
-        }
-        else
-        {
-            var age = CalculateAge(birthDate, today);
-            if (age < 10)
-            {
-                errors.Add(AgeTooYoung());
-            }
+            errors.Add(BirthDateError(birthDate, today));
         }
 
         if (errors.HasErrors)
@@ -146,17 +131,42 @@ public sealed class PersonalInfo
             return errors.ToResult<PersonalInfo>();
         }
 
-        return Result.Ok(new PersonalInfo(firstName, lastName, gender, birthDate, nationality, occupation));
+        return Result.Ok(new PersonalInfo(name.Value.FirstName, name.Value.LastName, gender, birthDate, nationality, occupation));
     }
 
-    private static int CalculateAge(DateOnly birthDate, DateOnly currentDate)
+    /// <summary>
+    /// Reports <see cref="PersonName"/> failures under the customer field names. The shared type uses the same messages, so
+    /// only the field name changes.
+    /// </summary>
+    private static void AddNameErrors(ValidationErrors errors, IReadOnlyDictionary<string, IReadOnlyList<string>>? nameErrors)
     {
-        var age = currentDate.Year - birthDate.Year;
-        if (currentDate.Month < birthDate.Month || (currentDate.Month == birthDate.Month && currentDate.Day < birthDate.Day))
+        foreach (var (field, messages) in nameErrors ?? new Dictionary<string, IReadOnlyList<string>>())
         {
-            age--;
+            var customerField = field switch
+            {
+                "firstName" => "FirstName",
+                "lastName" => "LastName",
+                _ => field
+            };
+
+            foreach (var message in messages)
+            {
+                errors.Add(Result.Invalid(detail: message, field: customerField, message: message));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Names the rule that <see cref="SharedBirthDate"/> rejected, in its order of checks, without echoing the age: a missing date,
+    /// a future date, then a customer younger than the minimum age.
+    /// </summary>
+    private static Result BirthDateError(DateOnly birthDate, DateOnly today)
+    {
+        if (birthDate == default)
+        {
+            return EmptyBirthDate();
         }
 
-        return age;
+        return birthDate > today ? FutureBirthDate() : AgeTooYoung();
     }
 }

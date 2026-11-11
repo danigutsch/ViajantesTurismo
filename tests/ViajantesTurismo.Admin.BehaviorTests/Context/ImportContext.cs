@@ -19,7 +19,7 @@ public sealed class ImportContext
     private const string ValidRow =
         "John,Doe,Male,1990-01-01,Brazilian,Engineer,A12345,BR," +
         "john.import@example.com,+1234567890,123 Main St,Downtown," +
-        "10001,New York,NY,USA,75,175,Regular,DoubleOccupancy,SingleBed," +
+        "10001,New York,NY,US,75,175,Regular,DoubleOccupancy,SingleBed," +
         "Jane Doe,+0987654321";
 
     public string CsvContent { get; set; } = BuildValidCsv(1);
@@ -96,7 +96,7 @@ public sealed class ImportContext
 
     public Customer? GetCustomerByEmail(string email) =>
         CustomerStore.AllCustomers.FirstOrDefault(c =>
-            c.ContactInfo.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+            c.ContactInfo.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase));
 
     public void ReplaceBlankEmailsWithGeneratedValidEmails()
     {
@@ -142,7 +142,7 @@ public sealed class ImportContext
         const string rowWithoutEmail =
             "John,Doe,Male,1990-01-01,Brazilian,Engineer,A12345,BR," +
             "+1234567890,123 Main St,Downtown," +
-            "10001,New York,NY,USA,75,175,Regular,DoubleOccupancy,SingleBed," +
+            "10001,New York,NY,US,75,175,Regular,DoubleOccupancy,SingleBed," +
             "Jane Doe,+0987654321";
 
         return headersWithoutEmail + "\n" + rowWithoutEmail;
@@ -155,7 +155,7 @@ public sealed class ImportContext
             new PersonalInfoDefinition(firstName, "Doe", "Male", today.AddYears(-30), "Brazilian", "Engineer"),
             new IdentificationInfoDefinition("A12345678", "BR"),
             new ContactInfoDefinition(email, "+1234567890", null, null),
-            new AddressDefinition("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA"),
+            new AddressDefinition("123 Main St", null, "Downtown", "10001", "New York", "NY", "US"),
             new PhysicalInfoDefinition(75, 175, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Emergency Contact", "+0987654321", "None", "None"));

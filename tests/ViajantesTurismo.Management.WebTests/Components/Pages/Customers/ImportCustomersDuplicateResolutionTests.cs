@@ -182,7 +182,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
                 PostalCode = "01000-000",
                 City = "São Paulo",
                 State = "SP",
-                Country = "Brazil"
+                Country = "BR"
             },
             PhysicalInfo = new PhysicalInfoDto
             {

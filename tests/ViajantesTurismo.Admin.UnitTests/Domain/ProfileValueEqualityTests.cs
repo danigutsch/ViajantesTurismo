@@ -10,8 +10,8 @@ public sealed class ProfileValueEqualityTests
     public void Equivalent_contacts_share_value_identity_after_sanitization()
     {
         // Arrange
-        var first = ContactInfo.Create(" person@example.com ", "+49 1234", null, null).Value;
-        var second = ContactInfo.Create("person@example.com", "+49 1234", "", " ").Value;
+        var first = ContactInfo.Create(" Person@Example.com ", "+49 30 1234-567", null, null).Value;
+        var second = ContactInfo.Create("person@example.com", "+49301234567", "", " ").Value;
 
         // Act
         var count = new HashSet<ContactInfo> { first, second }.Count;
@@ -25,8 +25,8 @@ public sealed class ProfileValueEqualityTests
     public void Equivalent_addresses_share_value_identity()
     {
         // Arrange
-        var first = Address.Create("Street 1", null, "Center", "12345", "Berlin", "Berlin", "Germany").Value;
-        var second = Address.Create("Street 1", null, "Center", "12345", "Berlin", "Berlin", "Germany").Value;
+        var first = Address.Create("Street 1", null, "Center", "12345", "Berlin", "Berlin", "DE").Value;
+        var second = Address.Create("Street 1", null, "Center", "12345", "Berlin", "Berlin", " de ").Value;
 
         // Act
         var count = new HashSet<Address> { first, second }.Count;

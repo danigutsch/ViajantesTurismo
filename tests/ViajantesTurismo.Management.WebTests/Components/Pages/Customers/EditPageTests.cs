@@ -193,7 +193,7 @@ public class EditPageTests : BunitContext
             card.QuerySelector("input#postalCode").ShouldNotBeNull();
             card.QuerySelector("input#city").ShouldNotBeNull();
             card.QuerySelector("input#state").ShouldNotBeNull();
-            card.QuerySelector("input#country").ShouldNotBeNull();
+            card.QuerySelector("#country").ShouldNotBeNull();
         });
     }
 

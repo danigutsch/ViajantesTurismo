@@ -217,7 +217,7 @@ public static class DtoBuilders
                 PostalCode = "10001",
                 City = "New York",
                 State = "NY",
-                Country = "USA"
+                Country = "US"
             },
             PhysicalInfo = physicalInfo ?? new PhysicalInfoDto
             {
@@ -367,7 +367,7 @@ public static class DtoBuilders
                 PostalCode = "12345",
                 City = "New York",
                 State = "NY",
-                Country = "USA"
+                Country = "US"
             },
             PhysicalInfo = new PhysicalInfoDto
             {
@@ -533,7 +533,7 @@ public static class DtoBuilders
                 PostalCode = postalCode ?? "12345",
                 City = city ?? "New York",
                 State = state ?? "NY",
-                Country = country ?? "USA"
+                Country = country ?? "US"
             },
             PhysicalInfo = new PhysicalInfoDto
             {

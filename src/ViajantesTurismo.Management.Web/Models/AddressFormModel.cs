@@ -56,7 +56,7 @@ internal sealed class AddressFormModel
     /// Country name.
     /// </summary>
     [Required(ErrorMessage = "Country is required")]
-    [MaxLength(ContractConstants.MaxNameLength)]
+    [StringLength(2, MinimumLength = 2, ErrorMessage = "Select a country")]
     public string Country { get; set; } = string.Empty;
 
     /// <summary>

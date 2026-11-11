@@ -76,8 +76,8 @@ public sealed class CustomerImportCommandHandlerTests
         const string duplicateEmail = "dup@example.com";
         const string csv =
             $"{CsvRows.Headers}\n" +
-            $"John,Doe,Male,1990-01-01,USA,Engineer,A12345678,USA,{duplicateEmail},+1234567890,123 Main St,Downtown,10001,New York,NY,USA,75,175,Regular,DoubleOccupancy,SingleBed,Jane Doe,+0987654321\n" +
-            $"Jane,Smith,Female,1992-06-15,USA,Doctor,B87654321,USA,{duplicateEmail},+9876543210,456 Oak Ave,Uptown,20002,Boston,MA,USA,65,165,Regular,SingleOccupancy,DoubleBed,Jim Smith,+1122334455";
+            $"John,Doe,Male,1990-01-01,USA,Engineer,A12345678,USA,{duplicateEmail},+1234567890,123 Main St,Downtown,10001,New York,NY,US,75,175,Regular,DoubleOccupancy,SingleBed,Jane Doe,+0987654321\n" +
+            $"Jane,Smith,Female,1992-06-15,USA,Doctor,B87654321,USA,{duplicateEmail},+9876543210,456 Oak Ave,Uptown,20002,Boston,MA,US,65,165,Regular,SingleOccupancy,DoubleBed,Jim Smith,+1122334455";
 
         var command = new CustomerImportCommand(csv, DryRun: false);
 

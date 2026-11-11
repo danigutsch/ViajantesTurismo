@@ -86,7 +86,7 @@ public class RowToCustomerMapperTests
         customer.PersonalInfo.FirstName.ShouldBe("John");
         customer.PersonalInfo.LastName.ShouldBe("Doe");
         customer.IdentificationInfo.NationalId.ShouldBe("123456789");
-        customer.ContactInfo.Email.ShouldBe("john.doe@example.com");
+        customer.ContactInfo.Email.Value.ShouldBe("john.doe@example.com");
         customer.Address.Street.ShouldBe("Main St 123");
         customer.PhysicalInfo.WeightKg.ShouldBe(75.5m);
         customer.PhysicalInfo.BikeType.ShouldBe(BikeType.Regular);

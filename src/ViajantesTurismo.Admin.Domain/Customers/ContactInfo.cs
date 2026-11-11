@@ -1,5 +1,4 @@
 using PandaBear.BuildingBlocks;
-using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using PandaBear.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
@@ -10,9 +9,9 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// <summary>
 /// Represents contact information of a customer.
 /// </summary>
-public sealed partial class ContactInfo : ValueObject
+public sealed class ContactInfo : ValueObject
 {
-    private ContactInfo(string email, string mobile, string? instagram, string? facebook)
+    private ContactInfo(EmailAddress email, PhoneNumber mobile, string? instagram, string? facebook)
     {
         Email = email;
         Mobile = mobile;
@@ -28,14 +27,14 @@ public sealed partial class ContactInfo : ValueObject
     {
     }
 
-    /// <summary>Email address.</summary>
-    public string Email
+    /// <summary>Email address, stored in lower case.</summary>
+    public EmailAddress Email
     {
         get; private set;
     }
 
-    /// <summary>Mobile phone number.</summary>
-    public string Mobile
+    /// <summary>Mobile phone number: its digits, led by + when it was entered with one.</summary>
+    public PhoneNumber Mobile
     {
         get; private set;
     }
@@ -52,14 +51,10 @@ public sealed partial class ContactInfo : ValueObject
         get; private set;
     }
 
-    [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
-    private static partial Regex EmailFormatRegex();
-
-    [GeneratedRegex(@"^[\d\s\-\(\)\+]+$", RegexOptions.Compiled)]
-    private static partial Regex PhoneFormatRegex();
-
     /// <summary>
-    /// Creates a new instance of the <see cref="ContactInfo"/> class.
+    /// Creates a new instance of the <see cref="ContactInfo"/> class. The email is validated by <see cref="EmailAddress"/>
+    /// and kept within <see cref="AdminDomainLimits.MaxNameLength"/>; the mobile is validated by <see cref="PhoneNumber"/>
+    /// and kept within <see cref="AdminDomainLimits.MaxDefaultLength"/> characters as typed.
     /// </summary>
     /// <param name="email">The email address.</param>
     /// <param name="mobile">The mobile phone number.</param>
@@ -68,40 +63,16 @@ public sealed partial class ContactInfo : ValueObject
     /// <returns>A Result containing the ContactInfo.</returns>
     public static Result<ContactInfo> Create(string email, string mobile, string? instagram, string? facebook)
     {
-        email = StringSanitizer.Sanitize(email);
-        mobile = StringSanitizer.Sanitize(mobile);
+        var sanitizedEmail = StringSanitizer.Sanitize(email);
+        var sanitizedMobile = StringSanitizer.Sanitize(mobile);
         instagram = StringSanitizer.Sanitize(instagram);
         instagram = string.IsNullOrWhiteSpace(instagram) ? null : instagram;
         facebook = StringSanitizer.Sanitize(facebook);
         facebook = string.IsNullOrWhiteSpace(facebook) ? null : facebook;
 
         var errors = new ValidationErrors();
-
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            errors.Add(EmptyEmail());
-        }
-        else if (email.Length > AdminDomainLimits.MaxNameLength)
-        {
-            errors.Add(EmailTooLong());
-        }
-        else if (!EmailFormatRegex().IsMatch(email))
-        {
-            errors.Add(InvalidEmailFormat());
-        }
-
-        if (string.IsNullOrWhiteSpace(mobile))
-        {
-            errors.Add(EmptyMobile());
-        }
-        else if (mobile.Length > AdminDomainLimits.MaxDefaultLength)
-        {
-            errors.Add(MobileTooLong());
-        }
-        else if (!PhoneFormatRegex().IsMatch(mobile))
-        {
-            errors.Add(InvalidPhoneFormat());
-        }
+        var emailAddress = CreateEmail(errors, sanitizedEmail);
+        var phoneNumber = CustomerPhoneNumbers.Create(errors, sanitizedMobile, EmptyMobile, MobileTooLong, InvalidPhoneFormat);
 
         if (instagram?.Length > AdminDomainLimits.MaxDefaultLength)
         {
@@ -118,7 +89,7 @@ public sealed partial class ContactInfo : ValueObject
             return errors.ToResult<ContactInfo>();
         }
 
-        return Result.Ok(new ContactInfo(email, mobile, instagram, facebook));
+        return Result.Ok(new ContactInfo(emailAddress!, phoneNumber!, instagram, facebook));
     }
 
     /// <inheritdoc />
@@ -128,5 +99,29 @@ public sealed partial class ContactInfo : ValueObject
         yield return Mobile;
         yield return Instagram;
         yield return Facebook;
+    }
+
+    private static EmailAddress? CreateEmail(ValidationErrors errors, string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            errors.Add(EmptyEmail());
+            return null;
+        }
+
+        if (email.Length > AdminDomainLimits.MaxNameLength)
+        {
+            errors.Add(EmailTooLong());
+            return null;
+        }
+
+        var address = EmailAddress.Create(email);
+        if (address.IsFailure)
+        {
+            errors.Add(InvalidEmailFormat());
+            return null;
+        }
+
+        return address.Value;
     }
 }

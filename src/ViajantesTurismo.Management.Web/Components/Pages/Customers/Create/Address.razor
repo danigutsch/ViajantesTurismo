@@ -1,7 +1,9 @@
 @page "/customers/create/address"
 @using ViajantesTurismo.Management.Web.Models
+@using ViajantesTurismo.Management.Web.Services
 
 @inject CustomerCreationState State
+@inject ICountryService CountryService
 @inject NavigationManager Navigation
 
 <PageTitle>Create Customer - Address</PageTitle>
@@ -64,7 +66,17 @@
 
                     <div class="col-md-4 mb-3">
                         <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
-                        <InputText id="country" @bind-Value="_model.Country" class="form-control"/>
+                        @if (_countries is null)
+                        {
+                            <div class="form-control" role="status" aria-live="polite" aria-busy="true">
+                                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                                Loading countries...
+                            </div>
+                        }
+                        else
+                        {
+                            <CountrySelector id="country" @bind-Value="_model.Country" Countries="_countries" BindCode="true"/>
+                        }
                         <ValidationMessage For="@(() => _model.Country)"/>
                     </div>
                 </div>
@@ -84,9 +96,10 @@
 
 @code {
     private AddressFormModel _model = new();
+    private IReadOnlyList<CountryInfo>? _countries;
 
     /// <inheritdoc />
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (State.Address is not null)
         {
@@ -94,6 +107,8 @@
         }
 
         State.NavigateToStep(4);
+
+        _countries = await CountryService.GetCountries(CancellationToken.None);
     }
 
     private void HandleValidSubmit()

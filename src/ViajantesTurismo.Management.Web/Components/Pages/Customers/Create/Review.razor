@@ -129,7 +129,7 @@
                             <dd class="col-sm-8">@address.PostalCode</dd>
 
                             <dt class="col-sm-4">Country:</dt>
-                            <dd class="col-sm-8">@address.Country</dd>
+                            <dd class="col-sm-8">@CountryFormatter.FormatCountry(address.Country)</dd>
                         </dl>
                         <button @onclick="@(() => Navigation.NavigateTo("/customers/create/address"))"
                                 class="btn btn-sm btn-link">Edit

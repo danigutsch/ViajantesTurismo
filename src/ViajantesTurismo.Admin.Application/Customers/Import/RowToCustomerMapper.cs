@@ -89,15 +89,15 @@ public static class RowToCustomerMapper
                     personal.Nationality, personal.Occupation),
                 new IdentificationInfoDefinition(identificationInfoResult.Value.NationalId,
                     identificationInfoResult.Value.IdNationality),
-                new ContactInfoDefinition(contactInfoResult.Value.Email, contactInfoResult.Value.Mobile,
+                new ContactInfoDefinition(contactInfoResult.Value.Email.Value, contactInfoResult.Value.Mobile.Value,
                     contactInfoResult.Value.Instagram, contactInfoResult.Value.Facebook),
                 new AddressDefinition(address.Street, address.Complement, address.Neighborhood, address.PostalCode,
-                    address.City, address.State, address.Country),
+                    address.City, address.State, address.Country.Value),
                 new PhysicalInfoDefinition(physicalInfoResult.Value.WeightKg, physicalInfoResult.Value.HeightCentimeters,
                     physicalInfoResult.Value.BikeType),
                 new AccommodationPreferencesDefinition(accommodationPreferencesResult.Value.RoomType,
                     accommodationPreferencesResult.Value.BedType, accommodationPreferencesResult.Value.CompanionId),
-                new CustomerHealthDefinition(emergencyContactResult.Value.Name, emergencyContactResult.Value.Mobile,
+                new CustomerHealthDefinition(emergencyContactResult.Value.Name, emergencyContactResult.Value.Mobile.Value,
                     medicalInfoResult.Value.Allergies, medicalInfoResult.Value.AdditionalInfo)),
             today);
     }

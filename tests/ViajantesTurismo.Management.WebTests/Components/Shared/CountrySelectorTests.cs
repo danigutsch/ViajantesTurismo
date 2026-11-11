@@ -301,6 +301,80 @@ public class CountrySelectorTests : BunitContext
     }
 
     [Fact]
+    public void Selecting_country_in_code_mode_raises_the_iso_code()
+    {
+        // Arrange
+        var countries = new List<CountryInfo>
+        {
+            new() { Code = "PT", Name = "Portugal" },
+            new() { Code = "ES", Name = "Spain" }
+        };
+        var value = string.Empty;
+        string? capturedValue = null;
+        var cut = Render<CountrySelector>(parameters => parameters
+            .Add(p => p.Countries, countries)
+            .Add(p => p.BindCode, true)
+            .Add(p => p.Value, value)
+            .Add(p => p.ValueExpression, () => value)
+            .Add(p => p.ValueChanged, newValue => capturedValue = newValue));
+        cut.InvokeAsync(() => cut.Find("button.form-select").Click());
+        cut.WaitForState(() => cut.FindAll(".country-dropdown-menu").Count == 1);
+
+        // Act
+        cut.InvokeAsync(() => cut.FindAll(".country-dropdown-item")[0].Click());
+        cut.WaitForState(() => capturedValue != null);
+
+        // Assert
+        capturedValue.ShouldBe("PT");
+    }
+
+    [Fact]
+    public void Code_mode_shows_the_country_of_a_stored_code_in_any_casing()
+    {
+        // Arrange
+        var countries = new List<CountryInfo>
+        {
+            new() { Code = "PT", Name = "Portugal" },
+            new() { Code = "ES", Name = "Spain" }
+        };
+        var value = "es";
+
+        // Act
+        var cut = Render<CountrySelector>(parameters => parameters
+            .Add(p => p.Countries, countries)
+            .Add(p => p.BindCode, true)
+            .Add(p => p.Value, value)
+            .Add(p => p.ValueExpression, () => value));
+
+        // Assert
+        cut.Find("button.form-select").TextContent.ShouldContain("Spain", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Code_mode_offers_only_assigned_iso_codes()
+    {
+        // Arrange
+        var countries = new List<CountryInfo>
+        {
+            new() { Code = "PT", Name = "Portugal" },
+            new() { Code = "XK", Name = "Kosovo" }
+        };
+        var value = string.Empty;
+        var cut = Render<CountrySelector>(parameters => parameters
+            .Add(p => p.Countries, countries)
+            .Add(p => p.BindCode, true)
+            .Add(p => p.Value, value)
+            .Add(p => p.ValueExpression, () => value));
+
+        // Act
+        cut.InvokeAsync(() => cut.Find("button.form-select").Click());
+        cut.WaitForState(() => cut.FindAll(".country-dropdown-menu").Count == 1);
+
+        // Assert
+        cut.FindAll(".country-dropdown-item").ShouldHaveSingleItem().TextContent.ShouldContain("Portugal", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Clicking_button_again_closes_dropdown()
     {
         // Arrange

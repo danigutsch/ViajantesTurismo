@@ -26,7 +26,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         "Email,Mobile,Street,Neighborhood,PostalCode,City,State,Country," +
         "WeightKg,HeightCentimeters,BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile\n" +
         "Ana,Silva,Male,1990-01-01,Brazilian,Engineer,A12345678,BR," +
-        "ana@example.com,+5511999999999,Rua A,Centro,01000-000,Sao Paulo,SP,Brazil," +
+        "ana@example.com,+5511999999999,Rua A,Centro,01000-000,Sao Paulo,SP,BR," +
         "75,175,Regular,DoubleOccupancy,SingleBed,Emergency Name,+5511888888888";
 
     private readonly WebApplicationFactory<AdminApiHostEntryPoint> root;

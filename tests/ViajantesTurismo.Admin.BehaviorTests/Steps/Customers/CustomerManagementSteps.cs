@@ -35,7 +35,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             "12345",
             "New York",
             "NY",
-            "USA");
+            "US");
     }
 
     [Given("I have valid physical information")]
@@ -91,13 +91,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
                 new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate,
                     personal.Nationality, personal.Occupation),
                 new IdentificationInfoDefinition(identification.NationalId, identification.IdNationality),
-                new ContactInfoDefinition(contact.Email, contact.Mobile, contact.Instagram, contact.Facebook),
+                new ContactInfoDefinition(contact.Email.Value, contact.Mobile.Value, contact.Instagram, contact.Facebook),
                 new AddressDefinition(address.Street, address.Complement, address.Neighborhood, address.PostalCode,
-                    address.City, address.State, address.Country),
+                    address.City, address.State, address.Country.Value),
                 new PhysicalInfoDefinition(physical.WeightKg, physical.HeightCentimeters, physical.BikeType),
                 new AccommodationPreferencesDefinition(accommodationPreferences.RoomType,
                     accommodationPreferences.BedType, accommodationPreferences.CompanionId),
-                new CustomerHealthDefinition(emergencyContact.Name, emergencyContact.Mobile, medical.Allergies,
+                new CustomerHealthDefinition(emergencyContact.Name, emergencyContact.Mobile.Value, medical.Allergies,
                     medical.AdditionalInfo)),
             DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
         customerResult.IsSuccess.ShouldBeTrue();
@@ -131,15 +131,15 @@ public sealed class CustomerManagementSteps(CustomerContext context)
             personal.BirthDate, personal.Nationality, personal.Occupation));
         actual.IdentificationInfo.ShouldBe(new IdentificationInfoDefinition(identification.NationalId,
             identification.IdNationality));
-        actual.ContactInfo.ShouldBe(new ContactInfoDefinition(contact.Email, contact.Mobile, contact.Instagram,
+        actual.ContactInfo.ShouldBe(new ContactInfoDefinition(contact.Email.Value, contact.Mobile.Value, contact.Instagram,
             contact.Facebook));
         actual.Address.ShouldBe(new AddressDefinition(address.Street, address.Complement, address.Neighborhood,
-            address.PostalCode, address.City, address.State, address.Country));
+            address.PostalCode, address.City, address.State, address.Country.Value));
         actual.PhysicalInfo.ShouldBe(new PhysicalInfoDefinition(physical.WeightKg, physical.HeightCentimeters,
             physical.BikeType));
         actual.AccommodationPreferences.ShouldBe(new AccommodationPreferencesDefinition(accommodationPreferences.RoomType,
             accommodationPreferences.BedType, accommodationPreferences.CompanionId));
-        actual.HealthInfo.ShouldBe(new CustomerHealthDefinition(emergencyContact.Name, emergencyContact.Mobile,
+        actual.HealthInfo.ShouldBe(new CustomerHealthDefinition(emergencyContact.Name, emergencyContact.Mobile.Value,
             medical.Allergies, medical.AdditionalInfo));
     }
 
@@ -209,7 +209,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized address country should be ""(.*)""")]
     public void ThenTheSanitizedAddressCountryShouldBe(string expectedCountry)
     {
-        context.AddressResult.Value.Country.ShouldBe(expectedCountry);
+        context.AddressResult.Value.Country.Value.ShouldBe(expectedCountry);
     }
 
     [Given(@"I have contact info with email ""(.*)"" and mobile ""(.*)""")]
@@ -227,13 +227,13 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized email should be ""(.*)""")]
     public void ThenTheSanitizedEmailShouldBe(string expectedEmail)
     {
-        context.ContactInfoResult.Value.Email.ShouldBe(expectedEmail);
+        context.ContactInfoResult.Value.Email.Value.ShouldBe(expectedEmail);
     }
 
     [Then(@"the sanitized mobile should be ""(.*)""")]
     public void ThenTheSanitizedMobileShouldBe(string expectedMobile)
     {
-        context.ContactInfoResult.Value.Mobile.ShouldBe(expectedMobile);
+        context.ContactInfoResult.Value.Mobile.Value.ShouldBe(expectedMobile);
     }
 
     [Given(@"I have contact info with Instagram ""(.*)"" and Facebook ""(.*)""")]
@@ -305,7 +305,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
     [Then(@"the sanitized emergency contact mobile should be ""(.*)""")]
     public void ThenTheSanitizedEmergencyContactMobileShouldBe(string expectedMobile)
     {
-        context.EmergencyContactResult.Value.Mobile.ShouldBe(expectedMobile);
+        context.EmergencyContactResult.Value.Mobile.Value.ShouldBe(expectedMobile);
     }
 
     [Given(@"I have medical info with allergies ""(.*)"" and additional info ""(.*)""")]
@@ -379,7 +379,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
                 PostalCode = "54321",
                 City = "City",
                 State = "State",
-                Country = "Country"
+                Country = "BR"
             },
             PhysicalInfo: new PhysicalInfoDto
             {
