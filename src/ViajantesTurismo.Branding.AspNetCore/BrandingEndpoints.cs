@@ -1,14 +1,15 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi;
 using ViajantesTurismo.Branding.Contracts.Http;
 using PandaBear.ApiVersioning.AspNetCore;
 using PandaBear.Branding;
 using PandaBear.BuildingBlocks;
 using PandaBear.HttpCaching.AspNetCore;
+using PandaBear.OpenApi;
 using PandaBear.Results;
 using ViajantesTurismo.Branding.Infrastructure;
 
@@ -40,52 +41,27 @@ internal static class BrandingEndpoints
         managementBranding.MapGet("/", GetManagementSettings)
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
-            .AddOpenApiOperationTransformer((operation, _, _) =>
-            {
-                AddEntityTagResponseHeader(operation);
-                return Task.CompletedTask;
-            })
+            .WithEntityTagResponseHeader()
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingRead);
         managementBranding.MapPut("/", SaveSettings)
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status412PreconditionFailed)
-            .ProducesProblem(StatusCodes.Status428PreconditionRequired)
-            .AddOpenApiOperationTransformer((operation, _, _) =>
-            {
-                AddIfMatchRequestHeader(operation);
-                return Task.CompletedTask;
-            })
+            .WithIfMatchPrecondition()
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
         managementBranding.MapPut(BrandingLogoPath.ManagementTemplate, UploadLogo)
             .Accepts<byte[]>("image/png", "image/jpeg", "image/webp")
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status412PreconditionFailed)
-            .ProducesProblem(StatusCodes.Status428PreconditionRequired)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithMetadata(new RequestSizeLimitAttribute(BrandingLogoLimits.MaxUploadBytes))
-            .AddOpenApiOperationTransformer((operation, _, _) =>
-            {
-                AddIfMatchRequestHeader(operation);
-                return Task.CompletedTask;
-            })
+            .WithIfMatchPrecondition()
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
 
         managementBranding.MapDelete(BrandingLogoPath.ManagementTemplate, RemoveLogo)
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status412PreconditionFailed)
-            .ProducesProblem(StatusCodes.Status428PreconditionRequired)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
-            .AddOpenApiOperationTransformer((operation, _, _) =>
-            {
-                AddIfMatchRequestHeader(operation);
-                return Task.CompletedTask;
-            })
+            .WithIfMatchPrecondition()
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
 
@@ -115,7 +91,8 @@ internal static class BrandingEndpoints
             return TypedResults.NotFound();
         }
 
-        BrandingHttpCache.SetImmutableHeaders(httpContext);
+        HttpCacheHeaders.SetImmutable(httpContext);
+        httpContext.Response.Headers.XContentTypeOptions = "nosniff";
         return TypedResults.Bytes(logo.Content, logo.ContentType, entityTag: new EntityTagHeaderValue($"\"{logo.Sha256}\""));
     }
 
@@ -147,21 +124,9 @@ internal static class BrandingEndpoints
         HttpContext httpContext,
         CancellationToken ct)
     {
-        if (!httpContext.Request.Headers.TryGetValue(HeaderNames.IfMatch, out var ifMatchValues))
+        if (!TryReadIfMatch(httpContext, out var ifMatch, out var problem))
         {
-            return PreconditionProblem(
-                StatusCodes.Status428PreconditionRequired,
-                BrandingManagementProblemCodes.PreconditionRequired,
-                "Send If-Match with the entity tag from the latest Branding read.");
-        }
-
-        var ifMatch = BrandingIfMatch.Parse(ifMatchValues);
-        if (ifMatch is null)
-        {
-            return PreconditionProblem(
-                StatusCodes.Status400BadRequest,
-                BrandingManagementProblemCodes.InvalidIfMatch,
-                "If-Match must be \"*\" or a list of entity tags.");
+            return problem;
         }
 
         var settings = BrandingSettings.Create(request, BrandingDefaults.AllowedFonts);
@@ -179,7 +144,7 @@ internal static class BrandingEndpoints
                 current =>
                 {
                     foreignLogo = !KeepsOrClearsLogo(current, settings.Value);
-                    return !foreignLogo && ifMatch.Matches(current);
+                    return !foreignLogo && Matches(ifMatch, current);
                 },
                 ct).ConfigureAwait(false);
         }
@@ -212,10 +177,9 @@ internal static class BrandingEndpoints
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var check = RequireIfMatch(httpContext);
-        if (check.IfMatch is not { } ifMatch)
+        if (!TryReadIfMatch(httpContext, out var ifMatch, out var problem))
         {
-            return check.Problem ?? throw new InvalidOperationException("A failed If-Match check carries a problem.");
+            return problem;
         }
 
         if (await HasStaleSnapshot(store, ifMatch, ct).ConfigureAwait(false))
@@ -238,14 +202,13 @@ internal static class BrandingEndpoints
     /// Cheap fail-fast read so a stale tag skips the scan and re-encode. The store re-checks the precondition when it writes,
     /// and a missing snapshot is left to the store to report.
     /// </summary>
-    private static async Task<bool> HasStaleSnapshot(IBrandingSettingsRevisionStore store, BrandingIfMatch ifMatch, CancellationToken ct) =>
-        await store.GetCurrent(ct).ConfigureAwait(false) is { } current && !ifMatch.Matches(current);
+    private static async Task<bool> HasStaleSnapshot(IBrandingSettingsRevisionStore store, IfMatchCondition ifMatch, CancellationToken ct) =>
+        await store.GetCurrent(ct).ConfigureAwait(false) is { } current && !Matches(ifMatch, current);
 
     private static ProblemHttpResult StalePreconditionProblem() =>
-        PreconditionProblem(
-            StatusCodes.Status412PreconditionFailed,
-            BrandingManagementProblemCodes.PreconditionFailed,
-            "Branding settings changed after they were loaded. Reload them and reapply your changes.");
+        PreconditionProblems.Failed(
+            "Branding settings changed after they were loaded. Reload them and reapply your changes.",
+            ProblemCode(BrandingManagementProblemCodes.PreconditionFailed));
 
     private static async Task<Results<Ok<BrandingManagementSettingsDto>, ProblemHttpResult>> RemoveLogo(
         IBrandingSettingsRevisionStore store,
@@ -255,10 +218,9 @@ internal static class BrandingEndpoints
         HttpContext httpContext,
         CancellationToken ct)
     {
-        var check = RequireIfMatch(httpContext);
-        if (check.IfMatch is not { } ifMatch)
+        if (!TryReadIfMatch(httpContext, out var ifMatch, out var problem))
         {
-            return check.Problem ?? throw new InvalidOperationException("A failed If-Match check carries a problem.");
+            return problem;
         }
 
         return await ReplaceLogo(null, ifMatch, store, outputCacheStore, telemetry, logger, ct).ConfigureAwait(false);
@@ -266,7 +228,7 @@ internal static class BrandingEndpoints
 
     private static async Task<Results<Ok<BrandingManagementSettingsDto>, ProblemHttpResult>> ReplaceLogo(
         BrandingLogo? logo,
-        BrandingIfMatch ifMatch,
+        IfMatchCondition ifMatch,
         IBrandingSettingsRevisionStore store,
         IOutputCacheStore outputCacheStore,
         BrandingTelemetry telemetry,
@@ -282,7 +244,7 @@ internal static class BrandingEndpoints
                 current =>
                 {
                     unavailable = current is null;
-                    return !unavailable && ifMatch.Matches(current);
+                    return !unavailable && Matches(ifMatch, current);
                 },
                 ct).ConfigureAwait(false);
         }
@@ -308,25 +270,35 @@ internal static class BrandingEndpoints
         return TypedResults.Ok(ToManagementDto(saved));
     }
 
-    private static IfMatchCheck RequireIfMatch(HttpContext httpContext)
+    private static bool TryReadIfMatch(
+        HttpContext httpContext,
+        [NotNullWhen(true)] out IfMatchCondition? ifMatch,
+        [NotNullWhen(false)] out ProblemHttpResult? problem)
     {
+        ifMatch = null;
+        problem = null;
         if (!httpContext.Request.Headers.TryGetValue(HeaderNames.IfMatch, out var ifMatchValues))
         {
-            return new IfMatchCheck(null, PreconditionProblem(
-                StatusCodes.Status428PreconditionRequired,
-                BrandingManagementProblemCodes.PreconditionRequired,
-                "Send If-Match with the entity tag from the latest Branding read."));
+            problem = PreconditionProblems.Required(
+                "Send If-Match with the entity tag from the latest Branding read.",
+                ProblemCode(BrandingManagementProblemCodes.PreconditionRequired));
+            return false;
         }
 
-        return BrandingIfMatch.Parse(ifMatchValues) is { } parsed
-            ? new IfMatchCheck(parsed, null)
-            : new IfMatchCheck(null, PreconditionProblem(
-                StatusCodes.Status400BadRequest,
-                BrandingManagementProblemCodes.InvalidIfMatch,
-                "If-Match must be \"*\" or a list of entity tags."));
+        if (!IfMatchCondition.TryParse(ifMatchValues, out ifMatch))
+        {
+            problem = PreconditionProblems.InvalidIfMatch(extensions: ProblemCode(BrandingManagementProblemCodes.InvalidIfMatch));
+            return false;
+        }
+
+        return true;
     }
 
-    private sealed record IfMatchCheck(BrandingIfMatch? IfMatch, ProblemHttpResult? Problem);
+    private static bool Matches(IfMatchCondition ifMatch, BrandingSettingsSnapshot? current) =>
+        current is not null && ifMatch.Matches(BrandingEntityTags.Format(current.SourceEpoch, current.SourceRevision));
+
+    private static KeyValuePair<string, object?>[] ProblemCode(string code) =>
+        [new(BrandingManagementProblemCodes.ExtensionName, code)];
 
     private static bool KeepsOrClearsLogo(BrandingSettingsSnapshot? current, BrandingSettings requested) =>
         requested.LogoUri is null || (current is not null && string.Equals(requested.LogoUri, current.Settings.LogoUri, StringComparison.Ordinal));
@@ -339,15 +311,6 @@ internal static class BrandingEndpoints
                     ["The logo can only be replaced by uploading an image, or removed by leaving the logo URI empty."]
             },
             detail: "Branding settings are invalid.").ProblemDetails);
-
-    private static ProblemHttpResult PreconditionProblem(int statusCode, string code, string detail) =>
-        TypedResults.Problem(
-            detail,
-            statusCode: statusCode,
-            extensions: new Dictionary<string, object?>(StringComparer.Ordinal)
-            {
-                [BrandingManagementProblemCodes.ExtensionName] = code
-            });
 
     private static BrandingManagementSettingsDto ToManagementDto(BrandingSettingsSnapshot snapshot) => new()
     {
@@ -362,37 +325,6 @@ internal static class BrandingEndpoints
         SourceEpoch = snapshot.SourceEpoch,
         SourceRevision = snapshot.SourceRevision
     };
-
-    private static void AddEntityTagResponseHeader(OpenApiOperation operation)
-    {
-        if (operation.Responses is null
-            || !operation.Responses.TryGetValue("200", out var okResponse)
-            || okResponse is not OpenApiResponse response)
-        {
-            return;
-        }
-
-        response.Headers ??= new Dictionary<string, IOpenApiHeader>(StringComparer.Ordinal);
-        response.Headers[HeaderNames.ETag] = new OpenApiHeader
-        {
-            Description = "Strong validator for the returned revision; send it as If-Match on the next PUT.",
-            Required = true,
-            Schema = new OpenApiSchema { Type = JsonSchemaType.String }
-        };
-    }
-
-    private static void AddIfMatchRequestHeader(OpenApiOperation operation)
-    {
-        operation.Parameters ??= [];
-        operation.Parameters.Add(new OpenApiParameter
-        {
-            Name = HeaderNames.IfMatch,
-            In = ParameterLocation.Header,
-            Required = true,
-            Description = "Entity tag from the latest management GET, or \"*\".",
-            Schema = new OpenApiSchema { Type = JsonSchemaType.String }
-        });
-    }
 
     private static async Task<BrandingSettings> GetSettingsOrDefault(IBrandingSettingsStore store, CancellationToken ct)
     {

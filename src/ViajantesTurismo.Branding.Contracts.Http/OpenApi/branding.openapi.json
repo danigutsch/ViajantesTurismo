@@ -15,7 +15,7 @@
             "description": "OK",
             "headers": {
               "ETag": {
-                "description": "Strong validator for the returned revision; send it as If-Match on the next PUT.",
+                "description": "Strong validator of the returned representation; send it as If-Match on the next write.",
                 "required": true,
                 "schema": {
                   "type": "string"
@@ -61,7 +61,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "Entity tag from the latest management GET, or \"*\".",
+            "description": "The entity tag (ETag) from the latest read, or \"*\".",
             "required": true,
             "schema": {
               "type": "string"
@@ -142,7 +142,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "Entity tag from the latest management GET, or \"*\".",
+            "description": "The entity tag (ETag) from the latest read, or \"*\".",
             "required": true,
             "schema": {
               "type": "string"
@@ -183,6 +183,16 @@
               }
             }
           },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -205,16 +215,6 @@
           },
           "428": {
             "description": "Precondition Required",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Service Unavailable",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -244,7 +244,7 @@
           {
             "name": "If-Match",
             "in": "header",
-            "description": "Entity tag from the latest management GET, or \"*\".",
+            "description": "The entity tag (ETag) from the latest read, or \"*\".",
             "required": true,
             "schema": {
               "type": "string"
@@ -258,6 +258,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BrandingManagementSettingsDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -284,16 +294,6 @@
           },
           "428": {
             "description": "Precondition Required",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Service Unavailable",
             "content": {
               "application/problem+json": {
                 "schema": {
