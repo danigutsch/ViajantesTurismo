@@ -1,32 +1,11 @@
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
-
 namespace ViajantesTurismo.Admin.Infrastructure;
 
-/// <summary>Database schema names and constraint checks for customers.</summary>
+/// <summary>Database schema names and unique rules for customers.</summary>
 internal static class CustomerSchema
 {
     /// <summary>Name of the unique index on customer email.</summary>
     public const string EmailUniqueIndex = "UX_CustomerContactInfo_Email";
 
-    /// <summary>Returns whether the exception wraps a Postgres unique violation on the customer email index.</summary>
-    public static bool IsEmailConflict(DbUpdateException exception)
-    {
-        ArgumentNullException.ThrowIfNull(exception);
-
-        return exception.InnerException is PostgresException postgresException &&
-            IsEmailConflict(postgresException);
-    }
-
-    /// <summary>Returns whether the Postgres exception is a unique violation on the customer email index.</summary>
-    public static bool IsEmailConflict(PostgresException exception)
-    {
-        ArgumentNullException.ThrowIfNull(exception);
-
-        return exception is
-        {
-            SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: EmailUniqueIndex,
-        };
-    }
+    /// <summary>The unique rule of the customer email index, reported when two customers would share an email.</summary>
+    public const string EmailUniqueRule = "customer.email";
 }

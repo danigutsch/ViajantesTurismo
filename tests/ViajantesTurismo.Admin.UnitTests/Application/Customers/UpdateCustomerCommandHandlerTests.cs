@@ -144,7 +144,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             {
                 FirstName = existing1.PersonalInfo.FirstName,
                 LastName = existing1.PersonalInfo.LastName,
-                BirthDate = existing1.PersonalInfo.BirthDate,
+                BirthDate = existing1.PersonalInfo.BirthDate.Value,
                 Gender = existing1.PersonalInfo.Gender,
                 Nationality = existing1.PersonalInfo.Nationality,
                 Occupation = existing1.PersonalInfo.Occupation

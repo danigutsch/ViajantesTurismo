@@ -26,8 +26,8 @@ public static class DuplicateDetector
                 continue;
             }
 
-            var normalizedEmail = StringSanitizer.NormalizeKey(email);
-            if (!seenEmails.Add(normalizedEmail))
+            // A malformed email is not a duplicate; the row's own validation reports it.
+            if (StringSanitizer.TryNormalizeKey(email, out var normalizedEmail) && !seenEmails.Add(normalizedEmail))
             {
                 duplicateLineNumbers.Add(lineNumber);
             }
@@ -59,8 +59,8 @@ public static class DuplicateDetector
                 continue;
             }
 
-            var normalizedName = StringSanitizer.NormalizeKeyRemovingDiacritics($"{firstName} {lastName}");
-            if (!seenNames.Add(normalizedName))
+            var fullName = $"{firstName} {lastName}";
+            if (StringSanitizer.TrySanitize(fullName, out _) && !seenNames.Add(StringSanitizer.NormalizeKeyRemovingDiacritics(fullName)))
             {
                 duplicateLineNumbers.Add(lineNumber);
             }

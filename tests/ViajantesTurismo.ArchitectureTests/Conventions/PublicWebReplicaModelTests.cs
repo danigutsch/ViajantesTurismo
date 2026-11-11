@@ -1,5 +1,6 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using PandaBear.IntegrationTesting;
 using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
 
@@ -35,7 +36,7 @@ public sealed class PublicWebReplicaModelTests
 
         // Assert
         publicWeb.GetReplicaCount().ShouldBe(expectedCount);
-        publicWeb.Annotations.OfType<HealthCheckAnnotation>().ShouldNotBeEmpty();
+        AppHostModel.HasHttpHealthCheck(publicWeb, "/health").ShouldBeTrue();
         var endpoints = publicWeb.Annotations.OfType<EndpointAnnotation>().ToArray();
         endpoints.ShouldNotBeEmpty();
         foreach (var endpoint in endpoints)
@@ -45,8 +46,7 @@ public sealed class PublicWebReplicaModelTests
             endpoint.TargetPort.ShouldBeNull();
         }
 
-        var dependencies = publicWeb.Annotations.OfType<WaitAnnotation>()
-            .Select(annotation => annotation.Resource.Name).ToArray();
+        var dependencies = AppHostModel.WaitedFor(publicWeb);
         dependencies.ShouldContain(ResourceNames.CatalogApi);
         otherProjects.ShouldNotBeEmpty();
         foreach (var project in otherProjects)

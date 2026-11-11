@@ -4,16 +4,14 @@ using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Management.Security;
 using ViajantesTurismo.MigrationService;
 using ViajantesTurismo.Resources;
+using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 return await MigrationProcess.Run(() =>
 {
     var builder = Host.CreateApplicationBuilder(args);
 
-    builder.Services.AddOpenTelemetry()
-        .WithTracing(tracingBuilder => { tracingBuilder.AddSource(DatabaseInitializationWorker.ActivitySourceName); });
-
-    builder.AddServiceDefaults();
+    builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 
     builder.AddAdminDatabaseInitialization();
     builder.AddBrandingInfrastructure(addOutboxRelay: false);

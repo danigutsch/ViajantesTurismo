@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore;
 using Npgsql;
 using PandaBear.EventSourcing.Npgsql;
 using ViajantesTurismo.Admin.Infrastructure;
@@ -104,29 +104,20 @@ internal sealed class DatabaseInitializationWorker
 
     private static async Task RunMigrations(IServiceProvider serviceProvider, CancellationToken ct)
     {
-        var catalogDbContext = serviceProvider.GetRequiredService<CatalogDbContext>();
-        var brandingDbContext = serviceProvider.GetRequiredService<BrandingDbContext>();
-        var managementSecurityDbContext = serviceProvider.GetRequiredService<ManagementSecurityDbContext>();
-
         await serviceProvider.MigrateAdminDatabase(ct);
 
-        if (catalogDbContext.Database.IsRelational())
+        if (await serviceProvider.ApplyMigrations<CatalogDbContext>(ct))
         {
             var catalogDataSource = serviceProvider.GetRequiredService<NpgsqlDataSource>();
-            await catalogDbContext.Database.MigrateAsync(ct);
             await PostgreSqlEventSourcingSchema.Initialize(catalogDataSource, options: null, ct);
         }
 
-        if (brandingDbContext.Database.IsRelational())
+        if (await serviceProvider.ApplyMigrations<BrandingDbContext>(ct))
         {
-            await brandingDbContext.Database.MigrateAsync(ct);
             await serviceProvider.BootstrapBrandingRevisions(ct);
         }
 
-        if (managementSecurityDbContext.Database.IsRelational())
-        {
-            await managementSecurityDbContext.Database.MigrateAsync(ct);
-        }
+        await serviceProvider.ApplyMigrations<ManagementSecurityDbContext>(ct);
     }
 
     private static Task RunDevelopmentDataInitialization(

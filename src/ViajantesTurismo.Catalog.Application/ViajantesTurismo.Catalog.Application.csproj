@@ -35,6 +35,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.SourceGenerator" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
         <PackageReference Include="PandaBear.SharedKernel.Results" />
+        <PackageReference Include="PandaBear.SharedKernel.UploadSanitizing" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.IntegrationEvents\ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />

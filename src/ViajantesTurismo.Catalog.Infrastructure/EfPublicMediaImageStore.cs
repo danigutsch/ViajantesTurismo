@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
+using PandaBear.BuildingBlocks;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore.Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using PandaBear.InputNormalization;
@@ -12,6 +14,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure;
 /// <param name="dbContext">The Catalog context.</param>
 internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPublicMediaImageStore
 {
+    private static readonly NpgsqlUniqueViolationParser UniqueViolationParser = new();
+
     /// <inheritdoc />
     public async ValueTask Upsert(PublicMediaImage image, CancellationToken ct)
     {
@@ -24,7 +28,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
         {
             await strategy.ExecuteAsync(() => ReplaceImage(sanitizedImage, ct)).ConfigureAwait(false);
         }
-        catch (DbUpdateException exception) when (IsGalleryPlacementConflict(exception))
+        catch (UniqueConstraintViolationException exception) when (exception.Rule == PublicMediaImageSchema.GalleryPlacementRule)
         {
             throw new MediaGalleryPlacementConflictException(
                 "The tour gallery changed while the media image was being saved.",
@@ -47,9 +51,9 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             var transaction = await dbContext.Database.BeginTransactionAsync(ct).ConfigureAwait(false);
             await using var _ = transaction.ConfigureAwait(false);
             dbContext.PublicMediaImages.Remove(existing);
-            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
             dbContext.PublicMediaImages.Add(image);
-            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
         }
         else
@@ -57,12 +61,12 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             if (existing is not null)
             {
                 dbContext.PublicMediaImages.Remove(existing);
-                await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+                await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
             }
 
             dbContext.PublicMediaImages.Add(image);
 
-            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
         }
     }
 
@@ -185,15 +189,6 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             StringSanitizer.SanitizeCollection(image.Tags),
             [.. image.TourLinks.OrderBy(link => link.DisplayOrder)],
             image.AccessibilityTexts);
-    }
-
-    private static bool IsGalleryPlacementConflict(DbUpdateException exception)
-    {
-        return exception.InnerException is PostgresException
-        {
-            SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: PublicMediaImageSchema.GalleryCoverUniqueIndex or PublicMediaImageSchema.GalleryDisplayOrderUniqueIndex
-        };
     }
 
     private static PublicMediaImage ForTour(PublicMediaImage image, Guid catalogTourId)

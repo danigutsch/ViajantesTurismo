@@ -1,7 +1,7 @@
 namespace ViajantesTurismo.Catalog.Application.Media;
 
 /// <summary>
-/// Validates uploaded media before storage or processing.
+/// Validates the file name, declared content type and length of an upload before its content is read.
 /// </summary>
 public sealed class MediaUploadValidator(MediaUploadValidationOptions? validationOptions = null) : IMediaUploadValidator
 {
@@ -35,28 +35,7 @@ public sealed class MediaUploadValidator(MediaUploadValidationOptions? validatio
             errors[nameof(request.FileName)] = ["File extension does not match the allowed content type."];
         }
 
-        if (!HasAllowedSignature(contentType, request.HeaderBytes.Span))
-        {
-            errors[nameof(request.HeaderBytes)] = ["File signature does not match the allowed content type."];
-        }
-
         return errors;
-    }
-
-    private static bool HasAllowedSignature(string contentType, ReadOnlySpan<byte> header)
-    {
-        return contentType.ToUpperInvariant() switch
-        {
-            "IMAGE/JPEG" => header is [0xFF, 0xD8, 0xFF, ..],
-            "IMAGE/PNG" => header is [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, ..],
-            "IMAGE/WEBP" => header.Length >= 12
-                && header[..4].SequenceEqual("RIFF"u8)
-                && header[8..12].SequenceEqual("WEBP"u8),
-            "IMAGE/AVIF" => header.Length >= 12
-                && header[4..8].SequenceEqual("ftyp"u8)
-                && (header[8..12].SequenceEqual("avif"u8) || header[8..12].SequenceEqual("avis"u8)),
-            _ => false
-        };
     }
 
     private static bool ContainsPathSegments(string fileName)

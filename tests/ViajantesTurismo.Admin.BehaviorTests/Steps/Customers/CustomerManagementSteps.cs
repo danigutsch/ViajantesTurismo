@@ -88,7 +88,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         var medical = context.MedicalInfoResult.Value.Value;
         var customerResult = Customer.Create(
             new CustomerDefinition(
-                new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate,
+                new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate.Value,
                     personal.Nationality, personal.Occupation),
                 new IdentificationInfoDefinition(identification.NationalId, identification.IdNationality),
                 new ContactInfoDefinition(contact.Email.Value, contact.Mobile.Value, contact.Instagram, contact.Facebook),
@@ -128,7 +128,7 @@ public sealed class CustomerManagementSteps(CustomerContext context)
         var medical = context.MedicalInfoResult.Value.Value;
 
         actual.PersonalInfo.ShouldBe(new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender,
-            personal.BirthDate, personal.Nationality, personal.Occupation));
+            personal.BirthDate.Value, personal.Nationality, personal.Occupation));
         actual.IdentificationInfo.ShouldBe(new IdentificationInfoDefinition(identification.NationalId,
             identification.IdNationality));
         actual.ContactInfo.ShouldBe(new ContactInfoDefinition(contact.Email.Value, contact.Mobile.Value, contact.Instagram,

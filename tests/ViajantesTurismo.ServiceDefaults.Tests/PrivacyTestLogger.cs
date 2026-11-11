@@ -11,24 +11,6 @@ internal static partial class PrivacyTestLogger
             new EventId(1, nameof(LogStructuredFailure)),
             "Operation failed with {DiagnosticFailure} and {Outcome}");
 
-    private static readonly Action<ILogger, string, string, string, Exception?> LogEntityFrameworkCommandCore =
-        LoggerMessage.Define<string, string, string>(
-            LogLevel.Information,
-            new EventId(20101, "Microsoft.EntityFrameworkCore.Database.Command.CommandExecuted"),
-            "Executed DbCommand {CommandText} with {Parameters}; {Outcome}");
-
-    private static readonly Action<ILogger, string, Exception?> LogMixedCaseExceptionTypeCore =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(2, nameof(LogMixedCaseExceptionType)),
-            "Operation failed with {Exception.Type}");
-
-    private static readonly Action<ILogger, string, Exception?> LogMixedCaseErrorTypeCore =
-        LoggerMessage.Define<string>(
-            LogLevel.Error,
-            new EventId(3, nameof(LogMixedCaseErrorType)),
-            "Operation failed with {Error.Type}");
-
     [LoggerMessage(LogLevel.Warning, "No XML encryptor configured. Key {KeyId:B} may be persisted to storage in unencrypted form.")]
     public static partial void LogDataProtectionKey(ILogger logger, Guid keyId);
 
@@ -43,33 +25,8 @@ internal static partial class PrivacyTestLogger
         string outcome);
 
     /// <summary>Logs an error with an exception and outcome as structured values.</summary>
-    public static void LogStructuredFailure(
-        ILogger logger,
-        Exception diagnosticFailure,
-        string outcome)
+    public static void LogStructuredFailure(ILogger logger, Exception diagnosticFailure, string outcome)
     {
         LogStructuredFailureCore(logger, diagnosticFailure, outcome, null);
-    }
-
-    /// <summary>Logs an EF Core command-executed event with command text and parameters.</summary>
-    public static void LogEntityFrameworkCommand(
-        ILogger logger,
-        string commandText,
-        string parameters,
-        string outcome)
-    {
-        LogEntityFrameworkCommandCore(logger, commandText, parameters, outcome, null);
-    }
-
-    /// <summary>Logs an error with a mixed-case Exception.Type placeholder.</summary>
-    public static void LogMixedCaseExceptionType(ILogger logger, string exceptionType, Exception? exception)
-    {
-        LogMixedCaseExceptionTypeCore(logger, exceptionType, exception);
-    }
-
-    /// <summary>Logs an error with a mixed-case Error.Type placeholder.</summary>
-    public static void LogMixedCaseErrorType(ILogger logger, string errorType)
-    {
-        LogMixedCaseErrorTypeCore(logger, errorType, null);
     }
 }

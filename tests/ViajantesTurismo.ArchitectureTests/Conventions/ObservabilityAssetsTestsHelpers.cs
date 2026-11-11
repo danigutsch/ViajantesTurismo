@@ -14,13 +14,6 @@ internal static partial class ObservabilityAssetsTestsHelpers
         "media-accessibility", "mediator", "platform-smoke", "postgresql-observability", "runtime", "traces"
     ];
 
-    /// <summary>Meter argument expressions from other packages mapped to the meter names they resolve to.</summary>
-    public static readonly (string Argument, string Meter)[] ExternalMeterNames =
-        [("PandaBear.Mediator.MediatorTelemetry.Name", "SharedKernel.Mediator")];
-
-    /// <summary>Meters registered outside ServiceDefaults by host configuration.</summary>
-    public static readonly string[] SeparatelyRegisteredMeters = ["SharedKernel.Observability.Npgsql"];
-
     /// <summary>Prefixes of platform metrics that the catalog does not enumerate.</summary>
     public static readonly string[] PlatformMetricPrefixes =
         ["otelcol_", "http_", "kestrel_", "dotnet_", "process_", "aspnetcore_", "db_client", "client_call"];
@@ -86,18 +79,28 @@ internal static partial class ObservabilityAssetsTestsHelpers
         return Identifier().Matches(stripped).Select(match => match.Value).Where(name => !PromQlKeywords.Contains(name));
     }
 
-    /// <summary>Resolves the meters the application registers from the AddMeter calls in ServiceDefaults.</summary>
-    public static string[] RegisteredMeterNames()
+    /// <summary>
+    /// Resolves the meter names and name patterns the application registers: the AddMeter calls in ServiceDefaults and every SharedKernel
+    /// meter, which the SharedKernel service defaults register by pattern.
+    /// </summary>
+    public static string[] RegisteredMeterPatterns()
     {
         var source = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(), "src", "ViajantesTurismo.ServiceDefaults", "OpenTelemetryBuilderExtensions.cs"));
+            GetRepositoryRoot(), "src", "ViajantesTurismo.ServiceDefaults", "ViajantesTurismoServiceDefaults.cs"));
         var constants = MeterNameConstant().Matches(source).ToDictionary(match => match.Groups["name"].Value, match => match.Groups["value"].Value);
-        var resolved = AddMeterCall().Matches(source).Select(match => match.Groups["argument"].Value.Trim()).Select(argument =>
-            constants.TryGetValue(argument, out var value) ? value
-            : ExternalMeterNames.FirstOrDefault(known => known.Argument == argument).Meter
-              ?? throw new InvalidOperationException($"AddMeter({argument}) has no known meter name. Add it to ExternalMeterNames."));
-        return [.. resolved.Concat(SeparatelyRegisteredMeters).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+        var resolved = AddMeterCall().Matches(source)
+            .SelectMany(match => match.Groups["argument"].Value.Split(',', StringSplitOptions.TrimEntries))
+            .Select(argument => constants.TryGetValue(argument, out var value)
+                ? value
+                : throw new InvalidOperationException($"AddMeter({argument}) has no known meter name."));
+        return [.. resolved.Concat(PandaBear.Observability.SharedKernelInstrumentationExtensions.NamePatterns).Distinct(StringComparer.Ordinal)];
     }
+
+    /// <summary>Gets whether a meter name matches a registered name or a <c>Prefix.*</c> pattern.</summary>
+    public static bool MatchesMeterPattern(string pattern, string meter) =>
+        pattern.EndsWith(".*", StringComparison.Ordinal)
+            ? meter.StartsWith(pattern[..^1], StringComparison.Ordinal)
+            : string.Equals(pattern, meter, StringComparison.Ordinal);
 
     /// <summary>Strips series, unit, and counter suffixes from a Prometheus metric name.</summary>
     public static string BaseMetricName(string metric)

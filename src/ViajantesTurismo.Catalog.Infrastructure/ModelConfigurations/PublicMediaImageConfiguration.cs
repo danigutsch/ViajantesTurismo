@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.EntityFrameworkCore;
 using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain;
@@ -55,9 +56,11 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
             link.HasKey("PublicMediaImageId", nameof(MediaImageTourLink.CatalogTourId));
             link.HasIndex(item => new { item.CatalogTourId, item.DisplayOrder })
                 .HasDatabaseName(PublicMediaImageSchema.GalleryDisplayOrderUniqueIndex)
+                .HasUniqueRule(PublicMediaImageSchema.GalleryPlacementRule)
                 .IsUnique();
             link.HasIndex(item => item.CatalogTourId)
                 .HasDatabaseName(PublicMediaImageSchema.GalleryCoverUniqueIndex)
+                .HasUniqueRule(PublicMediaImageSchema.GalleryPlacementRule)
                 .HasFilter("\"IsCover\" = TRUE")
                 .IsUnique();
             link.Property(item => item.CatalogTourId).ValueGeneratedNever();

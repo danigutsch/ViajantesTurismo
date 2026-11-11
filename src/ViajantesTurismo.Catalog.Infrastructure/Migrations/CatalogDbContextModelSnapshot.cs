@@ -434,7 +434,8 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("Slug")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasAnnotation("PandaBear:UniqueRule", "catalog.tour-slug");
 
                     b.ToTable("CatalogTourReadModels", (string)null);
                 });
@@ -516,11 +517,13 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                             b1.HasIndex("CatalogTourId")
                                 .IsUnique()
                                 .HasDatabaseName("UX_PublicMediaImageTourLinks_CatalogTourId_Cover")
-                                .HasFilter("\"IsCover\" = TRUE");
+                                .HasFilter("\"IsCover\" = TRUE")
+                                .HasAnnotation("PandaBear:UniqueRule", "catalog.gallery-placement");
 
                             b1.HasIndex("CatalogTourId", "DisplayOrder")
                                 .IsUnique()
-                                .HasDatabaseName("UX_PublicMediaImageTourLinks_CatalogTourId_DisplayOrder");
+                                .HasDatabaseName("UX_PublicMediaImageTourLinks_CatalogTourId_DisplayOrder")
+                                .HasAnnotation("PandaBear:UniqueRule", "catalog.gallery-placement");
 
                             b1.ToTable("PublicMediaImageTourLinks", (string)null);
 

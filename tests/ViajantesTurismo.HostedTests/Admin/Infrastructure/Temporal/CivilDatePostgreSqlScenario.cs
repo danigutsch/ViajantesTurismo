@@ -58,7 +58,7 @@ internal sealed class CivilDatePostgreSqlScenario : IAsyncDisposable
         var tour = await context.Tours.Include(item => item.Bookings)
             .AsNoTracking().SingleAsync(ct);
         var booking = tour.Bookings.ShouldHaveSingleItem();
-        return (customer.PersonalInfo.BirthDate, tour.Schedule.StartDate, tour.Schedule.EndDate,
+        return (customer.PersonalInfo.BirthDate.Value, tour.Schedule.StartDate, tour.Schedule.EndDate,
             booking.BookingDate);
     }
 

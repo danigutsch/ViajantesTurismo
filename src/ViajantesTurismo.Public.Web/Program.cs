@@ -7,11 +7,12 @@ using PandaBear.AspNetCore.Localization;
 using PandaBear.HttpCaching.AspNetCore;
 using ViajantesTurismo.Public.Web;
 using ViajantesTurismo.Resources;
+using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.Services.AddHttpClientDefaults(PublicWebSecurityBaseline.ConfigureCatalogResilience);
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddPublicWebSecurityBaseline();
@@ -53,6 +54,6 @@ app.UseRequestLocalization(options =>
 app.UseRateLimiter();
 app.MapPublicWebEndpoints();
 
-app.MapDefaultEndpoints();
+app.MapSharedKernelDefaultEndpoints();
 
 await app.RunAsync();

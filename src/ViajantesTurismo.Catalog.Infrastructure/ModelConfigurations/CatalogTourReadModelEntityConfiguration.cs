@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
@@ -7,6 +8,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
 /// <summary>EF Core mapping for the catalog tour read model.</summary>
 internal sealed class CatalogTourReadModelEntityConfiguration : IEntityTypeConfiguration<CatalogTourReadModelEntity>
 {
+    /// <summary>The unique rule of the public tour slug index, reported when two tours would share a slug.</summary>
+    internal const string SlugUniqueRule = "catalog.tour-slug";
+
     /// <summary>Maps the table, unique indexes, column limits and concurrency tokens.</summary>
     public void Configure(EntityTypeBuilder<CatalogTourReadModelEntity> entity)
     {
@@ -14,7 +18,7 @@ internal sealed class CatalogTourReadModelEntityConfiguration : IEntityTypeConfi
         entity.HasKey(tour => tour.CatalogTourId);
         entity.Property(tour => tour.CatalogTourId).ValueGeneratedNever();
         entity.HasIndex(tour => tour.AdminTourId).IsUnique();
-        entity.HasIndex(tour => tour.Slug).IsUnique();
+        entity.HasIndex(tour => tour.Slug).HasUniqueRule(SlugUniqueRule);
 
         entity.Property(tour => tour.Identifier).HasMaxLength(CatalogDomainLimits.MaxDefaultLength).IsRequired();
         entity.Property(tour => tour.Title).HasMaxLength(CatalogDomainLimits.MaxNameLength).IsRequired();

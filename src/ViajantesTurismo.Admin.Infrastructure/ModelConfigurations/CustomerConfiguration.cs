@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.EntityFrameworkCore;
 using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Customers;
 
@@ -17,7 +18,9 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         entity.OwnsOne(customer => customer.PersonalInfo, builder =>
         {
             builder.ToTable("CustomerPersonalInfo");
-            builder.Property(info => info.BirthDate).HasColumnType("date");
+            builder.Property(info => info.BirthDate)
+                .HasConversion(birthDate => birthDate.Value, value => BirthDate.Restore(value))
+                .HasColumnType("date");
         });
         entity.OwnsOne(customer => customer.IdentificationInfo, builder => builder.ToTable("CustomerIdentificationInfo"));
         entity.OwnsOne(customer => customer.ContactInfo, builder =>
@@ -31,7 +34,8 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
                 .HasMaxLength(PhoneNumber.MaxDigits + 1);
             builder.HasIndex(contactInfo => contactInfo.Email)
                 .IsUnique()
-                .HasDatabaseName(CustomerSchema.EmailUniqueIndex);
+                .HasDatabaseName(CustomerSchema.EmailUniqueIndex)
+                .HasUniqueRule(CustomerSchema.EmailUniqueRule);
         });
         entity.OwnsOne(customer => customer.Address, builder =>
         {

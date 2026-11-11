@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PandaBear.Observability.Npgsql;
+using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 namespace ViajantesTurismo.DatabaseObservability;
@@ -12,7 +13,7 @@ internal static class DatabaseObservabilityHostConfiguration
     /// <summary>Adds service defaults and, when enabled, PostgreSQL index-health monitoring for the Admin and Catalog databases.</summary>
     public static void Configure(IHostApplicationBuilder builder)
     {
-        builder.AddServiceDefaults();
+        builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 
         var options = builder.Configuration
             .GetSection(PostgreSqlIndexHealthHostOptions.SectionName)

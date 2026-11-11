@@ -25,6 +25,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />
         <PackageReference Include="PandaBear.SharedKernel.AI" />
         <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore" />
+        <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore.Npgsql" />
         <PackageReference Include="PandaBear.SharedKernel.EventSourcing.Npgsql" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.OpenApi" />

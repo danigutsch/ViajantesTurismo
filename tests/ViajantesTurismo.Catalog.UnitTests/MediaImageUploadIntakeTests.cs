@@ -712,7 +712,7 @@ public sealed class MediaImageUploadIntakeTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        objectStore.LastWriteBytes.ShouldBe(payloadBytes);
+        objectStore.LastWriteBytes.ShouldBeLessThan(payloadBytes, "the zero padding after the end marker is not stored");
         allocated.ShouldBeLessThan(payloadBytes / 4);
     }
 

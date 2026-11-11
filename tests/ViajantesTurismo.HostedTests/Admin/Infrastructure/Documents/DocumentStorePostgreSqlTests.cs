@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -626,7 +627,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         var conflict = await save.ShouldThrow<DocumentRevisionConflictException>();
-        var updateException = conflict.InnerException.ShouldBeOfType<DbUpdateException>();
+        var updateException = conflict.InnerException.ShouldBeOfType<UniqueConstraintViolationException>().InnerException.ShouldBeOfType<DbUpdateException>();
         var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
         postgresException.ConstraintName.ShouldBe("UX_DocumentLineages_BookingId_Type");
@@ -649,7 +650,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         var conflict = await save.ShouldThrow<DocumentRevisionConflictException>();
-        var updateException = conflict.InnerException.ShouldBeOfType<DbUpdateException>();
+        var updateException = conflict.InnerException.ShouldBeOfType<UniqueConstraintViolationException>().InnerException.ShouldBeOfType<DbUpdateException>();
         var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
         postgresException.ConstraintName.ShouldBe("UX_DocumentDrafts_DocumentLineageId_Revision");
@@ -671,7 +672,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         var conflict = await save.ShouldThrow<DocumentRevisionConflictException>();
-        var updateException = conflict.InnerException.ShouldBeOfType<DbUpdateException>();
+        var updateException = conflict.InnerException.ShouldBeOfType<UniqueConstraintViolationException>().InnerException.ShouldBeOfType<DbUpdateException>();
         var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
         postgresException.ConstraintName.ShouldBe("UX_DocumentDrafts_BookingId_Type_Revision");

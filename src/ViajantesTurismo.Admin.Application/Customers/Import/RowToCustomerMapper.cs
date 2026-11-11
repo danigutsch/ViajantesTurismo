@@ -85,7 +85,7 @@ public static class RowToCustomerMapper
         var address = addressResult.Value;
         return Customer.Create(
             new CustomerDefinition(
-                new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate,
+                new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate.Value,
                     personal.Nationality, personal.Occupation),
                 new IdentificationInfoDefinition(identificationInfoResult.Value.NationalId,
                     identificationInfoResult.Value.IdNationality),

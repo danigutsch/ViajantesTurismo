@@ -31,7 +31,7 @@ public sealed class PerformanceTestingResourceTests
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
         var (api, identity) = AddDependencies(builder);
-        _ = builder.AddLocalSecret(ResourceNames.IdentityProviderK6ClientSecret);
+        _ = builder.AddGeneratedSecret(ResourceNames.IdentityProviderK6ClientSecret);
 
         // Act
         builder.AddAdminPerformanceSmoke(api, identity, Enabled);
@@ -51,7 +51,7 @@ public sealed class PerformanceTestingResourceTests
         // Arrange
         var builder = DistributedApplication.CreateBuilder([]);
         var (api, identity) = AddDependencies(builder);
-        _ = builder.AddLocalSecret(ResourceNames.IdentityProviderK6ClientSecret);
+        _ = builder.AddGeneratedSecret(ResourceNames.IdentityProviderK6ClientSecret);
         Dictionary<string, string?> environment = new(StringComparer.Ordinal)
         {
             ["VT_ASPIRE_ENABLE_PERFORMANCE_TESTS"] = "1",

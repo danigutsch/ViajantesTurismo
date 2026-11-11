@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using PandaBear.Aspire.Hosting;
 using Projects;
 using ViajantesTurismo.Resources;
 
@@ -9,23 +10,11 @@ namespace ViajantesTurismo.AppHost;
 /// </summary>
 internal static class AppHostResourceExtensions
 {
-    /// <summary>Tag for <c>docker.io/library/postgres:18.4</c>.</summary>
-    private const string PostgresImageTag = "18.4";
-
-    /// <summary>Digest for <c>docker.io/library/postgres:18.4</c>.</summary>
-    private const string PostgresImageDigest = "4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20";
-
     /// <summary>Tag for <c>docker.io/sosedoff/pgweb:0.17.0</c>.</summary>
     private const string PgWebImageTag = "0.17.0";
 
     /// <summary>Digest for <c>docker.io/sosedoff/pgweb:0.17.0</c>.</summary>
     private const string PgWebImageDigest = "a5256d416e2e8b92d69a4459058e3eca33a9f075d8325491644411d0bc3bd70b";
-
-    /// <summary>Tag for <c>docker.io/library/redis:8.8</c>.</summary>
-    private const string RedisImageTag = "8.8";
-
-    /// <summary>Digest for <c>docker.io/library/redis:8.8</c>.</summary>
-    private const string RedisImageDigest = "2838d5524559494f6f1cd66e97e76b200d64a633a8614200620755ed395daf32";
 
     /// <summary>Tag for <c>docker.io/redis/redisinsight:3.6</c>.</summary>
     private const string RedisInsightImageTag = "3.6";
@@ -117,8 +106,8 @@ internal static class AppHostResourceExtensions
                 persist: true)
             : null;
         var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer, password: password)
-            .WithImageTag(PostgresImageTag)
-            .WithImageSHA256(PostgresImageDigest)
+            .WithImageTag(PostgresContainerImageTags.Tag)
+            .WithImageSHA256(PostgresContainerImageTags.Digest)
             .WithArgs("-c", "max_connections=200");
 
         if (persistsData)
@@ -145,8 +134,8 @@ internal static class AppHostResourceExtensions
     public static IResourceBuilder<RedisResource> AddCache(this IDistributedApplicationBuilder builder, bool includeRedisInsight)
     {
         var cache = builder.AddRedis(ResourceNames.Cache)
-            .WithImageTag(RedisImageTag)
-            .WithImageSHA256(RedisImageDigest);
+            .WithImageTag(RedisContainerImageTags.Tag)
+            .WithImageSHA256(RedisContainerImageTags.Digest);
 
         if (builder.PersistsData())
         {
@@ -203,9 +192,9 @@ internal static class AppHostResourceExtensions
             return null;
         }
 
-        var conformanceUserPassword = builder.AddLocalSecret(ResourceNames.IdentityProviderConformanceUserPassword);
-        var operatorConformanceUserPassword = builder.AddLocalSecret(ResourceNames.IdentityProviderOperatorConformanceUserPassword);
-        var k6ClientSecret = builder.AddLocalSecret(ResourceNames.IdentityProviderK6ClientSecret);
+        var conformanceUserPassword = builder.AddGeneratedSecret(ResourceNames.IdentityProviderConformanceUserPassword);
+        var operatorConformanceUserPassword = builder.AddGeneratedSecret(ResourceNames.IdentityProviderOperatorConformanceUserPassword);
+        var k6ClientSecret = builder.AddGeneratedSecret(ResourceNames.IdentityProviderK6ClientSecret);
         return AddIdentityProvider(builder, managementWebClientSecret, conformanceUserPassword, operatorConformanceUserPassword, k6ClientSecret);
     }
 
@@ -222,19 +211,6 @@ internal static class AppHostResourceExtensions
             .Single(static parameter => string.Equals(parameter.Name, ResourceNames.IdentityProviderK6ClientSecret, StringComparison.Ordinal)));
     }
 
-    /// <summary>
-    /// Adds a local-only secret parameter that gets a generated value when no configuration supplies one.
-    /// </summary>
-    /// <param name="builder">The distributed application builder.</param>
-    /// <param name="name">The parameter name.</param>
-    /// <returns>The secret parameter.</returns>
-    public static IResourceBuilder<ParameterResource> AddLocalSecret(this IDistributedApplicationBuilder builder, string name)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-
-        return builder.AddParameter(name, new GenerateParameterDefault { MinLength = 32, Special = false }, secret: true);
-    }
-
     private static IResourceBuilder<ContainerResource> AddIdentityProvider(
         IDistributedApplicationBuilder builder,
         IResourceBuilder<ParameterResource> managementWebClientSecret,
@@ -246,7 +222,7 @@ internal static class AppHostResourceExtensions
         ArgumentNullException.ThrowIfNull(operatorConformanceUserPassword);
         ArgumentNullException.ThrowIfNull(k6ClientSecret);
 
-        var bootstrapAdminPassword = builder.AddLocalSecret(ResourceNames.IdentityProviderAdminPassword);
+        var bootstrapAdminPassword = builder.AddGeneratedSecret(ResourceNames.IdentityProviderAdminPassword);
         var realmImportPath = builder.Configuration[RealmImportDirectoryConfigurationKey]
             ?? Path.Combine(AppContext.BaseDirectory, "Keycloak");
 
@@ -334,15 +310,13 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
-        var api = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
-            .WithHttpHealthCheck(EndpointPaths.Health)
+        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
             .WithReference(adminDatabase)
             .WaitFor(adminDatabase)
             .WaitForCompletion(migrationService)
             .WithLocalIdentityProvider(identityProvider)
-            .WithPayments();
-
-        return clamAv is null ? api : api.WithClamAvReference(clamAv).WaitFor(clamAv);
+            .WithPayments()
+            .WithMalwareScanner(clamAv);
     }
 
     /// <summary>
@@ -365,26 +339,15 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<SeaweedFsResource>? seaweedFs,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
-        var catalogApi = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
-            .WithHttpHealthCheck(EndpointPaths.Health)
+        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
             .WaitFor(adminDatabase)
             .WaitFor(catalogDatabase)
             .WaitForCompletion(migrationService)
-            .WithLocalIdentityProvider(identityProvider);
-
-        if (clamAv is not null)
-        {
-            catalogApi.WithClamAvReference(clamAv).WaitFor(clamAv);
-        }
-
-        if (seaweedFs is not null)
-        {
-            catalogApi.WithSeaweedFsReference(seaweedFs).WaitFor(seaweedFs);
-        }
-
-        return catalogApi;
+            .WithLocalIdentityProvider(identityProvider)
+            .WithMalwareScanner(clamAv)
+            .WithMediaObjectStorage(seaweedFs);
     }
 
     /// <summary>
@@ -405,24 +368,14 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<SeaweedFsResource>? seaweedFs)
     {
-        var worker = builder.AddDevelopmentDotNetProject<ViajantesTurismo_Catalog_IntegrationEventWorker>(ResourceNames.CatalogIntegrationEventWorker)
+        return builder.AddDevelopmentDotNetProject<ViajantesTurismo_Catalog_IntegrationEventWorker>(ResourceNames.CatalogIntegrationEventWorker)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
             .WaitFor(adminDatabase)
             .WaitFor(catalogDatabase)
-            .WaitForCompletion(migrationService);
-
-        if (clamAv is not null)
-        {
-            worker.WithClamAvReference(clamAv).WaitFor(clamAv);
-        }
-
-        if (seaweedFs is not null)
-        {
-            worker.WithSeaweedFsReference(seaweedFs).WaitFor(seaweedFs);
-        }
-
-        return worker;
+            .WaitForCompletion(migrationService)
+            .WithMalwareScanner(clamAv)
+            .WithMediaObjectStorage(seaweedFs);
     }
 
     /// <summary>
@@ -488,7 +441,6 @@ internal static class AppHostResourceExtensions
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
             .WithExternalHttpEndpoints()
-            .WithHttpHealthCheck(EndpointPaths.Health)
             .WithReference(cache)
             .WaitFor(cache)
             .WithReference(securityDatabase)
@@ -522,14 +474,67 @@ internal static class AppHostResourceExtensions
             .WithEnvironment(AuthenticationAllowHttpDevelopmentAuthorityEnvironmentVariable, LocalHttpAuthorityAllowed);
     }
 
+    /// <summary>
+    /// Points the resource at the local identity provider, or at the external authority configured under
+    /// <see cref="ExternalInfrastructure.IdentityProviderAuthorityKey"/> when there is no local one.
+    /// </summary>
     private static IResourceBuilder<TResource> WithLocalIdentityProvider<TResource>(
         this IResourceBuilder<TResource> resource,
         IResourceBuilder<ContainerResource>? identityProvider)
         where TResource : IResourceWithEnvironment, IResourceWithWaitSupport
     {
-        return identityProvider is null
-            ? resource
-            : resource.WaitFor(identityProvider).WithDevelopmentOidcAuthority(identityProvider);
+        if (identityProvider is not null)
+        {
+            return resource.WaitFor(identityProvider).WithDevelopmentOidcAuthority(identityProvider);
+        }
+
+        if (ExternalInfrastructure.IdentityProviderAuthority(resource.ApplicationBuilder.Configuration) is not { } authority)
+        {
+            return resource;
+        }
+
+        resource.WithEnvironment(AuthenticationAuthorityEnvironmentVariable, authority.AbsoluteUri.TrimEnd('/'))
+            .WithEnvironment(AuthenticationIssuerEnvironmentVariable, authority.AbsoluteUri.TrimEnd('/'));
+        return authority.Scheme == Uri.UriSchemeHttp
+            ? resource.WithEnvironment(AuthenticationAllowHttpDevelopmentAuthorityEnvironmentVariable, LocalHttpAuthorityAllowed)
+            : resource;
+    }
+
+    /// <summary>Gives the resource the local malware scanner, or the external one configured under <c>AppHost:External:ClamAv</c>.</summary>
+    private static IResourceBuilder<TResource> WithMalwareScanner<TResource>(
+        this IResourceBuilder<TResource> resource,
+        IResourceBuilder<ClamAvResource>? clamAv)
+        where TResource : IResourceWithEnvironment, IResourceWithWaitSupport
+    {
+        if (clamAv is not null)
+        {
+            return resource.WithClamAvReference(clamAv).WaitFor(clamAv);
+        }
+
+        return ExternalInfrastructure.ClamAv(resource.ApplicationBuilder.Configuration) is { } scanner
+            ? resource.WithEnvironment("MalwareScanning__ClamAv__Host", scanner.Host)
+                .WithEnvironment("MalwareScanning__ClamAv__Port", scanner.Port.ToString(System.Globalization.CultureInfo.InvariantCulture))
+            : resource;
+    }
+
+    /// <summary>Gives the resource the local media object storage, or the external one configured under <c>AppHost:External:SeaweedFs</c>.</summary>
+    private static IResourceBuilder<TResource> WithMediaObjectStorage<TResource>(
+        this IResourceBuilder<TResource> resource,
+        IResourceBuilder<SeaweedFsResource>? seaweedFs)
+        where TResource : IResourceWithEnvironment, IResourceWithWaitSupport
+    {
+        if (seaweedFs is not null)
+        {
+            return resource.WithSeaweedFsReference(seaweedFs).WaitFor(seaweedFs);
+        }
+
+        return ExternalInfrastructure.SeaweedFs(resource.ApplicationBuilder.Configuration) is { } storage
+            ? resource.WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__Endpoint", storage.Endpoint)
+                .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__AccessKey", storage.AccessKey)
+                .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__SecretKey", storage.SecretKey)
+                .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__Bucket", storage.Bucket)
+                .WithEnvironment("Catalog__MediaObjectStorage__SeaweedFs__AutoProvisionBucket", "true")
+            : resource;
     }
 
     /// <summary>
@@ -548,13 +553,10 @@ internal static class AppHostResourceExtensions
             throw new InvalidOperationException($"{PublicWebReplicasConfigurationKey} must be a positive integer.");
         }
 
-        var publicWeb = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp);
-
-        return publicWeb
+        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
             .WithReplicas(replicas)
             .WithExternalHttpEndpoints()
-            .WithEnvironment(PublicWebSitemapCanonicalOriginEnvironmentVariable, publicWeb.GetEndpoint("https"))
-            .WithHttpHealthCheck(EndpointPaths.Health)
+            .WithSelfOrigin(PublicWebSitemapCanonicalOriginEnvironmentVariable)
             .WithReference(catalogApiService)
             .WaitFor(catalogApiService);
     }

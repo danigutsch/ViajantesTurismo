@@ -581,11 +581,13 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.HasIndex("DocumentLineageId", "Revision")
                         .IsUnique()
-                        .HasDatabaseName("UX_DocumentDrafts_DocumentLineageId_Revision");
+                        .HasDatabaseName("UX_DocumentDrafts_DocumentLineageId_Revision")
+                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
 
                     b.HasIndex("BookingId", "Type", "Revision")
                         .IsUnique()
-                        .HasDatabaseName("UX_DocumentDrafts_BookingId_Type_Revision");
+                        .HasDatabaseName("UX_DocumentDrafts_BookingId_Type_Revision")
+                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
 
                     b.ToTable("DocumentDrafts");
                 });
@@ -620,7 +622,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.HasIndex("BookingId", "Type")
                         .IsUnique()
-                        .HasDatabaseName("UX_DocumentLineages_BookingId_Type");
+                        .HasDatabaseName("UX_DocumentLineages_BookingId_Type")
+                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
 
                     b.ToTable("DocumentLineages");
                 });
@@ -1129,7 +1132,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.HasIndex("Email")
                                 .IsUnique()
-                                .HasDatabaseName("UX_CustomerContactInfo_Email");
+                                .HasDatabaseName("UX_CustomerContactInfo_Email")
+                                .HasAnnotation("PandaBear:UniqueRule", "customer.email");
 
                             b1.ToTable("CustomerContactInfo", (string)null);
 

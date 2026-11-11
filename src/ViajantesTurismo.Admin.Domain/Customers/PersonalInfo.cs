@@ -14,7 +14,7 @@ public sealed class PersonalInfo
     /// <summary>Customers have no maximum age; <see cref="SharedBirthDate"/> requires one, so the largest value is passed.</summary>
     private const int NoMaximumAgeYears = int.MaxValue;
 
-    private PersonalInfo(string firstName, string lastName, string gender, DateOnly birthDate, string nationality, string occupation)
+    private PersonalInfo(string firstName, string lastName, string gender, SharedBirthDate birthDate, string nationality, string occupation)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -43,7 +43,7 @@ public sealed class PersonalInfo
     }
 
     /// <summary>Date of birth.</summary>
-    public DateOnly BirthDate
+    public SharedBirthDate BirthDate
     {
         get; private set;
     }
@@ -121,7 +121,8 @@ public sealed class PersonalInfo
             errors.Add(OccupationTooLong());
         }
 
-        if (SharedBirthDate.Create(birthDate, today, AdminDomainLimits.MinCustomerAgeYears, NoMaximumAgeYears).IsFailure)
+        var validBirthDate = SharedBirthDate.Create(birthDate, today, AdminDomainLimits.MinCustomerAgeYears, NoMaximumAgeYears);
+        if (validBirthDate.IsFailure)
         {
             errors.Add(BirthDateError(birthDate, today));
         }
@@ -131,7 +132,7 @@ public sealed class PersonalInfo
             return errors.ToResult<PersonalInfo>();
         }
 
-        return Result.Ok(new PersonalInfo(name.Value.FirstName, name.Value.LastName, gender, birthDate, nationality, occupation));
+        return Result.Ok(new PersonalInfo(name.Value.FirstName, name.Value.LastName, gender, validBirthDate.Value, nationality, occupation));
     }
 
     /// <summary>

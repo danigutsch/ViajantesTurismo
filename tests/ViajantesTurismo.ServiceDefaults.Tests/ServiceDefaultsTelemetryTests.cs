@@ -1,120 +1,63 @@
-using System.Diagnostics;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using PandaBear.Mediator;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
+[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
 public sealed class ServiceDefaultsTelemetryTests
 {
-    private const string NpgsqlEventSourcingTelemetryName = "SharedKernel.EventSourcing.Npgsql";
-    private const string PostgreSqlEventSourcingActivityAppend = "eventsourcing.postgresql.append";
-    private const string PostgreSqlEventSourcingMetricEventsAppended = "eventsourcing.postgresql.event.appended";
-    private const string CatalogTelemetryName = "ViajantesTurismo.Catalog";
-    private const string CatalogActivityIntegrationEventHandle = "catalog.integration_event.handle";
-    private const string CatalogMetricIntegrationEvent = "catalog.integration_event";
-
-    [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
-    public void Management_service_defaults_export_admin_client_business_outcomes()
+    [Theory]
+    [InlineData("ViajantesTurismo.Admin.Contracts.Clients")]
+    [InlineData("ViajantesTurismo.Catalog")]
+    [InlineData("ViajantesTurismo.MigrationService.DatabaseInitializationWorker")]
+    public void Host_defaults_export_every_application_activity_source(string sourceName)
     {
         // Arrange
-        const string sourceName = "ViajantesTurismo.Admin.Contracts.Clients";
         var exportedActivities = new ConcurrentQueue<Activity>();
         using var activitySource = new ActivitySource(sourceName);
-        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
-        {
-            ApplicationName = "ViajantesTurismo.Management.Web"
-        });
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { ApplicationName = "ViajantesTurismo.Management.Web" });
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
-        builder.AddServiceDefaults();
+        HostDefaults.Add(builder);
         builder.Services.AddOpenTelemetry().WithTracing(tracing =>
             tracing.AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(exportedActivities))));
         using var host = builder.Build();
         var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
 
         // Act
-        using (var activity = activitySource.StartActivity("customers.create", ActivityKind.Client))
+        using (var activity = activitySource.StartActivity("operation", ActivityKind.Client))
         {
             activity?.SetStatus(ActivityStatusCode.Error);
         }
+
         tracerProvider.ForceFlush();
 
         // Assert
-        var exported = exportedActivities.ShouldHaveSingleItem(activity =>
-            string.Equals(activity.Source.Name, sourceName, StringComparison.Ordinal));
-        exported.OperationName.ShouldBe("customers.create");
+        var exported = exportedActivities.ShouldHaveSingleItem(activity => string.Equals(activity.Source.Name, sourceName, StringComparison.Ordinal));
+        exported.OperationName.ShouldBe("operation");
         exported.Status.ShouldBe(ActivityStatusCode.Error);
     }
 
-    [Fact]
-    public void Add_service_defaults_exports_catalog_custom_tracing_and_metrics()
+    [Theory]
+    [InlineData("ViajantesTurismo.Catalog", "catalog.integration_event")]
+    [InlineData("ViajantesTurismo.Branding", "branding.revision")]
+    [InlineData("Npgsql", "db.client.connection.count")]
+    public void Host_defaults_export_the_application_and_npgsql_meters(string meterName, string instrumentName)
     {
         // Arrange
-        var exportedActivities = new ConcurrentQueue<Activity>();
         var exportedMetricNames = new ConcurrentQueue<string>();
-        using var activitySource = new ActivitySource(CatalogTelemetryName);
-        using var meter = new Meter(CatalogTelemetryName);
-        var counter = meter.CreateCounter<long>(CatalogMetricIntegrationEvent);
+        using var meter = new Meter(meterName);
+        var counter = meter.CreateCounter<long>(instrumentName);
         var builder = Host.CreateApplicationBuilder();
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
-
-        builder.AddServiceDefaults();
-        builder.Services.AddOpenTelemetry()
-            .WithTracing(tracing =>
-            {
-                tracing.AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(exportedActivities)));
-            })
-            .WithMetrics(metrics =>
-            {
-                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
-            });
-
-        using var host = builder.Build();
-        var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
-        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
-
-        // Act
-        using (var activity = activitySource.StartActivity(CatalogActivityIntegrationEventHandle, ActivityKind.Consumer))
-        {
-            activity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        counter.Add(1);
-        tracerProvider.ForceFlush();
-        meterProvider.ForceFlush();
-
-        // Assert
-        var catalogActivity = exportedActivities.ShouldHaveSingleItem(activity =>
-            string.Equals(activity.Source.Name, CatalogTelemetryName, StringComparison.Ordinal));
-        catalogActivity.OperationName.ShouldBe(CatalogActivityIntegrationEventHandle);
-        exportedMetricNames.ShouldContain(CatalogMetricIntegrationEvent, StringComparer.Ordinal);
-    }
-
-    [Fact]
-    public void Add_service_defaults_exports_aspnetcore_error_and_security_metrics()
-    {
-        // Arrange
-        const string aspNetCoreMeterName = "PandaBear.AspNetCore";
-        const string unhandledExceptionsCounter = "unhandled_exceptions_total";
-        var exportedMetricNames = new ConcurrentQueue<string>();
-        using var meter = new Meter(aspNetCoreMeterName);
-        var counter = meter.CreateCounter<long>(unhandledExceptionsCounter);
-        var builder = Host.CreateApplicationBuilder();
-        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
-
-        builder.AddServiceDefaults();
-        builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
-            {
-                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
-            });
-
+        HostDefaults.Add(builder);
+        builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
+            metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames))));
         using var host = builder.Build();
         var meterProvider = host.Services.GetRequiredService<MeterProvider>();
 
@@ -123,28 +66,21 @@ public sealed class ServiceDefaultsTelemetryTests
         meterProvider.ForceFlush();
 
         // Assert
-        exportedMetricNames.ShouldContain(unhandledExceptionsCounter, StringComparer.Ordinal);
+        exportedMetricNames.ShouldContain(instrumentName, StringComparer.Ordinal);
     }
 
     [Fact]
-    public void Add_service_defaults_exports_the_native_npgsql_pool_metrics()
+    public void Host_defaults_do_not_export_unrelated_meters()
     {
         // Arrange
-        const string npgsqlMeterName = "Npgsql";
-        const string connectionCountMetric = "db.client.connection.count";
         var exportedMetricNames = new ConcurrentQueue<string>();
-        using var meter = new Meter(npgsqlMeterName);
-        var counter = meter.CreateCounter<long>(connectionCountMetric);
+        using var meter = new Meter("Unrelated.Library");
+        var counter = meter.CreateCounter<long>("unrelated.count");
         var builder = Host.CreateApplicationBuilder();
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
-
-        builder.AddServiceDefaults();
-        builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
-            {
-                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
-            });
-
+        HostDefaults.Add(builder);
+        builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
+            metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames))));
         using var host = builder.Build();
         var meterProvider = host.Services.GetRequiredService<MeterProvider>();
 
@@ -153,131 +89,6 @@ public sealed class ServiceDefaultsTelemetryTests
         meterProvider.ForceFlush();
 
         // Assert
-        exportedMetricNames.ShouldContain(connectionCountMetric, StringComparer.Ordinal);
+        exportedMetricNames.ShouldNotContain("unrelated.count", StringComparer.Ordinal);
     }
-
-    [Fact]
-    public void Add_service_defaults_exports_the_handled_ui_failure_metric()
-    {
-        // Arrange
-        const string blazorMeterName = "PandaBear.Blazor";
-        const string handledUiFailuresCounter = "handled_ui_failures_total";
-        var exportedMetricNames = new ConcurrentQueue<string>();
-        using var meter = new Meter(blazorMeterName);
-        var counter = meter.CreateCounter<long>(handledUiFailuresCounter);
-        var builder = Host.CreateApplicationBuilder();
-        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
-
-        builder.AddServiceDefaults();
-        builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
-            {
-                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
-            });
-
-        using var host = builder.Build();
-        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
-
-        // Act
-        counter.Add(1);
-        meterProvider.ForceFlush();
-
-        // Assert
-        exportedMetricNames.ShouldContain(handledUiFailuresCounter, StringComparer.Ordinal);
-    }
-
-    [Fact]
-    public void Add_service_defaults_exports_mediator_custom_tracing_and_metrics()
-    {
-        // Arrange
-        var exportedActivities = new ConcurrentQueue<Activity>();
-        var exportedMetricNames = new ConcurrentQueue<string>();
-        var builder = Host.CreateApplicationBuilder();
-        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
-
-        builder.AddServiceDefaults();
-        builder.Services.AddSingleton<AppMediatorInstrumentation>();
-        builder.Services.AddOpenTelemetry()
-            .WithTracing(tracing =>
-            {
-                tracing.AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(exportedActivities)));
-            })
-            .WithMetrics(metrics =>
-            {
-                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
-            });
-
-        using var host = builder.Build();
-        var instrumentation = host.Services.GetRequiredService<AppMediatorInstrumentation>();
-        var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
-        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
-
-        // Act
-        using (var activity = SharedKernelMediatorActivitySource.Source.StartActivity("test.dispatch", ActivityKind.Internal))
-        {
-            activity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        instrumentation.RequestsTotal.Add(
-            1,
-            new TagList
-            {
-                { "mediator.request.name", "LookupTour" },
-                { "mediator.outcome", "success" }
-            });
-
-        tracerProvider.ForceFlush();
-        meterProvider.ForceFlush();
-
-        // Assert
-        var mediatorActivity = exportedActivities.ShouldHaveSingleItem(activity =>
-            string.Equals(activity.Source.Name, SharedKernelMediatorActivitySource.ActivitySourceName, StringComparison.Ordinal));
-        mediatorActivity.OperationName.ShouldBe("test.dispatch");
-        exportedMetricNames.ShouldContain("mediator.requests", StringComparer.Ordinal);
-    }
-
-    [Fact]
-    public void Add_service_defaults_exports_sharedkernel_provider_tracing_and_metrics()
-    {
-        // Arrange
-        var exportedActivities = new ConcurrentQueue<Activity>();
-        var exportedMetricNames = new ConcurrentQueue<string>();
-        using var activitySource = new ActivitySource(NpgsqlEventSourcingTelemetryName);
-        using var meter = new Meter(NpgsqlEventSourcingTelemetryName);
-        var counter = meter.CreateCounter<long>(PostgreSqlEventSourcingMetricEventsAppended);
-        var builder = Host.CreateApplicationBuilder();
-        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
-
-        builder.AddServiceDefaults();
-        builder.Services.AddOpenTelemetry()
-            .WithTracing(tracing =>
-            {
-                tracing.AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(exportedActivities)));
-            })
-            .WithMetrics(metrics =>
-            {
-                metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames)));
-            });
-
-        using var host = builder.Build();
-        var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
-        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
-
-        // Act
-        using (var activity = activitySource.StartActivity(PostgreSqlEventSourcingActivityAppend, ActivityKind.Internal))
-        {
-            activity?.SetStatus(ActivityStatusCode.Ok);
-        }
-
-        counter.Add(1);
-        tracerProvider.ForceFlush();
-        meterProvider.ForceFlush();
-
-        // Assert
-        var providerActivity = exportedActivities.ShouldHaveSingleItem(activity =>
-            string.Equals(activity.Source.Name, NpgsqlEventSourcingTelemetryName, StringComparison.Ordinal));
-        providerActivity.OperationName.ShouldBe(PostgreSqlEventSourcingActivityAppend);
-        exportedMetricNames.ShouldContain(PostgreSqlEventSourcingMetricEventsAppended, StringComparer.Ordinal);
-    }
-
 }

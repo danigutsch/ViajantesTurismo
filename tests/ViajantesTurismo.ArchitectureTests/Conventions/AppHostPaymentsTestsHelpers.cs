@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
+using PandaBear.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -41,22 +41,11 @@ internal static class AppHostPaymentsTestsHelpers
         File.WriteAllBytes(path, certificate.Export(X509ContentType.Pfx));
     }
 
-    /// <summary>
-    /// Collects the plain-text environment variables the Admin API resource receives.
-    /// </summary>
-    /// <remarks>
-    /// Runs the environment callbacks without resolving references, because a run-mode connection string waits for
-    /// endpoints that only exist once the application is started.
-    /// </remarks>
+    /// <summary>Collects the plain-text environment variables the Admin API resource receives.</summary>
     internal static async Task<Dictionary<string, string>> ApiEnvironment(IDistributedApplicationBuilder builder)
     {
-        var api = builder.Resources.OfType<ProjectResource>().Single(project => project.Name == ResourceNames.Api);
-        var variables = new Dictionary<string, object>(StringComparer.Ordinal);
-        var context = new EnvironmentCallbackContext(builder.ExecutionContext, api, variables);
-        foreach (var annotation in api.Annotations.OfType<EnvironmentCallbackAnnotation>())
-        {
-            await annotation.Callback(context);
-        }
+        var api = AppHostTestBuilder.Project(builder, ResourceNames.Api);
+        var variables = await AppHostModel.EvaluateEnvironment(api, TestContext.Current.CancellationToken);
 
         return variables
             .Where(static variable => variable.Value is string)

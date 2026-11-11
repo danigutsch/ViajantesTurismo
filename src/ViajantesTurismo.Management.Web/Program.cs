@@ -5,11 +5,12 @@ using PandaBear.HttpClients;
 using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Resources;
+using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddRedisOutputCache(ResourceNames.Cache);
 builder.Services.AddHttpClientDefaults();
 builder.AddConfiguredTrustedForwardedHeaders();
@@ -78,6 +79,6 @@ app.UseOutputCache();
 
 app.MapManagementWebEndpoints();
 
-app.MapDefaultEndpoints();
+app.MapSharedKernelDefaultEndpoints();
 
 await app.RunAsync();
