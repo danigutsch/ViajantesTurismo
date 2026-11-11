@@ -11,6 +11,7 @@ using OpenTelemetry;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
+using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
@@ -21,12 +22,12 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
     public void Service_defaults_remove_preconfigured_non_otlp_logging_providers()
     {
         // Arrange
-        var capturedMessages = new ConcurrentQueue<string>();
+        using var recordingProvider = new RecordingLoggerProvider();
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
         {
             EnvironmentName = Environments.Production
         });
-        builder.Logging.AddProvider(new CollectingLoggerProvider(capturedMessages));
+        builder.Logging.AddProvider(recordingProvider);
         builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = string.Empty;
 
         // Act
@@ -43,7 +44,7 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
             "conflict");
 
         // Assert
-        capturedMessages.ShouldBeEmpty();
+        recordingProvider.Records.ShouldBeEmpty();
     }
 
     [Fact]
