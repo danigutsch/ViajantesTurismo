@@ -13,6 +13,7 @@ public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigration
     public async Task Initial_branding_migration_creates_the_dedicated_schema_and_store_round_trips_settings()
     {
         // Arrange
+        await scenario.ResetSchemas(TestContext.Current.CancellationToken);
         await scenario.ApplyMigrations(TestContext.Current.CancellationToken);
         var settings = BrandingSettings.Create(new BrandingSettingsDto
         {
@@ -110,6 +111,7 @@ public sealed class BrandingPostgreSqlMigrationTests(BrandingPostgreSqlMigration
     public async Task Schema_reset_preserves_migration_history_and_clears_branding_settings()
     {
         // Arrange
+        await scenario.ResetSchemas(TestContext.Current.CancellationToken);
         await scenario.ApplyMigrations(TestContext.Current.CancellationToken);
         var settings = BrandingSettings.Create(new BrandingSettingsDto
         {
