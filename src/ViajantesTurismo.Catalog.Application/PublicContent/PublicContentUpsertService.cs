@@ -45,7 +45,7 @@ public sealed class PublicContentUpsertService(IPublicContentStore store)
 
         var content = EditablePublicContent.Create(
             key,
-            ToDomainLanguage(request.SourceLanguage),
+            PublicContentCultures.Parse(request.SourceLanguage),
             variantResults.Select(variantResult => variantResult.Value));
         if (content.IsFailure)
         {
@@ -73,19 +73,12 @@ public sealed class PublicContentUpsertService(IPublicContentStore store)
         }
 
         return PublicContentVariant.Create(
-            ToDomainLanguage(variant.Language),
+            PublicContentCultures.Parse(variant.Language),
             variant.Title,
             variant.Body,
             variant.SeoTitle,
             variant.MetaDescription,
             variant.ShareSummary,
             variant.RequiresHumanReview);
-    }
-
-    private static PublicContentLanguage ToDomainLanguage(PublicContentLanguageDto language)
-    {
-        return language == PublicContentLanguageDto.None || !Enum.IsDefined(language)
-            ? PublicContentLanguage.None
-            : (PublicContentLanguage)(int)language;
     }
 }

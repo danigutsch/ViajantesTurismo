@@ -1,4 +1,4 @@
-using ViajantesTurismo.Catalog.Domain.PublicContent;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
@@ -8,9 +8,9 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 public sealed record MediaImageAccessibilityDraftInput
 {
     /// <summary>
-    /// Gets the requested draft language.
+    /// Gets the requested draft culture, or <see langword="null"/> when the request named none.
     /// </summary>
-    public required PublicContentLanguage Language
+    public required ContentCulture? Language
     {
         get; init;
     }

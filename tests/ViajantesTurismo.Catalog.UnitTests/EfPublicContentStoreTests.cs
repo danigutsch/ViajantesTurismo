@@ -60,7 +60,7 @@ public sealed class EfPublicContentStoreTests
         _ = saved.ShouldNotBeNull();
         saved.Key.ShouldBe(content.Key);
         saved.SourceLanguage.ShouldBe(content.SourceLanguage);
-        saved.Variants.OrderBy(variant => variant.Language).ShouldBe(content.Variants.OrderBy(variant => variant.Language));
+        saved.Variants.OrderBy(variant => variant.Language.Value, StringComparer.Ordinal).ShouldBe(content.Variants.OrderBy(variant => variant.Language.Value, StringComparer.Ordinal));
         saved.PublicationState.ShouldBe(content.PublicationState);
     }
 

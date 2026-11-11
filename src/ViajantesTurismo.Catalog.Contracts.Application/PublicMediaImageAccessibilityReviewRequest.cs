@@ -8,10 +8,10 @@ namespace ViajantesTurismo.Catalog.Contracts.Application;
 public sealed record PublicMediaImageAccessibilityReviewRequest
 {
     /// <summary>
-    /// Gets the accessibility text language.
+    /// Gets the language tag of the accessibility text.
     /// </summary>
     [Required]
-    public PublicContentLanguageDto Language { get; init; } = PublicContentLanguageDto.EnUs;
+    public string Language { get; init; } = PublicContentLanguageTags.EnglishUnitedStates;
 
     /// <summary>
     /// Gets the approved alternative text.

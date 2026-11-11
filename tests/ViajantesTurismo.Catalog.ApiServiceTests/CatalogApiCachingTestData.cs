@@ -60,7 +60,7 @@ internal static class CatalogApiCachingTestData
     public static EditablePublicContent CreatePublishedContent(string title)
     {
         var enUs = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             title,
             "Ride with us",
             null,
@@ -73,7 +73,7 @@ internal static class CatalogApiCachingTestData
         }
 
         var ptBr = PublicContentVariant.Create(
-            PublicContentLanguage.PtBr,
+            PublicContentCultures.PortugueseBrazil,
             title,
             "Pedale conosco",
             null,
@@ -85,7 +85,7 @@ internal static class CatalogApiCachingTestData
             throw new InvalidOperationException(ptBr.ErrorDetails.Detail);
         }
 
-        var content = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
+        var content = EditablePublicContent.Create("home.hero", PublicContentCultures.EnglishUnitedStates, [enUs.Value, ptBr.Value]);
         if (content.IsFailure)
         {
             throw new InvalidOperationException(content.ErrorDetails.Detail);
@@ -105,11 +105,11 @@ internal static class CatalogApiCachingTestData
     {
         return new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs,
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates,
             Variants =
             {
-                new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = title, Body = "Ride with us" },
-                new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = title, Body = "Pedale conosco" }
+                new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = title, Body = "Ride with us" },
+                new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = title, Body = "Pedale conosco" }
             }
         };
     }

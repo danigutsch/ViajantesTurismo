@@ -21,9 +21,9 @@ public sealed class PublicContentKeyPostgreSqlTests(HostedTestFixture shared)
         await using var dbContext = new CatalogDbContextDesignTimeFactory().CreateDbContext([]);
         dbContext.Database.SetConnectionString(database.ConnectionString);
         await dbContext.Database.MigrateAsync(ct);
-        var enUs = PublicContentVariant.Create(PublicContentLanguage.EnUs, "Welcome", "Tour information", null, null, null, false).Value;
-        var ptBr = PublicContentVariant.Create(PublicContentLanguage.PtBr, "Welcome", "Tour information", null, null, null, false).Value;
-        var content = EditablePublicContent.Create(input, PublicContentLanguage.EnUs, [enUs, ptBr]).Value;
+        var enUs = PublicContentVariant.Create(PublicContentCultures.EnglishUnitedStates, "Welcome", "Tour information", null, null, null, false).Value;
+        var ptBr = PublicContentVariant.Create(PublicContentCultures.PortugueseBrazil, "Welcome", "Tour information", null, null, null, false).Value;
+        var content = EditablePublicContent.Create(input, PublicContentCultures.EnglishUnitedStates, [enUs, ptBr]).Value;
         var store = new EfPublicContentStore(dbContext);
         await store.SaveContent(content, ct);
         dbContext.ChangeTracker.Clear();

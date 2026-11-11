@@ -141,10 +141,10 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
 
         // Act
         using var response = await client.PutAsJsonAsync(
@@ -157,7 +157,7 @@ public sealed class CatalogApiEndpointTests
         var saved = await response.Content.ReadFromJsonAsync<PublicContentDto>(TestContext.Current.CancellationToken);
         _ = saved.ShouldNotBeNull();
         saved.Key.ShouldBe("HOME.HERO");
-        saved.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.RequiresHumanReview);
+        saved.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil && variant.RequiresHumanReview);
         saved.PublicationState.ShouldBe("ReviewRequired");
     }
 
@@ -169,10 +169,10 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = string.Empty, Body = "Ride with us" });
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = string.Empty, Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
         using var response = await client.PutAsJsonAsync(
@@ -189,6 +189,62 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Public_content_endpoint_answers_language_tags_in_canonical_casing()
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var request = new UpsertPublicContentRequest
+        {
+            SourceLanguage = "pt-br"
+        };
+        request.Variants.Add(new PublicContentVariantDto { Language = "EN-us", Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = "pt-br", Title = "Bem-vindo", Body = "Pedale conosco" });
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var saved = await response.Content.ReadFromJsonAsync<PublicContentDto>(TestContext.Current.CancellationToken);
+        _ = saved.ShouldNotBeNull();
+        saved.SourceLanguage.ShouldBe(PublicContentLanguageTags.PortugueseBrazil);
+        saved.Variants.Select(variant => variant.Language).ShouldBe([PublicContentLanguageTags.EnglishUnitedStates, PublicContentLanguageTags.PortugueseBrazil]);
+    }
+
+    [Theory]
+    [InlineData("fr-FR")]
+    [InlineData("EnUs")]
+    [InlineData("")]
+    public async Task Public_content_endpoint_rejects_a_source_language_that_is_not_supported(string sourceLanguage)
+    {
+        // Arrange
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+        var request = new UpsertPublicContentRequest
+        {
+            SourceLanguage = sourceLanguage
+        };
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco" });
+
+        // Act
+        using var response = await client.PutAsJsonAsync(
+            new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
+            request,
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+        _ = problem.ShouldNotBeNull();
+        problem.Errors.Keys.ShouldContain(nameof(UpsertPublicContentRequest.SourceLanguage));
+    }
+
+    [Fact]
     public async Task Public_content_endpoint_returns_validation_problem_when_variant_language_is_duplicated()
     {
         // Arrange
@@ -196,10 +252,10 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Welcome", Body = "Ride with us" });
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
         using var response = await client.PutAsJsonAsync(
@@ -222,7 +278,7 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
         using var content = new StringContent(
             """
-            { "sourceLanguage": 1, "variants": null }
+            { "sourceLanguage": "en-US", "variants": null }
             """,
             Encoding.UTF8,
             "application/json");
@@ -249,10 +305,10 @@ public sealed class CatalogApiEndpointTests
         using var content = new StringContent(
             """
             {
-              "sourceLanguage": 1,
+              "sourceLanguage": "en-US",
               "variants": [
                 null,
-                { "language": 2, "title": "Bem-vindo", "body": "Pedale conosco" }
+                { "language": "pt-BR", "title": "Bem-vindo", "body": "Pedale conosco" }
               ]
             }
             """,
@@ -280,9 +336,9 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
 
         // Act
         using var response = await client.PutAsJsonAsync(
@@ -303,7 +359,7 @@ public sealed class CatalogApiEndpointTests
         // Arrange
         var publicContentStore = new TestPublicContentStore();
         var enUs = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             "Welcome",
             "Ride with us",
             "Cycle tours",
@@ -311,7 +367,7 @@ public sealed class CatalogApiEndpointTests
             null,
             requiresHumanReview: false);
         var ptBr = PublicContentVariant.Create(
-            PublicContentLanguage.PtBr,
+            PublicContentCultures.PortugueseBrazil,
             "Bem-vindo",
             "Pedale conosco",
             "Cicloturismo",
@@ -320,7 +376,7 @@ public sealed class CatalogApiEndpointTests
             requiresHumanReview: false);
         enUs.IsSuccess.ShouldBeTrue();
         ptBr.IsSuccess.ShouldBeTrue();
-        var content = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
+        var content = EditablePublicContent.Create("home.hero", PublicContentCultures.EnglishUnitedStates, [enUs.Value, ptBr.Value]);
         content.IsSuccess.ShouldBeTrue();
         var publish = content.Value.Publish();
         publish.IsSuccess.ShouldBeTrue();
@@ -338,7 +394,7 @@ public sealed class CatalogApiEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         _ = variant.ShouldNotBeNull();
-        variant.Language.ShouldBe(PublicContentLanguageDto.PtBr);
+        variant.Language.ShouldBe(PublicContentLanguageTags.PortugueseBrazil);
         variant.Title.ShouldBe("Bem-vindo");
         variant.RequiresHumanReview.ShouldBeFalse();
     }
@@ -349,7 +405,7 @@ public sealed class CatalogApiEndpointTests
         // Arrange
         var publicContentStore = new TestPublicContentStore();
         var enUs = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             "Welcome",
             "Ride with us",
             null,
@@ -357,7 +413,7 @@ public sealed class CatalogApiEndpointTests
             null,
             requiresHumanReview: false);
         var ptBr = PublicContentVariant.Create(
-            PublicContentLanguage.PtBr,
+            PublicContentCultures.PortugueseBrazil,
             "Bem-vindo",
             "Pedale conosco",
             null,
@@ -366,7 +422,7 @@ public sealed class CatalogApiEndpointTests
             requiresHumanReview: false);
         enUs.IsSuccess.ShouldBeTrue();
         ptBr.IsSuccess.ShouldBeTrue();
-        var content = EditablePublicContent.Create("home/hero", PublicContentLanguage.EnUs, [enUs.Value, ptBr.Value]);
+        var content = EditablePublicContent.Create("home/hero", PublicContentCultures.EnglishUnitedStates, [enUs.Value, ptBr.Value]);
         content.IsSuccess.ShouldBeTrue();
         var publish = content.Value.Publish();
         publish.IsSuccess.ShouldBeTrue();
@@ -396,10 +452,10 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
         using var writeResponse = await client.PutAsJsonAsync(
@@ -415,7 +471,7 @@ public sealed class CatalogApiEndpointTests
         writeResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         _ = variant.ShouldNotBeNull();
-        variant.Language.ShouldBe(PublicContentLanguageDto.PtBr);
+        variant.Language.ShouldBe(PublicContentLanguageTags.PortugueseBrazil);
         variant.Title.ShouldBe("Bem-vindo");
         variant.RequiresHumanReview.ShouldBeFalse();
     }
@@ -643,7 +699,7 @@ public sealed class CatalogApiEndpointTests
         // Act
         using var response = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
-            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs, Context = "Hero image" },
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageTags.EnglishUnitedStates, Context = "Hero image" },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -687,7 +743,7 @@ public sealed class CatalogApiEndpointTests
         // Act
         using var response = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
-            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.None },
+            new PublicMediaImageAccessibilityDraftRequest { Language = string.Empty },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -709,7 +765,7 @@ public sealed class CatalogApiEndpointTests
         // Act
         using var response = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/media/images/{imageId}/accessibility-draft", UriKind.Relative),
-            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs, Latitude = -23.55m },
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageTags.EnglishUnitedStates, Latitude = -23.55m },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -734,7 +790,7 @@ public sealed class CatalogApiEndpointTests
         // Act
         using var response = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
-            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageTags.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -761,7 +817,7 @@ public sealed class CatalogApiEndpointTests
         // Act
         using var response = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
-            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs },
+            new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageTags.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -1303,7 +1359,7 @@ public sealed class CatalogApiEndpointTests
             "Draft image",
             displayOrder: 0,
             isCover: true);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft image", null).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "AI draft image", null).IsSuccess.ShouldBeTrue();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
         using var client = factory.CreateClient();
@@ -1717,7 +1773,7 @@ public sealed class CatalogApiEndpointTests
             isCover: true);
         if (unreviewed)
         {
-            image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft image", null).IsSuccess.ShouldBeTrue();
+            image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "AI draft image", null).IsSuccess.ShouldBeTrue();
         }
         else
         {
@@ -1763,7 +1819,7 @@ public sealed class CatalogApiEndpointTests
         listener.Start();
         var now = new DateTimeOffset(2026, 10, 21, 10, 0, 0, TimeSpan.Zero);
         var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "source.jpg", "review.jpg", "sha256:review", "English draft", 0, true);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "English draft", null, now.AddSeconds(draftOffsetSeconds)).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "English draft", null, now.AddSeconds(draftOffsetSeconds)).IsSuccess.ShouldBeTrue();
         var store = new TestPublicMediaImageStore();
         await store.Upsert(image, TestContext.Current.CancellationToken);
         await using var baseFactory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), store, new TestMediaObjectStore());
@@ -1781,7 +1837,7 @@ public sealed class CatalogApiEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         ages.ShouldHaveSingleItem().ShouldBe(expectedAge);
-        image.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBeNull();
+        image.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.EnglishUnitedStates).PendingDraftCreatedAt.ShouldBeNull();
     }
 
     [Fact]
@@ -1833,14 +1889,14 @@ public sealed class CatalogApiEndpointTests
         // Arrange
         var tourId = Guid.CreateVersion7();
         var image = PublicMediaImageTestFactory.CreateReadyImage(tourId, "source.jpg", "review-640.jpg", "sha256:review", "English draft", 0, true);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "English draft", null).IsSuccess.ShouldBeTrue();
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Descrição em português", null).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "English draft", null).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.PortugueseBrazil, "Descrição em português", null).IsSuccess.ShouldBeTrue();
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), mediaStore, new TestMediaObjectStore());
         using var client = factory.CreateClient();
         using var content = new StringContent("""
-            {"language":2,"altText":"Ciclistas na montanha","isDecorative":false,
+            {"language":"pt-BR","altText":"Ciclistas na montanha","isDecorative":false,
              "sourceObjectKey":"attacker","processingStatus":0,"responsiveVariants":[],"tourLinks":[]}
             """, Encoding.UTF8, "application/json");
 
@@ -1858,8 +1914,8 @@ public sealed class CatalogApiEndpointTests
         saved.ProcessingStatus.ShouldBe(MediaImageProcessingStatus.Ready);
         saved.ResponsiveVariants.Count.ShouldBe(1);
         saved.BelongsToTour(tourId).ShouldBeTrue();
-        saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.EnUs).RequiresHumanReview.ShouldBeTrue();
-        saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr).RequiresHumanReview.ShouldBeFalse();
+        saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.EnglishUnitedStates).RequiresHumanReview.ShouldBeTrue();
+        saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.PortugueseBrazil).RequiresHumanReview.ShouldBeFalse();
     }
 
     [Fact]
@@ -1887,7 +1943,7 @@ public sealed class CatalogApiEndpointTests
             "Initial image",
             displayOrder: 0,
             isCover: true);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft", null).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "AI draft", null).IsSuccess.ShouldBeTrue();
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         var objectStore = new TestMediaObjectStore();
@@ -1906,7 +1962,7 @@ public sealed class CatalogApiEndpointTests
             new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-review", UriKind.Relative),
             new PublicMediaImageAccessibilityReviewRequest
             {
-                Language = PublicContentLanguageDto.EnUs,
+                Language = PublicContentLanguageTags.EnglishUnitedStates,
                 AltText = "Cyclists riding through a mountain pass.",
                 IsDecorative = false
             },
@@ -1948,7 +2004,7 @@ public sealed class CatalogApiEndpointTests
             "Initial image",
             displayOrder: 0,
             isCover: true);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "AI draft", null).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "AI draft", null).IsSuccess.ShouldBeTrue();
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         var objectStore = new TestMediaObjectStore();
@@ -1963,7 +2019,7 @@ public sealed class CatalogApiEndpointTests
             new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-review", UriKind.Relative),
             new PublicMediaImageAccessibilityReviewRequest
             {
-                Language = PublicContentLanguageDto.EnUs,
+                Language = PublicContentLanguageTags.EnglishUnitedStates,
                 AltText = string.Empty,
                 IsDecorative = false
             },

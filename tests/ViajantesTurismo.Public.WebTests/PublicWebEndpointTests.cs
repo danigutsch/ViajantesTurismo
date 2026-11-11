@@ -204,7 +204,7 @@ public sealed class PublicWebEndpointTests
         var catalogApi = new FakePublicCatalogApiClient();
         catalogApi.AddContent("pt-BR", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.PtBr,
+            Language = PublicContentLanguageTags.PortugueseBrazil,
             Title = "Cicloturismo pelo mundo!",
             Body = "Pedale com cultura, saúde e diversão.",
             SeoTitle = "Cicloturismo - Viajantes Turismo"
@@ -232,7 +232,7 @@ public sealed class PublicWebEndpointTests
         var catalogApi = new FakePublicCatalogApiClient();
         catalogApi.AddContent("pt-BR", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.PtBr,
+            Language = PublicContentLanguageTags.PortugueseBrazil,
             Title = "Cicloturismo pelo mundo!",
             Body = "Pedale com cultura, saúde e diversão.",
             SeoTitle = "Cicloturismo - Viajantes Turismo"
@@ -477,7 +477,7 @@ public sealed class PublicWebEndpointTests
         var catalogApi = new FakePublicCatalogApiClient();
         catalogApi.AddContent("other.section", "en-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Wrong section",
             Body = "This content belongs elsewhere.",
             SeoTitle = "Wrong section - Viajantes Turismo"
@@ -509,7 +509,7 @@ public sealed class PublicWebEndpointTests
         catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
         catalogApi.AddContent("en-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Cycle safely",
             Body = "Guided tours for everyone.",
             SeoTitle = "Cycle safely - Viajantes Turismo"
@@ -538,7 +538,7 @@ public sealed class PublicWebEndpointTests
         var catalogApi = new FakePublicCatalogApiClient();
         var content = new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Cycle safely",
             Body = "Guided tours for everyone.",
             SeoTitle = "Cycle safely - Viajantes Turismo"
@@ -559,14 +559,14 @@ public sealed class PublicWebEndpointTests
         var catalogApi = new FakePublicCatalogApiClient();
         catalogApi.AddContent("home\nhero", "en-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Newline key",
             Body = "Key-specific content.",
             SeoTitle = "Newline key - Viajantes Turismo"
         });
         catalogApi.AddContent("home", "hero\nen-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Other key",
             Body = "Other content.",
             SeoTitle = "Other key - Viajantes Turismo"
@@ -591,7 +591,7 @@ public sealed class PublicWebEndpointTests
         var catalogApi = new FakePublicCatalogApiClient();
         catalogApi.AddContent("en-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Cycle safely",
             Body = "Guided tours for everyone.",
             SeoTitle = "Cycle safely - Viajantes Turismo"

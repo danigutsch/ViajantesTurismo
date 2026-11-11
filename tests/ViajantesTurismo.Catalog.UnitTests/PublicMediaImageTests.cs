@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
@@ -147,7 +148,7 @@ public sealed class PublicMediaImageTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
 
         // Act
-        var result = image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "Cyclists riding near a mountain trail", "Mountain cycling tour");
+        var result = image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "Cyclists riding near a mountain trail", "Mountain cycling tour");
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -164,10 +165,10 @@ public sealed class PublicMediaImageTests
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "Cyclists riding near a mountain trail", null).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "Cyclists riding near a mountain trail", null).IsSuccess.ShouldBeTrue();
 
         // Act
-        var result = image.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, "Cyclists riding near a mountain trail", null, isDecorative: false);
+        var result = image.SetReviewedAccessibilityText(PublicContentCultures.EnglishUnitedStates, "Cyclists riding near a mountain trail", null, isDecorative: false);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -183,7 +184,7 @@ public sealed class PublicMediaImageTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
 
         // Act
-        var result = image.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, null, null, isDecorative: true);
+        var result = image.SetReviewedAccessibilityText(PublicContentCultures.EnglishUnitedStates, null, null, isDecorative: true);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -199,7 +200,7 @@ public sealed class PublicMediaImageTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
 
         // Act
-        var result = image.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, null, null, isDecorative: false);
+        var result = image.SetReviewedAccessibilityText(PublicContentCultures.EnglishUnitedStates, null, null, isDecorative: false);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -213,7 +214,7 @@ public sealed class PublicMediaImageTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
 
         // Act
-        var result = image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, string.Empty, null);
+        var result = image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, string.Empty, null);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -224,7 +225,7 @@ public sealed class PublicMediaImageTests
     public void Ai_draft_accessibility_text_cannot_mark_images_decorative()
     {
         // Arrange
-        const PublicContentLanguage language = PublicContentLanguage.EnUs;
+        var language = PublicContentCultures.EnglishUnitedStates;
 
         // Act
         var result = PublicMediaImageAccessibilityText.Create(
@@ -243,7 +244,7 @@ public sealed class PublicMediaImageTests
     public void Accessibility_text_requires_language()
     {
         // Arrange
-        const PublicContentLanguage language = PublicContentLanguage.None;
+        ContentCulture? language = null;
 
         // Act
         var result = PublicMediaImageAccessibilityText.Create(
@@ -262,7 +263,7 @@ public sealed class PublicMediaImageTests
     public void Accessibility_text_rejects_unknown_language()
     {
         // Arrange
-        const PublicContentLanguage language = (PublicContentLanguage)999;
+        var language = ContentCulture.Restore("fr-FR");
 
         // Act
         var result = PublicMediaImageAccessibilityText.Create(
@@ -281,7 +282,7 @@ public sealed class PublicMediaImageTests
     public void Decorative_accessibility_text_cannot_publish_alt_text()
     {
         // Arrange
-        const PublicContentLanguage language = PublicContentLanguage.EnUs;
+        var language = PublicContentCultures.EnglishUnitedStates;
 
         // Act
         var result = PublicMediaImageAccessibilityText.CreateReviewed(
@@ -298,7 +299,7 @@ public sealed class PublicMediaImageTests
     public void Ai_generated_accessibility_text_cannot_skip_human_review()
     {
         // Arrange
-        const PublicContentLanguage language = PublicContentLanguage.EnUs;
+        var language = PublicContentCultures.EnglishUnitedStates;
 
         // Act
         var result = PublicMediaImageAccessibilityText.Create(
@@ -317,7 +318,7 @@ public sealed class PublicMediaImageTests
     public void Accessibility_text_rejects_text_that_exceeds_contract_limits()
     {
         // Arrange
-        const PublicContentLanguage language = PublicContentLanguage.EnUs;
+        var language = PublicContentCultures.EnglishUnitedStates;
 
         // Act
         var result = PublicMediaImageAccessibilityText.Create(
@@ -336,9 +337,9 @@ public sealed class PublicMediaImageTests
     public void Accessibility_text_publication_state_requires_reviewed_content()
     {
         // Arrange
-        var reviewed = PublicMediaImageAccessibilityText.CreateReviewed(PublicContentLanguage.EnUs, "Cyclists riding near a mountain trail", null, isDecorative: false);
-        var decorative = PublicMediaImageAccessibilityText.CreateReviewed(PublicContentLanguage.EnUs, null, null, isDecorative: true);
-        var draft = PublicMediaImageAccessibilityText.Create(PublicContentLanguage.EnUs, "Draft image", null, isDecorative: false, requiresHumanReview: true, isAiGenerated: false);
+        var reviewed = PublicMediaImageAccessibilityText.CreateReviewed(PublicContentCultures.EnglishUnitedStates, "Cyclists riding near a mountain trail", null, isDecorative: false);
+        var decorative = PublicMediaImageAccessibilityText.CreateReviewed(PublicContentCultures.EnglishUnitedStates, null, null, isDecorative: true);
+        var draft = PublicMediaImageAccessibilityText.Create(PublicContentCultures.EnglishUnitedStates, "Draft image", null, isDecorative: false, requiresHumanReview: true, isAiGenerated: false);
 
         // Act
         var reviewedResult = reviewed.Value.IsReviewedForPublication;
@@ -358,14 +359,14 @@ public sealed class PublicMediaImageTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
 
         // Act
-        var result = image.SetDraftAccessibilityText(PublicContentLanguage.EnUs, "Editor draft image description", "Editor draft caption");
+        var result = image.SetDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "Editor draft image description", "Editor draft caption");
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
         image.RequiresHumanReview.ShouldBeTrue();
         image.IsAiGenerated.ShouldBeFalse();
         image.HasPublicVariants.ShouldBeFalse();
-        var text = image.AccessibilityTexts.ShouldHaveSingleItem(accessibilityText => accessibilityText.Language == PublicContentLanguage.EnUs);
+        var text = image.AccessibilityTexts.ShouldHaveSingleItem(accessibilityText => accessibilityText.Language == PublicContentCultures.EnglishUnitedStates);
         text.RequiresHumanReview.ShouldBeTrue();
         text.IsAiGenerated.ShouldBeFalse();
     }
@@ -377,7 +378,7 @@ public sealed class PublicMediaImageTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, altText: "Reviewed default alt");
 
         // Act
-        var result = image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Rascunho em português", null);
+        var result = image.SetAiDraftAccessibilityText(PublicContentCultures.PortugueseBrazil, "Rascunho em português", null);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -394,12 +395,12 @@ public sealed class PublicMediaImageTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
 
         // Act
-        var result = image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Ciclistas em uma trilha de montanha", "Passeio de bicicleta");
+        var result = image.SetAiDraftAccessibilityText(PublicContentCultures.PortugueseBrazil, "Ciclistas em uma trilha de montanha", "Passeio de bicicleta");
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
         image.AccessibilityTexts.Count.ShouldBe(2);
-        var localized = image.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr);
+        var localized = image.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.PortugueseBrazil);
         localized.RequiresHumanReview.ShouldBeTrue();
         localized.IsAiGenerated.ShouldBeTrue();
     }

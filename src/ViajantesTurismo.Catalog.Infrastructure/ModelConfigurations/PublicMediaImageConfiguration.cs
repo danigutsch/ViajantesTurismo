@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain;
 
@@ -69,7 +70,10 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
             text.ToTable("PublicMediaImageAccessibilityTexts");
             text.WithOwner().HasForeignKey("PublicMediaImageId");
             text.HasKey("PublicMediaImageId", nameof(PublicMediaImageAccessibilityText.Language));
-            text.Property(item => item.Language).HasConversion<string>().IsRequired();
+            text.Property(item => item.Language)
+                .HasConversion(culture => culture.Value, value => ContentCulture.Restore(value))
+                .HasMaxLength(ContentCulture.MaxLength)
+                .IsRequired();
             text.Property(item => item.AltText).HasMaxLength(CatalogDomainLimits.MaxAltTextLength);
             text.Property(item => item.Caption).HasMaxLength(CatalogDomainLimits.MaxCaptionLength);
             text.Property(item => item.IsDecorative).IsRequired();

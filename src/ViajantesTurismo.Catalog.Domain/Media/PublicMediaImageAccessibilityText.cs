@@ -19,10 +19,11 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     [UsedImplicitly]
     private PublicMediaImageAccessibilityText()
     {
+        Language = PublicContentCultures.EnglishUnitedStates;
     }
 
     private PublicMediaImageAccessibilityText(
-        PublicContentLanguage language,
+        ContentCulture language,
         string? altText,
         string? caption,
         bool isDecorative,
@@ -42,7 +43,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     /// <summary>
     /// Gets the language for this accessibility text.
     /// </summary>
-    public PublicContentLanguage Language
+    public ContentCulture Language
     {
         get; private set;
     }
@@ -109,7 +110,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     /// <param name="pendingDraftCreatedAt">The current draft creation time when known.</param>
     /// <returns>A result containing the accessibility text when valid.</returns>
     public static Result<PublicMediaImageAccessibilityText> CreateAiDraft(
-        PublicContentLanguage language,
+        ContentCulture? language,
         string altText,
         string? caption,
         DateTimeOffset? pendingDraftCreatedAt = null)
@@ -126,7 +127,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     /// <param name="isDecorative">Whether the image is intentionally decorative.</param>
     /// <returns>A result containing the accessibility text when valid.</returns>
     public static Result<PublicMediaImageAccessibilityText> CreateReviewed(
-        PublicContentLanguage language,
+        ContentCulture? language,
         string? altText,
         string? caption,
         bool isDecorative)
@@ -146,7 +147,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
     /// <param name="pendingDraftCreatedAt">The current draft creation time when known.</param>
     /// <returns>A result containing the accessibility text when valid.</returns>
     public static Result<PublicMediaImageAccessibilityText> Create(
-        PublicContentLanguage language,
+        ContentCulture? language,
         string? altText,
         string? caption,
         bool isDecorative,
@@ -158,9 +159,13 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
         var sanitizedCaption = StringSanitizer.Sanitize(caption);
         var errors = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
-        if (language == PublicContentLanguage.None || !Enum.IsDefined(language))
+        if (language is null)
         {
             errors[nameof(Language)] = ["Language is required."];
+        }
+        else if (!PublicContentCultures.IsSupported(language))
+        {
+            errors[nameof(Language)] = ["Language must be a supported culture."];
         }
 
         if (!isDecorative && string.IsNullOrWhiteSpace(sanitizedAltText))
@@ -195,7 +200,7 @@ public sealed class PublicMediaImageAccessibilityText : ValueObject
 
         return errors.Count > 0
             ? Result.Invalid<PublicMediaImageAccessibilityText>("Public media accessibility text is invalid.", errors)
-            : Result.Ok(new PublicMediaImageAccessibilityText(language, sanitizedAltText, sanitizedCaption, isDecorative, requiresHumanReview, isAiGenerated, pendingDraftCreatedAt));
+            : Result.Ok(new PublicMediaImageAccessibilityText(language!, sanitizedAltText, sanitizedCaption, isDecorative, requiresHumanReview, isAiGenerated, pendingDraftCreatedAt));
     }
 
     /// <inheritdoc />

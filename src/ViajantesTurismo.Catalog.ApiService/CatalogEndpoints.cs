@@ -202,7 +202,8 @@ internal static class CatalogEndpoints
             return Results.BadRequest();
         }
 
-        if (!TryGetPublicContentLanguage(language, culture, out var requestedLanguage))
+        var requestedLanguage = PublicContentCultures.Resolve(string.IsNullOrWhiteSpace(language) ? culture : language);
+        if (requestedLanguage is null)
         {
             HttpCacheHeaders.SetNoStore(httpContext);
             return Results.BadRequest();
@@ -215,8 +216,7 @@ internal static class CatalogEndpoints
             return Results.NotFound();
         }
 
-        var variant = content.FindPublicVariant(requestedLanguage);
-        if (variant is null)
+        if (!content.TryResolvePublicVariant(requestedLanguage, out var variant))
         {
             HttpCacheHeaders.SetNoStore(httpContext);
             return Results.NotFound();
@@ -686,7 +686,7 @@ internal static class CatalogEndpoints
             id,
             new MediaImageAccessibilityDraftInput
             {
-                Language = ToDomainLanguage(request.Language),
+                Language = PublicContentCultures.Parse(request.Language),
                 Context = request.Context,
                 Latitude = request.Latitude,
                 Longitude = request.Longitude
@@ -725,7 +725,7 @@ internal static class CatalogEndpoints
             return TypedResults.BadRequest();
         }
 
-        var language = ToDomainLanguage(request.Language);
+        var language = PublicContentCultures.Parse(request.Language);
         try
         {
             var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
@@ -930,9 +930,13 @@ internal static class CatalogEndpoints
     {
         var errors = new Dictionary<string, string[]>();
 
-        if (request.Language == PublicContentLanguageDto.None || !Enum.IsDefined(request.Language))
+        if (string.IsNullOrWhiteSpace(request.Language))
         {
             errors[nameof(PublicMediaImageAccessibilityDraftRequest.Language)] = ["Language is required."];
+        }
+        else if (!PublicContentCultures.IsSupported(PublicContentCultures.Parse(request.Language)))
+        {
+            errors[nameof(PublicMediaImageAccessibilityDraftRequest.Language)] = ["Language must be a supported culture."];
         }
 
         if (request.Context?.Length > 1_000)
@@ -972,7 +976,7 @@ internal static class CatalogEndpoints
             Id = image.Id,
             AccessibilityTexts = [.. image.AccessibilityTexts.Select(text => new PublicMediaAccessibilityTextDto
             {
-                Language = ToContractLanguage(text.Language),
+                Language = text.Language.Value,
                 AltText = text.AltText,
                 Caption = text.Caption,
                 IsDecorative = text.IsDecorative,
@@ -1061,11 +1065,11 @@ internal static class CatalogEndpoints
         var dto = new PublicContentDto
         {
             Key = content.Key,
-            SourceLanguage = ToContractLanguage(content.SourceLanguage),
+            SourceLanguage = content.SourceLanguage.Value,
             PublicationState = content.PublicationState.ToString()
         };
 
-        foreach (var variant in content.Variants.OrderBy(variant => variant.Language))
+        foreach (var variant in content.Variants.OrderBy(variant => SupportedCultureOrder(variant.Language)))
         {
             dto.Variants.Add(MapVariant(variant));
         }
@@ -1077,7 +1081,7 @@ internal static class CatalogEndpoints
     {
         return new PublicContentVariantDto
         {
-            Language = ToContractLanguage(variant.Language),
+            Language = variant.Language.Value,
             Title = variant.Title,
             Body = variant.Body,
             SeoTitle = variant.SeoTitle,
@@ -1118,24 +1122,18 @@ internal static class CatalogEndpoints
         return result;
     }
 
-    private static PublicContentLanguage ToDomainLanguage(PublicContentLanguageDto language)
+    private static int SupportedCultureOrder(ContentCulture culture)
     {
-        return language == PublicContentLanguageDto.None || !Enum.IsDefined(language)
-            ? PublicContentLanguage.None
-            : (PublicContentLanguage)(int)language;
-    }
+        var cultures = PublicContentCultures.Supported.Cultures;
+        for (var index = 0; index < cultures.Count; index++)
+        {
+            if (cultures[index] == culture)
+            {
+                return index;
+            }
+        }
 
-    private static PublicContentLanguageDto ToContractLanguage(PublicContentLanguage language)
-    {
-        return language == PublicContentLanguage.None || !Enum.IsDefined(language)
-            ? PublicContentLanguageDto.None
-            : (PublicContentLanguageDto)(int)language;
-    }
-
-    private static bool TryGetPublicContentLanguage(string? language, string? culture, out PublicContentLanguage publicContentLanguage)
-    {
-        publicContentLanguage = PublicContentCultures.Resolve(string.IsNullOrWhiteSpace(language) ? culture : language);
-        return publicContentLanguage != PublicContentLanguage.None;
+        return cultures.Count;
     }
 
 }

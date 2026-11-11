@@ -9,12 +9,12 @@ internal static class PublicContentTestsHelpers
         var content = new PublicContentDto
         {
             Key = key,
-            SourceLanguage = PublicContentLanguageDto.EnUs,
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates,
             PublicationState = "ReviewRequired"
         };
 
-        content.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
-        content.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
+        content.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
+        content.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
 
         return content;
     }

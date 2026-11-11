@@ -33,9 +33,17 @@ public sealed class MediaImageAccessibilityDraftService(
             return Result.Invalid<PublicMediaImage>("Media image identifier is required.", nameof(imageId), "Media image identifier is required.");
         }
 
-        if (input.Language == PublicContentLanguage.None)
+        if (input.Language is null)
         {
             return Result.Invalid<PublicMediaImage>("Draft language is required.", nameof(input.Language), "Draft language is required.");
+        }
+
+        if (!PublicContentCultures.IsSupported(input.Language))
+        {
+            return Result.Invalid<PublicMediaImage>(
+                "Draft language must be a supported culture.",
+                nameof(input.Language),
+                "Draft language must be a supported culture.");
         }
 
         if ((input.Latitude is null) != (input.Longitude is null))

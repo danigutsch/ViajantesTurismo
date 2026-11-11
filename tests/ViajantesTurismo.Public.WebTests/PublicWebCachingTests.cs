@@ -64,7 +64,7 @@ public sealed class PublicWebCachingTests
         catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
         catalogApi.AddContent("en-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Original hero",
             Body = "Original body"
         });
@@ -76,7 +76,7 @@ public sealed class PublicWebCachingTests
         var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         catalogApi.AddContent("en-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Store-only hero",
             Body = "Store-only body"
         });
@@ -98,7 +98,7 @@ public sealed class PublicWebCachingTests
         catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
         catalogApi.AddContent("en-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Original hero",
             Body = "Original body"
         });
@@ -110,7 +110,7 @@ public sealed class PublicWebCachingTests
         var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         catalogApi.AddContent("en-US", new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Store-only hero",
             Body = "Store-only body"
         });

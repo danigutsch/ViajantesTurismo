@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Domain;
 
@@ -8,7 +9,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
 /// <summary>EF Core mapping for editable public content and its language variants.</summary>
 internal sealed class EditablePublicContentConfiguration : IEntityTypeConfiguration<EditablePublicContent>
 {
-    /// <summary>Maps the content table, unique key, enum conversions and owned variants.</summary>
+    /// <summary>Maps the content table, unique key, culture and enum conversions and owned variants.</summary>
     public void Configure(EntityTypeBuilder<EditablePublicContent> entity)
     {
         entity.ToTable("PublicContent");
@@ -23,14 +24,20 @@ internal sealed class EditablePublicContentConfiguration : IEntityTypeConfigurat
             .HasColumnName("Key")
             .IsRequired()
             .HasMaxLength(CatalogDomainLimits.MaxDefaultLength);
-        entity.Property(content => content.SourceLanguage).HasConversion<string>().IsRequired();
+        entity.Property(content => content.SourceLanguage)
+            .HasConversion(culture => culture.Value, value => ContentCulture.Restore(value))
+            .HasMaxLength(ContentCulture.MaxLength)
+            .IsRequired();
         entity.Property(content => content.PublicationState).HasConversion<string>().IsRequired();
 
         entity.OwnsMany(content => content.Variants, variant =>
         {
             variant.ToTable("PublicContentVariants");
             variant.WithOwner().HasForeignKey("PublicContentId");
-            variant.Property(v => v.Language).HasConversion<string>().IsRequired();
+            variant.Property(v => v.Language)
+                .HasConversion(culture => culture.Value, value => ContentCulture.Restore(value))
+                .HasMaxLength(ContentCulture.MaxLength)
+                .IsRequired();
             variant.Property(v => v.Title).HasMaxLength(CatalogDomainLimits.MaxNameLength).IsRequired();
             variant.Property(v => v.Body).HasMaxLength(CatalogDomainLimits.MaxBodyLength).IsRequired();
             variant.Property(v => v.SeoTitle).HasMaxLength(CatalogDomainLimits.MaxNameLength);

@@ -82,10 +82,10 @@ public sealed class CatalogApiClientIntegrationTests
         var sut = new PublicContentApiClient(httpClient);
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
         var savedOutcome = await sut.SaveContent("home.hero", request, cancellationToken);
@@ -98,7 +98,7 @@ public sealed class CatalogApiClientIntegrationTests
         readOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var read = readOutcome.Value.ShouldNotBeNull();
         read.Key.ShouldBe("HOME.HERO");
-        read.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Title == "Bem-vindo");
+        read.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil && variant.Title == "Bem-vindo");
     }
 
 }

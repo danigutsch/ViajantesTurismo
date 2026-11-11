@@ -74,7 +74,7 @@ public sealed class PublicContentTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("No public content entries yet", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Act
-        cut.Find("#source-language").Change(PublicContentLanguageDto.PtBr.ToString());
+        cut.Find("#source-language").Change(PublicContentLanguageTags.PortugueseBrazil);
         cut.Find("#pt-br-title").Change("Bem-vindo");
         cut.Find("#pt-br-body").Change("Pedale conosco");
         cut.Find("button.btn-outline-primary").Click();
@@ -90,7 +90,7 @@ public sealed class PublicContentTests : BunitContext
     {
         // Arrange
         var content = PublicContentTestsHelpers.CreateContent("home.hero");
-        content.SourceLanguage = PublicContentLanguageDto.None;
+        content.SourceLanguage = string.Empty;
         publicContentApi.Content = [content];
         var cut = Render<PublicContent>();
         cut.WaitForState(() => cut.Markup.Contains("home.hero", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
@@ -175,8 +175,8 @@ public sealed class PublicContentTests : BunitContext
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
         publicContentApi.SavedKey.ShouldBe("home.hero");
         publicContentApi.SavedRequest.ShouldNotBeNull();
-        publicContentApi.SavedRequest.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.EnUs && variant.Title == "Welcome");
-        publicContentApi.SavedRequest.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageDto.PtBr && variant.Body == "Pedale conosco");
+        publicContentApi.SavedRequest.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageTags.EnglishUnitedStates && variant.Title == "Welcome");
+        publicContentApi.SavedRequest.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil && variant.Body == "Pedale conosco");
         cut.Markup.ShouldContain("Public content saved", StringComparison.Ordinal);
     }
 
@@ -196,7 +196,7 @@ public sealed class PublicContentTests : BunitContext
         // Assert
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
         publicContentApi.SavedRequest.ShouldNotBeNull();
-        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageDto.PtBr);
+        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil);
         portugueseVariant.RequiresHumanReview.ShouldBeTrue();
         portugueseVariant.Title.ShouldBe("Welcome");
         cut.Markup.ShouldContain("Public content saved", StringComparison.Ordinal);
@@ -256,7 +256,7 @@ public sealed class PublicContentTests : BunitContext
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
         cut.Markup.ShouldNotContain("Confirm human review", StringComparison.Ordinal);
         publicContentApi.SavedRequest.ShouldNotBeNull();
-        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageDto.PtBr);
+        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil);
         portugueseVariant.RequiresHumanReview.ShouldBeFalse();
     }
 
@@ -279,7 +279,7 @@ public sealed class PublicContentTests : BunitContext
         // Assert
         cut.WaitForState(() => publicContentApi.SavedRequest is not null, TimeSpan.FromSeconds(2));
         publicContentApi.SavedRequest.ShouldNotBeNull();
-        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageDto.PtBr);
+        var portugueseVariant = publicContentApi.SavedRequest.Variants.ShouldHaveSingleItem(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil);
         portugueseVariant.RequiresHumanReview.ShouldBeFalse();
     }
 

@@ -67,7 +67,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
             Id = Guid.CreateVersion7(), AltText = "Approved English", ResponsiveVariants = [],
             AccessibilityTexts = [new PublicMediaAccessibilityTextDto
             {
-                Language = PublicContentLanguageDto.PtBr, AltText = "Ciclistas atravessam as montanhas.",
+                Language = PublicContentLanguageTags.PortugueseBrazil, AltText = "Ciclistas atravessam as montanhas.",
                 RequiresHumanReview = true, IsAiGenerated = true
             }]
         }];
@@ -80,7 +80,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
 
         // Assert
         var request = catalogApi.LastAccessibilityReviewRequest.ShouldNotBeNull();
-        request.Language.ShouldBe(PublicContentLanguageDto.PtBr);
+        request.Language.ShouldBe(PublicContentLanguageTags.PortugueseBrazil);
         request.AltText.ShouldBe("Ciclistas na montanha.");
         request.Caption.ShouldBe("Passeio de bicicleta");
     }

@@ -47,7 +47,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
             }, original.ResponsiveVariants, original.Tags, original.TourLinks);
         replacementResult.IsSuccess.ShouldBeTrue();
         var replacement = replacementResult.Value;
-        replacement.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, "Reviewed replacement", "Reviewed caption", false).IsSuccess.ShouldBeTrue();
+        replacement.SetReviewedAccessibilityText(PublicContentCultures.EnglishUnitedStates, "Reviewed replacement", "Reviewed caption", false).IsSuccess.ShouldBeTrue();
         await images.Upsert(replacement, timeout.Token);
 
         // Assert

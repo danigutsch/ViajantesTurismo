@@ -23,10 +23,10 @@ public sealed class PublicContentWorkflowSteps
         contentKey = key;
         request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
     }
 
     [Given("localized public content for key {string} includes only English")]
@@ -35,9 +35,9 @@ public sealed class PublicContentWorkflowSteps
         contentKey = key;
         request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
     }
 
     [When("I save the public content")]

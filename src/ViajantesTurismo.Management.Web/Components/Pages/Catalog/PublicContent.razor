@@ -138,10 +138,7 @@
     public void Dispose() => _binder?.Dispose();
 
     private PublicContentFormModel _model = new();
-    private static readonly PublicContentLanguageDto[] SupportedLanguages = Enum
-        .GetValues<PublicContentLanguageDto>()
-        .Where(language => language != PublicContentLanguageDto.None)
-        .ToArray();
+    private static readonly IReadOnlyList<string> SupportedLanguages = PublicContentLanguageTags.All;
     private bool _loading = true;
     private bool _saving;
     private string? _errorMessage;
@@ -228,7 +225,7 @@
     /// <summary>
     /// Generates the missing-language draft after checking its preconditions. A source language with no variant is reachable
     /// today, when the loaded entry has no supported source language. The check for more than one blank target is a defensive
-    /// guard that cannot occur until a third language is added to <see cref="PublicContentLanguageDto"/>.
+    /// guard that cannot occur until a third language is added to <see cref="PublicContentLanguageTags"/>.
     /// </summary>
     private void GenerateMissingDraft()
     {
@@ -237,7 +234,7 @@
 
         var source = _model.GetVariant(_model.SourceLanguage);
         var blankTargets = _model.Variants
-            .Where(variant => variant.Language != _model.SourceLanguage)
+            .Where(variant => !IsSameLanguage(variant.Language, _model.SourceLanguage))
             .Where(IsBlankDraftTarget)
             .ToArray();
 
@@ -377,7 +374,7 @@
         [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxDefaultLength)]
         public string Key { get; set; } = string.Empty;
 
-        public PublicContentLanguageDto SourceLanguage { get; set; } = PublicContentLanguageDto.EnUs;
+        public string SourceLanguage { get; set; } = PublicContentLanguageTags.EnglishUnitedStates;
 
         public List<PublicContentVariantFormModel> Variants { get; } = SupportedLanguages
             .Select(language => new PublicContentVariantFormModel { Language = language })
@@ -435,9 +432,9 @@
             return request;
         }
 
-        public PublicContentVariantFormModel? GetVariant(PublicContentLanguageDto language)
+        public PublicContentVariantFormModel? GetVariant(string language)
         {
-            return Variants.FirstOrDefault(variant => variant.Language == language);
+            return Variants.FirstOrDefault(variant => IsSameLanguage(variant.Language, language));
         }
 
         private static IEnumerable<ValidationResult> ValidateVariant(PublicContentVariantFormModel variant)
@@ -456,7 +453,7 @@
 
     private sealed class PublicContentVariantFormModel
     {
-        public PublicContentLanguageDto Language { get; set; }
+        public string Language { get; set; } = string.Empty;
 
         [StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxNameLength)]
         public string Title { get; set; } = string.Empty;
@@ -506,21 +503,16 @@
         }
     }
 
-    /// <summary>Falls back to the enum name for a language that has no display label yet, so a newly added language still renders.</summary>
-    private static string GetLanguageLabel(PublicContentLanguageDto language)
-    {
-        return language switch
-        {
-            PublicContentLanguageDto.EnUs => "en-US",
-            PublicContentLanguageDto.PtBr => "pt-BR",
-            _ => language.ToString()
-        };
-    }
+    /// <summary>The language tag is the label, so a newly supported language renders without a new entry here.</summary>
+    private static string GetLanguageLabel(string language) => language;
 
-    private static string GetLanguageId(PublicContentLanguageDto language)
+    private static string GetLanguageId(string language)
     {
         return GetLanguageLabel(language).ToLowerInvariant();
     }
+
+    /// <summary>Language tags are case-insensitive, so en-us and en-US name the same culture.</summary>
+    private static bool IsSameLanguage(string? left, string? right) => string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
 
     private static bool IsBlankDraftTarget(PublicContentVariantFormModel variant)
     {

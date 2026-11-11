@@ -11,12 +11,12 @@ public sealed class PublicContentDto
     public string Key { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the source language entered by the editor.
+    /// Gets or sets the language tag of the source culture entered by the editor.
     /// </summary>
-    public PublicContentLanguageDto SourceLanguage
+    public string SourceLanguage
     {
         get; set;
-    }
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the localized content variants.

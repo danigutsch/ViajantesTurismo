@@ -11,7 +11,7 @@ public sealed class PublicContentVariantTests
     {
         // Act
         var result = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             new string('t', CatalogDomainLimits.MaxNameLength),
             new string('b', CatalogDomainLimits.MaxBodyLength),
             new string('s', CatalogDomainLimits.MaxNameLength),
@@ -36,7 +36,7 @@ public sealed class PublicContentVariantTests
 
         // Act
         var result = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             field == "Title" ? tooLong : "Welcome",
             field == "Body" ? tooLong : "Discover cycling tours.",
             field == "SeoTitle" ? tooLong : null,
@@ -58,7 +58,7 @@ public sealed class PublicContentVariantTests
     {
         // Act
         var result = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             field == "Title" ? "   " : "Welcome",
             field == "Body" ? "   " : "Discover cycling tours.",
             null,
@@ -76,9 +76,9 @@ public sealed class PublicContentVariantTests
     public void Variants_that_differ_only_in_language_are_not_equal()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
-        var sameEnUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
+        var sameEnUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
 
         // Assert
         enUs.ShouldNotBe(ptBr);
@@ -96,9 +96,9 @@ public sealed class PublicContentVariantTests
     {
         // Arrange
         var original = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs, "Title", "Body", "SeoTitle", "MetaDescription", "ShareSummary", requiresHumanReview: false);
+            PublicContentCultures.EnglishUnitedStates, "Title", "Body", "SeoTitle", "MetaDescription", "ShareSummary", requiresHumanReview: false);
         var different = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             changed == "title" ? "Other" : "Title",
             changed == "body" ? "Other" : "Body",
             changed == "seoTitle" ? "Other" : "SeoTitle",

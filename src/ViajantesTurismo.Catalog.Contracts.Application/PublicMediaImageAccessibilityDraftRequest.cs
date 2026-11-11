@@ -8,10 +8,10 @@ namespace ViajantesTurismo.Catalog.Contracts.Application;
 public sealed record PublicMediaImageAccessibilityDraftRequest
 {
     /// <summary>
-    /// Gets the draft language.
+    /// Gets the language tag of the draft.
     /// </summary>
     [Required]
-    public PublicContentLanguageDto Language { get; init; } = PublicContentLanguageDto.EnUs;
+    public string Language { get; init; } = PublicContentLanguageTags.EnglishUnitedStates;
 
     /// <summary>
     /// Gets optional editorial context for the image purpose or tour placement.

@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
@@ -10,16 +11,16 @@ public sealed class EditablePublicContentTests
     public void Create_stores_both_supported_language_variants()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs, ptBr]);
+        var result = EditablePublicContent.Create("home.hero", PublicContentCultures.EnglishUnitedStates, [enUs, ptBr]);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.Key.ShouldBe("HOME.HERO");
-        result.Value.SourceLanguage.ShouldBe(PublicContentLanguage.EnUs);
+        result.Value.SourceLanguage.ShouldBe(PublicContentCultures.EnglishUnitedStates);
         result.Value.Variants.ShouldContain(enUs);
         result.Value.Variants.ShouldContain(ptBr);
         result.Value.PublicationState.ShouldBe(PublicContentPublicationState.Draft);
@@ -29,11 +30,11 @@ public sealed class EditablePublicContentTests
     public void Create_marks_content_as_review_required_when_translation_needs_review()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: true);
 
         // Act
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs, ptBr]);
+        var result = EditablePublicContent.Create("home.hero", PublicContentCultures.EnglishUnitedStates, [enUs, ptBr]);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -44,11 +45,11 @@ public sealed class EditablePublicContentTests
     public void Create_rejects_empty_content_keys()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create(" ", PublicContentLanguage.EnUs, [enUs, ptBr]);
+        var result = EditablePublicContent.Create(" ", PublicContentCultures.EnglishUnitedStates, [enUs, ptBr]);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -58,11 +59,11 @@ public sealed class EditablePublicContentTests
     public void Create_normalizes_content_key_casing()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create("  Home.Hero  ", PublicContentLanguage.EnUs, [enUs, ptBr]);
+        var result = EditablePublicContent.Create("  Home.Hero  ", PublicContentCultures.EnglishUnitedStates, [enUs, ptBr]);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -73,11 +74,11 @@ public sealed class EditablePublicContentTests
     public void Create_rejects_unsupported_source_language()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.None, [enUs, ptBr]);
+        var result = EditablePublicContent.Create("home.hero", null, [enUs, ptBr]);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -88,14 +89,14 @@ public sealed class EditablePublicContentTests
     {
         // Arrange
         var wrongLanguageVariant = EditablePublicContentTestFactory.CreateVariant(
-            PublicContentLanguage.PtBr,
+            PublicContentCultures.PortugueseBrazil,
             requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
 
         // Act
         var result = EditablePublicContent.Create(
             "home.hero",
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             [wrongLanguageVariant, ptBr]);
 
         // Assert
@@ -106,12 +107,12 @@ public sealed class EditablePublicContentTests
     public void Create_rejects_missing_supported_language_variants()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
 
         // Act
         var result = EditablePublicContent.Create(
             "home.hero",
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             [enUs]);
 
         // Assert
@@ -126,15 +127,15 @@ public sealed class EditablePublicContentTests
     {
         // Arrange
         var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: true);
 
         // Act
-        var result = content.ReplaceVariants(PublicContentLanguage.EnUs, [enUs]);
+        var result = content.ReplaceVariants(PublicContentCultures.EnglishUnitedStates, [enUs]);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         content.PublicationState.ShouldBe(PublicContentPublicationState.Draft);
-        content.Variants.ShouldContain(variant => variant.Language == PublicContentLanguage.PtBr);
+        content.Variants.ShouldContain(variant => variant.Language == PublicContentCultures.PortugueseBrazil);
     }
 
     [Fact]
@@ -199,44 +200,75 @@ public sealed class EditablePublicContentTests
     }
 
     [Fact]
-    public void FindPublicVariant_returns_requested_approved_language()
+    public void TryResolvePublicVariant_returns_requested_approved_culture()
     {
         // Arrange
         var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
 
         // Act
-        var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
+        var found = content.TryResolvePublicVariant(PublicContentCultures.PortugueseBrazil, out var variant);
 
         // Assert
-        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentLanguage.PtBr);
+        found.ShouldBeTrue();
+        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentCultures.PortugueseBrazil);
     }
 
     [Fact]
-    public void FindPublicVariant_falls_back_to_approved_english_when_requested_language_needs_review()
+    public void TryResolvePublicVariant_resolves_a_neutral_or_regional_request_to_the_same_language()
+    {
+        // Arrange
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        // Act
+        var found = content.TryResolvePublicVariant(ContentCulture.Restore("pt-PT"), out var variant);
+
+        // Assert
+        found.ShouldBeTrue();
+        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentCultures.PortugueseBrazil);
+    }
+
+    [Fact]
+    public void TryResolvePublicVariant_falls_back_to_approved_english_when_requested_language_needs_review()
     {
         // Arrange
         var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: true);
 
         // Act
-        var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
+        var found = content.TryResolvePublicVariant(PublicContentCultures.PortugueseBrazil, out var variant);
 
         // Assert
-        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentLanguage.EnUs);
+        found.ShouldBeTrue();
+        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentCultures.EnglishUnitedStates);
     }
 
     [Fact]
-    public void FindPublicVariant_returns_null_when_requested_english_needs_review()
+    public void TryResolvePublicVariant_falls_back_to_approved_english_for_an_unknown_culture()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.PtBr, [enUs, ptBr]);
+        var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
+
+        // Act
+        var found = content.TryResolvePublicVariant(ContentCulture.Restore("fr-FR"), out var variant);
+
+        // Assert
+        found.ShouldBeTrue();
+        variant.ShouldNotBeNull().Language.ShouldBe(PublicContentCultures.EnglishUnitedStates);
+    }
+
+    [Fact]
+    public void TryResolvePublicVariant_finds_nothing_when_requested_english_needs_review()
+    {
+        // Arrange
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: true);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
+        var result = EditablePublicContent.Create("home.hero", PublicContentCultures.PortugueseBrazil, [enUs, ptBr]);
         result.IsSuccess.ShouldBe(true);
 
         // Act
-        var variant = result.Value.FindPublicVariant(PublicContentLanguage.EnUs);
+        var found = result.Value.TryResolvePublicVariant(PublicContentCultures.EnglishUnitedStates, out var variant);
 
         // Assert
+        found.ShouldBeFalse();
         variant.ShouldBeNull();
     }
 
@@ -248,7 +280,7 @@ public sealed class EditablePublicContentTests
 
         // Act
         var result = PublicContentVariant.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.EnglishUnitedStates,
             title,
             "Body",
             null,
@@ -265,7 +297,7 @@ public sealed class EditablePublicContentTests
     {
         // Act
         var result = PublicContentVariant.Create(
-            PublicContentLanguage.None,
+            ContentCulture.Restore("fr-FR"),
             "Welcome",
             "Discover cycling tours.",
             null,
@@ -279,7 +311,7 @@ public sealed class EditablePublicContentTests
     [Fact]
     public void Create_rejects_missing_variants()
     {
-        Action create = () => EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, null!);
+        Action create = () => EditablePublicContent.Create("home.hero", PublicContentCultures.EnglishUnitedStates, null!);
 
         // Act
         var exception = create.ShouldThrow<ArgumentNullException>();
@@ -292,12 +324,12 @@ public sealed class EditablePublicContentTests
     public void Create_accepts_a_key_at_the_maximum_length_and_rejects_one_character_more()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
 
         // Act
-        var atLimit = EditablePublicContent.Create(new string('k', CatalogDomainLimits.MaxDefaultLength), PublicContentLanguage.EnUs, [enUs, ptBr]);
-        var overLimit = EditablePublicContent.Create(new string('k', CatalogDomainLimits.MaxDefaultLength + 1), PublicContentLanguage.EnUs, [enUs, ptBr]);
+        var atLimit = EditablePublicContent.Create(new string('k', CatalogDomainLimits.MaxDefaultLength), PublicContentCultures.EnglishUnitedStates, [enUs, ptBr]);
+        var overLimit = EditablePublicContent.Create(new string('k', CatalogDomainLimits.MaxDefaultLength + 1), PublicContentCultures.EnglishUnitedStates, [enUs, ptBr]);
 
         // Assert
         atLimit.IsSuccess.ShouldBeTrue();
@@ -310,12 +342,12 @@ public sealed class EditablePublicContentTests
     public void Create_reports_each_duplicate_language_exactly_once()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: false);
-        var otherPtBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: false);
+        var otherPtBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: true);
 
         // Act
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs, ptBr, otherPtBr]);
+        var result = EditablePublicContent.Create("home.hero", PublicContentCultures.EnglishUnitedStates, [enUs, ptBr, otherPtBr]);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -327,16 +359,16 @@ public sealed class EditablePublicContentTests
     public void Create_reports_only_the_missing_language()
     {
         // Arrange
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
 
         // Act
-        var result = EditablePublicContent.Create("home.hero", PublicContentLanguage.EnUs, [enUs]);
+        var result = EditablePublicContent.Create("home.hero", PublicContentCultures.EnglishUnitedStates, [enUs]);
 
         // Assert
         var validationErrors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
         validationErrors["Variants"].ShouldHaveSingleItem().ShouldBe("Variants is missing a supported language variant.");
-        result.ErrorDetails.Detail.ShouldContain(nameof(PublicContentLanguage.PtBr), StringComparison.Ordinal);
-        result.ErrorDetails.Detail.ShouldNotContain(nameof(PublicContentLanguage.EnUs), StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldContain(PublicContentCultures.PortugueseBrazil.Value, StringComparison.Ordinal);
+        result.ErrorDetails.Detail.ShouldNotContain(PublicContentCultures.EnglishUnitedStates.Value, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -373,7 +405,7 @@ public sealed class EditablePublicContentTests
         // Arrange
         var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
 
-        Action replace = () => content.ReplaceVariants(PublicContentLanguage.EnUs, null!);
+        Action replace = () => content.ReplaceVariants(PublicContentCultures.EnglishUnitedStates, null!);
 
         // Act
         var exception = replace.ShouldThrow<ArgumentNullException>();
@@ -387,15 +419,15 @@ public sealed class EditablePublicContentTests
     {
         // Arrange
         var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: true);
 
         // Act
-        var result = content.ReplaceVariants(PublicContentLanguage.None, [enUs, ptBr]);
+        var result = content.ReplaceVariants(ContentCulture.Restore("fr-FR"), [enUs, ptBr]);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        content.SourceLanguage.ShouldBe(PublicContentLanguage.EnUs);
+        content.SourceLanguage.ShouldBe(PublicContentCultures.EnglishUnitedStates);
         content.PublicationState.ShouldBe(PublicContentPublicationState.Draft);
     }
 
@@ -404,15 +436,15 @@ public sealed class EditablePublicContentTests
     {
         // Arrange
         var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: false);
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: false);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: false);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: true);
 
         // Act
-        var result = content.ReplaceVariants(PublicContentLanguage.PtBr, [enUs, ptBr]);
+        var result = content.ReplaceVariants(PublicContentCultures.PortugueseBrazil, [enUs, ptBr]);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        content.SourceLanguage.ShouldBe(PublicContentLanguage.PtBr);
+        content.SourceLanguage.ShouldBe(PublicContentCultures.PortugueseBrazil);
         content.Variants.Count.ShouldBe(2);
         content.Variants.ShouldContain(ptBr);
         content.PublicationState.ShouldBe(PublicContentPublicationState.ReviewRequired);
@@ -434,18 +466,19 @@ public sealed class EditablePublicContentTests
     }
 
     [Fact]
-    public void FindPublicVariant_returns_null_when_neither_the_requested_language_nor_english_is_approved()
+    public void TryResolvePublicVariant_finds_nothing_when_neither_the_requested_language_nor_english_is_approved()
     {
         // Arrange
         var content = EditablePublicContentTestFactory.CreateContent(requiresHumanReview: true);
-        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.EnUs, requiresHumanReview: true);
-        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentLanguage.PtBr, requiresHumanReview: true);
-        content.ReplaceVariants(PublicContentLanguage.EnUs, [enUs, ptBr]).IsSuccess.ShouldBeTrue();
+        var enUs = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.EnglishUnitedStates, requiresHumanReview: true);
+        var ptBr = EditablePublicContentTestFactory.CreateVariant(PublicContentCultures.PortugueseBrazil, requiresHumanReview: true);
+        content.ReplaceVariants(PublicContentCultures.EnglishUnitedStates, [enUs, ptBr]).IsSuccess.ShouldBeTrue();
 
         // Act
-        var variant = content.FindPublicVariant(PublicContentLanguage.PtBr);
+        var found = content.TryResolvePublicVariant(PublicContentCultures.PortugueseBrazil, out var variant);
 
         // Assert
+        found.ShouldBeFalse();
         variant.ShouldBeNull();
     }
 }

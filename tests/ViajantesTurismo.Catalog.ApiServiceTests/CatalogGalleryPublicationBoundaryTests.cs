@@ -50,12 +50,12 @@ public sealed class CatalogGalleryPublicationBoundaryTests
     }
 
     [Theory]
-    [InlineData("Operator", true, false, PublicContentLanguageDto.EnUs, HttpStatusCode.Forbidden)]
-    [InlineData("Operator", true, false, PublicContentLanguageDto.PtBr, HttpStatusCode.Forbidden)]
-    [InlineData("Operator", false, false, PublicContentLanguageDto.EnUs, HttpStatusCode.OK)]
-    [InlineData("Admin", true, false, PublicContentLanguageDto.EnUs, HttpStatusCode.OK)]
-    [InlineData("Operator", false, true, PublicContentLanguageDto.EnUs, HttpStatusCode.Forbidden)]
-    public async Task Reviewing_live_gallery_content_requires_a_publisher(string role, bool published, bool publicationPending, PublicContentLanguageDto language, HttpStatusCode expectedStatus)
+    [InlineData("Operator", true, false, PublicContentLanguageTags.EnglishUnitedStates, HttpStatusCode.Forbidden)]
+    [InlineData("Operator", true, false, PublicContentLanguageTags.PortugueseBrazil, HttpStatusCode.Forbidden)]
+    [InlineData("Operator", false, false, PublicContentLanguageTags.EnglishUnitedStates, HttpStatusCode.OK)]
+    [InlineData("Admin", true, false, PublicContentLanguageTags.EnglishUnitedStates, HttpStatusCode.OK)]
+    [InlineData("Operator", false, true, PublicContentLanguageTags.EnglishUnitedStates, HttpStatusCode.Forbidden)]
+    public async Task Reviewing_live_gallery_content_requires_a_publisher(string role, bool published, bool publicationPending, string language, HttpStatusCode expectedStatus)
     {
         // Arrange
         var tourId = Guid.CreateVersion7();
@@ -92,9 +92,9 @@ public sealed class CatalogGalleryPublicationBoundaryTests
         }
     }
     [Theory]
-    [InlineData(PublicContentLanguageDto.EnUs)]
-    [InlineData(PublicContentLanguageDto.PtBr)]
-    public async Task Generating_a_draft_cannot_replace_live_metadata_without_a_publisher(PublicContentLanguageDto language)
+    [InlineData(PublicContentLanguageTags.EnglishUnitedStates)]
+    [InlineData(PublicContentLanguageTags.PortugueseBrazil)]
+    public async Task Generating_a_draft_cannot_replace_live_metadata_without_a_publisher(string language)
     {
         // Arrange
         var tourId = Guid.CreateVersion7();
@@ -288,7 +288,7 @@ public sealed class CatalogGalleryPublicationBoundaryTests
             "review" => await client.PutAsJsonAsync(new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-review", UriKind.Relative),
                 new PublicMediaImageAccessibilityReviewRequest { AltText = "Unapproved public replacement" }, TestContext.Current.CancellationToken),
             _ => await client.PostAsJsonAsync(new Uri($"/api/v1/catalog/media/images/{image.Id}/accessibility-draft", UriKind.Relative),
-                new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageDto.EnUs }, TestContext.Current.CancellationToken)
+                new PublicMediaImageAccessibilityDraftRequest { Language = PublicContentLanguageTags.EnglishUnitedStates }, TestContext.Current.CancellationToken)
         };
         var saved = await images.ListByTour(tourId, TestContext.Current.CancellationToken);
 

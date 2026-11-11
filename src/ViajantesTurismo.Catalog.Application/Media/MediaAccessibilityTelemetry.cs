@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
@@ -20,7 +21,7 @@ public static class MediaAccessibilityTelemetry
     /// <param name="language">Reviewed language.</param>
     /// <param name="queueAgeSeconds">Measured queue age, when known.</param>
     /// <exception cref="ArgumentOutOfRangeException">The outcome or queue age is invalid.</exception>
-    public static void RecordReview(string outcome, PublicContentLanguage language, double? queueAgeSeconds = null)
+    public static void RecordReview(string outcome, ContentCulture? language, double? queueAgeSeconds = null)
     {
         if (outcome is not ("approved" or "edited" or "rejected" or "failed" or "missing_alt"))
         {
@@ -55,20 +56,20 @@ public static class MediaAccessibilityTelemetry
     }
 
     /// <summary>Records the start of an accessibility draft attempt for the given language.</summary>
-    internal static void RecordAttempt(PublicContentLanguage language)
+    internal static void RecordAttempt(ContentCulture? language)
     {
         Attempts.Add(1, Tags("started", language));
     }
 
     /// <summary>Records an attempt outcome and its duration since the given <see cref="Stopwatch"/> timestamp.</summary>
-    internal static void RecordCompletion(string outcome, PublicContentLanguage language, long started)
+    internal static void RecordCompletion(string outcome, ContentCulture? language, long started)
     {
         var tags = Tags(outcome, language);
         Completions.Add(1, tags);
         Duration.Record(Stopwatch.GetElapsedTime(started).TotalSeconds, tags);
     }
 
-    private static TagList Tags(string outcome, PublicContentLanguage language)
+    private static TagList Tags(string outcome, ContentCulture? language)
     {
         return new TagList
         {

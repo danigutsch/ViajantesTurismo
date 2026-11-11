@@ -278,7 +278,7 @@ public sealed class PublicCatalogApiClientTests
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return PublicCatalogApiClientTestsHelpers.JsonResponse("""
                 {
-                  "language":2,
+                  "language":"pt-BR",
                   "title":"Bem-vindo",
                   "body":"Pedale conosco",
                   "seoTitle":"Cicloturismo no Brasil",
