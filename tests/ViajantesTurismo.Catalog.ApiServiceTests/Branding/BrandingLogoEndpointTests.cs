@@ -209,7 +209,7 @@ public sealed class BrandingLogoEndpointTests
     }
 
     [Fact]
-    public async Task A_png_with_an_animation_control_chunk_after_the_image_data_is_accepted_as_still()
+    public async Task A_png_with_an_animation_control_chunk_after_the_image_data_is_refused()
     {
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
@@ -221,12 +221,12 @@ public sealed class BrandingLogoEndpointTests
         using var response = await BrandingLogoRequests.PutLogo(client, upload, PngType, "*");
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        store.Logos.ShouldHaveSingleItem();
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        store.Logos.ShouldBeEmpty();
     }
 
     [Fact]
-    public async Task A_still_webp_followed_by_bytes_that_look_like_an_animation_frame_is_accepted()
+    public async Task A_still_webp_followed_by_bytes_outside_its_riff_payload_is_refused()
     {
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
@@ -238,8 +238,8 @@ public sealed class BrandingLogoEndpointTests
         using var response = await BrandingLogoRequests.PutLogo(client, upload, "image/webp", "*");
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        store.Logos.ShouldHaveSingleItem();
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        store.Logos.ShouldBeEmpty();
     }
 
     [Fact]
@@ -257,7 +257,7 @@ public sealed class BrandingLogoEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo could not be decoded or exceeds the allowed image dimensions.");
         store.Logos.ShouldBeEmpty();
     }
 
@@ -276,7 +276,7 @@ public sealed class BrandingLogoEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo could not be decoded or exceeds the allowed image dimensions.");
         store.Logos.ShouldBeEmpty();
     }
 
@@ -295,7 +295,7 @@ public sealed class BrandingLogoEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo could not be decoded or exceeds the allowed image dimensions.");
         store.Logos.ShouldBeEmpty();
     }
 
@@ -314,7 +314,7 @@ public sealed class BrandingLogoEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo must be a still image; animated images are not accepted.");
+        problem.ShouldNotBeNull().Errors["Content"].ShouldContain("Logo could not be decoded or exceeds the allowed image dimensions.");
         store.Logos.ShouldBeEmpty();
     }
 

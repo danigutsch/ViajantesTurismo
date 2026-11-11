@@ -5,14 +5,14 @@ using PandaBear.ImageProcessing;
 using PandaBear.IO;
 using PandaBear.MalwareScanning;
 using PandaBear.Results;
+using PandaBear.UploadSanitizing.Images;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
 
 /// <summary>
-/// Turns an uploaded image into a Branding logo: validates the declared type and signature, bounds the size, scans
-/// for malware, decodes, and re-encodes it so metadata is stripped and dimensions and bytes are bounded.
-/// The order is: size limit, signature, malware scan, animation check, decode and re-encode. Animated WebP and APNG uploads
-/// are refused by a bounded chunk walk after the scan and before the decode; a truncated or overrunning chunk is refused the same way.
+/// Turns an uploaded image into a Branding logo: validates the declared type, bounds the size, checks the structure with
+/// <see cref="ImageSanitizer"/>, scans for malware, decodes, and re-encodes it so metadata is stripped and dimensions and bytes are
+/// bounded. The order is: size limit, structure and animation check, declared type match, malware scan, decode and re-encode.
 /// </summary>
 /// <param name="scanner">The malware scanner.</param>
 /// <param name="logger">The logger.</param>
@@ -21,10 +21,16 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
     private const string InvalidUploadDetail = "Logo upload is invalid.";
     private const string ScannerUnavailableDetail = "Logo upload scanner is unavailable.";
     private const string ContentField = "Content";
-    private const int SignatureLength = 12;
-    private const int PngSignatureLength = 8;
-    private const int WebPRiffSizeOffset = 4;
-    private const int WebPAnimationFlag = 0x02;
+    private const string MismatchDetail = "Logo content does not match its declared image type.";
+    private const string UndecodableDetail = "Logo could not be decoded or exceeds the allowed image dimensions.";
+
+    private static readonly ImageSanitizerOptions SanitizerOptions = ImageSanitizerOptions.Default with
+    {
+        MaxBytes = BrandingLogoLimits.MaxUploadBytes,
+        MaxDimension = BrandingLogoLimits.MaxUploadEdgePixels,
+        Field = ContentField,
+        RejectAnimation = true
+    };
 
     private static readonly ImageProcessingLimits UploadLimits = new(
         BrandingLogoLimits.MaxUploadEdgePixels,
@@ -50,8 +56,7 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
     {
         ArgumentNullException.ThrowIfNull(content);
 
-        var declaredType = NormalizeDeclaredType(declaredContentType);
-        if (declaredType is null)
+        if (NormalizeDeclaredType(declaredContentType) is not { } declaredType)
         {
             return Result.Invalid<BrandingLogo>(InvalidUploadDetail, "ContentType", "Logo must be a PNG, JPEG or WebP image.");
         }
@@ -73,9 +78,10 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
         await using var ownedLease = lease.ConfigureAwait(false);
         var upload = lease.Content;
 
-        if (!MatchesSignature(upload, declaredType))
+        var structure = await CheckStructure(upload, declaredType, ct).ConfigureAwait(false);
+        if (structure is { } malformed)
         {
-            return Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, "Logo content does not match its declared image type.");
+            return malformed;
         }
 
         var scan = await Scan(upload, ct).ConfigureAwait(false);
@@ -84,138 +90,41 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
             return refused;
         }
 
-        if (IsAnimated(upload, declaredType))
-        {
-            return Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, "Logo must be a still image; animated images are not accepted.");
-        }
-
         return Reencode(upload, ct);
     }
 
-    private static string? NormalizeDeclaredType(string? declaredContentType) =>
+    private static ImageFormat? NormalizeDeclaredType(string? declaredContentType) =>
         (MediaTypeHeaderValue.TryParse(declaredContentType, out var mediaType) ? mediaType.MediaType : null)?.ToUpperInvariant() switch
         {
-            "IMAGE/PNG" => "png",
-            "IMAGE/JPEG" => "jpeg",
-            "IMAGE/WEBP" => "webp",
+            "IMAGE/PNG" => ImageFormat.Png,
+            "IMAGE/JPEG" => ImageFormat.Jpeg,
+            "IMAGE/WEBP" => ImageFormat.Webp,
             _ => null
         };
 
-    private static bool MatchesSignature(Stream upload, string declaredType)
+    private static async ValueTask<Result<BrandingLogo>?> CheckStructure(Stream upload, ImageFormat declaredType, CancellationToken ct)
     {
-        Span<byte> header = stackalloc byte[SignatureLength];
         upload.Position = 0;
-        var read = upload.ReadAtLeast(header, SignatureLength, throwOnEndOfStream: false);
+        var sanitized = await ImageSanitizer.Sanitize(upload, SanitizerOptions, ct).ConfigureAwait(false);
         upload.Position = 0;
-        var bytes = header[..read];
 
-        return declaredType switch
+        if (sanitized.IsFailure)
         {
-            "png" => bytes.StartsWith<byte>([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
-            "jpeg" => bytes.StartsWith<byte>([0xFF, 0xD8, 0xFF]),
-            _ => bytes.Length == SignatureLength && bytes[..4].SequenceEqual("RIFF"u8) && bytes[8..12].SequenceEqual("WEBP"u8)
-        };
-    }
-
-    private static bool IsAnimated(Stream upload, string declaredType)
-    {
-        try
-        {
-            return declaredType switch
+            var message = sanitized.ErrorDetails?.ValidationErrors?.Values.SelectMany(static messages => messages).FirstOrDefault();
+            return message switch
             {
-                "png" => HasAnimationControlChunk(upload),
-                "webp" => HasWebPAnimation(upload),
-                _ => false
+                ImageSanitizer.NotAnImageMessage => Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, MismatchDetail),
+                ImageSanitizer.AnimatedMessage => Result.Invalid<BrandingLogo>(
+                    InvalidUploadDetail,
+                    ContentField,
+                    "Logo must be a still image; animated images are not accepted."),
+                _ => Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, UndecodableDetail)
             };
         }
-        finally
-        {
-            upload.Position = 0;
-        }
-    }
 
-    /// <summary>Walks PNG chunks and reports whether the file is animated or its chunk sequence is truncated or overruns.</summary>
-    /// <param name="upload">The seekable upload.</param>
-    /// <returns><see langword="true"/> when the file must be refused.</returns>
-    internal static bool HasAnimationControlChunk(Stream upload)
-    {
-        Span<byte> header = stackalloc byte[ImageChunkParser.PngChunkHeaderLength];
-        var length = upload.Length;
-        var position = (long)PngSignatureLength;
-        while (position + ImageChunkParser.PngChunkHeaderLength <= length)
-        {
-            upload.Position = position;
-            upload.ReadExactly(header);
-            if (!ImageChunkParser.TryParsePngHeader(header, out var kind, out var chunkLength))
-            {
-                return true;
-            }
-
-            if (kind is ImageChunkKind.Animation)
-            {
-                return true;
-            }
-
-            if (kind is ImageChunkKind.EndOfControlRegion)
-            {
-                return false;
-            }
-
-            if (!ImageChunkParser.TryGetNextPngPosition(position, chunkLength, length, out position))
-            {
-                return true;
-            }
-        }
-
-        return position != length;
-    }
-
-    /// <summary>Walks WebP chunks and reports whether the file is animated or its chunk sequence is truncated or overruns.</summary>
-    /// <param name="upload">The seekable upload.</param>
-    /// <returns><see langword="true"/> when the file must be refused.</returns>
-    internal static bool HasWebPAnimation(Stream upload)
-    {
-        if (upload.Length < SignatureLength)
-        {
-            return true;
-        }
-
-        Span<byte> header = stackalloc byte[ImageChunkParser.WebPChunkHeaderLength];
-        upload.Position = WebPRiffSizeOffset;
-        upload.ReadExactly(header[..4]);
-        if (!ImageChunkParser.TryGetWebPEnd(header[..4], upload.Length, out var end))
-        {
-            return true;
-        }
-
-        var position = (long)SignatureLength;
-        while (position + ImageChunkParser.WebPChunkHeaderLength <= end)
-        {
-            upload.Position = position;
-            upload.ReadExactly(header);
-            if (!ImageChunkParser.TryParseWebPHeader(header, out var kind, out var size))
-            {
-                return true;
-            }
-
-            if (kind is ImageChunkKind.Animation)
-            {
-                return true;
-            }
-
-            var chunkStart = position;
-            if (!ImageChunkParser.TryGetNextWebPPosition(chunkStart, size, end, out position))
-            {
-                return true;
-            }
-
-            if (kind is ImageChunkKind.ExtendedHeader && size > 0 && (upload.ReadByte() & WebPAnimationFlag) != 0)
-            {
-                return true;
-            }
-        }
-
-        return position < end;
+        return sanitized.Value.Format == declaredType
+            ? null
+            : Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, MismatchDetail);
     }
 
     private async ValueTask<Result<BrandingLogo>?> Scan(Stream upload, CancellationToken ct)
@@ -256,10 +165,7 @@ public sealed partial class BrandingLogoIntake(IMalwareScanner scanner, ILogger<
         }
         catch (ImageProcessingException)
         {
-            return Result.Invalid<BrandingLogo>(
-                InvalidUploadDetail,
-                ContentField,
-                "Logo could not be decoded or exceeds the allowed image dimensions.");
+            return Result.Invalid<BrandingLogo>(InvalidUploadDetail, ContentField, UndecodableDetail);
         }
 
         foreach (var variant in processed.Variants)
