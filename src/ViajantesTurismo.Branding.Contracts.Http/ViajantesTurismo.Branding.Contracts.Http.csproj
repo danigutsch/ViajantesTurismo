@@ -12,6 +12,8 @@
     <ItemGroup>
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.HttpClients" />
+        <PackageReference Include="PandaBear.SharedKernel.Blazor.Site" />
+        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
     </ItemGroup>
 
     <ItemGroup>

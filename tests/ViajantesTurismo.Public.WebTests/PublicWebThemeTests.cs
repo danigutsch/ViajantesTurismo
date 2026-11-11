@@ -1,3 +1,4 @@
+using PandaBear.Blazor.Site.Theming;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests;
@@ -24,7 +25,9 @@ public sealed class PublicWebThemeTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         content.ShouldContain("<link rel=\"stylesheet\" href=\"_content/PandaBear.SharedKernel.Blazor.Site/site.", StringComparison.Ordinal);
-        content.ShouldContain("<link rel=\"stylesheet\" href=\"/theme.css\" />", StringComparison.Ordinal);
+        content.ShouldContain("<link rel=\"stylesheet\" href=\"public-site.", StringComparison.Ordinal);
+        var theme = PublicBranding.Theme(PublicWebThemeTestsHelpers.CreateBranding());
+        content.ShouldContain($"<link rel=\"stylesheet\" href=\"/theme.css?v={SiteThemeStylesheet.Hash(theme)}\" />", StringComparison.Ordinal);
         content.ShouldNotContain("<style", StringComparison.OrdinalIgnoreCase);
         content.ShouldContain("<a href=\"#main-content\" class=\"site-skip-link\">Skip to content</a>", StringComparison.Ordinal);
         content.ShouldContain("<main id=\"main-content\" tabindex=\"-1\">", StringComparison.Ordinal);
@@ -36,7 +39,7 @@ public sealed class PublicWebThemeTests
     }
 
     [Fact]
-    public async Task Theme_stylesheet_overrides_the_site_tokens_with_the_brand_colours_and_fonts()
+    public async Task Theme_stylesheet_renders_the_brand_colours_and_fonts_as_the_site_theme()
     {
         // Arrange
         var brandingApi = new FakeBrandingApiClient();
@@ -51,12 +54,13 @@ public sealed class PublicWebThemeTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/css");
-        stylesheet.ShouldContain("--site-color-primary: light-dark(#112233, color-mix(in srgb, #112233 55%, white));", StringComparison.Ordinal);
-        stylesheet.ShouldContain("--site-color-accent: light-dark(#445566, color-mix(in srgb, #445566 55%, white));", StringComparison.Ordinal);
-        stylesheet.ShouldContain("--site-color-surface: light-dark(#FFFFFF, #111827);", StringComparison.Ordinal);
+        stylesheet.ShouldBe(SiteThemeStylesheet.Render(PublicBranding.Theme(PublicWebThemeTestsHelpers.CreateBranding())));
+        stylesheet.ShouldContain("--site-color-primary: light-dark(#112233, #93c5fd);", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-color-accent: light-dark(#445566, #fbbf24);", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-color-surface: light-dark(#ffffff, #111827);", StringComparison.Ordinal);
         stylesheet.ShouldContain("--site-color-text: light-dark(#000000, #f3f4f6);", StringComparison.Ordinal);
-        stylesheet.ShouldContain("--site-font-heading: Inter;", StringComparison.Ordinal);
-        stylesheet.ShouldContain("--site-font-body: Verdana;", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-h1-font-family: system-ui,", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-body-font-family: system-ui,", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -87,11 +91,11 @@ public sealed class PublicWebThemeTests
     }
 
     [Fact]
-    public async Task Theme_stylesheet_canonicalizes_allowed_font_casing()
+    public async Task Theme_stylesheet_matches_allowed_fonts_ignoring_case()
     {
         // Arrange
         var brandingApi = new FakeBrandingApiClient();
-        brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding(headingFont: "inter", bodyFont: "verdana"));
+        brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding(headingFont: "georgia", bodyFont: "verdana"));
         await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
@@ -101,8 +105,8 @@ public sealed class PublicWebThemeTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        stylesheet.ShouldContain("--site-font-heading: Inter;", StringComparison.Ordinal);
-        stylesheet.ShouldContain("--site-font-body: Verdana;", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-h1-font-family: Georgia,", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-body-font-family: system-ui,", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -131,9 +135,9 @@ public sealed class PublicWebThemeTests
 
         // Assert
         stylesheetResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        stylesheet.ShouldContain("--site-color-primary: light-dark(#0F766E,", StringComparison.Ordinal);
-        stylesheet.ShouldContain("--site-font-heading: Georgia;", StringComparison.Ordinal);
-        stylesheet.ShouldContain("--site-font-body: system-ui;", StringComparison.Ordinal);
+        stylesheet.ShouldBe(SiteThemeStylesheet.Render(PublicBranding.Theme(PublicBranding.Defaults())));
+        stylesheet.ShouldContain("--site-color-primary: light-dark(#0f766e,", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-h1-font-family: Georgia,", StringComparison.Ordinal);
         pageResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         page.ShouldContain("Viajantes Turismo", StringComparison.Ordinal);
     }
@@ -155,9 +159,46 @@ public sealed class PublicWebThemeTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        stylesheet.ShouldContain("--site-color-primary: light-dark(#0F766E,", StringComparison.Ordinal);
-        stylesheet.ShouldContain("--site-font-heading: Georgia;", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-color-primary: light-dark(#0f766e,", StringComparison.Ordinal);
+        stylesheet.ShouldContain("--site-h1-font-family: Georgia,", StringComparison.Ordinal);
         stylesheet.ShouldNotContain("javascript", StringComparison.Ordinal);
         stylesheet.ShouldNotContain("bad;font", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Colours_that_break_text_contrast_render_the_default_theme()
+    {
+        // Arrange
+        var brandingApi = new FakeBrandingApiClient();
+        brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding(primaryColor: "#EEEEEE"));
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/theme.css", UriKind.Relative), TestContext.Current.CancellationToken);
+        var stylesheet = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        stylesheet.ShouldBe(SiteThemeStylesheet.Render(PublicBranding.Theme(PublicBranding.Defaults())));
+    }
+
+    [Fact]
+    public async Task The_versioned_theme_stylesheet_is_immutable_and_a_stale_version_is_not()
+    {
+        // Arrange
+        var brandingApi = new FakeBrandingApiClient();
+        brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding());
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        using var client = factory.CreateClient();
+        var hash = SiteThemeStylesheet.Hash(PublicBranding.Theme(PublicWebThemeTestsHelpers.CreateBranding()));
+
+        // Act
+        using var current = await client.GetAsync(new Uri($"/theme.css?v={hash}", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var stale = await client.GetAsync(new Uri("/theme.css?v=0000000000000000", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        current.Headers.CacheControl.ShouldNotBeNull().ToString().ShouldBe("public, max-age=31536000, immutable");
+        stale.Headers.CacheControl.ShouldNotBeNull().MaxAge.ShouldBe(TimeSpan.FromSeconds(60));
     }
 }

@@ -135,6 +135,12 @@ internal static class BrandingEndpoints
             return ToValidationProblem(settings.ErrorDetails);
         }
 
+        var theme = BrandingSiteTheme.Create(request);
+        if (theme.IsFailure)
+        {
+            return ToValidationProblem(theme.ErrorDetails);
+        }
+
         var foreignLogo = false;
         BrandingSettingsSnapshot? saved;
         try
