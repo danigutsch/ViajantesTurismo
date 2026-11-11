@@ -91,7 +91,9 @@
     <PackageVersion Include="PandaBear.SharedKernel.ApiVersioning.AspNetCore" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Authentication" Version="0.1.0-alpha.521.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Authentication.Bff" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" Version="0.1.0-alpha.521.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Localization" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Seo" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Aspire.Analyzers" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting" Version="0.1.0-alpha.521.1" />
@@ -103,6 +105,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.AuditTrail.SourceGenerator" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Branding" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Blazor" Version="0.1.0-alpha.521.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Blazor.Site" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.BuildingBlocks" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.DispositionHold.Abstractions" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.DispositionHold.EntityFrameworkCore" Version="0.1.0-alpha.521.1" />
