@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
@@ -17,14 +14,13 @@ public sealed class PublicWebSecurityBaselineTests
     public void A_rejected_request_is_answered_with_too_many_requests()
     {
         // Arrange
-        var services = new ServiceCollection().AddPublicWebSecurityBaseline();
-        using var provider = services.BuildServiceProvider();
+        const int tooManyRequests = StatusCodes.Status429TooManyRequests;
 
         // Act
-        var options = provider.GetRequiredService<IOptions<RateLimiterOptions>>().Value;
+        var options = PublicWebSecurityBaselineTestsHelpers.ConfiguredRateLimiterOptions();
 
         // Assert
-        options.RejectionStatusCode.ShouldBe(StatusCodes.Status429TooManyRequests);
+        options.RejectionStatusCode.ShouldBe(tooManyRequests);
         options.OnRejected.ShouldNotBeNull();
     }
 
