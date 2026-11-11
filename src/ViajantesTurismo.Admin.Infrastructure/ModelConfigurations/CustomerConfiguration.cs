@@ -18,7 +18,9 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         entity.OwnsOne(customer => customer.PersonalInfo, builder =>
         {
             builder.ToTable("CustomerPersonalInfo");
-            builder.Property(info => info.BirthDate).HasColumnType("date");
+            builder.Property(info => info.BirthDate)
+                .HasConversion(birthDate => birthDate.Value, value => BirthDate.Restore(value))
+                .HasColumnType("date");
         });
         entity.OwnsOne(customer => customer.IdentificationInfo, builder => builder.ToTable("CustomerIdentificationInfo"));
         entity.OwnsOne(customer => customer.ContactInfo, builder =>

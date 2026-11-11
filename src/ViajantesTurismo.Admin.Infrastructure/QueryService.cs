@@ -114,7 +114,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             {
                 FirstName = customer.PersonalInfo.FirstName,
                 LastName = customer.PersonalInfo.LastName,
-                BirthDate = customer.PersonalInfo.BirthDate,
+                BirthDate = customer.PersonalInfo.BirthDate.Value,
                 Gender = customer.PersonalInfo.Gender,
                 Nationality = customer.PersonalInfo.Nationality,
                 Occupation = customer.PersonalInfo.Occupation

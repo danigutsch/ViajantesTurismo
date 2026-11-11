@@ -124,7 +124,7 @@ public static class CustomerMapper
         var personal = customer.PersonalInfo;
         var address = customer.Address;
         return new CustomerDefinition(
-            new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate,
+            new PersonalInfoDefinition(personal.FirstName, personal.LastName, personal.Gender, personal.BirthDate.Value,
                 personal.Nationality, personal.Occupation),
             new IdentificationInfoDefinition(customer.IdentificationInfo.NationalId,
                 customer.IdentificationInfo.IdNationality),
