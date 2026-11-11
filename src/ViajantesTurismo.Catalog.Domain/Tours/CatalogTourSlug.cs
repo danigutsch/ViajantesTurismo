@@ -1,5 +1,4 @@
-using System.Globalization;
-using System.Text;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Domain.Tours;
 
@@ -41,46 +40,9 @@ public static class CatalogTourSlug
     /// <returns><see langword="true" /> when the input can be normalized safely; otherwise, <see langword="false" />.</returns>
     public static bool TryNormalize(string? value, out string slug)
     {
-        slug = string.Empty;
-        if (string.IsNullOrWhiteSpace(value)
-            || value.Any(char.IsControl)
-            || value.IndexOfAny(['/', '\\', '?', '#']) >= 0)
-        {
-            return false;
-        }
-
-        var builder = new StringBuilder(value.Length);
-        var requiresSeparator = false;
-        foreach (var character in value.Normalize(NormalizationForm.FormD))
-        {
-            if (CharUnicodeInfo.GetUnicodeCategory(character) == UnicodeCategory.NonSpacingMark)
-            {
-                continue;
-            }
-
-            if (char.IsAsciiLetterOrDigit(character))
-            {
-                if (requiresSeparator)
-                {
-                    builder.Append('-');
-                }
-
-                builder.Append(char.ToLowerInvariant(character));
-                requiresSeparator = false;
-                continue;
-            }
-
-            if (char.IsWhiteSpace(character) || character is '-' or '_')
-            {
-                requiresSeparator = builder.Length > 0;
-                continue;
-            }
-
-            return false;
-        }
-
-        slug = builder.ToString();
-        return slug.Length is > 0 and <= CatalogDomainLimits.MaxSlugLength;
+        var result = Slug.Create(value, CatalogDomainLimits.MaxSlugLength);
+        slug = result.IsSuccess ? result.Value.Value : string.Empty;
+        return result.IsSuccess;
     }
 
     /// <summary>
@@ -90,7 +52,6 @@ public static class CatalogTourSlug
     /// <returns><see langword="true" /> when the slug is canonical; otherwise, <see langword="false" />.</returns>
     public static bool IsCanonical(string? value)
     {
-        return TryNormalize(value, out var slug)
-            && string.Equals(value, slug, StringComparison.Ordinal);
+        return Slug.IsCanonical(value, CatalogDomainLimits.MaxSlugLength);
     }
 }
