@@ -24,6 +24,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore" />
+        <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore.Npgsql" />
         <PackageReference Include="PandaBear.SharedKernel.ImageProcessing" />
         <PackageReference Include="PandaBear.SharedKernel.IO" />
         <PackageReference Include="PandaBear.SharedKernel.IO.Analyzers" PrivateAssets="all" />

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PandaBear.Branding;
+using PandaBear.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Branding.Infrastructure.ModelConfigurations;
 
@@ -14,7 +15,7 @@ internal sealed class BrandingSettingsRevisionConfiguration : IEntityTypeConfigu
 
         entity.HasKey(revision => revision.Id);
         entity.Property(revision => revision.Id).ValueGeneratedNever();
-        entity.HasIndex(revision => new { revision.SourceEpoch, revision.SourceRevision }).IsUnique();
+        entity.HasIndex(revision => new { revision.SourceEpoch, revision.SourceRevision }).HasUniqueRule(BrandingSettingsRevisionRecord.UniqueRule);
         entity.Property(revision => revision.BrandName).HasMaxLength(BrandingContractConstants.MaxBrandNameLength).IsRequired();
         entity.Property(revision => revision.PrimaryColor).HasMaxLength(BrandingContractConstants.MaxCssColorLength).IsRequired();
         entity.Property(revision => revision.AccentColor).HasMaxLength(BrandingContractConstants.MaxCssColorLength).IsRequired();
