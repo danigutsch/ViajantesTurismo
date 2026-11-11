@@ -1,12 +1,11 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
-using Aspire.Hosting.Testing;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using PandaBear.IntegrationTesting;
 using PandaBear.Npgsql.Testing;
+using PandaBear.Testing;
 using Projects;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using ViajantesTurismo.AppHost;
@@ -15,53 +14,46 @@ using ViajantesTurismo.Resources;
 namespace ViajantesTurismo.HostedTests.Infrastructure;
 
 /// <summary>
-/// Owns the assembly's six infrastructure containers and isolated application instances.
+/// Owns the assembly's six infrastructure containers and isolated application stacks.
 /// Nothing starts before a test demands it: the infrastructure Aspire application is composed on the first demand with every
-/// container set to explicit start, and each container is then started once, through its own on-demand gate.
+/// container set to explicit start, each container is then started once through <see cref="OnDemandResources{T}"/>, and each
+/// application stack is one profile of an <see cref="AspireAppHostFixture{TAppHost}"/> wired to those containers.
 /// </summary>
-[SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "DisposeAsync passes the on-demand resources to independent ordered cleanup before aggregating errors.")]
+[SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "DisposeAsync passes every owned resource to the ordered TestCleanup.")]
 public sealed class HostedTestFixture : IAsyncLifetime
 {
     private const string CollectorName = "opentelemetry-collector";
     private const string FixtureDatabaseName = "fixture";
     private static readonly TimeSpan StartBudget = TimeSpan.FromMinutes(3);
+    private static readonly string[] Stacks = ["api", "system", "concurrent-a", "concurrent-b"];
 
-    private readonly ConcurrentDictionary<string, OnDemandResource<AspireTestApplication>> applications = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, string> conformanceUserIds = new(StringComparer.Ordinal);
-    private readonly OnDemandResource<InfrastructureHost> infrastructure;
-    private readonly OnDemandResource<string> postgres;
-    private readonly OnDemandResource<string> cache;
-    private readonly OnDemandResource<Uri> identityProvider;
-    private readonly OnDemandResource<Uri> clamAv;
-    private readonly OnDemandResource<Uri> seaweedFs;
-    private readonly OnDemandResource<Uri> collector;
+    private readonly ConcurrentDictionary<string, HostedProfile> profiles = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, StackLaunch> preparedLaunches = new(StringComparer.Ordinal);
+    private readonly Lazy<TestWorkspace> workspace = new(() => TestWorkspace.Create("vt-hosted"), LazyThreadSafetyMode.ExecutionAndPublication);
+    private readonly OnDemandResource<AspireTestApplication> infrastructure;
+    private readonly OnDemandResources<StartedContainer> containers;
+    private readonly OnDemandResources<StackLaunch> launches;
+    private readonly ApplicationStacks stacks;
     private readonly PostgreSqlTestDatabasePool databases;
 
     public HostedTestFixture()
     {
-        // A start may run only through its gate: starting a container twice recreates it and loses its data.
+        // A container may start only through its key: starting one twice recreates it and loses its data.
         infrastructure = new(CreateInfrastructure);
-        postgres = new(ct => StartResource(ResourceNames.DatabaseServer, application => application.GetConnectionString(FixtureDatabaseName, ct), ct, FixtureDatabaseName));
-        cache = new(ct => StartResource(ResourceNames.Cache, application => application.GetConnectionString(ResourceNames.Cache, ct), ct));
-        identityProvider = new(async ct =>
-        {
-            await PrepareRealmImports(ct);
-            return await StartResource(ResourceNames.IdentityProvider, application => Task.FromResult(application.GetEndpoint(ResourceNames.IdentityProvider, "http")), ct);
-        });
-        clamAv = new(ct => StartResource(ResourceNames.ClamAv, application => Task.FromResult(application.GetEndpoint(ResourceNames.ClamAv, ClamAvResource.TcpEndpointName)), ct));
-        seaweedFs = new(ct => StartResource(ResourceNames.SeaweedFs, application => Task.FromResult(application.GetEndpoint(ResourceNames.SeaweedFs, SeaweedFsResource.S3EndpointName)), ct));
-        collector = new(ct => StartResource(CollectorName, application => Task.FromResult(application.GetEndpoint(CollectorName, "grpc")), ct));
-        databases = new PostgreSqlTestDatabasePool(ct => postgres.Get(ct));
+        containers = new(StartContainer);
+        launches = new(PrepareLaunch);
+        stacks = new ApplicationStacks(this);
+        databases = new PostgreSqlTestDatabasePool(GetPostgreSqlConnectionString);
     }
 
     public AppHostTestConfiguration Configuration { get; } = AppHostTestArguments.CreateConfiguration();
     public string RunId { get; } = Guid.NewGuid().ToString("N");
-    public string WorkDirectory { get; } = Path.Combine(Path.GetTempPath(), $"vt-hosted-{Guid.NewGuid():N}");
     public string SeaweedAccessKey { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(24));
     public string SeaweedSecretKey { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
     /// <summary>Gets the pool of PostgreSQL test databases.</summary>
     internal PostgreSqlTestDatabasePool Databases => databases;
-    private string RealmImportDirectory => Path.Combine(WorkDirectory, "keycloak");
+    private string RealmImportDirectory => workspace.Value.Folder("keycloak");
 
     public string Realm(string stack) => stack == "api" ? "viajantes" : $"hosted-{stack}-{RunId}";
 
@@ -70,27 +62,58 @@ public sealed class HostedTestFixture : IAsyncLifetime
         ? id
         : throw new InvalidOperationException($"The realm for stack '{stack}' is prepared when the identity provider is first demanded.");
 
-    /// <summary>Starts nothing: the infrastructure application, its containers and the work directory are created on demand.</summary>
+    /// <summary>Starts nothing: the infrastructure application, its containers and the workspace are created on demand.</summary>
     public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
-    public Task<string> GetPostgreSqlConnectionString(CancellationToken ct) => postgres.Get(ct);
+    public async Task<string> GetPostgreSqlConnectionString(CancellationToken ct) =>
+        await (await containers.Get(ResourceNames.DatabaseServer, ct)).Application.GetConnectionString(FixtureDatabaseName, ct);
 
-    public Task<Uri> GetIdentityProviderEndpoint(CancellationToken ct) => identityProvider.Get(ct);
+    public async Task<Uri> GetIdentityProviderEndpoint(CancellationToken ct) =>
+        (await containers.Get(ResourceNames.IdentityProvider, ct)).Application.GetEndpoint(ResourceNames.IdentityProvider, "http");
 
-    public Task<Uri> GetClamAvEndpoint(CancellationToken ct) => clamAv.Get(ct);
+    public async Task<Uri> GetClamAvEndpoint(CancellationToken ct) =>
+        (await containers.Get(ResourceNames.ClamAv, ct)).Application.GetEndpoint(ResourceNames.ClamAv, ClamAvResource.TcpEndpointName);
 
-    public Task<Uri> GetSeaweedFsEndpoint(CancellationToken ct) => seaweedFs.Get(ct);
+    public async Task<Uri> GetSeaweedFsEndpoint(CancellationToken ct) =>
+        (await containers.Get(ResourceNames.SeaweedFs, ct)).Application.GetEndpoint(ResourceNames.SeaweedFs, SeaweedFsResource.S3EndpointName);
 
-    public Task<AspireTestApplication> GetApplication(HostedProfile profile, string stack, CancellationToken ct)
+    /// <summary>Gets the application stack, starting it with the profile on the first demand; every later caller shares it.</summary>
+    public async Task<AspireTestApplication> GetApplication(HostedProfile profile, string stack, CancellationToken ct)
     {
-        return applications.GetOrAdd(stack, _ => new OnDemandResource<AspireTestApplication>(ct => StartApplication(profile, stack, ct))).Get(ct);
+        var stackProfile = profiles.GetOrAdd(stack, profile);
+        if (stackProfile != profile)
+        {
+            throw new InvalidOperationException($"The '{stack}' stack runs the {stackProfile} profile, not {profile}.");
+        }
+
+        _ = await launches.Get(stack, ct);
+        return await stacks.Application(stack, ct);
     }
 
-    private async Task<InfrastructureHost> CreateInfrastructure(CancellationToken ct)
+    /// <summary>Stops the application stacks, drops their databases, stops the containers, then removes the workspace.</summary>
+    public async ValueTask DisposeAsync()
     {
-        var builder = AspireTestApplication.CreateBuilder([.. Configuration.Arguments, $"--DcpPublisher:ResourceNameSuffix=hosted-{RunId}",
-            $"--Parameters:seaweedfs-access-key={SeaweedAccessKey}", $"--Parameters:seaweedfs-secret-key={SeaweedSecretKey}",
-            $"--{AppHostResourceExtensions.RealmImportDirectoryConfigurationKey}={RealmImportDirectory}"]);
+        await TestCleanup.DisposeAll(
+            null,
+            stacks,
+            launches,
+            databases,
+            containers,
+            infrastructure,
+            workspace.IsValueCreated ? workspace.Value : null);
+    }
+
+    // Runs synchronously on the first caller's thread: Aspire reads its DCP metadata from the synchronous call stack.
+    private Task<AspireTestApplication> CreateInfrastructure(CancellationToken ct)
+    {
+        var builder = AspireTestApplication.CreateBuilder(
+            new Dictionary<string, string?>
+            {
+                ["Parameters:seaweedfs-access-key"] = SeaweedAccessKey,
+                ["Parameters:seaweedfs-secret-key"] = SeaweedSecretKey,
+                [AppHostResourceExtensions.RealmImportDirectoryConfigurationKey] = RealmImportDirectory,
+            },
+            [.. Configuration.Arguments]);
         var database = builder.AddDatabaseServer(includePgWeb: false).WithExplicitStart();
         _ = database.AddDatabase(FixtureDatabaseName);
         _ = builder.AddCache(includeRedisInsight: false).WithExplicitStart();
@@ -104,74 +127,33 @@ public sealed class HostedTestFixture : IAsyncLifetime
         var observability = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", "..", "observability"));
         _ = builder.AddOpenTelemetryCollectorGateway(CollectorName,
             Path.Combine(observability, "otel-collector", "privacy.yaml"), Path.Combine(observability, "otel-collector", "aspire.yaml")).WithExplicitStart();
-        // The testing wrapper hides its application, so keep the services Aspire hands out before start for the start commands.
-        IServiceProvider? services = null;
-        builder.Eventing.Subscribe<BeforeStartEvent>((beforeStart, _) =>
-        {
-            services = beforeStart.Services;
-            return Task.CompletedTask;
-        });
         // No resource name is awaited: explicit-start resources stay NotStarted until a test demands them. Keep project resources
         // out of this model: a WaitFor edge to a resource that never starts would block the application start.
-        AspireTestApplication application;
-        try
-        {
-            application = await AspireTestApplication.Start(builder, [], StartBudget, ct);
-        }
-        catch (OperationCanceledException cancellation) when (!ct.IsCancellationRequested)
-        {
-            // Only disposal cancels ct, so this is the start budget. The gate caches the failure for every borrower, and a bare
-            // "A task was canceled." would name neither the application nor the budget.
-            throw new TimeoutException($"The infrastructure application did not start within {StartBudget}.", cancellation);
-        }
-
-        if (services is null)
-        {
-            await application.DisposeAsync();
-            throw new InvalidOperationException("Aspire did not publish its services before start.");
-        }
-
-        return new InfrastructureHost(application, services);
+        return AspireTestApplication.Start(builder, [], StartBudget, ct);
     }
 
-    private async Task<T> StartResource<T>(string resourceName, Func<AspireTestApplication, Task<T>> read, CancellationToken ct, string? databaseName = null)
+    private async Task<StartedContainer> StartContainer(string resourceName, CancellationToken ct)
     {
-        var host = await infrastructure.Get(ct);
-        using var budget = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        budget.CancelAfter(StartBudget);
-        var awaiting = resourceName;
-        try
+        var application = await infrastructure.Get(ct);
+        if (resourceName == ResourceNames.IdentityProvider)
         {
-            var started = await host.Commands.ExecuteCommandAsync(resourceName, KnownResourceCommands.StartCommand, budget.Token);
-
-            // A command canceled by the budget reports that by value. Its success only means that the container was requested.
-            budget.Token.ThrowIfCancellationRequested();
-            if (!started.Success)
-            {
-                throw new InvalidOperationException($"Starting '{resourceName}' failed: {started.Message}");
-            }
-
-            await host.Notifications.WaitForResourceHealthyAsync(resourceName, budget.Token);
-            if (databaseName is not null)
-            {
-                // Aspire creates the databases of a server once the server is ready, so a healthy server does not yet have its database.
-                awaiting = databaseName;
-                await host.Notifications.WaitForResourceHealthyAsync(databaseName, budget.Token);
-            }
-        }
-        catch (OperationCanceledException) when (budget.IsCancellationRequested && !ct.IsCancellationRequested)
-        {
-            throw new TimeoutException($"'{awaiting}' did not become healthy within {StartBudget}.");
+            await PrepareRealmImports(ct);
         }
 
-        return await read(host.Application);
+        await application.StartResource(resourceName, StartBudget, ct);
+        if (resourceName == ResourceNames.DatabaseServer)
+        {
+            // Aspire creates the databases of a server once the server is ready, so a healthy server does not yet have its database.
+            await application.WaitForHealthy([FixtureDatabaseName], StartBudget, ct);
+        }
+
+        return new StartedContainer(application);
     }
 
     private async Task PrepareRealmImports(CancellationToken ct)
     {
-        var imports = Directory.CreateDirectory(RealmImportDirectory);
         var template = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "Keycloak", "viajantes-realm.json"), ct);
-        foreach (var stack in new[] { "api", "system", "concurrent-a", "concurrent-b" })
+        foreach (var stack in Stacks)
         {
             var realm = JsonNode.Parse(template) ?? throw new InvalidOperationException("The test realm template is empty.");
             realm["realm"] = Realm(stack);
@@ -191,12 +173,15 @@ public sealed class HostedTestFixture : IAsyncLifetime
                     }
                 }
             }
-            await File.WriteAllTextAsync(Path.Combine(imports.FullName, $"{Realm(stack)}-realm.json"), realm.ToJsonString(), ct);
+
+            await File.WriteAllTextAsync(Path.Combine(RealmImportDirectory, $"{Realm(stack)}-realm.json"), realm.ToJsonString(), ct);
         }
     }
 
-    private async Task<AspireTestApplication> StartApplication(HostedProfile profile, string stack, CancellationToken ct)
+    // Starts the containers and leases the databases of a stack, so that ApplicationStacks.Launch can read the stack's settings.
+    private async Task<StackLaunch> PrepareLaunch(string stack, CancellationToken ct)
     {
+        var profile = profiles[stack];
         // Every stack is configured with these services; only the Management web app of the System and Full profiles uses the
         // cache (see SharedProductResourceExtensions in the AppHost), so an Admin stack never starts it.
         var includesCache = profile is not HostedProfile.Admin;
@@ -204,17 +189,23 @@ public sealed class HostedTestFixture : IAsyncLifetime
         var authority = GetIdentityProviderEndpoint(ct);
         var scanner = GetClamAvEndpoint(ct);
         var storage = GetSeaweedFsEndpoint(ct);
-        var telemetry = collector.Get(ct);
-        var redis = includesCache ? cache.Get(ct) : Task.FromResult(string.Empty);
+        var telemetry = containers.Get(CollectorName, ct);
+        List<Task> starts = [server, authority, scanner, storage, telemetry];
+        var redis = includesCache ? containers.Get(ResourceNames.Cache, ct) : null;
+        if (redis is not null)
+        {
+            starts.Add(redis);
+        }
+
         // Concurrent starts take about half the time of sequential ones.
-        await Task.WhenAll(server, authority, scanner, storage, telemetry, redis);
+        await Task.WhenAll(starts);
         var identityProviderEndpoint = await authority;
         var clamAvEndpoint = await scanner;
         var seaweedFsEndpoint = await storage;
         var admin = await Databases.Create(ct);
         var catalog = await Databases.Create(ct);
         var security = await Databases.Create(ct);
-        var values = new Dictionary<string, string?>
+        var values = new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["HostedTests:SharedInfrastructure"] = "true",
             [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = admin.ConnectionString,
@@ -222,85 +213,48 @@ public sealed class HostedTestFixture : IAsyncLifetime
             [$"ConnectionStrings:{ResourceNames.SecurityDatabase}"] = security.ConnectionString,
             ["HostedTests:Authority"] = $"{identityProviderEndpoint.ToString().TrimEnd('/')}/realms/{Realm(stack)}",
             ["HostedTests:ClamAv:Host"] = clamAvEndpoint.Host,
-            ["HostedTests:ClamAv:Port"] = clamAvEndpoint.Port.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["HostedTests:ClamAv:Port"] = clamAvEndpoint.Port.ToString(CultureInfo.InvariantCulture),
             ["HostedTests:SeaweedFs:Endpoint"] = seaweedFsEndpoint.GetLeftPart(UriPartial.Authority),
             ["HostedTests:SeaweedFs:AccessKey"] = SeaweedAccessKey,
             ["HostedTests:SeaweedFs:SecretKey"] = SeaweedSecretKey,
             ["HostedTests:SeaweedFs:Bucket"] = $"{stack}-{RunId}",
-            ["HostedTests:OtlpEndpoint"] = (await telemetry).ToString(),
-            // The AppHost generates payment protection material for every run; keep it inside this run's work directory.
-            ["Payments:GeneratedDirectory"] = Path.Combine(WorkDirectory, "payments"),
+            ["HostedTests:OtlpEndpoint"] = (await telemetry).Application.GetEndpoint(CollectorName, "grpc").ToString(),
         };
-        if (includesCache)
+        if (redis is not null)
         {
-            values[$"ConnectionStrings:{ResourceNames.Cache}"] = await redis;
+            values[$"ConnectionStrings:{ResourceNames.Cache}"] = await (await redis).Application.GetConnectionString(ResourceNames.Cache, ct);
         }
 
-        var builder = await DistributedApplicationTestingBuilder.CreateAsync<ViajantesTurismo_AppHost>(
-            [.. Configuration.Arguments, .. profile.ToArguments(), $"--DcpPublisher:ResourceNameSuffix={stack}-{RunId}"],
-            (_, settings) =>
-            {
-                settings.Configuration ??= new ConfigurationManager();
-                settings.Configuration.AddInMemoryCollection(values);
-            }, ct);
-        try
-        {
-            return await AspireTestApplication.Start(builder,
-                profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [ResourceNames.Api, ResourceNames.CatalogApi],
-                StartBudget, ct);
-        }
-        catch (OperationCanceledException cancellation) when (!ct.IsCancellationRequested)
-        {
-            // Only disposal cancels ct, so this is the start budget; name the stack instead of caching a bare cancellation.
-            throw new TimeoutException($"The '{stack}' application stack did not start within {StartBudget}.", cancellation);
-        }
+        var launch = new StackLaunch(profile, values);
+        preparedLaunches[stack] = launch;
+        return launch;
     }
 
-    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Assembly cleanup must attempt every application and infrastructure resource and preserve failures.")]
-    public async ValueTask DisposeAsync()
+    /// <summary>The infrastructure application once one of its containers is healthy; disposing it is the infrastructure's job.</summary>
+    private sealed record StartedContainer(AspireTestApplication Application);
+
+    /// <summary>The profile and AppHost configuration of a stack whose containers and databases are ready.</summary>
+    private sealed record StackLaunch(HostedProfile Profile, IReadOnlyDictionary<string, string?> Configuration);
+
+    /// <summary>One AppHost application per stack, wired to the infrastructure through the AppHost's hosted-test configuration keys.</summary>
+    private sealed class ApplicationStacks(HostedTestFixture owner) : AspireAppHostFixture<ViajantesTurismo_AppHost>
     {
-        List<Exception> failures = [];
+        protected override string WorkspaceName => "vt-hosted-stacks";
 
-        // Applications first, then the pool that drops their databases, then the containers, then the infrastructure host.
-        IAsyncDisposable[] ordered = [.. applications.Values, databases, postgres, cache, identityProvider, clamAv, seaweedFs, collector, infrastructure];
-        foreach (var resource in ordered)
+        protected override AppHostLaunch Launch(string profile, string folder)
         {
-            try
+            var launch = owner.preparedLaunches.TryGetValue(profile, out var prepared)
+                ? prepared
+                : throw new InvalidOperationException($"The '{profile}' stack starts through HostedTestFixture.GetApplication.");
+            var configuration = new Dictionary<string, string?>(launch.Configuration, StringComparer.Ordinal)
             {
-                await resource.DisposeAsync();
-            }
-            catch (Exception failure)
-            {
-                failures.Add(failure);
-            }
+                // The AppHost generates payment protection material for every run; keep it inside the stack's own folder.
+                ["Payments:GeneratedDirectory"] = Path.Combine(folder, "payments"),
+            };
+            string[] healthy = launch.Profile is HostedProfile.System
+                ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp]
+                : [ResourceNames.Api, ResourceNames.CatalogApi];
+            return new AppHostLaunch([.. owner.Configuration.Arguments, .. launch.Profile.ToArguments()], healthy, StartBudget, configuration);
         }
-
-        try
-        {
-            if (Directory.Exists(WorkDirectory))
-            {
-                Directory.Delete(WorkDirectory, recursive: true);
-            }
-        }
-        catch (Exception failure)
-        {
-            failures.Add(failure);
-        }
-
-        if (failures.Count != 0)
-        {
-            throw new AggregateException("Hosted test cleanup failed.", failures);
-        }
-    }
-
-    private sealed class InfrastructureHost(AspireTestApplication application, IServiceProvider services) : IAsyncDisposable
-    {
-        public AspireTestApplication Application { get; } = application;
-
-        public ResourceCommandService Commands { get; } = services.GetRequiredService<ResourceCommandService>();
-
-        public ResourceNotificationService Notifications { get; } = services.GetRequiredService<ResourceNotificationService>();
-
-        public ValueTask DisposeAsync() => Application.DisposeAsync();
     }
 }

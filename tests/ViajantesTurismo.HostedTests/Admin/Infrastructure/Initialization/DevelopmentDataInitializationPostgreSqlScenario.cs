@@ -1,4 +1,4 @@
-using PostgreSqlTestCleanup = ViajantesTurismo.HostedTests.Infrastructure.HostedTestCleanup;
+using PandaBear.Testing;
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
@@ -56,7 +56,7 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
         }
         catch (Exception creationFailure)
         {
-            await PostgreSqlTestCleanup.DisposeResources(creationFailure, scenario);
+            await TestCleanup.DisposeAll(creationFailure, scenario);
             throw;
         }
 

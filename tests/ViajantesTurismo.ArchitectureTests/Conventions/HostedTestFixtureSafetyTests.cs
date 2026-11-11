@@ -2,7 +2,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>
 /// Pins the guards of <c>HostedTestFixture</c> that no other test reads: telemetry privacy, the shared-infrastructure marker of
-/// every application stack, and ownership of the work directory. Restructuring the fixture must not drop them silently.
+/// every application stack, and ownership of the run's files. Restructuring the fixture must not drop them silently.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class HostedTestFixtureSafetyTests
@@ -28,14 +28,14 @@ public sealed class HostedTestFixtureSafetyTests
         var fixture = HostedTestFixtureSource.Read();
 
         // Act
-        var stack = HostedTestFixtureSource.Body(fixture, "private async Task<AspireTestApplication> StartApplication(");
+        var stack = HostedTestFixtureSource.Body(fixture, "private async Task<StackLaunch> PrepareLaunch(");
 
         // Assert
         stack.ShouldContain("[\"HostedTests:SharedInfrastructure\"] = \"true\"", StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Fixture_deletes_the_unique_work_directory_it_creates()
+    public void Fixture_keeps_the_run_files_in_a_test_workspace_it_removes()
     {
         // Arrange
         var fixture = HostedTestFixtureSource.Read();
@@ -44,7 +44,8 @@ public sealed class HostedTestFixtureSafetyTests
         var disposal = HostedTestFixtureSource.Body(fixture, "public async ValueTask DisposeAsync()");
 
         // Assert
-        fixture.ShouldContain("WorkDirectory { get; } = Path.Combine(Path.GetTempPath(), $\"vt-hosted-{Guid.NewGuid():N}\");", StringComparison.Ordinal);
-        disposal.ShouldContain("Directory.Delete(WorkDirectory, recursive: true);", StringComparison.Ordinal);
+        fixture.ShouldContain("TestWorkspace.Create(\"vt-hosted\")", StringComparison.Ordinal);
+        fixture.ShouldNotContain("Path.GetTempPath()", StringComparison.Ordinal);
+        disposal.ShouldContain("workspace.IsValueCreated ? workspace.Value : null", StringComparison.Ordinal);
     }
 }

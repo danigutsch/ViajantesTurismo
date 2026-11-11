@@ -219,7 +219,7 @@ public sealed partial class AppHostOrchestrationTests
         // Assert
         fixtureText.ShouldContain("StartBudget = TimeSpan.FromMinutes(3);", StringComparison.Ordinal, "the start of a stack is bounded");
         fixtureText.ShouldContain(
-            "AspireTestApplication.Start(builder, profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [",
+            "launch.Profile is HostedProfile.System ? [ResourceNames.Api, ResourceNames.WebApp, ResourceNames.PublicWebApp] : [",
             StringComparison.Ordinal,
             "the System stack awaits the API and both web applications");
     }
@@ -233,7 +233,7 @@ public sealed partial class AppHostOrchestrationTests
         // Assert
         fixtureText.ShouldContain("StartBudget = TimeSpan.FromMinutes(3);", StringComparison.Ordinal, "the start of a stack is bounded");
         fixtureText.ShouldContain(
-            ": [ResourceNames.Api, ResourceNames.CatalogApi], StartBudget, ct);",
+            ": [ResourceNames.Api, ResourceNames.CatalogApi]; return new AppHostLaunch([.. owner.Configuration.Arguments, .. launch.Profile.ToArguments()], healthy, StartBudget, configuration);",
             StringComparison.Ordinal,
             "the Admin stack awaits the API and the Catalog API within the start budget");
     }

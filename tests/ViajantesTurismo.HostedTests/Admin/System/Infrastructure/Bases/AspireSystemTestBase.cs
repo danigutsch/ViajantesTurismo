@@ -2,17 +2,15 @@ using Microsoft.Playwright;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using PandaBear.Testing.Playwright;
-using Microsoft.Playwright.Xunit.v3;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 
-public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTest, IClassFixture<AspireSystemTestFixture>
+public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : TracedPageTest, IClassFixture<AspireSystemTestFixture>
     where TFixture : IAspireSystemTestFixture
 {
     private const float DefaultTimeoutMilliseconds = 30000;
     private HttpClient? apiClient;
-    private PageDiagnostics? diagnostics;
 
     protected TFixture Fixture => fixture;
 
@@ -38,7 +36,6 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
         var initialized = false;
         try
         {
-            diagnostics = new PageDiagnostics(Page);
             Page.SetDefaultTimeout(DefaultTimeoutMilliseconds);
             Page.SetDefaultNavigationTimeout(DefaultTimeoutMilliseconds);
             Assertions.SetDefaultExpectTimeout(DefaultTimeoutMilliseconds);
@@ -82,17 +79,13 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
     {
         ArgumentNullException.ThrowIfNull(uri);
 
-        await Page.GotoAsync(uri.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
         if (IsManagementWebAppUri(uri))
         {
-            await WaitForInteractivePage();
+            await GotoInteractive(uri);
+            return;
         }
-    }
 
-    private async Task WaitForInteractivePage()
-    {
-        await Page.WaitForBlazorInteractive(
-            diagnostics ?? throw new InvalidOperationException("The page diagnostics are not initialized."));
+        await Page.GotoAsync(uri.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
     }
 
     private bool IsManagementWebAppUri(Uri uri)
