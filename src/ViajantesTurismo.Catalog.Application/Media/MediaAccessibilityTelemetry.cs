@@ -73,7 +73,7 @@ public static class MediaAccessibilityTelemetry
         return new TagList
         {
             { "catalog.outcome", outcome },
-            { "catalog.media_accessibility.language", language switch { PublicContentLanguage.EnUs => "en-US", PublicContentLanguage.PtBr => "pt-BR", _ => "und" } }
+            { "catalog.media_accessibility.language", PublicContentCultures.ToLanguageTag(language) }
         };
     }
 }

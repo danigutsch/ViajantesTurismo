@@ -1134,14 +1134,7 @@ internal static class CatalogEndpoints
 
     private static bool TryGetPublicContentLanguage(string? language, string? culture, out PublicContentLanguage publicContentLanguage)
     {
-        var requestedLanguage = string.IsNullOrWhiteSpace(language) ? culture : language;
-        publicContentLanguage = requestedLanguage?.Trim().ToUpperInvariant() switch
-        {
-            null or "" or "EN-US" or "EN" => PublicContentLanguage.EnUs,
-            "PT-BR" or "PT" => PublicContentLanguage.PtBr,
-            _ => PublicContentLanguage.None
-        };
-
+        publicContentLanguage = PublicContentCultures.Resolve(string.IsNullOrWhiteSpace(language) ? culture : language);
         return publicContentLanguage != PublicContentLanguage.None;
     }
 

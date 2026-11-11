@@ -96,7 +96,7 @@ public sealed class MediaImageAccessibilityDraftService(
                     {
                         Image = readableSource.Content,
                         ContentType = readableSource.ContentType,
-                        Language = ToLanguageTag(input.Language),
+                        Language = PublicContentCultures.ToLanguageTag(input.Language),
                         Context = input.Context,
                         Latitude = input.Latitude,
                         Longitude = input.Longitude
@@ -133,15 +133,5 @@ public sealed class MediaImageAccessibilityDraftService(
             activity?.SetStatus(outcome == "success" ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             MediaAccessibilityTelemetry.RecordCompletion(outcome, input.Language, started);
         }
-    }
-
-    private static string ToLanguageTag(PublicContentLanguage language)
-    {
-        return language switch
-        {
-            PublicContentLanguage.EnUs => "en-US",
-            PublicContentLanguage.PtBr => "pt-BR",
-            _ => "und"
-        };
     }
 }
