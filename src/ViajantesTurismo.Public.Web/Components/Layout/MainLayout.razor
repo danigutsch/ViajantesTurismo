@@ -1,56 +1,63 @@
 @inherits LayoutComponentBase
 
-<a class="skip-link" href="#content">Skip to content</a>
+<SkipLink>Skip to content</SkipLink>
 
-<header class="public-shell-header">
-    <a class="public-shell-brand" href="/" aria-label="@HomeAriaLabel">
-        @if (LogoUri is not null)
-        {
-            <img class="public-shell-logo" src="@LogoUri" alt="" />
-        }
-        else
-        {
-            <span class="public-shell-brand-mark" aria-hidden="true">@BrandInitials</span>
-        }
-        <span>@BrandName</span>
-    </a>
-    <nav class="public-shell-nav" aria-label="Main navigation">
-        <a href="/">Home</a>
-        <a href="/group-bike-tours">Bike Tours</a>
-        <a href="/gallery">Gallery</a>
-    </nav>
-</header>
+<SiteHeader Label="Main navigation" Items="NavItems" CurrentPath="@CurrentPath">
+    <Brand>
+        <a class="public-brand" href="@Culture.Localize("/")" aria-label="@HomeAriaLabel">
+            @if (Logo is not null)
+            {
+                <img class="public-brand__logo" src="@Logo.Value" alt="" />
+            }
+            else
+            {
+                <span class="public-brand__mark" aria-hidden="true">@BrandInitials</span>
+            }
+            <span>@BrandName</span>
+        </a>
+    </Brand>
+    <Actions>
+        <LanguageSwitcher Label="Language" Languages="Languages" />
+    </Actions>
+</SiteHeader>
 
-<main class="public-shell-main" id="content">
+<main id="main-content" tabindex="-1">
     @Body
 </main>
 
-<footer class="public-shell-footer">
+<SiteFooter>
     <p>@BrandName</p>
-</footer>
+</SiteFooter>
 
 @code {
-    private const string DefaultBrandName = "Viajantes Turismo";
-
     [CascadingParameter]
     private BrandingSettingsDto? Branding { get; set; }
 
-    private string BrandName => string.IsNullOrWhiteSpace(Branding?.BrandName) ? DefaultBrandName : Branding.BrandName.Trim();
+    [CascadingParameter]
+    private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
+
+    private string BrandName => PublicBranding.BrandName(Branding);
 
     private string HomeAriaLabel => $"{BrandName} home";
 
     private string BrandInitials => string.Concat(BrandName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(static part => char.ToUpperInvariant(part[0])));
 
-    private string? LogoUri => SafeLogoUri(Branding?.LogoUri);
+    private LinkTarget? Logo => PublicBranding.Logo(Branding);
 
-    private static string? SafeLogoUri(string? logoUri)
-    {
-        var value = logoUri?.Trim();
-        if (string.IsNullOrWhiteSpace(value) || value.Any(char.IsWhiteSpace) || value.Any(char.IsControl) || value.Contains('\\', StringComparison.Ordinal))
-        {
-            return null;
-        }
+    private string CurrentPath => Culture.Switch(Culture.UrlCulture);
 
-        return value[0] == '/' && !value.StartsWith("//", StringComparison.Ordinal) ? value : null;
-    }
+    private IReadOnlyList<SiteNavItem> NavItems =>
+    [
+        new("Home", LinkTarget.FromString(Culture.Localize("/"))),
+        new("Bike Tours", LinkTarget.FromString(Culture.Localize("/group-bike-tours"))),
+        new("Gallery", LinkTarget.FromString(Culture.Localize("/gallery")))
+    ];
+
+    private IReadOnlyList<LanguageLink> Languages => PublicSiteCultures.Supported.Cultures
+        .Select(culture => new LanguageLink(
+            PublicSiteCultures.ContentLanguage(culture),
+            PublicSiteCultures.NativeName(culture),
+            LinkTarget.FromString(Culture.Switch(culture)),
+            culture.Equals(Culture.UrlCulture)))
+        .ToArray();
 }

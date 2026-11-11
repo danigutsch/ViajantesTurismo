@@ -106,7 +106,7 @@ public sealed class PublicCatalogProxyRateLimitTests
         }
 
         // Act
-        foreach (var path in new[] { "/", "/group-bike-tours", "/group-bike-tours/quota-gallery", "/gallery", "/sitemap.xml" })
+        foreach (var path in new[] { "/en/", "/en/group-bike-tours", "/pt/group-bike-tours/quota-gallery", "/pt/gallery", "/sitemap.xml", "/theme.css" })
         {
             using var response = await visitor.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
 
@@ -124,7 +124,7 @@ public sealed class PublicCatalogProxyRateLimitTests
         using var visitor = proxy.CreateVisitor(IPAddress.Parse("203.0.113.20"));
 
         // Act
-        using var gallery = await visitor.GetAsync(new Uri("/gallery", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var gallery = await visitor.GetAsync(new Uri("/en/gallery", UriKind.Relative), TestContext.Current.CancellationToken);
         var html = await gallery.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert

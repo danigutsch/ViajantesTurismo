@@ -9,10 +9,11 @@ namespace ViajantesTurismo.Public.WebTests;
 public sealed class PublicWebCachingTests
 {
     [Theory]
-    [InlineData("/")]
-    [InlineData("/group-bike-tours")]
-    [InlineData("/group-bike-tours/camino-norte")]
-    [InlineData("/gallery")]
+    [InlineData("/en/")]
+    [InlineData("/pt/group-bike-tours")]
+    [InlineData("/en/group-bike-tours/camino-norte")]
+    [InlineData("/pt/gallery")]
+    [InlineData("/theme.css")]
     public async Task Public_ssr_routes_emit_cache_metadata(string path)
     {
         // Arrange
@@ -33,6 +34,26 @@ public sealed class PublicWebCachingTests
     }
 
     [Fact]
+    public async Task Culture_redirect_is_not_publicly_cacheable()
+    {
+        // Arrange
+        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/gallery", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        var isPublic = response.Headers.CacheControl?.Public ?? false;
+        isPublic.ShouldBeFalse();
+        response.Headers.Vary.ShouldContain("Accept-Language");
+    }
+
+    [Fact]
     public async Task Public_tour_list_reflects_catalog_updates()
     {
         // Arrange
@@ -42,10 +63,10 @@ public sealed class PublicWebCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var firstResponse = await client.GetAsync(new Uri("/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var firstResponse = await client.GetAsync(new Uri("/en/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
         var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("atlantic-way", "Atlantic Way"));
-        using var updatedResponse = await client.GetAsync(new Uri("/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var updatedResponse = await client.GetAsync(new Uri("/en/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
         var updatedContent = await updatedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
@@ -57,74 +78,6 @@ public sealed class PublicWebCachingTests
     }
 
     [Fact]
-    public async Task Public_web_cache_uses_canonical_culture_for_language_alias()
-    {
-        // Arrange
-        var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
-        catalogApi.AddContent("en-US", new PublicContentVariantDto
-        {
-            Language = PublicContentLanguageDto.EnUs,
-            Title = "Original hero",
-            Body = "Original body"
-        });
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var firstResponse = await client.GetAsync(new Uri("/?culture=ZZ&language=EN", UriKind.Relative), TestContext.Current.CancellationToken);
-        var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        catalogApi.AddContent("en-US", new PublicContentVariantDto
-        {
-            Language = PublicContentLanguageDto.EnUs,
-            Title = "Store-only hero",
-            Body = "Store-only body"
-        });
-        using var updatedResponse = await client.GetAsync(new Uri("/?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
-        var updatedContent = await updatedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        firstContent.ShouldContain("Original hero", StringComparison.Ordinal);
-        updatedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        updatedContent.ShouldContain("Store-only hero", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Public_web_cache_strips_invalid_culture_to_default_key()
-    {
-        // Arrange
-        var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
-        catalogApi.AddContent("en-US", new PublicContentVariantDto
-        {
-            Language = PublicContentLanguageDto.EnUs,
-            Title = "Original hero",
-            Body = "Original body"
-        });
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var firstResponse = await client.GetAsync(new Uri("/?culture=ZZ", UriKind.Relative), TestContext.Current.CancellationToken);
-        var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        catalogApi.AddContent("en-US", new PublicContentVariantDto
-        {
-            Language = PublicContentLanguageDto.EnUs,
-            Title = "Store-only hero",
-            Body = "Store-only body"
-        });
-        using var updatedResponse = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var updatedContent = await updatedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        firstContent.ShouldContain("Original hero", StringComparison.Ordinal);
-        updatedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        updatedContent.ShouldContain("Store-only hero", StringComparison.Ordinal);
-    }
-
-    [Fact]
     public async Task Public_ssr_load_failures_are_not_cacheable()
     {
         // Arrange
@@ -133,7 +86,7 @@ public sealed class PublicWebCachingTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/en/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
