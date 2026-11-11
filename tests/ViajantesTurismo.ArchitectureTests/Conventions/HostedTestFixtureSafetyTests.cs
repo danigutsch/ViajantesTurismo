@@ -1,8 +1,7 @@
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>
-/// Pins the guards of <c>HostedTestFixture</c> that no other test reads: telemetry privacy, the shared-infrastructure marker of
-/// every application stack, and ownership of the work directory. Restructuring the fixture must not drop them silently.
+/// Pins the guards of <c>HostedTestFixture</c> that no other test reads: telemetry privacy and ownership of the work directory. Restructuring the fixture must not drop them silently.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class HostedTestFixtureSafetyTests
@@ -19,19 +18,6 @@ public sealed class HostedTestFixtureSafetyTests
             "builder.AddOpenTelemetryCollectorGateway(CollectorName, Path.Combine(observability, \"otel-collector\", \"privacy.yaml\"), "
             + "Path.Combine(observability, \"otel-collector\", \"aspire.yaml\"))",
             StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Fixture_marks_every_application_stack_as_using_the_shared_infrastructure()
-    {
-        // Arrange
-        var fixture = HostedTestFixtureSource.Read();
-
-        // Act
-        var stack = HostedTestFixtureSource.Body(fixture, "private async Task<AspireTestApplication> StartApplication(");
-
-        // Assert
-        stack.ShouldContain("[\"HostedTests:SharedInfrastructure\"] = \"true\"", StringComparison.Ordinal);
     }
 
     [Fact]

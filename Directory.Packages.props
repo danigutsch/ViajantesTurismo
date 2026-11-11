@@ -95,6 +95,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Seo" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Aspire.Analyzers" Version="0.1.0-alpha.521.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.Grafana" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Aspire.Hosting.K6" Version="0.1.0-alpha.521.1" />

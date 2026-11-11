@@ -42,6 +42,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.Documentation" />
+        <PackageReference Include="PandaBear.SharedKernel.IntegrationTesting" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
     </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@ using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestration
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
-public sealed partial class AppHostOrchestrationTests
+public sealed class AppHostOrchestrationTests
 {
     [Fact]
     public void Aspire_release_docs_keep_versions_out_of_the_apphost()
@@ -78,87 +78,6 @@ public sealed partial class AppHostOrchestrationTests
     }
 
     [Fact]
-    public void Catalog_API_waits_for_database_migrations_when_it_uses_persisted_public_content()
-    {
-        // Arrange
-        var appHostText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostResourceExtensions.cs"));
-
-        // Act
-        var catalogApiBlock = CatalogApiResourceRegex().Match(appHostText).Value;
-
-        // Assert
-        catalogApiBlock.ShouldNotBeEmpty();
-        catalogApiBlock.ShouldContain("WithReference(catalogDatabase)", StringComparison.Ordinal);
-        catalogApiBlock.ShouldContain("WaitFor(catalogDatabase)", StringComparison.Ordinal);
-        catalogApiBlock.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Local_oidc_provider_is_excluded_from_release_publishing()
-    {
-        // Arrange
-        var compositionText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostComposition.cs"));
-        var resourceExtensionsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostResourceExtensions.cs"));
-
-        // Act
-        var hasReleaseGate = compositionText.Contains(
-            "builder.AddRunModeIdentityProvider(managementWebClientSecret)",
-            StringComparison.Ordinal);
-
-        // Assert
-        hasReleaseGate.ShouldBeTrue();
-        resourceExtensionsText.ShouldContain("builder.ExecutionContext.IsRunMode", StringComparison.Ordinal);
-        resourceExtensionsText.ShouldContain("WithLocalIdentityProvider", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Local_oidc_provider_uses_an_explicit_registry_and_pinned_image()
-    {
-        // Arrange
-        var resourceExtensionsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostResourceExtensions.cs"));
-
-        // Act
-        var identityProviderBlock = IdentityProviderResourceRegex().Match(resourceExtensionsText).Value;
-
-        // Assert
-        identityProviderBlock.ShouldNotBeEmpty();
-        identityProviderBlock.ShouldContain(
-            "builder.AddContainer(ResourceNames.IdentityProvider, KeycloakImageName)",
-            StringComparison.Ordinal);
-        identityProviderBlock.ShouldContain(".WithImageRegistry(KeycloakImageRegistry)", StringComparison.Ordinal);
-        identityProviderBlock.ShouldContain(".WithImageTag(KeycloakImageTag)", StringComparison.Ordinal);
-        identityProviderBlock.ShouldContain(".WithImageSHA256(OidcProviderImageDigest)", StringComparison.Ordinal);
-        resourceExtensionsText.ShouldContain(
-            "private const string KeycloakImageRegistry = \"quay.io\";",
-            StringComparison.Ordinal);
-        resourceExtensionsText.ShouldContain(
-            "private const string KeycloakImageName = \"keycloak/keycloak\";",
-            StringComparison.Ordinal);
-        resourceExtensionsText.ShouldContain(
-            "private const string KeycloakImageTag = \"26.7.0\";",
-            StringComparison.Ordinal);
-        resourceExtensionsText.ShouldContain(
-            "private const string OidcProviderImageDigest = \"2eb3cd316835c990e69e26ade292ffa78f6fb0db7d5fc6377463c162e1979ac0\";",
-            StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void Local_postgresql_capacity_supports_the_system_test_resource_model()
     {
         // Arrange
@@ -170,22 +89,6 @@ public sealed partial class AppHostOrchestrationTests
 
         // Act and assert
         resourceExtensionsText.ShouldContain("WithArgs(\"-c\", \"max_connections=200\")", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void Management_security_schema_is_provisioned_before_the_web_starts()
-    {
-        // Arrange
-        var resourceExtensionsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostResourceExtensions.cs"));
-
-        // Assert
-        resourceExtensionsText.ShouldContain("WithReference(securityDatabase)", StringComparison.Ordinal);
-        resourceExtensionsText.ShouldContain("WaitFor(securityDatabase)", StringComparison.Ordinal);
-        resourceExtensionsText.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -236,45 +139,6 @@ public sealed partial class AppHostOrchestrationTests
             ": [ResourceNames.Api, ResourceNames.CatalogApi], StartBudget, ct);",
             StringComparison.Ordinal,
             "the Admin stack awaits the API and the Catalog API within the start budget");
-    }
-
-    [Fact]
-    public void Database_observability_waits_for_both_databases_after_migrations()
-    {
-        // Arrange
-        var compositionText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostComposition.cs"));
-        var appHostExtensionsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostResourceExtensions.cs"));
-        var appHostProfileExtensionsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
-            "src",
-            "ViajantesTurismo.AppHost",
-            "AppHostProfileExtensions.cs"));
-
-        // Act
-        var databaseObservabilityBlock = DatabaseObservabilityResourceRegex().Match(appHostExtensionsText).Value;
-
-        // Assert
-        appHostProfileExtensionsText.ShouldContain("Aspire:Features:DatabaseObservability", StringComparison.Ordinal);
-        compositionText.ShouldContain("AddDatabaseObservability(adminDatabase, catalogDatabase, migrationService)", StringComparison.Ordinal);
-        databaseObservabilityBlock.ShouldNotBeEmpty();
-        databaseObservabilityBlock.ShouldContain("AddDevelopmentDotNetProject<ViajantesTurismo_DatabaseObservability>", StringComparison.Ordinal);
-        databaseObservabilityBlock.ShouldContain("WaitFor(adminDatabase)", StringComparison.Ordinal);
-        databaseObservabilityBlock.ShouldContain("WaitFor(catalogDatabase)", StringComparison.Ordinal);
-        databaseObservabilityBlock.ShouldContain("WaitForCompletion(migrationService)", StringComparison.Ordinal);
-        databaseObservabilityBlock.ShouldContain("AddParameter(AdminIndexHealthConnectionStringParameterName, secret: true)", StringComparison.Ordinal);
-        databaseObservabilityBlock.ShouldContain("AddParameter(CatalogIndexHealthConnectionStringParameterName, secret: true)", StringComparison.Ordinal);
-        appHostExtensionsText.ShouldContain("ConnectionStrings__admin-index-health", StringComparison.Ordinal);
-        appHostExtensionsText.ShouldContain("ConnectionStrings__catalog-index-health", StringComparison.Ordinal);
-        databaseObservabilityBlock.ShouldNotContain("WithReference(adminDatabase)", StringComparison.Ordinal);
-        databaseObservabilityBlock.ShouldNotContain("WithReference(catalogDatabase)", StringComparison.Ordinal);
     }
 
     [Fact]

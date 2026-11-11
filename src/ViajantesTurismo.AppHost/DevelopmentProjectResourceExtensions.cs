@@ -5,7 +5,6 @@ namespace ViajantesTurismo.AppHost;
 /// </summary>
 internal static class DevelopmentProjectResourceExtensions
 {
-    private const string AspNetCoreEnvironmentVariable = "ASPNETCORE_ENVIRONMENT";
     private const string DotNetEnvironmentVariable = "DOTNET_ENVIRONMENT";
     private const string DevelopmentEnvironment = "Development";
     private const string ContainerImageTagConfigurationKey = "VT_ASPIRE_CONTAINER_IMAGE_TAG";
@@ -16,7 +15,8 @@ internal static class DevelopmentProjectResourceExtensions
     private const string SourceRevisionEnvironmentVariable = "VT_SOURCE_REVISION";
 
     /// <summary>
-    /// Adds an ASP.NET Core project without launch profile endpoints.
+    /// Adds an ASP.NET Core project without launch profile endpoints. It runs in the AppHost's environment and has a health check on
+    /// <c>/health</c>, which the SharedKernel service defaults map in every environment.
     /// </summary>
     /// <typeparam name="TProject">The Aspire project metadata type.</typeparam>
     /// <param name="builder">The distributed application builder.</param>
@@ -27,16 +27,11 @@ internal static class DevelopmentProjectResourceExtensions
         string name)
         where TProject : IProjectMetadata, new()
     {
-        var project = builder.AddProject<TProject>(name, launchProfileName: null);
-        if (builder.ExecutionContext.IsRunMode)
-        {
-            project.WithEnvironment(AspNetCoreEnvironmentVariable, DevelopmentEnvironment);
-        }
-
-        return project
+        return builder.AddProject<TProject>(name, launchProfileName: null)
             .WithReleasePublishing(builder)
             .WithHttpEndpoint()
-            .WithHttpsEndpoint();
+            .WithHttpsEndpoint()
+            .WithHttpHealthCheckInAppHostEnvironment();
     }
 
     /// <summary>
