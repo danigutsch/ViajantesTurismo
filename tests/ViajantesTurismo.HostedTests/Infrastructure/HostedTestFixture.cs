@@ -211,14 +211,14 @@ public sealed class HostedTestFixture : IAsyncLifetime
             [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = admin.ConnectionString,
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = catalog.ConnectionString,
             [$"ConnectionStrings:{ResourceNames.SecurityDatabase}"] = security.ConnectionString,
-            ["HostedTests:Authority"] = $"{identityProviderEndpoint.ToString().TrimEnd('/')}/realms/{Realm(stack)}",
-            ["HostedTests:ClamAv:Host"] = clamAvEndpoint.Host,
-            ["HostedTests:ClamAv:Port"] = clamAvEndpoint.Port.ToString(CultureInfo.InvariantCulture),
-            ["HostedTests:SeaweedFs:Endpoint"] = seaweedFsEndpoint.GetLeftPart(UriPartial.Authority),
-            ["HostedTests:SeaweedFs:AccessKey"] = SeaweedAccessKey,
-            ["HostedTests:SeaweedFs:SecretKey"] = SeaweedSecretKey,
-            ["HostedTests:SeaweedFs:Bucket"] = $"{stack}-{RunId}",
-            ["HostedTests:OtlpEndpoint"] = (await telemetry).Application.GetEndpoint(CollectorName, "grpc").ToString(),
+            ["AppHost:External:IdentityProvider:Authority"] = $"{identityProviderEndpoint.ToString().TrimEnd('/')}/realms/{Realm(stack)}",
+            ["AppHost:External:ClamAv:Host"] = clamAvEndpoint.Host,
+            ["AppHost:External:ClamAv:Port"] = clamAvEndpoint.Port.ToString(CultureInfo.InvariantCulture),
+            ["AppHost:External:SeaweedFs:Endpoint"] = seaweedFsEndpoint.GetLeftPart(UriPartial.Authority),
+            ["AppHost:External:SeaweedFs:AccessKey"] = SeaweedAccessKey,
+            ["AppHost:External:SeaweedFs:SecretKey"] = SeaweedSecretKey,
+            ["AppHost:External:SeaweedFs:Bucket"] = $"{stack}-{RunId}",
+            ["AppHost:External:Otlp:Endpoint"] = (await telemetry).Application.GetEndpoint(CollectorName, "grpc").ToString(),
         };
         if (redis is not null)
         {
