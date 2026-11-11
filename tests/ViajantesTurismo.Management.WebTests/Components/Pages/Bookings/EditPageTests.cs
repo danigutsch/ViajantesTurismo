@@ -210,7 +210,7 @@ public sealed class EditPageTests : BunitContext
         cut.WaitForAssertion(() => cut.Find(HeadingOrAlertSelector));
         // Assert
         var priceInput = cut.Find("#totalPrice");
-        priceInput.GetAttribute(ValueAttributeName).ShouldBe("R$ 3,250.50");
+        priceInput.GetAttribute(ValueAttributeName).ShouldBe(MoneyText.Of(3250.50m, "BRL"));
         priceInput.HasAttribute("readonly").ShouldBeTrue();
     }
 
@@ -437,7 +437,7 @@ public sealed class EditPageTests : BunitContext
         updatedDetails.CompanionCustomerId.ShouldBeNull();
         updatedDetails.CompanionBikeType.ShouldBeNull();
         _fakeBookingsApi.GetBookingByIdCallCount.ShouldBe(2);
-        cut.Find("#totalPrice").GetAttribute(ValueAttributeName).ShouldBe("R$ 1,400.00");
+        cut.Find("#totalPrice").GetAttribute(ValueAttributeName).ShouldBe(MoneyText.Of(1400.00m, "BRL"));
         cut.Find("#roomType").GetAttribute(ValueAttributeName).ShouldBe(nameof(RoomTypeDto.SingleOccupancy));
 
         var redirectAlert = cut.FindAll(".alert.alert-info").ShouldHaveSingleItem(alert => alert.TextContent.Contains("Redirecting", StringComparison.Ordinal));
@@ -529,7 +529,7 @@ public sealed class EditPageTests : BunitContext
         _fakeBookingsApi.UpdateBookingDetailsCallCount.ShouldBe(1);
         _fakeBookingsApi.UpdateBookingNotesCallCount.ShouldBe(1);
         _fakeBookingsApi.GetBookingByIdCallCount.ShouldBe(2);
-        cut.Find("#totalPrice").GetAttribute(ValueAttributeName).ShouldBe("R$ 1,300.00");
+        cut.Find("#totalPrice").GetAttribute(ValueAttributeName).ShouldBe(MoneyText.Of(1300.00m, "BRL"));
         cut.Find("#notes").GetAttribute(ValueAttributeName).ShouldBe("Attempted notes");
         cut.Markup.ShouldContain("We couldn't update the booking", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("HTTP transport failed.", StringComparison.Ordinal);

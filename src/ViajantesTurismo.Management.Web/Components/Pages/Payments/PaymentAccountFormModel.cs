@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Management.Web.Helpers;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
@@ -14,7 +14,7 @@ internal sealed class PaymentAccountFormModel
     /// <summary>Account kind that decides which recipient fields apply.</summary>
     public PaymentAccountKindDto Kind { get; set; } = PaymentAccountKindDto.Iban;
     /// <summary>Currency the account settles in; only editable for IBAN accounts.</summary>
-    public string SettlementCurrency { get; set; } = CurrencyFormatter.Eur;
+    public string SettlementCurrency { get; set; } = Currency.Eur.Code;
     /// <summary>IBAN, used when the kind is IBAN.</summary>
     public string Iban { get; set; } = string.Empty;
     /// <summary>BIC/SWIFT code, used when the kind is IBAN.</summary>
@@ -38,7 +38,7 @@ internal sealed class PaymentAccountFormModel
     {
         Kind = Kind,
         RecipientName = RecipientName,
-        SettlementCurrency = Kind == PaymentAccountKindDto.Iban ? SettlementCurrency : CurrencyFormatter.Brl,
+        SettlementCurrency = Kind == PaymentAccountKindDto.Iban ? SettlementCurrency : Currency.Brl.Code,
         Iban = Kind == PaymentAccountKindDto.Iban ? Iban : null,
         Bic = Kind == PaymentAccountKindDto.Iban ? Bic : null,
         PixKey = Kind == PaymentAccountKindDto.Pix ? PixKey : null,

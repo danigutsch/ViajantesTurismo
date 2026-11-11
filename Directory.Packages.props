@@ -18,7 +18,6 @@
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.k6" Version="13.6.1" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector" Version="13.6.1" />
     <!-- Code analysis packages -->
-    <PackageVersion Include="Duende.AccessTokenManagement.OpenIdConnect" Version="4.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.13" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="18.9.6" />

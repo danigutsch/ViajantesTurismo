@@ -1,9 +1,9 @@
-using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using PandaBear.AspNetCore.Authentication.Bff;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -28,14 +28,17 @@ internal sealed class ManagementAuthenticationTestHost : IAsyncDisposable
         .GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
         .Get(CookieAuthenticationDefaults.AuthenticationScheme);
 
-    /// <summary>Registered ticket store.</summary>
-    public ITicketStore TicketStore => _provider.GetRequiredService<ITicketStore>();
+    /// <summary>Server-side ticket store options.</summary>
+    public ServerSideTicketStoreOptions TicketStoreOptions => _provider.GetRequiredService<IOptions<ServerSideTicketStoreOptions>>().Value;
 
-    /// <summary>Registered user token store.</summary>
-    public IUserTokenStore UserTokenStore => _provider.GetRequiredService<IUserTokenStore>();
+    /// <summary>User token management options.</summary>
+    public UserTokenManagementOptions UserTokenOptions => _provider.GetRequiredService<IOptions<UserTokenManagementOptions>>().Value;
 
-    /// <summary>Registered protected distributed user token store.</summary>
-    public ProtectedDistributedUserTokenStore ProtectedUserTokenStore => _provider.GetRequiredService<ProtectedDistributedUserTokenStore>();
+    /// <summary>Registered session lock.</summary>
+    public IUserSessionLock SessionLock => _provider.GetRequiredService<IUserSessionLock>();
+
+    /// <summary>Registered user token manager.</summary>
+    public UserTokenManager UserTokenManager => _provider.GetRequiredService<UserTokenManager>();
 
     /// <summary>Configured authorization options.</summary>
     public AuthorizationOptions AuthorizationOptions => _provider.GetRequiredService<IOptions<AuthorizationOptions>>().Value;
@@ -44,19 +47,6 @@ internal sealed class ManagementAuthenticationTestHost : IAsyncDisposable
     public void ResolveAdvisoryLockDataSource()
     {
         _ = _provider.GetRequiredService<Npgsql.NpgsqlDataSource>();
-    }
-
-    /// <summary>Creates the HTTP client used for Keycloak token exchange.</summary>
-    public HttpClient CreateKeycloakTokenExchangeClient()
-    {
-        return _provider.GetRequiredService<IHttpClientFactory>()
-            .CreateClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName);
-    }
-
-    /// <summary>Creates a scope-bound session for resolving user token stores.</summary>
-    public ManagementAuthenticationTestScope CreateUserTokenStoreSession()
-    {
-        return new ManagementAuthenticationTestScope(_provider.GetRequiredService<IServiceScopeFactory>());
     }
 
     /// <summary>Builds a host from the configuration and environment.</summary>

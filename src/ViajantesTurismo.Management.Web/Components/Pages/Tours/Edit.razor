@@ -80,9 +80,9 @@ else
         <div class="mb-3">
             <label for="currency" class="form-label">Currency</label>
             <InputSelect id="currency" class="form-control" @bind-Value="_model.Currency" disabled="@_hasBookings">
-                @foreach (var isoCode in CurrencyFormatter.TourCurrencies)
+                @foreach (var isoCode in CurrencyChoices.Tour.Select(currency => currency.Code))
             {
-                <option value="@isoCode">@CurrencyFormatter.GetDisplayName(isoCode)</option>
+                <option value="@isoCode">@CurrencyChoices.DisplayName(isoCode)</option>
             }
             </InputSelect>
         </div>

@@ -26,10 +26,6 @@ internal static class ManagementAuthenticationDefaults
     /// </summary>
     internal const string KeycloakTokenExchangeProvider = "Keycloak";
     /// <summary>
-    /// Named HTTP client used for Keycloak token exchange requests.
-    /// </summary>
-    internal const string KeycloakTokenExchangeHttpClientName = "ManagementKeycloakTokenExchange";
-    /// <summary>
     /// Connection string name of the security database.
     /// </summary>
     internal const string SecurityDatabaseConnectionName = "security-database";
@@ -38,25 +34,9 @@ internal static class ManagementAuthenticationDefaults
     /// </summary>
     internal const string TicketStoreKeyPrefix = "management-ticket:";
     /// <summary>
-    /// Data protection purpose for encrypting stored cookie tickets.
-    /// </summary>
-    internal const string TicketStoreProtectorPurpose = "ViajantesTurismo.Management.Web.CookieTicketStore.v1";
-    /// <summary>
     /// Distributed cache key prefix for stored user tokens.
     /// </summary>
     internal const string UserTokenStoreKeyPrefix = "management-user-token:";
-    /// <summary>
-    /// Data protection purpose for encrypting stored user tokens.
-    /// </summary>
-    internal const string UserTokenStoreProtectorPurpose = "ViajantesTurismo.Management.Web.UserTokenStore.v1";
-    /// <summary>
-    /// Claim type carrying the opaque token session identifier.
-    /// </summary>
-    internal const string UserTokenStoreSessionIdClaimType = "urn:viajantes:management:token-session-id";
-    /// <summary>
-    /// Claim type carrying the absolute token session expiry.
-    /// </summary>
-    internal const string UserTokenStoreSessionExpiresAtClaimType = "urn:viajantes:management:token-session-expires-at";
     /// <summary>
     /// Name of the authentication cookie; the __Host- prefix requires Secure, Path=/ and no Domain.
     /// </summary>

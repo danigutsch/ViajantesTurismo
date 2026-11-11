@@ -108,7 +108,7 @@ else if (_booking is not null)
                     <div class="col-md-6 mb-3">
                         <label for="totalPrice" class="form-label">Total Price (Calculated)</label>
                         <input type="text" id="totalPrice" class="form-control"
-                               value="@CurrencyFormatter.Format(_booking.TotalPrice, _booking.Currency)" readonly/>
+                               value="@Money.Restore(_booking.TotalPrice, Currency.Restore(_booking.Currency)).ToString("C", CultureInfo.CurrentUICulture)" readonly/>
                         <div class="form-text">Price is automatically calculated from room type and bikes</div>
                     </div>
 
@@ -266,7 +266,7 @@ else if (_booking is not null)
                     <div class="card bg-light">
                         <div class="card-body py-2 text-center">
                             <div class="text-muted small">Total Price</div>
-                            <div class="h5 mb-0">@CurrencyFormatter.Format(_booking.TotalPrice, _booking.Currency)</div>
+                            <div class="h5 mb-0">@Money.Restore(_booking.TotalPrice, Currency.Restore(_booking.Currency)).ToString("C", CultureInfo.CurrentUICulture)</div>
                         </div>
                     </div>
                 </div>
@@ -274,7 +274,7 @@ else if (_booking is not null)
                     <div class="card bg-light">
                         <div class="card-body py-2 text-center">
                             <div class="text-muted small">Amount Paid</div>
-                            <div class="h5 mb-0 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyFormatter.Eur)</div>
+                            <div class="h5 mb-0 text-success">@Money.Restore(_booking.AmountPaid, Currency.Eur).ToString("C", CultureInfo.CurrentUICulture)</div>
                         </div>
                     </div>
                 </div>
@@ -282,7 +282,7 @@ else if (_booking is not null)
                     <div class="card bg-light">
                         <div class="card-body py-2 text-center">
                             <div class="text-muted small">Remaining Balance</div>
-                            <div class="h5 mb-0 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyFormatter.Eur)</div>
+                            <div class="h5 mb-0 text-danger">@Money.Restore(_booking.RemainingBalance, Currency.Eur).ToString("C", CultureInfo.CurrentUICulture)</div>
                         </div>
                     </div>
                 </div>

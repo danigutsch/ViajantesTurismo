@@ -119,19 +119,19 @@
                     <div class="card-body">
                         <dl class="row mb-0">
                             <dt class="col-sm-4">Total Price</dt>
-                            <dd class="col-sm-8">@CurrencyFormatter.Format(_booking.TotalPrice, _booking.Currency)</dd>
+                            <dd class="col-sm-8">@Money.Restore(_booking.TotalPrice, Currency.Restore(_booking.Currency)).ToString("C", CultureInfo.CurrentUICulture)</dd>
 
                             <dt class="col-sm-4">Amount Paid</dt>
-                            <dd class="col-sm-8 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyFormatter.Eur)</dd>
+                            <dd class="col-sm-8 text-success">@Money.Restore(_booking.AmountPaid, Currency.Eur).ToString("C", CultureInfo.CurrentUICulture)</dd>
 
                             <dt class="col-sm-4">Remaining Balance</dt>
-                            <dd class="col-sm-8 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyFormatter.Eur)</dd>
+                            <dd class="col-sm-8 text-danger">@Money.Restore(_booking.RemainingBalance, Currency.Eur).ToString("C", CultureInfo.CurrentUICulture)</dd>
 
                             <dt class="col-sm-4">Discount</dt>
                             <dd class="col-sm-8">
                                 @if (_booking.DiscountType != DiscountTypeDto.None)
                                 {
-                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : CurrencyFormatter.GetDisplayName(_booking.Currency))</span>
+                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : CurrencyChoices.DisplayName(_booking.Currency))</span>
                                     @if (!string.IsNullOrEmpty(_booking.DiscountReason))
                                     {
                                         <br /><small class="text-muted">Reason: @_booking.DiscountReason</small>
@@ -183,7 +183,8 @@
     private bool _notFound;
     private string? _loadErrorMessage;
     private string? _documentError;
-    private (Guid ResourceId, string Key)? _generationAttempt;
+    private IdempotentSubmission<GetDocumentDto> _generation = new();
+    private Guid _generationBookingId;
     private bool _generatingContractDraft;
 
     protected override async Task OnInitializedAsync()
@@ -226,22 +227,26 @@
 
         _generatingContractDraft = true;
         _documentError = null;
-        var attempt = _generationAttempt is { } pending && pending.ResourceId == Id
-            ? pending
-            : (ResourceId: Id, Key: Guid.CreateVersion7().ToString("N"));
-        _generationAttempt = attempt;
+        if (_generationBookingId != Id)
+        {
+            // A submission whose outcome is unknown is retried only for the booking it was made for.
+            _generation = new IdempotentSubmission<GetDocumentDto>();
+            _generationBookingId = Id;
+        }
 
         try
         {
-            var outcome = await DocumentsApi.GenerateContractDraft(Id, attempt.Key, CancellationToken.None);
+            var bookingId = Id;
+            var outcome = _generation.HasPending
+                ? await _generation.Retry(CancellationToken.None)
+                : await _generation.Submit("contract-draft", (key, ct) => DocumentsApi.GenerateContractDraft(bookingId, key, ct), CancellationToken.None);
             if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
             {
-                _generationAttempt = null;
                 Navigation.NavigateTo($"/documents/{document.Id}");
                 return;
             }
 
-            _documentError = new HttpOutcomeMessages("The contract draft could not be generated.").For(outcome.Kind);
+            _documentError = new HttpOutcomeMessages("The contract draft could not be generated.").For(outcome?.Kind ?? HttpOutcomeKind.TransportFailure);
         }
         catch (Exception exception)
         {

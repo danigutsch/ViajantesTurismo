@@ -44,7 +44,7 @@ else
 
         <TemplateColumn Title="Total Price" Sortable="true"
                         SortBy="GridSort<GetBookingDto>.ByAscending(b => b.TotalPrice)">
-            @CurrencyFormatter.Format(context.TotalPrice, context.Currency)
+            @Money.Restore(context.TotalPrice, Currency.Restore(context.Currency)).ToString("C", CultureInfo.CurrentUICulture)
         </TemplateColumn>
 
         <TemplateColumn Title="Discount">
@@ -117,7 +117,7 @@ else
         return booking.DiscountType switch
         {
             DiscountTypeDto.Percentage => $"{booking.DiscountAmount:F2}%",
-            DiscountTypeDto.Absolute => CurrencyFormatter.Format(booking.DiscountAmount, booking.Currency),
+            DiscountTypeDto.Absolute => Money.Restore(booking.DiscountAmount, Currency.Restore(booking.Currency)).ToString("C", CultureInfo.CurrentUICulture),
             _ => "-"
         };
     }

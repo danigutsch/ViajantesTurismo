@@ -1,4 +1,4 @@
-using PostgreSqlTestCleanup = ViajantesTurismo.HostedTests.Infrastructure.HostedTestCleanup;
+using PandaBear.Testing;
 using PandaBear.IntegrationTesting;
 using PandaBear.Npgsql.Testing;
 
@@ -13,5 +13,5 @@ internal sealed class SecurityPersistenceApplication(AspireTestApplication appli
     public Task<string> GetConnectionString(string name, CancellationToken ct) => application.GetConnectionString(name, ct);
 
     /// <summary>Disposes the application and database lease.</summary>
-    public ValueTask DisposeAsync() => new(PostgreSqlTestCleanup.DisposeResources(null, application, database));
+    public ValueTask DisposeAsync() => new(TestCleanup.DisposeAll(null, application, database));
 }

@@ -5,7 +5,6 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using PandaBear.Testing.Playwright;
-using System.Globalization;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Bookings;
 
@@ -26,7 +25,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
             tour,
             customerFullName,
             customerSelectionLabel,
-            "$ 1,300.00");
+            MoneyText.Of(1300.00m, "USD"));
         await BookingWorkflow.NavigateToDetails(createdBookingId);
 
         // Assert
@@ -37,7 +36,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         await Expect(Page.GetByText("Unpaid").First).ToBeVisibleAsync();
         await Expect(Page.GetByText(tour.Name).First).ToBeVisibleAsync();
         await Expect(Page.GetByText(customerFullName).First).ToBeVisibleAsync();
-        await Expect(Page.GetByText("$ 1,300.00").First).ToBeVisibleAsync();
+        await Expect(Page.GetByText(MoneyText.Of(1300.00m, "USD")).First).ToBeVisibleAsync();
     }
 
     [Fact]
@@ -52,7 +51,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
             tour,
             customerFullName,
             customerSelectionLabel,
-            "1,300.00 €");
+            MoneyText.Of(1300.00m, "EUR"));
 
         // Act
         await BookingWorkflow.ApplyDiscount(createdBookingId);
@@ -66,7 +65,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
                 "Reason: E2E test discount applied for loyal customer testing",
                 new LocatorGetByTextOptions { Exact = true }))
             .ToBeVisibleAsync();
-        await Expect(financialDetails.GetByText("1,170.00 €", new LocatorGetByTextOptions { Exact = true }))
+        await Expect(financialDetails.GetByText(MoneyText.Of(1170.00m, "EUR"), new LocatorGetByTextOptions { Exact = true }))
             .ToBeVisibleAsync();
         await BookingWorkflow.NavigateToFinances(createdBookingId);
         await Expect(Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { NameRegex = new global::System.Text.RegularExpressions.Regex("^Receipt ") })).ToHaveCountAsync(1);
@@ -81,7 +80,7 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
         var booking = await ApiClient.CreateConfirmedPaidBooking(tour.Id, customer.Id);
-        var expectedTotal = $"{booking.TotalPrice.ToString("N2", CultureInfo.InvariantCulture)} €";
+        var expectedTotal = MoneyText.Of(booking.TotalPrice, "EUR");
         await BookingWorkflow.NavigateToEdit(booking.Id);
         await Expect(Page.GetButton("Complete Booking")).ToBeEnabledAsync();
 
