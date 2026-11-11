@@ -1,3 +1,6 @@
+using PandaBear.Blazor.Site;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Routing;
 namespace ViajantesTurismo.Public.WebTests;
 
 /// <summary>Builders for DTOs used by public component tests.</summary>
@@ -44,4 +47,8 @@ internal static class PublicComponentTestsHelpers
             ]
         };
     }
+
+    /// <summary>Maps catalog images to the gallery images of <c>ImageGrid</c> with the test's link generator.</summary>
+    public static IReadOnlyList<GalleryImage> Gallery(IServiceProvider services, IEnumerable<CatalogTourImageDto> images) =>
+        TourImageRenditions.Gallery(services.GetRequiredService<LinkGenerator>(), images);
 }

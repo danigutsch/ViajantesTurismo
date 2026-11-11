@@ -10,7 +10,7 @@
     <Card Title="@Tour.Title"
           HeadingLevel="HeadingLevel"
           Href="@TourLink"
-          Image="@ResponsiveImage.Create(LinkTarget.FromString(TourImageRenditions.Path(LinkGenerator, coverImage.Id, cardVariant)), cardVariant.Width, cardVariant.Height, Alternative(coverImage))">
+          Image="@ResponsiveImage.Create(LinkTarget.FromString(TourImageRenditions.Path(LinkGenerator, coverImage.Id, cardVariant)), cardVariant.Width, cardVariant.Height, TourImageRenditions.Alternative(coverImage))">
         <p>@Tour.Summary</p>
     </Card>
 }
@@ -32,8 +32,4 @@ else
     private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
 
     private LinkTarget TourLink => LinkTarget.FromString(Culture.Localize($"/group-bike-tours/{Uri.EscapeDataString(Tour.Slug)}"));
-
-    // The card's heading already names the tour; an image without alternative text adds nothing for a screen reader.
-    private static ImageAlternative Alternative(CatalogTourImageDto image) =>
-        string.IsNullOrWhiteSpace(image.AltText) ? ImageAlternative.Decorative() : ImageAlternative.Describe(image.AltText);
 }

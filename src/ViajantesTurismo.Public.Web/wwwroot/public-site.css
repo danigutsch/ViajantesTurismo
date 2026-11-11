@@ -1,6 +1,3 @@
 .public-brand { display: inline-flex; align-items: center; gap: var(--site-space-2); color: inherit; text-decoration: none; }
 .public-brand__logo { block-size: 2.5rem; inline-size: auto; }
 .public-brand__mark { display: inline-grid; place-items: center; block-size: 2.5rem; inline-size: 2.5rem; border-radius: var(--site-radius); background: var(--site-color-primary); color: var(--site-color-on-primary); font-size: var(--site-font-size-sm); }
-.tour-hero { width: min(100% - 2 * var(--site-space-3), var(--site-content-width)); margin-inline: auto; }
-.tour-gallery { display: grid; gap: var(--site-space-3); grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr)); }
-.tour-gallery figure { margin: 0; }

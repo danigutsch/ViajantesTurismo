@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Bunit;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using PandaBear.Blazor.Site;
 using TourCard = ViajantesTurismo.Public.Web.Components.Shared.TourCard;
-using TourGallery = ViajantesTurismo.Public.Web.Components.Shared.TourGallery;
 
 namespace ViajantesTurismo.Public.WebTests;
 
@@ -137,7 +137,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourGallery_renders_captions_only_when_present()
+    public void Gallery_renders_captions_only_when_present()
     {
         // Arrange
         var images = new[]
@@ -147,7 +147,7 @@ public sealed class PublicComponentTests : BunitContext
         };
 
         // Act
-        var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
+        var cut = Render<ImageGrid>(parameters => parameters.Add(component => component.Images, PublicComponentTestsHelpers.Gallery(Services, images)));
 
         // Assert
         cut.FindAll("figure").Count.ShouldBe(2);
@@ -157,7 +157,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourGallery_renders_responsive_sources_when_variants_are_present()
+    public void Gallery_renders_responsive_sources_when_variants_are_present()
     {
         // Arrange
         var imageId = Guid.Parse("33333333-3333-3333-3333-333333333333");
@@ -178,7 +178,7 @@ public sealed class PublicComponentTests : BunitContext
         };
 
         // Act
-        var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
+        var cut = Render<ImageGrid>(parameters => parameters.Add(component => component.Images, PublicComponentTestsHelpers.Gallery(Services, images)));
 
         // Assert
         var sources = cut.FindAll("source");
@@ -195,7 +195,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourGallery_builds_local_media_links_from_the_image_id()
+    public void Gallery_builds_local_media_links_from_the_image_id()
     {
         // Arrange
         var imageId = Guid.Parse("33333333-3333-3333-3333-333333333333");
@@ -219,7 +219,7 @@ public sealed class PublicComponentTests : BunitContext
         };
 
         // Act
-        var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
+        var cut = Render<ImageGrid>(parameters => parameters.Add(component => component.Images, PublicComponentTestsHelpers.Gallery(Services, images)));
 
         // Assert
         cut.Find("source").GetAttribute("srcset").ShouldBe("/catalog/media/33333333-3333-3333-3333-333333333333/640/jpg 640w");
@@ -227,7 +227,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourGallery_uses_the_largest_available_variant_when_no_jpeg_or_png_variant_exists()
+    public void Gallery_uses_the_largest_available_variant_when_no_jpeg_or_png_variant_exists()
     {
         // Arrange
         var imageId = Guid.Parse("44444444-4444-4444-4444-444444444444");
@@ -246,7 +246,7 @@ public sealed class PublicComponentTests : BunitContext
         };
 
         // Act
-        var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
+        var cut = Render<ImageGrid>(parameters => parameters.Add(component => component.Images, PublicComponentTestsHelpers.Gallery(Services, images)));
 
         // Assert
         cut.Find("img").GetAttribute("src").ShouldBe($"/catalog/media/{imageId}/640/webp");
@@ -255,7 +255,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourGallery_trims_responsive_variant_content_types()
+    public void Gallery_trims_responsive_variant_content_types()
     {
         // Arrange
         var imageId = Guid.Parse("55555555-5555-5555-5555-555555555555");
@@ -274,7 +274,7 @@ public sealed class PublicComponentTests : BunitContext
         };
 
         // Act
-        var cut = Render<TourGallery>(parameters => parameters.Add(component => component.Images, images));
+        var cut = Render<ImageGrid>(parameters => parameters.Add(component => component.Images, PublicComponentTestsHelpers.Gallery(Services, images)));
 
         // Assert
         cut.Find("source").GetAttribute("type").ShouldBe("image/avif");
@@ -283,7 +283,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourGallery_rejects_images_without_a_supported_responsive_variant()
+    public void Gallery_rejects_images_without_a_supported_responsive_variant()
     {
         // Arrange
         var image = new CatalogTourImageDto
@@ -301,7 +301,7 @@ public sealed class PublicComponentTests : BunitContext
                 }
             ]
         };
-        Action renderGallery = () => Render<TourGallery>(parameters => parameters.Add(component => component.Images, [image]));
+        Action renderGallery = () => _ = Render<ImageGrid>(parameters => parameters.Add(component => component.Images, PublicComponentTestsHelpers.Gallery(Services, [image])));
 
         // Act
         var exception = renderGallery.ShouldThrow<InvalidOperationException>();
@@ -311,7 +311,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void TourGallery_can_prioritize_the_first_image()
+    public void Gallery_can_prioritize_the_first_image()
     {
         // Arrange
         var images = new[]
@@ -321,8 +321,8 @@ public sealed class PublicComponentTests : BunitContext
         };
 
         // Act
-        var cut = Render<TourGallery>(parameters => parameters
-            .Add(component => component.Images, images)
+        var cut = Render<ImageGrid>(parameters => parameters
+            .Add(component => component.Images, PublicComponentTestsHelpers.Gallery(Services, images))
             .Add(component => component.PrioritizeFirstImage, true));
 
         // Assert
@@ -332,5 +332,4 @@ public sealed class PublicComponentTests : BunitContext
         imageElements[1].GetAttribute("loading").ShouldBe("lazy");
         imageElements[1].GetAttribute("fetchpriority").ShouldBeNull();
     }
-
 }
