@@ -11,8 +11,6 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
     where TFixture : IAspireSystemTestFixture
 {
     private const float DefaultTimeoutMilliseconds = 30000;
-    private const string InteractivePageSelector = ".page[data-interactive=\"true\"]";
-    private const string DeveloperExceptionPageSelector = "#stackpage";
     private HttpClient? apiClient;
     private PageDiagnostics? diagnostics;
 
@@ -93,30 +91,8 @@ public abstract class AspireSystemTestBase<TFixture>(TFixture fixture) : PageTes
 
     private async Task WaitForInteractivePage()
     {
-        try
-        {
-            await Page.Locator(InteractivePageSelector).WaitForAsync(
-                new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
-        }
-        catch (Exception exception) when (exception is PlaywrightException or TimeoutException)
-        {
-            if (await Page.Locator(DeveloperExceptionPageSelector).IsVisibleAsync())
-            {
-                throw new InvalidOperationException(
-                    "Management Web returned an ASP.NET developer exception page.",
-                    exception);
-            }
-
-            if (diagnostics is null)
-            {
-                throw;
-            }
-
-            throw new TimeoutException(
-                $"Management Web page never became interactive. Browser diagnostics:{Environment.NewLine}"
-                + await diagnostics.Describe(Page),
-                exception);
-        }
+        await Page.WaitForBlazorInteractive(
+            diagnostics ?? throw new InvalidOperationException("The page diagnostics are not initialized."));
     }
 
     private bool IsManagementWebAppUri(Uri uri)

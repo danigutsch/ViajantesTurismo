@@ -6,17 +6,6 @@ namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 /// </summary>
 internal static class LocatorHelpers
 {
-    private const float FastValueAssertionTimeoutMilliseconds = 750;
-
-    /// <summary>
-    /// Provides extension methods for IPage to locate common elements like headings, links, buttons, and details badges.
-    /// </summary>
-    /// <param name="page">The IPage instance to extend.</param>
-    /// <param name="name">The name of the element to locate.</param>
-    /// <returns>An ILocator representing the located element.</returns>
-    public static ILocator GetHeading(this IPage page, string name) =>
-        page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = name });
-
     /// <summary>
     /// Provides extension methods for ILocator to locate child elements like headings, links, and buttons by their role and name, allowing for more specific element targeting within a parent locator context.
     /// </summary>
@@ -27,16 +16,6 @@ internal static class LocatorHelpers
         locator.GetByRole(AriaRole.Heading, new LocatorGetByRoleOptions { Name = name });
 
     /// <summary>
-    /// Provides an extension method for IPage to locate a link by its name, with an optional parameter to specify exact matching.
-    /// </summary>
-    /// <param name="page">The IPage instance to extend.</param>
-    /// <param name="name">The name of the link to locate.</param>
-    /// <param name="exact">Whether to match the name exactly.</param>
-    /// <returns>An ILocator representing the located link.</returns>
-    public static ILocator GetLink(this IPage page, string name, bool? exact = null) =>
-        page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = name, Exact = exact });
-
-    /// <summary>
     /// Provides an extension method for ILocator to locate a child link by its name, with an optional parameter to specify exact matching, allowing for more specific element targeting within a parent locator context.
     /// </summary>
     /// <param name="locator">The ILocator instance to extend.</param>
@@ -45,15 +24,6 @@ internal static class LocatorHelpers
     /// <returns>An ILocator representing the located link.</returns>
     public static ILocator GetLink(this ILocator locator, string name, bool? exact = null) =>
         locator.GetByRole(AriaRole.Link, new LocatorGetByRoleOptions { Name = name, Exact = exact });
-
-    /// <summary>
-    /// Provides an extension method for IPage to locate a button by its name.
-    /// </summary>
-    /// <param name="page">The IPage instance to extend.</param>
-    /// <param name="name">The name of the button to locate.</param>
-    /// <returns>An ILocator representing the located button.</returns>
-    public static ILocator GetButton(this IPage page, string name) =>
-        page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = name });
 
     /// <summary>
     /// Provides an extension method for ILocator to locate a child button by its name, allowing for more specific element targeting within a parent locator context.
@@ -75,51 +45,6 @@ internal static class LocatorHelpers
         var term = page.Locator($"dt:text-is('{label}')");
         return term.Locator("xpath=following-sibling::dd[1]").Locator(".badge");
     }
-
-    /// <summary>
-    /// Fills an input and retries if an early interactive render resets the value.
-    /// </summary>
-    /// <param name="locator">The input locator.</param>
-    /// <param name="value">The expected value.</param>
-    public static async Task FillAndExpectValue(this ILocator locator, string value)
-    {
-        for (var attempt = 1; attempt <= 3; attempt++)
-        {
-            await Assertions.Expect(locator).ToBeEditableAsync();
-            var inputType = await locator.GetAttributeAsync("type");
-            if (UsesNativeValueSetter(inputType))
-            {
-                await locator.FillAsync(value);
-            }
-            else
-            {
-                await locator.ClearAsync();
-                if (value.Length > 0)
-                {
-                    await locator.PressSequentiallyAsync(value);
-                }
-            }
-
-            await locator.BlurAsync();
-
-            try
-            {
-                await Assertions.Expect(locator).ToHaveValueAsync(
-                    value,
-                    new LocatorAssertionsToHaveValueOptions { Timeout = FastValueAssertionTimeoutMilliseconds });
-                return;
-            }
-            catch (PlaywrightException) when (attempt < 3)
-            {
-                // Blazor interactive startup can rerender immediately after static content accepts input.
-            }
-        }
-
-        await Assertions.Expect(locator).ToHaveValueAsync(value);
-    }
-
-    private static bool UsesNativeValueSetter(string? inputType) =>
-        inputType is "date" or "datetime-local" or "month" or "number" or "time" or "week";
 
     /// <summary>
     /// Cancels the timed redirect affordance when it is present on the page.

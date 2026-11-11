@@ -54,7 +54,7 @@ public sealed class DocumentLifecycleTests(AspireSystemTestFixture fixture)
         await Expect(Page.Locator("input#document-field-greeting")).ToHaveCountAsync(0);
         await Expect(Page.Locator("#document-field-greeting")).ToHaveTextAsync(reviewedValue);
         await Expect(Page.GetButton("Save Greeting")).ToHaveCountAsync(0);
-        var downloadLink = Page.GetLink("Download artifact", exact: true);
+        var downloadLink = Page.GetLink("Download artifact");
         await Expect(downloadLink).ToBeVisibleAsync();
         var documentUri = new Uri(Page.Url);
         var documentIdWasParsed = Guid.TryParse(documentUri.Segments[^1], out var documentId);

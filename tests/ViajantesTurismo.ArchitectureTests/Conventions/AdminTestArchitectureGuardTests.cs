@@ -129,8 +129,7 @@ public sealed partial class AdminTestArchitectureGuardTests
         mainLayoutMarkup.ShouldContain("aria-busy=\"@(!RendererInfo.IsInteractive ? \"true\" : \"false\")\"", StringComparison.Ordinal);
         mainLayoutMarkup.ShouldContain("data-interactive=\"@RendererInfo.IsInteractive.ToString().ToLowerInvariant()\"", StringComparison.Ordinal);
         appStyles.ShouldContain("body:has(.page[data-interactive=\"true\"]) .app-startup-status", StringComparison.Ordinal);
-        systemTestBase.ShouldContain(".page[data-interactive=\\\"true\\\"]", StringComparison.Ordinal);
-        systemTestBase.ShouldContain("DeveloperExceptionPageSelector", StringComparison.Ordinal);
+        systemTestBase.ShouldContain("Page.WaitForBlazorInteractive(", StringComparison.Ordinal);
         systemTestBase.ShouldNotContain(".page:not([inert])", StringComparison.Ordinal);
         systemTestBase.ShouldNotContain("maxAttempts", StringComparison.Ordinal);
         noScriptStylesExists.ShouldBeTrue();
