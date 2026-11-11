@@ -53,11 +53,11 @@ public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fix
         // Assert
         found.ShouldNotBeNull();
         found.Id.ShouldBe(original.Id);
-        found.ContactInfo.Email.Value.ShouldBe("Traveler@Example.com");
+        found.ContactInfo.Email.Value.ShouldBe("traveler@example.com");
         var assertedAsciiI = foundAsciiI.ShouldNotBeNull();
-        assertedAsciiI.ContactInfo.Email.Value.ShouldBe("INDIGO@example.com");
+        assertedAsciiI.ContactInfo.Email.Value.ShouldBe("indigo@example.com");
         var assertedAccentedCase = foundAccentedCase.ShouldNotBeNull();
-        assertedAccentedCase.ContactInfo.Email.Value.ShouldBe("Émile@example.com");
+        assertedAccentedCase.ContactInfo.Email.Value.ShouldBe("émile@example.com");
         var dbUpdateException = exception.InnerException.ShouldBeOfType<DbUpdateException>();
         var postgresException = dbUpdateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
