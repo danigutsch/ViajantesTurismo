@@ -14,7 +14,7 @@ public sealed class SdkSecurityGateTests
     {
         // Arrange
         using var workspace = new TemporaryWorkspace();
-        var root = RepositoryTestProcess.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate();
         var project = new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
             new XElement("PropertyGroup", new XElement("IsRoslynComponent", "true")),
             new XElement("Import", new XAttribute("Project", Path.Combine(root, "Directory.Build.props"))));
@@ -22,7 +22,7 @@ public sealed class SdkSecurityGateTests
         workspace.WriteFile("Probe.cs", source);
 
         // Act
-        var result = await RepositoryTestProcess.Run("dotnet", root,
+        var result = await TestProcess.Run("dotnet", root,
             ["build", Path.Combine(workspace.RootPath, "SecurityProbe.csproj"), "-c", "Release", "--nologo"],
             TestContext.Current.CancellationToken);
 

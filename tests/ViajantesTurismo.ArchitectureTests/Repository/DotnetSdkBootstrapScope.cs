@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 
@@ -11,7 +12,7 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
 {
     private readonly TemporaryWorkspace _workspace = new();
     private readonly bool _powershell;
-    private readonly string _repositoryRoot = RepositoryTestProcess.GetRepositoryRoot();
+    private readonly string _repositoryRoot = RepositoryRoot.Locate();
     private readonly string _rid = $"{(OperatingSystem.IsMacOS() ? "osx" : "linux")}-{RuntimeInformation.OSArchitecture switch { Architecture.X64 => "x64", Architecture.Arm64 => "arm64", Architecture.Arm => "arm", _ => throw new PlatformNotSupportedException("Unsupported SDK fixture architecture.") }}";
 
     /// <summary>Builds the workspace for the bash or PowerShell bootstrap script with a pinned SDK 10.0.303 archive and fake tools.</summary>
@@ -148,7 +149,7 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
     }
 
     /// <summary>Runs the bootstrap script with the fake tools first on PATH, optionally installing, and returns its process result.</summary>
-    public Task<RepositoryTestProcess.ProcessResult> Run(bool install, CancellationToken ct, string globalJson = "global.json")
+    public Task<TestProcessResult> Run(bool install, CancellationToken ct, string globalJson = "global.json")
     {
         var subject = Path.Combine(_repositoryRoot, "scripts", _powershell ? "ensure-dotnet-sdk.ps1" : "ensure-dotnet-sdk.sh");
         var environment = new Dictionary<string, string?>
@@ -182,7 +183,7 @@ internal sealed class DotnetSdkBootstrapScope : IDisposable
             arguments.Add("--install");
         }
 
-        return RepositoryTestProcess.Run(_powershell ? "pwsh" : "bash", _workspace.RootPath, arguments, ct, environment);
+        return TestProcess.Run(_powershell ? "pwsh" : "bash", _workspace.RootPath, arguments, ct, environment);
     }
 
     /// <summary>Deletes the workspace.</summary>

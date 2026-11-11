@@ -9,7 +9,7 @@ public sealed class SecurityWorkflowContractTests
     public async Task Secret_scanning_uses_shared_tooling_without_granting_the_scanner_write_permissions()
     {
         // Arrange
-        var root = RepositoryTestProcess.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate();
         var workflowPath = Path.Combine(root, ".github", "workflows", "secret-scan.yml");
 
         // Act

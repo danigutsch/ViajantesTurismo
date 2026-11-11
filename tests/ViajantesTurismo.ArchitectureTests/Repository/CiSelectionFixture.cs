@@ -1,3 +1,5 @@
+using PandaBear.Testing;
+
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 
 /// <summary>
@@ -8,20 +10,11 @@ internal sealed class CiSelectionFixture : IDisposable
 {
     private static readonly string[] SelectionInputs = ["ViajantesTurismo.slnx", ".config/sharedkernel-ci.json", "*.csproj", "*.props", "*.targets"];
 
-    private readonly string _repositoryRoot = RepositoryTestProcess.GetRepositoryRoot();
-
-    /// <summary>Creates an empty temporary directory to hold the fixture repository.</summary>
-    public CiSelectionFixture()
-    {
-        RootPath = Path.Combine(Path.GetTempPath(), "viajantes-ci-selection", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(RootPath);
-    }
+    private readonly string _repositoryRoot = RepositoryRoot.Locate();
+    private readonly TemporaryDirectory _directory = new();
 
     /// <summary>The temporary directory that holds the fixture repository.</summary>
-    public string RootPath
-    {
-        get;
-    }
+    public string RootPath => _directory.Path;
 
     /// <summary>Commits the selection inputs, then <paramref name="changedPath"/>, and returns the GitHub outputs of the selection.</summary>
     public async Task<Dictionary<string, string>> Select(string changedPath, CancellationToken ct)
@@ -50,10 +43,7 @@ internal sealed class CiSelectionFixture : IDisposable
     }
 
     /// <summary>Deletes the temporary fixture repository.</summary>
-    public void Dispose()
-    {
-        TemporaryRepositoryDirectory.Delete(RootPath);
-    }
+    public void Dispose() => _directory.Dispose();
 
     private async Task<string> Commit(CancellationToken ct)
     {
@@ -69,7 +59,7 @@ internal sealed class CiSelectionFixture : IDisposable
 
     private static async Task<string> Run(string fileName, string workingDirectory, IReadOnlyList<string> arguments, CancellationToken ct)
     {
-        var result = await RepositoryTestProcess.Run(fileName, workingDirectory, arguments, ct);
+        var result = await TestProcess.Run(fileName, workingDirectory, arguments, ct);
         result.ExitCode.ShouldBe(0, $"{fileName} {string.Join(' ', arguments)}: {result.StandardOutput}{result.StandardError}");
         return result.StandardOutput;
     }
