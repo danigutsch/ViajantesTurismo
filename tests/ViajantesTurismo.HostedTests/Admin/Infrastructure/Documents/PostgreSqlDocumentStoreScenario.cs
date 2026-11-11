@@ -1,6 +1,7 @@
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using PandaBear.Domain.EntityFrameworkCore;
@@ -320,6 +321,39 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         }
 
         return await Task.WhenAll(firstSave, secondSave);
+    }
+
+    /// <summary>
+    /// Saves two mutations of one lineage loaded at the same version, overlapping their transactions in a fixed order:
+    /// the first save executes and holds its commit, the second save starts and blocks on the first save's row locks,
+    /// then the first commits. Returns the conflict each save captured, or <see langword="null" /> when it succeeded.
+    /// </summary>
+    public async Task<Exception?[]> SaveOverlappingLineageMutations(
+        Guid documentId,
+        Func<DocumentLineage, Result> committingMutation,
+        Func<DocumentLineage, Result> blockedMutation,
+        CancellationToken ct)
+    {
+        var commitGate = new DocumentCommitGateInterceptor();
+        await using var committingContext = CreateDbContext(interceptor: commitGate);
+        await using var blockedContext = CreateDbContext();
+        await LoadAndMutateLineage(committingContext, documentId, committingMutation, ct);
+        await LoadAndMutateLineage(blockedContext, documentId, blockedMutation, ct);
+
+        var committingSave = CaptureExpectedConflict(() => committingContext.SaveEntities(ct));
+        Task<Exception?> blockedSave;
+        try
+        {
+            await commitGate.ReadyToCommit.WaitAsync(TimeSpan.FromSeconds(10), ct);
+            blockedSave = CaptureExpectedConflict(() => blockedContext.SaveEntities(ct));
+            await WaitForBlockedSession(ct);
+        }
+        finally
+        {
+            commitGate.Release();
+        }
+
+        return [await committingSave, await blockedSave];
     }
 
     /// <summary>Races two generation attempts on the same idempotency key and returns both outcomes plus the replayed result.</summary>
@@ -754,7 +788,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         DocumentSaveBarrierInterceptor barrier,
         CancellationToken ct)
     {
-        await using var dbContext = CreateDbContext(saveBarrier: barrier);
+        await using var dbContext = CreateDbContext(interceptor: barrier);
         dbContext.DocumentLineages.Add(DocumentLineage.Restore([document]));
         return await CaptureExpectedConflict(() => dbContext.SaveEntities(ct));
     }
@@ -765,7 +799,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         DocumentSaveBarrierInterceptor barrier,
         CancellationToken ct)
     {
-        await using var dbContext = CreateDbContext(saveBarrier: barrier);
+        await using var dbContext = CreateDbContext(interceptor: barrier);
         var lineage = await new DocumentStore(dbContext).GetByDocumentId(documentId, ct);
         var loadedLineage = lineage.ShouldNotBeNull();
         var replacement = loadedLineage.CreateRevision(
@@ -784,12 +818,24 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         DocumentSaveBarrierInterceptor barrier,
         CancellationToken ct)
     {
-        await using var dbContext = CreateDbContext(saveBarrier: barrier);
+        await using var dbContext = CreateDbContext(interceptor: barrier);
         var lineage = await new DocumentStore(dbContext).GetByDocumentId(documentId, ct);
         var loadedLineage = lineage.ShouldNotBeNull();
         mutation(loadedLineage).IsSuccess.ShouldBeTrue();
         loadedLineage.ClearDomainEvents();
         return await CaptureExpectedConflict(() => dbContext.SaveEntities(ct));
+    }
+
+    private static async Task LoadAndMutateLineage(
+        AdminWriteDbContext dbContext,
+        Guid documentId,
+        Func<DocumentLineage, Result> mutation,
+        CancellationToken ct)
+    {
+        var lineage = await new DocumentStore(dbContext).GetByDocumentId(documentId, ct);
+        var loadedLineage = lineage.ShouldNotBeNull();
+        mutation(loadedLineage).IsSuccess.ShouldBeTrue();
+        loadedLineage.ClearDomainEvents();
     }
 
     private static async Task<Exception?> CaptureExpectedConflict(Func<Task> save)
@@ -906,7 +952,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
 
     private AdminWriteDbContext CreateDbContext(
         bool enableRetryOnFailure = false,
-        DocumentSaveBarrierInterceptor? saveBarrier = null)
+        IInterceptor? interceptor = null)
     {
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
@@ -926,10 +972,10 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             })
             .Options;
 
-        if (saveBarrier is not null)
+        if (interceptor is not null)
         {
             options = new DbContextOptionsBuilder<AdminWriteDbContext>(options)
-                .AddInterceptors(saveBarrier)
+                .AddInterceptors(interceptor)
                 .Options;
         }
 
