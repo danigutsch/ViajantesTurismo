@@ -36,6 +36,31 @@ public sealed class CreateCustomerCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_returns_invalid_for_an_email_with_a_lone_surrogate()
+    {
+        // Arrange
+        var dto = DtoBuilders.BuildCreateCustomerDto(email: "traveler\uD800@example.com");
+        var command = new CreateCustomerCommand(
+            dto.PersonalInfo,
+            dto.IdentificationInfo,
+            dto.ContactInfo,
+            dto.Address,
+            dto.PhysicalInfo,
+            dto.AccommodationPreferences,
+            dto.EmergencyContact,
+            dto.MedicalInfo);
+        var store = new FakeCustomerStore();
+        var handler = new CreateCustomerCommandHandler(store, new FakeUnitOfWork(), TimeProvider.System);
+
+        // Act
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        store.AllCustomers.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Handle_returns_invalid_without_creating_a_customer_when_address_or_physical_info_is_invalid()
     {
         // Arrange

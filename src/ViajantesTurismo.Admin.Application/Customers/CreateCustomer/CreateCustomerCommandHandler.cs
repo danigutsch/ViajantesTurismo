@@ -24,7 +24,10 @@ public sealed class CreateCustomerCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var sanitizedEmail = StringSanitizer.Sanitize(command.ContactInfo.Email);
+        if (!StringSanitizer.TrySanitize(command.ContactInfo.Email, out var sanitizedEmail) || sanitizedEmail is null)
+        {
+            return CustomerErrors.InvalidEmailFormat().ConvertError<Guid>();
+        }
 
         if (await customerStore.EmailExists(sanitizedEmail, ct))
         {
