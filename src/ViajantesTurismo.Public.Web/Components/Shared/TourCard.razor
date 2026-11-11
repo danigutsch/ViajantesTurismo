@@ -1,19 +1,28 @@
-@if (GetCoverImage() is { } coverImage)
-{
-    <ResponsiveTourImage Image="coverImage" Sizes="(min-width: 48rem) 33vw, 100vw" />
-}
+@using Microsoft.AspNetCore.Routing
+@inject LinkGenerator LinkGenerator
 
-@if (HeadingLevel == 3)
+@{
+    var coverImage = TourImageRenditions.Cover(Tour.Images);
+    var cardVariant = coverImage is null ? null : TourImageRenditions.Card(coverImage);
+}
+@if (coverImage is not null && cardVariant is not null)
 {
-    <h3><a href="@TourUrl(Tour)">@Tour.Title</a></h3>
+    <Card Title="@Tour.Title"
+          HeadingLevel="HeadingLevel"
+          Href="@TourLink"
+          ImageSrc="@LinkTarget.FromString(TourImageRenditions.Path(LinkGenerator, coverImage.Id, cardVariant))"
+          ImageAlt="@Alternative(coverImage)"
+          ImageWidth="cardVariant.Width"
+          ImageHeight="cardVariant.Height">
+        <p>@Tour.Summary</p>
+    </Card>
 }
 else
 {
-    <h2><a href="@TourUrl(Tour)">@Tour.Title</a></h2>
+    <Card Title="@Tour.Title" HeadingLevel="HeadingLevel" Href="@TourLink">
+        <p>@Tour.Summary</p>
+    </Card>
 }
-
-<p>@Tour.Summary</p>
-<a href="@TourUrl(Tour)">Learn more</a>
 
 @code {
     [Parameter, EditorRequired]
@@ -22,10 +31,12 @@ else
     [Parameter]
     public int HeadingLevel { get; set; } = 2;
 
-    private CatalogTourImageDto? GetCoverImage() => Tour.Images
-        .OrderByDescending(image => image.IsCover)
-        .ThenBy(image => image.SortOrder)
-        .FirstOrDefault();
+    [CascadingParameter]
+    private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
 
-    private static string TourUrl(TourSummaryDto tour) => $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}";
+    private LinkTarget TourLink => LinkTarget.FromString(Culture.Localize($"/group-bike-tours/{Uri.EscapeDataString(Tour.Slug)}"));
+
+    // The card's heading already names the tour; an image without alternative text adds nothing for a screen reader.
+    private static ImageAlternative Alternative(CatalogTourImageDto image) =>
+        string.IsNullOrWhiteSpace(image.AltText) ? ImageAlternative.Decorative() : ImageAlternative.Describe(image.AltText);
 }

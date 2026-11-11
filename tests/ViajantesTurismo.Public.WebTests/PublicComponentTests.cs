@@ -29,15 +29,19 @@ public sealed class PublicComponentTests : BunitContext
         var image = tour.Images.ShouldHaveSingleItem();
 
         // Act
-        var cut = Render<TourCard>(parameters => parameters.Add(component => component.Tour, tour));
+        var cut = Render<TourCard>(parameters => parameters
+            .Add(component => component.Tour, tour)
+            .AddCascadingValue(PublicPageCulture.FromPath(new PathString("/en/group-bike-tours"))));
 
         // Assert
+        cut.Find("article").ClassList.ShouldContain("site-card");
         var heading = cut.Find("h2 a");
         heading.TextContent.ShouldBe("Camino Norte");
-        heading.GetAttribute("href").ShouldBe("/group-bike-tours/camino%20norte");
+        heading.GetAttribute("href").ShouldBe("/en/group-bike-tours/camino%20norte");
         cut.Find("p").TextContent.ShouldBe("Discover Camino Norte by bicycle.");
         cut.Find("img").GetAttribute("src").ShouldBe($"/catalog/media/{image.Id}/640/jpg");
         cut.Find("img").GetAttribute("alt").ShouldBe("Cyclists on the Camino");
+        cut.Find("img").GetAttribute("loading").ShouldBe("lazy");
     }
 
     [Fact]
@@ -49,16 +53,17 @@ public sealed class PublicComponentTests : BunitContext
         // Act
         var cut = Render<TourCard>(parameters => parameters
             .Add(component => component.Tour, tour)
-            .Add(component => component.HeadingLevel, 3));
+            .Add(component => component.HeadingLevel, 3)
+            .AddCascadingValue(PublicPageCulture.FromPath(new PathString("/pt/"))));
 
         // Assert
         cut.Find("h3 a").TextContent.ShouldBe("Andes Ride");
-        cut.Find("h3 a").GetAttribute("href").ShouldBe("/group-bike-tours/andes%2Fride");
+        cut.Find("h3 a").GetAttribute("href").ShouldBe("/pt/group-bike-tours/andes%2Fride");
         cut.FindAll("img").ShouldBeEmpty();
     }
 
     [Fact]
-    public void TourCard_renders_cover_image_and_responsive_source()
+    public void TourCard_shows_the_cover_image_in_the_smallest_jpeg_at_least_640_wide()
     {
         // Arrange
         var coverImageId = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -91,7 +96,8 @@ public sealed class PublicComponentTests : BunitContext
                         new CatalogMediaImageVariantDto { Width = 320, Height = 213, ContentType = "image/avif", FileSizeBytes = 256 },
                         new CatalogMediaImageVariantDto { Width = 640, Height = 427, ContentType = "image/webp", FileSizeBytes = 512 },
                         new CatalogMediaImageVariantDto { Width = 320, Height = 213, ContentType = "image/jpeg", FileSizeBytes = 512 },
-                        new CatalogMediaImageVariantDto { Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 }
+                        new CatalogMediaImageVariantDto { Width = 640, Height = 427, ContentType = "image/jpeg", FileSizeBytes = 1024 },
+                        new CatalogMediaImageVariantDto { Width = 1280, Height = 853, ContentType = "image/jpeg", FileSizeBytes = 4096 }
                     ]
                 }
             ],
@@ -99,20 +105,35 @@ public sealed class PublicComponentTests : BunitContext
         };
 
         // Act
-        var cut = Render<TourCard>(parameters => parameters.Add(component => component.Tour, tour));
+        var cut = Render<TourCard>(parameters => parameters
+            .Add(component => component.Tour, tour)
+            .AddCascadingValue(PublicPageCulture.FromPath(new PathString("/en/"))));
 
         // Assert
-        var sources = cut.FindAll("source");
-        sources[0].GetAttribute("type").ShouldBe("image/avif");
-        sources[0].GetAttribute("srcset").ShouldBe($"/catalog/media/{coverImageId}/320/avif 320w");
-        sources[1].GetAttribute("type").ShouldBe("image/webp");
-        sources[1].GetAttribute("srcset").ShouldBe($"/catalog/media/{coverImageId}/640/webp 640w");
-        sources[2].GetAttribute("type").ShouldBe("image/jpeg");
-        sources[2].GetAttribute("srcset").ShouldBe($"/catalog/media/{coverImageId}/320/jpg 320w, /catalog/media/{coverImageId}/640/jpg 640w");
-        cut.Find("img").GetAttribute("src").ShouldBe($"/catalog/media/{coverImageId}/640/jpg");
-        cut.Find("img").GetAttribute("alt").ShouldBe("Cover image");
-        cut.Find("img").GetAttribute("width").ShouldBe("640");
-        cut.Find("img").GetAttribute("height").ShouldBe("427");
+        cut.FindAll("source").ShouldBeEmpty();
+        var image = cut.Find("img");
+        image.GetAttribute("src").ShouldBe($"/catalog/media/{coverImageId}/640/jpg");
+        image.GetAttribute("alt").ShouldBe("Cover image");
+        image.GetAttribute("width").ShouldBe("640");
+        image.GetAttribute("height").ShouldBe("427");
+    }
+
+    [Fact]
+    public void TourCard_marks_a_cover_image_without_alternative_text_as_decorative()
+    {
+        // Arrange
+        var tour = PublicComponentTestsHelpers.CreateTour("camino-norte", "Camino Norte", includeImage: true) with
+        {
+            Images = [PublicComponentTestsHelpers.CreateImage(" ")]
+        };
+
+        // Act
+        var cut = Render<TourCard>(parameters => parameters
+            .Add(component => component.Tour, tour)
+            .AddCascadingValue(PublicPageCulture.FromPath(new PathString("/en/"))));
+
+        // Assert
+        cut.Find("img").GetAttribute("alt").ShouldBe(string.Empty);
     }
 
     [Fact]

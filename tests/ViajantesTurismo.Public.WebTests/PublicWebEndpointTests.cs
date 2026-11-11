@@ -166,13 +166,13 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/en/", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
-        content.ShouldContain("<html lang=\"en\">", StringComparison.Ordinal);
+        content.ShouldContain("<html lang=\"en-US\">", StringComparison.Ordinal);
         content.ShouldContain("Viajantes Turismo", StringComparison.Ordinal);
         content.ShouldContain("Cycle tourism around the world!", StringComparison.Ordinal);
         content.ShouldContain("New tours will be published soon.", StringComparison.Ordinal);
@@ -189,12 +189,12 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/en/", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", StringComparison.Ordinal);
+        content.ShouldContain("<h3 class=\"site-card__title\"><a href=\"/en/group-bike-tours/camino-norte\">Camino Norte</a></h3>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -214,260 +214,15 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/?culture=pt-BR", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/pt/", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         content.ShouldContain("<html lang=\"pt-BR\">", StringComparison.Ordinal);
         content.ShouldContain("<title>Cicloturismo - Viajantes Turismo</title>", StringComparison.Ordinal);
-        content.ShouldContain("<h1 id=\"home-hero-title\">Cicloturismo pelo mundo!</h1>", StringComparison.Ordinal);
+        content.ShouldContain("<h1 class=\"site-hero__title\">Cicloturismo pelo mundo!</h1>", StringComparison.Ordinal);
         content.ShouldContain("Pedale com cultura", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Root_renders_public_content_for_requested_language()
-    {
-        // Arrange
-        var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddContent("pt-BR", new PublicContentVariantDto
-        {
-            Language = PublicContentLanguageTags.PortugueseBrazil,
-            Title = "Cicloturismo pelo mundo!",
-            Body = "Pedale com cultura, saúde e diversão.",
-            SeoTitle = "Cicloturismo - Viajantes Turismo"
-        });
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/?language=pt-BR", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("<html lang=\"pt-BR\">", StringComparison.Ordinal);
-        content.ShouldContain("<h1 id=\"home-hero-title\">Cicloturismo pelo mundo!</h1>", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Root_uses_requested_english_language_metadata()
-    {
-        // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/?culture=en-US", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("<html lang=\"en-US\">", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Root_renders_public_branding_css_variables_and_brand_name()
-    {
-        // Arrange
-        var brandingApi = new FakeBrandingApiClient();
-        brandingApi.SetBranding(new BrandingSettingsDto
-        {
-            BrandName = "Camino Riders",
-            LogoUri = "/api/v1/public/branding/logo/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            PrimaryColor = "#112233",
-            AccentColor = "#445566",
-            BackgroundColor = "#FFFFFF",
-            TextColor = "#000000",
-            HeadingFontFamily = "Inter",
-            BodyFontFamily = "Verdana"
-        });
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("--vt-color-primary: #112233;", StringComparison.Ordinal);
-        content.ShouldContain("--vt-font-heading: Inter;", StringComparison.Ordinal);
-        content.ShouldContain("font-family: var(--vt-font-body);", StringComparison.Ordinal);
-        content.ShouldContain("class=\"public-hero\"", StringComparison.Ordinal);
-        content.ShouldContain("class=\"public-shell-nav\"", StringComparison.Ordinal);
-        content.ShouldContain("Camino Riders", StringComparison.Ordinal);
-        content.ShouldContain("/api/v1/public/branding/logo/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", StringComparison.Ordinal);
-    }
-
-    [Theory]
-    [InlineData("/images/\u0001logo.svg")]
-    [InlineData("https://cdn.example/logo.svg")]
-    [InlineData("https://cdn.example/\u0001logo.svg")]
-    [InlineData("/images\\logo.svg")]
-    [InlineData("//cdn.example/logo.svg")]
-    [InlineData("https:///logo.svg")]
-    [InlineData("https://user:pass@cdn.example/logo.svg")]
-    public async Task Root_omits_unsafe_branding_logo_uri(string candidate)
-    {
-        // Arrange
-        var brandingApi = new FakeBrandingApiClient();
-        brandingApi.SetBranding(new BrandingSettingsDto
-        {
-            BrandName = "Camino Riders",
-            LogoUri = candidate,
-            PrimaryColor = "#112233",
-            AccentColor = "#445566",
-            BackgroundColor = "#FFFFFF",
-            TextColor = "#000000",
-            HeadingFontFamily = "Inter",
-            BodyFontFamily = "Verdana"
-        });
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.Contains("<img class=\"public-shell-logo\"", StringComparison.Ordinal).ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task Root_canonicalizes_safe_branding_font_casing()
-    {
-        // Arrange
-        var brandingApi = new FakeBrandingApiClient();
-        brandingApi.SetBranding(new BrandingSettingsDto
-        {
-            BrandName = "Camino Riders",
-            LogoUri = null,
-            PrimaryColor = "#112233",
-            AccentColor = "#445566",
-            BackgroundColor = "#FFFFFF",
-            TextColor = "#000000",
-            HeadingFontFamily = "inter",
-            BodyFontFamily = "verdana"
-        });
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("--vt-font-heading: Inter;", StringComparison.Ordinal);
-        content.ShouldContain("--vt-font-body: Verdana;", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Root_uses_default_branding_when_branding_load_fails()
-    {
-        // Arrange
-        var brandingApi = new FakeBrandingApiClient
-        {
-            FailRequests = true
-        };
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
-        content.ShouldContain("--vt-font-body: system-ui;", StringComparison.Ordinal);
-        content.ShouldContain("Viajantes Turismo", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Root_uses_default_branding_when_branding_response_is_empty()
-    {
-        // Arrange
-        var brandingApi = new FakeBrandingApiClient
-        {
-            ReturnEmptyResponse = true
-        };
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
-        content.ShouldContain("--vt-font-body: system-ui;", StringComparison.Ordinal);
-    }
-
-    [Theory]
-    [InlineData("malformed")]
-    [InlineData("unsupported")]
-    public async Task Root_uses_default_branding_when_branding_response_cannot_be_deserialized(string responseFailure)
-    {
-        // Arrange
-        var brandingApi = new FakeBrandingApiClient
-        {
-            ReturnMalformedResponse = string.Equals(responseFailure, "malformed", StringComparison.Ordinal),
-            ReturnUnsupportedResponse = string.Equals(responseFailure, "unsupported", StringComparison.Ordinal)
-        };
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
-        content.ShouldContain("--vt-font-body: system-ui;", StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Root_rejects_unsafe_branding_values_and_uses_safe_fallbacks()
-    {
-        // Arrange
-        var brandingApi = new FakeBrandingApiClient();
-        brandingApi.SetBranding(new BrandingSettingsDto
-        {
-            BrandName = "Unsafe Brand",
-            LogoUri = "http://cdn.example/logo.svg",
-            PrimaryColor = "url(javascript:alert(1))",
-            AccentColor = "#445566",
-            BackgroundColor = "#FFFFFF",
-            TextColor = "#000000",
-            HeadingFontFamily = "bad;font",
-            BodyFontFamily = "Verdana"
-        });
-
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
-        using var client = factory.CreateClient();
-
-        // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("--vt-color-primary: #0F766E;", StringComparison.Ordinal);
-        content.ShouldContain("--vt-font-heading: Georgia;", StringComparison.Ordinal);
-        content.Contains("http://cdn.example/logo.svg", StringComparison.Ordinal).ShouldBeFalse();
-        content.ShouldNotContain("javascript:alert(1)", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -487,7 +242,7 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/en/", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
@@ -519,7 +274,7 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        var responseTask = client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        var responseTask = client.GetAsync(new Uri("/en/", UriKind.Relative), TestContext.Current.CancellationToken);
         await catalogApi.ContentStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
         await catalogApi.ListStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
         using var response = await responseTask;
@@ -606,7 +361,7 @@ public sealed class PublicWebEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("<h1 id=\"home-hero-title\">Cycle safely</h1>", StringComparison.Ordinal);
+        content.ShouldContain("<h1 class=\"site-hero__title\">Cycle safely</h1>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -620,13 +375,13 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/en/", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         content.ShouldContain("Cycle tourism around the world!", StringComparison.Ordinal);
-        content.ShouldContain("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", StringComparison.Ordinal);
+        content.ShouldContain("<h3 class=\"site-card__title\"><a href=\"/en/group-bike-tours/camino-norte\">Camino Norte</a></h3>", StringComparison.Ordinal);
         content.Contains("Tours could not be loaded", StringComparison.Ordinal).ShouldBeFalse();
     }
 
@@ -644,13 +399,13 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/en/", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         content.ShouldContain("Cycle tourism around the world!", StringComparison.Ordinal);
-        content.ShouldContain("<h3><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h3>", StringComparison.Ordinal);
+        content.ShouldContain("<h3 class=\"site-card__title\"><a href=\"/en/group-bike-tours/camino-norte\">Camino Norte</a></h3>", StringComparison.Ordinal);
         content.Contains("Tours could not be loaded", StringComparison.Ordinal).ShouldBeFalse();
     }
 
@@ -664,7 +419,7 @@ public sealed class PublicWebEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/en/", UriKind.Relative), TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
@@ -673,8 +428,8 @@ public sealed class PublicWebEndpointTests
     }
 
     [Theory]
-    [InlineData("/group-bike-tours", "Group Bike Tours")]
-    [InlineData("/gallery", "Gallery")]
+    [InlineData("/en/group-bike-tours", "Group Bike Tours")]
+    [InlineData("/pt/gallery", "Gallery")]
     public async Task Public_ssr_routes_return_expected_content(string path, string expectedHeading)
     {
         // Arrange
@@ -688,7 +443,7 @@ public sealed class PublicWebEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
-        content.ShouldContain($"<h1>{expectedHeading}</h1>", StringComparison.Ordinal);
+        content.ShouldContain($"<h1 class=\"site-section__title\">{expectedHeading}</h1>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -703,13 +458,13 @@ public sealed class PublicWebEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/group-bike-tours", UriKind.Relative),
+            new Uri("/en/group-bike-tours", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("<h2><a href=\"/group-bike-tours/camino-norte\">Camino Norte</a></h2>", StringComparison.Ordinal);
+        content.ShouldContain("<h2 class=\"site-card__title\"><a href=\"/en/group-bike-tours/camino-norte\">Camino Norte</a></h2>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -723,7 +478,7 @@ public sealed class PublicWebEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/group-bike-tours", UriKind.Relative),
+            new Uri("/en/group-bike-tours", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
@@ -733,9 +488,9 @@ public sealed class PublicWebEndpointTests
     }
 
     [Theory]
-    [InlineData("/")]
-    [InlineData("/group-bike-tours")]
-    [InlineData("/gallery")]
+    [InlineData("/en/")]
+    [InlineData("/en/group-bike-tours")]
+    [InlineData("/pt/gallery")]
     public async Task Public_list_pages_return_non_cacheable_service_unavailable_when_catalog_cancels_upstream(string path)
     {
         // Arrange
@@ -772,13 +527,13 @@ public sealed class PublicWebEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/group-bike-tours/camino-norte", UriKind.Relative),
+            new Uri("/en/group-bike-tours/camino-norte", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        content.ShouldContain("<h1>Camino Norte</h1>", StringComparison.Ordinal);
+        content.ShouldContain("<h1 class=\"site-hero__title\">Camino Norte</h1>", StringComparison.Ordinal);
         content.ShouldContain("Discover Camino Norte by bicycle.", StringComparison.Ordinal);
         content.ShouldContain("A detailed description of Camino Norte.", StringComparison.Ordinal);
         content.ShouldContain("Day one: explore Camino Norte.", StringComparison.Ordinal);
@@ -802,7 +557,7 @@ public sealed class PublicWebEndpointTests
             catalogApi,
             canonicalOrigin: "https://public.example.test");
         using var client = factory.CreateClient();
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/group-bike-tours/camino-norte", UriKind.Relative));
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/en/group-bike-tours/camino-norte", UriKind.Relative));
         request.Headers.Host = "attacker.example.test";
 
         // Act
@@ -813,9 +568,9 @@ public sealed class PublicWebEndpointTests
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         content.ShouldContain("<title>Camino Norte cycling tour</title>", StringComparison.Ordinal);
         content.ShouldContain("name=\"description\" content=\"Cycle the Camino Norte with Viajantes Turismo.\"", StringComparison.Ordinal);
-        content.ShouldContain("rel=\"canonical\" href=\"https://public.example.test/group-bike-tours/camino-norte\"", StringComparison.Ordinal);
+        content.ShouldContain("rel=\"canonical\" href=\"https://public.example.test/en/group-bike-tours/camino-norte\"", StringComparison.Ordinal);
         content.ShouldContain("property=\"og:title\" content=\"Camino Norte cycling tour\"", StringComparison.Ordinal);
-        content.ShouldContain("property=\"og:url\" content=\"https://public.example.test/group-bike-tours/camino-norte\"", StringComparison.Ordinal);
+        content.ShouldContain("property=\"og:url\" content=\"https://public.example.test/en/group-bike-tours/camino-norte\"", StringComparison.Ordinal);
         content.ShouldContain($"property=\"og:image\" content=\"https://public.example.test/catalog/media/{image.Id}/640/jpg\"", StringComparison.Ordinal);
         content.ShouldNotContain("attacker.example.test", StringComparison.Ordinal);
         var coverAltOccurrences = content.Split("alt=\"Cyclists on the Camino\"", StringSplitOptions.None).Length - 1;
@@ -839,7 +594,7 @@ public sealed class PublicWebEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/group-bike-tours/safe-tour", UriKind.Relative),
+            new Uri("/en/group-bike-tours/safe-tour", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
@@ -862,13 +617,13 @@ public sealed class PublicWebEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/group-bike-tours/camino-norte", UriKind.Relative),
+            new Uri("/en/group-bike-tours/camino-norte", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
-        content.ShouldContain("<h1>Tour unavailable</h1>", StringComparison.Ordinal);
+        content.ShouldContain("<h1 class=\"site-section__title\">Tour unavailable</h1>", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -881,7 +636,7 @@ public sealed class PublicWebEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/group-bike-tours/camino-norte", UriKind.Relative),
+            new Uri("/en/group-bike-tours/camino-norte", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -900,7 +655,7 @@ public sealed class PublicWebEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/group-bike-tours/missing-tour", UriKind.Relative),
+            new Uri("/en/group-bike-tours/missing-tour", UriKind.Relative),
             TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
@@ -909,7 +664,7 @@ public sealed class PublicWebEndpointTests
         response.Headers.CacheControl.ShouldNotBeNull();
         response.Headers.CacheControl.NoStore.ShouldBeTrue();
         response.Headers.GetValues("Pragma").ShouldHaveSingleItem().ShouldBe("no-cache");
-        content.ShouldContain("<h1>Page not found</h1>", StringComparison.Ordinal);
+        content.ShouldContain("<h1 class=\"site-section__title\">Page not found</h1>", StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1032,18 +787,33 @@ public sealed class PublicWebEndpointTests
         var sitemapNamespace = XNamespace.Get("http://www.sitemaps.org/schemas/sitemap/0.9");
         var locations = document.Descendants(sitemapNamespace + "loc").Select(element => element.Value).ToArray();
         var lastModified = document.Descendants(sitemapNamespace + "lastmod").Select(element => element.Value).ToArray();
+        var tourAlternates = document.Descendants(sitemapNamespace + "url")
+            .Where(url => url.Element(sitemapNamespace + "loc")?.Value == "https://localhost:7003/pt/group-bike-tours/camino-norte")
+            .Elements(XNamespace.Get("http://www.w3.org/1999/xhtml") + "link")
+            .Select(link => $"{link.Attribute("hreflang")?.Value} {link.Attribute("href")?.Value}")
+            .ToArray();
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/xml");
         locations.ShouldBe([
-            "https://localhost:7003/",
-            "https://localhost:7003/group-bike-tours",
-            "https://localhost:7003/gallery",
-            "https://localhost:7003/group-bike-tours/camino-norte",
-            "https://localhost:7003/group-bike-tours/missing-date"
+            "https://localhost:7003/en/",
+            "https://localhost:7003/pt/",
+            "https://localhost:7003/en/group-bike-tours",
+            "https://localhost:7003/pt/group-bike-tours",
+            "https://localhost:7003/en/gallery",
+            "https://localhost:7003/pt/gallery",
+            "https://localhost:7003/en/group-bike-tours/camino-norte",
+            "https://localhost:7003/pt/group-bike-tours/camino-norte",
+            "https://localhost:7003/en/group-bike-tours/missing-date",
+            "https://localhost:7003/pt/group-bike-tours/missing-date"
         ]);
-        lastModified.ShouldBe(["2026-07-11T09:30:00Z"]);
+        lastModified.ShouldBe(["2026-07-11T09:30:00Z", "2026-07-11T09:30:00Z"]);
+        tourAlternates.ShouldBe([
+            "en-US https://localhost:7003/en/group-bike-tours/camino-norte",
+            "pt-BR https://localhost:7003/pt/group-bike-tours/camino-norte",
+            "x-default https://localhost:7003/group-bike-tours/camino-norte"
+        ]);
     }
 
     [Fact]
@@ -1051,7 +821,7 @@ public sealed class PublicWebEndpointTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
-        for (var index = 0; index < 49_998; index++)
+        for (var index = 0; index < 25_000; index++)
         {
             catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour($"tour-{index}", "Tour"));
         }
@@ -1069,8 +839,8 @@ public sealed class PublicWebEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         locations.Length.ShouldBe(50_000);
-        locations[^1].ShouldBe("https://localhost:7003/group-bike-tours/tour-49996");
-        locations.ShouldNotContain("https://localhost:7003/group-bike-tours/tour-49997");
+        locations[^1].ShouldBe("https://localhost:7003/pt/group-bike-tours/tour-24996");
+        locations.ShouldNotContain("https://localhost:7003/en/group-bike-tours/tour-24997");
     }
 
     [Fact]

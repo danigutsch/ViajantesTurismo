@@ -55,7 +55,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         var published = await scenario.PublishCatalogTour(catalogTour, title, slug, TestContext.Current.CancellationToken);
 
         // Act
-        await NavigateTo(new Uri(Fixture.PublicWebAppUrl, "/group-bike-tours"));
+        await NavigateTo(new Uri(Fixture.PublicWebAppUrl, "/en/group-bike-tours"));
 
         // Assert
         published.IsPublished.ShouldBeTrue();
@@ -79,7 +79,7 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         var adminTour = await scenario.CreateAdminTour(identifier, title);
         var catalogTour = await scenario.WaitForCatalogTour(adminTour.Id, TestContext.Current.CancellationToken);
         var published = await scenario.PublishCatalogTour(catalogTour, title, slug, TestContext.Current.CancellationToken);
-        await NavigateTo(new Uri(Fixture.PublicWebAppUrl, $"/group-bike-tours/{published.Slug}"));
+        await NavigateTo(new Uri(Fixture.PublicWebAppUrl, $"/pt/group-bike-tours/{published.Slug}"));
 
         // Assert
         published.AdminTourId.ShouldBe(adminTour.Id);

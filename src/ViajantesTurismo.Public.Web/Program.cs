@@ -1,7 +1,10 @@
+using System.Globalization;
 using PandaBear.Branding;
 using PandaBear.HttpClients;
 using Microsoft.Extensions.Options;
 using PandaBear.AspNetCore;
+using PandaBear.AspNetCore.Localization;
+using PandaBear.HttpCaching.AspNetCore;
 using ViajantesTurismo.Public.Web;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
@@ -35,8 +38,18 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.UsePublicWebCacheHeaders();
+app.UseDefaultPublicCaching(PublicWebHttpCache.PublishedContentFreshness);
 app.UsePublicWebSecurityHeaders();
+app.UsePermanentRedirects(PublicCultureRedirects.Resolve);
+app.UseCulturePathRedirect(PublicSiteCultures.Supported, excludedPrefixes: PublicSiteCultures.UnlocalizedPrefixes);
+app.UseRequestLocalization(options =>
+{
+    CultureInfo[] cultures = [.. PublicSiteCultures.Supported.Cultures.Select(culture => CultureInfo.GetCultureInfo(culture.Value))];
+    options.DefaultRequestCulture = new(PublicSiteCultures.Supported.Default.Value);
+    options.SupportedCultures = cultures;
+    options.SupportedUICultures = cultures;
+    options.RequestCultureProviders = [new PathCultureRequestCultureProvider(PublicSiteCultures.Supported)];
+});
 app.UseRateLimiter();
 app.MapPublicWebEndpoints();
 

@@ -1,18 +1,24 @@
 using Microsoft.Extensions.Options;
 using PandaBear.AspNetCore.Seo;
+using PandaBear.Branding;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Public.Web.Components;
 
 namespace ViajantesTurismo.Public.Web;
 
-/// <summary>Maps the Public Web endpoints: error, robots.txt, sitemap, catalog media and Razor components.</summary>
+/// <summary>Maps the Public Web endpoints: error, robots.txt, sitemap, theme stylesheet, catalog media and Razor components.</summary>
 internal static class PublicWebEndpoints
 {
-    private const string RobotsTxtPath = "/robots.txt";
     private const string SitemapPath = "/sitemap.xml";
+
+    /// <summary>Path of the stylesheet that overrides the site design tokens with the brand colours and fonts.</summary>
+    internal const string ThemeStylesheetPath = "/theme.css";
 
     /// <summary>Endpoint name of the public media-by-rendition route.</summary>
     internal const string PublicMediaByRenditionEndpointName = "public-media-by-rendition";
+
+    private static readonly string[] StaticPagePaths = ["/", "/group-bike-tours", "/gallery"];
 
     /// <summary>Maps the Public Web endpoints onto the route builder.</summary>
     internal static IEndpointRouteBuilder MapPublicWebEndpoints(this IEndpointRouteBuilder app)
@@ -26,10 +32,16 @@ internal static class PublicWebEndpoints
             })
             .ExcludeFromDescription();
 
-        app.MapGet(RobotsTxtPath, GetPublicRobotsTxt)
+        var sitemapOptions = app.ServiceProvider.GetRequiredService<IOptions<PublicWebSitemapOptions>>().Value;
+        var sitemapUri = new PublicSiteLinks(sitemapOptions).Absolute(SitemapPath);
+        app.MapRobotsTxt($"User-agent: *\nAllow: /\nSitemap: {sitemapUri.AbsoluteUri}")
             .ExcludeFromDescription();
 
         app.MapGet(SitemapPath, GetSitemap)
+            .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy)
+            .ExcludeFromDescription();
+
+        app.MapGet(ThemeStylesheetPath, GetThemeStylesheet)
             .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy)
             .ExcludeFromDescription();
 
@@ -46,13 +58,10 @@ internal static class PublicWebEndpoints
         return app;
     }
 
-    private static IResult GetPublicRobotsTxt(IOptions<PublicWebSitemapOptions> sitemapOptions)
+    private static async Task<IResult> GetThemeStylesheet(IBrandingApiClient brandingApi, CancellationToken ct)
     {
-        var origin = SitemapCanonicalOrigin.Parse(sitemapOptions.Value.CanonicalOrigin);
-        var sitemapUri = new Uri(origin, SitemapPath);
-        return Results.Text(
-            $"User-agent: *\nAllow: /\nSitemap: {sitemapUri.AbsoluteUri}",
-            "text/plain; charset=utf-8");
+        var branding = await PublicBranding.Load(brandingApi, ct);
+        return Results.Text(PublicBranding.Stylesheet(branding), "text/css; charset=utf-8");
     }
 
     private static async Task<IResult> GetSitemap(
@@ -61,8 +70,6 @@ internal static class PublicWebEndpoints
         IPublicCatalogApiClient catalogApi,
         CancellationToken ct)
     {
-        var origin = SitemapCanonicalOrigin.Parse(sitemapOptions.Value.CanonicalOrigin);
-
         TourSummaryDto[] tours;
         try
         {
@@ -85,18 +92,17 @@ internal static class PublicWebEndpoints
             PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
             return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
-        var urls = new List<SitemapEntry>
-        {
-            new(new Uri(origin, "/")),
-            new(new Uri(origin, "/group-bike-tours")),
-            new(new Uri(origin, "/gallery"))
-        };
 
-        foreach (var tour in tours.Where(IsPublicTourPage).Take(SitemapXmlSerializer.MaximumUrlCount - urls.Count))
-        {
-            var tourUri = new Uri(origin, $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}");
-            urls.Add(new SitemapEntry(tourUri, tour.UpdatedAt));
-        }
+        // Every page is listed once per culture, so the tours share what the protocol maximum leaves after the fixed pages.
+        var links = new PublicSiteLinks(sitemapOptions.Value);
+        var cultureCount = PublicSiteCultures.Supported.Cultures.Count;
+        var tourLimit = (SitemapXmlSerializer.MaximumUrlCount / cultureCount) - StaticPagePaths.Length;
+        var urls = StaticPagePaths
+            .SelectMany(path => links.SitemapEntries(path))
+            .Concat(tours
+                .Where(tour => Slug.IsCanonical(tour.Slug))
+                .Take(tourLimit)
+                .SelectMany(tour => links.SitemapEntries($"/group-bike-tours/{tour.Slug}", tour.UpdatedAt)));
 
         var sitemap = await SitemapXmlSerializer.Serialize(urls, ct);
         return Results.File(sitemap, SitemapXmlSerializer.ContentType);
@@ -135,14 +141,5 @@ internal static class PublicWebEndpoints
         httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
         httpContext.Response.RegisterForDisposeAsync(media);
         return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);
-    }
-
-    private static bool IsPublicTourPage(TourSummaryDto tour)
-    {
-        return !string.IsNullOrWhiteSpace(tour.Slug)
-            && !string.Equals(tour.Slug, ".", StringComparison.Ordinal)
-            && !string.Equals(tour.Slug, "..", StringComparison.Ordinal)
-            && tour.Slug.All(character => !char.IsControl(character)
-                && character is not '/' and not '\\' and not '?' and not '#');
     }
 }

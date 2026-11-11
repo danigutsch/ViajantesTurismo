@@ -14,7 +14,8 @@ documents a narrower safe exception.
 | Catalog API `/public/catalog/content/{key}` | Public HTTP metadata plus server output cache varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Public content writes evict `public-content` |
 | Branding public settings route (Catalog-hosted) | Public HTTP metadata plus host-local server output cache | 60 seconds plus `stale-while-revalidate=300` | Branding writes evict public branding cache entries in the active host |
 | Branding management settings routes | No cache; `Cache-Control: no-store` | None | Not applicable |
-| Public Web `/`, `/group-bike-tours`, `/group-bike-tours/{slug}`, `/gallery` | Public HTTP metadata varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Server output cache is not used because Catalog API invalidation is service-local |
+| Public Web `/{culture}/`, `/{culture}/group-bike-tours`, `/{culture}/group-bike-tours/{slug}`, `/{culture}/gallery`, `/theme.css` | `UseDefaultPublicCaching`: `public` for anonymous `200` GET/HEAD responses without their own `Cache-Control` or a cookie; failures and the not-found page are `no-store`; the culture is part of the path | 60 seconds | Server output cache is not used because Catalog API invalidation is service-local |
+| Public Web redirects to a culture (`/`, `/gallery`) | Not public: they vary on `Accept-Language` and `Cookie` | None | Not applicable |
 
 ## Non-cacheable responses
 
@@ -67,8 +68,8 @@ integration event does not evict, so the public view can lag by up to the 60-sec
 Catalog and Branding mutations evict same-process public API output-cache entries before returning
 success. This remains host-local when Branding moves into Catalog.ApiService. Public Web pages cache
 rendered HTML in the Public Web process, so catalog or branding changes can remain visible there until
-the 60-second freshness window expires. Intermediaries may serve stale public responses for up to
-another 300 seconds while they revalidate.
+the 60-second freshness window expires. Intermediaries may serve stale public API responses for up to
+another 300 seconds while they revalidate; Public Web pages carry no `stale-while-revalidate`.
 
 The accepted Branding window does not justify Redis or another distributed cache. Add one only after
 measured multi-instance invalidation, scale, or stricter freshness requirements show that host-local
