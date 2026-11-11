@@ -15,6 +15,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Seo" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Authentication" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Authentication.Bff" />
         <PackageReference Include="PandaBear.SharedKernel.Blazor" />
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
@@ -38,7 +39,6 @@
 
     <ItemGroup>
         <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" />
-        <PackageReference Include="Duende.AccessTokenManagement.OpenIdConnect" />
         <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="Npgsql" />
