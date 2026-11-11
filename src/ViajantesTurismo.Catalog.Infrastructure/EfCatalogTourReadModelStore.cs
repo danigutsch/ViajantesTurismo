@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
+using PandaBear.BuildingBlocks;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore.Npgsql;
 using ViajantesTurismo.Catalog.Application.Tours;
+using ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using PandaBear.InputNormalization;
 
@@ -14,6 +17,8 @@ internal sealed class EfCatalogTourReadModelStore(
     CatalogDbContext dbContext) : ICatalogTourReadModelStore
 {
     private const int MaxProjectionSaveAttempts = 3;
+
+    private static readonly NpgsqlUniqueViolationParser UniqueViolationParser = new();
 
     /// <inheritdoc />
     public async ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
@@ -223,7 +228,7 @@ internal sealed class EfCatalogTourReadModelStore(
     {
         try
         {
-            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
             return true;
         }
         catch (DbUpdateConcurrencyException)
@@ -231,9 +236,8 @@ internal sealed class EfCatalogTourReadModelStore(
             dbContext.ChangeTracker.Clear();
             return false;
         }
-        catch (DbUpdateException exception) when (
-            slug is not null
-            && exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (UniqueConstraintViolationException exception) when (
+            slug is not null && exception.Rule == CatalogTourReadModelEntityConfiguration.SlugUniqueRule)
         {
             throw new CatalogTourSlugConflictException(
                 $"The public tour slug '{slug}' is already in use.",

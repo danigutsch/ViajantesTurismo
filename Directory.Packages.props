@@ -115,6 +115,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.Domain.EntityFrameworkCore" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Domain.SourceGenerator" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.EntityFrameworkCore" Version="0.1.0-alpha.521.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.EntityFrameworkCore.Npgsql" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.EventSourcing" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.EventSourcing.Npgsql" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" Version="0.1.0-alpha.521.1" />

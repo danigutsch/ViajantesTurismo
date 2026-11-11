@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.EntityFrameworkCore;
 using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Customers;
 
@@ -31,7 +32,8 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
                 .HasMaxLength(PhoneNumber.MaxDigits + 1);
             builder.HasIndex(contactInfo => contactInfo.Email)
                 .IsUnique()
-                .HasDatabaseName(CustomerSchema.EmailUniqueIndex);
+                .HasDatabaseName(CustomerSchema.EmailUniqueIndex)
+                .HasUniqueRule(CustomerSchema.EmailUniqueRule);
         });
         entity.OwnsOne(customer => customer.Address, builder =>
         {

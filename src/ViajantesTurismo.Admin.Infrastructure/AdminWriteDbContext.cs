@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
+using PandaBear.BuildingBlocks;
 using PandaBear.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore.Npgsql;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -23,6 +25,8 @@ internal sealed class AdminWriteDbContext(
     IEnumerable<IDbContextConfiguration<AdminWriteDbContext>>? configurations = null)
     : DbContext(options), IUnitOfWork
 {
+    private static readonly NpgsqlUniqueViolationParser UniqueViolationParser = new();
+
     /// <summary>Tour aggregates.</summary>
     public DbSet<Tour> Tours => Set<Tour>();
     /// <summary>Customer aggregates.</summary>
@@ -44,17 +48,13 @@ internal sealed class AdminWriteDbContext(
         try
         {
             await DocumentAuditLineage.StampAddedRecords(this, ct);
-            _ = await SaveChangesAsync(ct);
+            _ = await this.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct);
         }
-        catch (DbUpdateException exception) when (CustomerSchema.IsEmailConflict(exception))
+        catch (UniqueConstraintViolationException exception) when (exception.Rule == CustomerSchema.EmailUniqueRule)
         {
             throw new CustomerEmailConflictException(exception);
         }
-        catch (Npgsql.PostgresException exception) when (CustomerSchema.IsEmailConflict(exception))
-        {
-            throw new CustomerEmailConflictException(exception);
-        }
-        catch (DbUpdateException exception) when (DocumentDraftSchema.IsRevisionConflict(exception))
+        catch (UniqueConstraintViolationException exception) when (exception.Rule == DocumentDraftSchema.RevisionUniqueRule)
         {
             throw new DocumentRevisionConflictException(exception);
         }
@@ -62,7 +62,7 @@ internal sealed class AdminWriteDbContext(
         {
             throw new DocumentBookingEligibilityConflictException(exception);
         }
-        catch (Npgsql.PostgresException exception) when (DocumentDraftSchema.IsRevisionConflict(exception))
+        catch (Npgsql.PostgresException exception) when (DocumentDraftSchema.IsActiveFinalizedLineageConflict(exception))
         {
             throw new DocumentRevisionConflictException(exception);
         }

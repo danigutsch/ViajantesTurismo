@@ -3,7 +3,7 @@ using Npgsql;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
-/// <summary>Database constraint and index names for document drafts, with PostgreSQL conflict detection.</summary>
+/// <summary>Database constraint and index names for document drafts, with the conflicts EF Core cannot report by unique rule.</summary>
 internal static class DocumentDraftSchema
 {
     /// <summary>Check constraint name enforcing booking eligibility.</summary>
@@ -16,6 +16,8 @@ internal static class DocumentDraftSchema
     public const string RevisionUniqueIndex = "UX_DocumentDrafts_DocumentLineageId_Revision";
     /// <summary>Unique index name for one revision number per booking and document type.</summary>
     public const string BookingTypeRevisionUniqueIndex = "UX_DocumentDrafts_BookingId_Type_Revision";
+    /// <summary>The unique rule of the lineage and revision indexes, reported when two writers create the same revision.</summary>
+    public const string RevisionUniqueRule = "document.revision";
 
     /// <summary>Returns true when the exception wraps a booking eligibility check violation.</summary>
     public static bool IsBookingEligibilityConflict(DbUpdateException exception)
@@ -29,24 +31,18 @@ internal static class DocumentDraftSchema
         };
     }
 
-    /// <summary>Returns true when the exception wraps a unique violation on a revision or lineage constraint.</summary>
-    public static bool IsRevisionConflict(DbUpdateException exception)
-    {
-        ArgumentNullException.ThrowIfNull(exception);
-
-        return exception.InnerException is PostgresException postgresException &&
-            IsRevisionConflict(postgresException);
-    }
-
-    /// <summary>Returns true when the PostgreSQL error is a unique violation on a revision or lineage constraint.</summary>
-    public static bool IsRevisionConflict(PostgresException exception)
+    /// <summary>
+    /// Returns true when the PostgreSQL error is a violation of the deferred one-active-finalized-revision constraint. It is created in SQL,
+    /// not in the EF Core model, and PostgreSQL reports it when the transaction commits, so it cannot be reported by unique rule.
+    /// </summary>
+    public static bool IsActiveFinalizedLineageConflict(PostgresException exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
 
         return exception is
         {
             SqlState: PostgresErrorCodes.UniqueViolation,
-            ConstraintName: LineageUniqueIndex or RevisionUniqueIndex or BookingTypeRevisionUniqueIndex or ActiveFinalizedLineageConstraint,
+            ConstraintName: ActiveFinalizedLineageConstraint,
         };
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -20,7 +21,8 @@ internal sealed class DocumentLineageConfiguration : IEntityTypeConfiguration<Do
         entity.Property(lineage => lineage.Version).IsConcurrencyToken().IsRequired();
         entity.HasIndex(lineage => new { lineage.BookingId, lineage.Type })
             .IsUnique()
-            .HasDatabaseName(DocumentDraftSchema.LineageUniqueIndex);
+            .HasDatabaseName(DocumentDraftSchema.LineageUniqueIndex)
+            .HasUniqueRule(DocumentDraftSchema.RevisionUniqueRule);
         entity.HasMany(lineage => lineage.Revisions)
             .WithOne()
             .HasForeignKey(document => document.DocumentLineageId)
