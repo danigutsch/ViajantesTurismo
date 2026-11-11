@@ -12,7 +12,7 @@ public sealed class AboutPageTests : BunitContext
     public void Displays_the_effective_host_environment()
     {
         // Arrange
-        Services.AddSingleton<IHostEnvironment>(new Infrastructure.MockWebHostEnvironment { EnvironmentName = "TemporalTests" });
+        Services.AddSingleton<IHostEnvironment>(new TestHostEnvironment("ViajantesTurismo.Management.Web") { EnvironmentName = "TemporalTests" });
 
         // Act
         var cut = Render<About>();
@@ -25,7 +25,7 @@ public sealed class AboutPageTests : BunitContext
     public void Renders_static_about_content_and_dashboard_link()
     {
         // Arrange
-        Services.AddSingleton<IHostEnvironment>(new Infrastructure.MockWebHostEnvironment());
+        Services.AddSingleton<IHostEnvironment>(new TestHostEnvironment("ViajantesTurismo.Management.Web"));
 
         // Act
         var cut = Render<About>();

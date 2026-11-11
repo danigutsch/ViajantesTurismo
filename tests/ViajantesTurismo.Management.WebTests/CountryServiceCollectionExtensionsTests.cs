@@ -7,22 +7,16 @@ namespace ViajantesTurismo.Management.WebTests;
 [TestScope(TestScope.Unit)]
 public sealed class CountryServiceCollectionExtensionsTests : IDisposable
 {
-    private readonly string _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+    private readonly TemporaryDirectory _temp = new();
 
-    public void Dispose()
-    {
-        if (Directory.Exists(_tempDir))
-        {
-            Directory.Delete(_tempDir, recursive: true);
-        }
-    }
+    public void Dispose() => _temp.Dispose();
 
     [Fact]
     public async Task AddCountryService_shares_loaded_countries_across_scopes()
     {
         // Arrange
-        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"br": {"name": "Brazil"}}""");
-        await using var host = new CountryServiceRegistrationHost(_tempDir);
+        CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, """{"br": {"name": "Brazil"}}""");
+        await using var host = new CountryServiceRegistrationHost(_temp.Path);
 
         // Act
         var first = await host.GetCountriesFromNewScope(Xunit.TestContext.Current.CancellationToken);

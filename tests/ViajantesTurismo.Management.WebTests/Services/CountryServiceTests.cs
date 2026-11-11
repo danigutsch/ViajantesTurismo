@@ -4,22 +4,16 @@ namespace ViajantesTurismo.Management.WebTests.Services;
 [TestScope(TestScope.Unit)]
 public sealed class CountryServiceTests : IDisposable
 {
-    private readonly string _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+    private readonly TemporaryDirectory _temp = new();
 
-    public void Dispose()
-    {
-        if (Directory.Exists(_tempDir))
-        {
-            Directory.Delete(_tempDir, recursive: true);
-        }
-    }
+    public void Dispose() => _temp.Dispose();
 
     [Fact]
     public async Task GetCountries_valid_Json_returns_countries_ordered_by_name()
     {
         // Arrange
-        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"de": {"name": "Germany"}, "br": {"name": "Brazil"}}""");
-        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
+        CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, """{"de": {"name": "Germany"}, "br": {"name": "Brazil"}}""");
+        var sut = CountryServiceTestsHelpers.CreateService(_temp.Path);
 
         // Act
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
@@ -36,8 +30,8 @@ public sealed class CountryServiceTests : IDisposable
     public async Task GetCountries_caches_result_on_second_call()
     {
         // Arrange
-        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"us": {"name": "United States"}}""");
-        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
+        CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, """{"us": {"name": "United States"}}""");
+        var sut = CountryServiceTestsHelpers.CreateService(_temp.Path);
 
         // Act
         CountryInfo[] first = await sut.GetCountries(CancellationToken.None);
@@ -51,8 +45,8 @@ public sealed class CountryServiceTests : IDisposable
     public async Task GetCountries_missing_file_returns_fallback_countries()
     {
         // Arrange — data directory exists but file does not
-        Directory.CreateDirectory(Path.Combine(_tempDir, "data"));
-        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
+        Directory.CreateDirectory(Path.Combine(_temp.Path, "data"));
+        var sut = CountryServiceTestsHelpers.CreateService(_temp.Path);
 
         // Act
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
@@ -66,10 +60,10 @@ public sealed class CountryServiceTests : IDisposable
     public async Task GetCountries_missing_file_then_file_appears_returns_the_real_list()
     {
         // Arrange
-        Directory.CreateDirectory(Path.Combine(_tempDir, "data"));
-        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
+        Directory.CreateDirectory(Path.Combine(_temp.Path, "data"));
+        var sut = CountryServiceTestsHelpers.CreateService(_temp.Path);
         await sut.GetCountries(CancellationToken.None);
-        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"ar": {"name": "Argentina"}}""");
+        CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, """{"ar": {"name": "Argentina"}}""");
 
         // Act
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
@@ -82,10 +76,10 @@ public sealed class CountryServiceTests : IDisposable
     public async Task GetCountries_invalid_Json_then_valid_file_returns_the_real_list()
     {
         // Arrange
-        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, "not valid json {{{");
-        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
+        CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, "not valid json {{{");
+        var sut = CountryServiceTestsHelpers.CreateService(_temp.Path);
         await sut.GetCountries(CancellationToken.None);
-        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, """{"ar": {"name": "Argentina"}}""");
+        CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, """{"ar": {"name": "Argentina"}}""");
 
         // Act
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
@@ -98,8 +92,8 @@ public sealed class CountryServiceTests : IDisposable
     public async Task GetCountries_invalid_Json_returns_fallback_countries()
     {
         // Arrange
-        CountryServiceTestsHelpers.WriteCountriesJson(_tempDir, "not valid json {{{");
-        var sut = CountryServiceTestsHelpers.CreateService(_tempDir);
+        CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, "not valid json {{{");
+        var sut = CountryServiceTestsHelpers.CreateService(_temp.Path);
 
         // Act
         CountryInfo[] result = await sut.GetCountries(CancellationToken.None);
