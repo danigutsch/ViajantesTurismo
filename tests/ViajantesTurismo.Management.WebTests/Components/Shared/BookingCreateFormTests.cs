@@ -513,25 +513,25 @@ public class BookingCreateFormTests : BunitContext
             .Add(p => p.Customers, [.. customers]));
 
         // Assert
-        cut.Markup.ShouldContain("$ 1,000.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(1000.00m, "USD"), StringComparison.Ordinal);
 
         // Act
         cut.FindAll(SelectSelector)[1].Change(principalCustomer.Id);
 
         // Assert
-        cut.Markup.ShouldContain("$ 1,050.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(1050.00m, "USD"), StringComparison.Ordinal);
 
         // Act
         cut.FindAll(SelectSelector)[3].Change(BikeTypeDto.EBike);
 
         // Assert
-        cut.Markup.ShouldContain("$ 1,100.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(1100.00m, "USD"), StringComparison.Ordinal);
 
         // Act
         cut.FindAll(SelectSelector)[2].Change(RoomTypeDto.SingleOccupancy);
 
         // Assert
-        cut.Markup.ShouldContain("$ 1,300.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(1300.00m, "USD"), StringComparison.Ordinal);
         cut.Markup.ShouldContain("Final Total:", StringComparison.Ordinal);
 
         // Act
@@ -540,8 +540,8 @@ public class BookingCreateFormTests : BunitContext
 
         // Assert
         cut.Markup.ShouldContain("(10.00%)", StringComparison.Ordinal);
-        cut.Markup.ShouldContain("-$ 130.00", StringComparison.Ordinal);
-        cut.Markup.ShouldContain("$ 1,170.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("-" + MoneyText.Of(130.00m, "USD"), StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(1170.00m, "USD"), StringComparison.Ordinal);
     }
 
     [Fact]

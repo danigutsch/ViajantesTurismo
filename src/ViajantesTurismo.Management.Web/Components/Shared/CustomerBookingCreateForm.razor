@@ -301,6 +301,6 @@
         await OnValidSubmit.InvokeAsync(Model);
     }
 
-    private static string FormatPrice(decimal amount, string currency) => CurrencyFormatter.Format(amount, currency);
+    private static string FormatPrice(decimal amount, string currency) => Money.Restore(amount, Currency.Restore(currency)).ToString("C", CultureInfo.CurrentUICulture);
 
 }

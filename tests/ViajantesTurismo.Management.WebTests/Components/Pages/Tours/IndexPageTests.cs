@@ -50,10 +50,10 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("R$", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        cut.Markup.ShouldContain("R$ 1,500.00", StringComparison.Ordinal);
-        cut.Markup.ShouldContain("R$ 300.00", StringComparison.Ordinal);
-        cut.Markup.ShouldContain("R$ 100.00", StringComparison.Ordinal);
-        cut.Markup.ShouldContain("R$ 250.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(1500.00m, "BRL"), StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(300.00m, "BRL"), StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(100.00m, "BRL"), StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(250.00m, "BRL"), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains('€', StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        cut.Markup.ShouldContain("1,200.00 €", StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(1200.00m, "EUR"), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -80,10 +80,10 @@ public class IndexPageTests : BunitContext
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("$ 1,800.00", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains(MoneyText.Of(1800.00m, "USD"), StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
-        cut.Markup.ShouldContain("$ 1,800.00", StringComparison.Ordinal);
+        cut.Markup.ShouldContain(MoneyText.Of(1800.00m, "USD"), StringComparison.Ordinal);
     }
 
     [Fact]

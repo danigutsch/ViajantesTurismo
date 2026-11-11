@@ -119,19 +119,19 @@
                     <div class="card-body">
                         <dl class="row mb-0">
                             <dt class="col-sm-4">Total Price</dt>
-                            <dd class="col-sm-8">@CurrencyFormatter.Format(_booking.TotalPrice, _booking.Currency)</dd>
+                            <dd class="col-sm-8">@Money.Restore(_booking.TotalPrice, Currency.Restore(_booking.Currency)).ToString("C", CultureInfo.CurrentUICulture)</dd>
 
                             <dt class="col-sm-4">Amount Paid</dt>
-                            <dd class="col-sm-8 text-success">@CurrencyFormatter.Format(_booking.AmountPaid, CurrencyFormatter.Eur)</dd>
+                            <dd class="col-sm-8 text-success">@Money.Restore(_booking.AmountPaid, Currency.Eur).ToString("C", CultureInfo.CurrentUICulture)</dd>
 
                             <dt class="col-sm-4">Remaining Balance</dt>
-                            <dd class="col-sm-8 text-danger">@CurrencyFormatter.Format(_booking.RemainingBalance, CurrencyFormatter.Eur)</dd>
+                            <dd class="col-sm-8 text-danger">@Money.Restore(_booking.RemainingBalance, Currency.Eur).ToString("C", CultureInfo.CurrentUICulture)</dd>
 
                             <dt class="col-sm-4">Discount</dt>
                             <dd class="col-sm-8">
                                 @if (_booking.DiscountType != DiscountTypeDto.None)
                                 {
-                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : CurrencyFormatter.GetDisplayName(_booking.Currency))</span>
+                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : CurrencyChoices.DisplayName(_booking.Currency))</span>
                                     @if (!string.IsNullOrEmpty(_booking.DiscountReason))
                                     {
                                         <br /><small class="text-muted">Reason: @_booking.DiscountReason</small>
