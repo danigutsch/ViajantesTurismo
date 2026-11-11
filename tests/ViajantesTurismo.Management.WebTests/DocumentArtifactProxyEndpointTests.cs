@@ -36,6 +36,7 @@ public sealed class DocumentArtifactProxyEndpointTests
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
         response.Headers.Pragma.ShouldContain(header => string.Equals(header.Name, "no-cache", StringComparison.OrdinalIgnoreCase));
+        response.Content.Headers.GetValues("Expires").ShouldBe(["Thu, 01 Jan 1970 00:00:00 GMT"]);
         response.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         response.Content.Headers.ContentDisposition.ShouldNotBeNull().FileNameStar.ShouldBe($"{documentId:N}.html");

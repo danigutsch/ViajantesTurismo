@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.HttpCaching.AspNetCore;
 using Polly.Timeout;
 
 namespace ViajantesTurismo.Management.Web;
@@ -35,9 +36,7 @@ internal static class DocumentArtifactProxyEndpoints
                 return TypedResults.NotFound();
             }
 
-            httpContext.Response.Headers.CacheControl = "no-store";
-            httpContext.Response.Headers.Pragma = "no-cache";
-            httpContext.Response.Headers.Expires = "0";
+            HttpCacheHeaders.SetNoStore(httpContext);
             httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
             return TypedResults.File(artifact.Content.ToArray(), HtmlMediaType, artifact.FileName, enableRangeProcessing: false);
         }
