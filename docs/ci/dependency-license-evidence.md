@@ -419,3 +419,19 @@ files adds nothing and removes nothing; only the first-party `PandaBear.SharedKe
 `.RateLimiting`, `.Seo` and `Idempotency.AspNetCore` packages are new, and JwtBearer stays only in the Authentication
 package. The workflow still permits only the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0`
 metadata exceptions; no license category, vulnerability threshold or native distribution gate was relaxed.
+
+## Coverage gate and ordered blocks candidate
+
+Candidate `0.1.0-alpha.521.1` uses clean library revision `e65cb83570dbb331e871f5a2264a801822c19fe6`. It makes the
+coverage gate ignore compiler-generated methods, adds ordered document blocks and the `ProblemDetailsOptions`
+documentation, and adds the sandbox settings and packages updates commands of the tools, on top of `0.1.0-alpha.511.1`.
+All 103 package hashes were verified by `stage-candidate` against the pin, which is the unedited `candidate.json` of CI
+run [42892764135](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/42892764135) and the GitHub
+prerelease. The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
+
+Against the `0.1.0-alpha.511.1` branch of this repository, the external package version and content-hash set across all
+lock files (2641 file, framework and package entries) adds nothing and removes nothing, and no lock file was added or
+removed. `global.json` and the SharedKernel `action-pins.json` are unchanged between the two library revisions. The
+workflow still permits only the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata
+exceptions; no license category, vulnerability threshold or native distribution gate was relaxed. The preview approval in
+`.config/sharedkernel-repo.json` now names this exact version and revision.
