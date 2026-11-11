@@ -55,6 +55,12 @@ internal static class AppHostResourceExtensions
     private const string KeycloakOperatorConformanceUserPasswordEnvironmentVariable = "LOCAL_OPERATOR_CONFORMANCE_PASSWORD";
     private const string KeycloakK6ClientSecretEnvironmentVariable = "LOCAL_K6_CLIENT_SECRET";
     private const string KeycloakRealmImportDirectory = "/opt/keycloak/data/import";
+
+    /// <summary>
+    /// Configuration key for the host directory that holds the Keycloak realm import files; by default the
+    /// <c>Keycloak</c> folder copied next to the AppHost.
+    /// </summary>
+    public const string RealmImportDirectoryConfigurationKey = "AppHost:IdentityProvider:RealmImportDirectory";
     private const string KeycloakBootstrapAdminUsername = "admin";
     private const string LocalHttpAuthorityAllowed = "true";
     private const string DatabaseObservabilityEnabledEnvironmentVariable = "DatabaseObservability__PostgreSqlIndexHealth__Enabled";
@@ -241,7 +247,8 @@ internal static class AppHostResourceExtensions
         ArgumentNullException.ThrowIfNull(k6ClientSecret);
 
         var bootstrapAdminPassword = builder.AddLocalSecret(ResourceNames.IdentityProviderAdminPassword);
-        var realmImportPath = Path.Combine(AppContext.BaseDirectory, "Keycloak");
+        var realmImportPath = builder.Configuration[RealmImportDirectoryConfigurationKey]
+            ?? Path.Combine(AppContext.BaseDirectory, "Keycloak");
 
         return builder.AddContainer(ResourceNames.IdentityProvider, KeycloakImageName)
             .WithImageRegistry(KeycloakImageRegistry)

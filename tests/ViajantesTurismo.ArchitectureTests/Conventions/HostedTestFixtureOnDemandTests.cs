@@ -140,11 +140,13 @@ public sealed class HostedTestFixtureOnDemandTests
         var volumes = HostedTestFixtureSource.Count(creation, ".WithVolume(") + HostedTestFixtureSource.Count(creation, ".WithDataVolume(");
         var dataBindMounts = HostedTestFixtureSource.Count(creation, ".WithDataBindMount(");
         var bindMounts = HostedTestFixtureSource.Count(creation, ".WithBindMount(");
+        var realmImportSettings = HostedTestFixtureSource.Count(creation, "RealmImportDirectoryConfigurationKey");
 
         // Assert
         volumes.ShouldBe(0, "a named volume outlives its container, so a hosted run would leave it behind");
         dataBindMounts.ShouldBe(0, "a hosted run keeps no resource data outside its containers");
-        bindMounts.ShouldBe(1, "the read-only realm import of the identity provider is the only host directory the infrastructure mounts");
+        bindMounts.ShouldBe(0, "the AppHost mounts the realm import; the fixture only points it at the run's directory");
+        realmImportSettings.ShouldBe(1, "the fixture configures the realm import directory instead of replacing the AppHost mount");
     }
 
     [Fact]

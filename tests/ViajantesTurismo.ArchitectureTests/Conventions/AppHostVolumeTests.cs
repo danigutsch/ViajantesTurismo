@@ -50,4 +50,22 @@ public sealed class AppHostVolumeTests
         redis.Annotations.OfType<ContainerMountAnnotation>().ShouldBeEmpty();
         postgres.PasswordParameter.Name.ShouldBe("database-server-password");
     }
+
+    [Fact]
+    public void Realm_import_directory_comes_from_configuration()
+    {
+        // Arrange
+        var builder = DistributedApplication.CreateBuilder([]);
+        var directory = Path.Combine(Path.GetTempPath(), "realm-import");
+        builder.Configuration[AppHost.AppHostResourceExtensions.RealmImportDirectoryConfigurationKey] = directory;
+        var clientSecret = builder.AddParameter("client-secret", secret: true);
+
+        // Act
+        var identity = AppHost.AppHostResourceExtensions.AddRunModeIdentityProvider(builder, clientSecret).ShouldNotBeNull();
+
+        // Assert
+        identity.Resource.Annotations.OfType<ContainerMountAnnotation>()
+            .ShouldHaveSingleItem(mount => mount.Target == "/opt/keycloak/data/import")
+            .Source.ShouldBe(directory);
+    }
 }

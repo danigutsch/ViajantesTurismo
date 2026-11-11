@@ -10,9 +10,9 @@ internal static class ObservabilityStackResourceExtensions
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
     /// <remarks>
-    /// The collector gateway is always present. Set <c>ASPIRE_ENABLE_OBSERVABILITY_STACK=1</c> before
-    /// AppHost startup to add the local developer backends; otherwise sanitized telemetry is routed only
-    /// to the built-in Aspire dashboard.
+    /// The collector gateway is always present. Set <c>ASPIRE_ENABLE_OBSERVABILITY_STACK=1</c> (an environment
+    /// variable or any other AppHost configuration source) before AppHost startup to add the local developer
+    /// backends; otherwise sanitized telemetry is routed only to the built-in Aspire dashboard.
     /// </remarks>
     public static void AddObservabilityStack(this IDistributedApplicationBuilder builder)
     {
@@ -21,7 +21,7 @@ internal static class ObservabilityStackResourceExtensions
         var repositoryRoot = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", ".."));
         var observabilityRoot = Path.Combine(repositoryRoot, "observability");
 
-        if (IsEnabled(Environment.GetEnvironmentVariable(GrafanaLgtmStackDefaults.EnableObservabilityStackVariable)))
+        if (IsEnabled(builder.Configuration[GrafanaLgtmStackDefaults.EnableObservabilityStackVariable]))
         {
             builder.AddGrafanaLgtmStack(observabilityRoot);
             return;

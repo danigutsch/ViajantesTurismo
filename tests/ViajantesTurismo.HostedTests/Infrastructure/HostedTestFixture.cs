@@ -89,7 +89,8 @@ public sealed class HostedTestFixture : IAsyncLifetime
     private async Task<InfrastructureHost> CreateInfrastructure(CancellationToken ct)
     {
         var builder = AspireTestApplication.CreateBuilder([.. Configuration.Arguments, $"--DcpPublisher:ResourceNameSuffix=hosted-{RunId}",
-            $"--Parameters:seaweedfs-access-key={SeaweedAccessKey}", $"--Parameters:seaweedfs-secret-key={SeaweedSecretKey}"]);
+            $"--Parameters:seaweedfs-access-key={SeaweedAccessKey}", $"--Parameters:seaweedfs-secret-key={SeaweedSecretKey}",
+            $"--{AppHostResourceExtensions.RealmImportDirectoryConfigurationKey}={RealmImportDirectory}"]);
         var database = builder.AddDatabaseServer(includePgWeb: false).WithExplicitStart();
         _ = database.AddDatabase(FixtureDatabaseName);
         _ = builder.AddCache(includeRedisInsight: false).WithExplicitStart();
@@ -98,12 +99,7 @@ public sealed class HostedTestFixture : IAsyncLifetime
         var clientSecret = builder.AddParameter(ResourceNames.ManagementWebClientSecret, secret: true);
         var identity = builder.AddRunModeIdentityProvider(clientSecret)
             ?? throw new InvalidOperationException("Test identity provider was not created.");
-        foreach (var mount in identity.Resource.Annotations.OfType<ContainerMountAnnotation>().Where(mount => mount.Target == "/opt/keycloak/data/import").ToArray())
-        {
-            identity.Resource.Annotations.Remove(mount);
-        }
-
-        _ = identity.WithBindMount(RealmImportDirectory, "/opt/keycloak/data/import", isReadOnly: true).WithExplicitStart();
+        _ = identity.WithExplicitStart();
         // The shared gateway keeps the same privacy processors as ordinary AppHost execution.
         var observability = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", "..", "observability"));
         _ = builder.AddOpenTelemetryCollectorGateway(CollectorName,
