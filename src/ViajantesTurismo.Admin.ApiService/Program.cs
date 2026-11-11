@@ -72,9 +72,9 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.T
 
 var app = builder.Build();
 
-app.UseExceptionHandler();
-
 app.UseForwardedHeaders();
+
+app.UseExceptionHandler();
 
 app.MapConfiguredOpenApi();
 

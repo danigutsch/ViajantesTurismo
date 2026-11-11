@@ -29,7 +29,8 @@ internal static class CatalogEndpoints
         ArgumentNullException.ThrowIfNull(app);
 
         var versionedApi = app.MapApiVersionGroup(CatalogOpenApiDocuments.CurrentApiVersion);
-        var managementCatalog = versionedApi.MapGroup("/catalog").WithNoStoreResponses();
+        var managementCatalog = versionedApi.MapGroup("/catalog")
+            .WithNoStoreResponses($"/api/{CatalogOpenApiDocuments.CurrentApiVersion.RouteSegment}/catalog");
 
         managementCatalog.MapGet("/tours", GetTours)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);

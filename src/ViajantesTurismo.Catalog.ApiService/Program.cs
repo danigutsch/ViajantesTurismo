@@ -28,27 +28,15 @@ builder.AddBrandingModule(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(build
 
 var app = builder.Build();
 
-app.UseExceptionHandler();
-
 app.UseForwardedHeaders();
+
+app.UseExceptionHandler();
 
 app.MapConfiguredOpenApi();
 
 app.UsePublicContentLanguageQueryAlias();
 app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
-app.Use(static (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/api/v1/catalog", StringComparison.OrdinalIgnoreCase))
-    {
-        context.Response.OnStarting(static state =>
-        {
-            HttpCacheHeaders.SetNoStore((HttpContext)state);
-            return Task.CompletedTask;
-        }, context);
-    }
-
-    return next(context);
-});
+app.UseNoStoreResponses();
 
 app.UseApiSecurity();
 app.UseRateLimiter();

@@ -67,11 +67,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Security headers come before authentication and antiforgery, so responses those short-circuit carry them too.
+app.UseManagementWebSecurityHeaders();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
-
-app.UseManagementWebSecurityHeaders();
 
 app.UseOutputCache();
 
