@@ -1,4 +1,5 @@
 using System.Text.Json;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 
@@ -10,7 +11,7 @@ public sealed class RoadmapSchemaContractTests
     {
         // Arrange
         using var workspace = new TemporaryWorkspace();
-        var init = await RepositoryTestProcess.Run("dotnet", RepositoryTestProcess.GetRepositoryRoot(),
+        var init = await TestProcess.Run("dotnet", RepositoryRoot.Locate(),
             ["tool", "run", "sharedkernel-repo", "--", "init", "--root", workspace.RootPath], TestContext.Current.CancellationToken);
         init.ExitCode.ShouldBe(0, init.StandardOutput + init.StandardError);
 
@@ -36,7 +37,7 @@ public sealed class RoadmapSchemaContractTests
     {
         // Arrange
         using var workspace = new TemporaryWorkspace();
-        var init = await RepositoryTestProcess.Run("dotnet", RepositoryTestProcess.GetRepositoryRoot(),
+        var init = await TestProcess.Run("dotnet", RepositoryRoot.Locate(),
             ["tool", "run", "sharedkernel-repo", "--", "init", "--root", workspace.RootPath], TestContext.Current.CancellationToken);
         init.ExitCode.ShouldBe(0, init.StandardOutput + init.StandardError);
 

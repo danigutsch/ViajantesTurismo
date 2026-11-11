@@ -9,7 +9,7 @@ public sealed class DocumentationCiTests
     public void Documentation_workflow_avoids_hidden_test_runs_and_lints_every_change_alike()
     {
         // Arrange
-        var root = RepositoryTestProcess.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate();
         var workflow = File.ReadAllText(Path.Combine(root, ".github/workflows/ci.yml"));
 
         // Act
@@ -63,7 +63,7 @@ public sealed class DocumentationCiTests
         string required, string tests, string build, string format, int expected)
     {
         // Arrange
-        var root = RepositoryTestProcess.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate();
         var workflow = await File.ReadAllTextAsync(Path.Combine(root, ".github/workflows/ci.yml"), TestContext.Current.CancellationToken);
         var step = workflow.Split("      - name: Require successful change selection and tests\n", StringSplitOptions.None)[1]
             .Split("      - name: Checkout repository", StringSplitOptions.None)[0];
@@ -72,7 +72,7 @@ public sealed class DocumentationCiTests
         workspace.WriteFile("gate.sh", "set -e\n" + script);
 
         // Act
-        var result = await RepositoryTestProcess.Run("bash", workspace.RootPath, ["gate.sh"],
+        var result = await TestProcess.Run("bash", workspace.RootPath, ["gate.sh"],
             TestContext.Current.CancellationToken, new Dictionary<string, string?>
             {
                 ["SELECTION_RESULT"] = "success",
