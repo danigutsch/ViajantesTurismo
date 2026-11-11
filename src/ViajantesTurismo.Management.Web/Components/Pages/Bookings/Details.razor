@@ -183,7 +183,8 @@
     private bool _notFound;
     private string? _loadErrorMessage;
     private string? _documentError;
-    private (Guid ResourceId, string Key)? _generationAttempt;
+    private IdempotentSubmission<GetDocumentDto> _generation = new();
+    private Guid _generationBookingId;
     private bool _generatingContractDraft;
 
     protected override async Task OnInitializedAsync()
@@ -226,22 +227,26 @@
 
         _generatingContractDraft = true;
         _documentError = null;
-        var attempt = _generationAttempt is { } pending && pending.ResourceId == Id
-            ? pending
-            : (ResourceId: Id, Key: Guid.CreateVersion7().ToString("N"));
-        _generationAttempt = attempt;
+        if (_generationBookingId != Id)
+        {
+            // A submission whose outcome is unknown is retried only for the booking it was made for.
+            _generation = new IdempotentSubmission<GetDocumentDto>();
+            _generationBookingId = Id;
+        }
 
         try
         {
-            var outcome = await DocumentsApi.GenerateContractDraft(Id, attempt.Key, CancellationToken.None);
+            var bookingId = Id;
+            var outcome = _generation.HasPending
+                ? await _generation.Retry(CancellationToken.None)
+                : await _generation.Submit("contract-draft", (key, ct) => DocumentsApi.GenerateContractDraft(bookingId, key, ct), CancellationToken.None);
             if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } document })
             {
-                _generationAttempt = null;
                 Navigation.NavigateTo($"/documents/{document.Id}");
                 return;
             }
 
-            _documentError = new HttpOutcomeMessages("The contract draft could not be generated.").For(outcome.Kind);
+            _documentError = new HttpOutcomeMessages("The contract draft could not be generated.").For(outcome?.Kind ?? HttpOutcomeKind.TransportFailure);
         }
         catch (Exception exception)
         {
