@@ -20,7 +20,7 @@ public sealed class PublicWebStartupTests
         ExitCode.ShouldNotBe(0);
         Output.ShouldContain("OptionsValidationException", StringComparison.Ordinal);
         Output.ShouldContain(
-            "PublicWeb:Sitemap:CanonicalOrigin must be provided.",
+            "Set PublicWeb:Sitemap:CanonicalOrigin to the site's absolute http or https origin without a path",
             StringComparison.Ordinal);
     }
 
@@ -38,7 +38,7 @@ public sealed class PublicWebStartupTests
         ExitCode.ShouldNotBe(0);
         Output.ShouldContain("OptionsValidationException", StringComparison.Ordinal);
         Output.ShouldContain(
-            "PublicWeb:Sitemap:CanonicalOrigin must be an absolute HTTP or HTTPS origin without a path, query, fragment, or userinfo.",
+            "Set PublicWeb:Sitemap:CanonicalOrigin to the site's absolute http or https origin without a path",
             StringComparison.Ordinal);
     }
 }

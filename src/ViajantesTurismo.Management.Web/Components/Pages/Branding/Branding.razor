@@ -85,7 +85,7 @@ else
                 <InputText id="branding-text-color" class="form-control" @bind-Value="_model.TextColor" />
                 <ValidationMessage For="() => _model.TextColor" />
             </div>
-            <div class="form-text">Colors must use safe #RRGGBB hex values.</div>
+            <div class="form-text">Colors must use safe #RRGGBB hex values. Text, primary and accent colors must keep a 4.5:1 contrast with the background and with white button text.</div>
         </fieldset>
 
         <fieldset class="border rounded p-3 mb-3">
@@ -467,7 +467,7 @@ else
                 BrandName = "Viajantes Turismo",
                 LogoUri = string.Empty,
                 PrimaryColor = "#0F766E",
-                AccentColor = "#F97316",
+                AccentColor = "#C2410C",
                 BackgroundColor = "#FFFBF5",
                 TextColor = "#1F2937",
                 HeadingFontFamily = BrandingFontFamilies.DefaultHeading,

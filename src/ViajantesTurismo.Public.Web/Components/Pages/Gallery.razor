@@ -1,6 +1,8 @@
 @page "/en/gallery"
 @page "/pt/gallery"
+@using Microsoft.AspNetCore.Routing
 @inject IPublicCatalogApiClient CatalogApi
+@inject LinkGenerator LinkGenerator
 
 <PublicPageHead Title="Gallery - Viajantes Turismo" Description="Moments from Viajantes Turismo cycle tours." Path="/gallery" />
 
@@ -24,9 +26,7 @@
     @foreach (var tour in _tours.Where(tour => tour.Images.Count > 0))
     {
         <Section Title="@tour.Title" HeadingId="@GalleryHeadingId(tour)">
-            <div class="tour-gallery">
-                <TourGallery Images="tour.Images" />
-            </div>
+            <ImageGrid Images="@TourImageRenditions.Gallery(LinkGenerator, tour.Images)" />
         </Section>
     }
 }

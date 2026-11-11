@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Options;
 using PandaBear.AspNetCore.Seo;
 using PandaBear.Branding;
+using PandaBear.Blazor.Site.Theming;
 using PandaBear.BuildingBlocks;
+using PandaBear.HttpCaching.AspNetCore;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Public.Web.Components;
 
@@ -12,7 +14,7 @@ internal static class PublicWebEndpoints
 {
     private const string SitemapPath = "/sitemap.xml";
 
-    /// <summary>Path of the stylesheet that overrides the site design tokens with the brand colours and fonts.</summary>
+    /// <summary>Path of the stylesheet that renders the brand theme; pages link it with the theme hash as <c>v</c>.</summary>
     internal const string ThemeStylesheetPath = "/theme.css";
 
     /// <summary>Endpoint name of the public media-by-rendition route.</summary>
@@ -32,7 +34,7 @@ internal static class PublicWebEndpoints
             })
             .ExcludeFromDescription();
 
-        var sitemapOptions = app.ServiceProvider.GetRequiredService<IOptions<PublicWebSitemapOptions>>().Value;
+        var sitemapOptions = app.ServiceProvider.GetRequiredService<IOptions<CanonicalOriginOptions>>().Value;
         var sitemapUri = new PublicSiteLinks(sitemapOptions).Absolute(SitemapPath);
         app.MapRobotsTxt($"User-agent: *\nAllow: /\nSitemap: {sitemapUri.AbsoluteUri}")
             .ExcludeFromDescription();
@@ -58,15 +60,24 @@ internal static class PublicWebEndpoints
         return app;
     }
 
-    private static async Task<IResult> GetThemeStylesheet(IBrandingApiClient brandingApi, CancellationToken ct)
+    /// <summary>
+    /// Renders the current theme. A request for its content hash (<c>?v=</c>, as the pages link it) is cached as immutable; any
+    /// other request keeps the default freshness, so a stale link never pins old colours.
+    /// </summary>
+    private static async Task<IResult> GetThemeStylesheet(IBrandingApiClient brandingApi, HttpContext httpContext, string? v, CancellationToken ct)
     {
-        var branding = await PublicBranding.Load(brandingApi, ct);
-        return Results.Text(PublicBranding.Stylesheet(branding), "text/css; charset=utf-8");
+        var theme = PublicBranding.Theme(await PublicBranding.Load(brandingApi, ct));
+        if (string.Equals(v, SiteThemeStylesheet.Hash(theme), StringComparison.Ordinal))
+        {
+            HttpCacheHeaders.SetImmutable(httpContext);
+        }
+
+        return Results.Text(SiteThemeStylesheet.Render(theme), "text/css; charset=utf-8");
     }
 
     private static async Task<IResult> GetSitemap(
         HttpContext httpContext,
-        IOptions<PublicWebSitemapOptions> sitemapOptions,
+        IOptions<CanonicalOriginOptions> sitemapOptions,
         IPublicCatalogApiClient catalogApi,
         CancellationToken ct)
     {

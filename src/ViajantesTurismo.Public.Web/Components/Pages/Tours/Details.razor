@@ -2,10 +2,11 @@
 @page "/pt/group-bike-tours/{Slug}"
 @using Microsoft.AspNetCore.Routing
 @using Microsoft.Extensions.Options
+@using PandaBear.AspNetCore.Seo
 @inject IPublicCatalogApiClient CatalogApi
 @inject LinkGenerator LinkGenerator
 @inject NavigationManager Navigation
-@inject IOptions<PublicWebSitemapOptions> SitemapOptions
+@inject IOptions<CanonicalOriginOptions> SitemapOptions
 
 @if (_loadFailed)
 {
@@ -32,18 +33,12 @@ else
                     ImageUrl="@GetSocialImageUrl(coverImage)" />
 
     <article>
-        <Hero Title="@_tour.Title" Subtitle="@_tour.Summary">
+        <Hero Title="@_tour.Title" Subtitle="@_tour.Summary"
+              Image="@(coverImage is null ? null : TourImageRenditions.Responsive(LinkGenerator, coverImage, TourImageRenditions.HalfWidthSizes))">
             <Actions>
                 <ButtonLink Href="@LinkTarget.FromString(Culture.Localize("/group-bike-tours"))" Variant="ButtonVariant.Outline">All tours</ButtonLink>
             </Actions>
         </Hero>
-
-        @if (coverImage is not null)
-        {
-            <div class="tour-hero">
-                <ResponsiveTourImage Image="coverImage" Sizes="100vw" Loading="eager" FetchPriority="high" />
-            </div>
-        }
 
         @if (!string.IsNullOrWhiteSpace(_tour.Description))
         {
@@ -62,9 +57,7 @@ else
         @if (galleryImages.Count > 0)
         {
             <Section Title="Gallery" HeadingId="tour-gallery">
-                <div class="tour-gallery">
-                    <TourGallery Images="galleryImages" />
-                </div>
+                <ImageGrid Images="@TourImageRenditions.Gallery(LinkGenerator, galleryImages)" />
             </Section>
         }
     </article>

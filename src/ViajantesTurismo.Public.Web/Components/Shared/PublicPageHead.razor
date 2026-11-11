@@ -1,5 +1,6 @@
 @using Microsoft.Extensions.Options
-@inject IOptions<PublicWebSitemapOptions> SitemapOptions
+@using PandaBear.AspNetCore.Seo
+@inject IOptions<CanonicalOriginOptions> SitemapOptions
 
 <PageHead Title="@Title"
           Description="@Description"

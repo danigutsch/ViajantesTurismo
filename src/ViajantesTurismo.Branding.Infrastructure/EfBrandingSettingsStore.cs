@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 using PandaBear.Branding;
+using PandaBear.BuildingBlocks;
+using PandaBear.EntityFrameworkCore;
+using PandaBear.EntityFrameworkCore.Npgsql;
 using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Resources;
@@ -17,6 +19,8 @@ internal sealed class EfBrandingSettingsStore(
     [FromKeyedServices(typeof(BrandingDbContext))] IIntegrationEventOutbox outbox,
     TimeProvider timeProvider) : IBrandingSettingsStore, IBrandingSettingsRevisionStore, IBrandingSourceRecovery
 {
+    private static readonly NpgsqlUniqueViolationParser UniqueViolations = new();
+
     /// <inheritdoc />
     public async Task<BrandingSettings?> GetSettings(CancellationToken ct)
     {
@@ -146,7 +150,7 @@ internal sealed class EfBrandingSettingsStore(
         {
             await CommitRevision(created, ct).ConfigureAwait(false);
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateException)
         {
             dbContext.ChangeTracker.Clear();
             if (await Load(ct).ConfigureAwait(false) is null)
@@ -207,7 +211,7 @@ internal sealed class EfBrandingSettingsStore(
         dbContext.BrandingSettings.SingleOrDefaultAsync(settings => settings.Id == BrandingSettingsRecord.SettingsId, ct);
 
     /// <summary>
-    /// Two writers creating the first row, or the same revision, collide on a key: same outcome as a stale revision.
+    /// Two writers committing the same revision collide on the revision rule: same outcome as a stale revision.
     /// Every other persistence failure propagates unchanged.
     /// </summary>
     private async Task CommitRevision(BrandingSettingsRecord current, CancellationToken ct)
@@ -218,10 +222,9 @@ internal sealed class EfBrandingSettingsStore(
 
         try
         {
-            await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+            await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolations, ct).ConfigureAwait(false);
         }
-        catch (DbUpdateException exception) when (exception is not DbUpdateConcurrencyException
-                                                  && exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (UniqueConstraintViolationException exception) when (exception.Rule == BrandingSettingsRevisionRecord.UniqueRule)
         {
             throw new DbUpdateConcurrencyException("Branding settings changed by another writer.", exception);
         }

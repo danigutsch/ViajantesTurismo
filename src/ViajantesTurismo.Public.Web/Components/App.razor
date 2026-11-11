@@ -1,3 +1,4 @@
+@using PandaBear.Blazor.Site.Theming
 @inject IBrandingApiClient BrandingApi
 
 <!doctype html>
@@ -7,7 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link rel="stylesheet" href="@Assets["_content/PandaBear.SharedKernel.Blazor.Site/site.css"]" />
-    <link rel="stylesheet" href="@PublicWebEndpoints.ThemeStylesheetPath" />
+    <link rel="stylesheet" href="@Assets["public-site.css"]" />
+    <link rel="stylesheet" href="@ThemeStylesheet" />
     <HeadOutlet />
 </head>
 <body>
@@ -22,6 +24,8 @@
 @code {
     private BrandingSettingsDto _branding = PublicBranding.Defaults();
     private PublicPageCulture _culture = PublicPageCulture.FromPath(PathString.Empty);
+
+    private string ThemeStylesheet => $"{PublicWebEndpoints.ThemeStylesheetPath}?v={SiteThemeStylesheet.Hash(PublicBranding.Theme(_branding))}";
 
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }

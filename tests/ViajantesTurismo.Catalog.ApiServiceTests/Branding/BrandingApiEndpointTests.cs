@@ -45,7 +45,7 @@ public sealed class BrandingApiEndpointTests
         settings.ShouldNotBeNull();
         settings.BrandName.ShouldBe("Viajantes Turismo");
         settings.PrimaryColor.ShouldBe("#0F766E");
-        settings.AccentColor.ShouldBe("#F97316");
+        settings.AccentColor.ShouldBe("#C2410C");
         settings.BackgroundColor.ShouldBe("#FFFBF5");
         settings.TextColor.ShouldBe("#1F2937");
         settings.HeadingFontFamily.ShouldBe("Georgia");
@@ -370,5 +370,33 @@ public sealed class BrandingApiEndpointTests
         problem.Errors.Keys.ShouldContain(nameof(BrandingSettingsDto.PrimaryColor));
         problem.Errors.Keys.ShouldContain(nameof(BrandingSettingsDto.HeadingFontFamily));
         problem.Errors.Keys.ShouldContain(nameof(BrandingSettingsDto.LogoUri));
+    }
+
+    [Fact]
+    public async Task Branding_management_endpoint_refuses_colours_that_break_text_contrast()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        await using var factory = BrandingApiTestHost.Create(store);
+        using var client = factory.CreateClient();
+        var request = new BrandingSettingsDto
+        {
+            BrandName = "Viajantes Turismo",
+            PrimaryColor = "#112233",
+            AccentColor = "#F97316",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#BBBBBB",
+            HeadingFontFamily = "Georgia",
+            BodyFontFamily = "Verdana"
+        };
+
+        // Act
+        using var response = await BrandingManagementRequests.PutSettings(client, request, "*");
+        var problem = await response.Content.ReadFromJsonAsync<HttpValidationProblemDetails>(TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        problem.ShouldNotBeNull().Errors.Keys.Order(StringComparer.Ordinal).ToArray().ShouldBe(
+            [nameof(BrandingSettingsDto.AccentColor), nameof(BrandingSettingsDto.TextColor)]);
     }
 }
