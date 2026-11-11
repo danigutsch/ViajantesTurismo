@@ -600,22 +600,9 @@
 
     private void SetPendingFile(string fileName, byte[] fileBytes)
     {
-        var csvHeaders = ParseCsvHeaders(fileBytes);
+        var csvHeaders = ImportCustomersCsvProcessor.ReadHeaders(fileBytes);
         var fieldMappings = CustomerImportHeaderMatcher.AutoMatch(csvHeaders);
         _state.SetPendingFile(fileName, fileBytes, csvHeaders, fieldMappings);
-    }
-
-    private static IReadOnlyList<string> ParseCsvHeaders(byte[] fileBytes)
-    {
-        var text = Encoding.UTF8.GetString(fileBytes, 0, Math.Min(4096, fileBytes.Length));
-        var firstLine = text
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .FirstOrDefault() ?? string.Empty;
-
-        return firstLine.Split(',')
-            .Select(header => header.Trim().Trim('"'))
-            .ToList()
-            .AsReadOnly();
     }
 
     private byte[] ApplyCurrentMapping() =>

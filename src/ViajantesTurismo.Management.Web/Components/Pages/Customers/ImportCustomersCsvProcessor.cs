@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Text;
+using PandaBear.Tabular;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Management.Web.Services;
 
@@ -9,10 +11,29 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Customers;
 /// </summary>
 internal static class ImportCustomersCsvProcessor
 {
+    private static readonly CsvWriteOptions ImportFileOptions = new() { GuardFormulas = false, NewLine = "\n" };
+    private static readonly string[] ErrorReportHeaders = ["LineNumber", "Field", "Message", "Email"];
+
     private sealed record MixedConflictRow(
-        string[] Values,
+        IReadOnlyList<string> Values,
         IReadOnlyDictionary<string, ImportConflictFieldSource> FieldSelections,
         IReadOnlyDictionary<string, string> ExistingValues);
+
+    /// <summary>Reads the header names of a CSV file; when its rows are malformed, the first record alone is read.</summary>
+    internal static IReadOnlyList<string> ReadHeaders(byte[] fileBytes)
+    {
+        ArgumentNullException.ThrowIfNull(fileBytes);
+
+        if (TryParse(fileBytes, out var document))
+        {
+            return document.Headers;
+        }
+
+        var headerEnd = Array.IndexOf(fileBytes, (byte)'\n');
+        ReadOnlySpan<byte> firstRecord = headerEnd < 0 ? fileBytes : fileBytes.AsSpan(0, headerEnd);
+        var header = CsvDocument.ParseUtf8(firstRecord);
+        return header.IsSuccess ? header.Value.Headers : [];
+    }
 
     /// <summary>Builds up to the given number of preview rows from the pending CSV using the effective column mappings.</summary>
     internal static IReadOnlyList<IReadOnlyDictionary<string, string>> BuildPreviewRows(
@@ -22,9 +43,7 @@ internal static class ImportCustomersCsvProcessor
         IReadOnlyDictionary<string, string?> userMappings,
         int maxPreviewRows)
     {
-        var text = Encoding.UTF8.GetString(pendingFileBytes);
-        var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 2)
+        if (!TryParse(pendingFileBytes, out var document) || document.Rows.Count == 0)
         {
             return [];
         }
@@ -32,13 +51,12 @@ internal static class ImportCustomersCsvProcessor
         var fieldToColIndex = BuildFieldToColumnIndex(csvHeaders, fieldMappings, userMappings);
         var result = new List<IReadOnlyDictionary<string, string>>();
 
-        foreach (var line in lines.Skip(1).Take(maxPreviewRows))
+        foreach (var values in document.Rows.Take(maxPreviewRows))
         {
-            var values = line.Split(',');
             var row = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var (fieldName, colIdx) in fieldToColIndex)
             {
-                row[fieldName] = colIdx < values.Length ? values[colIdx].Trim().Trim('"') : string.Empty;
+                row[fieldName] = colIdx < values.Count ? values[colIdx] : string.Empty;
             }
 
             result.Add(row);
@@ -50,29 +68,21 @@ internal static class ImportCustomersCsvProcessor
     /// <summary>Parses the mapped CSV into field values keyed by email address.</summary>
     internal static Dictionary<string, Dictionary<string, string>> ParseMappedRowsByEmail(byte[] mappedFileBytes)
     {
-        var text = Encoding.UTF8.GetString(mappedFileBytes);
-        var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 2)
+        var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+        if (!TryParse(mappedFileBytes, out var document))
         {
-            return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+            return result;
         }
 
-        var headers = lines[0].Split(',').Select(h => h.Trim().Trim('"')).ToArray();
-        var emailIndex = Array.FindIndex(headers, h => h.Equals(CustomerImportFieldNames.Email, StringComparison.OrdinalIgnoreCase));
+        var headers = document.Headers;
+        var emailIndex = FindHeader(headers, CustomerImportFieldNames.Email);
         if (emailIndex < 0)
         {
-            return new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+            return result;
         }
 
-        var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var line in lines.Skip(1))
+        foreach (var values in document.Rows)
         {
-            var values = line.Split(',').Select(v => v.Trim().Trim('"')).ToArray();
-            if (emailIndex >= values.Length)
-            {
-                continue;
-            }
-
             var email = values[emailIndex];
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -80,9 +90,9 @@ internal static class ImportCustomersCsvProcessor
             }
 
             var rowValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < headers.Length; i++)
+            for (var i = 0; i < headers.Count; i++)
             {
-                rowValues[headers[i]] = i < values.Length ? values[i] : string.Empty;
+                rowValues[headers[i]] = values[i];
             }
 
             result[email] = rowValues;
@@ -96,38 +106,57 @@ internal static class ImportCustomersCsvProcessor
         byte[] mappedFileBytes,
         IReadOnlyList<ImportCustomerConflictState> conflictStates)
     {
-        var text = Encoding.UTF8.GetString(mappedFileBytes);
-        var lines = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length < 2)
+        if (!TryParse(mappedFileBytes, out var document) || document.Rows.Count == 0)
         {
             return mappedFileBytes;
         }
 
-        var headers = lines[0].Split(',').Select(h => h.Trim().Trim('"')).ToArray();
-        var headerIndexes = headers
-            .Select((name, index) => new { name, index })
-            .ToDictionary(x => x.name, x => x.index, StringComparer.OrdinalIgnoreCase);
-
-        if (!headerIndexes.TryGetValue(CustomerImportFieldNames.Email, out var emailIndex))
+        var headers = document.Headers;
+        var emailIndex = FindHeader(headers, CustomerImportFieldNames.Email);
+        if (emailIndex < 0)
         {
             return mappedFileBytes;
         }
 
-        var outputLines = new List<string>(lines.Length) { lines[0] };
-        foreach (var line in lines.Skip(1))
+        var headerIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < headers.Count; i++)
         {
-            var values = line.Split(',').Select(v => v.Trim().Trim('"')).ToArray();
+            headerIndexes.TryAdd(headers[i], i);
+        }
+
+        var anyMerged = false;
+        var rows = new List<IReadOnlyList<string>>(document.Rows.Count);
+        foreach (var values in document.Rows)
+        {
             if (!TryGetMixedConflictRow(values, emailIndex, conflictStates, out var conflictRow))
             {
-                outputLines.Add(line);
+                rows.Add(values);
                 continue;
             }
 
-            var mergedValues = BuildMergedValues(headers, headerIndexes, conflictRow);
-            outputLines.Add(string.Join(",", mergedValues.Select(EscapeCsvValue)));
+            var merged = BuildMergedValues(headerIndexes, conflictRow);
+            rows.Add(merged);
+            anyMerged |= !merged.SequenceEqual(values, StringComparer.Ordinal);
         }
 
-        return Encoding.UTF8.GetBytes(string.Join("\n", outputLines));
+        return anyMerged ? WriteImportFile(headers, rows) : mappedFileBytes;
+    }
+
+    /// <summary>
+    /// Writes a CSV file for the import API: values are kept exactly, without the spreadsheet formula guard, so the file reads back
+    /// with the same headers and values.
+    /// </summary>
+    internal static byte[] WriteImportFile(IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<string>> rows) =>
+        Encoding.UTF8.GetBytes(CsvWriter.Write(headers, rows, ImportFileOptions));
+
+    /// <summary>Parses CSV bytes; a structurally invalid file yields no document.</summary>
+    internal static bool TryParse(byte[] fileBytes, out CsvDocument document)
+    {
+        ArgumentNullException.ThrowIfNull(fileBytes);
+
+        var parsed = CsvDocument.ParseUtf8(fileBytes);
+        document = parsed.IsSuccess ? parsed.Value : null!;
+        return parsed.IsSuccess;
     }
 
     /// <summary>Builds created, updated, skipped and failed counts from the import result and conflict decisions.</summary>
@@ -162,21 +191,30 @@ internal static class ImportCustomersCsvProcessor
             return null;
         }
 
-        var sb = new StringBuilder();
-        sb.AppendLine("LineNumber,Field,Message,Email");
-        foreach (var row in errorRows)
+        var csv = CsvWriter.Write(
+            ErrorReportHeaders,
+            errorRows.Select(row => (IReadOnlyList<string>)
+            [
+                row.LineNumber.ToString(CultureInfo.InvariantCulture),
+                row.Field ?? string.Empty,
+                row.Message,
+                row.Email ?? string.Empty,
+            ]));
+
+        return "data:text/csv;charset=utf-8," + Uri.EscapeDataString(csv);
+    }
+
+    private static int FindHeader(IReadOnlyList<string> headers, string name)
+    {
+        for (var i = 0; i < headers.Count; i++)
         {
-            sb.Append(row.LineNumber)
-                .Append(',')
-                .Append(EscapeReportValue(row.Field ?? string.Empty))
-                .Append(',')
-                .Append(EscapeReportValue(row.Message))
-                .Append(',')
-                .Append(EscapeReportValue(row.Email ?? string.Empty))
-                .AppendLine();
+            if (headers[i].Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
         }
 
-        return "data:text/csv;charset=utf-8," + Uri.EscapeDataString(sb.ToString());
+        return -1;
     }
 
     private static Dictionary<string, int> BuildFieldToColumnIndex(
@@ -215,17 +253,12 @@ internal static class ImportCustomersCsvProcessor
     }
 
     private static bool TryGetMixedConflictRow(
-        string[] values,
+        CsvRow values,
         int emailIndex,
         IReadOnlyList<ImportCustomerConflictState> conflictStates,
         out MixedConflictRow conflictRow)
     {
         conflictRow = null!;
-
-        if (emailIndex >= values.Length)
-        {
-            return false;
-        }
 
         var email = values[emailIndex];
         var state = conflictStates.FirstOrDefault(candidate =>
@@ -245,11 +278,10 @@ internal static class ImportCustomersCsvProcessor
     }
 
     private static string[] BuildMergedValues(
-        IReadOnlyList<string> headers,
         Dictionary<string, int> headerIndexes,
         MixedConflictRow conflictRow)
     {
-        var mergedValues = headers.Select((_, i) => i < conflictRow.Values.Length ? conflictRow.Values[i] : string.Empty).ToArray();
+        var mergedValues = conflictRow.Values.ToArray();
 
         foreach (var (fieldName, source) in conflictRow.FieldSelections)
         {
@@ -273,29 +305,4 @@ internal static class ImportCustomersCsvProcessor
 
         return mergedValues;
     }
-
-    private static string EscapeReportValue(string value)
-    {
-        var candidate = value.AsSpan();
-        while (!candidate.IsEmpty && (char.IsWhiteSpace(candidate[0]) || char.IsControl(candidate[0])))
-        {
-            candidate = candidate[1..];
-        }
-
-        if ((!candidate.IsEmpty && candidate[0] is '=' or '+' or '-' or '@' or '＝' or '＋' or '－' or '＠')
-            || (value.Length > 0 && char.IsControl(value[0])))
-        {
-            return $"\"'{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
-        }
-
-        return EscapeCsvValue(value);
-    }
-
-    private static string EscapeCsvValue(string value) =>
-        value.Contains(',', StringComparison.Ordinal)
-        || value.Contains('"', StringComparison.Ordinal)
-        || value.Contains('\n', StringComparison.Ordinal)
-        || value.Contains('\r', StringComparison.Ordinal)
-            ? $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
-            : value;
 }

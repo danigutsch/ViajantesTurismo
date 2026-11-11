@@ -1,4 +1,4 @@
-using System.Text;
+using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.Web.Services;
 
@@ -64,16 +64,11 @@ internal static class CustomerImportHeaderMatcher
     )
     {
         ArgumentNullException.ThrowIfNull(userMappings);
-        var text = Encoding.UTF8.GetString(fileBytes);
-        var newlineIndex = text.IndexOf('\n', StringComparison.Ordinal);
-        var firstLine = newlineIndex >= 0
-            ? text[..newlineIndex].TrimEnd('\r')
-            : text;
-        var rest = newlineIndex >= 0 ? text[(newlineIndex + 1)..] : "";
-
-        var originalHeaders = firstLine.Split(',')
-            .Select(h => h.Trim().Trim('"'))
-            .ToArray();
+        if (!ImportCustomersCsvProcessor.TryParse(fileBytes, out var document))
+        {
+            // The import API reports what is wrong with a malformed file.
+            return fileBytes;
+        }
 
         var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var mapping in autoMappings.Where(m => m.IsAutoMatched))
@@ -89,8 +84,10 @@ internal static class CustomerImportHeaderMatcher
             }
         }
 
-        var newHeaders = originalHeaders.Select(h => lookup.GetValueOrDefault(h, h));
+        string[] newHeaders = [.. document.Headers.Select(h => lookup.GetValueOrDefault(h, h))];
 
-        return Encoding.UTF8.GetBytes(string.Join(",", newHeaders) + "\n" + rest);
+        return newHeaders.SequenceEqual(document.Headers, StringComparer.Ordinal)
+            ? fileBytes
+            : ImportCustomersCsvProcessor.WriteImportFile(newHeaders, document.Rows);
     }
 }
