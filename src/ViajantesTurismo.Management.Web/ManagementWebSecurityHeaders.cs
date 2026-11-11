@@ -7,10 +7,18 @@ namespace ViajantesTurismo.Management.Web;
 /// </summary>
 internal static class ManagementWebSecurityHeaders
 {
-    private const string ContentSecurityPolicy = "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:";
+    private const string ContentSecurityPolicy = "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self' 'nonce-{nonce}'; style-src 'self' 'nonce-{nonce}'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:";
 
     /// <summary>
-    /// Adds the security headers middleware with the Management Web content security policy.
+    /// The name of the cascading value that carries the document response's nonce from <c>App</c> through <c>Routes</c> to interactive
+    /// components, whose circuit has no response of its own.
+    /// </summary>
+    internal const string NonceCascadeName = "CspNonce";
+
+    /// <summary>
+    /// Adds the security headers middleware with the Management Web content security policy. Inline scripts and styles, and the
+    /// third-party stylesheet, need the response's nonce
+    /// (<see cref="ICspNonce" />, registered with <see cref="CspNonceServiceCollectionExtensions.AddCspNonce" />).
     /// </summary>
     public static IApplicationBuilder UseManagementWebSecurityHeaders(this IApplicationBuilder app)
     {

@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Components;
 using PandaBear.Testing;
+using ViajantesTurismo.Management.Web;
 namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 
 [TestScope(TestScope.Component)]
@@ -542,5 +544,26 @@ public class CountrySelectorTests : BunitContext
         var item = cut.Find(".country-dropdown-item");
         item.InnerHtml.ShouldContain("fi-PT", StringComparison.Ordinal);
         item.TextContent.ShouldContain("Portugal", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Style_block_carries_the_cascaded_response_nonce()
+    {
+        // Arrange
+        var countries = new List<CountryInfo> { new() { Code = "PT", Name = "Portugal" } };
+        var value = string.Empty;
+
+        // Act
+        var cut = Render<CascadingValue<string>>(parameters => parameters
+            .Add(cascade => cascade.Name, ManagementWebSecurityHeaders.NonceCascadeName)
+            .Add(cascade => cascade.Value, "bm9uY2U=")
+            .Add(cascade => cascade.IsFixed, true)
+            .AddChildContent<CountrySelector>(selector => selector
+                .Add(p => p.Countries, countries)
+                .Add(p => p.Value, value)
+                .Add(p => p.ValueExpression, () => value)));
+
+        // Assert
+        cut.Find("style").GetAttribute("nonce").ShouldBe("bm9uY2U=");
     }
 }

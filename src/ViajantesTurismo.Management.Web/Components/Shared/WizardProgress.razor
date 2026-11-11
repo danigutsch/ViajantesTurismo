@@ -25,7 +25,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="@CspNonce">
     .wizard-progress {
         margin-bottom: 2rem;
     }
@@ -99,6 +99,9 @@
 </style>
 
 @code {
+    /// <summary>Gets or sets the nonce of the document's response, which the inline style block needs under the strict policy.</summary>
+    [CascadingParameter(Name = ManagementWebSecurityHeaders.NonceCascadeName)]
+    public string? CspNonce { get; set; }
 
     private string GetStepClass(int step)
     {

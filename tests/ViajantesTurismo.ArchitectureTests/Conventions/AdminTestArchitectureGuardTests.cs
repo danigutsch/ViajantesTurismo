@@ -121,7 +121,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         // Assert
         appMarkup.ShouldContain("<HeadOutlet @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
-        appMarkup.ShouldContain("<Routes @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
+        appMarkup.ShouldContain("<Routes @rendermode=\"InteractiveServer\" CspNonce=\"@CspNonce.Value\" />", StringComparison.Ordinal);
         appMarkup.ShouldContain("<div class=\"app-startup-status\" role=\"status\" aria-live=\"polite\">", StringComparison.Ordinal);
         appMarkup.ShouldContain("<noscript>", StringComparison.Ordinal);
         appMarkup.ShouldContain("<link rel=\"stylesheet\" href=\"@Assets[\"app-noscript.css\"]\" />", StringComparison.Ordinal);

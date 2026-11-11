@@ -1,5 +1,7 @@
 using System.Net;
 using PandaBear.Testing;
+using Microsoft.AspNetCore.Components;
+using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Helpers;
 using BrandingPage = ViajantesTurismo.Management.Web.Components.Pages.Branding.Branding;
 using ViajantesTurismo.Branding.Contracts.Http;
@@ -545,5 +547,81 @@ public sealed class BrandingTests : BunitContext
         var input = cut.Find("#branding-logo-file");
         input.GetAttribute("aria-invalid").ShouldBe("true");
         input.GetAttribute("aria-describedby").ShouldBe("branding-logo-help branding-logo-status branding-logo-error");
+    }
+
+    [Fact]
+    public void Preview_shows_the_loaded_colours_and_the_contrast_table()
+    {
+        // Arrange
+        brandingApi.Branding = new BrandingSettingsDto
+        {
+            BrandName = "Viajantes Turismo",
+            PrimaryColor = "#112233",
+            AccentColor = "#C2410C",
+            BackgroundColor = "#FFFFFF",
+            TextColor = "#000000",
+            HeadingFontFamily = "Georgia",
+            BodyFontFamily = "system-ui"
+        };
+
+        // Act
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#112233", TimeSpan.FromSeconds(2));
+
+        // Assert
+        var style = cut.Find("#branding-preview style").TextContent;
+        style.ShouldContain("--site-color-primary: light-dark(#112233,", StringComparison.OrdinalIgnoreCase);
+        style.ShouldContain("--site-color-text: light-dark(#000000,", StringComparison.OrdinalIgnoreCase);
+        cut.FindAll("#branding-preview table.site-theme-preview__contrast tbody tr").ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void Preview_follows_a_colour_and_a_font_change_before_saving()
+    {
+        // Arrange
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#branding-primary-color").Change("#1D4ED8");
+        cut.Find("#branding-heading-font").Change("Inter");
+
+        // Assert
+        var style = cut.Find("#branding-preview style").TextContent;
+        style.ShouldContain("--site-color-primary: light-dark(#1d4ed8,", StringComparison.OrdinalIgnoreCase);
+        style.ShouldContain("--site-h1-font-family: system-ui", StringComparison.Ordinal);
+        brandingApi.SavedBranding.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Preview_keeps_the_last_readable_theme_and_lists_an_unreadable_colour()
+    {
+        // Arrange
+        var cut = Render<BrandingPage>();
+        cut.WaitForState(() => cut.Find("#branding-primary-color").GetAttribute("value") == "#0F766E", TimeSpan.FromSeconds(2));
+
+        // Act
+        cut.Find("#branding-primary-color").Change("teal");
+
+        // Assert
+        cut.Find("#branding-preview style").TextContent.ShouldContain("--site-color-primary: light-dark(#0f766e,", StringComparison.OrdinalIgnoreCase);
+        cut.Find("#branding-preview .site-theme-preview__issues li[data-field=\"PrimaryColor\"]").TextContent
+            .ShouldContain("#RRGGBB", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Preview_style_carries_the_cascaded_response_nonce()
+    {
+        // Arrange & Act
+        var cut = Render<CascadingValue<string>>(parameters => parameters
+            .Add(value => value.Name, ManagementWebSecurityHeaders.NonceCascadeName)
+            .Add(value => value.Value, "q0Ub+/Xy9w4M1Lr2kE8A==")
+            .Add(value => value.IsFixed, true)
+            .AddChildContent<BrandingPage>());
+        cut.WaitForState(() => cut.FindAll("#branding-preview style").Count == 1, TimeSpan.FromSeconds(2));
+
+        // Assert
+        cut.Find("#branding-preview style").GetAttribute("nonce").ShouldBe("q0Ub+/Xy9w4M1Lr2kE8A==");
+        cut.FindAll("#branding-preview [style]").ShouldBeEmpty();
     }
 }

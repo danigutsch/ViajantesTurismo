@@ -44,6 +44,9 @@
 </div>
 
 @code {
+    /// <summary>Gets or sets the nonce of the document's response, which the inline style block needs under the strict policy.</summary>
+    [CascadingParameter(Name = ManagementWebSecurityHeaders.NonceCascadeName)]
+    public string? CspNonce { get; set; }
 
     [Parameter] public string? Id { get; set; }
 
@@ -118,7 +121,7 @@
 
 }
 
-<style>
+<style nonce="@CspNonce">
     .country-dropdown-menu {
         position: absolute;
         top: 100%;

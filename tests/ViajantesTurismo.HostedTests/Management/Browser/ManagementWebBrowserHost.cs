@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PandaBear.AspNetCore;
 using PandaBear.Blazor;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components;
@@ -13,8 +14,8 @@ using ViajantesTurismo.Management.Web.Services;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>
-/// Hosts the real Management Web Razor components on a loopback Kestrel port with synthetic authentication,
-/// so a browser can drive them against the API clients registered by the caller.
+/// Hosts the real Management Web Razor components on a loopback Kestrel port with synthetic authentication and the
+/// production security headers, so a browser can drive them against the API clients registered by the caller.
 /// </summary>
 internal sealed class ManagementWebBrowserHost : IAsyncDisposable
 {
@@ -48,6 +49,7 @@ internal sealed class ManagementWebBrowserHost : IAsyncDisposable
             .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, AlwaysAuthenticatedHandler>(AlwaysAuthenticatedHandler.SchemeName, null);
         builder.Services.AddAuthorization();
         builder.Services.AddAntiforgery();
+        builder.Services.AddCspNonce();
         builder.Services.AddCascadingAuthenticationState();
         builder.Services.AddUiFailureReporting();
         builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -59,6 +61,7 @@ internal sealed class ManagementWebBrowserHost : IAsyncDisposable
         }
 
         var app = builder.Build();
+        app.UseManagementWebSecurityHeaders();
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseAntiforgery();
