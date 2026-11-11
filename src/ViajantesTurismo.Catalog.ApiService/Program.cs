@@ -7,6 +7,7 @@ using PandaBear.OpenApi;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
+using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
@@ -14,7 +15,7 @@ const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
-builder.AddServiceDefaults();
+builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddUnhandledExceptionHandler();
 builder.Services.AddAuthenticationEventTelemetry();
@@ -45,6 +46,6 @@ app.MapCatalogEndpoints();
 app.MapBrandingModule();
 app.MapRobotsTxt(ApiRobotsTxt);
 
-app.MapDefaultEndpoints();
+app.MapSharedKernelDefaultEndpoints();
 
 await app.RunAsync();

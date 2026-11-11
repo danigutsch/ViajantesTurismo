@@ -147,6 +147,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.Results" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Results.AspNet" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Scheduling" Version="0.1.0-alpha.521.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.ServiceDefaults" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Style.Analyzers" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Style.CodeFixes" Version="0.1.0-alpha.521.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Tabular" Version="0.1.0-alpha.521.1" />
