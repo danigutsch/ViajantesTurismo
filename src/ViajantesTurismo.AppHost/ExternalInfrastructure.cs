@@ -19,6 +19,9 @@ namespace ViajantesTurismo.AppHost;
 /// <item><c>AppHost:External:SeaweedFs:Endpoint</c>, <c>:AccessKey</c>, <c>:SecretKey</c> and <c>:Bucket</c>: no SeaweedFS.</item>
 /// <item><see cref="OtlpEndpointKey"/>: no collector gateway; every project exports OTLP over gRPC to that endpoint.</item>
 /// </list>
+/// The hosted-test fixture names the same settings <c>HostedTests:Authority</c>, <c>HostedTests:ClamAv:*</c>,
+/// <c>HostedTests:SeaweedFs:*</c> and <c>HostedTests:OtlpEndpoint</c>; those names are read when the <c>AppHost:External</c> ones are absent.
+/// With <see cref="SharedInfrastructureKey"/> set to <c>true</c>, every external setting is required.
 /// </remarks>
 internal static class ExternalInfrastructure
 {
@@ -46,7 +49,47 @@ internal static class ExternalInfrastructure
     /// <summary>The OTLP gRPC endpoint of an external collector, such as <c>http://localhost:4317</c>.</summary>
     public const string OtlpEndpointKey = "AppHost:External:Otlp:Endpoint";
 
+    /// <summary>Requires every dependency to be external, as the hosted-test fixture does for its shared infrastructure.</summary>
+    public const string SharedInfrastructureKey = "HostedTests:SharedInfrastructure";
+
+    /// <summary>The hosted-test names of the external settings, read when the <c>AppHost:External</c> name is absent.</summary>
+    private static readonly Dictionary<string, string> HostedTestNames = new(StringComparer.Ordinal)
+    {
+        [IdentityProviderAuthorityKey] = "HostedTests:Authority",
+        [ClamAvHostKey] = "HostedTests:ClamAv:Host",
+        [ClamAvPortKey] = "HostedTests:ClamAv:Port",
+        [SeaweedFsEndpointKey] = "HostedTests:SeaweedFs:Endpoint",
+        [SeaweedFsAccessKeyKey] = "HostedTests:SeaweedFs:AccessKey",
+        [SeaweedFsSecretKeyKey] = "HostedTests:SeaweedFs:SecretKey",
+        [SeaweedFsBucketKey] = "HostedTests:SeaweedFs:Bucket",
+        [OtlpEndpointKey] = "HostedTests:OtlpEndpoint",
+    };
+
     private static readonly string[] DatabaseNames = [ResourceNames.AdminDatabase, ResourceNames.CatalogDatabase, ResourceNames.SecurityDatabase];
+
+    /// <summary>
+    /// When <see cref="SharedInfrastructureKey"/> is <c>true</c>, checks that the databases, the identity provider, ClamAV, SeaweedFS and
+    /// the OTLP endpoint are all configured, so a missing setting fails the model instead of starting a container.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">A required setting is missing.</exception>
+    public static void RequireAllWhenShared(IConfiguration configuration)
+    {
+        if (!string.Equals(configuration[SharedInfrastructureKey], bool.TrueString, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var missing = HostedTestNames.Keys.Where(key => string.IsNullOrWhiteSpace(Value(configuration, key))).ToList();
+        if (!HasDatabases(configuration))
+        {
+            missing.AddRange(DatabaseNames.Select(name => $"ConnectionStrings:{name}"));
+        }
+
+        if (missing.Count > 0)
+        {
+            throw new InvalidOperationException($"{SharedInfrastructureKey} needs every external setting; missing: {string.Join(", ", missing)}.");
+        }
+    }
 
     /// <summary>Gets whether the three application databases are configured as connection strings.</summary>
     /// <exception cref="InvalidOperationException">Only some of the three are configured.</exception>
@@ -106,7 +149,7 @@ internal static class ExternalInfrastructure
 
     private static Uri? Endpoint(IConfiguration configuration, string key)
     {
-        var value = configuration[key];
+        var value = Value(configuration, key);
         if (string.IsNullOrWhiteSpace(value))
         {
             return null;
@@ -117,9 +160,12 @@ internal static class ExternalInfrastructure
             : throw new InvalidOperationException($"{key} must be an absolute http or https URI.");
     }
 
+    private static string? Value(IConfiguration configuration, string key) =>
+        configuration[key] is { Length: > 0 } value ? value : HostedTestNames.TryGetValue(key, out var hosted) ? configuration[hosted] : null;
+
     private static string[]? Required(IConfiguration configuration, params string[] keys)
     {
-        var values = keys.Select(key => configuration[key] ?? string.Empty).ToArray();
+        var values = keys.Select(key => Value(configuration, key) ?? string.Empty).ToArray();
         if (values.All(string.IsNullOrWhiteSpace))
         {
             return null;

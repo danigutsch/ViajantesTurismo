@@ -27,6 +27,7 @@ internal static class AppHostComposition
         }
 
         var configuration = builder.Configuration;
+        ExternalInfrastructure.RequireAllWhenShared(configuration);
         builder.AddObservabilityStack();
         var includeDeveloperTooling = profile.IncludesDeveloperTooling();
         var databaseServer = ExternalInfrastructure.HasDatabases(configuration) ? null : builder.AddDatabaseServer(includePgWeb: includeDeveloperTooling);

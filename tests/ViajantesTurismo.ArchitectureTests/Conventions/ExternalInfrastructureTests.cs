@@ -85,6 +85,50 @@ public sealed class ExternalInfrastructureTests
         builder.Resources.OfType<PostgresServerResource>().ShouldHaveSingleItem();
     }
 
+    [Fact]
+    public async Task Hosted_test_settings_name_the_same_external_infrastructure()
+    {
+        // Arrange
+        var builder = AppHostTestBuilder.Create(new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["HostedTests:SharedInfrastructure"] = "true",
+            [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = "Host=localhost;Database=admin;Username=postgres",
+            [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=catalog;Username=postgres",
+            [$"ConnectionStrings:{ResourceNames.SecurityDatabase}"] = "Host=localhost;Database=security;Username=postgres",
+            [$"ConnectionStrings:{ResourceNames.Cache}"] = "localhost:6379",
+            ["HostedTests:Authority"] = "http://localhost:8080/realms/test",
+            ["HostedTests:ClamAv:Host"] = "localhost",
+            ["HostedTests:ClamAv:Port"] = "3310",
+            ["HostedTests:SeaweedFs:Endpoint"] = "http://localhost:8333",
+            ["HostedTests:SeaweedFs:AccessKey"] = "synthetic-access",
+            ["HostedTests:SeaweedFs:SecretKey"] = "synthetic-secret",
+            ["HostedTests:SeaweedFs:Bucket"] = "synthetic-media",
+            ["HostedTests:OtlpEndpoint"] = "http://localhost:4317",
+        });
+        builder.AddProductResources(HostedProfile.System);
+
+        // Act
+        var api = await AppHostModel.EvaluateEnvironment(AppHostTestBuilder.Project(builder, ResourceNames.Api), TestContext.Current.CancellationToken);
+
+        // Assert
+        builder.Resources.OfType<ContainerResource>().ShouldBeEmpty();
+        api["Authentication__Authority"].ShouldBe("http://localhost:8080/realms/test");
+        api["MalwareScanning__ClamAv__Port"].ShouldBe("3310");
+    }
+
+    [Fact]
+    public void Shared_infrastructure_without_every_setting_fails_during_model_creation()
+    {
+        // Arrange
+        var builder = AppHostTestBuilder.Create(new Dictionary<string, string?>(StringComparer.Ordinal) { ["HostedTests:SharedInfrastructure"] = "true" });
+
+        // Act
+        Action createModel = () => builder.AddProductResources(HostedProfile.Admin);
+
+        // Assert
+        createModel.ShouldThrow<InvalidOperationException>().Message.ShouldContain("HostedTests:SharedInfrastructure", StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData($"ConnectionStrings:{ResourceNames.AdminDatabase}", "Host=localhost")]
     [InlineData(ExternalInfrastructure.ClamAvHostKey, "localhost")]
