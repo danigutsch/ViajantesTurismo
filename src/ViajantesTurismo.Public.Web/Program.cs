@@ -1,9 +1,9 @@
 using System.Globalization;
 using PandaBear.Branding;
 using PandaBear.HttpClients;
-using Microsoft.Extensions.Options;
 using PandaBear.AspNetCore;
 using PandaBear.AspNetCore.Localization;
+using PandaBear.AspNetCore.Seo;
 using PandaBear.HttpCaching.AspNetCore;
 using ViajantesTurismo.Public.Web;
 using ViajantesTurismo.Resources;
@@ -19,10 +19,7 @@ builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(
     .AddForwardedClientIp();
 builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
 builder.Services.AddRazorComponents();
-builder.Services.AddOptions<PublicWebSitemapOptions>()
-    .BindConfiguration(PublicWebSitemapOptions.SectionName)
-    .ValidateOnStart();
-builder.Services.AddSingleton<IValidateOptions<PublicWebSitemapOptions>, PublicWebSitemapOptionsValidator>();
+builder.Services.AddCanonicalOrigin(PublicSiteLinks.CanonicalOriginKey);
 
 var app = builder.Build();
 

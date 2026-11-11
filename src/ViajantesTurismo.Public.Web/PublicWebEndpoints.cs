@@ -34,7 +34,7 @@ internal static class PublicWebEndpoints
             })
             .ExcludeFromDescription();
 
-        var sitemapOptions = app.ServiceProvider.GetRequiredService<IOptions<PublicWebSitemapOptions>>().Value;
+        var sitemapOptions = app.ServiceProvider.GetRequiredService<IOptions<CanonicalOriginOptions>>().Value;
         var sitemapUri = new PublicSiteLinks(sitemapOptions).Absolute(SitemapPath);
         app.MapRobotsTxt($"User-agent: *\nAllow: /\nSitemap: {sitemapUri.AbsoluteUri}")
             .ExcludeFromDescription();
@@ -77,7 +77,7 @@ internal static class PublicWebEndpoints
 
     private static async Task<IResult> GetSitemap(
         HttpContext httpContext,
-        IOptions<PublicWebSitemapOptions> sitemapOptions,
+        IOptions<CanonicalOriginOptions> sitemapOptions,
         IPublicCatalogApiClient catalogApi,
         CancellationToken ct)
     {

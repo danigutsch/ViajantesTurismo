@@ -8,10 +8,13 @@ namespace ViajantesTurismo.Public.Web;
 /// Builds the absolute addresses of a page under the configured canonical origin: one per culture, plus the address
 /// without culture that redirects each visitor to their language and serves as <c>x-default</c>.
 /// </summary>
-/// <param name="options">The sitemap options that hold the canonical origin.</param>
-internal sealed class PublicSiteLinks(PublicWebSitemapOptions options)
+/// <param name="options">The canonical origin options.</param>
+internal sealed class PublicSiteLinks(CanonicalOriginOptions options)
 {
-    private readonly Uri origin = SitemapCanonicalOrigin.Parse(options.CanonicalOrigin);
+    /// <summary>The configuration key of the canonical origin.</summary>
+    public const string CanonicalOriginKey = "PublicWeb:Sitemap:CanonicalOrigin";
+
+    private readonly Uri origin = options.Value;
 
     /// <summary>Gets the canonical address of a page in a culture.</summary>
     /// <param name="urlCulture">The URL culture.</param>

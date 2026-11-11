@@ -35,7 +35,7 @@ internal static class PublicWebEndpointTestsHelpers
         if (canonicalOrigin is not null)
         {
             settings ??= [];
-            settings[$"{PublicWebSitemapOptions.SectionName}:CanonicalOrigin"] = canonicalOrigin;
+            settings[PublicSiteLinks.CanonicalOriginKey] = canonicalOrigin;
         }
 
         return WebApplicationTestHost.Create<IPublicWebAssemblyMarker>(

@@ -2,10 +2,11 @@
 @page "/pt/group-bike-tours/{Slug}"
 @using Microsoft.AspNetCore.Routing
 @using Microsoft.Extensions.Options
+@using PandaBear.AspNetCore.Seo
 @inject IPublicCatalogApiClient CatalogApi
 @inject LinkGenerator LinkGenerator
 @inject NavigationManager Navigation
-@inject IOptions<PublicWebSitemapOptions> SitemapOptions
+@inject IOptions<CanonicalOriginOptions> SitemapOptions
 
 @if (_loadFailed)
 {
