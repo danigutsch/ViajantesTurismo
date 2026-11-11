@@ -177,6 +177,28 @@ directly on `PATH`.
 The Aspire dashboard URL is printed when the AppHost starts. Use it to inspect services, logs,
 traces, metrics, endpoints, and health status.
 
+## Local data
+
+Application data is ephemeral by default, following Aspire's default container lifetime: PostgreSQL,
+SeaweedFS and Redis start empty on every AppHost run and are removed when it stops. Only the ClamAV
+definitions cache keeps its named volume `clamav-definitions` (see below), because it is not application
+data and downloading it again is slow.
+
+To keep data between runs, opt in through configuration, for example in the AppHost user secrets:
+
+```bash
+dotnet user-secrets set "AppHost:PersistentData" "true" --project src/ViajantesTurismo.AppHost
+```
+
+With the opt-in, PostgreSQL and SeaweedFS get a persistent container lifetime and a data volume with
+Aspire's default name (it ends in `-database-server-data` and `-seaweedfs-data`), and Redis gets a
+persistent lifetime without a volume. A persisted PostgreSQL volume keeps the password it was created
+with, so the opt-in also adds the secret parameter `database-server-password`: Aspire generates it once
+and saves it in the AppHost user secrets as `Parameters:database-server-password`. Do not change or
+remove that secret while the volume exists. To start over, stop the AppHost, remove the containers and
+the two volumes (`podman volume ls`, then `podman volume rm <name>` for each verified name), and remove
+the secret if you want a new password.
+
 ## Public Web replicas
 
 Public Web supports an opt-in positive replica count through `Aspire:Replicas:PublicWeb`.
@@ -257,7 +279,8 @@ reaches the browser.
 `conformance-test-client` permits password grants solely for owned integration and browser-test
 setup; it is a local realm client and is not a production client.
 
-SeaweedFS keeps its objects in the named volume `seaweedfs-data`. Its access and secret keys are
+SeaweedFS keeps its objects only for the run unless `AppHost:PersistentData` is set (see Local data). Its access
+and secret keys are
 persisted Aspire parameters. To override them locally, use the
 AppHost user-secrets store and omit resolved values from source control:
 

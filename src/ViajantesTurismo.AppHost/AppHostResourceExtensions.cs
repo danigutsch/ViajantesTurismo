@@ -69,8 +69,27 @@ internal static class AppHostResourceExtensions
     /// <summary>The named volume that keeps the ClamAV virus definitions between AppHost runs.</summary>
     private const string ClamAvDefinitionsVolumeName = "clamav-definitions";
 
-    /// <summary>The named volume that keeps the SeaweedFS media objects between AppHost runs.</summary>
-    private const string SeaweedFsDataVolumeName = "seaweedfs-data";
+    /// <summary>
+    /// Configuration key that opts into keeping application data between AppHost runs. Data containers are ephemeral by
+    /// default; with <c>true</c>, PostgreSQL and SeaweedFS get a persistent lifetime and a data volume, and Redis a
+    /// persistent lifetime only.
+    /// </summary>
+    public const string PersistentDataConfigurationKey = "AppHost:PersistentData";
+
+    /// <summary>Suffix of the parameter that holds the PostgreSQL password when data is persisted.</summary>
+    private const string PasswordParameterSuffix = "-password";
+
+    /// <summary>
+    /// Gets whether <see cref="PersistentDataConfigurationKey"/> opts into keeping application data between runs.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <returns><see langword="true"/> when persistent data is configured.</returns>
+    public static bool PersistsData(this IDistributedApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        return builder.Configuration.GetValue<bool>(PersistentDataConfigurationKey);
+    }
 
     /// <summary>
     /// Adds the PostgreSQL server and, when selected, its PgWeb companion resource.
@@ -80,10 +99,26 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured PostgreSQL server resource.</returns>
     public static IResourceBuilder<PostgresServerResource> AddDatabaseServer(this IDistributedApplicationBuilder builder, bool includePgWeb)
     {
-        var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer)
+        var persistsData = builder.PersistsData();
+
+        // A persisted volume keeps the password it was created with, so the password must outlive one run: it is
+        // generated once and saved in the AppHost user secrets as Parameters:database-server-password.
+        var password = persistsData
+            ? builder.AddParameter(
+                ResourceNames.DatabaseServer + PasswordParameterSuffix,
+                new GenerateParameterDefault { MinLength = 32, Special = false },
+                secret: true,
+                persist: true)
+            : null;
+        var databaseServer = builder.AddPostgres(ResourceNames.DatabaseServer, password: password)
             .WithImageTag(PostgresImageTag)
             .WithImageSHA256(PostgresImageDigest)
             .WithArgs("-c", "max_connections=200");
+
+        if (persistsData)
+        {
+            databaseServer.WithLifetime(ContainerLifetime.Persistent).WithDataVolume();
+        }
 
         if (includePgWeb)
         {
@@ -106,6 +141,12 @@ internal static class AppHostResourceExtensions
         var cache = builder.AddRedis(ResourceNames.Cache)
             .WithImageTag(RedisImageTag)
             .WithImageSHA256(RedisImageDigest);
+
+        if (builder.PersistsData())
+        {
+            // A cache keeps no application data of its own, so it gets a persistent lifetime but no volume.
+            cache.WithLifetime(ContainerLifetime.Persistent);
+        }
 
         if (includeRedisInsight)
         {
@@ -134,7 +175,8 @@ internal static class AppHostResourceExtensions
     /// <returns>The configured SeaweedFS resource.</returns>
     public static IResourceBuilder<SeaweedFsResource> AddMediaObjectStorage(this IDistributedApplicationBuilder builder)
     {
-        return builder.AddSeaweedFs(ResourceNames.SeaweedFs, SeaweedFsBucketDefault).WithDataVolume(SeaweedFsDataVolumeName);
+        var storage = builder.AddSeaweedFs(ResourceNames.SeaweedFs, SeaweedFsBucketDefault);
+        return builder.PersistsData() ? storage.WithLifetime(ContainerLifetime.Persistent).WithDataVolume() : storage;
     }
 
     /// <summary>

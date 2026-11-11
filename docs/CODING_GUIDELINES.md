@@ -457,10 +457,11 @@ SQL of the former `InitialAdmin` (the `LC_CTYPE` guard, the finalized-document c
 payment triggers, and the `Down` guard that refuses to erase payment history) is kept in the new `InitialAdmin`.
 
 A database created from the old history cannot be upgraded, because its `__EFMigrationsHistory` names migrations that
-no longer exist. Recreate every local database and volume: the AppHost PostgreSQL server has no volume, so stopping
-and starting `dotnet tool run aspire run` creates an empty server, and `MigrationService` applies the new history.
-Remove any volume left from an older AppHost, for example `podman volume rm seaweedfs-data`; its media objects
-point at rows that no longer exist. Keep `clamav-definitions`, which only caches virus definitions.
+no longer exist. Local data is ephemeral by default, so stopping and starting `dotnet tool run aspire run` creates an
+empty PostgreSQL server and `MigrationService` applies the new history. Remove any volume left from an older AppHost,
+for example `podman volume rm seaweedfs-data`, whose media objects point at rows that no longer exist, and any volume
+kept with `AppHost:PersistentData` (see "Local data" in `src/ViajantesTurismo.AppHost/README.md`). Keep
+`clamav-definitions`, which only caches virus definitions.
 
 References: [EF Core migrations overview](https://learn.microsoft.com/ef/core/managing-schemas/migrations/),
 [managing migrations](https://learn.microsoft.com/ef/core/managing-schemas/migrations/managing),
