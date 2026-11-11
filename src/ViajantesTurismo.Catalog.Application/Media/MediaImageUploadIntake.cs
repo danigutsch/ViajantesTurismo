@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Runtime.InteropServices;
 using PandaBear.ObjectStorage;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -11,6 +13,7 @@ using PandaBear.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain;
 using PandaBear.BuildingBlocks;
+using PandaBear.UploadSanitizing.Images;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 
@@ -44,7 +47,18 @@ public sealed partial class MediaImageUploadIntake(
 
     private static readonly IReadOnlyList<ImageVariantRequest> ProbeVariants = [new("probe-webp", ImageOutputFormat.WebP, 1, 80, 1)];
 
+    private const string ContentField = "Content";
+
+    private const string SignatureMismatchMessage = "File signature does not match the allowed content type.";
+
     private readonly MediaUploadValidationOptions options = validationOptions.Value;
+
+    private ImageSanitizerOptions SanitizerOptions => new()
+    {
+        AllowAvif = true,
+        MaxBytes = options.MaxLengthBytes,
+        Field = ContentField,
+    };
 
     /// <summary>
     /// Accepts an uploaded original image when validation and scanning allow it.
@@ -82,8 +96,7 @@ public sealed partial class MediaImageUploadIntake(
         var validationErrors = validator.Validate(new MediaUploadValidationRequest(
             request.FileName,
             request.ContentType,
-            actualLength,
-            ReadHeaderBytes(content)));
+            actualLength));
 
         if (request.Length != actualLength)
         {
@@ -95,94 +108,119 @@ public sealed partial class MediaImageUploadIntake(
             return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, validationErrors);
         }
 
-        content.Position = 0;
         var canonicalContentType = GetCanonicalContentType(request.ContentType);
-        var objectKey = CreateOriginalObjectKey(request.MediaImageId, Guid.CreateVersion7(), canonicalContentType);
-        var scanResult = await Scan(objectKey, content, canonicalContentType, actualLength, ct).ConfigureAwait(false);
-        if (scanResult.Status is MediaUploadScanStatus.Failed)
-        {
-            LogScanDiagnostic(scanResult.Status);
-            return Result.Unavailable<MediaImageUploadIntakeResult>(ScannerUnavailableMessage);
-        }
-
-        if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
-        {
-            LogScanDiagnostic(scanResult.Status);
-            return Result.Invalid<MediaImageUploadIntakeResult>(
-                InvalidUploadMessage,
-                nameof(scanResult.Status),
-                ScanRejectedMessage);
-        }
-
-        content.Position = 0;
-        ImageProcessingResult decoded;
+        var buffer = ArrayPool<byte>.Shared.Rent((int)actualLength);
         try
         {
-            decoded = MagickImageProcessor.Process(
-                new ImageProcessingRequest(
-                    content,
-                    ProbeVariants,
-                    new ImageProcessingLimits(options.MaxDecodedWidth, options.MaxDecodedHeight, options.MaxDecodedPixelCount)),
-                ct);
-        }
-        catch (ImageProcessingException)
-        {
-            return Result.Invalid<MediaImageUploadIntakeResult>(
-                InvalidUploadMessage,
-                nameof(request.Content),
-                "Image content could not be decoded or exceeds the configured decoded image limits.");
-        }
-
-        content.Position = 0;
-        var checksum = ComputeChecksum(content);
-        content.Position = 0;
-        var stored = await objectStore.Put(
-            ObjectWriteRequest.Create(objectKey, content, canonicalContentType, actualLength, checksum),
-            ct).ConfigureAwait(false);
-        var imageResult = PublicMediaImage.Create(
-            new PublicMediaImageMetadata
+            content.Position = 0;
+            await content.ReadExactlyAsync(buffer.AsMemory(0, (int)actualLength), ct).ConfigureAwait(false);
+            content.Position = 0;
+            var sanitized = ImageSanitizer.SanitizeInPlace(buffer.AsMemory(0, (int)actualLength), SanitizerOptions);
+            if (IsWrongFormat(sanitized, canonicalContentType))
             {
-                Id = request.MediaImageId,
-                SourceObjectKey = stored.ObjectKey,
-                Checksum = checksum,
-                ContentType = stored.ContentType,
-                FileSizeBytes = stored.Length,
-                Dimensions = new MediaImageDimensions(decoded.Width, decoded.Height),
-                ProcessingStatus = MediaImageProcessingStatus.Pending,
-                AltText = request.AltText,
-                Caption = request.Caption,
-                Attribution = request.Attribution,
-                Copyright = request.Copyright,
-            },
-            [],
-            request.Tags ?? [],
-            request.TourLinks);
-        if (imageResult.IsFailure)
-        {
-            await MediaObjectCompensation.Delete(objectStore, objectKey.Value).ConfigureAwait(false);
+                return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, ContentField, SignatureMismatchMessage);
+            }
 
-            return imageResult.ConvertError<PublicMediaImage, MediaImageUploadIntakeResult>();
+            var objectKey = CreateOriginalObjectKey(request.MediaImageId, Guid.CreateVersion7(), canonicalContentType);
+            var scanResult = await Scan(objectKey, content, canonicalContentType, actualLength, ct).ConfigureAwait(false);
+            if (scanResult.Status is MediaUploadScanStatus.Failed)
+            {
+                LogScanDiagnostic(scanResult.Status);
+                return Result.Unavailable<MediaImageUploadIntakeResult>(ScannerUnavailableMessage);
+            }
+
+            if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
+            {
+                LogScanDiagnostic(scanResult.Status);
+                return Result.Invalid<MediaImageUploadIntakeResult>(
+                    InvalidUploadMessage,
+                    nameof(scanResult.Status),
+                    ScanRejectedMessage);
+            }
+
+            if (sanitized.IsFailure)
+            {
+                return sanitized.ConvertError<SanitizedImage, MediaImageUploadIntakeResult>();
+            }
+
+            // The cleaned image, without Exif, XMP, comments or trailing bytes, is what gets decoded and stored.
+            _ = MemoryMarshal.TryGetArray(sanitized.Value.Bytes, out var cleanedBytes);
+            using var cleaned = new MemoryStream(buffer, cleanedBytes.Offset, cleanedBytes.Count, writable: false);
+            content = cleaned;
+            actualLength = cleaned.Length;
+            ImageProcessingResult decoded;
+            try
+            {
+                decoded = MagickImageProcessor.Process(
+                    new ImageProcessingRequest(
+                        content,
+                        ProbeVariants,
+                        new ImageProcessingLimits(options.MaxDecodedWidth, options.MaxDecodedHeight, options.MaxDecodedPixelCount)),
+                    ct);
+            }
+            catch (ImageProcessingException)
+            {
+                return Result.Invalid<MediaImageUploadIntakeResult>(
+                    InvalidUploadMessage,
+                    nameof(request.Content),
+                    "Image content could not be decoded or exceeds the configured decoded image limits.");
+            }
+
+            content.Position = 0;
+            var checksum = ComputeChecksum(content);
+            content.Position = 0;
+            var stored = await objectStore.Put(
+                ObjectWriteRequest.Create(objectKey, content, canonicalContentType, actualLength, checksum),
+                ct).ConfigureAwait(false);
+            var imageResult = PublicMediaImage.Create(
+                new PublicMediaImageMetadata
+                {
+                    Id = request.MediaImageId,
+                    SourceObjectKey = stored.ObjectKey,
+                    Checksum = checksum,
+                    ContentType = stored.ContentType,
+                    FileSizeBytes = stored.Length,
+                    Dimensions = new MediaImageDimensions(decoded.Width, decoded.Height),
+                    ProcessingStatus = MediaImageProcessingStatus.Pending,
+                    AltText = request.AltText,
+                    Caption = request.Caption,
+                    Attribution = request.Attribution,
+                    Copyright = request.Copyright,
+                },
+                [],
+                request.Tags ?? [],
+                request.TourLinks);
+            if (imageResult.IsFailure)
+            {
+                await MediaObjectCompensation.Delete(objectStore, objectKey.Value).ConfigureAwait(false);
+
+                return imageResult.ConvertError<PublicMediaImage, MediaImageUploadIntakeResult>();
+            }
+
+            var image = imageResult.Value;
+
+            var originalStoredEvent = new MediaImageOriginalStoredIntegrationEvent(
+                Guid.CreateVersion7(),
+                timeProvider.GetUtcNow(),
+                request.MediaImageId,
+                objectKey.Value,
+                1);
+
+            try
+            {
+                await StoreImageEventAndCompensateObject(image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
+            }
+            catch (MediaGalleryPlacementConflictException)
+            {
+                return Result.Conflict<MediaImageUploadIntakeResult>(GalleryPlacementConflictMessage);
+            }
+
+            return Result.Ok(new MediaImageUploadIntakeResult(image, originalStoredEvent, scanResult.Status));
         }
-
-        var image = imageResult.Value;
-
-        var originalStoredEvent = new MediaImageOriginalStoredIntegrationEvent(
-            Guid.CreateVersion7(),
-            timeProvider.GetUtcNow(),
-            request.MediaImageId,
-            objectKey.Value,
-            1);
-
-        try
+        finally
         {
-            await StoreImageEventAndCompensateObject(image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
+            ArrayPool<byte>.Shared.Return(buffer);
         }
-        catch (MediaGalleryPlacementConflictException)
-        {
-            return Result.Conflict<MediaImageUploadIntakeResult>(GalleryPlacementConflictMessage);
-        }
-
-        return Result.Ok(new MediaImageUploadIntakeResult(image, originalStoredEvent, scanResult.Status));
     }
 
     private async ValueTask<MediaUploadScanResult> Scan(ObjectStorageKey objectKey, Stream content, string contentType, long length, CancellationToken ct)
@@ -230,16 +268,13 @@ public sealed partial class MediaImageUploadIntake(
         }
     }
 
-    private static ReadOnlyMemory<byte> ReadHeaderBytes(Stream content)
-    {
-        content.Position = 0;
-        var headerLength = (int)Math.Min(content.Length, 12);
-        var header = new byte[headerLength];
-        content.ReadExactly(header);
-        content.Position = 0;
-
-        return header;
-    }
+    /// <summary>
+    /// Gets whether the content is a different image format than declared, or no image at all: the cases the declared-type check refuses
+    /// before the scan. A damaged file of the declared format is scanned first, so a scanner rejection is reported instead.
+    /// </summary>
+    private static bool IsWrongFormat(Result<SanitizedImage> sanitized, string canonicalContentType) => sanitized.IsSuccess
+        ? !string.Equals(sanitized.Value.ContentType, canonicalContentType, StringComparison.Ordinal)
+        : sanitized.ErrorDetails?.ValidationErrors?.Values.Any(messages => messages.Contains(ImageSanitizer.NotAnImageMessage)) == true;
 
     private static string ComputeChecksum(Stream content)
     {
