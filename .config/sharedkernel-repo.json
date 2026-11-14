@@ -23,6 +23,7 @@
     "src/ViajantesTurismo.Admin.Contracts.Application/ViajantesTurismo.Admin.Contracts.Application.csproj",
     "src/ViajantesTurismo.Admin.Contracts.Http/ViajantesTurismo.Admin.Contracts.Http.csproj",
     "src/ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj",
+    "src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj",
     "src/ViajantesTurismo.Branding.AspNetCore/ViajantesTurismo.Branding.AspNetCore.csproj",
     "src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj",
     "src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj",
@@ -44,8 +45,8 @@
     "approval": {
       "file": ".config/sharedkernel-candidate.json",
       "values": {
-        "packageVersion": "0.1.0-alpha.521.1",
-        "libraryRevision": "e65cb83570dbb331e871f5a2264a801822c19fe6",
+        "packageVersion": "0.1.0-alpha.530.1",
+        "libraryRevision": "b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696",
         "libraryDirty": false
       }
     },

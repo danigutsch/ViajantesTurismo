@@ -39,6 +39,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=catalog;Username=test;Password=test"
         });
         builder.AddAdminIntegrationEventWorkerInfrastructure();
+        builder.Services.ConfigureDbContext<AdminWriteDbContext>(options => options.EnableServiceProviderCaching(false));
 
         return new AdminIntegrationEventWorkerScenario(builder.Services.BuildServiceProvider());
     }
@@ -77,6 +78,14 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
         var entityType = scope.ServiceProvider.GetRequiredService<TContext>().Model.GetEntityTypes()
             .ShouldHaveSingleItem(entity => entity.ClrType.Name == clrTypeName);
         return (entityType.GetSchema(), entityType.GetTableName());
+    }
+
+    /// <summary>Returns whether the model of <typeparamref name="TContext" /> differs from its migration snapshot.</summary>
+    public bool HasPendingModelChanges<TContext>()
+        where TContext : DbContext
+    {
+        using var scope = provider.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<TContext>().Database.HasPendingModelChanges();
     }
 
     /// <summary>Applies one event in its own unit of work, like one transport delivery.</summary>

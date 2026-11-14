@@ -189,6 +189,7 @@ public static class InfrastructureDependencyInjection
             adminTourCreatedJsonTypeInfo);
         builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        builder.Services.AddIntegrationEventTransportStorage<AdminWriteDbContext>();
         builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
         builder.Services.AddAdminBrandingProjection();
 
