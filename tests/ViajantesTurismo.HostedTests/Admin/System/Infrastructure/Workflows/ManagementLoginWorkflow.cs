@@ -30,13 +30,10 @@ internal sealed class ManagementLoginWorkflow(IPage page)
                 await page.ExpectPath(managementWebUrl, "/");
                 return;
             }
-            catch (PlaywrightException exception) when (IsRetryableNetworkChange(exception) && attempt < MaxLoginNavigationAttempts)
+            catch (Exception exception) when (IsRetryableSignInFailure(exception) && attempt < MaxLoginNavigationAttempts)
             {
-                // Retry the complete OIDC redirect after transient AppHost loopback endpoint changes.
-            }
-            catch (Exception exception) when (exception is TimeoutException or PlaywrightException && attempt < MaxLoginNavigationAttempts)
-            {
-                // Retry when the OIDC redirect is interrupted before the web app regains control.
+                // Retry the complete OIDC redirect after a loopback endpoint change, or when it is interrupted or times out before the
+                // web app regains control.
             }
         }
 
@@ -63,6 +60,20 @@ internal sealed class ManagementLoginWorkflow(IPage page)
         }
 
         throw new InvalidOperationException($"Navigation to '{loginUrl}' did not complete after {MaxLoginNavigationAttempts} attempts.");
+    }
+
+    /// <summary>
+    /// Whether a sign-in attempt failed transiently: a timeout, an AppHost loopback endpoint change, a navigation interrupted by the OIDC
+    /// redirect, or the post-login address check of <see cref="PlaywrightPageExtensions.ExpectPath(IPage, Uri, string)"/> timing out.
+    /// Any other failure, such as a closed page or a missing login field, is real and is not retried.
+    /// </summary>
+    internal static bool IsRetryableSignInFailure(Exception exception)
+    {
+        return exception is TimeoutException
+            || exception is PlaywrightException playwrightException
+            && (IsRetryableNetworkChange(playwrightException)
+                || IsOidcRedirect(playwrightException)
+                || playwrightException.Message.StartsWith("Page URL expected to be", StringComparison.Ordinal));
     }
 
     private static bool IsRetryableNetworkChange(PlaywrightException exception)
