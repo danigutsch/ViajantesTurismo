@@ -52,7 +52,6 @@ internal sealed class PostgreSqlUserSessionLock(NpgsqlDataSource dataSource) : I
                 return;
             }
 
-            // Ending the transaction releases the lock; a rollback is enough because the transaction writes nothing.
             await transaction.DisposeAsync();
             await connection.DisposeAsync();
         }

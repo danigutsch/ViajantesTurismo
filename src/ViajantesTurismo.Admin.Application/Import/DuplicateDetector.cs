@@ -26,7 +26,6 @@ public static class DuplicateDetector
                 continue;
             }
 
-            // A malformed email is not a duplicate; the row's own validation reports it.
             if (StringSanitizer.TryNormalizeKey(email, out var normalizedEmail) && !seenEmails.Add(normalizedEmail))
             {
                 duplicateLineNumbers.Add(lineNumber);

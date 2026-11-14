@@ -104,7 +104,6 @@ internal static class PublicWebEndpoints
             return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
-        // Every page is listed once per culture, so the tours share what the protocol maximum leaves after the fixed pages.
         var links = new PublicSiteLinks(sitemapOptions.Value);
         var cultureCount = PublicSiteCultures.Supported.Cultures.Count;
         var tourLimit = (SitemapXmlSerializer.MaximumUrlCount / cultureCount) - StaticPagePaths.Length;

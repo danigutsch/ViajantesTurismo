@@ -143,7 +143,6 @@ public sealed partial class MediaImageUploadIntake(
                 return sanitized.ConvertError<SanitizedImage, MediaImageUploadIntakeResult>();
             }
 
-            // The cleaned image, without Exif, XMP, comments or trailing bytes, is what gets decoded and stored.
             _ = MemoryMarshal.TryGetArray(sanitized.Value.Bytes, out var cleanedBytes);
             using var cleaned = new MemoryStream(buffer, cleanedBytes.Offset, cleanedBytes.Count, writable: false);
             content = cleaned;

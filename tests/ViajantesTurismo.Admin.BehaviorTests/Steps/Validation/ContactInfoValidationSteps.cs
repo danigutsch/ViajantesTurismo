@@ -32,7 +32,6 @@ public sealed class ContactInfoValidationSteps(CustomerContext context)
     [When(@"I create contact info with email of (\d+) characters")]
     public void WhenICreateContactInfoWithEmailOfDCharacters(int length)
     {
-        // The local part stays within the 64 characters an address allows; the domain fills the rest.
         var email = "customer@" + new string('d', length - 13) + ".com";
         context.ContactInfoResult = ContactInfo.Create(email, "+1234567890", null, null);
     }

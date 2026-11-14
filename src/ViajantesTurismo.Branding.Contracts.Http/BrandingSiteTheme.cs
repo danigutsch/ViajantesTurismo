@@ -125,7 +125,6 @@ public static class BrandingSiteTheme
         return fields.ToDictionary(entry => entry.Key, entry => entry.Value.ToArray(), StringComparer.Ordinal);
     }
 
-    // A text pair is reported on its foreground; the Branding field that can repair it is the one the owner edits.
     private static string SettingsField(string path) => path switch
     {
         "colors.primary" or "colors.primaryHover" or "colors.onPrimary" => nameof(BrandingSettingsDto.PrimaryColor),

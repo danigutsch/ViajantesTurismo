@@ -25,15 +25,11 @@ internal sealed class ManagementLoginWorkflow(IPage page)
                 await page.Locator("#username").FillAsync(ConformanceUsername);
                 await page.Locator("#password").FillAsync(password);
                 await page.Locator("#kc-login").ClickAsync();
-                // The login redirects to the returnUrl, the home page. ExpectPath polls the address: WaitForURLAsync can lose a
-                // navigation that lands while it subscribes (microsoft/playwright-dotnet#3364).
                 await page.ExpectPath(managementWebUrl, "/");
                 return;
             }
             catch (Exception exception) when (IsRetryableSignInFailure(exception) && attempt < MaxLoginNavigationAttempts)
             {
-                // Retry the complete OIDC redirect after a loopback endpoint change, or when it is interrupted or times out before the
-                // web app regains control.
             }
         }
 

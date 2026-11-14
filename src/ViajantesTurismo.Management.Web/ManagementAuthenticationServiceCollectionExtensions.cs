@@ -121,7 +121,6 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             .SetFallbackPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build());
-        // One session's requests can reach several instances, so refresh, exchange and sign-out lock in PostgreSQL.
         services.AddSingleton<IUserSessionLock, PostgreSqlUserSessionLock>();
         services.AddUserTokenManagement(options =>
         {

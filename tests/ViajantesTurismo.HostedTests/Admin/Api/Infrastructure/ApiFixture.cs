@@ -190,7 +190,6 @@ public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admi
                 }
                 catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UndefinedTable)
                 {
-                    // Migrations have not created the projection table yet.
                     return null;
                 }
             },

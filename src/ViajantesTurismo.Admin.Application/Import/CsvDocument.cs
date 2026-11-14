@@ -8,7 +8,6 @@ namespace ViajantesTurismo.Admin.Application.Import;
 /// </summary>
 public sealed class CsvDocument : IImportDocument
 {
-    // A blank line in an import is a data row that fails validation, never silently skipped.
     private static readonly CsvParseOptions ParseOptions = new() { SkipBlankLines = false };
 
     private readonly PandaBear.Tabular.CsvDocument document;

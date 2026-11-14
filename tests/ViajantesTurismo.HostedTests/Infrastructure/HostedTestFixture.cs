@@ -39,7 +39,6 @@ public sealed class HostedTestFixture : IAsyncLifetime
 
     public HostedTestFixture()
     {
-        // A container may start only through its key: starting one twice recreates it and loses its data.
         infrastructure = new(CreateInfrastructure);
         containers = new(StartContainer);
         launches = new(PrepareLaunch);
@@ -103,7 +102,6 @@ public sealed class HostedTestFixture : IAsyncLifetime
             workspace.IsValueCreated ? workspace.Value : null);
     }
 
-    // Runs synchronously on the first caller's thread: Aspire reads its DCP metadata from the synchronous call stack.
     private Task<AspireTestApplication> CreateInfrastructure(CancellationToken ct)
     {
         var builder = AspireTestApplication.CreateBuilder(
@@ -143,7 +141,6 @@ public sealed class HostedTestFixture : IAsyncLifetime
         await application.StartResource(resourceName, StartBudget, ct);
         if (resourceName == ResourceNames.DatabaseServer)
         {
-            // Aspire creates the databases of a server once the server is ready, so a healthy server does not yet have its database.
             await application.WaitForHealthy([FixtureDatabaseName], StartBudget, ct);
         }
 
@@ -178,7 +175,6 @@ public sealed class HostedTestFixture : IAsyncLifetime
         }
     }
 
-    // Starts the containers and leases the databases of a stack, so that ApplicationStacks.Launch can read the stack's settings.
     private async Task<StackLaunch> PrepareLaunch(string stack, CancellationToken ct)
     {
         var profile = profiles[stack];
@@ -248,7 +244,6 @@ public sealed class HostedTestFixture : IAsyncLifetime
                 : throw new InvalidOperationException($"The '{profile}' stack starts through HostedTestFixture.GetApplication.");
             var configuration = new Dictionary<string, string?>(launch.Configuration, StringComparer.Ordinal)
             {
-                // The AppHost generates payment protection material for every run; keep it inside the stack's own folder.
                 ["Payments:GeneratedDirectory"] = Path.Combine(folder, "payments"),
             };
             string[] healthy = launch.Profile is HostedProfile.System

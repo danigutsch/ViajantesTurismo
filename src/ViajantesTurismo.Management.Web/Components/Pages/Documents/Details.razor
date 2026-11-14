@@ -569,7 +569,6 @@
         var resourceId = CurrentDocumentId;
         if (_regenerationDocumentId != resourceId)
         {
-            // A submission whose outcome is unknown is retried only for the document it was made for.
             _regeneration = new IdempotentSubmission<GetDocumentDto>();
             _regenerationDocumentId = resourceId;
         }

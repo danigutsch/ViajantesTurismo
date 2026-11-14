@@ -96,8 +96,6 @@ internal static class AppHostResourceExtensions
     {
         var persistsData = builder.PersistsData();
 
-        // A persisted volume keeps the password it was created with, so the password must outlive one run: it is
-        // generated once and saved in the AppHost user secrets as Parameters:database-server-password.
         var password = persistsData
             ? builder.AddParameter(
                 ResourceNames.DatabaseServer + PasswordParameterSuffix,
@@ -139,7 +137,6 @@ internal static class AppHostResourceExtensions
 
         if (builder.PersistsData())
         {
-            // A cache keeps no application data of its own, so it gets a persistent lifetime but no volume.
             cache.WithLifetime(ContainerLifetime.Persistent);
         }
 

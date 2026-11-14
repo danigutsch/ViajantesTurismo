@@ -229,7 +229,6 @@
         _documentError = null;
         if (_generationBookingId != Id)
         {
-            // A submission whose outcome is unknown is retried only for the booking it was made for.
             _generation = new IdempotentSubmission<GetDocumentDto>();
             _generationBookingId = Id;
         }

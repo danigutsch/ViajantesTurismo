@@ -66,7 +66,6 @@ internal static class CustomerImportHeaderMatcher
         ArgumentNullException.ThrowIfNull(userMappings);
         if (!ImportCustomersCsvProcessor.TryParse(fileBytes, out var document))
         {
-            // The import API reports what is wrong with a malformed file.
             return fileBytes;
         }
 

@@ -14,7 +14,6 @@
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        // A missing page must not be kept by browsers or proxies; it may be published a moment later.
         if (HttpContext is { Response.HasStarted: false })
         {
             PublicWebHttpCache.SetNoStore(HttpContext);

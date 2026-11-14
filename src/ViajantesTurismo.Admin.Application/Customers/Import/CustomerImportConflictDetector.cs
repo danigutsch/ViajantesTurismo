@@ -75,7 +75,6 @@ public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
                 continue;
             }
 
-            // A malformed email cannot match a stored one; the row's own validation reports it.
             if (StringSanitizer.TrySanitize(email, out var sanitizedEmail) && sanitizedEmail is not null && await customerStore.EmailExists(sanitizedEmail, ct))
             {
                 duplicateLineNumbers.Add(lineNumber);
