@@ -39,7 +39,6 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
             [$"ConnectionStrings:{ResourceNames.CatalogDatabase}"] = "Host=localhost;Database=catalog;Username=test;Password=test"
         });
         builder.AddAdminIntegrationEventWorkerInfrastructure();
-        // A private EF service provider keeps the worker's model out of the model cache other tests share.
         builder.Services.ConfigureDbContext<AdminWriteDbContext>(options => options.EnableServiceProviderCaching(false));
 
         return new AdminIntegrationEventWorkerScenario(builder.Services.BuildServiceProvider());
