@@ -82,7 +82,7 @@ runs:
           ${{ inputs.sparse-extra }}
 
     - name: Set up the SDK and build SharedKernel tool
-      uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696
+      uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@324f99162a3249f628c33f87088136415af989d9
       with:
         project: tools/${{ inputs.tool }}
         global-json-file: global.json

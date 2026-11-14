@@ -460,3 +460,28 @@ solution including transitive packages reports nothing. The workflow still permi
 distribution gate was relaxed. The SharedKernel `action-pins.json` is unchanged between the two library revisions, and
 `global.json` differs only in its `Aspire.AppHost.Sdk`. The preview approval in `.config/sharedkernel-repo.json` now names
 this exact version and revision.
+
+## Public-site building blocks candidate
+
+Candidate `0.1.0-alpha.541.1` uses clean library revision `324f99162a3249f628c33f87088136415af989d9`. On top of
+`0.1.0-alpha.530.1` it adds the public-site building blocks, BFF token management and system-test infrastructure, image
+format and animation probing with PNG encoding, and raises the ASP.NET Core floors to 10.0.14. All 112 package hashes were
+verified by `stage-candidate` against the pin, which is the unedited `candidate.json` of CI run
+[43628733143](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/43628733143) and the GitHub prerelease. The
+pin records Linux/Windows package consumption, the API baseline comparison and stable promotion as `pending`.
+
+The candidate requires `Microsoft.AspNetCore.Authentication.JwtBearer`, `Microsoft.AspNetCore.OpenApi`,
+`Microsoft.AspNetCore.Mvc.Testing` and `Microsoft.AspNetCore.TestHost` 10.0.14 (NU1109 otherwise), so the remaining
+10.0.13 ASP.NET Core and EF Core pins moved to the same 10.0.14 servicing release. No `NuGetAuditSuppress` was added and
+the audit mode and level are unchanged.
+
+Against the `0.1.0-alpha.530.1` state of this repository, the lock files add no external package id; they add the
+first-party `AspNetCore.Authentication.Bff`, `AspNetCore.Localization`, `Aspire.Hosting`, `Blazor.Site`,
+`EntityFrameworkCore.Npgsql`, `ServiceDefaults` and `UploadSanitizing` SharedKernel packages and remove
+`Duende.AccessTokenManagement`, `Duende.AccessTokenManagement.OpenIdConnect`, `Duende.IdentityModel` and
+`Microsoft.Extensions.Caching.Hybrid`, which the SharedKernel BFF token management replaces. No lock file was added or
+removed. A vulnerability scan of the solution including transitive packages reports nothing. The workflow still permits
+only the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category,
+vulnerability threshold or native distribution gate was relaxed. The SharedKernel `action-pins.json` and `global.json` are
+unchanged between the two library revisions. The preview approval in `.config/sharedkernel-repo.json` now names this exact
+version and revision.
