@@ -8,7 +8,7 @@ namespace ViajantesTurismo.ServiceDefaults.Tests;
 public static class ServiceDefaultsOptionsTests
 {
     [Fact]
-    public static void Host_defaults_do_not_retry_every_http_client_request()
+    public static void Host_defaults_keep_the_plain_shared_resilience_handler()
     {
         // Arrange
         var builder = Host.CreateApplicationBuilder();
@@ -19,7 +19,8 @@ public static class ServiceDefaultsOptionsTests
         var options = host.Services.GetRequiredService<ServiceDefaultsOptions>();
 
         // Assert
-        options.AddResilience.ShouldBeFalse();
+        options.AddResilience.ShouldBeTrue();
+        options.ConfigureResilience.ShouldBeNull();
         options.SensitiveTelemetryAttributes.ShouldContain("customer.email");
     }
 }

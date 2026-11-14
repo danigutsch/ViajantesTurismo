@@ -43,8 +43,8 @@ public static class ViajantesTurismoServiceDefaults
         ["payment", "financial", "recipient", "fx.quote", "receipt", "refund", "reconciliation", "allocation"];
 
     /// <summary>
-    /// Sets the ViajantesTurismo choices on the SharedKernel service defaults: the business attribute names the privacy processors remove,
-    /// and no standard resilience handler on every <see cref="HttpClient"/>, because it would retry non-idempotent requests such as a
+    /// Sets the ViajantesTurismo choices on the SharedKernel service defaults: the business attribute names the privacy processors remove.
+    /// The SharedKernel standard resilience handler stays on every <see cref="HttpClient"/>; it never retries unsafe methods such as a
     /// customer creation or a payment instruction.
     /// </summary>
     /// <param name="options">The SharedKernel service-defaults options.</param>
@@ -52,7 +52,6 @@ public static class ViajantesTurismoServiceDefaults
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        options.AddResilience = false;
         options.SensitiveTelemetryAttributes.UnionWith(SensitiveAttributeNames);
     }
 
