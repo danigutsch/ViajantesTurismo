@@ -1,5 +1,4 @@
 using PandaBear.IO;
-using PandaBear.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
@@ -19,8 +18,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         var imageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(320, 160);
         var original = PublicMediaImageTestFactory.CreatePendingImage(imageId, content.Length);
-        var objects = new InMemoryMediaObjectStore();
-        await objects.Put(new ObjectWriteRequest("media/original.png", new MemoryStream(content), "image/jpeg", content.Length), TestContext.Current.CancellationToken);
+        var objects = MediaObjectStoreTestFactory.Create();
+        objects.Seed("media/original.png", content, "image/jpeg");
         var images = new InMemoryPublicMediaImageStore(original);
         var mutationLock = new TestCatalogTourMutationLock();
         var observed = new ObservedCatalogTourMutationLock(mutationLock);
@@ -70,10 +69,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(640, 320);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("uploads/original.jpg", content, "image/jpeg");
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length));
         var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore, new TestCatalogTourMutationLock());
         var notification = new MediaImageOriginalStoredIntegrationEvent(
@@ -104,11 +101,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(640, 320);
-        var inner = new InMemoryMediaObjectStore();
-        await inner.Put(
-            new ObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
-            TestContext.Current.CancellationToken);
-        var objectStore = new PutRecordingObjectStore(inner);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("uploads/original.jpg", content, "image/jpeg");
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length));
         var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore, new TestCatalogTourMutationLock());
         var notification = new MediaImageOriginalStoredIntegrationEvent(
@@ -125,14 +119,15 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         objectStore.Puts.Count.ShouldBe(8);
         foreach (var put in objectStore.Puts)
         {
-            put.StreamType.ShouldBe(typeof(ReadOnlyMemoryStream));
-            put.CanWrite.ShouldBeFalse();
-            put.Position.ShouldBe(0);
-            put.Bytes.Length.ShouldBe((int)put.DeclaredLength);
-            using var stored = await inner.OpenRead(put.ObjectKey, TestContext.Current.CancellationToken);
+            put.ContentStreamType.ShouldBe(typeof(ReadOnlyMemoryStream));
+            put.ContentCanWrite.ShouldBeFalse();
+            put.StartPosition.ShouldBe(0);
+            put.BytesRead.ShouldBe(put.DeclaredLength);
+            var putBytes = put.Content.ToArray();
+            using var stored = await objectStore.OpenRead(put.ObjectKey, TestContext.Current.CancellationToken);
             using var storedBytes = new MemoryStream();
             await stored.Content.CopyToAsync(storedBytes, TestContext.Current.CancellationToken);
-            storedBytes.ToArray().ShouldBe(put.Bytes);
+            storedBytes.ToArray().ShouldBe(putBytes);
         }
 
         foreach (var variant in imageStore.Current.ResponsiveVariants)
@@ -148,10 +143,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(640, 320);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("uploads/original.jpg", content, "image/jpeg");
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length));
         var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore, new TestCatalogTourMutationLock());
 
@@ -185,10 +178,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
     {
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("uploads/not-image.bin", new MemoryStream([0x01, 0x02, 0x03]), "application/octet-stream", 3),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("uploads/not-image.bin", [0x01, 0x02, 0x03], "application/octet-stream");
         var existingImage = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), mediaImageId, 0, true);
         var existingVariant = existingImage.ResponsiveVariants.ShouldHaveSingleItem();
         var imageStore = new InMemoryPublicMediaImageStore(existingImage);
@@ -215,10 +206,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
     {
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("uploads/not-image.bin", new MemoryStream([0x01, 0x02, 0x03]), "application/octet-stream", 3),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("uploads/not-image.bin", [0x01, 0x02, 0x03], "application/octet-stream");
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 3));
         var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore, new TestCatalogTourMutationLock());
 
@@ -243,10 +232,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(100, 50);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("uploads/tiny-original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("uploads/tiny-original.jpg", content, "image/jpeg");
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length));
         var handler = new MediaImageOriginalStoredIntegrationHandler(objectStore, imageStore, new TestCatalogTourMutationLock());
         var notification = new MediaImageOriginalStoredIntegrationEvent(
@@ -274,10 +261,8 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(640, 320);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("uploads/original.jpg", new MemoryStream(content), "image/jpeg", content.Length),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("uploads/original.jpg", content, "image/jpeg");
         var imageStore = new ThrowingPublicMediaImageStore(
             PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, content.Length),
             new InvalidOperationException("database unavailable"));

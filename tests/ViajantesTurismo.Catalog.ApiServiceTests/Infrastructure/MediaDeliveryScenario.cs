@@ -1,10 +1,11 @@
-using PandaBear.ObjectStorage;
+using System.Collections.Concurrent;
+using PandaBear.Testing;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
-/// <summary>A published tour with one reviewed 640 px JPEG rendition served from an observable object store.</summary>
+/// <summary>A published tour with one reviewed 640 px JPEG rendition whose opened object streams are observable.</summary>
 internal sealed class MediaDeliveryScenario : IAsyncDisposable
 {
     /// <summary>Object key of the stored rendition.</summary>
@@ -14,11 +15,15 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
     public static readonly byte[] Payload = "streamed-media-payload"u8.ToArray();
 
     private readonly Guid imageId;
+    private readonly ConcurrentQueue<PandaBear.Testing.DisposalTrackingStream> openedStreams;
 
-    private MediaDeliveryScenario(WebApplicationFactory<CatalogApiHostEntryPoint> factory, TestMediaObjectStore objectStore, Guid imageId)
+    private MediaDeliveryScenario(
+        WebApplicationFactory<CatalogApiHostEntryPoint> factory,
+        ConcurrentQueue<PandaBear.Testing.DisposalTrackingStream> openedStreams,
+        Guid imageId)
     {
         Factory = factory;
-        ObjectStore = objectStore;
+        this.openedStreams = openedStreams;
         this.imageId = imageId;
     }
 
@@ -28,18 +33,18 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
         get;
     }
 
-    /// <summary>The object store backing the rendition.</summary>
-    public TestMediaObjectStore ObjectStore
-    {
-        get;
-    }
+    /// <summary>The disposal-tracking streams the object store handed out, in read order.</summary>
+    public IReadOnlyList<PandaBear.Testing.DisposalTrackingStream> OpenedStreams => [.. openedStreams];
 
     /// <summary>Returns the public or management media route for the 640 px JPEG rendition.</summary>
     public string Route(bool isPublic) => isPublic
         ? $"/api/v1/public/catalog/media/{imageId}/640/jpg"
         : $"/api/v1/catalog/media/images/{imageId}/preview/640/jpg";
 
-    /// <summary>Seeds the tour, image and object, optionally stalling reads after the first byte, and returns the scenario.</summary>
+    /// <summary>
+    /// Seeds the tour, image and object and returns the scenario. With <paramref name="stallReadsAfterFirstByte" />, each read
+    /// serves the first payload byte and then blocks in a <see cref="BlockingReadStream" /> until it is cancelled.
+    /// </summary>
     public static async Task<MediaDeliveryScenario> Create(bool stallReadsAfterFirstByte = false)
     {
         var tourId = Guid.CreateVersion7();
@@ -65,12 +70,23 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
             isCover: true);
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        var objectStore = new TestMediaObjectStore { StallReadsAfterFirstByte = stallReadsAfterFirstByte };
-        await objectStore.Put(
-            new ObjectWriteRequest(ObjectKey, new MemoryStream(Payload), "image/jpeg", Payload.Length, "sha256:stream"),
-            TestContext.Current.CancellationToken);
+        var openedStreams = new ConcurrentQueue<PandaBear.Testing.DisposalTrackingStream>();
+        var objectStore = MediaObjectStoreTestFactory.Create((_, content) =>
+        {
+            var served = content;
+            if (stallReadsAfterFirstByte)
+            {
+                content.Dispose();
+                served = new BlockingReadStream(Payload[..1], Payload[1..]);
+            }
 
-        return new MediaDeliveryScenario(CatalogApiTestHost.Create(tourStore, mediaStore, objectStore), objectStore, image.Id);
+            var tracked = new PandaBear.Testing.DisposalTrackingStream(served);
+            openedStreams.Enqueue(tracked);
+            return tracked;
+        });
+        objectStore.Seed(ObjectKey, Payload, "image/jpeg", "sha256:stream");
+
+        return new MediaDeliveryScenario(CatalogApiTestHost.Create(tourStore, mediaStore, objectStore), openedStreams, image.Id);
     }
 
     /// <summary>Disposes the host.</summary>

@@ -1,4 +1,4 @@
-using PandaBear.ObjectStorage;
+using PandaBear.Testing.ObjectStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http.Resilience;
 using ViajantesTurismo.Catalog.ApiService;
@@ -12,7 +12,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
 {
     private readonly TestCatalogTourReadModelStore tours = new();
     private readonly TestPublicMediaImageStore media = new();
-    private readonly TestMediaObjectStore objects = new();
+    private readonly InMemoryObjectStore objects = MediaObjectStoreTestFactory.Create();
     private readonly WebApplicationFactory<CatalogApiHostEntryPoint> catalogRoot;
     private readonly WebApplicationFactory<CatalogApiHostEntryPoint> catalog;
     private readonly List<WebApplicationFactory<App>> frontends = [];
@@ -83,10 +83,7 @@ internal sealed class PublicCatalogProxyTestScope : IAsyncDisposable
                 tourId, $"gallery/source-{imageNumber}.jpg", $"gallery/image-{imageNumber}-640.jpg", "sha256:gallery",
                 $"Gallery image {imageNumber}", imageNumber, imageNumber == 0);
             await media.Upsert(image, ct);
-            var payload = "gallery-media"u8.ToArray();
-            using var content = new MemoryStream(payload);
-            await objects.Put(new ObjectWriteRequest(
-                $"gallery/image-{imageNumber}-640.jpg", content, "image/jpeg", payload.Length, "sha256:gallery"), ct);
+            objects.Seed($"gallery/image-{imageNumber}-640.jpg", "gallery-media"u8, "image/jpeg", "sha256:gallery");
             imageIds.Add(image.Id);
         }
 

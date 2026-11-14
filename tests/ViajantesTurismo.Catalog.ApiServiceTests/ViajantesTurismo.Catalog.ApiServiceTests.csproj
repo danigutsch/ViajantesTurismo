@@ -42,6 +42,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Testing.MalwareScanning" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Logging" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.ObjectStorage" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Testing\ViajantesTurismo.Catalog.Testing.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.UploadWire.Testing\ViajantesTurismo.UploadWire.Testing.csproj" />
     </ItemGroup>

@@ -9,6 +9,7 @@ using PandaBear.EventSourcing;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Testing.AspNetCore;
+using PandaBear.Testing.ObjectStorage;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
@@ -63,7 +64,7 @@ internal static class CatalogApiTestHost
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestCatalogTourReadModelStore tourStore,
         TestPublicMediaImageStore mediaStore,
-        TestMediaObjectStore objectStore)
+        InMemoryObjectStore objectStore)
     {
         return Create(null, tourStore, null, mediaStore, objectStore, null);
     }
@@ -71,7 +72,7 @@ internal static class CatalogApiTestHost
     /// <summary>Creates an authenticated host backed by the given media stores and a replacement image text generator.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
         TestPublicMediaImageStore mediaStore,
-        TestMediaObjectStore objectStore,
+        InMemoryObjectStore objectStore,
         IImageTextGenerator imageTextGenerator)
     {
         return Create(null, null, null, mediaStore, objectStore, imageTextGenerator);
@@ -172,7 +173,7 @@ internal static class CatalogApiTestHost
         TestCatalogTourReadModelStore? tourStore,
         TestPublicContentStore? publicContentStore,
         TestPublicMediaImageStore? mediaStore,
-        TestMediaObjectStore? objectStore,
+        InMemoryObjectStore? objectStore,
         IImageTextGenerator? imageTextGenerator,
         bool authenticateClient = true,
         TestEventStore? eventStore = null,
@@ -224,7 +225,7 @@ internal static class CatalogApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourSlugLock>(new TestCatalogTourSlugLock()));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourMutationLock>(new TestCatalogTourMutationLock()));
                 services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(mediaStore ?? new TestPublicMediaImageStore()));
-                services.Replace(ServiceDescriptor.Singleton<IObjectStore>(objectStore ?? new TestMediaObjectStore()));
+                services.Replace(ServiceDescriptor.Singleton<IObjectStore>(objectStore ?? MediaObjectStoreTestFactory.Create()));
                 services.Replace(ServiceDescriptor.Singleton<IIntegrationEventOutbox, TestIntegrationEventOutbox>());
                 if (imageTextGenerator is not null)
                 {

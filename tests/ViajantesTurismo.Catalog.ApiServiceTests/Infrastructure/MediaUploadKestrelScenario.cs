@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.TestHost;
+using PandaBear.Testing.ObjectStorage;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -26,7 +27,7 @@ internal sealed class MediaUploadKestrelScenario : IAsyncDisposable
         RequestLifetimeProbe probe,
         ScanRecorder scans,
         TestPublicMediaImageStore mediaStore,
-        TestMediaObjectStore objectStore)
+        InMemoryObjectStore objectStore)
     {
         this.root = root;
         this.factory = factory;
@@ -80,7 +81,7 @@ internal sealed class MediaUploadKestrelScenario : IAsyncDisposable
     }
 
     /// <summary>The object store the intake writes originals into.</summary>
-    public TestMediaObjectStore ObjectStore
+    public InMemoryObjectStore ObjectStore
     {
         get;
     }
@@ -97,7 +98,7 @@ internal sealed class MediaUploadKestrelScenario : IAsyncDisposable
             new CatalogTourDraftReadModel(tourId, Guid.CreateVersion7(), "TOUR-UPLOAD", "Upload Tour", "upload-tour", false, 1, TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var probe = new RequestLifetimeProbe($"/tours/{tourId}/images");
         var scans = new ScanRecorder();
         var root = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);

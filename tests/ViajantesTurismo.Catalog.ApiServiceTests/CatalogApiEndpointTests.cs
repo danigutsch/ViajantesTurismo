@@ -1,4 +1,4 @@
-using PandaBear.ObjectStorage;
+using PandaBear.Testing.ObjectStorage;
 using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
 using System.Net.Http.Headers;
@@ -531,7 +531,7 @@ public sealed class CatalogApiEndpointTests
     {
         // Arrange
         var imageStore = new TestPublicMediaImageStore();
-        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), imageStore, new TestMediaObjectStore());
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), imageStore, MediaObjectStoreTestFactory.Create());
         using var client = factory.CreateClient();
         var imageId = Guid.CreateVersion7();
 
@@ -686,13 +686,11 @@ public sealed class CatalogApiEndpointTests
     {
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", "Generated caption"));
         var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1, 2, 3]), "image/jpeg", 3, "sha256:abc"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed(image.SourceObjectKey, [1, 2, 3], "image/jpeg", "sha256:abc");
         await using var factory = CatalogApiTestHost.Create(mediaStore, objectStore, generator);
         using var client = factory.CreateClient();
 
@@ -780,7 +778,7 @@ public sealed class CatalogApiEndpointTests
     {
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", null));
         var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
@@ -803,14 +801,12 @@ public sealed class CatalogApiEndpointTests
     {
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", null));
         generator.Throw(new ImageTextGenerationException("Proxy failed."));
         var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         await using var factory = CatalogApiTestHost.Create(mediaStore, objectStore, generator);
         using var client = factory.CreateClient();
 
@@ -1392,7 +1388,7 @@ public sealed class CatalogApiEndpointTests
                 TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             tourId,
             "source.jpg",
@@ -1403,9 +1399,7 @@ public sealed class CatalogApiEndpointTests
             isCover: true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         var expectedContent = "published-media"u8.ToArray();
-        await objectStore.Put(
-            new ObjectWriteRequest("published-640.jpg", new MemoryStream(expectedContent), "image/jpeg", expectedContent.Length, "sha256:published"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("published-640.jpg", expectedContent, "image/jpeg", "sha256:published");
         await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -1441,7 +1435,7 @@ public sealed class CatalogApiEndpointTests
                 TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             tourId,
             "source.jpg",
@@ -1451,9 +1445,7 @@ public sealed class CatalogApiEndpointTests
             displayOrder: 0,
             isCover: true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("published-640.jpg", new MemoryStream("not-an-image"u8.ToArray()), "text/html", 12, "sha256:published"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("published-640.jpg", "not-an-image"u8.ToArray(), "text/html", "sha256:published");
         await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -1494,10 +1486,11 @@ public sealed class CatalogApiEndpointTests
             isCover: true);
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        var objectStore = new TestMediaObjectStore { ThrowFileNotFoundOnOpenRead = true };
-        await objectStore.Put(
-            new ObjectWriteRequest("published-640.jpg", new MemoryStream("published-media"u8.ToArray()), "image/jpeg", 15, "sha256:published"),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("published-640.jpg", "published-media"u8.ToArray(), "image/jpeg", "sha256:published");
+        objectStore.FailAlways(
+            ObjectStoreOperation.OpenRead,
+            new FileNotFoundException("The media object is unavailable.", "published-640.jpg"));
         await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -1516,7 +1509,7 @@ public sealed class CatalogApiEndpointTests
     {
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             Guid.CreateVersion7(),
             "source.jpg",
@@ -1527,9 +1520,7 @@ public sealed class CatalogApiEndpointTests
             isCover: true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         var expectedContent = "management-media"u8.ToArray();
-        await objectStore.Put(
-            new ObjectWriteRequest("management-640.jpg", new MemoryStream(expectedContent), "image/jpeg", expectedContent.Length, "sha256:management"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("management-640.jpg", expectedContent, "image/jpeg", "sha256:management");
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -1553,7 +1544,7 @@ public sealed class CatalogApiEndpointTests
         // Arrange
         var imageId = Guid.CreateVersion7();
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var imageResult = PublicMediaImage.Create(
             new PublicMediaImageMetadata
             {
@@ -1577,12 +1568,8 @@ public sealed class CatalogApiEndpointTests
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         var avifContent = "management-avif"u8.ToArray();
         var jpegContent = "management-jpeg"u8.ToArray();
-        await objectStore.Put(
-            new ObjectWriteRequest("management-640.avif", new MemoryStream(avifContent), "image/avif", avifContent.Length, "sha256:avif"),
-            TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("management-640.jpg", new MemoryStream(jpegContent), "image/jpeg", jpegContent.Length, "sha256:jpeg"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("management-640.avif", avifContent, "image/avif", "sha256:avif");
+        objectStore.Seed("management-640.jpg", jpegContent, "image/jpeg", "sha256:jpeg");
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -1610,7 +1597,7 @@ public sealed class CatalogApiEndpointTests
     {
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             Guid.CreateVersion7(),
             "source.jpg",
@@ -1620,9 +1607,7 @@ public sealed class CatalogApiEndpointTests
             displayOrder: 0,
             isCover: true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("management-640.jpg", new MemoryStream("not-an-image"u8.ToArray()), "text/html", 12, "sha256:management"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("management-640.jpg", "not-an-image"u8.ToArray(), "text/html", "sha256:management");
         await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -1663,7 +1648,7 @@ public sealed class CatalogApiEndpointTests
             displayOrder: 0,
             isCover: true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, new TestMediaObjectStore());
+        await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, MediaObjectStoreTestFactory.Create());
         using var client = factory.CreateClient();
 
         // Act
@@ -1694,7 +1679,7 @@ public sealed class CatalogApiEndpointTests
                 TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             tourId,
             "source.jpg",
@@ -1704,9 +1689,7 @@ public sealed class CatalogApiEndpointTests
             displayOrder: 0,
             isCover: true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("draft-640.jpg", new MemoryStream("draft-media"u8.ToArray()), "image/jpeg", 11, "sha256:draft"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("draft-640.jpg", "draft-media"u8.ToArray(), "image/jpeg", "sha256:draft");
         await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -1762,7 +1745,7 @@ public sealed class CatalogApiEndpointTests
                 TimeProvider.System.GetUtcNow()),
             TestContext.Current.CancellationToken);
         var mediaStore = new TestPublicMediaImageStore();
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var image = PublicMediaImageTestFactory.CreateReadyImage(
             tourId,
             "source.jpg",
@@ -1781,9 +1764,7 @@ public sealed class CatalogApiEndpointTests
             typeof(PublicMediaImage).GetProperty(nameof(PublicMediaImage.AltText)).ShouldNotBeNull().SetValue(image, string.Empty);
         }
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("draft-640.jpg", new MemoryStream("draft-media"u8.ToArray()), "image/jpeg", 11, "sha256:draft"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("draft-640.jpg", "draft-media"u8.ToArray(), "image/jpeg", "sha256:draft");
         await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -1822,7 +1803,7 @@ public sealed class CatalogApiEndpointTests
         image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "English draft", null, now.AddSeconds(draftOffsetSeconds)).IsSuccess.ShouldBeTrue();
         var store = new TestPublicMediaImageStore();
         await store.Upsert(image, TestContext.Current.CancellationToken);
-        await using var baseFactory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), store, new TestMediaObjectStore());
+        await using var baseFactory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), store, MediaObjectStoreTestFactory.Create());
         await using var factory = baseFactory.WithWebHostBuilder(builder => builder.ConfigureServices(services =>
             {
                 services.RemoveAll<TimeProvider>();
@@ -1870,7 +1851,7 @@ public sealed class CatalogApiEndpointTests
         var store = new TestPublicMediaImageStore();
         await store.Upsert(image, TestContext.Current.CancellationToken);
         store.UpsertException = new IOException("Private storage failure must not become metric tags.");
-        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), store, new TestMediaObjectStore());
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), store, MediaObjectStoreTestFactory.Create());
         using var client = factory.CreateClient();
 
         // Act
@@ -1893,7 +1874,7 @@ public sealed class CatalogApiEndpointTests
         image.SetAiDraftAccessibilityText(PublicContentCultures.PortugueseBrazil, "Descrição em português", null).IsSuccess.ShouldBeTrue();
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), mediaStore, new TestMediaObjectStore());
+        await using var factory = CatalogApiTestHost.Create(new TestCatalogTourReadModelStore(), mediaStore, MediaObjectStoreTestFactory.Create());
         using var client = factory.CreateClient();
         using var content = new StringContent("""
             {"language":"pt-BR","altText":"Ciclistas na montanha","isDecorative":false,
@@ -1946,11 +1927,9 @@ public sealed class CatalogApiEndpointTests
         image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "AI draft", null).IsSuccess.ShouldBeTrue();
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var expectedContent = "reviewed-media"u8.ToArray();
-        await objectStore.Put(
-            new ObjectWriteRequest("review-640.jpg", new MemoryStream(expectedContent), "image/jpeg", expectedContent.Length, "sha256:review"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("review-640.jpg", expectedContent, "image/jpeg", "sha256:review");
         await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -2007,10 +1986,8 @@ public sealed class CatalogApiEndpointTests
         image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "AI draft", null).IsSuccess.ShouldBeTrue();
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        var objectStore = new TestMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("review-640.jpg", new MemoryStream("reviewed-media"u8.ToArray()), "image/jpeg", 14, "sha256:review"),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("review-640.jpg", "reviewed-media"u8.ToArray(), "image/jpeg", "sha256:review");
         await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
         using var client = factory.CreateClient();
 
@@ -2076,15 +2053,11 @@ public sealed class CatalogApiEndpointTests
         var image = imageResult.Value;
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        var objectStore = new TestMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var avifContent = "640-avif"u8.ToArray();
         var smallContent = "640-media"u8.ToArray();
-        await objectStore.Put(
-            new ObjectWriteRequest("variant-640.avif", new MemoryStream(avifContent), "image/avif", avifContent.Length, "sha256:640-avif"),
-            TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("variant-640.jpg", new MemoryStream(smallContent), "image/jpeg", smallContent.Length, "sha256:640"),
-            TestContext.Current.CancellationToken);
+        objectStore.Seed("variant-640.avif", avifContent, "image/avif", "sha256:640-avif");
+        objectStore.Seed("variant-640.jpg", smallContent, "image/jpeg", "sha256:640");
         await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
         using var client = factory.CreateClient();
 

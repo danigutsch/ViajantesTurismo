@@ -1,4 +1,3 @@
-using PandaBear.ObjectStorage;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using PandaBear.AI;
@@ -6,6 +5,7 @@ using PandaBear.BuildingBlocks;
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -20,8 +20,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var store = new InMemoryPublicMediaImageStore(image);
-        var objects = new InMemoryMediaObjectStore();
-        await objects.Put(new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), TestContext.Current.CancellationToken);
+        var objects = MediaObjectStoreTestFactory.Create();
+        objects.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var generatedAt = new DateTimeOffset(2026, 10, 21, 12, 0, 0, TimeSpan.Zero);
         var service = new MediaImageAccessibilityDraftService(store, objects, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), new FakeTimeProvider(generatedAt));
 
@@ -40,8 +40,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var provenance = new MediaImageAccessibilityGenerationProvenance("litellm", "configured-model", "artifact-version", "configuration-fingerprint");
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), provenance: provenance);
         var activities = new ConcurrentQueue<Activity>();
@@ -75,8 +75,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"), cancellation.Token);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new CancellingImageTextGenerator(cancellation));
         var activities = new ConcurrentQueue<Activity>();
         using var listener = CatalogTelemetryTestsHelpers.CreateActivityListener(activities);
@@ -96,7 +96,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
     {
         // Arrange
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7()));
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -116,7 +116,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
     {
         // Arrange
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7()));
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -137,15 +137,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7(), altText: "Existing alt");
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(
-                image.SourceObjectKey,
-                new MemoryStream([1, 2, 3]),
-                "image/jpeg",
-                3,
-                "sha256:abc"),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1, 2, 3], "image/jpeg", "sha256:abc");
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft beach alt", "Draft beach caption"));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -187,7 +180,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
     {
         // Arrange
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7()));
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -208,7 +201,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -229,8 +222,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        objectStore.FailNextOpen(new IOException("Source unreadable."));
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.FailNext(ObjectStoreOperation.OpenRead, new IOException("Source unreadable."));
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -251,8 +244,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        objectStore.FailNextOpen(new FileNotFoundException("Source missing."));
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.FailNext(ObjectStoreOperation.OpenRead, new FileNotFoundException("Source missing."));
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -273,8 +266,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        objectStore.FailNextOpen(new DirectoryNotFoundException("Source directory missing."));
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.FailNext(ObjectStoreOperation.OpenRead, new DirectoryNotFoundException("Source directory missing."));
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -295,8 +288,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        objectStore.FailNextOpen(new UnauthorizedAccessException("Source denied."));
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.FailNext(ObjectStoreOperation.OpenRead, new UnauthorizedAccessException("Source denied."));
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -317,7 +310,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -338,10 +331,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         generator.Throw(new ImageTextGenerationException("Proxy failed."));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
@@ -363,10 +354,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         generator.Throw(new InvalidOperationException("Missing model."));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
@@ -388,10 +377,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult(string.Empty, null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -412,10 +399,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Rascunho", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
@@ -437,10 +422,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/jpeg", 1, "sha256:abc"),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 

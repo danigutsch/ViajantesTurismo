@@ -1,6 +1,6 @@
-using PandaBear.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
 using PandaBear.Testing.Logging;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -13,7 +13,7 @@ public sealed class MediaObjectReconciliationServiceTests
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
 
@@ -32,13 +32,9 @@ public sealed class MediaObjectReconciliationServiceTests
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
-            TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("media/orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/png");
+        objectStore.Seed("media/orphan.jpg", [2], "image/jpeg");
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
 
@@ -58,13 +54,9 @@ public sealed class MediaObjectReconciliationServiceTests
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
-            TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("media/orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/png");
+        objectStore.Seed("media/orphan.jpg", [2], "image/jpeg");
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
 
@@ -77,7 +69,7 @@ public sealed class MediaObjectReconciliationServiceTests
         report.DeletedOrphanObjectKeys.ShouldContain("media/orphan.jpg");
         report.FailedDeleteObjectKeys.ShouldBeEmpty();
         objectStore.ObjectKeys.ShouldNotContain("media/orphan.jpg");
-        objectStore.ExistsCallCount.ShouldBe(0);
+        objectStore.CallCount(ObjectStoreOperation.Exists).ShouldBe(0);
     }
 
     [Fact]
@@ -85,10 +77,8 @@ public sealed class MediaObjectReconciliationServiceTests
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("media/recent-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("media/recent-orphan.jpg", [2], "image/jpeg");
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
 
@@ -107,10 +97,8 @@ public sealed class MediaObjectReconciliationServiceTests
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest("media/old-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed("media/old-orphan.jpg", [2], "image/jpeg");
         objectStore.SetLastModified("media/old-orphan.jpg", TimeProvider.System.GetUtcNow().AddDays(-2));
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var service = new MediaObjectReconciliationService(objectStore, imageStore);
@@ -132,11 +120,9 @@ public sealed class MediaObjectReconciliationServiceTests
         // Arrange
         const string objectKey = "media/traveler@example.com/private.jpg";
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(objectKey, new MemoryStream([2]), "image/jpeg", 1),
-            TestContext.Current.CancellationToken);
-        objectStore.FailNextDelete(objectKey);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(objectKey, [2], "image/jpeg");
+        objectStore.FailNext(ObjectStoreOperation.Delete, new IOException($"Delete failed for {objectKey}."), objectKey);
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var logger = new RecordingLogger<MediaObjectReconciliationService>();
         var service = new MediaObjectReconciliationService(objectStore, imageStore, logger: logger);
@@ -163,7 +149,7 @@ public sealed class MediaObjectReconciliationServiceTests
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var service = new MediaObjectReconciliationService(new InMemoryMediaObjectStore(), new InMemoryPublicMediaImageStore(image));
+        var service = new MediaObjectReconciliationService(MediaObjectStoreTestFactory.Create(), new InMemoryPublicMediaImageStore(image));
 
         // Act
         var action = () => service.Reconcile(deleteOrphans: true, TimeSpan.FromTicks(-1), TestContext.Current.CancellationToken).AsTask();

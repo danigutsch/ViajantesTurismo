@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -15,7 +16,7 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
 
     private MediaObjectReconciliationHostedServiceScenario(
         ServiceProvider provider,
-        InMemoryMediaObjectStore objectStore)
+        InMemoryObjectStore objectStore)
     {
         this.provider = provider;
         ObjectStore = objectStore;
@@ -25,7 +26,7 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
     }
 
     /// <summary>Gets the in-memory object store the scenario runs against.</summary>
-    public InMemoryMediaObjectStore ObjectStore
+    public InMemoryObjectStore ObjectStore
     {
         get;
     }
@@ -34,13 +35,9 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
     public static async Task<MediaObjectReconciliationHostedServiceScenario> CreateWithOldOrphan()
     {
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
-            TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("media/hosted-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/png");
+        objectStore.Seed("media/hosted-orphan.jpg", [2], "image/jpeg");
         objectStore.SetLastModified("media/hosted-orphan.jpg", TimeProvider.System.GetUtcNow().AddDays(-2));
 
         var imageStore = new InMemoryPublicMediaImageStore(image);
@@ -56,13 +53,9 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
     public static async Task<MediaObjectReconciliationHostedServiceScenario> CreateWithRecentOrphan()
     {
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        var objectStore = new InMemoryMediaObjectStore();
-        await objectStore.Put(
-            new ObjectWriteRequest(image.SourceObjectKey, new MemoryStream([1]), "image/png", 1),
-            TestContext.Current.CancellationToken);
-        await objectStore.Put(
-            new ObjectWriteRequest("media/recent-hosted-orphan.jpg", new MemoryStream([2]), "image/jpeg", 1),
-            TestContext.Current.CancellationToken);
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.Seed(image.SourceObjectKey, [1], "image/png");
+        objectStore.Seed("media/recent-hosted-orphan.jpg", [2], "image/jpeg");
 
         return Create(image, objectStore);
     }
@@ -71,10 +64,10 @@ internal sealed class MediaObjectReconciliationHostedServiceScenario : IAsyncDis
     public static MediaObjectReconciliationHostedServiceScenario CreateWithMissingObject()
     {
         var image = PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1024);
-        return Create(image, new InMemoryMediaObjectStore());
+        return Create(image, MediaObjectStoreTestFactory.Create());
     }
 
-    private static MediaObjectReconciliationHostedServiceScenario Create(PublicMediaImage image, InMemoryMediaObjectStore objectStore)
+    private static MediaObjectReconciliationHostedServiceScenario Create(PublicMediaImage image, InMemoryObjectStore objectStore)
     {
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var services = new ServiceCollection();
