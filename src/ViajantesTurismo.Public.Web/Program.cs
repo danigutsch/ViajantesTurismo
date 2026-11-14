@@ -1,6 +1,5 @@
 using System.Globalization;
 using PandaBear.Branding;
-using PandaBear.HttpClients;
 using PandaBear.AspNetCore;
 using PandaBear.AspNetCore.Localization;
 using PandaBear.AspNetCore.Seo;
@@ -12,8 +11,11 @@ using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
-builder.Services.AddHttpClientDefaults(PublicWebSecurityBaseline.ConfigureCatalogResilience);
+builder.AddSharedKernelServiceDefaults(static options =>
+{
+    ViajantesTurismoServiceDefaults.Configure(options);
+    options.ConfigureResilience = PublicWebSecurityBaseline.ConfigureCatalogResilience;
+}).AddViajantesTurismoTelemetry();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddPublicWebSecurityBaseline();
 builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))

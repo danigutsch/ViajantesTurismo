@@ -1,7 +1,6 @@
 using PandaBear.AspNetCore;
 using PandaBear.AspNetCore.Authentication.Bff;
 using PandaBear.Blazor;
-using PandaBear.HttpClients;
 using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Resources;
@@ -12,7 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddRedisOutputCache(ResourceNames.Cache);
-builder.Services.AddHttpClientDefaults();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddManagementAuthentication(builder.Configuration, builder.Environment);
 

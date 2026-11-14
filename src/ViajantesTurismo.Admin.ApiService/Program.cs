@@ -3,7 +3,6 @@ using PandaBear.AspNetCore.Authentication;
 using PandaBear.AspNetCore.RateLimiting;
 using PandaBear.AspNetCore.Seo;
 using PandaBear.HttpCaching.AspNetCore;
-using PandaBear.HttpClients;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Mediator;
 using PandaBear.OpenApi;
@@ -27,7 +26,6 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 
 builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
-builder.Services.AddHttpClientDefaults();
 
 builder.Services.AddSingleton(TimeProvider.System);
 
