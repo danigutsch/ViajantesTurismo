@@ -435,3 +435,28 @@ removed. `global.json` and the SharedKernel `action-pins.json` are unchanged bet
 workflow still permits only the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata
 exceptions; no license category, vulnerability threshold or native distribution gate was relaxed. The preview approval in
 `.config/sharedkernel-repo.json` now names this exact version and revision.
+
+## Aspire security candidate
+
+Candidate `0.1.0-alpha.530.1` uses clean library revision `b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696`. It adds
+`EditSession` to the Blazor package, makes the unhandled-exception handler answer a client that accepts only HTML with the
+problem body, and moves Aspire to 13.6.5, on top of `0.1.0-alpha.521.1`. All 103 package hashes were verified by
+`stage-candidate` against the pin, which is the unedited `candidate.json` of CI run
+[43055566816](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/43055566816) and the GitHub prerelease. The
+pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
+
+This repository's main CI failed restore audit on Aspire 13.6.4: NU1903 for `Aspire.Hosting` and `Aspire.Hosting.AppHost`
+(CVE-2026-120006, GHSA-f7vh-h5g3-7jrh) and NU1904 for `Aspire.Dashboard.Sdk.linux-x64` (CVE-2026-118740,
+GHSA-4g86-54fm-h9h8). Both advisories are fixed in 13.6.5 and the candidate requires it, so the `Aspire.*` packages, the
+`Aspire.AppHost.Sdk` in `global.json` and the `aspire.cli` tool moved to 13.6.5. 13.6.5 raises the floors of
+`Microsoft.Extensions.*` and `Microsoft.EntityFrameworkCore.Relational` to 10.0.14, so those pins moved too. No
+`NuGetAuditSuppress` was added and the audit mode and level are unchanged.
+
+Against the `0.1.0-alpha.521.1` state of this repository, the set of external package ids across all lock files is
+identical and no lock file was added or removed; only versions move: the `Aspire.*` family from 13.6.4 to 13.6.5 and the
+`Microsoft.Extensions.*`, EF Core and related packages from 10.0.12 or 10.0.13 to 10.0.14. A vulnerability scan of the
+solution including transitive packages reports nothing. The workflow still permits only the same exact StreamJsonRpc
+`2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability threshold or native
+distribution gate was relaxed. The SharedKernel `action-pins.json` is unchanged between the two library revisions, and
+`global.json` differs only in its `Aspire.AppHost.Sdk`. The preview approval in `.config/sharedkernel-repo.json` now names
+this exact version and revision.

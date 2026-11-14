@@ -42,6 +42,19 @@ public sealed class AdminIntegrationEventWorkerTests
     }
 
     [Fact]
+    public void The_admin_worker_builds_the_admin_model_its_migrations_describe()
+    {
+        // Arrange
+        using var scenario = AdminIntegrationEventWorkerScenario.ComposeWorker();
+
+        // Act
+        var hasPendingChanges = scenario.HasPendingModelChanges<AdminWriteDbContext>();
+
+        // Assert
+        hasPendingChanges.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task The_projection_store_applies_a_revision_and_ignores_its_redelivery()
     {
         // Arrange

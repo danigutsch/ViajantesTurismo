@@ -3,6 +3,7 @@
     <PropertyGroup>
         <!-- EF Core DbContext and migrations are not Native AOT-compatible. -->
         <IsAotCompatible>false</IsAotCompatible>
+        <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
     </PropertyGroup>
 
     <ItemGroup>
