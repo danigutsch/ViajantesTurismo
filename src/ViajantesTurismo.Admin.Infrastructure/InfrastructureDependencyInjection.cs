@@ -189,6 +189,8 @@ public static class InfrastructureDependencyInjection
             adminTourCreatedJsonTypeInfo);
         builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
+        // The worker publishes nothing, but its Admin model must still map the transport table the migrations own.
+        builder.Services.AddIntegrationEventTransportStorage<AdminWriteDbContext>();
         builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
         builder.Services.AddAdminBrandingProjection();
 
