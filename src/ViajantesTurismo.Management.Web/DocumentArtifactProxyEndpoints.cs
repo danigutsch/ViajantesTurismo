@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.AspNetCore.Authentication.Bff;
 using PandaBear.HttpCaching.AspNetCore;
 using Polly.Timeout;
 
@@ -56,7 +57,7 @@ internal static class DocumentArtifactProxyEndpoints
         {
             return TypedResults.Problem("The document artifact could not be retrieved.", statusCode: StatusCodes.Status502BadGateway);
         }
-        catch (InvalidOperationException)
+        catch (Exception exception) when (exception is InvalidOperationException or UserTokenUnavailableException)
         {
             return TypedResults.Problem("The document artifact could not be retrieved.", statusCode: StatusCodes.Status502BadGateway);
         }
