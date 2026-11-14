@@ -6,9 +6,13 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.541.1` at clean library revision
-[`324f99162a3249f628c33f87088136415af989d9`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/324f99162a3249f628c33f87088136415af989d9).
-On top of `0.1.0-alpha.530.1` it adds the public-site building blocks (`Blazor.Site`, `AspNetCore.Localization`,
+The published candidate is `0.1.0-alpha.547.1` at clean library revision
+[`cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965).
+On top of `0.1.0-alpha.541.1` it adds shared test doubles: `Testing.ObjectStorage` (`InMemoryObjectStore`),
+`Testing.MalwareScanning` (`TestMalwareScanner`), recording, routing and gated HTTP handlers in `Testing.Http`,
+`StreamFormFile` in `Testing.AspNetCore`, and cancellation and disposal streams in `Testing`; the application's local
+copies of these fakes are removed. It also adds the `prune-prereleases` command of the SharedKernel CI tool and shortens
+the default local candidate version. Version `0.1.0-alpha.541.1` added the public-site building blocks (`Blazor.Site`, `AspNetCore.Localization`,
 `ServiceDefaults`, `Aspire.Hosting`, `EntityFrameworkCore.Npgsql`), BFF token management in
 `AspNetCore.Authentication.Bff` that replaces Duende.AccessTokenManagement, and system-test infrastructure. It is breaking:
 the service defaults own the `HttpClient` pipeline, `AddHttpClientDefaults` is removed and `ImageSanitizing` is renamed
@@ -23,7 +27,7 @@ SharedKernel tools. Version `0.1.0-alpha.511.1` had split `PandaBear.SharedKerne
 `.RateLimiting`, `.Seo` and `PandaBear.Idempotency.AspNetCore`; `AddSecurityEventTelemetry` became
 `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry`). It keeps `lockExemptProjects` and SDK 10.0.403.
 The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.541.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.541.1).
+[`v0.1.0-alpha.547.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.547.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
@@ -152,9 +156,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/324f99162a3249f628c33f87088136415af989d9/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`324f99162a3249f628c33f87088136415af989d9`, which equals the `libraryRevision` in
+`cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

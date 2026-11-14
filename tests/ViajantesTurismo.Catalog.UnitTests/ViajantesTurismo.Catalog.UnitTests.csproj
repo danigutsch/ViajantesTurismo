@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.ObjectStorage" />
         <Using Include="ViajantesTurismo.Admin.Testing.Fakes" />
         <Using Include="Xunit" />
     </ItemGroup>
@@ -31,7 +32,9 @@
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.MalwareScanning" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Logging" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.ObjectStorage" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.ApiService\ViajantesTurismo.Catalog.ApiService.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />

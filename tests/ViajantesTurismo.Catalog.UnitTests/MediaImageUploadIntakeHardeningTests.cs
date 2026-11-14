@@ -1,4 +1,5 @@
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -14,7 +15,7 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Arrange
         var content = CatalogTestImages.CreateJpeg(64, 32);
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1));
-        var intake = IntakeTestSetup.CreateIntake(new InMemoryMediaObjectStore(), imageStore);
+        var intake = IntakeTestSetup.CreateIntake(MediaObjectStoreTestFactory.Create(), imageStore);
 
         // Act
         var result = await intake.Accept(IntakeTestSetup.CreateRequest(content, "photo.jpg", declared), TestContext.Current.CancellationToken);
@@ -30,7 +31,7 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Arrange
         var content = CatalogTestImages.CreateJpeg(64, 32);
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var intake = IntakeTestSetup.CreateIntake(objectStore, new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)), scanner);
 
         // Act
@@ -50,7 +51,7 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Arrange
         byte[] content = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01];
         var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         var intake = IntakeTestSetup.CreateIntake(objectStore, new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)), scanner);
 
         // Act
@@ -70,7 +71,7 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Arrange
         var content = CatalogTestImages.CreateAnimatedWebP(64, 32);
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1));
-        var intake = IntakeTestSetup.CreateIntake(new InMemoryMediaObjectStore(), imageStore);
+        var intake = IntakeTestSetup.CreateIntake(MediaObjectStoreTestFactory.Create(), imageStore);
 
         // Act
         var result = await intake.Accept(IntakeTestSetup.CreateRequest(content, "photo.webp", "image/webp"), TestContext.Current.CancellationToken);
@@ -86,7 +87,7 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Arrange
         var content = CatalogTestImages.CreatePng(64, 32);
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1));
-        var intake = IntakeTestSetup.CreateIntake(new InMemoryMediaObjectStore(), imageStore);
+        var intake = IntakeTestSetup.CreateIntake(MediaObjectStoreTestFactory.Create(), imageStore);
 
         // Act
         var result = await intake.Accept(IntakeTestSetup.CreateRequest(content, "photo.png", "image/png"), TestContext.Current.CancellationToken);
@@ -102,7 +103,7 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(64, 32);
-        var objectStore = new InMemoryMediaObjectStore();
+        var objectStore = MediaObjectStoreTestFactory.Create();
         using var cancellation = new CancellationTokenSource();
         var imageStore = new CancelingPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 1), cancellation);
         var intake = IntakeTestSetup.CreateIntake(objectStore, imageStore);
@@ -121,7 +122,8 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
         var content = CatalogTestImages.CreateJpeg(64, 32);
-        var objectStore = new FailingDeleteObjectStore(new InMemoryMediaObjectStore());
+        var objectStore = MediaObjectStoreTestFactory.Create();
+        objectStore.FailAlways(ObjectStoreOperation.Delete, new IOException("delete failed"));
         var imageStore = new ThrowingPublicMediaImageStore(
             PublicMediaImageTestFactory.CreatePendingImage(mediaImageId, 1),
             new InvalidOperationException("database unavailable"));
@@ -133,6 +135,6 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Assert
         var thrown = await action.ShouldThrow<InvalidOperationException>();
         thrown.Message.ShouldBe("database unavailable");
-        objectStore.DeleteCallCount.ShouldBe(1);
+        objectStore.CallCount(ObjectStoreOperation.Delete).ShouldBe(1);
     }
 }

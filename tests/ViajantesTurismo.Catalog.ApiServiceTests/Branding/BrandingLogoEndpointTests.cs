@@ -1,5 +1,6 @@
 using ImageMagick;
 using PandaBear.MalwareScanning;
+using PandaBear.Testing.MalwareScanning;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Branding.Contracts.Http;
 
@@ -466,7 +467,7 @@ public sealed class BrandingLogoEndpointTests
     public async Task An_upload_with_a_stale_if_match_is_refused_before_the_scan()
     {
         // Arrange
-        var scanner = new StubMalwareScanner(MalwareScanStatus.Passed);
+        var scanner = TestMalwareScanner.Returning(MalwareScanStatus.Passed);
         var store = TestBrandingSettingsStore.Seeded();
         await using var host = BrandingApiTestHost.Create(store);
         await using var factory = BrandingApiTestHost.WithMalwareScanner(host, scanner);
@@ -477,7 +478,7 @@ public sealed class BrandingLogoEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
-        scanner.ScanCount.ShouldBe(0);
+        scanner.CallCount.ShouldBe(0);
         store.Logos.ShouldBeEmpty();
     }
 
@@ -575,7 +576,7 @@ public sealed class BrandingLogoEndpointTests
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
         await using var host = BrandingApiTestHost.Create(store);
-        await using var factory = BrandingApiTestHost.WithMalwareScanner(host, new StubMalwareScanner(MalwareScanStatus.Rejected));
+        await using var factory = BrandingApiTestHost.WithMalwareScanner(host, TestMalwareScanner.Returning(MalwareScanStatus.Rejected));
         using var client = factory.CreateClient();
 
         // Act
@@ -592,7 +593,7 @@ public sealed class BrandingLogoEndpointTests
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
         await using var host = BrandingApiTestHost.Create(store);
-        await using var factory = BrandingApiTestHost.WithMalwareScanner(host, new StubMalwareScanner(MalwareScanStatus.Passed, new InvalidOperationException("down")));
+        await using var factory = BrandingApiTestHost.WithMalwareScanner(host, TestMalwareScanner.Throwing(new InvalidOperationException("down")));
         using var client = factory.CreateClient();
 
         // Act

@@ -103,7 +103,7 @@ public sealed class CatalogGalleryPublicationBoundaryTests
         var image = PublicMediaImageTestFactory.CreateReadyImage(tourId, "source.jpg", "public.jpg", "sha256:draft", "Existing text", 0, true);
         var images = new TestPublicMediaImageStore();
         await images.Upsert(image, TestContext.Current.CancellationToken);
-        await using var factory = CatalogApiTestHost.Create(tours, images, new TestMediaObjectStore());
+        await using var factory = CatalogApiTestHost.Create(tours, images, MediaObjectStoreTestFactory.Create());
         using var client = factory.CreateClient();
         CatalogApiTestHost.ConfigureAuthenticatedClient(client, "Operator");
 
@@ -147,7 +147,7 @@ public sealed class CatalogGalleryPublicationBoundaryTests
         var image = imageResult.Value;
         var images = new TestPublicMediaImageStore();
         await images.Upsert(image, TestContext.Current.CancellationToken);
-        await using var factory = CatalogApiTestHost.Create(tours, images, new TestMediaObjectStore());
+        await using var factory = CatalogApiTestHost.Create(tours, images, MediaObjectStoreTestFactory.Create());
         using var client = factory.CreateClient();
         CatalogApiTestHost.ConfigureAuthenticatedClient(client, "Operator");
 

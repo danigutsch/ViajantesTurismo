@@ -125,7 +125,7 @@ public sealed class ManagementWebEndpointTests
         // Arrange
         var imageId = Guid.CreateVersion7();
         using var upstreamResponse = new ReleaseTrackingResponse();
-        var upstreamStream = new StalledMediaStream();
+        var upstreamStream = new BlockingReadStream("i"u8.ToArray(), []);
         var catalogApi = new FakeCatalogToursApiClient
         {
             Media = new PublicMediaObjectResponse(upstreamResponse, upstreamStream, "image/jpeg")
@@ -144,17 +144,12 @@ public sealed class ManagementWebEndpointTests
         bytesRead.ShouldBe(1);
 
         // Act
-        await upstreamStream.StalledReadStarted.WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
+        await upstreamStream.Blocked.WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
         response.Dispose();
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(Xunit.TestContext.Current.CancellationToken);
-        timeout.CancelAfter(TimeSpan.FromSeconds(10));
-        while (!upstreamStream.IsDisposed || !upstreamResponse.IsReleased)
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
-        }
+        await Task.WhenAll(upstreamStream.Disposed, upstreamResponse.Released).WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
 
         // Assert
-        upstreamStream.StalledReadWasCancelled.ShouldBeTrue();
+        upstreamStream.BlockedReadCancelled.ShouldBeTrue();
     }
 
     [Fact]

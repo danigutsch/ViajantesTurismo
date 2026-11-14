@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using PandaBear.MalwareScanning;
 using PandaBear.MalwareScanning.ClamAv.Testing;
 using PandaBear.Results;
+using PandaBear.Testing.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -60,7 +61,9 @@ public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContain
         listener.Stop();
         var unavailableEndpoint = new UriBuilder("tcp", IPAddress.Loopback.ToString(), unavailablePort).Uri;
         using var scannerScope = ClamAvMalwareScannerTestScope.Create(new ClamAvMalwareScannerTestSettings(unavailableEndpoint, TimeSpan.FromMilliseconds(100)));
-        var objectStore = new RecordingMediaObjectStore();
+        var objectStore = new InMemoryObjectStore { DiscardWrites = true };
+        objectStore.FailAlways(ObjectStoreOperation.OpenRead, new InvalidOperationException("Storage reads are not expected."));
+        objectStore.FailAlways(ObjectStoreOperation.CreateUploadUrl, new InvalidOperationException("Direct uploads are not expected."));
         var validationOptions = new MediaUploadValidationOptions();
         var intake = new MediaImageUploadIntake(
             new MediaUploadValidator(validationOptions),
@@ -86,7 +89,7 @@ public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContain
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Unavailable);
-        objectStore.PutCount.ShouldBe(0);
+        objectStore.Puts.ShouldBeEmpty();
     }
 
     [Fact]

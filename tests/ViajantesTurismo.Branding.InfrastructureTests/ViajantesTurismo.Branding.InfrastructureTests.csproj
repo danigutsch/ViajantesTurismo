@@ -33,6 +33,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.MalwareScanning" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj" />
     </ItemGroup>

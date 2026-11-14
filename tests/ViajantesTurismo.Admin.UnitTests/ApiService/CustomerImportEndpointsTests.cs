@@ -16,6 +16,7 @@ using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.ApiService.Customers;
 using ViajantesTurismo.Admin.Contracts.Application;
 using PandaBear.Testing.Logging;
+using PandaBear.Testing.MalwareScanning;
 
 namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 
@@ -162,7 +163,7 @@ public sealed class CustomerImportEndpointsTests
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture };
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
@@ -170,7 +171,7 @@ public sealed class CustomerImportEndpointsTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         Encoding.UTF8.GetString(result.Value.Span).ShouldBe(expectedCsv);
-        scanner.ScannedContent.ShouldBe(Encoding.UTF8.GetBytes(expectedCsv));
+        scanner.LastScan.ShouldNotBeNull().Content.ToArray().ShouldBe(Encoding.UTF8.GetBytes(expectedCsv));
     }
 
     [Fact]
@@ -183,7 +184,7 @@ public sealed class CustomerImportEndpointsTests
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
-        var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected));
+        var scanner = new TestMalwareScanner { Result = MalwareScanResult.Rejected, ContentHandling = MalwareScanContentHandling.Capture };
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
@@ -205,7 +206,7 @@ public sealed class CustomerImportEndpointsTests
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
-        var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Failed));
+        var scanner = new TestMalwareScanner { Result = new MalwareScanResult(MalwareScanStatus.Failed), ContentHandling = MalwareScanContentHandling.Capture };
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
@@ -227,7 +228,7 @@ public sealed class CustomerImportEndpointsTests
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed, new IOException());
+        var scanner = TestMalwareScanner.Throwing(new IOException());
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
@@ -250,7 +251,7 @@ public sealed class CustomerImportEndpointsTests
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed, new IOException(sensitiveText));
+        var scanner = TestMalwareScanner.Throwing(new IOException(sensitiveText));
         var logger = new RecordingLogger();
 
         // Act
@@ -315,7 +316,7 @@ public sealed class CustomerImportEndpointsTests
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture };
         using var requestCancellation = new CancellationTokenSource();
 
         // Act
@@ -326,7 +327,7 @@ public sealed class CustomerImportEndpointsTests
 
         // Assert
         _ = await action.ShouldThrow<TaskCanceledException>();
-        scanner.ScannedContent.ShouldBeNull();
+        scanner.CallCount.ShouldBe(0);
         stream.BytesRead.ShouldBe(0);
     }
 
@@ -342,14 +343,14 @@ public sealed class CustomerImportEndpointsTests
             Headers = new HeaderDictionary(),
             ContentType = ContractConstants.CustomerImportTextCsvContentType
         };
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture };
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        scanner.ScannedContent.ShouldBe(content);
+        scanner.LastScan.ShouldNotBeNull().Content.ToArray().ShouldBe(content);
         result.Value.ToArray().ShouldBe(content);
     }
 
@@ -359,7 +360,7 @@ public sealed class CustomerImportEndpointsTests
         // Arrange
         var content = new byte[ContractConstants.CustomerImportMaxFileBytes];
         Array.Fill(content, (byte)'a');
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed, captureContent: false);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Drain };
         var warmUp = new FormFile(new MemoryStream(content), 0, content.LongLength, "file", "customers.csv")
         {
             Headers = new HeaderDictionary(),
@@ -405,7 +406,7 @@ public sealed class CustomerImportEndpointsTests
         };
 
         // Act
-        var result = await CustomerImportEndpoints.ReadCsv(file, new StubMalwareScanner(MalwareScanResult.Passed), NullLogger.Instance, TestContext.Current.CancellationToken);
+        var result = await CustomerImportEndpoints.ReadCsv(file, new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture }, NullLogger.Instance, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -418,8 +419,8 @@ public sealed class CustomerImportEndpointsTests
         // Arrange
         var content = "firstName,lastName\nAda,Lovelace\nGrace,Hopper"u8.ToArray();
         using var stream = new GatedChunkReadStream(content, 7);
-        var file = new StreamFormFile(stream, content.LongLength);
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture };
         var chunkReads = (content.Length + 6) / 7;
 
         // Act
@@ -427,7 +428,7 @@ public sealed class CustomerImportEndpointsTests
         for (var i = 0; i < chunkReads; i++)
         {
             await stream.WaitForPendingRead(TestContext.Current.CancellationToken);
-            scanner.ScannedContent.ShouldBeNull();
+            scanner.CallCount.ShouldBe(0);
             stream.ReleaseRead();
         }
 
@@ -438,7 +439,7 @@ public sealed class CustomerImportEndpointsTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         Encoding.UTF8.GetString(result.Value.Span).ShouldBe(Encoding.UTF8.GetString(content));
-        scanner.ScannedContent.ShouldBe(content);
+        scanner.LastScan.ShouldNotBeNull().Content.ToArray().ShouldBe(content);
         stream.LargestRequestedRead.ShouldBeLessThanOrEqualTo(128 * 1024);
     }
 
@@ -450,8 +451,8 @@ public sealed class CustomerImportEndpointsTests
         Array.Fill(content, (byte)'a');
         using var stream = new GatedChunkReadStream(content, 64 * 1024);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, content.LongLength);
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture };
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
@@ -459,7 +460,7 @@ public sealed class CustomerImportEndpointsTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.Length.ShouldBe(content.Length);
-        scanner.ScannedContent.ShouldNotBeNull();
+        scanner.LastScan.ShouldNotBeNull().Content.Length.ShouldBe(content.Length);
     }
 
     [Fact]
@@ -470,8 +471,8 @@ public sealed class CustomerImportEndpointsTests
         Array.Fill(content, (byte)'a');
         using var stream = new GatedChunkReadStream(content, 64 * 1024);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, ContractConstants.CustomerImportMaxFileBytes);
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var file = new StreamFormFile(stream, ContractConstants.CustomerImportMaxFileBytes, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture };
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
@@ -479,7 +480,7 @@ public sealed class CustomerImportEndpointsTests
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
-        scanner.ScannedContent.ShouldBeNull();
+        scanner.CallCount.ShouldBe(0);
         stream.BytesRead.ShouldBeLessThanOrEqualTo(ContractConstants.CustomerImportMaxFileBytes + 64 * 1024);
     }
 
@@ -492,8 +493,8 @@ public sealed class CustomerImportEndpointsTests
         var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
         using var stream = new GatedChunkReadStream(content, 8);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, content.LongLength + declaredDelta);
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var file = new StreamFormFile(stream, content.LongLength + declaredDelta, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture };
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
@@ -501,7 +502,7 @@ public sealed class CustomerImportEndpointsTests
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
-        scanner.ScannedContent.ShouldBeNull();
+        scanner.CallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -510,8 +511,8 @@ public sealed class CustomerImportEndpointsTests
         // Arrange
         var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
         using var stream = new GatedChunkReadStream(content, 8);
-        var file = new StreamFormFile(stream, content.LongLength);
-        var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
+        var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture };
         using var requestCancellation = new CancellationTokenSource();
 
         // Act
@@ -524,7 +525,7 @@ public sealed class CustomerImportEndpointsTests
 
         // Assert
         _ = await action.ShouldThrow<OperationCanceledException>();
-        scanner.ScannedContent.ShouldBeNull();
+        scanner.CallCount.ShouldBe(0);
         stream.BytesRead.ShouldBe(8);
         stream.IsDisposed.ShouldBeTrue();
     }
@@ -543,13 +544,13 @@ public sealed class CustomerImportEndpointsTests
             : "firstName,lastName\nAda,Lovelace"u8.ToArray();
         using var stream = new GatedChunkReadStream(content, 64 * 1024);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, content.LongLength);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
         var scanner = outcome switch
         {
-            "rejected" => new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected)),
-            "unavailable" => new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Failed)),
-            "throws" => new StubMalwareScanner(MalwareScanResult.Passed, new IOException()),
-            _ => new StubMalwareScanner(MalwareScanResult.Passed)
+            "rejected" => new TestMalwareScanner { Result = MalwareScanResult.Rejected, ContentHandling = MalwareScanContentHandling.Capture },
+            "unavailable" => new TestMalwareScanner { Result = new MalwareScanResult(MalwareScanStatus.Failed), ContentHandling = MalwareScanContentHandling.Capture },
+            "throws" => TestMalwareScanner.Throwing(new IOException()),
+            _ => new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.Capture }
         };
 
         // Act
@@ -566,8 +567,8 @@ public sealed class CustomerImportEndpointsTests
         var content = new byte[] { 0xFF, 0xFE }.Concat(Encoding.Unicode.GetBytes("firstName,lastName\nAda,Lovelace")).ToArray();
         using var stream = new GatedChunkReadStream(content, 5);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, content.LongLength);
-        var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected));
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
+        var scanner = new TestMalwareScanner { Result = MalwareScanResult.Rejected, ContentHandling = MalwareScanContentHandling.Capture };
 
         // Act
         var result = await CustomerImportEndpoints.ReadCsv(file, scanner, NullLogger.Instance, TestContext.Current.CancellationToken);
@@ -575,6 +576,6 @@ public sealed class CustomerImportEndpointsTests
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Status.ShouldBe(ResultStatus.Invalid);
-        scanner.ScannedContent.ShouldBe(content);
+        scanner.LastScan.ShouldNotBeNull().Content.ToArray().ShouldBe(content);
     }
 }

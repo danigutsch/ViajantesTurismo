@@ -37,7 +37,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         WebApplicationFactory<AdminApiHostEntryPoint> factory,
         Uri baseUri,
         RequestLifetimeProbe probe,
-        ScanRecorder scans,
+        ChunkObservingMalwareScanner scanner,
         FakeCustomerStore store,
         FakeUnitOfWork unitOfWork)
     {
@@ -45,7 +45,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         this.factory = factory;
         BaseUri = baseUri;
         Probe = probe;
-        Scans = scans;
+        Scanner = scanner;
         Store = store;
         UnitOfWork = unitOfWork;
         Client = new HttpClient { BaseAddress = baseUri, Timeout = TimeSpan.FromSeconds(60) };
@@ -70,8 +70,8 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         get;
     }
 
-    /// <summary>The scans the malware scanner received.</summary>
-    public ScanRecorder Scans
+    /// <summary>The malware scanner, which records each scan and the client chunks started when it began.</summary>
+    public ChunkObservingMalwareScanner Scanner
     {
         get;
     }
@@ -95,13 +95,13 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
     public static CustomerImportKestrelScenario Start(string routeSuffix, Action<IWebHostBuilder>? configureHost = null)
     {
         var probe = new RequestLifetimeProbe(routeSuffix);
-        var scans = new ScanRecorder();
+        var scanner = new ChunkObservingMalwareScanner();
         var store = new FakeCustomerStore();
         var unitOfWork = new FakeUnitOfWork();
         var root = AdminApiTestHost.Create(services =>
         {
             RequestProbeStartupFilter.Register(services, probe);
-            services.Replace(ServiceDescriptor.Singleton<IMalwareScanner>(new RecordingMalwareScanner(scans)));
+            services.Replace(ServiceDescriptor.Singleton<IMalwareScanner>(scanner));
             var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
             services.Replace(ServiceDescriptor.Singleton(new CustomerImportWorkflowService(
                 store,
@@ -116,7 +116,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         });
 
         var baseUri = factory.Start();
-        return new CustomerImportKestrelScenario(root, factory, baseUri, probe, scans, store, unitOfWork);
+        return new CustomerImportKestrelScenario(root, factory, baseUri, probe, scanner, store, unitOfWork);
     }
 
     /// <summary>Builds the multipart form for a CSV file, with the empty resolutions field the commit route accepts.</summary>

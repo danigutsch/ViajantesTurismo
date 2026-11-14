@@ -31,7 +31,7 @@ public sealed class CustomerImportUploadOverKestrelTests
 
         // Assert
         scenario.Probe.DisconnectObserved.ShouldBeTrue();
-        scenario.Scans.Scans.ShouldBeEmpty();
+        scenario.Scanner.Recorder.CallCount.ShouldBe(0);
         scenario.Store.AllCustomers.ShouldBeEmpty();
         scenario.UnitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
@@ -46,14 +46,14 @@ public sealed class CustomerImportUploadOverKestrelTests
         var csv = Encoding.UTF8.GetBytes(CustomerImportKestrelScenario.ValidCsv);
         var payload = await CustomerImportKestrelScenario.Form(csv, TestContext.Current.CancellationToken);
         using var upload = new SlowUpload(scenario.Client, new Uri(route, UriKind.Relative), payload, chunkSize: 128);
-        scenario.Scans.ChunksStarted = () => upload.Content.ChunksStarted;
+        scenario.Scanner.ChunksStarted = () => upload.Content.ChunksStarted;
 
         // Act
         for (var chunk = 1; chunk < upload.Content.ChunkCount; chunk++)
         {
             upload.Content.ReleaseChunk();
             await scenario.Probe.WaitForBytes(upload.Content.BytesAfter(chunk)).WaitAsync(WireTimeout.Default, TestContext.Current.CancellationToken);
-            scenario.Scans.Scans.ShouldBeEmpty();
+            scenario.Scanner.Recorder.CallCount.ShouldBe(0);
         }
 
         upload.Content.ReleaseChunk();
@@ -61,9 +61,9 @@ public sealed class CustomerImportUploadOverKestrelTests
 
         // Assert
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var scan = scenario.Scans.Scans.ShouldHaveSingleItem();
+        var scan = scenario.Scanner.Recorder.Scans.ShouldHaveSingleItem();
         scan.Content.ToArray().ShouldBe(csv);
-        scan.ChunksStarted.ShouldBe(upload.Content.ChunkCount);
+        scenario.Scanner.ChunksStartedAtScan.ShouldHaveSingleItem().ShouldBe(upload.Content.ChunkCount);
         scenario.Probe.LargestRequestedRead.ShouldBeLessThanOrEqualTo(81_920);
         scenario.Store.AllCustomers.ShouldHaveSingleItem();
     }
@@ -86,7 +86,7 @@ public sealed class CustomerImportUploadOverKestrelTests
 
         // Assert
         statusLine.ShouldBe("HTTP/1.1 413 Payload Too Large");
-        scenario.Scans.Scans.ShouldBeEmpty();
+        scenario.Scanner.Recorder.CallCount.ShouldBe(0);
         scenario.Store.AllCustomers.ShouldBeEmpty();
     }
 
@@ -108,7 +108,7 @@ public sealed class CustomerImportUploadOverKestrelTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        scenario.Scans.Scans.ShouldBeEmpty();
+        scenario.Scanner.Recorder.CallCount.ShouldBe(0);
         scenario.Store.AllCustomers.ShouldBeEmpty();
     }
 
@@ -132,7 +132,7 @@ public sealed class CustomerImportUploadOverKestrelTests
 
         // Assert
         statusLine.ShouldBe("HTTP/1.1 408 Request Timeout");
-        scenario.Scans.Scans.ShouldBeEmpty();
+        scenario.Scanner.Recorder.CallCount.ShouldBe(0);
         scenario.Store.AllCustomers.ShouldBeEmpty();
     }
 }

@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using PandaBear.Testing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
@@ -6,8 +7,8 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 /// <summary>
 /// Contract tests for the range and disposal behavior of Catalog media delivery.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class MediaStreamingContractTests
 {
     [Theory]
@@ -46,7 +47,7 @@ public sealed class MediaStreamingContractTests
         _ = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        scenario.ObjectStore.OpenedStreams.ShouldHaveSingleItem().IsDisposed.ShouldBeTrue();
+        scenario.OpenedStreams.ShouldHaveSingleItem().IsDisposed.ShouldBeTrue();
     }
 
     [Theory]
@@ -67,12 +68,13 @@ public sealed class MediaStreamingContractTests
         bytesRead.ShouldBe(1);
 
         // Act
-        var stream = scenario.ObjectStore.OpenedStreams.ShouldHaveSingleItem();
-        await stream.StalledReadStarted.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        var stream = scenario.OpenedStreams.ShouldHaveSingleItem();
+        var stalledContent = stream.InnerStream.ShouldBeOfType<BlockingReadStream>();
+        await stalledContent.Blocked.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         response.Dispose();
         await stream.Disposed.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         // Assert
-        stream.StalledReadWasCancelled.ShouldBeTrue();
+        stalledContent.BlockedReadCancelled.ShouldBeTrue();
     }
 }
