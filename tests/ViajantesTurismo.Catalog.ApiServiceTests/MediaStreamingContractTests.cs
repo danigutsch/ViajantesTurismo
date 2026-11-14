@@ -69,7 +69,7 @@ public sealed class MediaStreamingContractTests
 
         // Act
         var stream = scenario.OpenedStreams.ShouldHaveSingleItem();
-        var stalledContent = stream.InnerStream.ShouldBeOfType<PandaBear.Testing.BlockingReadStream>();
+        var stalledContent = stream.InnerStream.ShouldBeOfType<BlockingReadStream>();
         await stalledContent.Blocked.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         response.Dispose();
         await stream.Disposed.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);

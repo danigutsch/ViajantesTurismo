@@ -15,11 +15,11 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
     public static readonly byte[] Payload = "streamed-media-payload"u8.ToArray();
 
     private readonly Guid imageId;
-    private readonly ConcurrentQueue<PandaBear.Testing.DisposalTrackingStream> openedStreams;
+    private readonly ConcurrentQueue<DisposalTrackingStream> openedStreams;
 
     private MediaDeliveryScenario(
         WebApplicationFactory<CatalogApiHostEntryPoint> factory,
-        ConcurrentQueue<PandaBear.Testing.DisposalTrackingStream> openedStreams,
+        ConcurrentQueue<DisposalTrackingStream> openedStreams,
         Guid imageId)
     {
         Factory = factory;
@@ -34,7 +34,7 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
     }
 
     /// <summary>The disposal-tracking streams the object store handed out, in read order.</summary>
-    public IReadOnlyList<PandaBear.Testing.DisposalTrackingStream> OpenedStreams => [.. openedStreams];
+    public IReadOnlyList<DisposalTrackingStream> OpenedStreams => [.. openedStreams];
 
     /// <summary>Returns the public or management media route for the 640 px JPEG rendition.</summary>
     public string Route(bool isPublic) => isPublic
@@ -70,7 +70,7 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
             isCover: true);
         var mediaStore = new TestPublicMediaImageStore();
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
-        var openedStreams = new ConcurrentQueue<PandaBear.Testing.DisposalTrackingStream>();
+        var openedStreams = new ConcurrentQueue<DisposalTrackingStream>();
         var objectStore = MediaObjectStoreTestFactory.Create((_, content) =>
         {
             var served = content;
@@ -80,7 +80,7 @@ internal sealed class MediaDeliveryScenario : IAsyncDisposable
                 served = new BlockingReadStream(Payload[..1], Payload[1..]);
             }
 
-            var tracked = new PandaBear.Testing.DisposalTrackingStream(served);
+            var tracked = new DisposalTrackingStream(served);
             openedStreams.Enqueue(tracked);
             return tracked;
         });
