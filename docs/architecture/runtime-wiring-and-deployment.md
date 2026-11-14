@@ -23,61 +23,46 @@ flowchart LR
     AdminIntegrationEventWorker[Admin Integration Event Worker]
     AdminPerformanceSmoke[Admin Performance Smoke]
     apiService[Admin.ApiService]
+    adminDatabase[Application Database]
+    catalogDatabase[Application Database]
+    securityDatabase[Application Database]
+    Cache[Cache]
     CatalogIntegrationEventWorker[Catalog Integration Event Worker]
     catalogApiService[Catalog.ApiService]
     clamAv[ClamAV]
-    adminDatabase[Database]
-    catalogDatabase[Database]
-    securityDatabase[Database]
     DatabaseObservability[Database Observability]
-    managementWebClientSecret[Local Secret]
+    managementWebClientSecret[Generated Secret]
     ManagementWeb[Management.Web]
     migrationService[MigrationService]
     ObservabilityStack[Observability Stack]
-    databaseServer[PostgreSQL server]
     PublicWeb[Public.Web]
-    cache[Redis cache]
-    identityProvider[Run Mode Identity Provider]
-    seaweedFs[SeaweedFS]
-    SharedProductResources[Shared Product Resources]
     AdminIntegrationEventWorker --> adminDatabase
     AdminIntegrationEventWorker --> catalogDatabase
     AdminIntegrationEventWorker --> migrationService
     AdminPerformanceSmoke --> apiService
-    AdminPerformanceSmoke --> identityProvider
     CatalogIntegrationEventWorker --> adminDatabase
     CatalogIntegrationEventWorker --> catalogDatabase
     CatalogIntegrationEventWorker --> clamAv
     CatalogIntegrationEventWorker --> migrationService
-    CatalogIntegrationEventWorker --> seaweedFs
     DatabaseObservability --> adminDatabase
     DatabaseObservability --> catalogDatabase
     DatabaseObservability --> migrationService
     ManagementWeb --> apiService
-    ManagementWeb --> cache
     ManagementWeb --> catalogApiService
-    ManagementWeb --> identityProvider
     ManagementWeb --> managementWebClientSecret
     ManagementWeb --> migrationService
     ManagementWeb --> securityDatabase
     PublicWeb --> catalogApiService
-    adminDatabase --> databaseServer
     apiService --> adminDatabase
     apiService --> clamAv
-    apiService --> identityProvider
     apiService --> migrationService
     catalogApiService --> adminDatabase
     catalogApiService --> catalogDatabase
     catalogApiService --> clamAv
-    catalogApiService --> identityProvider
     catalogApiService --> migrationService
-    catalogApiService --> seaweedFs
-    catalogDatabase --> databaseServer
-    identityProvider --> managementWebClientSecret
     migrationService --> adminDatabase
     migrationService --> catalogDatabase
     migrationService --> securityDatabase
-    securityDatabase --> databaseServer
 ```
 <!-- generated:apphost-resources:end -->
 
