@@ -40,10 +40,7 @@ internal static class TestCoverageMatrixTestsHelpers
             + "and not by a direct project reference.",
         ["ViajantesTurismo.Branding.AspNetCore"] =
             "Tested through Catalog.ApiServiceTests (BrandingApiEndpointTests) against the Catalog host; "
-            + "it has no test project of its own.",
-        ["ViajantesTurismo.Catalog.IntegrationEventWorker"] =
-            "No worker test project exists; the closest signal is HostedTests and WorkerOwnershipTests. "
-            + "Revisit when the worker gains logic of its own."
+            + "it has no test project of its own."
     };
 
     /// <summary>Returns the sorted source projects (from the solution) that lack a direct test project of the required category.</summary>
