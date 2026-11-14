@@ -29,7 +29,7 @@ public sealed class CustomerReviseTests
         result.IsSuccess.ShouldBeTrue();
         customer.PersonalInfo.FirstName.ShouldBe("Revised");
         customer.IdentificationInfo.NationalId.ShouldBe("B98765432");
-        customer.ContactInfo.Email.ShouldBe("revised@example.com");
+        customer.ContactInfo.Email.Value.ShouldBe("revised@example.com");
         customer.Address.City.ShouldBe("Porto");
         customer.PhysicalInfo.HeightCentimeters.ShouldBe(180);
         customer.AccommodationPreferences.BedType.ShouldBe(BedType.DoubleBed);

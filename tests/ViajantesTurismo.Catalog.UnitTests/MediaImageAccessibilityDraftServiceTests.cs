@@ -2,6 +2,7 @@ using PandaBear.ObjectStorage;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using PandaBear.AI;
+using PandaBear.BuildingBlocks;
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
@@ -25,11 +26,11 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var service = new MediaImageAccessibilityDraftService(store, objects, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), new FakeTimeProvider(generatedAt));
 
         // Act
-        var result = await service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.PtBr }, TestContext.Current.CancellationToken);
+        var result = await service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.PortugueseBrazil }, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        var draft = store.Current.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr);
+        var draft = store.Current.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.PortugueseBrazil);
         draft.PendingDraftCreatedAt.ShouldBe(generatedAt);
     }
 
@@ -49,7 +50,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         using var listener = CatalogTelemetryTestsHelpers.CreateMeterListener(measurements);
 
         // Act
-        var result = await service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs, Context = "Private context" }, TestContext.Current.CancellationToken);
+        var result = await service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates, Context = "Private context" }, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -81,7 +82,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         using var listener = CatalogTelemetryTestsHelpers.CreateActivityListener(activities);
 
         // Act
-        Func<Task> action = () => service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs }, cancellation.Token).AsTask();
+        Func<Task> action = () => service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates }, cancellation.Token).AsTask();
         await action.ShouldThrow<TaskCanceledException>();
 
         // Assert
@@ -102,7 +103,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             Guid.Empty,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -122,7 +123,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             Guid.CreateVersion7(),
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.None },
+            new MediaImageAccessibilityDraftInput { Language = null },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -153,7 +154,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             image.Id,
             new MediaImageAccessibilityDraftInput
             {
-                Language = PublicContentLanguage.EnUs,
+                Language = PublicContentCultures.EnglishUnitedStates,
                 Context = "Homepage hero",
                 Latitude = -23.55m,
                 Longitude = -46.63m
@@ -193,7 +194,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             Guid.CreateVersion7(),
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -214,7 +215,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -236,7 +237,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -258,7 +259,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -280,7 +281,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -302,7 +303,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -323,7 +324,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs, Latitude = -23.55m },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates, Latitude = -23.55m },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -348,7 +349,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -373,7 +374,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -397,7 +398,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.EnUs },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -421,7 +422,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = PublicContentLanguage.PtBr },
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.PortugueseBrazil },
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -446,12 +447,11 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Act
         var result = await service.GenerateDraft(
             image.Id,
-            new MediaImageAccessibilityDraftInput { Language = (PublicContentLanguage)999 },
+            new MediaImageAccessibilityDraftInput { Language = ContentCulture.Restore("fr-FR") },
             TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
-        generator.Request.ShouldNotBeNull();
-        generator.Request.Language.ShouldBe("und");
+        generator.Request.ShouldBeNull();
     }
 }

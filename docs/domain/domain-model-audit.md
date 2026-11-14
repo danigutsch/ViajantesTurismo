@@ -82,7 +82,7 @@ and A15, all fixed.
 
 | Category | Enums | Decision |
 | --- | --- | --- |
-| Stable labels | `BikeType`, `RoomType`, `BedType`, `PaymentMethod`, `DiscountType`, `DocumentType`, `DocumentAudience`, `DocumentPrivacyClassification`, `PublicContentLanguage`, `PaymentAccountKind`, `BrazilianAccountType`, `PaymentAccountVerificationMethod` | Keep as enums |
+| Stable labels | `BikeType`, `RoomType`, `BedType`, `PaymentMethod`, `DiscountType`, `DocumentType`, `DocumentAudience`, `DocumentPrivacyClassification`, `PaymentAccountKind`, `BrazilianAccountType`, `PaymentAccountVerificationMethod` | Keep as enums |
 | Reasons and audit vocabulary | `DocumentAuditOutcome`, `DocumentAuditReasonCode`, `DocumentAuditOperation`, `FinancialReason`, `PaymentAccountReason`, `PaymentAccountReviewOutcome` | Keep as enums |
 | Lifecycle states | `BookingStatus`, `PaymentStatus`, `DocumentStatus`, `PaymentAccountStatus`, `MediaImageProcessingStatus`, `PublicContentPublicationState` | Keep public for display, mapping, and filtering; move decisions behind domain predicates |
 

@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using PandaBear.AspNetCore.Authentication;
+using PandaBear.AspNetCore.Authentication.Bff;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Management.Web;
 
@@ -17,14 +17,14 @@ internal sealed class ManagementSecurityPersistenceTestHost : IAsyncDisposable
 
     private readonly ServiceProvider serviceProvider;
     private readonly IDataProtector payloadProtector;
-    private readonly ITicketStore ticketStore;
+    private readonly ServerSideTicketStore ticketStore;
 
     private ManagementSecurityPersistenceTestHost(ServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
         payloadProtector = serviceProvider.GetRequiredService<IDataProtectionProvider>()
             .CreateProtector(PayloadProtectorPurpose);
-        ticketStore = serviceProvider.GetRequiredService<ITicketStore>();
+        ticketStore = serviceProvider.GetRequiredService<ServerSideTicketStore>();
     }
 
     /// <summary>Builds a host with synthetic authentication settings backed by the given connection string, optionally setting the data protection application name.</summary>

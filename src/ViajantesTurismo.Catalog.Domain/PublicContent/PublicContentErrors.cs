@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
 
 namespace ViajantesTurismo.Catalog.Domain.PublicContent;
@@ -52,7 +53,7 @@ public static class PublicContentErrors
     /// <returns>A validation result.</returns>
     public static Result DuplicateVariantLanguage(
         string field,
-        PublicContentLanguage language) => Result.Invalid(
+        ContentCulture language) => Result.Invalid(
             detail: $"Public content {field} contains more than one {language} variant.",
             field: field,
             message: $"{field} contains a duplicate language variant.");
@@ -65,7 +66,7 @@ public static class PublicContentErrors
     /// <returns>A validation result.</returns>
     public static Result MissingVariantLanguage(
         string field,
-        PublicContentLanguage language) => Result.Invalid(
+        ContentCulture language) => Result.Invalid(
             detail: $"Public content {field} must include a {language} variant.",
             field: field,
             message: $"{field} is missing a supported language variant.");

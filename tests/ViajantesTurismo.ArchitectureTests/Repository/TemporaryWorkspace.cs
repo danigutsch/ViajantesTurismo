@@ -1,20 +1,14 @@
+using PandaBear.Testing;
+
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 
-/// <summary>Temporary directory under the system temp path that is removed on dispose.</summary>
+/// <summary>Temporary directory with relative-path file helpers; the directory is removed on dispose.</summary>
 internal sealed class TemporaryWorkspace : IDisposable
 {
-    /// <summary>Creates a new uniquely named workspace directory.</summary>
-    public TemporaryWorkspace()
-    {
-        RootPath = Path.Combine(Path.GetTempPath(), "viajantes-architecture-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(RootPath);
-    }
+    private readonly TemporaryDirectory _directory = new();
 
     /// <summary>Gets the absolute path of the workspace directory.</summary>
-    public string RootPath
-    {
-        get;
-    }
+    public string RootPath => _directory.Path;
 
     /// <summary>Returns whether the file at <paramref name="relativePath"/> exists in the workspace.</summary>
     public bool FileExists(string relativePath) =>
@@ -36,12 +30,6 @@ internal sealed class TemporaryWorkspace : IDisposable
     public void DeleteFile(string relativePath) =>
         File.Delete(Path.Combine(RootPath, relativePath));
 
-    /// <summary>Deletes the workspace directory and its contents.</summary>
-    public void Dispose()
-    {
-        if (Directory.Exists(RootPath))
-        {
-            Directory.Delete(RootPath, recursive: true);
-        }
-    }
+    /// <summary>Deletes the workspace directory and its contents, including read-only files.</summary>
+    public void Dispose() => _directory.Dispose();
 }

@@ -428,7 +428,8 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
                     b.HasIndex("LogoSha256");
 
                     b.HasIndex("SourceEpoch", "SourceRevision")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasAnnotation("PandaBear:UniqueRule", "branding.settings-revision");
 
                     b.ToTable("BrandingSettingsRevisions", "branding");
                 });

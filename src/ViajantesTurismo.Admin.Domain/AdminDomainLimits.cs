@@ -16,6 +16,11 @@ public static class AdminDomainLimits
     public const int MaxNameLength = 128;
 
     /// <summary>
+    /// The minimum age in whole years of a customer on the day the record is created or changed.
+    /// </summary>
+    public const int MinCustomerAgeYears = 10;
+
+    /// <summary>
     /// The length of an ISO 4217 currency code.
     /// </summary>
     public const int CurrencyCodeLength = 3;

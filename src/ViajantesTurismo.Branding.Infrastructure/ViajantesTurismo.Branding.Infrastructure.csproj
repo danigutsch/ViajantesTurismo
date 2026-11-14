@@ -24,6 +24,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore" />
+        <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore.Npgsql" />
         <PackageReference Include="PandaBear.SharedKernel.ImageProcessing" />
         <PackageReference Include="PandaBear.SharedKernel.IO" />
         <PackageReference Include="PandaBear.SharedKernel.IO.Analyzers" PrivateAssets="all" />
@@ -31,6 +32,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.Npgsql" />
+        <PackageReference Include="PandaBear.SharedKernel.UploadSanitizing" />
         <ProjectReference Include="..\ViajantesTurismo.Branding.Contracts.IntegrationEvents\ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
     </ItemGroup>

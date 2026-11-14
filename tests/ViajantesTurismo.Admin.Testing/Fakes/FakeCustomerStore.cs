@@ -16,7 +16,7 @@ public sealed class FakeCustomerStore(IEnumerable<string>? seededEmails = null) 
         Task.FromResult(_customers.SingleOrDefault(c => c.Id == id));
 
     public Task<Customer?> GetByEmail(string email, CancellationToken ct) =>
-        Task.FromResult(_customers.SingleOrDefault(c => c.ContactInfo.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
+        Task.FromResult(_customers.SingleOrDefault(c => c.ContactInfo.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase)));
 
     public void Delete(Customer customer) => _customers.Remove(customer);
 
@@ -26,7 +26,7 @@ public sealed class FakeCustomerStore(IEnumerable<string>? seededEmails = null) 
 
         return Task.FromResult(
             _seededEmails.Contains(email.Trim().ToUpperInvariant()) ||
-            _customers.Any(c => c.ContactInfo.Email.Equals(email, StringComparison.OrdinalIgnoreCase)));
+            _customers.Any(c => c.ContactInfo.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase)));
     }
 
     public Task<bool> EmailExistsExcluding(string email, Guid excludeCustomerId, CancellationToken ct)
@@ -36,7 +36,7 @@ public sealed class FakeCustomerStore(IEnumerable<string>? seededEmails = null) 
         return Task.FromResult(
             _seededEmails.Contains(email.Trim().ToUpperInvariant()) ||
             _customers.Any(c =>
-                c.ContactInfo.Email.Equals(email, StringComparison.OrdinalIgnoreCase) && c.Id != excludeCustomerId));
+                c.ContactInfo.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase) && c.Id != excludeCustomerId));
     }
 
     public void AddExistingCustomer(Customer customer) => _customers.Add(customer);

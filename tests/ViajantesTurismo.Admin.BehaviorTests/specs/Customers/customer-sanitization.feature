@@ -11,10 +11,10 @@ So that data is consistent and normalized across the system
         And the sanitized last name should be "Doe"
 
     Scenario: Customer address with whitespace is trimmed
-        Given I have address for sanitization with city "  New York  " and country "  USA  "
+        Given I have address for sanitization with city "  New York  " and country "  us  "
         When I create address information from sanitization inputs
         Then the sanitized address city should be "New York"
-        And the sanitized address country should be "USA"
+        And the sanitized address country should be "US"
 
     Scenario: Customer contact info with whitespace is trimmed
         Given I have contact info with email "  john@example.com  " and mobile "  +1234567890  "
@@ -28,11 +28,11 @@ So that data is consistent and normalized across the system
         Then the sanitized Instagram should be "john_doe"
         And the sanitized Facebook should be "johndoe123"
 
-    Scenario: Customer contact info normalizes multiple spaces
+    Scenario: Customer contact info keeps only the digits of the mobile
         Given I have contact info with email "john@example.com" and mobile "+123  456  7890"
         When I create contact information
         Then the sanitized email should be "john@example.com"
-        And the sanitized mobile should be "+123 456 7890"
+        And the sanitized mobile should be "+1234567890"
 
     Scenario: Customer identification info with whitespace is trimmed
         Given I have identification info with national ID "  ABC123456  " and nationality "  American  "

@@ -578,11 +578,13 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.HasIndex("DocumentLineageId", "Revision")
                         .IsUnique()
-                        .HasDatabaseName("UX_DocumentDrafts_DocumentLineageId_Revision");
+                        .HasDatabaseName("UX_DocumentDrafts_DocumentLineageId_Revision")
+                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
 
                     b.HasIndex("BookingId", "Type", "Revision")
                         .IsUnique()
-                        .HasDatabaseName("UX_DocumentDrafts_BookingId_Type_Revision");
+                        .HasDatabaseName("UX_DocumentDrafts_BookingId_Type_Revision")
+                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
 
                     b.ToTable("DocumentDrafts");
                 });
@@ -617,7 +619,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.HasIndex("BookingId", "Type")
                         .IsUnique()
-                        .HasDatabaseName("UX_DocumentLineages_BookingId_Type");
+                        .HasDatabaseName("UX_DocumentLineages_BookingId_Type")
+                        .HasAnnotation("PandaBear:UniqueRule", "document.revision");
 
                     b.ToTable("DocumentLineages");
                 });
@@ -1074,7 +1077,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Country")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(2)
+                                .HasColumnType("character(2)")
+                                .IsFixedLength();
 
                             b1.Property<string>("Neighborhood")
                                 .IsRequired()
@@ -1117,13 +1122,15 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Mobile")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(16)
+                                .HasColumnType("character varying(16)");
 
                             b1.HasKey("CustomerId");
 
                             b1.HasIndex("Email")
                                 .IsUnique()
-                                .HasDatabaseName("UX_CustomerContactInfo_Email");
+                                .HasDatabaseName("UX_CustomerContactInfo_Email")
+                                .HasAnnotation("PandaBear:UniqueRule", "customer.email");
 
                             b1.ToTable("CustomerContactInfo", (string)null);
 
@@ -1138,7 +1145,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                             b1.Property<string>("Mobile")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasMaxLength(16)
+                                .HasColumnType("character varying(16)");
 
                             b1.Property<string>("Name")
                                 .IsRequired()

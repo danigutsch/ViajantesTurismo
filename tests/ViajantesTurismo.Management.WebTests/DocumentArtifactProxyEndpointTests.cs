@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.TestHost;
+using PandaBear.AspNetCore.Authentication.Bff;
 using Polly.Timeout;
 using PandaBear.Testing;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
@@ -36,6 +37,7 @@ public sealed class DocumentArtifactProxyEndpointTests
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
         response.Headers.Pragma.ShouldContain(header => string.Equals(header.Name, "no-cache", StringComparison.OrdinalIgnoreCase));
+        response.Content.Headers.GetValues("Expires").ShouldBe(["Thu, 01 Jan 1970 00:00:00 GMT"]);
         response.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         response.Content.Headers.ContentDisposition.ShouldNotBeNull().FileNameStar.ShouldBe($"{documentId:N}.html");
@@ -179,6 +181,7 @@ public sealed class DocumentArtifactProxyEndpointTests
     [Theory]
     [InlineData("request")]
     [InlineData("invalid-response")]
+    [InlineData("token-unavailable")]
     public async Task Document_artifact_proxy_maps_upstream_failures_to_safe_bad_gateway(string failureType)
     {
         // Arrange
@@ -189,6 +192,7 @@ public sealed class DocumentArtifactProxyEndpointTests
             {
                 "request" => new HttpRequestException("Downstream unavailable."),
                 "invalid-response" => new InvalidOperationException("Unsafe upstream filename."),
+                "token-unavailable" => new UserTokenUnavailableException("Unsafe token detail."),
                 _ => throw new InvalidOperationException("Unsupported failure type.")
             })
         };
@@ -208,6 +212,7 @@ public sealed class DocumentArtifactProxyEndpointTests
         body.ShouldContain("The document artifact could not be retrieved.", StringComparison.Ordinal);
         body.ShouldNotContain("Downstream unavailable.", StringComparison.Ordinal);
         body.ShouldNotContain("Unsafe upstream filename.", StringComparison.Ordinal);
+        body.ShouldNotContain("Unsafe token detail.", StringComparison.Ordinal);
         response.Content.Headers.ContentDisposition.ShouldBeNull();
     }
 

@@ -90,8 +90,8 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                 Id = c.Id,
                 FirstName = c.PersonalInfo.FirstName,
                 LastName = c.PersonalInfo.LastName,
-                Email = c.ContactInfo.Email,
-                Mobile = c.ContactInfo.Mobile,
+                Email = c.ContactInfo.Email.Value,
+                Mobile = c.ContactInfo.Mobile.Value,
                 Nationality = c.PersonalInfo.Nationality,
                 BikeType = CustomerMapper.MapToBikeTypeDto(c.PhysicalInfo.BikeType)
             })
@@ -114,7 +114,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             {
                 FirstName = customer.PersonalInfo.FirstName,
                 LastName = customer.PersonalInfo.LastName,
-                BirthDate = customer.PersonalInfo.BirthDate,
+                BirthDate = customer.PersonalInfo.BirthDate.Value,
                 Gender = customer.PersonalInfo.Gender,
                 Nationality = customer.PersonalInfo.Nationality,
                 Occupation = customer.PersonalInfo.Occupation
@@ -126,8 +126,8 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             },
             ContactInfo = new ContactInfoDto
             {
-                Email = customer.ContactInfo.Email,
-                Mobile = customer.ContactInfo.Mobile,
+                Email = customer.ContactInfo.Email.Value,
+                Mobile = customer.ContactInfo.Mobile.Value,
                 Instagram = customer.ContactInfo.Instagram,
                 Facebook = customer.ContactInfo.Facebook
             },
@@ -139,7 +139,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                 PostalCode = customer.Address.PostalCode,
                 City = customer.Address.City,
                 State = customer.Address.State,
-                Country = customer.Address.Country
+                Country = customer.Address.Country.Value
             },
             PhysicalInfo = new PhysicalInfoDto
             {
@@ -156,7 +156,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             EmergencyContact = new EmergencyContactDto
             {
                 Name = customer.EmergencyContact.Name,
-                Mobile = customer.EmergencyContact.Mobile
+                Mobile = customer.EmergencyContact.Mobile.Value
             },
             MedicalInfo = new MedicalInfoDto
             {

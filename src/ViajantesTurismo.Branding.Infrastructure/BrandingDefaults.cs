@@ -37,7 +37,7 @@ public static class BrandingDefaults
         {
             BrandName = "Viajantes Turismo",
             PrimaryColor = "#0F766E",
-            AccentColor = "#F97316",
+            AccentColor = "#C2410C",
             BackgroundColor = "#FFFBF5",
             TextColor = "#1F2937",
             HeadingFontFamily = BrandingFontFamilies.DefaultHeading,

@@ -1,18 +1,26 @@
 using Microsoft.Extensions.Options;
 using PandaBear.AspNetCore.Seo;
+using PandaBear.Branding;
+using PandaBear.Blazor.Site.Theming;
+using PandaBear.BuildingBlocks;
+using PandaBear.HttpCaching.AspNetCore;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Public.Web.Components;
 
 namespace ViajantesTurismo.Public.Web;
 
-/// <summary>Maps the Public Web endpoints: error, robots.txt, sitemap, catalog media and Razor components.</summary>
+/// <summary>Maps the Public Web endpoints: error, robots.txt, sitemap, theme stylesheet, catalog media and Razor components.</summary>
 internal static class PublicWebEndpoints
 {
-    private const string RobotsTxtPath = "/robots.txt";
     private const string SitemapPath = "/sitemap.xml";
+
+    /// <summary>Path of the stylesheet that renders the brand theme; pages link it with the theme hash as <c>v</c>.</summary>
+    internal const string ThemeStylesheetPath = "/theme.css";
 
     /// <summary>Endpoint name of the public media-by-rendition route.</summary>
     internal const string PublicMediaByRenditionEndpointName = "public-media-by-rendition";
+
+    private static readonly string[] StaticPagePaths = ["/", "/group-bike-tours", "/gallery"];
 
     /// <summary>Maps the Public Web endpoints onto the route builder.</summary>
     internal static IEndpointRouteBuilder MapPublicWebEndpoints(this IEndpointRouteBuilder app)
@@ -26,10 +34,16 @@ internal static class PublicWebEndpoints
             })
             .ExcludeFromDescription();
 
-        app.MapGet(RobotsTxtPath, GetPublicRobotsTxt)
+        var sitemapOptions = app.ServiceProvider.GetRequiredService<IOptions<CanonicalOriginOptions>>().Value;
+        var sitemapUri = new PublicSiteLinks(sitemapOptions).Absolute(SitemapPath);
+        app.MapRobotsTxt($"User-agent: *\nAllow: /\nSitemap: {sitemapUri.AbsoluteUri}")
             .ExcludeFromDescription();
 
         app.MapGet(SitemapPath, GetSitemap)
+            .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy)
+            .ExcludeFromDescription();
+
+        app.MapGet(ThemeStylesheetPath, GetThemeStylesheet)
             .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy)
             .ExcludeFromDescription();
 
@@ -46,23 +60,27 @@ internal static class PublicWebEndpoints
         return app;
     }
 
-    private static IResult GetPublicRobotsTxt(IOptions<PublicWebSitemapOptions> sitemapOptions)
+    /// <summary>
+    /// Renders the current theme. A request for its content hash (<c>?v=</c>, as the pages link it) is cached as immutable; any
+    /// other request keeps the default freshness, so a stale link never pins old colours.
+    /// </summary>
+    private static async Task<IResult> GetThemeStylesheet(IBrandingApiClient brandingApi, HttpContext httpContext, string? v, CancellationToken ct)
     {
-        var origin = SitemapCanonicalOrigin.Parse(sitemapOptions.Value.CanonicalOrigin);
-        var sitemapUri = new Uri(origin, SitemapPath);
-        return Results.Text(
-            $"User-agent: *\nAllow: /\nSitemap: {sitemapUri.AbsoluteUri}",
-            "text/plain; charset=utf-8");
+        var theme = PublicBranding.Theme(await PublicBranding.Load(brandingApi, ct));
+        if (string.Equals(v, SiteThemeStylesheet.Hash(theme), StringComparison.Ordinal))
+        {
+            HttpCacheHeaders.SetImmutable(httpContext);
+        }
+
+        return Results.Text(SiteThemeStylesheet.Render(theme), "text/css; charset=utf-8");
     }
 
     private static async Task<IResult> GetSitemap(
         HttpContext httpContext,
-        IOptions<PublicWebSitemapOptions> sitemapOptions,
+        IOptions<CanonicalOriginOptions> sitemapOptions,
         IPublicCatalogApiClient catalogApi,
         CancellationToken ct)
     {
-        var origin = SitemapCanonicalOrigin.Parse(sitemapOptions.Value.CanonicalOrigin);
-
         TourSummaryDto[] tours;
         try
         {
@@ -85,18 +103,16 @@ internal static class PublicWebEndpoints
             PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
             return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
-        var urls = new List<SitemapEntry>
-        {
-            new(new Uri(origin, "/")),
-            new(new Uri(origin, "/group-bike-tours")),
-            new(new Uri(origin, "/gallery"))
-        };
 
-        foreach (var tour in tours.Where(IsPublicTourPage).Take(SitemapXmlSerializer.MaximumUrlCount - urls.Count))
-        {
-            var tourUri = new Uri(origin, $"/group-bike-tours/{Uri.EscapeDataString(tour.Slug)}");
-            urls.Add(new SitemapEntry(tourUri, tour.UpdatedAt));
-        }
+        var links = new PublicSiteLinks(sitemapOptions.Value);
+        var cultureCount = PublicSiteCultures.Supported.Cultures.Count;
+        var tourLimit = (SitemapXmlSerializer.MaximumUrlCount / cultureCount) - StaticPagePaths.Length;
+        var urls = StaticPagePaths
+            .SelectMany(path => links.SitemapEntries(path))
+            .Concat(tours
+                .Where(tour => Slug.IsCanonical(tour.Slug))
+                .Take(tourLimit)
+                .SelectMany(tour => links.SitemapEntries($"/group-bike-tours/{tour.Slug}", tour.UpdatedAt)));
 
         var sitemap = await SitemapXmlSerializer.Serialize(urls, ct);
         return Results.File(sitemap, SitemapXmlSerializer.ContentType);
@@ -135,14 +151,5 @@ internal static class PublicWebEndpoints
         httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
         httpContext.Response.RegisterForDisposeAsync(media);
         return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);
-    }
-
-    private static bool IsPublicTourPage(TourSummaryDto tour)
-    {
-        return !string.IsNullOrWhiteSpace(tour.Slug)
-            && !string.Equals(tour.Slug, ".", StringComparison.Ordinal)
-            && !string.Equals(tour.Slug, "..", StringComparison.Ordinal)
-            && tour.Slug.All(character => !char.IsControl(character)
-                && character is not '/' and not '\\' and not '?' and not '#');
     }
 }

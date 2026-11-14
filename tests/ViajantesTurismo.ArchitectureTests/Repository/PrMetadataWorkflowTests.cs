@@ -9,7 +9,7 @@ public sealed class PrMetadataWorkflowTests
     public async Task Pr_metadata_calls_the_shared_workflow_with_the_pinned_ci_tool_source()
     {
         // Arrange
-        var path = Path.Combine(RepositoryTestProcess.GetRepositoryRoot(), ".github", "workflows", "pr-metadata.yml");
+        var path = Path.Combine(RepositoryRoot.Locate(), ".github", "workflows", "pr-metadata.yml");
 
         // Act
         var workflow = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);

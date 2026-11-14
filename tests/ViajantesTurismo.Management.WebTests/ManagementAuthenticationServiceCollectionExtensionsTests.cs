@@ -1,7 +1,7 @@
 using PandaBear.Testing;
-using System.Net;
 using Microsoft.Extensions.Hosting;
 using PandaBear.AspNetCore.Authentication;
+using PandaBear.AspNetCore.Authentication.Bff;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;
@@ -150,7 +150,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
         options.TokenValidationParameters.RoleClaimType.ShouldBe(ApiAuthenticationDefaults.RolesClaimType);
         options.UsePkce.ShouldBeTrue();
         options.SaveTokens.ShouldBeFalse();
-        options.EventsType.ShouldBe(typeof(ManagementOpenIdConnectEvents));
+        options.EventsType.ShouldBeNull();
         options.Scope.ShouldContain("offline_access");
         options.Scope.ShouldContain("admin-api");
         options.Scope.ShouldContain("catalog-api");
@@ -198,69 +198,43 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
 
         // Act
         var cookieOptions = host.CookieOptions;
-        var ticketStore = host.TicketStore;
-        var userTokenStore = host.UserTokenStore;
-        var protectedUserTokenStore = host.ProtectedUserTokenStore;
+        var ticketStoreOptions = host.TicketStoreOptions;
         var authorization = host.AuthorizationOptions;
 
         // Assert
         cookieOptions.Cookie.Name.ShouldBe("__Host-viajantes-management");
         cookieOptions.Cookie.HttpOnly.ShouldBeTrue();
         cookieOptions.Cookie.SecurePolicy.ShouldBe(Microsoft.AspNetCore.Http.CookieSecurePolicy.Always);
+        cookieOptions.Cookie.SameSite.ShouldBe(Microsoft.AspNetCore.Http.SameSiteMode.Lax);
+        cookieOptions.ExpireTimeSpan.ShouldBe(TimeSpan.FromHours(8));
         cookieOptions.SlidingExpiration.ShouldBeFalse();
-        cookieOptions.EventsType.ShouldBe(typeof(ManagementCookieAuthenticationEvents));
-        ticketStore.ShouldBeOfType<ProtectedDistributedTicketStore>();
-        userTokenStore.ShouldBeOfType<ProtectedDistributedUserTokenStore>();
-        ReferenceEquals(userTokenStore, protectedUserTokenStore).ShouldBeTrue();
+        cookieOptions.EventsType.ShouldBeNull();
+        cookieOptions.SessionStore.ShouldBeOfType<ServerSideTicketStore>();
+        ticketStoreOptions.KeyPrefix.ShouldBe("management-ticket:");
+        ticketStoreOptions.AbsoluteLifetime.ShouldBe(TimeSpan.FromHours(8));
+        ticketStoreOptions.SlidingExpiration.ShouldBeNull();
         authorization.FallbackPolicy.ShouldNotBeNull();
     }
 
     [Fact]
-    public async Task Maps_the_user_token_store_to_the_scoped_protected_store_in_each_scope()
+    public async Task Keeps_user_tokens_server_side_for_the_session_lifetime_and_locks_sessions_in_postgresql()
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create();
         var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
         await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
-        using var firstSession = host.CreateUserTokenStoreSession();
-        using var secondSession = host.CreateUserTokenStoreSession();
 
         // Act
-        var firstUserTokenStore = firstSession.UserTokenStore;
-        var firstProtectedUserTokenStore = firstSession.ProtectedUserTokenStore;
-        var secondUserTokenStore = secondSession.UserTokenStore;
-        var secondProtectedUserTokenStore = secondSession.ProtectedUserTokenStore;
+        var tokenOptions = host.UserTokenOptions;
+        var sessionLock = host.SessionLock;
+        var tokenManager = host.UserTokenManager;
 
         // Assert
-        ReferenceEquals(firstUserTokenStore, firstProtectedUserTokenStore).ShouldBeTrue();
-        ReferenceEquals(secondUserTokenStore, secondProtectedUserTokenStore).ShouldBeTrue();
-        ReferenceEquals(firstUserTokenStore, secondUserTokenStore).ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task Keycloak_token_exchange_http_client_does_not_follow_temporary_redirects()
-    {
-        // Arrange
-        var ct = Xunit.TestContext.Current.CancellationToken;
-        await using var server = await RedirectingTokenExchangeTestServer.Start(ct);
-        var configuration = ManagementAuthenticationTestConfiguration.Create();
-        var environment = new TestHostEnvironment("ViajantesTurismo.Management.WebTests") { EnvironmentName = Environments.Development };
-        await using var host = ManagementAuthenticationTestHost.Create(configuration, environment);
-        using var client = host.CreateKeycloakTokenExchangeClient();
-        using var requestContent = new FormUrlEncodedContent(
-        [
-            new KeyValuePair<string, string>("subject_token", "test-source-token"),
-            new KeyValuePair<string, string>("client_secret", "test-client-secret")
-        ]);
-
-        // Act
-        using var response = await client.PostAsync(server.TokenEndpoint, requestContent, ct);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.TemporaryRedirect);
-        server.TokenRequestBodies.Count.ShouldBe(1);
-        server.TokenRequestBodies[0].ShouldContain("subject_token=test-source-token", StringComparison.Ordinal);
-        server.TokenRequestBodies[0].ShouldContain("client_secret=test-client-secret", StringComparison.Ordinal);
-        server.RedirectRequestBodies.ShouldBeEmpty();
+        tokenOptions.CacheKeyPrefix.ShouldBe("management-user-token:");
+        tokenOptions.SessionLifetime.ShouldBe(TimeSpan.FromHours(8));
+        tokenOptions.RevokeRefreshTokenOnSignOut.ShouldBeTrue();
+        tokenOptions.RejectCookieWithoutTokenSession.ShouldBeTrue();
+        sessionLock.ShouldBeOfType<PostgreSqlUserSessionLock>();
+        tokenManager.ShouldNotBeNull();
     }
 }

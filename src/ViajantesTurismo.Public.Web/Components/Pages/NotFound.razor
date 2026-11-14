@@ -3,5 +3,20 @@
 
 <PageTitle>Page not found - Viajantes Turismo</PageTitle>
 
-<h1>Page not found</h1>
-<p>The page you requested could not be found.</p>
+<Section Title="Page not found" Level="1">
+    <p>The page you requested could not be found.</p>
+</Section>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (HttpContext is { Response.HasStarted: false })
+        {
+            PublicWebHttpCache.SetNoStore(HttpContext);
+        }
+    }
+}

@@ -1,3 +1,4 @@
+using PandaBear.Testing.Playwright;
 using PandaBear.Testing;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;

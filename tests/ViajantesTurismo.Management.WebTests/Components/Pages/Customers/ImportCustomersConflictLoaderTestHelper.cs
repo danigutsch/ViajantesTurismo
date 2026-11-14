@@ -38,7 +38,7 @@ internal static class ImportCustomersConflictLoaderTestHelper
                 PostalCode = "01000-000",
                 City = "São Paulo",
                 State = "SP",
-                Country = "Brazil",
+                Country = "BR",
             },
             PhysicalInfo = new PhysicalInfoDto
             {

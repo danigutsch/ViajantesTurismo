@@ -238,7 +238,7 @@ public sealed class CustomerImportWorkflowService(
                 continue;
             }
 
-            var email = customerResult.Value.ContactInfo.Email;
+            var email = customerResult.Value.ContactInfo.Email.Value;
             var emailExists = await customerStore.EmailExists(email, ct);
 
             if (emailExists)

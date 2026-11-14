@@ -289,7 +289,8 @@
     private string? _errorMessage;
     private bool _acknowledging;
     private string? _loadErrorMessage;
-    private (Guid ResourceId, string Key)? _regenerationAttempt;
+    private IdempotentSubmission<GetDocumentDto> _regeneration = new();
+    private Guid _regenerationDocumentId;
     private bool _regenerating;
     private static readonly string[] HoldBases =
     [
@@ -566,21 +567,20 @@
 
         _regenerating = true;
         var resourceId = CurrentDocumentId;
-        var attempt = _regenerationAttempt is { } pending && pending.ResourceId == resourceId
-            ? pending
-            : (ResourceId: resourceId, Key: Guid.CreateVersion7().ToString("N"));
-        _regenerationAttempt = attempt;
+        if (_regenerationDocumentId != resourceId)
+        {
+            _regeneration = new IdempotentSubmission<GetDocumentDto>();
+            _regenerationDocumentId = resourceId;
+        }
+
         try
         {
             await ExecuteAction(async () =>
             {
-                var outcome = await DocumentsApi.Regenerate(resourceId, attempt.Key, CancellationToken.None);
-                if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: not null })
-                {
-                    _regenerationAttempt = null;
-                }
-
-                return outcome;
+                var outcome = _regeneration.HasPending
+                    ? await _regeneration.Retry(CancellationToken.None)
+                    : await _regeneration.Submit("regenerate", (key, ct) => DocumentsApi.Regenerate(resourceId, key, ct), CancellationToken.None);
+                return outcome ?? new HttpOutcome<GetDocumentDto> { Kind = HttpOutcomeKind.TransportFailure };
             }, "The document could not be regenerated.");
 
             if (_document is not null && _document.Id != Id)

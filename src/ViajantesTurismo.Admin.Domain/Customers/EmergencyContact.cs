@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 using PandaBear.InputNormalization;
@@ -15,7 +16,7 @@ public sealed class EmergencyContact
     /// </summary>
     /// <param name="name">The emergency contact name.</param>
     /// <param name="mobile">The emergency contact mobile.</param>
-    private EmergencyContact(string name, string mobile)
+    private EmergencyContact(string name, PhoneNumber mobile)
     {
         Name = name;
         Mobile = mobile;
@@ -35,8 +36,8 @@ public sealed class EmergencyContact
         get; private set;
     }
 
-    /// <summary>Emergency contact mobile (with DDD).</summary>
-    public string Mobile
+    /// <summary>Emergency contact mobile (with DDD): its digits, led by + when it was entered with one.</summary>
+    public PhoneNumber Mobile
     {
         get; private set;
     }
@@ -63,20 +64,18 @@ public sealed class EmergencyContact
             errors.Add(EmergencyContactNameTooLong());
         }
 
-        if (string.IsNullOrWhiteSpace(sanitizedMobile))
-        {
-            errors.Add(EmptyEmergencyContactMobile());
-        }
-        else if (sanitizedMobile.Length > AdminDomainLimits.MaxDefaultLength)
-        {
-            errors.Add(EmergencyContactMobileTooLong());
-        }
+        var phoneNumber = CustomerPhoneNumbers.Create(
+            errors,
+            sanitizedMobile,
+            EmptyEmergencyContactMobile,
+            EmergencyContactMobileTooLong,
+            InvalidEmergencyContactPhoneFormat);
 
         if (errors.HasErrors)
         {
             return errors.ToResult<EmergencyContact>();
         }
 
-        return Result.Ok(new EmergencyContact(sanitizedName!, sanitizedMobile!));
+        return Result.Ok(new EmergencyContact(sanitizedName!, phoneNumber!));
     }
 }

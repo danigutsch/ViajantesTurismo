@@ -22,6 +22,65 @@ public sealed class CivilDateBoundaryTests
         result.IsSuccess.ShouldBe(valid);
     }
 
+    [Theory]
+    [InlineData(2, 28, false)]
+    [InlineData(3, 1, true)]
+    public void Leap_day_birthday_is_reached_on_the_first_of_march_in_a_common_year(int month, int day, bool valid)
+    {
+        // Arrange
+        var birthDate = new DateOnly(2016, 2, 29);
+        var today = new DateOnly(2026, month, day);
+
+        // Act
+        var result = PersonalInfo.Create("Ana", "Silva", "Female", birthDate, "Brazilian", "Student", today);
+
+        // Assert
+        result.IsSuccess.ShouldBe(valid);
+    }
+
+    [Fact]
+    public void Missing_birth_date_is_rejected_as_required()
+    {
+        // Arrange
+        var today = new DateOnly(2030, 2, 3);
+
+        // Act
+        var result = PersonalInfo.Create("Ana", "Silva", "Female", default, "Brazilian", "Student", today);
+
+        // Assert
+        var errors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        errors["BirthDate"].ShouldBe(["Birth date is required."]);
+    }
+
+    [Fact]
+    public void Too_young_customer_is_rejected_without_revealing_the_age()
+    {
+        // Arrange
+        var today = new DateOnly(2030, 2, 3);
+
+        // Act
+        var result = PersonalInfo.Create("Ana", "Silva", "Female", today.AddYears(-9), "Brazilian", "Student", today);
+
+        // Assert
+        var errors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        errors["BirthDate"].ShouldBe(["Customer must meet the minimum age requirement."]);
+    }
+
+    [Fact]
+    public void Names_are_reported_under_the_customer_field_names()
+    {
+        // Arrange
+        var today = new DateOnly(2030, 2, 3);
+
+        // Act
+        var result = PersonalInfo.Create(" ", new string('s', 129), "Female", new DateOnly(1990, 1, 1), "Brazilian", "Student", today);
+
+        // Assert
+        var errors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        errors["FirstName"].ShouldBe(["First name is required."]);
+        errors["LastName"].ShouldBe(["Last name cannot exceed 128 characters."]);
+    }
+
     [Fact]
     public void Future_birth_dates_are_rejected()
     {

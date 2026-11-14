@@ -12,7 +12,8 @@ internal static class AppHostComposition
     /// </summary>
     /// <remarks>
     /// Catalog hosts Branding and relays its outbox; the Admin worker keeps the Admin Branding projection that
-    /// document generation reads, so even the Admin-only profile needs both.
+    /// document generation reads, so even the Admin-only profile needs both. Infrastructure configured in
+    /// <see cref="ExternalInfrastructure"/> replaces the container that would otherwise be started for it.
     /// </remarks>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="profile">The product profile to compose.</param>
@@ -25,23 +26,23 @@ internal static class AppHostComposition
             throw new ArgumentOutOfRangeException(nameof(profile), profile, "Unsupported hosted profile.");
         }
 
-        if (string.Equals(builder.Configuration["HostedTests:SharedInfrastructure"], bool.TrueString, StringComparison.OrdinalIgnoreCase))
-        {
-            builder.AddSharedProductResources(profile);
-            return;
-        }
-
+        var configuration = builder.Configuration;
+        ExternalInfrastructure.RequireAllWhenShared(configuration);
         builder.AddObservabilityStack();
         var includeDeveloperTooling = profile.IncludesDeveloperTooling();
-        var databaseServer = builder.AddDatabaseServer(includePgWeb: includeDeveloperTooling);
-        var adminDatabase = databaseServer.AddDatabase(ResourceNames.AdminDatabase);
-        var catalogDatabase = databaseServer.AddDatabase(ResourceNames.CatalogDatabase);
-        var securityDatabase = databaseServer.AddDatabase(ResourceNames.SecurityDatabase);
-        var managementWebClientSecret = builder.AddLocalSecret(ResourceNames.ManagementWebClientSecret);
-        var identityProvider = builder.AddRunModeIdentityProvider(managementWebClientSecret);
-        var clamAv = builder.AddMalwareScanner();
+        var databaseServer = ExternalInfrastructure.HasDatabases(configuration) ? null : builder.AddDatabaseServer(includePgWeb: includeDeveloperTooling);
+        var adminDatabase = builder.AddApplicationDatabase(databaseServer, ResourceNames.AdminDatabase);
+        var catalogDatabase = builder.AddApplicationDatabase(databaseServer, ResourceNames.CatalogDatabase);
+        var securityDatabase = builder.AddApplicationDatabase(databaseServer, ResourceNames.SecurityDatabase);
+        var managementWebClientSecret = builder.AddGeneratedSecret(ResourceNames.ManagementWebClientSecret);
+        var identityProvider = ExternalInfrastructure.IdentityProviderAuthority(configuration) is null
+            ? builder.AddRunModeIdentityProvider(managementWebClientSecret)
+            : null;
+        var clamAv = ExternalInfrastructure.ClamAv(configuration) is null ? builder.AddMalwareScanner() : null;
         var migrationService = builder.AddMigrationService(adminDatabase, catalogDatabase, securityDatabase);
-        var seaweedFs = profile.IncludesMediaInfrastructure() ? builder.AddMediaObjectStorage() : null;
+        var seaweedFs = profile.IncludesMediaInfrastructure() && ExternalInfrastructure.SeaweedFs(configuration) is null
+            ? builder.AddMediaObjectStorage()
+            : null;
 
         var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
         builder.AddAdminIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
@@ -52,9 +53,11 @@ internal static class AppHostComposition
             return;
         }
 
-        var cache = builder.AddCache(includeRedisInsight: includeDeveloperTooling);
+        IResourceBuilder<IResourceWithConnectionString> cache = ExternalInfrastructure.HasCache(configuration)
+            ? builder.AddConnectionString(ResourceNames.Cache)
+            : builder.AddCache(includeRedisInsight: includeDeveloperTooling);
 
-        if (builder.EnablesDatabaseObservability(profile))
+        if (databaseServer is not null && builder.EnablesDatabaseObservability(profile))
         {
             builder.AddDatabaseObservability(adminDatabase, catalogDatabase, migrationService);
         }
@@ -66,5 +69,13 @@ internal static class AppHostComposition
         {
             builder.AddAdminPerformanceSmoke(apiService, identityProvider);
         }
+    }
+
+    private static IResourceBuilder<IResourceWithConnectionString> AddApplicationDatabase(
+        this IDistributedApplicationBuilder builder,
+        IResourceBuilder<PostgresServerResource>? server,
+        string name)
+    {
+        return server is null ? builder.AddConnectionString(name) : server.AddDatabase(name);
     }
 }

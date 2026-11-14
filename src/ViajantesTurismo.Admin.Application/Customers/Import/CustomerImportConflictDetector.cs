@@ -75,8 +75,7 @@ public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
                 continue;
             }
 
-            var sanitizedEmail = StringSanitizer.Sanitize(email);
-            if (await customerStore.EmailExists(sanitizedEmail, ct))
+            if (StringSanitizer.TrySanitize(email, out var sanitizedEmail) && sanitizedEmail is not null && await customerStore.EmailExists(sanitizedEmail, ct))
             {
                 duplicateLineNumbers.Add(lineNumber);
             }

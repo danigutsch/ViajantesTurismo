@@ -1,10 +1,11 @@
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.IntegrationEventWorker;
+using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.AddServiceDefaults();
+builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddAdminIntegrationEventWorkerInfrastructure();
 builder.Services.AddAdminWorkerIntegrationEventDelivery();
 

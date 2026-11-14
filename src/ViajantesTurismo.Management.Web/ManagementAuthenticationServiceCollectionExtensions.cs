@@ -1,4 +1,3 @@
-using Duende.AccessTokenManagement.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using PandaBear.AspNetCore.Authentication;
+using PandaBear.AspNetCore.Authentication.Bff;
 using ViajantesTurismo.Management.Security;
 using System.Security.Cryptography.X509Certificates;
 using ViajantesTurismo.Resources;
@@ -59,8 +59,6 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
         services.AddManagementSecurityPersistence(connectionString!);
         services.AddSingleton(_ => CreateAdvisoryLockDataSource(connectionString!));
         services.TryAddSingleton(TimeProvider.System);
-        services.AddHttpClient(ManagementAuthenticationDefaults.KeycloakTokenExchangeHttpClientName)
-            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
 
         var dataProtection = services.AddDataProtection()
             .PersistKeysToDbContext<ManagementSecurityDbContext>()
@@ -72,9 +70,6 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 dataProtectionCertificatePassword);
             dataProtection.ProtectKeysWithCertificate(certificate);
         }
-        services.AddSingleton<ITicketStore, ProtectedDistributedTicketStore>();
-        services.AddScoped<ManagementCookieAuthenticationEvents>();
-        services.AddScoped<ManagementOpenIdConnectEvents>();
 
         services.AddAuthentication(options =>
             {
@@ -91,7 +86,6 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 options.Cookie.Path = "/";
                 options.ExpireTimeSpan = ManagementAuthenticationDefaults.SessionLifetime;
                 options.SlidingExpiration = false;
-                options.EventsType = typeof(ManagementCookieAuthenticationEvents);
             })
             .AddOpenIdConnect(options =>
             {
@@ -101,7 +95,6 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 options.ResponseType = "code";
                 options.UsePkce = true;
                 options.SaveTokens = false;
-                options.EventsType = typeof(ManagementOpenIdConnectEvents);
                 options.MapInboundClaims = false;
                 options.TokenValidationParameters.RoleClaimType = ApiAuthenticationDefaults.RolesClaimType;
                 options.RequireHttpsMetadata = !(environment.IsDevelopment() && allowHttpDevelopmentAuthority);
@@ -119,18 +112,22 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 }
             });
 
-        services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
-            .Configure<ITicketStore>((options, ticketStore) => options.SessionStore = ticketStore);
+        services.AddServerSideTicketStore(configure: options =>
+        {
+            options.KeyPrefix = ManagementAuthenticationDefaults.TicketStoreKeyPrefix;
+            options.AbsoluteLifetime = ManagementAuthenticationDefaults.SessionLifetime;
+        });
         services.AddAuthorizationBuilder()
             .SetFallbackPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build());
-        services.AddOpenIdConnectAccessTokenManagement()
-            .AddBlazorServerAccessTokenManagement<ProtectedDistributedUserTokenStore>();
-        services.AddScoped<ProtectedDistributedAudienceTokenStore>();
-        services.AddScoped<ProtectedDistributedUserTokenStore>();
-        services.AddScoped<IUserTokenStore>(serviceProvider =>
-            serviceProvider.GetRequiredService<ProtectedDistributedUserTokenStore>());
+        services.AddSingleton<IUserSessionLock, PostgreSqlUserSessionLock>();
+        services.AddUserTokenManagement(options =>
+        {
+            options.CacheKeyPrefix = ManagementAuthenticationDefaults.UserTokenStoreKeyPrefix;
+            options.SessionLifetime = ManagementAuthenticationDefaults.SessionLifetime;
+        });
+        services.AddBlazorServerCurrentUser();
     }
 
     private static void EnsureConfigured(

@@ -7,101 +7,101 @@ public sealed class AddressValidationSteps(CustomerContext context)
     [When("I attempt to create an address without a street")]
     public void WhenIAttemptToCreateAnAddressWithoutAStreet()
     {
-        context.AddressResult = Address.Create("", null, "Downtown", "10001", "New York", "NY", "USA");
+        context.AddressResult = Address.Create("", null, "Downtown", "10001", "New York", "NY", "US");
     }
 
     [When(@"I attempt to create an address with a street of (\d+) characters")]
     public void WhenIAttemptToCreateAnAddressWithAStreetOfCharacters(int length)
     {
         context.AddressResult =
-            Address.Create(new string('A', length), null, "Downtown", "10001", "New York", "NY", "USA");
+            Address.Create(new string('A', length), null, "Downtown", "10001", "New York", "NY", "US");
     }
 
     [When(@"I create an address with a street of (\d+) characters")]
     public void WhenICreateAnAddressWithAStreetOfCharacters(int length)
     {
         context.AddressResult =
-            Address.Create(new string('A', length), null, "Downtown", "10001", "New York", "NY", "USA");
+            Address.Create(new string('A', length), null, "Downtown", "10001", "New York", "NY", "US");
     }
 
     [When("I attempt to create an address without a neighborhood")]
     public void WhenIAttemptToCreateAnAddressWithoutANeighborhood()
     {
-        context.AddressResult = Address.Create("123 Main St", null, "", "10001", "New York", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "", "10001", "New York", "NY", "US");
     }
 
     [When(@"I attempt to create an address with a neighborhood of (\d+) characters")]
     public void WhenIAttemptToCreateAnAddressWithANeighborhoodOfCharacters(int length)
     {
         context.AddressResult =
-            Address.Create("123 Main St", null, new string('C', length), "10001", "New York", "NY", "USA");
+            Address.Create("123 Main St", null, new string('C', length), "10001", "New York", "NY", "US");
     }
 
     [When(@"I create an address with a neighborhood of (\d+) characters")]
     public void WhenICreateAnAddressWithANeighborhoodOfCharacters(int length)
     {
         context.AddressResult =
-            Address.Create("123 Main St", null, new string('C', length), "10001", "New York", "NY", "USA");
+            Address.Create("123 Main St", null, new string('C', length), "10001", "New York", "NY", "US");
     }
 
     [When("I attempt to create an address without a postal code")]
     public void WhenIAttemptToCreateAnAddressWithoutAPostalCode()
     {
-        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "", "New York", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "", "New York", "NY", "US");
     }
 
     [When(@"I attempt to create an address with a postal code of (\d+) characters")]
     public void WhenIAttemptToCreateAnAddressWithAPostalCodeOfCharacters(int length)
     {
         context.AddressResult = Address.Create("123 Main St", null, "Downtown", new string('D', length), "New York",
-            "NY", "USA");
+            "NY", "US");
     }
 
     [When(@"I create an address with a postal code of (\d+) characters")]
     public void WhenICreateAnAddressWithAPostalCodeOfCharacters(int length)
     {
         context.AddressResult = Address.Create("123 Main St", null, "Downtown", new string('D', length), "New York",
-            "NY", "USA");
+            "NY", "US");
     }
 
     [When("I attempt to create an address without a city")]
     public void WhenIAttemptToCreateAnAddressWithoutACity()
     {
-        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "", "NY", "US");
     }
 
     [When(@"I attempt to create an address with a city of (\d+) characters")]
     public void WhenIAttemptToCreateAnAddressWithACityOfCharacters(int length)
     {
         context.AddressResult =
-            Address.Create("123 Main St", null, "Downtown", "10001", new string('E', length), "NY", "USA");
+            Address.Create("123 Main St", null, "Downtown", "10001", new string('E', length), "NY", "US");
     }
 
     [When(@"I create an address with a city of (\d+) characters")]
     public void WhenICreateAnAddressWithACityOfCharacters(int length)
     {
         context.AddressResult =
-            Address.Create("123 Main St", null, "Downtown", "10001", new string('E', length), "NY", "USA");
+            Address.Create("123 Main St", null, "Downtown", "10001", new string('E', length), "NY", "US");
     }
 
     [When("I attempt to create an address without a state")]
     public void WhenIAttemptToCreateAnAddressWithoutAState()
     {
-        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "", "US");
     }
 
     [When(@"I attempt to create an address with a state of (\d+) characters")]
     public void WhenIAttemptToCreateAnAddressWithAStateOfCharacters(int length)
     {
         context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York",
-            new string('F', length), "USA");
+            new string('F', length), "US");
     }
 
     [When(@"I create an address with a state of (\d+) characters")]
     public void WhenICreateAnAddressWithAStateOfCharacters(int length)
     {
         context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York",
-            new string('F', length), "USA");
+            new string('F', length), "US");
     }
 
     [When("I attempt to create an address without a country")]
@@ -110,44 +110,48 @@ public sealed class AddressValidationSteps(CustomerContext context)
         context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "");
     }
 
-    [When(@"I attempt to create an address with a country of (\d+) characters")]
-    public void WhenIAttemptToCreateAnAddressWithACountryOfCharacters(int length)
+    [When(@"I attempt to create an address with country ""(.*)""")]
+    public void WhenIAttemptToCreateAnAddressWithCountry(string country)
     {
-        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY",
-            new string('G', length));
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", country);
     }
 
-    [When(@"I create an address with a country of (\d+) characters")]
-    public void WhenICreateAnAddressWithACountryOfCharacters(int length)
+    [When(@"I create an address with country ""(.*)""")]
+    public void WhenICreateAnAddressWithCountry(string country)
     {
-        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY",
-            new string('G', length));
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", country);
+    }
+
+    [Then(@"the country should be ""(.*)""")]
+    public void ThenTheCountryShouldBe(string expected)
+    {
+        context.AddressResult.Value.Country.Value.ShouldBe(expected);
     }
 
     [When(@"I create an address with complement ""(.*)""")]
     public void WhenICreateAnAddressWithComplement(string complement)
     {
-        context.AddressResult = Address.Create("123 Main St", complement, "Downtown", "10001", "New York", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", complement, "Downtown", "10001", "New York", "NY", "US");
     }
 
     [When("I create an address without a complement")]
     public void WhenICreateAnAddressWithoutAComplement()
     {
-        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "USA");
+        context.AddressResult = Address.Create("123 Main St", null, "Downtown", "10001", "New York", "NY", "US");
     }
 
     [When(@"I attempt to create an address with a complement of (\d+) characters")]
     public void WhenIAttemptToCreateAnAddressWithAComplementOfCharacters(int length)
     {
         context.AddressResult = Address.Create("123 Main St", new string('B', length), "Downtown", "10001", "New York",
-            "NY", "USA");
+            "NY", "US");
     }
 
     [When(@"I create an address with a complement of (\d+) characters")]
     public void WhenICreateAnAddressWithAComplementOfCharacters(int length)
     {
         context.AddressResult = Address.Create("123 Main St", new string('B', length), "Downtown", "10001", "New York",
-            "NY", "USA");
+            "NY", "US");
     }
 
     [When(
@@ -168,7 +172,7 @@ public sealed class AddressValidationSteps(CustomerContext context)
             "  10001  ",
             "  New York  ",
             "  NY  ",
-            "  USA  ");
+            "  us  ");
     }
 
     [Then("the address should be successfully created")]
@@ -277,13 +281,13 @@ public sealed class AddressValidationSteps(CustomerContext context)
         allErrors.ShouldContain("Country is required.");
     }
 
-    [Then("I should be informed that country cannot exceed 128 characters")]
-    public void ThenIShouldBeInformedThatCountryCannotExceed128Characters()
+    [Then("I should be informed that country must be an ISO 3166-1 alpha-2 code")]
+    public void ThenIShouldBeInformedThatCountryMustBeAnIsoCode()
     {
         context.AddressResult.IsFailure.ShouldBeTrue("Expected failure but got success");
         var errors = context.AddressResult.ErrorDetails?.ValidationErrors;
-        var allErrors = errors?.Values.SelectMany(e => e).ToList() ?? new List<string>();
-        allErrors.ShouldContain("Country cannot exceed 128 characters.");
+        errors.ShouldNotBeNull().Keys.ShouldContain("Country");
+        errors["Country"].ShouldContain("Country must be an ISO 3166-1 alpha-2 code, such as BR.");
     }
 
     [Then("I should be informed that complement cannot exceed 128 characters")]
@@ -316,6 +320,6 @@ public sealed class AddressValidationSteps(CustomerContext context)
         context.AddressResult.Value.PostalCode.ShouldBe("10001");
         context.AddressResult.Value.City.ShouldBe("New York");
         context.AddressResult.Value.State.ShouldBe("NY");
-        context.AddressResult.Value.Country.ShouldBe("USA");
+        context.AddressResult.Value.Country.Value.ShouldBe("US");
     }
 }

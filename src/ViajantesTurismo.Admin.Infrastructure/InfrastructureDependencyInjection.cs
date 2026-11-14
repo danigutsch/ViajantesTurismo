@@ -44,18 +44,14 @@ public static class InfrastructureDependencyInjection
     /// <summary>
     /// Applies Admin migrations from the dedicated database initialization application.
     /// </summary>
-    /// <param name="serviceProvider">The scoped service provider containing the Admin write context.</param>
+    /// <param name="serviceProvider">The service provider containing the Admin write context.</param>
     /// <param name="ct">The cancellation token.</param>
-    /// <returns>A task that represents the migration operation.</returns>
-    public static async Task MigrateAdminDatabase(this IServiceProvider serviceProvider, CancellationToken ct)
+    /// <returns><see langword="true"/> after migrating; <see langword="false"/> when the context is not relational.</returns>
+    public static Task<bool> MigrateAdminDatabase(this IServiceProvider serviceProvider, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(serviceProvider);
 
-        var dbContext = serviceProvider.GetRequiredService<AdminWriteDbContext>();
-        if (dbContext.Database.IsRelational())
-        {
-            await dbContext.Database.MigrateAsync(ct);
-        }
+        return serviceProvider.ApplyMigrations<AdminWriteDbContext>(ct);
     }
 
     /// <summary>

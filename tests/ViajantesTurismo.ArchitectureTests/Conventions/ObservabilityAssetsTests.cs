@@ -149,14 +149,15 @@ public sealed class ObservabilityAssetsTests
         // Arrange
         var catalog = File.ReadAllText(CatalogPath());
         var meterTable = catalog.Split("## Meters", 2)[1].Split("## Metrics", 2)[0];
+        var registered = RegisteredMeterPatterns();
 
         // Act
-        var listed = MeterTableRow().Matches(meterTable).Select(match => match.Groups["meter"].Value).Order(StringComparer.Ordinal).ToArray();
-        var registered = RegisteredMeterNames();
+        var listed = MeterTableRow().Matches(meterTable).Select(match => match.Groups["meter"].Value).ToArray();
+        var unregistered = listed.Where(meter => !registered.Any(pattern => MatchesMeterPattern(pattern, meter)));
+        var unlisted = registered.Where(pattern => !listed.Any(meter => MatchesMeterPattern(pattern, meter)));
 
         // Assert
-        registered.ShouldNotBeEmpty();
-        listed.ShouldBe(registered);
+        string.Join(", ", unregistered.Concat(unlisted)).ShouldBe(string.Empty);
     }
 
     [Fact]

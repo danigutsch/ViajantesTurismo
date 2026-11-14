@@ -23,8 +23,8 @@ public sealed class PublicContentApiClientTests
                 [
                   {
                     "key":"home.hero",
-                    "sourceLanguage":1,
-                    "variants":[{"language":1,"title":"Welcome","body":"Ride with us","requiresHumanReview":false},{"language":2,"title":"Bem-vindo","body":"Pedale conosco","requiresHumanReview":true}],
+                    "sourceLanguage":"en-US",
+                    "variants":[{"language":"en-US","title":"Welcome","body":"Ride with us","requiresHumanReview":false},{"language":"pt-BR","title":"Bem-vindo","body":"Pedale conosco","requiresHumanReview":true}],
                     "publicationState":"ReviewRequired"
                   },
                   null
@@ -72,8 +72,8 @@ public sealed class PublicContentApiClientTests
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 {
                   "key":"home.hero",
-                  "sourceLanguage":1,
-                  "variants":[{"language":1,"title":"Welcome","body":"Ride with us","requiresHumanReview":false}],
+                  "sourceLanguage":"en-US",
+                  "variants":[{"language":"en-US","title":"Welcome","body":"Ride with us","requiresHumanReview":false}],
                   "publicationState":"Published"
                 }
                 """);
@@ -101,8 +101,8 @@ public sealed class PublicContentApiClientTests
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
                 {
                   "key":"home.hero",
-                  "sourceLanguage":1,
-                  "variants":[{"language":1,"title":"Welcome","body":"Ride with us","requiresHumanReview":false},{"language":2,"title":"Bem-vindo","body":"Pedale conosco","requiresHumanReview":true}],
+                  "sourceLanguage":"en-US",
+                  "variants":[{"language":"en-US","title":"Welcome","body":"Ride with us","requiresHumanReview":false},{"language":"pt-BR","title":"Bem-vindo","body":"Pedale conosco","requiresHumanReview":true}],
                   "publicationState":"ReviewRequired"
                 }
                 """);
@@ -110,10 +110,10 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = "Welcome", Body = "Ride with us" });
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = "Welcome", Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco", RequiresHumanReview = true });
 
         // Act
         var outcome = await sut.SaveContent("/home//hero/", request, TestContext.Current.CancellationToken);
@@ -144,10 +144,10 @@ public sealed class PublicContentApiClientTests
         var sut = new PublicContentApiClient(httpClient);
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.EnUs, Title = string.Empty, Body = "Ride with us" });
-        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageDto.PtBr, Title = "Bem-vindo", Body = "Pedale conosco" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.EnglishUnitedStates, Title = string.Empty, Body = "Ride with us" });
+        request.Variants.Add(new PublicContentVariantDto { Language = PublicContentLanguageTags.PortugueseBrazil, Title = "Bem-vindo", Body = "Pedale conosco" });
 
         // Act
         var outcome = await sut.SaveContent("home.hero", request, TestContext.Current.CancellationToken);

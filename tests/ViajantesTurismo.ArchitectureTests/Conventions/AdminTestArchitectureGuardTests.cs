@@ -121,7 +121,7 @@ public sealed partial class AdminTestArchitectureGuardTests
 
         // Assert
         appMarkup.ShouldContain("<HeadOutlet @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
-        appMarkup.ShouldContain("<Routes @rendermode=\"InteractiveServer\" />", StringComparison.Ordinal);
+        appMarkup.ShouldContain("<Routes @rendermode=\"InteractiveServer\" CspNonce=\"@CspNonce.Value\" />", StringComparison.Ordinal);
         appMarkup.ShouldContain("<div class=\"app-startup-status\" role=\"status\" aria-live=\"polite\">", StringComparison.Ordinal);
         appMarkup.ShouldContain("<noscript>", StringComparison.Ordinal);
         appMarkup.ShouldContain("<link rel=\"stylesheet\" href=\"@Assets[\"app-noscript.css\"]\" />", StringComparison.Ordinal);
@@ -129,8 +129,7 @@ public sealed partial class AdminTestArchitectureGuardTests
         mainLayoutMarkup.ShouldContain("aria-busy=\"@(!RendererInfo.IsInteractive ? \"true\" : \"false\")\"", StringComparison.Ordinal);
         mainLayoutMarkup.ShouldContain("data-interactive=\"@RendererInfo.IsInteractive.ToString().ToLowerInvariant()\"", StringComparison.Ordinal);
         appStyles.ShouldContain("body:has(.page[data-interactive=\"true\"]) .app-startup-status", StringComparison.Ordinal);
-        systemTestBase.ShouldContain(".page[data-interactive=\\\"true\\\"]", StringComparison.Ordinal);
-        systemTestBase.ShouldContain("DeveloperExceptionPageSelector", StringComparison.Ordinal);
+        systemTestBase.ShouldContain("await GotoInteractive(uri);", StringComparison.Ordinal);
         systemTestBase.ShouldNotContain(".page:not([inert])", StringComparison.Ordinal);
         systemTestBase.ShouldNotContain("maxAttempts", StringComparison.Ordinal);
         noScriptStylesExists.ShouldBeTrue();

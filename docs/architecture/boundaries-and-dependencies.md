@@ -105,6 +105,7 @@ flowchart TB
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Branding_AspNetCore[ViajantesTurismo.Branding.AspNetCore] --> ViajantesTurismo_Branding_Contracts_Http[ViajantesTurismo.Branding.Contracts.Http]
     ViajantesTurismo_Branding_AspNetCore[ViajantesTurismo.Branding.AspNetCore] --> ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure]
+    ViajantesTurismo_Branding_Contracts_Http[ViajantesTurismo.Branding.Contracts.Http] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Branding_Contracts_IntegrationEvents[ViajantesTurismo.Branding.Contracts.IntegrationEvents] --> ViajantesTurismo_Architecture_Analyzers[ViajantesTurismo.Architecture.Analyzers]
     ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> ViajantesTurismo_Branding_Contracts_IntegrationEvents[ViajantesTurismo.Branding.Contracts.IntegrationEvents]
     ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
@@ -143,11 +144,11 @@ flowchart TB
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Management_Security[ViajantesTurismo.Management.Security]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_MigrationService[ViajantesTurismo.MigrationService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Branding_Contracts_Http[ViajantesTurismo.Branding.Contracts.Http]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
-    ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
 ```
 <!-- generated:project-dependencies:end -->
 

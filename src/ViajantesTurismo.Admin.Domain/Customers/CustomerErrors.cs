@@ -76,6 +76,15 @@ public static class CustomerErrors
         message: "Occupation is required.");
 
     /// <summary>
+    /// Indicates that the birth date is missing.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result EmptyBirthDate() => Result.Invalid(
+        detail: "Birth date is required.",
+        field: "BirthDate",
+        message: "Birth date is required.");
+
+    /// <summary>
     /// Indicates that the birth date is in the future.
     /// </summary>
     /// <returns>A Result representing the error.</returns>
@@ -328,13 +337,13 @@ public static class CustomerErrors
         message: "Country is required.");
 
     /// <summary>
-    /// Indicates that the country exceeds maximum length.
+    /// Indicates that the country is not an officially assigned ISO 3166-1 alpha-2 code.
     /// </summary>
     /// <returns>A Result representing the error.</returns>
-    public static Result CountryTooLong() => Result.Invalid(
-        detail: "Country cannot exceed 128 characters.",
+    public static Result InvalidCountry() => Result.Invalid(
+        detail: "Country must be an ISO 3166-1 alpha-2 code, such as BR.",
         field: "Country",
-        message: "Country cannot exceed 128 characters.");
+        message: "Country must be an ISO 3166-1 alpha-2 code, such as BR.");
 
     /// <summary>
     /// Indicates that the emergency contact name is empty.
@@ -428,9 +437,18 @@ public static class CustomerErrors
     /// </summary>
     /// <returns>A Result representing the error.</returns>
     public static Result InvalidPhoneFormat() => Result.Invalid(
-        detail: "Mobile phone must contain only digits, spaces, hyphens, parentheses, or plus sign.",
+        detail: "Mobile must be a phone number of 7 to 15 digits, optionally led by +, separated only by spaces, hyphens, dots or parentheses.",
         field: Mobile,
-        message: "Mobile phone must contain only digits, spaces, hyphens, parentheses, or plus sign.");
+        message: "Mobile must be a phone number of 7 to 15 digits, optionally led by +, separated only by spaces, hyphens, dots or parentheses.");
+
+    /// <summary>
+    /// Indicates that the emergency contact mobile phone is not a phone number.
+    /// </summary>
+    /// <returns>A Result representing the error.</returns>
+    public static Result InvalidEmergencyContactPhoneFormat() => Result.Invalid(
+        detail: "Emergency contact mobile must be a phone number of 7 to 15 digits, optionally led by +, separated only by spaces, hyphens, dots or parentheses.",
+        field: Mobile,
+        message: "Emergency contact mobile must be a phone number of 7 to 15 digits, optionally led by +, separated only by spaces, hyphens, dots or parentheses.");
 
     /// <summary>
     /// Indicates that the customer is too young (minimum age is 10 years).

@@ -1,4 +1,5 @@
 using Microsoft.Playwright;
+using PandaBear.Testing.Playwright;
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
 /// <summary>Signs the conformance user in to the management web app through the Keycloak login page.</summary>
@@ -24,20 +25,11 @@ internal sealed class ManagementLoginWorkflow(IPage page)
                 await page.Locator("#username").FillAsync(ConformanceUsername);
                 await page.Locator("#password").FillAsync(password);
                 await page.Locator("#kc-login").ClickAsync();
-                await page.WaitForURLAsync(
-                    url => Uri.TryCreate(url, UriKind.Absolute, out var uri)
-                           && uri.Host.Equals(managementWebUrl.Host, StringComparison.OrdinalIgnoreCase)
-                           && uri.Port == managementWebUrl.Port,
-                    new PageWaitForURLOptions { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.ExpectPath(managementWebUrl, "/");
                 return;
             }
-            catch (PlaywrightException exception) when (IsRetryableNetworkChange(exception) && attempt < MaxLoginNavigationAttempts)
+            catch (Exception exception) when (IsRetryableSignInFailure(exception) && attempt < MaxLoginNavigationAttempts)
             {
-                // Retry the complete OIDC redirect after transient AppHost loopback endpoint changes.
-            }
-            catch (TimeoutException) when (attempt < MaxLoginNavigationAttempts)
-            {
-                // Retry when the OIDC redirect is interrupted before the web app regains control.
             }
         }
 
@@ -64,6 +56,20 @@ internal sealed class ManagementLoginWorkflow(IPage page)
         }
 
         throw new InvalidOperationException($"Navigation to '{loginUrl}' did not complete after {MaxLoginNavigationAttempts} attempts.");
+    }
+
+    /// <summary>
+    /// Whether a sign-in attempt failed transiently: a timeout, an AppHost loopback endpoint change, a navigation interrupted by the OIDC
+    /// redirect, or the post-login address check of <see cref="PlaywrightPageExtensions.ExpectPath(IPage, Uri, string)"/> timing out.
+    /// Any other failure, such as a closed page or a missing login field, is real and is not retried.
+    /// </summary>
+    internal static bool IsRetryableSignInFailure(Exception exception)
+    {
+        return exception is TimeoutException
+            || exception is PlaywrightException playwrightException
+            && (IsRetryableNetworkChange(playwrightException)
+                || IsOidcRedirect(playwrightException)
+                || playwrightException.Message.StartsWith("Page URL expected to be", StringComparison.Ordinal));
     }
 
     private static bool IsRetryableNetworkChange(PlaywrightException exception)

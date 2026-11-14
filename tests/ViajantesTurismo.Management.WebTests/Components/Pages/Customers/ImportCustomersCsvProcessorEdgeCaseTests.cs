@@ -70,10 +70,10 @@ public sealed class ImportCustomersCsvProcessorEdgeCaseTests
     }
 
     [Fact]
-    public void ParseMappedRowsByEmail_skips_rows_that_are_too_short_or_have_a_blank_email()
+    public void ParseMappedRowsByEmail_skips_rows_with_a_blank_email()
     {
         // Arrange
-        var bytes = Encoding.UTF8.GetBytes("FirstName,Email\nShort\nBlank,  \nAda,ada@example.com");
+        var bytes = Encoding.UTF8.GetBytes("FirstName,Email\nBlank,  \nAda,ada@example.com");
 
         // Act
         var rows = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(bytes);
@@ -82,6 +82,19 @@ public sealed class ImportCustomersCsvProcessorEdgeCaseTests
         var row = rows.ShouldHaveSingleItem();
         row.Key.ShouldBe("ada@example.com");
         row.Value["FirstName"].ShouldBe("Ada");
+    }
+
+    [Fact]
+    public void ParseMappedRowsByEmail_reads_no_rows_from_a_file_with_a_short_row()
+    {
+        // Arrange
+        var bytes = Encoding.UTF8.GetBytes("FirstName,Email\nShort\nAda,ada@example.com");
+
+        // Act
+        var rows = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(bytes);
+
+        // Assert
+        rows.ShouldBeEmpty();
     }
 
     [Fact]

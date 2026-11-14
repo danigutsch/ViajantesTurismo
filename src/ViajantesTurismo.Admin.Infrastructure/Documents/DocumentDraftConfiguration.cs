@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PandaBear.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ViajantesTurismo.Admin.Domain.Documents;
 
@@ -24,10 +25,12 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
         entity.Property(document => document.Revision).IsRequired();
         entity.HasIndex(document => new { document.DocumentLineageId, document.Revision })
             .IsUnique()
-            .HasDatabaseName(DocumentDraftSchema.RevisionUniqueIndex);
+            .HasDatabaseName(DocumentDraftSchema.RevisionUniqueIndex)
+            .HasUniqueRule(DocumentDraftSchema.RevisionUniqueRule);
         entity.HasIndex(document => new { document.BookingId, document.Type, document.Revision })
             .IsUnique()
-            .HasDatabaseName(DocumentDraftSchema.BookingTypeRevisionUniqueIndex);
+            .HasDatabaseName(DocumentDraftSchema.BookingTypeRevisionUniqueIndex)
+            .HasUniqueRule(DocumentDraftSchema.RevisionUniqueRule);
         entity.Property(document => document.SourceVersion).HasMaxLength(DocumentLimits.MaxSourceVersionLength).IsRequired();
         entity.Property(document => document.BrandingVersion).HasMaxLength(DocumentLimits.MaxBrandingVersionLength).IsRequired();
         entity.Property(document => document.BrandingName).HasMaxLength(DocumentLimits.MaxBrandingNameLength).IsRequired();

@@ -1,3 +1,4 @@
+@inject PandaBear.AspNetCore.ICspNonce CspNonce
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,8 +10,8 @@
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["components.css"]" />
     <link rel="stylesheet" href="@Assets["ViajantesTurismo.Management.Web.styles.css"]"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css"/>
-    <ImportMap />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" nonce="@CspNonce.Value"/>
+    <ImportMap nonce="@CspNonce.Value" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="InteractiveServer" />
 </head>
@@ -24,7 +25,7 @@
         <link rel="stylesheet" href="@Assets["app-noscript.css"]" />
         <p class="app-startup-error" role="alert">JavaScript is required to use the ViajantesTurismo Admin Portal.</p>
     </noscript>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="InteractiveServer" CspNonce="@CspNonce.Value" />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 

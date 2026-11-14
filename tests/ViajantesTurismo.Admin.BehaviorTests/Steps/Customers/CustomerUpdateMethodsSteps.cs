@@ -109,7 +109,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     {
         var definition = CustomerMapper.MapToDefinition(customerContext.Customer) with
         {
-            Address = new AddressDefinition("123 Main St", null, "Downtown", "12345", city, "CA", "USA")
+            Address = new AddressDefinition("123 Main St", null, "Downtown", "12345", city, "CA", "US")
         };
 
         var result = customerContext.Customer.Revise(definition, DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime));
@@ -255,7 +255,7 @@ public sealed class CustomerUpdateMethodsSteps(CustomerContext customerContext)
     [Then(@"the customer should have email ""(.*)""")]
     public void ThenTheCustomerShouldHaveEmail(string expectedEmail)
     {
-        customerContext.Customer.ContactInfo.Email.ShouldBe(expectedEmail);
+        customerContext.Customer.ContactInfo.Email.Value.ShouldBe(expectedEmail);
     }
 
     [Then(@"the customer should have city ""(.*)""")]

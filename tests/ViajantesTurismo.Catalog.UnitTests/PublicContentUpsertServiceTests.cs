@@ -16,17 +16,17 @@ public sealed class PublicContentUpsertServiceTests
         var service = new PublicContentUpsertService(store);
         var request = new UpsertPublicContentRequest
         {
-            SourceLanguage = PublicContentLanguageDto.EnUs
+            SourceLanguage = PublicContentLanguageTags.EnglishUnitedStates
         };
         request.Variants.Add(new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.EnUs,
+            Language = PublicContentLanguageTags.EnglishUnitedStates,
             Title = "Welcome",
             Body = "Ride with us"
         });
         request.Variants.Add(new PublicContentVariantDto
         {
-            Language = PublicContentLanguageDto.PtBr,
+            Language = PublicContentLanguageTags.PortugueseBrazil,
             Title = "Bem-vindo",
             Body = "Pedale conosco",
             RequiresHumanReview = true

@@ -1,8 +1,16 @@
 @using ViajantesTurismo.Management.Web.Components.Layout
 @using ViajantesTurismo.Management.Web.Components.Pages
-<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(NotFound)">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router>
+<CascadingValue Name="@ManagementWebSecurityHeaders.NonceCascadeName" Value="CspNonce" IsFixed="true">
+    <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(NotFound)">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingValue>
+
+@code {
+    /// <summary>Gets or sets the nonce of the document's response, which the static <c>App</c> reads and the circuit keeps.</summary>
+    [Parameter]
+    public string? CspNonce { get; set; }
+}

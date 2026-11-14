@@ -30,7 +30,10 @@ public sealed class UpdateCustomerCommandHandler(
             return CustomerErrors.CustomerNotFound();
         }
 
-        var sanitizedEmail = StringSanitizer.Sanitize(command.ContactInfo.Email);
+        if (!StringSanitizer.TrySanitize(command.ContactInfo.Email, out var sanitizedEmail) || sanitizedEmail is null)
+        {
+            return CustomerErrors.InvalidEmailFormat();
+        }
 
         if (await customerStore.EmailExistsExcluding(sanitizedEmail, command.CustomerId, ct))
         {

@@ -101,10 +101,26 @@ public sealed class EmergencyContactValidationSteps(CustomerContext context)
         allErrors.ShouldContain("Emergency contact mobile cannot exceed 64 characters.");
     }
 
+    [Then("I should be informed that emergency contact mobile must be a valid phone number")]
+    public void ThenIShouldBeInformedThatEmergencyContactMobileMustBeAValidPhoneNumber()
+    {
+        context.EmergencyContactResult.IsFailure.ShouldBeTrue("Expected failure but got success");
+        var errors = context.EmergencyContactResult.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        errors.Keys.ShouldContain("Mobile");
+        errors["Mobile"].ShouldContain(
+            "Emergency contact mobile must be a phone number of 7 to 15 digits, optionally led by +, separated only by spaces, hyphens, dots or parentheses.");
+    }
+
+    [Then(@"the emergency contact mobile should be ""(.*)""")]
+    public void ThenTheEmergencyContactMobileShouldBe(string expected)
+    {
+        context.EmergencyContactResult.Value.Mobile.Value.ShouldBe(expected);
+    }
+
     [Then("all emergency contact fields should have normalized whitespace")]
     public void ThenAllEmergencyContactFieldsShouldHaveNormalizedWhitespace()
     {
         context.EmergencyContactResult.Value.Name.ShouldBe("Jane Doe");
-        context.EmergencyContactResult.Value.Mobile.ShouldBe("+1234 567890");
+        context.EmergencyContactResult.Value.Mobile.Value.ShouldBe("+1234567890");
     }
 }

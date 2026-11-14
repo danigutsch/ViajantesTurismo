@@ -179,26 +179,23 @@ public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admi
     // Documents read Branding from the Admin projection, which the Admin worker fills from Catalog-hosted Branding.
     private static async Task WaitForBrandingProjection(string connectionString, CancellationToken ct)
     {
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(BrandingProjectionTimeout);
         await using var dataSource = NpgsqlDataSource.Create(connectionString);
-        while (true)
-        {
-            try
+        _ = await Eventually.Until(
+            async ct =>
             {
-                await using var command = dataSource.CreateCommand("SELECT EXISTS (SELECT 1 FROM branding_projection.settings)");
-                if (await command.ExecuteScalarAsync(timeout.Token) is true)
+                try
                 {
-                    return;
+                    await using var command = dataSource.CreateCommand("SELECT EXISTS (SELECT 1 FROM branding_projection.settings)");
+                    return await command.ExecuteScalarAsync(ct) is true ? "projected" : null;
                 }
-            }
-            catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UndefinedTable)
-            {
-                // Migrations have not created the projection table yet.
-            }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(500), timeout.Token);
-        }
+                catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UndefinedTable)
+                {
+                    return null;
+                }
+            },
+            BrandingProjectionTimeout,
+            TimeSpan.FromMilliseconds(500),
+            ct);
     }
 
     private string GetDatabaseConnectionString()

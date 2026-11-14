@@ -6,11 +6,16 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.530.1` at clean library revision
-[`b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696).
-On top of `0.1.0-alpha.521.1` it adds `EditSession` to `PandaBear.SharedKernel.Blazor` (its `Sync` loads with a `ValueTask`),
-makes the unhandled-exception handler answer a client that accepts only HTML with the problem body, and moves Aspire to
-13.6.5 for CVE-2026-120006 and CVE-2026-118740. Version `0.1.0-alpha.521.1` made the coverage gate ignore compiler-generated
+The published candidate is `0.1.0-alpha.541.1` at clean library revision
+[`324f99162a3249f628c33f87088136415af989d9`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/324f99162a3249f628c33f87088136415af989d9).
+On top of `0.1.0-alpha.530.1` it adds the public-site building blocks (`Blazor.Site`, `AspNetCore.Localization`,
+`ServiceDefaults`, `Aspire.Hosting`, `EntityFrameworkCore.Npgsql`), BFF token management in
+`AspNetCore.Authentication.Bff` that replaces Duende.AccessTokenManagement, and system-test infrastructure. It is breaking:
+the service defaults own the `HttpClient` pipeline, `AddHttpClientDefaults` is removed and `ImageSanitizing` is renamed
+`UploadSanitizing`. It also adds image format and animation probing with PNG encoding, and raises the ASP.NET Core floors to
+10.0.14. Version `0.1.0-alpha.530.1` added `EditSession` to `PandaBear.SharedKernel.Blazor` (its `Sync` loads with a
+`ValueTask`), made the unhandled-exception handler answer a client that accepts only HTML with the problem body, and moved
+Aspire to 13.6.5 for CVE-2026-120006 and CVE-2026-118740. Version `0.1.0-alpha.521.1` made the coverage gate ignore compiler-generated
 methods, added ordered document blocks (`DocumentBlock` and `DocumentSection.Blocks`), documented how a host keeps its own
 client-error body through `ProblemDetailsOptions`, and added the sandbox settings and packages updates commands of the
 SharedKernel tools. Version `0.1.0-alpha.511.1` had split `PandaBear.SharedKernel.AspNetCore` into a core plus `AspNetCore.Authentication`,
@@ -18,7 +23,7 @@ SharedKernel tools. Version `0.1.0-alpha.511.1` had split `PandaBear.SharedKerne
 `.RateLimiting`, `.Seo` and `PandaBear.Idempotency.AspNetCore`; `AddSecurityEventTelemetry` became
 `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry`). It keeps `lockExemptProjects` and SDK 10.0.403.
 The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.530.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.530.1).
+[`v0.1.0-alpha.541.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.541.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
@@ -147,9 +152,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/324f99162a3249f628c33f87088136415af989d9/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696`, which equals the `libraryRevision` in
+`324f99162a3249f628c33f87088136415af989d9`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

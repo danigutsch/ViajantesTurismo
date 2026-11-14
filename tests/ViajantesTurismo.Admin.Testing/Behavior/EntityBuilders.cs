@@ -122,7 +122,7 @@ public static class EntityBuilders
                     _options.PostalCode ?? "10001",
                     _options.City ?? "New York",
                     _options.State ?? "NY",
-                    _options.Country ?? "USA"),
+                    _options.Country ?? "US"),
                 new PhysicalInfoDefinition(
                     _options.WeightKg ?? 75,
                     _options.HeightCentimeters ?? 175,

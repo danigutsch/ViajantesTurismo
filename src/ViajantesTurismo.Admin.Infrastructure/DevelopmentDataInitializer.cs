@@ -69,7 +69,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Alice", "Smith", FemaleGender, new DateOnly(1990, 1, 1), BrazilianNationality, "Engineer"),
             new IdentificationInfoDefinition("123456789", "Brazilian"),
             new ContactInfoDefinition("alice@example.com", "+5511999999999", "@alice", "alice.fb"),
-            new AddressDefinition("Rua A, 123", "Apt 1", "Centro", "01234-567", "São Paulo", "SP", "Brazil"),
+            new AddressDefinition("Rua A, 123", "Apt 1", "Centro", "01234-567", "São Paulo", "SP", "BR"),
             new PhysicalInfoDefinition(60, 165, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Bob Smith", "+5511988888888", "Peanuts", null)),
@@ -78,7 +78,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Bob", "Johnson", MaleGender, new DateOnly(1985, 5, 15), "American", "Teacher"),
             new IdentificationInfoDefinition("987654321", "American"),
             new ContactInfoDefinition("bob@example.com", "+15551234567", null, "bob.johnson"),
-            new AddressDefinition("456 Elm St", null, "Manhattan", "10001", "New York", "NY", "USA"),
+            new AddressDefinition("456 Elm St", null, "Manhattan", "10001", "New York", "NY", "US"),
             new PhysicalInfoDefinition(75, 180, BikeType.EBike),
             new AccommodationPreferencesDefinition(RoomType.SingleOccupancy, BedType.DoubleBed, null),
             new CustomerHealthDefinition("Jane Johnson", "+15559876543", null, null)),
@@ -87,7 +87,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Carla", "Santos", FemaleGender, new DateOnly(1995, 10, 20), "Portuguese", "Doctor"),
             new IdentificationInfoDefinition("456789123", "Portuguese"),
             new ContactInfoDefinition("carla@example.com", "+351912345678", "@carla_santos", null),
-            new AddressDefinition("Rua B, 456", null, "Alfama", "1100-001", "Lisbon", "Lisbon", "Portugal"),
+            new AddressDefinition("Rua B, 456", null, "Alfama", "1100-001", "Lisbon", "Lisbon", "PT"),
             new PhysicalInfoDefinition(55, 160, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Pedro Santos", "+351987654321", "Shellfish", null)),
@@ -96,7 +96,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("David", "Lee", MaleGender, new DateOnly(1980, 3, 10), "Korean", "Chef"),
             new IdentificationInfoDefinition("789123456", "Korean"),
             new ContactInfoDefinition("david@example.com", "+821012345678", null, "david.lee"),
-            new AddressDefinition("Gangnam-daero 789", null, "Gangnam-gu", "06234", "Seoul", "Seoul", "South Korea"),
+            new AddressDefinition("Gangnam-daero 789", null, "Gangnam-gu", "06234", "Seoul", "Seoul", "KR"),
             new PhysicalInfoDefinition(70, 175, BikeType.EBike),
             new AccommodationPreferencesDefinition(RoomType.SingleOccupancy, BedType.DoubleBed, null),
             new CustomerHealthDefinition("Sarah Lee", "+821098765432", "Dairy", null)),
@@ -105,7 +105,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Elena", "Rodriguez", FemaleGender, new DateOnly(1992, 7, 5), "Spanish", "Artist"),
             new IdentificationInfoDefinition("321654987", "Spanish"),
             new ContactInfoDefinition("elena@example.com", "+34612345678", "@elena_art", null),
-            new AddressDefinition("Calle C, 789", "Piso 2", "Centro", "28001", "Madrid", "Madrid", "Spain"),
+            new AddressDefinition("Calle C, 789", "Piso 2", "Centro", "28001", "Madrid", "Madrid", "ES"),
             new PhysicalInfoDefinition(58, 168, BikeType.EBike),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Miguel Rodriguez", "+34698765432", "Pollen", null)),
@@ -114,7 +114,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Frank", "Muller", MaleGender, new DateOnly(1975, 12, 25), "German", "Mechanic"),
             new IdentificationInfoDefinition("654987321", "German"),
             new ContactInfoDefinition("frank@example.com", "+491512345678", null, "frank.muller"),
-            new AddressDefinition("Hauptstr. 101", null, "Mitte", "10117", "Berlin", "Berlin", "Germany"),
+            new AddressDefinition("Hauptstr. 101", null, "Mitte", "10117", "Berlin", "Berlin", "DE"),
             new PhysicalInfoDefinition(80, 185, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.SingleOccupancy, BedType.DoubleBed, null),
             new CustomerHealthDefinition("Anna Muller", "+491598765432", null, null)),
@@ -123,7 +123,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Gina", "Patel", FemaleGender, new DateOnly(1988, 9, 30), "Indian", "Accountant"),
             new IdentificationInfoDefinition("147258369", "Indian"),
             new ContactInfoDefinition("gina@example.com", "+919876543210", "@gina_patel", null),
-            new AddressDefinition("MG Road, 202", null, "Bandra", "400050", "Mumbai", "Maharashtra", "India"),
+            new AddressDefinition("MG Road, 202", null, "Bandra", "400050", "Mumbai", "Maharashtra", "IN"),
             new PhysicalInfoDefinition(62, 162, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Raj Patel", "+919876543211", "Nuts", null)),
@@ -132,7 +132,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Hans", "Nielsen", MaleGender, new DateOnly(1998, 4, 14), "Danish", "Student"),
             new IdentificationInfoDefinition("963852741", "Danish"),
             new ContactInfoDefinition("hans@example.com", "+4520123456", null, "hans.nielsen"),
-            new AddressDefinition("Vesterbrogade 303", null, "Vesterbro", "1620", "Copenhagen", "Capital Region", "Denmark"),
+            new AddressDefinition("Vesterbrogade 303", null, "Vesterbro", "1620", "Copenhagen", "Capital Region", "DK"),
             new PhysicalInfoDefinition(68, 178, BikeType.EBike),
             new AccommodationPreferencesDefinition(RoomType.SingleOccupancy, BedType.DoubleBed, null),
             new CustomerHealthDefinition("Lise Nielsen", "+4520987654", "Gluten", null)),
@@ -141,7 +141,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Irina", "Petrov", FemaleGender, new DateOnly(1983, 11, 8), "Russian", "Scientist"),
             new IdentificationInfoDefinition("852741963", "Russian"),
             new ContactInfoDefinition("irina@example.com", "+79123456789", "@irina_petrov", null),
-            new AddressDefinition("Tverskaya Ulitsa, 404", null, "Tverskoy", "125009", "Moscow", "Moscow", "Russia"),
+            new AddressDefinition("Tverskaya Ulitsa, 404", null, "Tverskoy", "125009", "Moscow", "Moscow", "RU"),
             new PhysicalInfoDefinition(56, 170, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Alex Petrov", "+79234567890", null, null)),
@@ -150,7 +150,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Jack", "Brown", MaleGender, new DateOnly(1991, 6, 22), "Australian", "Photographer"),
             new IdentificationInfoDefinition("741963852", "Australian"),
             new ContactInfoDefinition("jack@example.com", "+61412345678", null, "jack.brown"),
-            new AddressDefinition("Collins Street, 505", null, "CBD", "3000", "Melbourne", "Victoria", "Australia"),
+            new AddressDefinition("Collins Street, 505", null, "CBD", "3000", "Melbourne", "Victoria", "AU"),
             new PhysicalInfoDefinition(72, 182, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.SingleOccupancy, BedType.DoubleBed, null),
             new CustomerHealthDefinition("Emma Brown", "+61498765432", "Seafood", null)),
@@ -159,7 +159,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Karen", "Tanaka", FemaleGender, new DateOnly(1987, 2, 14), "Japanese", "Architect"),
             new IdentificationInfoDefinition("159357486", "Japanese"),
             new ContactInfoDefinition("karen@example.com", "+81901234567", "@karen_tanaka", null),
-            new AddressDefinition("Shibuya 1-2-3", null, "Shibuya-ku", "150-0002", "Tokyo", "Tokyo", "Japan"),
+            new AddressDefinition("Shibuya 1-2-3", null, "Shibuya-ku", "150-0002", "Tokyo", "Tokyo", "JP"),
             new PhysicalInfoDefinition(52, 158, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Yuki Tanaka", "+81909876543", null, null)),
@@ -168,7 +168,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Leo", "Costa", MaleGender, new DateOnly(1993, 8, 3), BrazilianNationality, "Software Developer"),
             new IdentificationInfoDefinition("264835791", "Brazilian"),
             new ContactInfoDefinition("leo@example.com", "+5521999887766", null, "leo.costa"),
-            new AddressDefinition("Av. Paulista, 1000", "Sala 10", "Bela Vista", "01310-100", "São Paulo", "SP", "Brazil"),
+            new AddressDefinition("Av. Paulista, 1000", "Sala 10", "Bela Vista", "01310-100", "São Paulo", "SP", "BR"),
             new PhysicalInfoDefinition(78, 176, BikeType.EBike),
             new AccommodationPreferencesDefinition(RoomType.SingleOccupancy, BedType.DoubleBed, null),
             new CustomerHealthDefinition("Ana Costa", "+5521988776655", "Latex", null)),
@@ -177,7 +177,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Maria", "Gonzalez", FemaleGender, new DateOnly(1989, 12, 1), "Mexican", "Journalist"),
             new IdentificationInfoDefinition("375924681", "Mexican"),
             new ContactInfoDefinition("maria@example.com", "+521234567890", "@maria_g", null),
-            new AddressDefinition("Reforma 222", null, "Juárez", "06600", "Mexico City", "CDMX", "Mexico"),
+            new AddressDefinition("Reforma 222", null, "Juárez", "06600", "Mexico City", "CDMX", "MX"),
             new PhysicalInfoDefinition(60, 163, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Carlos Gonzalez", "+521987654321", "Penicillin", null)),
@@ -186,7 +186,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Nora", "Eriksson", FemaleGender, new DateOnly(1996, 5, 18), "Swedish", "Nurse"),
             new IdentificationInfoDefinition("486135792", "Swedish"),
             new ContactInfoDefinition("nora@example.com", "+46701234567", null, "nora.eriksson"),
-            new AddressDefinition("Kungsgatan 44", null, "Norrmalm", "111 35", "Stockholm", "Stockholm", "Sweden"),
+            new AddressDefinition("Kungsgatan 44", null, "Norrmalm", "111 35", "Stockholm", "Stockholm", "SE"),
             new PhysicalInfoDefinition(64, 172, BikeType.EBike),
             new AccommodationPreferencesDefinition(RoomType.SingleOccupancy, BedType.DoubleBed, null),
             new CustomerHealthDefinition("Erik Eriksson", "+46709876543", null, null)),
@@ -195,7 +195,7 @@ public sealed class DevelopmentDataInitializer
             new PersonalInfoDefinition("Oscar", "Fischer", MaleGender, new DateOnly(1982, 9, 27), "Austrian", "Musician"),
             new IdentificationInfoDefinition("597246813", "Austrian"),
             new ContactInfoDefinition("oscar@example.com", "+43664123456", "@oscar_music", null),
-            new AddressDefinition("Mariahilfer Straße, 88", null, "Mariahilf", "1060", "Vienna", "Vienna", "Austria"),
+            new AddressDefinition("Mariahilfer Straße, 88", null, "Mariahilf", "1060", "Vienna", "Vienna", "AT"),
             new PhysicalInfoDefinition(74, 179, BikeType.Regular),
             new AccommodationPreferencesDefinition(RoomType.DoubleOccupancy, BedType.SingleBed, null),
             new CustomerHealthDefinition("Sabine Fischer", "+43664987654", "Aspirin", null)),
@@ -697,8 +697,8 @@ public sealed class DevelopmentDataInitializer
                 actual.IdentificationInfo.IdNationality,
                 expected.IdentificationInfo.IdNationality,
                 StringComparison.Ordinal) &&
-            string.Equals(actual.ContactInfo.Email, expected.ContactInfo.Email, StringComparison.Ordinal) &&
-            string.Equals(actual.ContactInfo.Mobile, expected.ContactInfo.Mobile, StringComparison.Ordinal) &&
+            actual.ContactInfo.Email == expected.ContactInfo.Email &&
+            actual.ContactInfo.Mobile == expected.ContactInfo.Mobile &&
             string.Equals(actual.ContactInfo.Instagram, expected.ContactInfo.Instagram, StringComparison.Ordinal) &&
             string.Equals(actual.ContactInfo.Facebook, expected.ContactInfo.Facebook, StringComparison.Ordinal) &&
             string.Equals(actual.Address.Street, expected.Address.Street, StringComparison.Ordinal) &&
@@ -707,7 +707,7 @@ public sealed class DevelopmentDataInitializer
             string.Equals(actual.Address.PostalCode, expected.Address.PostalCode, StringComparison.Ordinal) &&
             string.Equals(actual.Address.City, expected.Address.City, StringComparison.Ordinal) &&
             string.Equals(actual.Address.State, expected.Address.State, StringComparison.Ordinal) &&
-            string.Equals(actual.Address.Country, expected.Address.Country, StringComparison.Ordinal) &&
+            actual.Address.Country == expected.Address.Country &&
             actual.PhysicalInfo.WeightKg == expected.PhysicalInfo.WeightKg &&
             actual.PhysicalInfo.HeightCentimeters == expected.PhysicalInfo.HeightCentimeters &&
             actual.PhysicalInfo.BikeType == expected.PhysicalInfo.BikeType &&
@@ -715,7 +715,7 @@ public sealed class DevelopmentDataInitializer
             actual.AccommodationPreferences.BedType == expected.AccommodationPreferences.BedType &&
             actual.AccommodationPreferences.CompanionId == expected.AccommodationPreferences.CompanionId &&
             string.Equals(actual.EmergencyContact.Name, expected.EmergencyContact.Name, StringComparison.Ordinal) &&
-            string.Equals(actual.EmergencyContact.Mobile, expected.EmergencyContact.Mobile, StringComparison.Ordinal) &&
+            actual.EmergencyContact.Mobile == expected.EmergencyContact.Mobile &&
             string.Equals(actual.MedicalInfo.Allergies, expected.MedicalInfo.Allergies, StringComparison.Ordinal) &&
             string.Equals(actual.MedicalInfo.AdditionalInfo, expected.MedicalInfo.AdditionalInfo, StringComparison.Ordinal);
     }

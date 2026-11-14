@@ -3,6 +3,9 @@ namespace ViajantesTurismo.Branding.Infrastructure;
 /// <summary>An immutable full-state Branding settings revision.</summary>
 internal sealed class BrandingSettingsRevisionRecord
 {
+    /// <summary>The unique rule of the source epoch and revision: one revision per number in a lineage.</summary>
+    public const string UniqueRule = "branding.settings-revision";
+
     private BrandingSettingsRevisionRecord(
         Guid id,
         Guid sourceEpoch,

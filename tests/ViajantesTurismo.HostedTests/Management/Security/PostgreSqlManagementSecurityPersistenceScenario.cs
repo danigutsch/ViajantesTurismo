@@ -1,4 +1,4 @@
-using PostgreSqlTestCleanup = ViajantesTurismo.HostedTests.Infrastructure.HostedTestCleanup;
+using PandaBear.Testing;
 using Npgsql;
 using Microsoft.EntityFrameworkCore;
 using PandaBear.IntegrationTesting;
@@ -43,7 +43,7 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
         }
         catch (Exception failure)
         {
-            await PostgreSqlTestCleanup.DisposeResources(failure, database);
+            await TestCleanup.DisposeAll(failure, database);
             throw;
         }
     }
@@ -65,7 +65,7 @@ internal sealed class PostgreSqlManagementSecurityPersistenceScenario : IAsyncDi
         }
         catch (Exception initializationFailure)
         {
-            await PostgreSqlTestCleanup.DisposeResources(initializationFailure, app);
+            await TestCleanup.DisposeAll(initializationFailure, app);
             throw;
         }
     }

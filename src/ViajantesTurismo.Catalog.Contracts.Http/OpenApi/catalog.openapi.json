@@ -1086,7 +1086,7 @@
             "type": "string"
           },
           "sourceLanguage": {
-            "$ref": "#/components/schemas/PublicContentLanguageDto"
+            "type": "string"
           },
           "variants": {
             "type": "array",
@@ -1099,14 +1099,11 @@
           }
         }
       },
-      "PublicContentLanguageDto": {
-        "type": "integer"
-      },
       "PublicContentVariantDto": {
         "type": "object",
         "properties": {
           "language": {
-            "$ref": "#/components/schemas/PublicContentLanguageDto"
+            "type": "string"
           },
           "title": {
             "type": "string"
@@ -1147,7 +1144,7 @@
         "type": "object",
         "properties": {
           "language": {
-            "$ref": "#/components/schemas/PublicContentLanguageDto"
+            "type": "string"
           },
           "altText": {
             "maxLength": 256,
@@ -1183,7 +1180,7 @@
         "type": "object",
         "properties": {
           "language": {
-            "$ref": "#/components/schemas/PublicContentLanguageDto"
+            "type": "string"
           },
           "context": {
             "maxLength": 1000,
@@ -1225,7 +1222,7 @@
         "type": "object",
         "properties": {
           "language": {
-            "$ref": "#/components/schemas/PublicContentLanguageDto"
+            "type": "string"
           },
           "altText": {
             "maxLength": 256,
@@ -1311,7 +1308,7 @@
         "type": "object",
         "properties": {
           "sourceLanguage": {
-            "$ref": "#/components/schemas/PublicContentLanguageDto"
+            "type": "string"
           },
           "variants": {
             "type": "array",

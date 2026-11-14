@@ -15,12 +15,14 @@
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Seo" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Authentication" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Authentication.Bff" />
         <PackageReference Include="PandaBear.SharedKernel.Blazor" />
         <PackageReference Include="PandaBear.SharedKernel.Branding" />
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <PackageReference Include="PandaBear.SharedKernel.HttpClients" />
         <PackageReference Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.Npgsql" />
+        <PackageReference Include="PandaBear.SharedKernel.Tabular" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Branding.Contracts.Http\ViajantesTurismo.Branding.Contracts.Http.csproj" />
@@ -38,7 +40,6 @@
 
     <ItemGroup>
         <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" />
-        <PackageReference Include="Duende.AccessTokenManagement.OpenIdConnect" />
         <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="Npgsql" />

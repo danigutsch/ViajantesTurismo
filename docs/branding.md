@@ -244,8 +244,11 @@ Public rendering uses a public-safe DTO only:
 - no internal identifiers, audit metadata, drafts, validation errors, editor names, or PII.
 
 Public.Web renders Branding settings in an SSR-friendly way by assigning values to a fixed set of CSS
-custom properties, such as brand palette and typography variables. The variable names are code-owned;
-only the variable values come from validated Branding settings.
+custom properties: the `--site-*` design tokens of `PandaBear.SharedKernel.Blazor.Site`, overridden in the
+`/theme.css` stylesheet with `light-dark()` so the brand colours are the light scheme and a lightened mix of
+them the dark one. The variable names are code-owned; only the variable values come from validated Branding
+settings. The stylesheet is a separate response because the content security policy allows only
+`style-src 'self'`.
 
 Public.Web owns the customer-facing presentation layer on top of those shared tokens. It can use the
 same brand name, logo, palette, and typography to produce polished marketing layout, soft surfaces,

@@ -1,3 +1,4 @@
+@using PandaBear.BuildingBlocks
 @using ViajantesTurismo.Management.Web.Services
 @inherits InputBase<string>
 
@@ -43,11 +44,21 @@
 </div>
 
 @code {
+    /// <summary>Gets or sets the nonce of the document's response, which the inline style block needs under the strict policy.</summary>
+    [CascadingParameter(Name = ManagementWebSecurityHeaders.NonceCascadeName)]
+    public string? CspNonce { get; set; }
 
     [Parameter] public string? Id { get; set; }
 
     [Parameter]
     public IReadOnlyList<CountryInfo>? Countries { get; set; }
+
+    /// <summary>
+    /// When <see langword="true"/>, the bound value is the ISO 3166-1 alpha-2 code (for example BR) instead of the country
+    /// name, and only officially assigned codes are offered.
+    /// </summary>
+    [Parameter]
+    public bool BindCode { get; set; }
 
     private bool _isOpen;
     private string _searchText = string.Empty;
@@ -55,6 +66,7 @@
 
     private IEnumerable<CountryInfo> FilteredCountries =>
         (Countries ?? [])
+        .Where(country => !BindCode || CountryCode.Create(country.Code).IsSuccess)
         .Where(country => string.IsNullOrEmpty(_searchText) ||
                           country.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase));
 
@@ -68,6 +80,12 @@
     {
         if (!string.IsNullOrEmpty(Value) && Countries != null)
         {
+            if (BindCode)
+            {
+                _selectedCountry = Countries.FirstOrDefault(c => string.Equals(c.Code, Value, StringComparison.OrdinalIgnoreCase));
+                return;
+            }
+
             var normalizedValue = CountryService.NormalizeNationality(Value);
             _selectedCountry = Countries.FirstOrDefault(c => c.Name == normalizedValue);
         }
@@ -88,7 +106,7 @@
 
     private void SelectCountry(CountryInfo country)
     {
-        CurrentValue = country.Name;
+        CurrentValue = BindCode ? country.Code : country.Name;
         _selectedCountry = country;
         _isOpen = false;
         _searchText = string.Empty;
@@ -103,7 +121,7 @@
 
 }
 
-<style>
+<style nonce="@CspNonce">
     .country-dropdown-menu {
         position: absolute;
         top: 100%;

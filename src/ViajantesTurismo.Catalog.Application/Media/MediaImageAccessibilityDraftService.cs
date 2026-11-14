@@ -33,9 +33,17 @@ public sealed class MediaImageAccessibilityDraftService(
             return Result.Invalid<PublicMediaImage>("Media image identifier is required.", nameof(imageId), "Media image identifier is required.");
         }
 
-        if (input.Language == PublicContentLanguage.None)
+        if (input.Language is null)
         {
             return Result.Invalid<PublicMediaImage>("Draft language is required.", nameof(input.Language), "Draft language is required.");
+        }
+
+        if (!PublicContentCultures.IsSupported(input.Language))
+        {
+            return Result.Invalid<PublicMediaImage>(
+                "Draft language must be a supported culture.",
+                nameof(input.Language),
+                "Draft language must be a supported culture.");
         }
 
         if ((input.Latitude is null) != (input.Longitude is null))
@@ -96,7 +104,7 @@ public sealed class MediaImageAccessibilityDraftService(
                     {
                         Image = readableSource.Content,
                         ContentType = readableSource.ContentType,
-                        Language = ToLanguageTag(input.Language),
+                        Language = PublicContentCultures.ToLanguageTag(input.Language),
                         Context = input.Context,
                         Latitude = input.Latitude,
                         Longitude = input.Longitude
@@ -133,15 +141,5 @@ public sealed class MediaImageAccessibilityDraftService(
             activity?.SetStatus(outcome == "success" ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             MediaAccessibilityTelemetry.RecordCompletion(outcome, input.Language, started);
         }
-    }
-
-    private static string ToLanguageTag(PublicContentLanguage language)
-    {
-        return language switch
-        {
-            PublicContentLanguage.EnUs => "en-US",
-            PublicContentLanguage.PtBr => "pt-BR",
-            _ => "und"
-        };
     }
 }

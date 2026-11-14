@@ -1,4 +1,5 @@
 using PandaBear.Results;
+using PandaBear.Tabular;
 
 namespace ViajantesTurismo.Admin.Application.Import;
 
@@ -7,6 +8,8 @@ namespace ViajantesTurismo.Admin.Application.Import;
 /// </summary>
 public sealed class CsvDocument : IImportDocument
 {
+    private static readonly CsvParseOptions ParseOptions = new() { SkipBlankLines = false };
+
     private readonly PandaBear.Tabular.CsvDocument document;
     private readonly IReadOnlyList<IImportRow> rows;
 
@@ -31,7 +34,7 @@ public sealed class CsvDocument : IImportDocument
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="content"/> is null.</exception>
     public static Result<CsvDocument> Parse(string content, IReadOnlyList<string>? requiredHeaderNames = null)
     {
-        var parsed = PandaBear.Tabular.CsvDocument.Parse(content, requiredHeaderNames);
+        var parsed = PandaBear.Tabular.CsvDocument.Parse(content, requiredHeaderNames, ParseOptions);
         return parsed.IsSuccess
             ? Result.Ok(new CsvDocument(parsed.Value))
             : parsed.ConvertError<PandaBear.Tabular.CsvDocument, CsvDocument>();
@@ -45,7 +48,7 @@ public sealed class CsvDocument : IImportDocument
     /// <returns>A parsed CSV document, or the same failure that <see cref="Parse"/> reports for the decoded text.</returns>
     public static Result<CsvDocument> ParseUtf8(ReadOnlySpan<byte> utf8Content, IReadOnlyList<string>? requiredHeaderNames = null)
     {
-        var parsed = PandaBear.Tabular.CsvDocument.ParseUtf8(utf8Content, requiredHeaderNames);
+        var parsed = PandaBear.Tabular.CsvDocument.ParseUtf8(utf8Content, requiredHeaderNames, ParseOptions);
         return parsed.IsSuccess
             ? Result.Ok(new CsvDocument(parsed.Value))
             : parsed.ConvertError<PandaBear.Tabular.CsvDocument, CsvDocument>();

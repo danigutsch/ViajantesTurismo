@@ -5,31 +5,17 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 public class CsvRowParsingTests
 {
     [Fact]
-    public void Parse_single_customer_row_returns_parsed_row()
+    public void Create_single_customer_row_keeps_values_in_order()
     {
         // Arrange
-        const string csvLine = "John,Doe,john.doe@example.com";
+        string[] values = ["John", "Doe", "john.doe@example.com"];
 
         // Act
-        var result = CsvRow.Parse(csvLine);
+        var result = CsvRow.Create(values);
 
         // Assert
         _ = result.ShouldNotBeNull();
-        result[0].ShouldBe("John");
-        result[1].ShouldBe("Doe");
-        result[2].ShouldBe("john.doe@example.com");
-    }
-
-    [Fact]
-    public void Parse_with_whitespace_trims_values()
-    {
-        // Arrange
-        const string csvLine = " John , Doe , john.doe@example.com ";
-
-        // Act
-        var result = CsvRow.Parse(csvLine);
-
-        // Assert
+        result.Count.ShouldBe(3);
         result[0].ShouldBe("John");
         result[1].ShouldBe("Doe");
         result[2].ShouldBe("john.doe@example.com");
@@ -39,7 +25,7 @@ public class CsvRowParsingTests
     public void Index_outofrange_throwsexception()
     {
         // Arrange
-        var row = CsvRow.Parse("John,Doe,john.doe@example.com");
+        var row = CsvRow.Create(["John", "Doe", "john.doe@example.com"]);
 
         // Act & Assert
         ShouldAssertionExtensions.ShouldThrow<IndexOutOfRangeException>(() => row[99]);

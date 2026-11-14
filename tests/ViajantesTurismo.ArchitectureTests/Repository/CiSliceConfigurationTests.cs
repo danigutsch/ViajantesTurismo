@@ -10,7 +10,7 @@ public sealed class CiSliceConfigurationTests
     public void Test_slice_matrix_matches_the_configured_slices()
     {
         // Arrange
-        var root = RepositoryTestProcess.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate();
         using var configuration = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-ci.json")));
         var workflow = File.ReadAllText(Path.Combine(root, ".github", "workflows", "ci.yml"));
 

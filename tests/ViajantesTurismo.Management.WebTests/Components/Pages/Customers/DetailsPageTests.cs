@@ -219,7 +219,7 @@ public sealed class DetailsPageTests : BunitContext
             PostalCode = "90210",
             City = "Los Angeles",
             State = "CA",
-            Country = "USA"
+            Country = "US"
         };
         var customer = BuildCustomerDetailsDto(address: address);
         _fakeCustomersApi.AddCustomerDetails(customer);
@@ -235,7 +235,7 @@ public sealed class DetailsPageTests : BunitContext
         card.TextContent.ShouldContain("90210", StringComparison.Ordinal);
         card.TextContent.ShouldContain("Los Angeles", StringComparison.Ordinal);
         card.TextContent.ShouldContain("CA", StringComparison.Ordinal);
-        card.TextContent.ShouldContain("USA", StringComparison.Ordinal);
+        card.TextContent.ShouldContain("United States", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -250,7 +250,7 @@ public sealed class DetailsPageTests : BunitContext
             PostalCode = "10001",
             City = "New York",
             State = "NY",
-            Country = "USA"
+            Country = "US"
         };
         var customer = BuildCustomerDetailsDto(address: address);
         _fakeCustomersApi.AddCustomerDetails(customer);

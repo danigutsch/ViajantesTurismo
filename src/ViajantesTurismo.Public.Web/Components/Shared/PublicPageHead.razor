@@ -1,0 +1,38 @@
+@using Microsoft.Extensions.Options
+@using PandaBear.AspNetCore.Seo
+@inject IOptions<CanonicalOriginOptions> SitemapOptions
+
+<PageHead Title="@Title"
+          Description="@Description"
+          CanonicalUrl="@Links.Canonical(Culture.UrlCulture, Path)"
+          Alternates="@Links.Alternates(Path)"
+          DefaultAlternateUrl="@Links.Default(Path)"
+          Locale="@Culture.ContentLanguage"
+          SiteName="@PublicBranding.BrandName(Branding)"
+          ImageUrl="@ImageUrl" />
+
+@code {
+    /// <summary>Gets or sets the page title.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the meta description.</summary>
+    [Parameter]
+    public string? Description { get; set; }
+
+    /// <summary>Gets or sets the page path without culture, URL-escaped and starting with <c>/</c>.</summary>
+    [Parameter, EditorRequired]
+    public string Path { get; set; } = "/";
+
+    /// <summary>Gets or sets the sharing image.</summary>
+    [Parameter]
+    public Uri? ImageUrl { get; set; }
+
+    [CascadingParameter]
+    private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
+
+    [CascadingParameter]
+    private BrandingSettingsDto? Branding { get; set; }
+
+    private PublicSiteLinks Links => new(SitemapOptions.Value);
+}

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using PandaBear.BuildingBlocks;
 using PandaBear.Results;
 using PandaBear.InputNormalization;
 using PandaBear.ObjectStorage;
@@ -457,7 +458,7 @@ public sealed class PublicMediaImage
     /// <param name="caption">The optional drafted caption.</param>
     /// <param name="pendingDraftCreatedAt">The current draft creation time when known.</param>
     /// <returns>A result indicating whether the draft was accepted.</returns>
-    public Result SetAiDraftAccessibilityText(PublicContentLanguage language, string altText, string? caption, DateTimeOffset? pendingDraftCreatedAt = null)
+    public Result SetAiDraftAccessibilityText(ContentCulture? language, string altText, string? caption, DateTimeOffset? pendingDraftCreatedAt = null)
     {
         var result = PublicMediaImageAccessibilityText.CreateAiDraft(language, altText, caption, pendingDraftCreatedAt);
         if (result.IsFailure)
@@ -466,7 +467,7 @@ public sealed class PublicMediaImage
         }
 
         ReplaceAccessibilityText(result.Value);
-        if (language == PublicContentLanguage.EnUs)
+        if (language == PublicContentCultures.Supported.Default)
         {
             AltText = result.Value.AltText ?? string.Empty;
             Caption = result.Value.Caption;
@@ -485,7 +486,7 @@ public sealed class PublicMediaImage
     /// <param name="altText">The drafted accessible image description.</param>
     /// <param name="caption">The optional drafted caption.</param>
     /// <returns>A result indicating whether the draft was accepted.</returns>
-    public Result SetDraftAccessibilityText(PublicContentLanguage language, string altText, string? caption)
+    public Result SetDraftAccessibilityText(ContentCulture? language, string altText, string? caption)
     {
         var result = PublicMediaImageAccessibilityText.Create(language, altText, caption, isDecorative: false, requiresHumanReview: true, isAiGenerated: false);
         if (result.IsFailure)
@@ -494,7 +495,7 @@ public sealed class PublicMediaImage
         }
 
         ReplaceAccessibilityText(result.Value);
-        if (language == PublicContentLanguage.EnUs)
+        if (language == PublicContentCultures.Supported.Default)
         {
             AltText = result.Value.AltText ?? string.Empty;
             Caption = result.Value.Caption;
@@ -514,7 +515,7 @@ public sealed class PublicMediaImage
     /// <param name="caption">The optional approved caption.</param>
     /// <param name="isDecorative">Whether the image is intentionally decorative.</param>
     /// <returns>A result indicating whether the reviewed text was accepted.</returns>
-    public Result SetReviewedAccessibilityText(PublicContentLanguage language, string? altText, string? caption, bool isDecorative)
+    public Result SetReviewedAccessibilityText(ContentCulture? language, string? altText, string? caption, bool isDecorative)
     {
         var result = PublicMediaImageAccessibilityText.CreateReviewed(language, altText, caption, isDecorative);
         if (result.IsFailure)
@@ -523,7 +524,7 @@ public sealed class PublicMediaImage
         }
 
         ReplaceAccessibilityText(result.Value);
-        if (language == PublicContentLanguage.EnUs)
+        if (language == PublicContentCultures.Supported.Default)
         {
             AltText = result.Value.AltText ?? string.Empty;
             Caption = result.Value.Caption;
@@ -590,7 +591,7 @@ public sealed class PublicMediaImage
     private static IReadOnlyList<PublicMediaImageAccessibilityText> CreateDefaultAccessibilityText(PublicMediaImageMetadata metadata)
     {
         var result = PublicMediaImageAccessibilityText.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.Supported.Default,
             metadata.AltText,
             metadata.Caption,
             metadata.IsDecorative,
@@ -603,7 +604,7 @@ public sealed class PublicMediaImage
     private static void ValidateAccessibilityText(Dictionary<string, string[]> errors, PublicMediaImageMetadata metadata)
     {
         var result = PublicMediaImageAccessibilityText.Create(
-            PublicContentLanguage.EnUs,
+            PublicContentCultures.Supported.Default,
             metadata.AltText,
             metadata.Caption,
             metadata.IsDecorative,

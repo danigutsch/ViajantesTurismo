@@ -718,7 +718,7 @@ public sealed class CatalogToursApiClientTests
             imageId,
             new PublicMediaImageAccessibilityReviewRequest
             {
-                Language = PublicContentLanguageDto.EnUs,
+                Language = PublicContentLanguageTags.EnglishUnitedStates,
                 AltText = "Cyclist on a mountain pass",
                 IsDecorative = false
             },
@@ -744,7 +744,7 @@ public sealed class CatalogToursApiClientTests
             Guid.CreateVersion7(),
             new PublicMediaImageAccessibilityReviewRequest
             {
-                Language = PublicContentLanguageDto.EnUs,
+                Language = PublicContentLanguageTags.EnglishUnitedStates,
                 AltText = "Missing image",
                 IsDecorative = false
             },

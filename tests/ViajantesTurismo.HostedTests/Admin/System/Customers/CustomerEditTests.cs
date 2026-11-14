@@ -50,7 +50,7 @@ public class CustomerEditTests(AspireSystemTestFixture fixture) : AspireSystemTe
         // Assert: address defaults are populated.
         await Expect(Page.Locator("#street")).ToHaveValueAsync("Test Street 1");
         await Expect(Page.Locator("#city")).ToHaveValueAsync("Test City");
-        await Expect(Page.Locator("#country")).ToHaveValueAsync("Brazil");
+        await Expect(Page.Locator("#country")).ToContainTextAsync("Brazil");
 
         // Assert: companion combobox excludes the current customer and includes another owned customer.
         var companionSelect = Page.Locator("select[name=\"_model.AccommodationPreferences.CompanionId\"]");

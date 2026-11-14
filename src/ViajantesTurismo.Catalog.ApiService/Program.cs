@@ -7,6 +7,7 @@ using PandaBear.OpenApi;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Infrastructure;
+using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
@@ -14,7 +15,7 @@ const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
-builder.AddServiceDefaults();
+builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddUnhandledExceptionHandler();
 builder.Services.AddAuthenticationEventTelemetry();
@@ -28,27 +29,15 @@ builder.AddBrandingModule(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(build
 
 var app = builder.Build();
 
-app.UseExceptionHandler();
-
 app.UseForwardedHeaders();
+
+app.UseExceptionHandler();
 
 app.MapConfiguredOpenApi();
 
 app.UsePublicContentLanguageQueryAlias();
 app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
-app.Use(static (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/api/v1/catalog", StringComparison.OrdinalIgnoreCase))
-    {
-        context.Response.OnStarting(static state =>
-        {
-            HttpCacheHeaders.SetNoStore((HttpContext)state);
-            return Task.CompletedTask;
-        }, context);
-    }
-
-    return next(context);
-});
+app.UseNoStoreResponses();
 
 app.UseApiSecurity();
 app.UseRateLimiter();
@@ -57,6 +46,6 @@ app.MapCatalogEndpoints();
 app.MapBrandingModule();
 app.MapRobotsTxt(ApiRobotsTxt);
 
-app.MapDefaultEndpoints();
+app.MapSharedKernelDefaultEndpoints();
 
 await app.RunAsync();

@@ -150,7 +150,7 @@ else if (_customer != null)
                             <dd class="col-sm-8">@_customer.Address.State</dd>
 
                             <dt class="col-sm-4">Country</dt>
-                            <dd class="col-sm-8">@_customer.Address.Country</dd>
+                            <dd class="col-sm-8">@CountryFormatter.FormatCountry(_customer.Address.Country)</dd>
                         </dl>
                     </div>
                 </div>

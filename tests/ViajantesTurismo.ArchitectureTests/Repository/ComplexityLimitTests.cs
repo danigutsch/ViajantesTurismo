@@ -12,7 +12,7 @@ public sealed class ComplexityLimitTests
     {
         // Arrange
         using var workspace = new TemporaryWorkspace();
-        var root = RepositoryTestProcess.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate();
         var source = new StringBuilder("internal static class Probe { internal static int Score(int value) { var score = 0;");
         for (var branch = 0; branch < 60; branch++)
         {
@@ -28,7 +28,7 @@ public sealed class ComplexityLimitTests
         workspace.WriteFile(".editorconfig", await File.ReadAllTextAsync(Path.Combine(root, ".editorconfig"), TestContext.Current.CancellationToken));
 
         // Act
-        var result = await RepositoryTestProcess.Run("dotnet", root,
+        var result = await TestProcess.Run("dotnet", root,
             ["build", Path.Combine(workspace.RootPath, "ComplexityProbe.csproj"), "-c", "Release", "--nologo"],
             TestContext.Current.CancellationToken);
 

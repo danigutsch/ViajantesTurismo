@@ -18,12 +18,13 @@ public sealed class PublicContentVariant : ValueObject
     [UsedImplicitly]
     private PublicContentVariant()
     {
+        Language = PublicContentCultures.EnglishUnitedStates;
         Title = string.Empty;
         Body = string.Empty;
     }
 
     private PublicContentVariant(
-        PublicContentLanguage language,
+        ContentCulture language,
         string title,
         string body,
         string? seoTitle,
@@ -41,9 +42,9 @@ public sealed class PublicContentVariant : ValueObject
     }
 
     /// <summary>
-    /// Gets the content language.
+    /// Gets the content culture, for example <c>pt-BR</c>.
     /// </summary>
-    public PublicContentLanguage Language
+    public ContentCulture Language
     {
         get; private set;
     }
@@ -99,7 +100,7 @@ public sealed class PublicContentVariant : ValueObject
     /// <summary>
     /// Creates localized content with validation.
     /// </summary>
-    /// <param name="language">The content language.</param>
+    /// <param name="language">The content culture; it must be one of <see cref="PublicContentCultures.Supported"/>.</param>
     /// <param name="title">The page title.</param>
     /// <param name="body">The page body.</param>
     /// <param name="seoTitle">The optional SEO title.</param>
@@ -108,7 +109,7 @@ public sealed class PublicContentVariant : ValueObject
     /// <param name="requiresHumanReview">Whether this variant needs human review.</param>
     /// <returns>A result containing the content variant when valid.</returns>
     public static Result<PublicContentVariant> Create(
-        PublicContentLanguage language,
+        ContentCulture? language,
         string title,
         string body,
         string? seoTitle,
@@ -133,7 +134,7 @@ public sealed class PublicContentVariant : ValueObject
         return errors.HasErrors
             ? errors.ToResult<PublicContentVariant>()
             : Result.Ok(new PublicContentVariant(
-                language,
+                language!,
                 sanitizedTitle,
                 sanitizedBody,
                 sanitizedSeoTitle,
@@ -154,9 +155,9 @@ public sealed class PublicContentVariant : ValueObject
         yield return RequiresHumanReview;
     }
 
-    private static void ValidateSupportedLanguage(ValidationErrors errors, PublicContentLanguage language)
+    private static void ValidateSupportedLanguage(ValidationErrors errors, ContentCulture? language)
     {
-        if (language == PublicContentLanguage.None || !Enum.IsDefined(language))
+        if (!PublicContentCultures.IsSupported(language))
         {
             errors.Add(PublicContentErrors.UnsupportedLanguage(nameof(Language)));
         }

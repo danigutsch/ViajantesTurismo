@@ -9,7 +9,8 @@ we can reach the appropriate person in case of an emergency involving the custom
 
 **Business Rules:**
 - Emergency contact name is required (maximum 128 characters)
-- Emergency contact mobile phone is required (maximum 64 characters)
+- Emergency contact mobile phone is required (maximum 64 characters as typed) and must be a phone number of 7 to 15
+  digits; it is stored as the digits with the optional leading +
 - All fields automatically trimmed and whitespace normalized
 
     Rule: Emergency contact name is required and must not exceed maximum length
@@ -51,10 +52,17 @@ we can reach the appropriate person in case of an emergency involving the custom
             Then I should be informed that emergency contact mobile cannot exceed 64 characters
 
         @Invariant:INV-CUST-029
+        @error_case
+        Scenario: I cannot create an emergency contact with a mobile that is not a phone number
+            When I create an emergency contact with name "Jane Doe" and mobile "12-34"
+            Then I should be informed that emergency contact mobile must be a valid phone number
+
+        @Invariant:INV-CUST-029
         @happy_path
-        Scenario: I can create an emergency contact with mobile at maximum allowed length
-            When I create an emergency contact with a mobile of 64 characters
+        Scenario: An emergency contact mobile is stored as its digits
+            When I create an emergency contact with name "Jane Doe" and mobile "+1 (234) 567-890"
             Then the emergency contact should be successfully created
+            And the emergency contact mobile should be "+1234567890"
 
     Rule: Emergency contact fields are automatically sanitized
 

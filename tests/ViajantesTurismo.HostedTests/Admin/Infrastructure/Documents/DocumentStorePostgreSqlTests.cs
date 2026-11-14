@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -498,7 +499,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
-    public async Task Concurrent_field_edit_and_finalization_never_commit_together()
+    public async Task Concurrent_field_edit_committed_first_rejects_the_overlapping_finalization()
     {
         // Arrange
         var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
@@ -508,7 +509,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
 
         // Act
-        var errors = await Scenario.SaveLineageMutationsConcurrently(
+        var errors = await Scenario.SaveOverlappingLineageMutations(
             documentId,
             loaded => loaded.UpdateField(documentId, "greeting", "Edited greeting", now.AddMinutes(1), auditContext),
             loaded => loaded.Finalize(documentId, "artifact"u8.ToArray(), now.AddMinutes(2), auditContext),
@@ -516,13 +517,44 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         var persisted = await Scenario.GetDocumentById(documentId, TestContext.Current.CancellationToken);
 
         // Assert
-        errors.Count(error => error is null).ShouldBe(1);
-        errors.ShouldHaveSingleItem(error => error is DocumentRevisionConflictException or DbUpdateConcurrencyException);
+        errors[0].ShouldBeNull();
+        errors[1].ShouldBeOfType<DbUpdateConcurrencyException>();
         var document = persisted.ShouldNotBeNull();
-        var editCommitted = errors[0] is null;
-        document.Status.ShouldBe(editCommitted ? DocumentStatus.InReview : DocumentStatus.Finalized);
-        document.Fields.Where(field => field.FieldId == "greeting").ShouldHaveSingleItem().Value
-            .ShouldBe(editCommitted ? "Edited greeting" : "Dear customer");
+        document.Status.ShouldBe(DocumentStatus.InReview);
+        document.FinalizedAt.ShouldBeNull();
+        var greeting = document.Fields.Where(field => field.FieldId == "greeting").ShouldHaveSingleItem();
+        greeting.StaffOverride.ShouldBe("Edited greeting");
+        greeting.RenderedValue.ShouldBe("Edited greeting");
+        greeting.Value.ShouldBe("Dear customer");
+    }
+
+    [Fact]
+    public async Task Concurrent_finalization_committed_first_rejects_the_overlapping_field_edit()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentDraftInfrastructureTestData.CreateApprovedLineage(now);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await Scenario.Seed(lineage);
+        var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
+
+        // Act
+        var errors = await Scenario.SaveOverlappingLineageMutations(
+            documentId,
+            loaded => loaded.Finalize(documentId, "artifact"u8.ToArray(), now.AddMinutes(2), auditContext),
+            loaded => loaded.UpdateField(documentId, "greeting", "Edited greeting", now.AddMinutes(1), auditContext),
+            TestContext.Current.CancellationToken);
+        var persisted = await Scenario.GetDocumentById(documentId, TestContext.Current.CancellationToken);
+
+        // Assert
+        errors[0].ShouldBeNull();
+        errors[1].ShouldBeOfType<DbUpdateConcurrencyException>();
+        var document = persisted.ShouldNotBeNull();
+        document.Status.ShouldBe(DocumentStatus.Finalized);
+        document.CopyFinalizedArtifactContent().ShouldNotBeNull().ToArray().ShouldBe("artifact"u8.ToArray());
+        var greeting = document.Fields.Where(field => field.FieldId == "greeting").ShouldHaveSingleItem();
+        greeting.StaffOverride.ShouldBeNull();
+        greeting.RenderedValue.ShouldBe("Dear customer");
     }
 
     [Fact]
@@ -595,7 +627,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         var conflict = await save.ShouldThrow<DocumentRevisionConflictException>();
-        var updateException = conflict.InnerException.ShouldBeOfType<DbUpdateException>();
+        var updateException = conflict.InnerException.ShouldBeOfType<UniqueConstraintViolationException>().InnerException.ShouldBeOfType<DbUpdateException>();
         var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
         postgresException.ConstraintName.ShouldBe("UX_DocumentLineages_BookingId_Type");
@@ -618,7 +650,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         var conflict = await save.ShouldThrow<DocumentRevisionConflictException>();
-        var updateException = conflict.InnerException.ShouldBeOfType<DbUpdateException>();
+        var updateException = conflict.InnerException.ShouldBeOfType<UniqueConstraintViolationException>().InnerException.ShouldBeOfType<DbUpdateException>();
         var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
         postgresException.ConstraintName.ShouldBe("UX_DocumentDrafts_DocumentLineageId_Revision");
@@ -640,7 +672,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         var conflict = await save.ShouldThrow<DocumentRevisionConflictException>();
-        var updateException = conflict.InnerException.ShouldBeOfType<DbUpdateException>();
+        var updateException = conflict.InnerException.ShouldBeOfType<UniqueConstraintViolationException>().InnerException.ShouldBeOfType<DbUpdateException>();
         var postgresException = updateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
         postgresException.ConstraintName.ShouldBe("UX_DocumentDrafts_BookingId_Type_Revision");

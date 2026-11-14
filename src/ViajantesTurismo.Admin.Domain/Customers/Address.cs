@@ -21,7 +21,7 @@ public sealed class Address : ValueObject
     /// <param name="city">The city.</param>
     /// <param name="state">The state.</param>
     /// <param name="country">The country.</param>
-    private Address(string street, string? complement, string neighborhood, string postalCode, string city, string state, string country)
+    private Address(string street, string? complement, string neighborhood, string postalCode, string city, string state, CountryCode country)
     {
         Street = street;
         Complement = complement;
@@ -76,8 +76,8 @@ public sealed class Address : ValueObject
         get; private set;
     }
 
-    /// <summary>Country.</summary>
-    public string Country
+    /// <summary>Country, as an ISO 3166-1 alpha-2 code such as BR.</summary>
+    public CountryCode Country
     {
         get; private set;
     }
@@ -156,13 +156,22 @@ public sealed class Address : ValueObject
             errors.Add(StateTooLong());
         }
 
+        CountryCode? countryCode = null;
         if (string.IsNullOrWhiteSpace(sanitizedCountry))
         {
             errors.Add(EmptyCountry());
         }
-        else if (sanitizedCountry.Length > AdminDomainLimits.MaxNameLength)
+        else
         {
-            errors.Add(CountryTooLong());
+            var countryResult = CountryCode.Create(sanitizedCountry);
+            if (countryResult.IsFailure)
+            {
+                errors.Add(InvalidCountry());
+            }
+            else
+            {
+                countryCode = countryResult.Value;
+            }
         }
 
         if (errors.HasErrors)
@@ -170,7 +179,7 @@ public sealed class Address : ValueObject
             return errors.ToResult<Address>();
         }
 
-        return Result.Ok(new Address(sanitizedStreet!, sanitizedComplement, sanitizedNeighborhood!, sanitizedPostalCode!, sanitizedCity!, sanitizedState!, sanitizedCountry!));
+        return Result.Ok(new Address(sanitizedStreet!, sanitizedComplement, sanitizedNeighborhood!, sanitizedPostalCode!, sanitizedCity!, sanitizedState!, countryCode!));
     }
 
     /// <inheritdoc />

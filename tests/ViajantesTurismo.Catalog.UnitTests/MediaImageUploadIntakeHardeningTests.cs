@@ -39,8 +39,28 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Assert
         result.IsFailure.ShouldBeTrue();
         var errors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
-        errors["HeaderBytes"].ShouldBe(["File signature does not match the allowed content type."]);
+        errors["Content"].ShouldBe(["File signature does not match the allowed content type."]);
         scanner.ScanCount.ShouldBe(0);
+        objectStore.ObjectKeys.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Accept_refuses_a_file_that_only_starts_like_an_image()
+    {
+        // Arrange
+        byte[] content = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01];
+        var scanner = new StubMediaUploadScanner(MediaUploadScanResult.Passed);
+        var objectStore = new InMemoryMediaObjectStore();
+        var intake = IntakeTestSetup.CreateIntake(objectStore, new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreatePendingImage(Guid.CreateVersion7(), 1)), scanner);
+
+        // Act
+        var result = await intake.Accept(IntakeTestSetup.CreateRequest(content, "photo.jpg", "image/jpeg"), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var errors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        errors["Content"].ShouldBe([PandaBear.UploadSanitizing.Images.ImageSanitizer.MalformedMessage]);
+        scanner.ScanCount.ShouldBe(1);
         objectStore.ObjectKeys.ShouldBeEmpty();
     }
 

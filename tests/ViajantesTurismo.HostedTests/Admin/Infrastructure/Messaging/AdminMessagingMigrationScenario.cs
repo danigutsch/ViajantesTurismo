@@ -19,7 +19,7 @@ namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Messaging;
 internal sealed class AdminMessagingMigrationScenario : IAsyncDisposable
 {
     /// <summary>Name of the only Admin migration.</summary>
-    public const string InitialMigration = "20261031155350_InitialAdmin";
+    public const string InitialMigration = "20261111091530_InitialAdmin";
 
     private readonly PostgreSqlTestDatabase database;
     private readonly string connectionString;

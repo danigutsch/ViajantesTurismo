@@ -1,19 +1,12 @@
-@page "/"
+@page "/en"
+@page "/pt"
 @inject IPublicCatalogApiClient CatalogApi
-@inject NavigationManager Navigation
 
-<PageTitle>@PageTitle</PageTitle>
+<PublicPageHead Title="@PageTitle" Description="@HeroBody" Path="/" />
 
-<section class="public-hero" aria-labelledby="home-hero-title">
-    <h1 id="home-hero-title">@HeroTitle</h1>
-    <p>@HeroBody</p>
-</section>
+<Hero Title="@HeroTitle" Subtitle="@HeroBody" />
 
-<section aria-labelledby="published-tours">
-    <div class="public-section-header">
-        <h2 id="published-tours">Our tours</h2>
-    </div>
-
+<Section Title="Our tours" HeadingId="published-tours">
     @if (_loadFailed)
     {
         <p>Tours could not be loaded right now. Try again later.</p>
@@ -28,20 +21,21 @@
     }
     else
     {
-        <div class="tour-list">
+        <CardGrid>
             @foreach (var tour in _tours)
             {
-                <article class="tour-card-shell">
-                    <TourCard Tour="tour" HeadingLevel="3" />
-                </article>
+                <TourCard Tour="tour" HeadingLevel="3" />
             }
-        </div>
+        </CardGrid>
     }
-</section>
+</Section>
 
 @code {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
+
+    [CascadingParameter]
+    private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
 
     private TourSummaryDto[]? _tours;
     private PublicContentVariantDto? _hero;
@@ -72,7 +66,7 @@
         {
             var outcome = await CatalogApi.GetPublicContent(
                 "home.hero",
-                PublicCultureQuery.GetRequestedCulture(Navigation.Uri),
+                Culture.ContentLanguage.Value,
                 CancellationToken.None);
             _hero = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } hero }
                 ? hero

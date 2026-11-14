@@ -176,6 +176,7 @@ public sealed class DetailsPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
         _fakeBookingsApi.AddBooking(booking);
+        _fakeDocumentsApi.GenerateContractDraftException = new HttpRequestException("The connection closed before the answer.");
         var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("h1"));
         var generateButton = cut.FindAll("button").ShouldHaveSingleItem(button =>
@@ -190,6 +191,26 @@ public sealed class DetailsPageTests : BunitContext
         var key = _fakeDocumentsApi.GenerationKeys[0];
         Guid.TryParseExact(key, "N", out _).ShouldBeTrue();
         _fakeDocumentsApi.GenerationKeys[1].ShouldBe(key);
+    }
+
+    [Fact]
+    public async Task A_new_generation_after_a_definitive_rejection_uses_a_new_idempotency_key()
+    {
+        // Arrange
+        var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
+        _fakeBookingsApi.AddBooking(booking);
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+        var generateButton = cut.FindAll("button").ShouldHaveSingleItem(button =>
+            button.TextContent.Contains("Generate contract draft", StringComparison.Ordinal));
+
+        // Act
+        await cut.InvokeAsync(() => generateButton.Click());
+        await cut.InvokeAsync(() => generateButton.Click());
+
+        // Assert
+        _fakeDocumentsApi.GenerationKeys.Count.ShouldBe(2);
+        _fakeDocumentsApi.GenerationKeys[1].ShouldNotBe(_fakeDocumentsApi.GenerationKeys[0]);
     }
 
     [Fact]

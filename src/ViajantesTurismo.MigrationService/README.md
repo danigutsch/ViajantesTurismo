@@ -28,6 +28,9 @@ dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Branding.I
 dotnet ef migrations add MigrationName --project src/ViajantesTurismo.Management.Security --startup-project src/ViajantesTurismo.MigrationService --context ManagementSecurityDbContext
 ```
 
+The history was reset before launch: each context has one `Initial*` migration. A local database built from the old
+history must be recreated; see "Migration history reset before launch" in `docs/CODING_GUIDELINES.md`.
+
 ## Execution
 
 Starts the Generic Host, runs `DatabaseInitializationWorker` through `MigrationProcess`, stops the host,

@@ -3,6 +3,7 @@
 @implements IDisposable
 @using System.ComponentModel.DataAnnotations
 @using System.Net
+@using PandaBear.Blazor.Site.Theming
 @using PandaBear.HttpClients
 @using ViajantesTurismo.Branding.Contracts.Http
 @using ViajantesTurismo.Management.Web.Helpers
@@ -31,6 +32,7 @@
 }
 else
 {
+    UpdatePreview();
     <EditForm EditContext="@FormContext" OnValidSubmit="@SaveBranding" OnInvalidSubmit="@ShowSummary" FormName="brandingEditor">
         <DataAnnotationsValidator />
         <ErrorSummary Title="There is a problem" Items="_summaryItems" id="error-summary" class="border border-danger rounded p-3 mb-3" />
@@ -85,7 +87,7 @@ else
                 <InputText id="branding-text-color" class="form-control" @bind-Value="_model.TextColor" />
                 <ValidationMessage For="() => _model.TextColor" />
             </div>
-            <div class="form-text">Colors must use safe #RRGGBB hex values.</div>
+            <div class="form-text">Colors must use safe #RRGGBB hex values. Text, primary and accent colors must keep a 4.5:1 contrast with the background and with white button text.</div>
         </fieldset>
 
         <fieldset class="border rounded p-3 mb-3">
@@ -112,6 +114,12 @@ else
             </div>
         </fieldset>
 
+        <section class="border rounded p-3 mb-3" aria-labelledby="branding-preview-heading">
+            <h2 id="branding-preview-heading" class="h5">Preview</h2>
+            <p class="form-text">How the public site looks with the colors and fonts above, before you save.</p>
+            <ThemePreview Theme="_previewTheme" Errors="_previewErrors" Nonce="@CspNonce" ScopeId="branding-preview" />
+        </section>
+
         <button type="submit" class="btn btn-primary" disabled="@_saving">@(_saving ? "Saving..." : "Save branding")</button>
     </EditForm>
 }
@@ -123,6 +131,30 @@ else
     private static readonly IReadOnlyList<string> AllowedFontFamilies = BrandingFontFamilies.All;
 
     private BrandingFormModel _model = BrandingFormModel.Default();
+    private SiteTheme _previewTheme = SiteTheme.Default;
+    private IReadOnlyDictionary<string, string[]>? _previewErrors;
+
+    /// <summary>Gets or sets the nonce of the document's response, which the preview's style element needs under the strict policy.</summary>
+    [CascadingParameter(Name = ManagementWebSecurityHeaders.NonceCascadeName)]
+    public string? CspNonce { get; set; }
+
+    /// <summary>
+    /// Maps the form onto the site theme on every render, so the preview follows each change before saving. An unreadable color or font
+    /// keeps the last readable theme and lists its error on the settings field.
+    /// </summary>
+    private void UpdatePreview()
+    {
+        var draft = BrandingSiteTheme.CreateDraft(_model.ToDto());
+        if (draft.IsSuccess)
+        {
+            _previewTheme = draft.Value;
+            _previewErrors = null;
+            return;
+        }
+
+        _previewErrors = (draft.ErrorDetails.ValidationErrors ?? new Dictionary<string, IReadOnlyList<string>>())
+            .ToDictionary(error => error.Key, error => error.Value.ToArray(), StringComparer.Ordinal);
+    }
     private IReadOnlyList<ErrorSummaryItem> _summaryItems = [];
     private ServerValidationBinder? _binder;
     private EditContext? _editContext;
@@ -467,7 +499,7 @@ else
                 BrandName = "Viajantes Turismo",
                 LogoUri = string.Empty,
                 PrimaryColor = "#0F766E",
-                AccentColor = "#F97316",
+                AccentColor = "#C2410C",
                 BackgroundColor = "#FFFBF5",
                 TextColor = "#1F2937",
                 HeadingFontFamily = BrandingFontFamilies.DefaultHeading,

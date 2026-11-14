@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
+using PandaBear.AspNetCore;
 using PandaBear.Testing;
 using System.Net;
 using ViajantesTurismo.Management.Web;
@@ -20,7 +21,7 @@ public sealed class ManagementWebSecurityHeadersTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
-                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults().AddCspNonce())
                 .Configure(app =>
                 {
                     app.UseManagementWebSecurityHeaders();
@@ -48,7 +49,7 @@ public sealed class ManagementWebSecurityHeadersTests
         using var host = await new HostBuilder()
             .ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
-                .ConfigureServices(static services => services.AddTestRequestBindingDefaults())
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults().AddCspNonce())
                 .Configure(app =>
                 {
                     app.UseManagementWebSecurityHeaders();
@@ -71,5 +72,36 @@ public sealed class ManagementWebSecurityHeadersTests
         response.Headers.GetValues("Content-Security-Policy").ShouldHaveSingleItem().ShouldContain("connect-src 'self' ws: wss:", StringComparison.Ordinal);
         response.Headers.GetValues("X-Frame-Options").ShouldHaveSingleItem().ShouldBe("DENY");
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
+    }
+
+    [Fact]
+    public async Task Management_web_script_and_style_policies_admit_only_the_site_and_the_response_nonce()
+    {
+        // Arrange
+        using var host = await new HostBuilder()
+            .ConfigureWebHost(webBuilder => webBuilder
+                .UseTestServer()
+                .ConfigureServices(static services => services.AddTestRequestBindingDefaults().AddCspNonce())
+                .Configure(app =>
+                {
+                    app.UseManagementWebSecurityHeaders();
+                    app.Run(static context => context.Response.WriteAsync(
+                        context.RequestServices.GetRequiredService<ICspNonce>().Value, context.RequestAborted));
+                }))
+            .StartAsync(Xunit.TestContext.Current.CancellationToken);
+        using var client = host.GetTestClient();
+
+        // Act
+        using var first = await client.GetAsync(new Uri("/", UriKind.Relative), Xunit.TestContext.Current.CancellationToken);
+        using var second = await client.GetAsync(new Uri("/", UriKind.Relative), Xunit.TestContext.Current.CancellationToken);
+
+        // Assert
+        var nonce = await first.Content.ReadAsStringAsync(Xunit.TestContext.Current.CancellationToken);
+        var policy = first.Headers.GetValues("Content-Security-Policy").ShouldHaveSingleItem();
+        var secondPolicy = second.Headers.GetValues("Content-Security-Policy").ShouldHaveSingleItem();
+        policy.ShouldContain($"script-src 'self' 'nonce-{nonce}';", StringComparison.Ordinal);
+        policy.ShouldContain($"style-src 'self' 'nonce-{nonce}';", StringComparison.Ordinal);
+        policy.ShouldNotContain("unsafe-inline", StringComparison.Ordinal);
+        secondPolicy.ShouldNotBe(policy);
     }
 }

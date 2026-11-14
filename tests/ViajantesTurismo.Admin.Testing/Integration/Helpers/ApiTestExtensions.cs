@@ -107,7 +107,7 @@ public static class ApiTestExtensions
                 PostalCode = "00000-000",
                 City = "Test City",
                 State = "TC",
-                Country = "Brazil"
+                Country = "BR"
             },
             PhysicalInfo = new PhysicalInfoDto
             {

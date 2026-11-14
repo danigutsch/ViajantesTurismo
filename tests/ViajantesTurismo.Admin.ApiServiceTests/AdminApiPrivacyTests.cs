@@ -78,7 +78,7 @@ public sealed class AdminApiPrivacyTests
         problem.ShouldNotBeNull();
         problem.Status.ShouldBe(StatusCodes.Status409Conflict);
         body.ShouldNotContain(duplicateEmail, StringComparison.OrdinalIgnoreCase);
-        targetCustomer.ContactInfo.Email.ShouldBe(originalEmail);
+        targetCustomer.ContactInfo.Email.Value.ShouldBe(originalEmail);
     }
 
     [Fact]

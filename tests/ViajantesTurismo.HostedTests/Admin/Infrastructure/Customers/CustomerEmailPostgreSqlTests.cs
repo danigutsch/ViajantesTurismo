@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PandaBear.Testing;
@@ -53,12 +54,12 @@ public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fix
         // Assert
         found.ShouldNotBeNull();
         found.Id.ShouldBe(original.Id);
-        found.ContactInfo.Email.ShouldBe("Traveler@Example.com");
+        found.ContactInfo.Email.Value.ShouldBe("traveler@example.com");
         var assertedAsciiI = foundAsciiI.ShouldNotBeNull();
-        assertedAsciiI.ContactInfo.Email.ShouldBe("INDIGO@example.com");
+        assertedAsciiI.ContactInfo.Email.Value.ShouldBe("indigo@example.com");
         var assertedAccentedCase = foundAccentedCase.ShouldNotBeNull();
-        assertedAccentedCase.ContactInfo.Email.ShouldBe("Émile@example.com");
-        var dbUpdateException = exception.InnerException.ShouldBeOfType<DbUpdateException>();
+        assertedAccentedCase.ContactInfo.Email.Value.ShouldBe("émile@example.com");
+        var dbUpdateException = exception.InnerException.ShouldBeOfType<UniqueConstraintViolationException>().InnerException.ShouldBeOfType<DbUpdateException>();
         var postgresException = dbUpdateException.InnerException.ShouldBeOfType<PostgresException>();
         postgresException.SqlState.ShouldBe(PostgresErrorCodes.UniqueViolation);
         postgresException.ConstraintName.ShouldBe("UX_CustomerContactInfo_Email");

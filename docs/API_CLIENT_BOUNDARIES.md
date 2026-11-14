@@ -154,10 +154,14 @@ Recommended outcome shape:
   validation problems, or fallback paths.
 - Keep caller cancellation, programmer errors, and local upload-content failures as exceptions.
 - Map configured timeout and transport failures only when current callers need explicit fallback outcomes.
-- Put reusable outbound HTTP defaults in `SharedKernel.HttpClients`, starting with service-discovery and resilience defaults.
-- Apps/projects that perform outbound HTTP calls reference `SharedKernel.HttpClients` directly and call `AddHttpClientDefaults()`.
-- `ViajantesTurismo.ServiceDefaults` keeps host-wide service discovery and telemetry, but does not configure outbound
-  HTTP clients for projects that do not make HTTP calls.
+- `AddSharedKernelServiceDefaults` owns the outbound `HttpClient` pipeline of every host: the standard resilience handler,
+  which never retries unsafe methods (POST, PUT, PATCH, DELETE, CONNECT), then one service-discovery handler, so each
+  retry resolves the address again. Projects do not add resilience or service-discovery handlers themselves.
+- A host that needs other resilience options sets `ServiceDefaultsOptions.ConfigureResilience` in its own
+  `AddSharedKernelServiceDefaults` call; it cannot turn retries of unsafe methods back on. Public Web uses it so a public
+  catalog quota (429) answer is final.
+- Put reusable outbound HTTP helpers, such as `DisableRetryOnTooManyRequests`, in `SharedKernel.HttpClients`.
+- `ViajantesTurismo.ServiceDefaults` sets the choices shared by every host and keeps the SharedKernel resilience defaults.
 - Add shared result/outcome adapters in `SharedKernel.HttpClients` or a focused `SharedKernel.Results.Http` package when the
   migration needs reusable parsing behavior across contract clients.
 

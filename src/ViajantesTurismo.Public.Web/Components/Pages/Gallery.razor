@@ -1,33 +1,33 @@
-@page "/gallery"
+@page "/en/gallery"
+@page "/pt/gallery"
+@using Microsoft.AspNetCore.Routing
 @inject IPublicCatalogApiClient CatalogApi
+@inject LinkGenerator LinkGenerator
 
-<PageTitle>Gallery - Viajantes Turismo</PageTitle>
+<PublicPageHead Title="Gallery - Viajantes Turismo" Description="Moments from Viajantes Turismo cycle tours." Path="/gallery" />
 
-<h1>Gallery</h1>
-<p>Moments from Viajantes Turismo cycle tours.</p>
+<Section Title="Gallery" Level="1" Intro="Moments from Viajantes Turismo cycle tours.">
+    @if (_loadFailed)
+    {
+        <p>The gallery could not be loaded right now. Try again later.</p>
+    }
+    else if (_tours is null)
+    {
+        <p><em>Loading gallery...</em></p>
+    }
+    else if (!_tours.Any(tour => tour.Images.Count > 0))
+    {
+        <p>New photos will be published soon.</p>
+    }
+</Section>
 
-@if (_loadFailed)
-{
-    <p>The gallery could not be loaded right now. Try again later.</p>
-}
-else if (_tours is null)
-{
-    <p><em>Loading gallery...</em></p>
-}
-else if (!_tours.Any(tour => tour.Images.Count > 0))
-{
-    <p>New photos will be published soon.</p>
-}
-else
+@if (_tours is not null)
 {
     @foreach (var tour in _tours.Where(tour => tour.Images.Count > 0))
     {
-        <section aria-labelledby="@GalleryHeadingId(tour)">
-            <h2 id="@GalleryHeadingId(tour)">@tour.Title</h2>
-            <div class="tour-gallery">
-                <TourGallery Images="tour.Images" />
-            </div>
-        </section>
+        <Section Title="@tour.Title" HeadingId="@GalleryHeadingId(tour)">
+            <ImageGrid Images="@TourImageRenditions.Gallery(LinkGenerator, tour.Images)" />
+        </Section>
     }
 }
 

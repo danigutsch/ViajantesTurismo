@@ -53,7 +53,7 @@ public sealed class UpdateCustomerCommandHandlerTests
                 PostalCode = "12345",
                 City = "City",
                 State = "State",
-                Country = "Country"
+                Country = "BR"
             },
             new PhysicalInfoDto { WeightKg = 70m, HeightCentimeters = 180, BikeType = BikeTypeDto.Regular },
             new AccommodationPreferencesDto
@@ -74,7 +74,7 @@ public sealed class UpdateCustomerCommandHandlerTests
         var updated = await _store.GetById(existing.Id, CancellationToken.None);
         _ = updated.ShouldNotBeNull();
         updated.PersonalInfo.LastName.ShouldBe("Smith");
-        updated.ContactInfo.Email.ShouldBe("updated@example.com");
+        updated.ContactInfo.Email.Value.ShouldBe("updated@example.com");
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public sealed class UpdateCustomerCommandHandlerTests
                 PostalCode = "12345",
                 City = "City",
                 State = "State",
-                Country = "Country"
+                Country = "BR"
             },
             new PhysicalInfoDto { WeightKg = 70m, HeightCentimeters = 180, BikeType = BikeTypeDto.Regular },
             new AccommodationPreferencesDto
@@ -144,7 +144,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             {
                 FirstName = existing1.PersonalInfo.FirstName,
                 LastName = existing1.PersonalInfo.LastName,
-                BirthDate = existing1.PersonalInfo.BirthDate,
+                BirthDate = existing1.PersonalInfo.BirthDate.Value,
                 Gender = existing1.PersonalInfo.Gender,
                 Nationality = existing1.PersonalInfo.Nationality,
                 Occupation = existing1.PersonalInfo.Occupation
@@ -157,7 +157,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             new ContactInfoDto
             {
                 Email = "dup@example.com",
-                Mobile = existing1.ContactInfo.Mobile,
+                Mobile = existing1.ContactInfo.Mobile.Value,
                 Instagram = null,
                 Facebook = null
             },
@@ -169,7 +169,7 @@ public sealed class UpdateCustomerCommandHandlerTests
                 PostalCode = "12345",
                 City = "City",
                 State = "State",
-                Country = "Country"
+                Country = "BR"
             },
             new PhysicalInfoDto
             {
@@ -186,7 +186,7 @@ public sealed class UpdateCustomerCommandHandlerTests
             new EmergencyContactDto
             {
                 Name = existing1.EmergencyContact.Name,
-                Mobile = existing1.EmergencyContact.Mobile
+                Mobile = existing1.EmergencyContact.Mobile.Value
             },
             new MedicalInfoDto
             {

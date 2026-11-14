@@ -123,9 +123,13 @@ internal static class BrandingTestImages
     public static byte[] CreateWebPWithTruncatedChunkHeader() =>
         WebPFile(9, [.. "VP8 "u8, 0x01]);
 
-    /// <summary>Creates a WebP whose <c>VP8X</c> chunk has the animation flag set.</summary>
-    public static byte[] CreateWebPWithAnimationFlag() =>
-        WebPFile(null, WebPChunk("VP8X"u8, [0x02, 0, 0, 0, 31, 0, 0, 31, 0, 0], null));
+    /// <summary>Creates a real still 32 by 32 WebP behind a <c>VP8X</c> chunk that has the animation flag set.</summary>
+    public static byte[] CreateWebPWithAnimationFlag()
+    {
+        var still = Create(MagickFormat.WebP, 32, 32);
+        const int riffHeaderLength = 12;
+        return WebPFile(null, [.. WebPChunk("VP8X"u8, [0x02, 0, 0, 0, 31, 0, 0, 31, 0, 0], null), .. still.AsSpan(riffHeaderLength)]);
+    }
 
     /// <summary>Creates a WebP whose <c>VP8X</c> animation flag is cleared but that carries a top-level <c>ANMF</c> chunk.</summary>
     public static byte[] CreateWebPWithAnimationFrameButNoFlag() =>

@@ -84,6 +84,7 @@ public sealed class ManagementSecurityPersistencePostgreSqlTests(HostedTestFixtu
 
         // Assert
         keyCount.ShouldBeGreaterThan(0);
+        ticketKey.ShouldStartWith("management-ticket:", StringComparison.Ordinal);
         ticketCount.ShouldBe(1);
         containsPlaintext.ShouldBeFalse();
         unprotectedPayload.ShouldBe(payload);

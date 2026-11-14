@@ -36,8 +36,8 @@ else
         <div class="mb-3">
             <label for="language" class="form-label">Declared language (BCP 47)</label>
             <select id="language" class="form-select" @bind="_language" @bind:after="SelectLanguage" disabled="@_saving">
-                <option value="@PublicContentLanguageDto.EnUs">English (en-US)</option>
-                <option value="@PublicContentLanguageDto.PtBr">Português (pt-BR)</option>
+                <option value="@PublicContentLanguageTags.EnglishUnitedStates">English (en-US)</option>
+                <option value="@PublicContentLanguageTags.PortugueseBrazil">Português (pt-BR)</option>
             </select>
         </div>
         <p><strong>AI draft:</strong> @(_isAiGenerated ? "Unapproved — Review required" : "Editor-provided")</p>
@@ -73,20 +73,23 @@ else
     private bool _isDecorative;
     private bool _isAiGenerated;
     private string? _caption;
-    private PublicContentLanguageDto _language = PublicContentLanguageDto.EnUs;
+    private string _language = PublicContentLanguageTags.EnglishUnitedStates;
+
+    private bool IsDefaultLanguage => string.Equals(_language, PublicContentLanguageTags.EnglishUnitedStates, StringComparison.OrdinalIgnoreCase);
+
     private void SelectLanguage()
     {
-        var text = _image?.AccessibilityTexts.FirstOrDefault(value => value.Language == _language);
-        _altText = text?.AltText ?? (_language == PublicContentLanguageDto.EnUs ? _image?.AltText : null) ?? string.Empty;
-        _caption = text?.Caption ?? (_language == PublicContentLanguageDto.EnUs ? _image?.Caption : null);
-        _isDecorative = text?.IsDecorative ?? (_language == PublicContentLanguageDto.EnUs && _image?.IsDecorative == true);
-        _isAiGenerated = text?.IsAiGenerated ?? (_language == PublicContentLanguageDto.EnUs && _image?.IsAiGenerated == true);
+        var text = _image?.AccessibilityTexts.FirstOrDefault(value => string.Equals(value.Language, _language, StringComparison.OrdinalIgnoreCase));
+        _altText = text?.AltText ?? (IsDefaultLanguage ? _image?.AltText : null) ?? string.Empty;
+        _caption = text?.Caption ?? (IsDefaultLanguage ? _image?.Caption : null);
+        _isDecorative = text?.IsDecorative ?? (IsDefaultLanguage && _image?.IsDecorative == true);
+        _isAiGenerated = text?.IsAiGenerated ?? (IsDefaultLanguage && _image?.IsAiGenerated == true);
     }
 
     private void SelectPendingImage(CatalogMediaImageDto[] images)
     {
         _image = images.FirstOrDefault(image => image.RequiresHumanReview || image.AccessibilityTexts.Any(text => text.RequiresHumanReview));
-        _language = _image?.AccessibilityTexts.FirstOrDefault(text => text.RequiresHumanReview)?.Language ?? PublicContentLanguageDto.EnUs;
+        _language = _image?.AccessibilityTexts.FirstOrDefault(text => text.RequiresHumanReview)?.Language ?? PublicContentLanguageTags.EnglishUnitedStates;
         SelectLanguage();
     }
     private bool _loading = true;

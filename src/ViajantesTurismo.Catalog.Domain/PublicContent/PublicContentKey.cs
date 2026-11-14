@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Text;
 using PandaBear.InputNormalization;
 using PandaBear.Results;
@@ -8,8 +7,6 @@ namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 /// <summary>The canonical identity of an editable public-content entry.</summary>
 public sealed record PublicContentKey : IComparable<PublicContentKey>
 {
-    private const int ReversedByteOrderMark = 0xFFFE;
-
     private PublicContentKey(string value) => Value = value;
 
     /// <summary>Gets the sanitized, uppercase content identity.</summary>
@@ -23,20 +20,11 @@ public sealed record PublicContentKey : IComparable<PublicContentKey>
     /// <returns>The canonical key, or the existing key validation error.</returns>
     public static Result<PublicContentKey> Create(string? value)
     {
-        var remaining = value.AsSpan();
-        while (!remaining.IsEmpty)
+        if (!StringSanitizer.TryNormalizeKey(value ?? string.Empty, out var canonical))
         {
-            // .NET normalization rejects U+FFFE in addition to malformed UTF-16.
-            if (Rune.DecodeFromUtf16(remaining, out var scalar, out var consumed) != OperationStatus.Done
-                || scalar.Value == ReversedByteOrderMark)
-            {
-                return PublicContentErrors.InvalidKeyUnicode().ConvertError<PublicContentKey>();
-            }
-
-            remaining = remaining[consumed..];
+            return PublicContentErrors.InvalidKeyUnicode().ConvertError<PublicContentKey>();
         }
 
-        var canonical = (StringSanitizer.Sanitize(value) ?? string.Empty).ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(canonical))
         {
             return PublicContentErrors.EmptyKey().ConvertError<PublicContentKey>();

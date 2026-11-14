@@ -1,6 +1,8 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.AspNetCore.Authentication.Bff;
+using PandaBear.HttpCaching.AspNetCore;
 using Polly.Timeout;
 
 namespace ViajantesTurismo.Management.Web;
@@ -35,9 +37,7 @@ internal static class DocumentArtifactProxyEndpoints
                 return TypedResults.NotFound();
             }
 
-            httpContext.Response.Headers.CacheControl = "no-store";
-            httpContext.Response.Headers.Pragma = "no-cache";
-            httpContext.Response.Headers.Expires = "0";
+            HttpCacheHeaders.SetNoStore(httpContext);
             httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
             return TypedResults.File(artifact.Content.ToArray(), HtmlMediaType, artifact.FileName, enableRangeProcessing: false);
         }
@@ -57,7 +57,7 @@ internal static class DocumentArtifactProxyEndpoints
         {
             return TypedResults.Problem("The document artifact could not be retrieved.", statusCode: StatusCodes.Status502BadGateway);
         }
-        catch (InvalidOperationException)
+        catch (Exception exception) when (exception is InvalidOperationException or UserTokenUnavailableException)
         {
             return TypedResults.Problem("The document artifact could not be retrieved.", statusCode: StatusCodes.Status502BadGateway);
         }

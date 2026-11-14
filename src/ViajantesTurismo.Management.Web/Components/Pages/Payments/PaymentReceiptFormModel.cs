@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Management.Web.Helpers;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 internal sealed class PaymentReceiptFormModel
 {
     /// <summary>Currency in which the payment settled.</summary>
-    public string SettlementCurrency { get; set; } = CurrencyFormatter.Eur;
+    public string SettlementCurrency { get; set; } = Currency.Eur.Code;
     /// <summary>Gross amount received, in the settlement currency.</summary>
     public decimal Gross
     {

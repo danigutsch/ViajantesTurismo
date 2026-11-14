@@ -101,7 +101,7 @@ public sealed class CustomerImportCommandHandler(
         }
 
         var customer = customerResult.Value;
-        if (!await customerStore.EmailExists(customer.ContactInfo.Email, ct))
+        if (!await customerStore.EmailExists(customer.ContactInfo.Email.Value, ct))
         {
             customersToCreate.Add(customer);
             return ImportRowOutcome.Created;
@@ -116,7 +116,7 @@ public sealed class CustomerImportCommandHandler(
         List<CustomerOverwritePair> customersToOverwrite,
         CancellationToken ct)
     {
-        if (!TryResolveConflict(conflictResolutions, customer.ContactInfo.Email, out var resolution))
+        if (!TryResolveConflict(conflictResolutions, customer.ContactInfo.Email.Value, out var resolution))
         {
             return ImportRowOutcome.Error;
         }
@@ -126,7 +126,7 @@ public sealed class CustomerImportCommandHandler(
             return ImportRowOutcome.Skipped;
         }
 
-        var existingCustomer = await customerStore.GetByEmail(customer.ContactInfo.Email, ct);
+        var existingCustomer = await customerStore.GetByEmail(customer.ContactInfo.Email.Value, ct);
         if (existingCustomer is null)
         {
             return ImportRowOutcome.Error;

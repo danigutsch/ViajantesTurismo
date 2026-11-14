@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
+using PandaBear.BuildingBlocks;
 using PandaBear.Domain;
 using PandaBear.Results;
 
@@ -21,12 +22,13 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     [UsedImplicitly]
     private EditablePublicContent()
     {
+        SourceLanguage = PublicContentCultures.EnglishUnitedStates;
     }
 
     private EditablePublicContent(
         Guid id,
         PublicContentKey key,
-        PublicContentLanguage sourceLanguage,
+        ContentCulture sourceLanguage,
         IEnumerable<PublicContentVariant> variants,
         PublicContentPublicationState publicationState)
     {
@@ -54,9 +56,9 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     public PublicContentKey ContentKey { get; private set; } = default!;
 
     /// <summary>
-    /// Gets the language originally entered by the editor.
+    /// Gets the culture the editor originally wrote the content in.
     /// </summary>
-    public PublicContentLanguage SourceLanguage
+    public ContentCulture SourceLanguage
     {
         get; private set;
     }
@@ -94,12 +96,12 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     /// Creates editable public website content with supported language variants.
     /// </summary>
     /// <param name="key">The stable content key.</param>
-    /// <param name="sourceLanguage">The source language entered by the editor.</param>
+    /// <param name="sourceLanguage">The source culture entered by the editor; it must be supported.</param>
     /// <param name="variants">The localized variants.</param>
     /// <returns>A result containing editable content when valid.</returns>
     public static Result<EditablePublicContent> Create(
         string key,
-        PublicContentLanguage sourceLanguage,
+        ContentCulture? sourceLanguage,
         IEnumerable<PublicContentVariant> variants)
     {
         ArgumentNullException.ThrowIfNull(variants);
@@ -121,7 +123,7 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
             : Result.Ok(new EditablePublicContent(
                 Guid.CreateVersion7(),
                 contentKey.Value,
-                sourceLanguage,
+                sourceLanguage!,
                 variantsArray,
                 GetInitialPublicationState(variantsArray)));
     }
@@ -153,11 +155,11 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     /// <summary>
     /// Replaces the editable language variants for the same content key.
     /// </summary>
-    /// <param name="sourceLanguage">The source language entered by the editor.</param>
+    /// <param name="sourceLanguage">The source culture entered by the editor; it must be supported.</param>
     /// <param name="variants">The localized variants.</param>
     /// <returns>A result indicating whether replacement was allowed.</returns>
     public Result ReplaceVariants(
-        PublicContentLanguage sourceLanguage,
+        ContentCulture? sourceLanguage,
         IEnumerable<PublicContentVariant> variants)
     {
         ArgumentNullException.ThrowIfNull(variants);
@@ -173,7 +175,7 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
             return errors.ToResult();
         }
 
-        SourceLanguage = sourceLanguage;
+        SourceLanguage = sourceLanguage!;
         _variants.Clear();
         _variants.AddRange(variantsArray);
         PublicationState = GetInitialPublicationState(variantsArray);
@@ -200,16 +202,23 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Finds the approved public variant for the requested language, falling back to English when needed.
+    /// Resolves the approved public variant for a requested culture with <see cref="TranslationSet{T}.TryResolve"/>: the exact
+    /// culture, its neutral parent, the first variant of the same language, then the default culture. Variants that still need
+    /// human review are never chosen.
     /// </summary>
-    /// <param name="requestedLanguage">The requested public content language.</param>
-    /// <returns>The approved public variant, or <see langword="null" /> when none is available.</returns>
-    public PublicContentVariant? FindPublicVariant(PublicContentLanguage requestedLanguage)
+    /// <param name="requested">The requested culture, or <see langword="null"/> for the default.</param>
+    /// <param name="variant">The approved public variant when one is found.</param>
+    /// <returns><see langword="true"/> when an approved variant is found.</returns>
+    public bool TryResolvePublicVariant(ContentCulture? requested, [MaybeNullWhen(false)] out PublicContentVariant variant)
     {
-        var variant = _variants.FirstOrDefault(variant => variant.Language == requestedLanguage && !variant.RequiresHumanReview);
-        return variant is not null || requestedLanguage == PublicContentLanguage.EnUs
-            ? variant
-            : _variants.FirstOrDefault(variant => variant.Language == PublicContentLanguage.EnUs && !variant.RequiresHumanReview);
+        var approved = TranslationSet.Create(_variants.Where(item => !item.RequiresHumanReview), item => item.Language);
+        if (approved.IsFailure)
+        {
+            variant = null;
+            return false;
+        }
+
+        return approved.Value.TryResolve(requested, PublicContentCultures.Supported.Default, out variant);
     }
 
     private static PublicContentPublicationState GetInitialPublicationState(IEnumerable<PublicContentVariant> variants)
@@ -221,9 +230,9 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
 
     private static void ValidateSupportedSourceLanguage(
         ValidationErrors errors,
-        PublicContentLanguage sourceLanguage)
+        ContentCulture? sourceLanguage)
     {
-        if (sourceLanguage == PublicContentLanguage.None || !Enum.IsDefined(sourceLanguage))
+        if (!PublicContentCultures.IsSupported(sourceLanguage))
         {
             errors.Add(PublicContentErrors.UnsupportedLanguage(nameof(SourceLanguage)));
         }
@@ -238,15 +247,10 @@ public sealed partial class EditablePublicContent : IAggregateRoot<Guid>
             errors.Add(PublicContentErrors.DuplicateVariantLanguage(nameof(Variants), duplicate.Key));
         }
 
-        foreach (var language in GetSupportedLanguages()
+        foreach (var language in PublicContentCultures.Supported.Cultures
             .Where(language => variants.All(variant => variant.Language != language)))
         {
             errors.Add(PublicContentErrors.MissingVariantLanguage(nameof(Variants), language));
         }
-    }
-
-    private static IEnumerable<PublicContentLanguage> GetSupportedLanguages()
-    {
-        return Enum.GetValues<PublicContentLanguage>().Where(language => language != PublicContentLanguage.None);
     }
 }

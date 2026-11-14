@@ -1,3 +1,4 @@
+using PandaBear.IntegrationTesting;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using System.Net;
 using ViajantesTurismo.Admin.Contracts.Application;

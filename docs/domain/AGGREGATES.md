@@ -168,24 +168,28 @@ accommodation information.
 
 **Personal Information:**
 
-- FirstName, LastName: Not empty, max 128 characters
-- Age: Must be at least 10 years old (calculated from birth date)
-- Birth date: Cannot be in the future
+- FirstName, LastName: Not empty, max 128 characters (SharedKernel `PersonName`)
+- Age: Must be at least 10 years old (SharedKernel `BirthDate`; a 29 February birthday is reached on 1 March in a
+  common year)
+- Birth date: Required and cannot be in the future
 - Gender: Required (max 64 chars)
 - Nationality: Required (max 128 chars)
 - Occupation: Required (max 128 chars)
 
 **Contact Information:**
 
-- Email: Must match format `^[^@\s]+@[^@\s]+\.[^@\s]+$` (no spaces allowed), max 256 characters
+- Email: A SharedKernel `EmailAddress` (local part up to 64 characters, a dotted domain, no spaces), max 128 characters,
+  stored in lower case
 - Email: Must be unique (application-level invariant enforced in handlers via repository checks)
-- Mobile phone: Required (max 64 chars)
-- Phone: Must match format `^[\d\s\-\(\)\+]+$` (digits, spaces, hyphens, parentheses, plus sign)
+- Mobile phone: Required (max 64 chars as typed); a SharedKernel `PhoneNumber` of 7 to 15 digits, optionally led by `+`,
+  separated only by spaces, hyphens, dots or parentheses; stored as the digits with the optional leading `+`
 - Instagram and Facebook handles: Optional (max 64 chars each)
 
 **Address Information:**
 
-- Street, neighborhood, postal code, city, state, country: Required (max 128 chars each)
+- Street, neighborhood, postal code, city, state: Required (max 128 chars each)
+- Country: Required; a SharedKernel `CountryCode` (officially assigned ISO 3166-1 alpha-2 code such as `BR`), stored in
+  upper case
 - Address complement: Optional (max 128 chars)
 - Postal code: Max 64 chars
 
@@ -202,7 +206,8 @@ accommodation information.
 
 **Medical & Emergency:**
 
-- Emergency contact name and mobile: Required (max 128 and 64 chars respectively)
+- Emergency contact name and mobile: Required (max 128 and 64 chars respectively); the mobile follows the same
+  `PhoneNumber` rule as the contact mobile
 - Allergies and additional medical info: Optional (max 500 chars each)
 
 #### Validation

@@ -10,7 +10,8 @@ communicate with and locate customers when needed.
 **Business Rules:**
 - All address fields (street, neighborhood, postal code, city, state, country) are required
 - Optional complement field for additional location details (apartment number, floor, etc.)
-- Street, neighborhood, city, state, country: maximum 128 characters
+- Street, neighborhood, city, state: maximum 128 characters
+- Country: an ISO 3166-1 alpha-2 code such as BR, stored in upper case
 - Postal code: maximum 64 characters
 - Complement: maximum 128 characters
 - All fields automatically trimmed and whitespace normalized
@@ -125,7 +126,7 @@ communicate with and locate customers when needed.
             When I create an address with a state of 128 characters
             Then the address should be successfully created
 
-    Rule: Country is required and must not exceed maximum length
+    Rule: Country is required and must be an ISO 3166-1 alpha-2 code
 
         @Invariant:INV-CUST-027
         @error_case
@@ -137,15 +138,22 @@ communicate with and locate customers when needed.
         @Invariant:INV-CUST-027
         @error_case
         @critical
-        Scenario: I cannot create an address with an excessively long country name
-            When I attempt to create an address with a country of 129 characters
-            Then I should be informed that country cannot exceed 128 characters
+        Scenario Outline: I cannot create an address with a country that is not an ISO code
+            When I attempt to create an address with country "<country>"
+            Then I should be informed that country must be an ISO 3166-1 alpha-2 code
+
+            Examples:
+              | country |
+              | Brazil  |
+              | USA     |
+              | XK      |
 
         @Invariant:INV-CUST-027
         @happy_path
-        Scenario: I can create an address with country at maximum allowed length
-            When I create an address with a country of 128 characters
+        Scenario: A country code is stored in upper case
+            When I create an address with country " br "
             Then the address should be successfully created
+            And the country should be "BR"
 
     Rule: Address complement is optional with maximum length constraint
 
@@ -175,7 +183,7 @@ communicate with and locate customers when needed.
 
         @happy_path
         Scenario: Address with complete valid information is accepted
-            When I create an address with street "123 Main St", city "New York", state "NY", country "USA", postal code "10001", and neighborhood "Downtown"
+            When I create an address with street "123 Main St", city "New York", state "NY", country "US", postal code "10001", and neighborhood "Downtown"
             Then the address should be successfully created
 
         @edge_case

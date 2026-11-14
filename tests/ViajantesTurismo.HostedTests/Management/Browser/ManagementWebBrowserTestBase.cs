@@ -1,13 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
+using PandaBear.Testing.Playwright;
 
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Base for browser tests that drive Management Web pages hosted in-process against fake API clients.</summary>
-public abstract class ManagementWebBrowserTestBase : PageTest
+public abstract class ManagementWebBrowserTestBase : TracedPageTest
 {
-    private const string InteractivePageSelector = ".page[data-interactive=\"true\"]";
     private ManagementWebBrowserHost? host;
 
     /// <summary>Gets the API client registrations the hosted page under test receives; fill it before the test starts.</summary>
@@ -42,9 +40,5 @@ public abstract class ManagementWebBrowserTestBase : PageTest
 
     /// <summary>Opens a page and waits until its Blazor circuit is interactive.</summary>
     /// <param name="relativePath">The page route.</param>
-    private protected async Task NavigateTo(string relativePath)
-    {
-        await Page.GotoAsync(new Uri(BaseUri, relativePath).ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
-        await Page.Locator(InteractivePageSelector).WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
-    }
+    private protected Task NavigateTo(string relativePath) => GotoInteractive(new Uri(BaseUri, relativePath));
 }

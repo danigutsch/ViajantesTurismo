@@ -26,7 +26,7 @@ public sealed class EfPublicMediaImageStoreTests
         beforeWait.ShouldNotBeNull();
         var concurrent = await secondStore.GetImage(image.Id, TestContext.Current.CancellationToken);
         concurrent.ShouldNotBeNull();
-        concurrent.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, "Publisher approved replacement", "Approved caption", false).IsSuccess.ShouldBeTrue();
+        concurrent.SetReviewedAccessibilityText(PublicContentCultures.EnglishUnitedStates, "Publisher approved replacement", "Approved caption", false).IsSuccess.ShouldBeTrue();
         await secondStore.Upsert(concurrent, TestContext.Current.CancellationToken);
 
         // Act
@@ -47,26 +47,26 @@ public sealed class EfPublicMediaImageStoreTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), Guid.CreateVersion7(), 0, true);
         var firstDraftAt = new DateTimeOffset(2026, 10, 21, 10, 0, 0, TimeSpan.Zero);
         var regeneratedAt = firstDraftAt.AddHours(1);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "A beach", null, firstDraftAt).IsSuccess.ShouldBeTrue();
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Uma praia", null, firstDraftAt).IsSuccess.ShouldBeTrue();
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.EnUs, "A blue sea", null, regeneratedAt).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "A beach", null, firstDraftAt).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.PortugueseBrazil, "Uma praia", null, firstDraftAt).IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.EnglishUnitedStates, "A blue sea", null, regeneratedAt).IsSuccess.ShouldBeTrue();
         await store.Upsert(image, TestContext.Current.CancellationToken);
         dbContext.ChangeTracker.Clear();
         var pending = await store.GetImage(image.Id, TestContext.Current.CancellationToken);
         pending.ShouldNotBeNull();
-        pending.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBe(regeneratedAt);
-        pending.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
+        pending.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.EnglishUnitedStates).PendingDraftCreatedAt.ShouldBe(regeneratedAt);
+        pending.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.PortugueseBrazil).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
 
         // Act
-        pending.SetReviewedAccessibilityText(PublicContentLanguage.EnUs, "A blue sea", null, false).IsSuccess.ShouldBeTrue();
+        pending.SetReviewedAccessibilityText(PublicContentCultures.EnglishUnitedStates, "A blue sea", null, false).IsSuccess.ShouldBeTrue();
         await store.Upsert(pending, TestContext.Current.CancellationToken);
         dbContext.ChangeTracker.Clear();
         var reviewed = await store.GetImage(image.Id, TestContext.Current.CancellationToken);
 
         // Assert
         reviewed.ShouldNotBeNull();
-        reviewed.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.EnUs).PendingDraftCreatedAt.ShouldBeNull();
-        reviewed.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
+        reviewed.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.EnglishUnitedStates).PendingDraftCreatedAt.ShouldBeNull();
+        reviewed.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.PortugueseBrazil).PendingDraftCreatedAt.ShouldBe(firstDraftAt);
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public sealed class EfPublicMediaImageStoreTests
         await using var dbContext = EfPublicContentStoreTestDbContextFactory.Create();
         var store = new EfPublicMediaImageStore(dbContext);
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), displayOrder: 0, isCover: true);
-        image.SetAiDraftAccessibilityText(PublicContentLanguage.PtBr, "Ciclistas em uma trilha de montanha", "Passeio de bicicleta").IsSuccess.ShouldBeTrue();
+        image.SetAiDraftAccessibilityText(PublicContentCultures.PortugueseBrazil, "Ciclistas em uma trilha de montanha", "Passeio de bicicleta").IsSuccess.ShouldBeTrue();
 
         // Act
         await store.Upsert(image, TestContext.Current.CancellationToken);
@@ -159,7 +159,7 @@ public sealed class EfPublicMediaImageStoreTests
         // Assert
         saved.ShouldNotBeNull();
         saved.AccessibilityTexts.Count.ShouldBe(2);
-        var localized = saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentLanguage.PtBr);
+        var localized = saved.AccessibilityTexts.ShouldHaveSingleItem(text => text.Language == PublicContentCultures.PortugueseBrazil);
         localized.RequiresHumanReview.ShouldBeTrue();
         localized.IsAiGenerated.ShouldBeTrue();
         localized.AltText.ShouldBe("Ciclistas em uma trilha de montanha");

@@ -12,44 +12,10 @@ public sealed class BrandingLogoIntakeTests
     private const string PngType = "image/png";
     private const string ScanRefusal = "Logo did not pass security scanning.";
     private const string AnimationRefusal = "Logo must be a still image; animated images are not accepted.";
+    private const string MalformedRefusal = "Logo could not be decoded or exceeds the allowed image dimensions.";
 
     [Fact]
-    public async Task A_refused_scan_returns_before_animation_detection()
-    {
-        // Arrange
-        var scanner = new RecordingMalwareScanner(MalwareScanStatus.Rejected);
-        var body = LogoImageBytes.RealAnimatedPng();
-
-        // Act
-        var result = await LogoIntakeHelpers.Create(scanner).Process(new MemoryStream(body), PngType, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.Status.ShouldBe(ResultStatus.Invalid);
-        LogoIntakeHelpers.ContentError(result).ShouldBe(ScanRefusal);
-        scanner.Calls.ShouldBe(1);
-    }
-
-    [Fact]
-    public async Task An_unavailable_scanner_is_reported_before_a_hostile_chunk_is_parsed()
-    {
-        // Arrange
-        var scanner = new RecordingMalwareScanner(MalwareScanStatus.Failed);
-        var hostile = LogoImageBytes.PngSignedFiller(64);
-        hostile[8] = 0xFF;
-        hostile[9] = 0xFF;
-        hostile[10] = 0xFF;
-        hostile[11] = 0xF0;
-
-        // Act
-        var result = await LogoIntakeHelpers.Create(scanner).Process(new MemoryStream(hostile), PngType, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.Status.ShouldBe(ResultStatus.Unavailable);
-        scanner.Calls.ShouldBe(1);
-    }
-
-    [Fact]
-    public async Task A_clean_scan_is_followed_by_animation_detection()
+    public async Task An_animated_png_is_refused_before_any_scan()
     {
         // Arrange
         var scanner = new RecordingMalwareScanner();
@@ -61,7 +27,57 @@ public sealed class BrandingLogoIntakeTests
         // Assert
         result.Status.ShouldBe(ResultStatus.Invalid);
         LogoIntakeHelpers.ContentError(result).ShouldBe(AnimationRefusal);
+        scanner.Calls.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task A_png_with_a_hostile_chunk_length_is_refused_before_any_scan()
+    {
+        // Arrange
+        var scanner = new RecordingMalwareScanner();
+        var hostile = LogoImageBytes.PngSignedFiller(64);
+        hostile[8] = 0xFF;
+        hostile[9] = 0xFF;
+        hostile[10] = 0xFF;
+        hostile[11] = 0xF0;
+
+        // Act
+        var result = await LogoIntakeHelpers.Create(scanner).Process(new MemoryStream(hostile), PngType, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        LogoIntakeHelpers.ContentError(result).ShouldBe(MalformedRefusal);
+        scanner.Calls.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task A_still_png_is_scanned_once()
+    {
+        // Arrange
+        var scanner = new RecordingMalwareScanner();
+        var body = LogoImageBytes.Real(MagickFormat.Png);
+
+        // Act
+        var result = await LogoIntakeHelpers.Create(scanner).Process(new MemoryStream(body), PngType, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeFalse();
         scanner.Calls.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task A_refused_scan_refuses_a_well_formed_image()
+    {
+        // Arrange
+        var scanner = new RecordingMalwareScanner(MalwareScanStatus.Rejected);
+        var body = LogoImageBytes.Real(MagickFormat.Png);
+
+        // Act
+        var result = await LogoIntakeHelpers.Create(scanner).Process(new MemoryStream(body), PngType, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        LogoIntakeHelpers.ContentError(result).ShouldBe(ScanRefusal);
     }
 
     [Fact]
@@ -219,11 +235,10 @@ public sealed class BrandingLogoIntakeTests
         var body = LogoImageBytes.PngSignedFiller(BrandingLogoLimits.MaxUploadBytes);
 
         // Act
-        await LogoIntakeHelpers.Create(scanner).Process(new OneChunkReadStream(body, 64 * 1024), PngType, TestContext.Current.CancellationToken);
+        var result = await LogoIntakeHelpers.Create(scanner).Process(new OneChunkReadStream(body, 64 * 1024), PngType, TestContext.Current.CancellationToken);
 
         // Assert
-        scanner.Calls.ShouldBe(1);
-        scanner.LastLength.ShouldBe(BrandingLogoLimits.MaxUploadBytes);
+        LogoIntakeHelpers.ContentError(result).ShouldBe(MalformedRefusal);
     }
 
     [Fact]

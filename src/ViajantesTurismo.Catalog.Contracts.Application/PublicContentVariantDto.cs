@@ -6,12 +6,12 @@ namespace ViajantesTurismo.Catalog.Contracts.Application;
 public sealed class PublicContentVariantDto
 {
     /// <summary>
-    /// Gets or sets the content language.
+    /// Gets or sets the content language tag, for example <c>pt-BR</c>.
     /// </summary>
-    public PublicContentLanguageDto Language
+    public string Language
     {
         get; set;
-    }
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the public title.

@@ -77,13 +77,13 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => cut.Markup.ShouldContain("R$ 1,500.00", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain(MoneyText.Of(1500.00m, "BRL"), StringComparison.Ordinal));
 
         // Assert
-        cut.Markup.ShouldContain("R$ 1,500.00", StringComparison.Ordinal); // Base Price
-        cut.Markup.ShouldContain("R$ 300.00", StringComparison.Ordinal); // Single Room Supplement
-        cut.Markup.ShouldContain("R$ 100.00", StringComparison.Ordinal); // Regular Bike
-        cut.Markup.ShouldContain("R$ 250.00", StringComparison.Ordinal); // E-Bike
+        cut.Markup.ShouldContain(MoneyText.Of(1500.00m, "BRL"), StringComparison.Ordinal); // Base Price
+        cut.Markup.ShouldContain(MoneyText.Of(300.00m, "BRL"), StringComparison.Ordinal); // Single Room Supplement
+        cut.Markup.ShouldContain(MoneyText.Of(100.00m, "BRL"), StringComparison.Ordinal); // Regular Bike
+        cut.Markup.ShouldContain(MoneyText.Of(250.00m, "BRL"), StringComparison.Ordinal); // E-Bike
     }
 
     [Fact]
@@ -98,11 +98,11 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => cut.Markup.ShouldContain("1,500.00 €", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain(MoneyText.Of(1500.00m, "EUR"), StringComparison.Ordinal));
 
         // Assert
-        cut.Markup.ShouldContain("1,500.00 €", StringComparison.Ordinal); // Base Price
-        cut.Markup.ShouldContain("300.00 €", StringComparison.Ordinal); // Single Room Supplement
+        cut.Markup.ShouldContain(MoneyText.Of(1500.00m, "EUR"), StringComparison.Ordinal); // Base Price
+        cut.Markup.ShouldContain(MoneyText.Of(300.00m, "EUR"), StringComparison.Ordinal); // Single Room Supplement
     }
 
     [Fact]
@@ -117,11 +117,11 @@ public class DetailsPageTests : BunitContext
         var cut = Render<Details>(parameters => parameters
             .Add(p => p.Id, tour.Id));
 
-        cut.WaitForAssertion(() => cut.Markup.ShouldContain("$ 1,500.00", StringComparison.Ordinal));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain(MoneyText.Of(1500.00m, "USD"), StringComparison.Ordinal));
 
         // Assert
-        cut.Markup.ShouldContain("$ 1,500.00", StringComparison.Ordinal); // Base Price
-        cut.Markup.ShouldContain("$ 300.00", StringComparison.Ordinal); // Single Room Supplement
+        cut.Markup.ShouldContain(MoneyText.Of(1500.00m, "USD"), StringComparison.Ordinal); // Base Price
+        cut.Markup.ShouldContain(MoneyText.Of(300.00m, "USD"), StringComparison.Ordinal); // Single Room Supplement
     }
 
     [Fact]
