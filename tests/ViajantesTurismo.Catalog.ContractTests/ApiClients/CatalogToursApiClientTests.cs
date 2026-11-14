@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Http;
 using System.Net;
 using CatalogToursApiClientTestsHelpers = PandaBear.Testing.Contracts.ContractHttpClientTestHelper;
+using PandaBear.Testing;
 using PandaBear.Testing.Contracts;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class CatalogToursApiClientTests
 {
     [Fact]
@@ -575,7 +576,7 @@ public sealed class CatalogToursApiClientTests
         const string failureMessage = "The selected image could not be read.";
         using var content = new ThrowingReadStream(new IOException(failureMessage));
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(
-            request => ThrowingReadStream.SerializeRequest(request, TestContext.Current.CancellationToken));
+            request => RequestContentReader.ReadContentAndRespondCreated(request, TestContext.Current.CancellationToken));
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act

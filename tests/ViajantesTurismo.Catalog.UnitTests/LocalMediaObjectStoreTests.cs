@@ -1,11 +1,12 @@
 using PandaBear.ObjectStorage;
+using PandaBear.Testing;
 using Microsoft.Extensions.Options;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
+[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class LocalMediaObjectStoreTests
 {
     [Theory]
@@ -211,7 +212,7 @@ public sealed class LocalMediaObjectStoreTests
     {
         // Arrange
         using var directory = TemporaryMediaDirectory.Create();
-        await using var content = new PrefixThenThrowStream([1, 2], new IOException("synthetic copy failure"));
+        await using var content = new ThrowingReadStream([1, 2], new IOException("synthetic copy failure"));
         var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
 
         // Act
@@ -238,7 +239,7 @@ public sealed class LocalMediaObjectStoreTests
         await File.WriteAllBytesAsync(path, [9, 8, 7], TestContext.Current.CancellationToken);
         var lastModified = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
         File.SetLastWriteTimeUtc(path, lastModified);
-        await using var content = new PrefixThenThrowStream([1, 2], new IOException("synthetic copy failure"));
+        await using var content = new ThrowingReadStream([1, 2], new IOException("synthetic copy failure"));
         var store = new LocalMediaObjectStore(Options.Create(new LocalMediaObjectStorageOptions { RootPath = directory.Path }));
 
         // Act
@@ -266,7 +267,7 @@ public sealed class LocalMediaObjectStoreTests
         var put = store.Put(
             new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
             TestContext.Current.CancellationToken).AsTask();
-        await content.WaitUntilBlocked(TestContext.Current.CancellationToken);
+        await content.Blocked.WaitAsync(TestContext.Current.CancellationToken);
         var existsWhileBlocked = File.Exists(path);
         var keysWhileBlocked = await store.ListKeys(string.Empty, TestContext.Current.CancellationToken);
         var objectsWhileBlocked = await store.ListObjects(string.Empty, TestContext.Current.CancellationToken);
@@ -292,7 +293,7 @@ public sealed class LocalMediaObjectStoreTests
         var put = store.Put(
             new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
             cancellation.Token).AsTask();
-        await content.WaitUntilBlocked(TestContext.Current.CancellationToken);
+        await content.Blocked.WaitAsync(TestContext.Current.CancellationToken);
 
         // Act
         await cancellation.CancelAsync();
@@ -324,7 +325,7 @@ public sealed class LocalMediaObjectStoreTests
         var put = store.Put(
             new ObjectWriteRequest("images/photo.jpg", content, "image/jpeg", 4),
             TestContext.Current.CancellationToken).AsTask();
-        await content.WaitUntilBlocked(TestContext.Current.CancellationToken);
+        await content.Blocked.WaitAsync(TestContext.Current.CancellationToken);
         var bytesWhileBlocked = await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken);
         content.Release();
         _ = await put;

@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using PandaBear.Testing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
@@ -6,8 +7,8 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 /// <summary>
 /// Contract tests for the range and disposal behavior of Catalog media delivery.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class MediaStreamingContractTests
 {
     [Theory]

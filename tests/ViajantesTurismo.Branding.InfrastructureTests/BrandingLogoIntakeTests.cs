@@ -2,12 +2,13 @@ using ImageMagick;
 using PandaBear.MalwareScanning;
 using PandaBear.Results;
 using PandaBear.Testing.MalwareScanning;
+using PandaBear.Testing;
 using ViajantesTurismo.Branding.Infrastructure;
 using TestTraits = ViajantesTurismo.Branding.InfrastructureTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Branding.InfrastructureTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 public sealed class BrandingLogoIntakeTests
 {
     private const string PngType = "image/png";
@@ -104,7 +105,7 @@ public sealed class BrandingLogoIntakeTests
     {
         // Arrange
         var scanner = new TestMalwareScanner { Exception = new InvalidOperationException("down"), ContentHandling = MalwareScanContentHandling.CaptureAndRestorePosition };
-        await using var body = new OneChunkReadStream(LogoImageBytes.Real(MagickFormat.Png));
+        await using var body = new TrackingReadStream(LogoImageBytes.Real(MagickFormat.Png)) { MaxBytesPerRead = 4096 };
 
         // Act
         var result = await LogoIntakeHelpers.Create(scanner).Process(body, PngType, TestContext.Current.CancellationToken);
@@ -151,14 +152,19 @@ public sealed class BrandingLogoIntakeTests
         // Arrange
         using var source = new CancellationTokenSource();
         var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.CaptureAndRestorePosition };
-        await using var body = new OneChunkReadStream(LogoImageBytes.PngSignedFiller(100_000), 1024, source);
+        var bytes = LogoImageBytes.PngSignedFiller(100_000);
+        await using var body = new BlockingReadStream(bytes[..1024], bytes[1024..]);
+        var processing = LogoIntakeHelpers.Create(scanner).Process(body, PngType, source.Token).AsTask();
+        await body.Blocked.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         // Act
-        Func<Task> act = () => LogoIntakeHelpers.Create(scanner).Process(body, PngType, source.Token).AsTask();
+        await source.CancelAsync();
+        Func<Task> act = () => processing;
 
         // Assert
-        _ = await act.ShouldThrow<OperationCanceledException>();
-        body.ReadCalls.ShouldBeLessThan(5);
+        _ = await act.ShouldThrowAssignableTo<OperationCanceledException>();
+        body.BlockedReadCancelled.ShouldBeTrue();
+        body.BytesRead.ShouldBe(1024);
         scanner.CallCount.ShouldBe(0);
     }
 
@@ -167,7 +173,7 @@ public sealed class BrandingLogoIntakeTests
     {
         // Arrange
         var scanner = new TestMalwareScanner { ContentHandling = MalwareScanContentHandling.CaptureAndRestorePosition };
-        await using var body = new OneChunkReadStream(LogoImageBytes.Real(MagickFormat.Png));
+        await using var body = new TrackingReadStream(LogoImageBytes.Real(MagickFormat.Png)) { MaxBytesPerRead = 4096 };
 
         // Act
         var result = await LogoIntakeHelpers.Create(scanner).Process(body, PngType, TestContext.Current.CancellationToken);
@@ -182,7 +188,7 @@ public sealed class BrandingLogoIntakeTests
     {
         // Arrange
         var scanner = new TestMalwareScanner { Result = MalwareScanResult.Rejected, ContentHandling = MalwareScanContentHandling.CaptureAndRestorePosition };
-        await using var body = new OneChunkReadStream(LogoImageBytes.Real(MagickFormat.Png));
+        await using var body = new TrackingReadStream(LogoImageBytes.Real(MagickFormat.Png)) { MaxBytesPerRead = 4096 };
 
         // Act
         var result = await LogoIntakeHelpers.Create(scanner).Process(body, PngType, TestContext.Current.CancellationToken);
@@ -202,7 +208,7 @@ public sealed class BrandingLogoIntakeTests
         image.Format = MagickFormat.Png;
         var body = image.ToByteArray();
         body.Length.ShouldBeInRange(256 * 1024 + 1, BrandingLogoLimits.MaxUploadBytes);
-        await using var stream = new OneChunkReadStream(body, 8192);
+        await using var stream = new TrackingReadStream(body) { MaxBytesPerRead = 8192 };
 
         // Act
         var result = await LogoIntakeHelpers.Create(scanner).Process(stream, PngType, TestContext.Current.CancellationToken);
@@ -238,7 +244,7 @@ public sealed class BrandingLogoIntakeTests
         var body = LogoImageBytes.PngSignedFiller(BrandingLogoLimits.MaxUploadBytes);
 
         // Act
-        var result = await LogoIntakeHelpers.Create(scanner).Process(new OneChunkReadStream(body, 64 * 1024), PngType, TestContext.Current.CancellationToken);
+        var result = await LogoIntakeHelpers.Create(scanner).Process(new TrackingReadStream(body) { MaxBytesPerRead = 64 * 1024 }, PngType, TestContext.Current.CancellationToken);
 
         // Assert
         LogoIntakeHelpers.ContentError(result).ShouldBe(MalformedRefusal);
@@ -252,7 +258,7 @@ public sealed class BrandingLogoIntakeTests
         var body = LogoImageBytes.PngSignedFiller(BrandingLogoLimits.MaxUploadBytes + 1);
 
         // Act
-        var result = await LogoIntakeHelpers.Create(scanner).Process(new OneChunkReadStream(body, 64 * 1024), PngType, TestContext.Current.CancellationToken);
+        var result = await LogoIntakeHelpers.Create(scanner).Process(new TrackingReadStream(body) { MaxBytesPerRead = 64 * 1024 }, PngType, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Invalid);

@@ -41,7 +41,6 @@ See [Test guidelines](../TEST_GUIDELINES.md) for how tests use these helpers.
 | `PostgreSqlTestServerFixture` and `PostgreSqlTestServerFixtureTestQueries` | `HostedTests/Infrastructure` | 28 | Project-level reusable. Depends on `HostedTestFixture`, so it stays in this repository |
 | `HostedTestCleanup`, `AdvisoryLockWaitScope` | `HostedTests/Infrastructure` | 8, 3 | Local-only to `HostedTests` |
 | `Catalog.Testing` stores, locks and `CatalogApiTestHost` | `tests/ViajantesTurismo.Catalog.Testing/Infrastructure` | shared by Catalog unit, API and behavior suites | Project-level reusable. Catalog ports only |
-| `DisposalTrackingStream` | `Catalog.Testing/Infrastructure` | 2 | Local-only until stream doubles are reviewed |
 | `ReadObservingStream`, `GatedChunkContent`, `SlowUpload`, `RawHttpUpload` and related wire probes | `tests/ViajantesTurismo.UploadWire.Testing` | shared by upload wire tests | Project-level reusable. Upload wire behavior only |
 
 ## Consolidated in this change
@@ -56,9 +55,10 @@ See [Test guidelines](../TEST_GUIDELINES.md) for how tests use these helpers.
   `FakeTimeProvider`, so there is one fake clock rather than three.
 - **Output cache store.** The local `RecordingOutputCacheStore` in the Catalog API service tests is removed in
   favor of the SharedKernel `RecordingOutputCacheStore`.
-- **Blocking read streams.** The Admin document and branding contract test copies of a blocking read stream are
-  replaced by the SharedKernel `BlockingReadStream`. Stream doubles with chunking, cancellation tracking or
-  throwing behavior stay local.
+- **Cancellation and disposal test streams.** The local blocking, stalled, gated-chunk, chunked, throwing and
+  disposal-tracking read streams are replaced by the SharedKernel `BlockingReadStream`, `GatedChunkReadStream`,
+  `TrackingReadStream` (with `MaxBytesPerRead`), `ThrowingReadStream` and `DisposalTrackingStream`. The upload wire
+  probe `ReadObservingStream` stays local because it reports to the VT request-lifetime probe.
 - **Logger captures.** The six local logger captures are replaced by the SharedKernel `RecordingLogger` and
   `RecordingLoggerProvider`.
 - **Browser files and distributed caches.** The local browser file and throwing distributed cache doubles are
