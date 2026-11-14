@@ -485,3 +485,21 @@ only the same exact StreamJsonRpc `2.25.29` and Magick.NET-Q8-AnyCPU `15.0.0` me
 vulnerability threshold or native distribution gate was relaxed. The SharedKernel `action-pins.json` and `global.json` are
 unchanged between the two library revisions. The preview approval in `.config/sharedkernel-repo.json` now names this exact
 version and revision.
+
+## Shared test doubles candidate
+
+Candidate `0.1.0-alpha.547.1` uses clean library revision `cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965`. On top of
+`0.1.0-alpha.541.1` it adds the shared object-store, malware-scanner, HTTP-handler, form-file and stream test doubles, the
+`prune-prereleases` command of the SharedKernel CI tool, and a shorter default local candidate version. All 114 package
+hashes were verified by `stage-candidate` against the pin, which is the unedited `candidate.json` of CI run
+[43635924026](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/43635924026) and the GitHub prerelease. The
+pin records Linux/Windows package consumption, the API baseline comparison and stable promotion as `pending`.
+
+Against the `0.1.0-alpha.541.1` state of this repository, the lock files add no external package id; they add the
+first-party `Testing.MalwareScanning` and `Testing.ObjectStorage` SharedKernel packages, and `Testing.Http` to the public
+web tests. No package was removed and no lock file was added or removed. A vulnerability scan of the solution including
+transitive packages reports nothing. The workflow still permits only the same exact StreamJsonRpc `2.25.29` and
+Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability threshold or native distribution
+gate was relaxed. The SharedKernel `action-pins.json` and `global.json` are unchanged between the two library revisions;
+the only workflow change in between is the new manually dispatched `prune-prereleases.yml`, which this repository does not
+call. The preview approval in `.config/sharedkernel-repo.json` now names this exact version and revision.
