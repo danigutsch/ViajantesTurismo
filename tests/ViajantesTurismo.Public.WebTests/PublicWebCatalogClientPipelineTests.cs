@@ -34,7 +34,7 @@ public sealed class PublicWebCatalogClientPipelineTests
     public async Task Catalog_client_does_not_retry_a_public_catalog_quota_answer()
     {
         // Arrange
-        using var catalog = new CountingStatusHandler(HttpStatusCode.TooManyRequests);
+        using var catalog = new RecordingHttpMessageHandler(HttpStatusCode.TooManyRequests);
         await using var host = PublicWebEndpointTestsHelpers.CreateFactory(
             configuration: new Dictionary<string, string?> { ["services:catalog-api:https:0"] = "https://catalog.test" });
         await using var factory = host.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
@@ -46,6 +46,6 @@ public sealed class PublicWebCatalogClientPipelineTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
-        catalog.Requests.ShouldBe(1);
+        catalog.Requests.Count.ShouldBe(1);
     }
 }

@@ -418,7 +418,7 @@ public sealed class CustomerImportEndpointsTests
         // Arrange
         var content = "firstName,lastName\nAda,Lovelace\nGrace,Hopper"u8.ToArray();
         using var stream = new GatedChunkReadStream(content, 7);
-        var file = new StreamFormFile(stream, content.LongLength);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
         var chunkReads = (content.Length + 6) / 7;
 
@@ -450,7 +450,7 @@ public sealed class CustomerImportEndpointsTests
         Array.Fill(content, (byte)'a');
         using var stream = new GatedChunkReadStream(content, 64 * 1024);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, content.LongLength);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
@@ -470,7 +470,7 @@ public sealed class CustomerImportEndpointsTests
         Array.Fill(content, (byte)'a');
         using var stream = new GatedChunkReadStream(content, 64 * 1024);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, ContractConstants.CustomerImportMaxFileBytes);
+        var file = new StreamFormFile(stream, ContractConstants.CustomerImportMaxFileBytes, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
@@ -492,7 +492,7 @@ public sealed class CustomerImportEndpointsTests
         var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
         using var stream = new GatedChunkReadStream(content, 8);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, content.LongLength + declaredDelta);
+        var file = new StreamFormFile(stream, content.LongLength + declaredDelta, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
 
         // Act
@@ -510,7 +510,7 @@ public sealed class CustomerImportEndpointsTests
         // Arrange
         var content = "firstName,lastName\nAda,Lovelace"u8.ToArray();
         using var stream = new GatedChunkReadStream(content, 8);
-        var file = new StreamFormFile(stream, content.LongLength);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
         var scanner = new StubMalwareScanner(MalwareScanResult.Passed);
         using var requestCancellation = new CancellationTokenSource();
 
@@ -543,7 +543,7 @@ public sealed class CustomerImportEndpointsTests
             : "firstName,lastName\nAda,Lovelace"u8.ToArray();
         using var stream = new GatedChunkReadStream(content, 64 * 1024);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, content.LongLength);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
         var scanner = outcome switch
         {
             "rejected" => new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected)),
@@ -566,7 +566,7 @@ public sealed class CustomerImportEndpointsTests
         var content = new byte[] { 0xFF, 0xFE }.Concat(Encoding.Unicode.GetBytes("firstName,lastName\nAda,Lovelace")).ToArray();
         using var stream = new GatedChunkReadStream(content, 5);
         stream.ReleaseAll();
-        var file = new StreamFormFile(stream, content.LongLength);
+        var file = new StreamFormFile(stream, content.LongLength, "customers.csv", ContractConstants.CustomerImportTextCsvContentType);
         var scanner = new StubMalwareScanner(new MalwareScanResult(MalwareScanStatus.Rejected));
 
         // Act
