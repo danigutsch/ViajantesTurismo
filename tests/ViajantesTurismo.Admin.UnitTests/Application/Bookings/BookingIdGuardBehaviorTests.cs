@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
 public sealed class BookingIdGuardBehaviorTests
 {
     [Fact]
-    public async Task Handle_passes_a_result_through_to_next_for_a_real_booking_id()
+    public async Task Handle_passes_a_result_through_to_next_for_a_real_booking_ID()
     {
         // Arrange
         var behavior = new BookingIdGuardBehavior<CancelBookingCommand, Result>();
@@ -30,7 +30,7 @@ public sealed class BookingIdGuardBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_passes_a_value_result_through_to_next_for_a_real_booking_id()
+    public async Task Handle_passes_a_value_result_through_to_next_for_a_real_booking_ID()
     {
         // Arrange
         var behavior = new BookingIdGuardBehavior<StubBookingValueCommand, Result<Guid>>();
@@ -48,7 +48,7 @@ public sealed class BookingIdGuardBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_short_circuits_with_booking_not_found_for_an_empty_booking_id()
+    public async Task Handle_short_circuits_with_booking_not_found_for_an_empty_booking_ID()
     {
         // Arrange
         var behavior = new BookingIdGuardBehavior<CancelBookingCommand, Result>();
@@ -71,7 +71,7 @@ public sealed class BookingIdGuardBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_short_circuits_a_value_result_with_booking_not_found_for_an_empty_booking_id()
+    public async Task Handle_short_circuits_a_value_result_with_booking_not_found_for_an_empty_booking_ID()
     {
         // Arrange
         var behavior = new BookingIdGuardBehavior<StubBookingValueCommand, Result<Guid>>();

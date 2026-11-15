@@ -29,7 +29,7 @@ public sealed class CsvErrorCatalogTests
     }
 
     [Fact]
-    public void Csv_rows_with_different_text_are_not_equal()
+    public void CSV_rows_with_different_text_are_not_equal()
     {
         // Assert
         CsvRow.Create(["a", "b"]).ShouldNotBe(CsvRow.Create(["a", "c"]));

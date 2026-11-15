@@ -59,7 +59,7 @@ public sealed class DocumentRetentionPurgeRecordTests
     }
 
     [Fact]
-    public void Create_rejects_a_non_utc_timestamp()
+    public void Create_rejects_a_non_UTC_timestamp()
     {
         // Act
         var result = DocumentRetentionPurgeRecord.Create(

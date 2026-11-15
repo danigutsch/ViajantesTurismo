@@ -16,7 +16,7 @@ public sealed class AdminMediatorDispatchEndpointTests
     [InlineData("PUT", "discount")]
     [InlineData("PUT", "details")]
     [InlineData("PATCH", "notes")]
-    public async Task An_empty_booking_id_is_rejected_by_the_mediator_pipeline_without_saving(string method, string action)
+    public async Task An_empty_booking_ID_is_rejected_by_the_mediator_pipeline_without_saving(string method, string action)
     {
         // Arrange
         ArgumentNullException.ThrowIfNull(method);
@@ -43,7 +43,7 @@ public sealed class AdminMediatorDispatchEndpointTests
     [InlineData("PUT", "discount")]
     [InlineData("PUT", "details")]
     [InlineData("PATCH", "notes")]
-    public async Task An_unknown_booking_id_reaches_the_handler_and_is_not_found_without_saving(string method, string action)
+    public async Task An_unknown_booking_ID_reaches_the_handler_and_is_not_found_without_saving(string method, string action)
     {
         // Arrange
         ArgumentNullException.ThrowIfNull(method);

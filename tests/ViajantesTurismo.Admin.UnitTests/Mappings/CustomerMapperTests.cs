@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Mappings;
 public class CustomerMapperTests
 {
     [Fact]
-    public void Map_to_bike_type_dto_should_cover_all_enum_values()
+    public void Map_to_bike_type_DTO_should_cover_all_enum_values()
     {
         // Arrange
         var allDomainValues = Enum.GetValues<BikeType>();
@@ -39,7 +39,7 @@ public class CustomerMapperTests
     }
 
     [Fact]
-    public void Map_to_bike_type_dto_with_invalid_value_should_throw_argument_out_of_range_exception()
+    public void Map_to_bike_type_DTO_with_invalid_value_should_throw_argument_out_of_range_exception()
     {
         // Arrange
         const BikeType invalidValue = (BikeType)999;

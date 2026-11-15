@@ -90,7 +90,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_uses_an_id_fallback_when_the_normalized_initial_slug_is_already_owned()
+    public async Task Handle_uses_an_ID_fallback_when_the_normalized_initial_slug_is_already_owned()
     {
         // Arrange
         var eventStore = new CapturingEventStore();
@@ -272,7 +272,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
 
     [Fact]
     [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
-    public async Task Handle_preserves_conflict_when_existing_initial_event_has_a_different_source_event_id()
+    public async Task Handle_preserves_conflict_when_existing_initial_event_has_a_different_source_event_ID()
     {
         // Arrange
         var eventStore = new CapturingEventStore();

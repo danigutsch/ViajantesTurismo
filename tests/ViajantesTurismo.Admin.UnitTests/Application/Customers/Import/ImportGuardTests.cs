@@ -43,7 +43,7 @@ public sealed class ImportGuardTests
     }
 
     [Fact]
-    public async Task The_import_command_handler_honors_a_cancelled_token_before_reading_the_csv()
+    public async Task The_import_command_handler_honors_a_cancelled_token_before_reading_the_CSV()
     {
         // Arrange
         var store = new FakeCustomerStore();

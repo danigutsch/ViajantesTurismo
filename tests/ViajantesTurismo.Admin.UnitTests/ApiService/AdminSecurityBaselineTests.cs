@@ -12,7 +12,7 @@ namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 public sealed class AdminSecurityBaselineTests
 {
     [Fact]
-    public void Configures_admin_cors_policy_with_allowed_origins()
+    public void Configures_admin_CORS_policy_with_allowed_origins()
     {
         // Arrange
         var configuration = new ConfigurationBuilder()

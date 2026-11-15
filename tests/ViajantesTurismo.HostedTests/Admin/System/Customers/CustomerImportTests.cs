@@ -14,7 +14,7 @@ namespace ViajantesTurismo.HostedTests.Admin.System.Customers;
 public partial class CustomerImportTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Can_navigate_to_import_page_and_upload_csv_wizard_opens()
+    public async Task Can_navigate_to_import_page_and_upload_CSV_wizard_opens()
     {
         // Arrange
         var email = $"e2e-ui1-{Guid.NewGuid():N}@import.test";

@@ -13,7 +13,7 @@ public sealed class BrandingLogoEndpointTests
     private const string PngType = "image/png";
 
     [Fact]
-    public async Task Uploading_a_png_stores_a_webp_and_points_the_settings_at_its_generated_url()
+    public async Task Uploading_a_png_stores_a_webp_and_points_the_settings_at_its_generated_URL()
     {
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
@@ -377,7 +377,7 @@ public sealed class BrandingLogoEndpointTests
     }
 
     [Fact]
-    public async Task The_public_logo_is_served_immutable_with_a_strong_etag_and_nosniff()
+    public async Task The_public_logo_is_served_immutable_with_a_strong_ETag_and_nosniff()
     {
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
@@ -605,7 +605,7 @@ public sealed class BrandingLogoEndpointTests
     }
 
     [Fact]
-    public async Task Settings_put_rejects_a_logo_uri_that_is_not_the_stored_generated_url()
+    public async Task Settings_put_rejects_a_logo_URI_that_is_not_the_stored_generated_URL()
     {
         // Arrange
         await using var factory = BrandingApiTestHost.Create(TestBrandingSettingsStore.Seeded());
@@ -632,7 +632,7 @@ public sealed class BrandingLogoEndpointTests
     }
 
     [Fact]
-    public async Task Settings_put_keeps_the_uploaded_logo_when_the_generated_url_is_sent_back_and_clears_it_when_omitted()
+    public async Task Settings_put_keeps_the_uploaded_logo_when_the_generated_URL_is_sent_back_and_clears_it_when_omitted()
     {
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();
@@ -665,7 +665,7 @@ public sealed class BrandingLogoEndpointTests
     }
 
     [Fact]
-    public async Task Deleting_the_logo_clears_the_logo_uri_and_returns_the_management_settings()
+    public async Task Deleting_the_logo_clears_the_logo_URI_and_returns_the_management_settings()
     {
         // Arrange
         var store = TestBrandingSettingsStore.Seeded();

@@ -142,7 +142,7 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
-    public void Ai_generated_accessibility_text_requires_human_review_before_publication()
+    public void AI_generated_accessibility_text_requires_human_review_before_publication()
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
@@ -208,7 +208,7 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
-    public void Ai_draft_accessibility_text_requires_alt_text()
+    public void AI_draft_accessibility_text_requires_alt_text()
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
@@ -222,7 +222,7 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
-    public void Ai_draft_accessibility_text_cannot_mark_images_decorative()
+    public void AI_draft_accessibility_text_cannot_mark_images_decorative()
     {
         // Arrange
         var language = PublicContentCultures.EnglishUnitedStates;
@@ -296,7 +296,7 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
-    public void Ai_generated_accessibility_text_cannot_skip_human_review()
+    public void AI_generated_accessibility_text_cannot_skip_human_review()
     {
         // Arrange
         var language = PublicContentCultures.EnglishUnitedStates;
@@ -353,7 +353,7 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
-    public void Manual_draft_accessibility_text_requires_human_review_without_ai_flag()
+    public void Manual_draft_accessibility_text_requires_human_review_without_AI_flag()
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true);
@@ -372,7 +372,7 @@ public sealed class PublicMediaImageTests
     }
 
     [Fact]
-    public void Pt_br_ai_draft_does_not_replace_default_public_accessibility_text()
+    public void Pt_br_AI_draft_does_not_replace_default_public_accessibility_text()
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, altText: "Reviewed default alt");

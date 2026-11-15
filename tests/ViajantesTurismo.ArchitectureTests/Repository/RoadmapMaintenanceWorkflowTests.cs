@@ -244,7 +244,7 @@ public sealed class RoadmapMaintenanceWorkflowTests
     }
 
     [Fact]
-    public void Nonempty_sealed_changes_publish_through_the_tool_that_requires_a_pull_request_url()
+    public void Nonempty_sealed_changes_publish_through_the_tool_that_requires_a_pull_request_URL()
     {
         // Act
         var workflow = RoadmapMaintenanceWorkflowTestFile.Content;

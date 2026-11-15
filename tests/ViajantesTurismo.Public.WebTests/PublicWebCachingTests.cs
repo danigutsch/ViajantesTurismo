@@ -102,7 +102,7 @@ public sealed class PublicWebCachingTests
     }
 
     [Fact]
-    public async Task Sitemap_xml_failure_is_not_cacheable()
+    public async Task Sitemap_XML_failure_is_not_cacheable()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };

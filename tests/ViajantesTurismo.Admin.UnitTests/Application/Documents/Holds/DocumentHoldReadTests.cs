@@ -257,7 +257,7 @@ public sealed class DocumentHoldReadTests
     }
 
     [Fact]
-    public async Task Each_overview_item_carries_the_newest_document_id_of_its_lineage_from_one_lookup()
+    public async Task Each_overview_item_carries_the_newest_document_ID_of_its_lineage_from_one_lookup()
     {
         // Arrange
         var harness = DocumentHoldHarness.Create();
@@ -278,7 +278,7 @@ public sealed class DocumentHoldReadTests
     }
 
     [Fact]
-    public async Task A_lineage_without_a_document_is_still_listed_with_a_null_document_id()
+    public async Task A_lineage_without_a_document_is_still_listed_with_a_null_document_ID()
     {
         // Arrange
         var harness = DocumentHoldHarness.Create();

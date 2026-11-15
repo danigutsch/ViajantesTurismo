@@ -11,7 +11,7 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandlerTests
     private static readonly DateTimeOffset Now = new(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task Handle_purges_expired_audit_records_using_the_current_utc_time()
+    public async Task Handle_purges_expired_audit_records_using_the_current_UTC_time()
     {
         // Arrange
         var auditStore = new FakeDocumentAuditStore { PurgedCount = 3 };

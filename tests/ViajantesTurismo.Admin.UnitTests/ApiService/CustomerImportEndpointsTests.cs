@@ -24,7 +24,7 @@ namespace ViajantesTurismo.Admin.UnitTests.ApiService;
 public sealed class CustomerImportEndpointsTests
 {
     [Fact]
-    public void Accepts_small_csv_uploads()
+    public void Accepts_small_CSV_uploads()
     {
         // Arrange
         using var stream = new MemoryStream("firstName,lastName"u8.ToArray());
@@ -43,7 +43,7 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
-    public void Accepts_csv_uploads_with_media_type_parameters()
+    public void Accepts_CSV_uploads_with_media_type_parameters()
     {
         // Arrange
         using var stream = new MemoryStream("firstName,lastName"u8.ToArray());
@@ -99,7 +99,7 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
-    public void Rejects_non_csv_uploads()
+    public void Rejects_non_CSV_uploads()
     {
         // Arrange
         using var stream = new MemoryStream([1, 2, 3]);
@@ -153,7 +153,7 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
-    public async Task Reads_csv_only_after_a_clean_scan_of_the_received_bytes()
+    public async Task Reads_CSV_only_after_a_clean_scan_of_the_received_bytes()
     {
         // Arrange
         var expectedCsv = "firstName,lastName\nAda,Lovelace";
@@ -175,7 +175,7 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
-    public async Task Rejects_csv_content_when_the_scanner_reports_malware()
+    public async Task Rejects_CSV_content_when_the_scanner_reports_malware()
     {
         // Arrange
         using var stream = new MemoryStream("firstName,lastName\nAda,Lovelace"u8.ToArray());
@@ -197,7 +197,7 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
-    public async Task Fails_closed_when_the_csv_scanner_is_unavailable()
+    public async Task Fails_closed_when_the_CSV_scanner_is_unavailable()
     {
         // Arrange
         using var stream = new MemoryStream("firstName,lastName\nAda,Lovelace"u8.ToArray());
@@ -219,7 +219,7 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
-    public async Task Fails_closed_when_the_csv_scanner_throws()
+    public async Task Fails_closed_when_the_CSV_scanner_throws()
     {
         // Arrange
         using var stream = new MemoryStream("firstName,lastName\nAda,Lovelace"u8.ToArray());
@@ -241,7 +241,7 @@ public sealed class CustomerImportEndpointsTests
     }
 
     [Fact]
-    public async Task Logs_a_structured_warning_without_exception_text_or_file_name_when_the_csv_scanner_throws()
+    public async Task Logs_a_structured_warning_without_exception_text_or_file_name_when_the_CSV_scanner_throws()
     {
         // Arrange
         const string sensitiveText = "clamd refused customers-private.csv";

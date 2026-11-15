@@ -135,7 +135,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Public_media_returns_non_cacheable_service_unavailable_when_catalog_http_request_fails()
+    public async Task Public_media_returns_non_cacheable_service_unavailable_when_catalog_HTTP_request_fails()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailMediaRequests = true };
@@ -745,7 +745,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Sitemap_xml_includes_only_canonical_public_pages()
+    public async Task Sitemap_XML_includes_only_canonical_public_pages()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
@@ -812,7 +812,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Sitemap_xml_limits_tours_to_protocol_maximum()
+    public async Task Sitemap_XML_limits_tours_to_protocol_maximum()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
@@ -839,7 +839,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Sitemap_xml_returns_service_unavailable_when_catalog_fails()
+    public async Task Sitemap_XML_returns_service_unavailable_when_catalog_fails()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
@@ -854,7 +854,7 @@ public sealed class PublicWebEndpointTests
     }
 
     [Fact]
-    public async Task Sitemap_xml_returns_non_cacheable_service_unavailable_when_catalog_cancels_upstream()
+    public async Task Sitemap_XML_returns_non_cacheable_service_unavailable_when_catalog_cancels_upstream()
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { ThrowOperationCanceledExceptionOnListRequests = true };

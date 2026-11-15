@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public sealed class EntityIdGenerationTests
 {
     [Fact]
-    public void Tour_create_should_generate_uuidv7_id()
+    public void Tour_create_should_generate_uuidv7_ID()
     {
         // Act
         var result = Tour.Create(new TourDefinition(
@@ -30,7 +30,7 @@ public sealed class EntityIdGenerationTests
     }
 
     [Fact]
-    public void Customer_constructor_should_generate_uuidv7_id()
+    public void Customer_constructor_should_generate_uuidv7_ID()
     {
         // Arrange
         var customer = EntityIdTestData.CreateCustomer();
@@ -40,7 +40,7 @@ public sealed class EntityIdGenerationTests
     }
 
     [Fact]
-    public void Booking_create_should_generate_uuidv7_id()
+    public void Booking_create_should_generate_uuidv7_ID()
     {
         // Arrange
         var principalResult = BookingCustomer.Create(Guid.CreateVersion7(), BikeType.Regular, 100m);

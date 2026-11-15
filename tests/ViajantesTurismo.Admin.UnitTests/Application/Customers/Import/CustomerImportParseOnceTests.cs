@@ -26,7 +26,7 @@ public sealed class CustomerImportParseOnceTests
     }
 
     [Fact]
-    public async Task The_command_handler_imports_the_parsed_document_instead_of_the_csv_text()
+    public async Task The_command_handler_imports_the_parsed_document_instead_of_the_CSV_text()
     {
         // Arrange
         var store = new FakeCustomerStore();
@@ -80,7 +80,7 @@ public sealed class CustomerImportParseOnceTests
     }
 
     [Fact]
-    public async Task Importing_unreadable_bytes_reports_the_same_csv_error_as_unreadable_text()
+    public async Task Importing_unreadable_bytes_reports_the_same_CSV_error_as_unreadable_text()
     {
         // Arrange
         var fromText = new CustomerImportWorkflowScenario();

@@ -217,7 +217,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
-    public async Task A_stored_raster_data_uri_logo_round_trips_unchanged()
+    public async Task A_stored_raster_data_URI_logo_round_trips_unchanged()
     {
         // Arrange
         var document = DocumentDraftInfrastructureTestData.CreateDraft(TimeProvider.System.GetUtcNow().UtcDateTime);

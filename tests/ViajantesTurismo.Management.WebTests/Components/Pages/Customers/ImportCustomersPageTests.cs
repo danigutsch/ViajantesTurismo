@@ -131,7 +131,7 @@ public sealed class ImportCustomersPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_validation_error_for_non_csv_file()
+    public void Shows_validation_error_for_non_CSV_file()
     {
         // Arrange
         var cut = Render<ImportCustomers>();

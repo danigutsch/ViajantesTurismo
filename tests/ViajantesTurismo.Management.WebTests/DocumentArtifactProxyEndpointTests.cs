@@ -14,7 +14,7 @@ namespace ViajantesTurismo.Management.WebTests;
 public sealed class DocumentArtifactProxyEndpointTests
 {
     [Fact]
-    public async Task Document_artifact_proxy_relays_html_with_private_delivery_headers_for_admin()
+    public async Task Document_artifact_proxy_relays_HTML_with_private_delivery_headers_for_admin()
     {
         // Arrange
         var documentId = Guid.CreateVersion7();

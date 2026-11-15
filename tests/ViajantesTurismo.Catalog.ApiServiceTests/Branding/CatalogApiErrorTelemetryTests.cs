@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 public sealed class CatalogApiErrorTelemetryTests
 {
     [Fact]
-    public async Task Unhandled_exception_returns_problem_json_without_exception_text_and_is_counted()
+    public async Task Unhandled_exception_returns_problem_JSON_without_exception_text_and_is_counted()
     {
         // Arrange
         const string secret = "secret-settings-detail";

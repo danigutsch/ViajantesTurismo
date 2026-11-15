@@ -310,7 +310,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    public void Displays_companion_id_when_present()
+    public void Displays_companion_ID_when_present()
     {
         // Arrange
         var companionId = Guid.NewGuid();

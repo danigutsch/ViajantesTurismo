@@ -70,7 +70,7 @@ public sealed class DocumentAuditWriterTests
     }
 
     [Fact]
-    public async Task Add_records_a_not_found_rejection_without_the_unresolved_document_id()
+    public async Task Add_records_a_not_found_rejection_without_the_unresolved_document_ID()
     {
         // Arrange
         var auditStore = new FakeDocumentAuditStore();
@@ -96,7 +96,7 @@ public sealed class DocumentAuditWriterTests
     }
 
     [Fact]
-    public async Task AddHold_records_a_not_found_rejection_without_the_unresolved_document_id()
+    public async Task AddHold_records_a_not_found_rejection_without_the_unresolved_document_ID()
     {
         // Arrange
         var auditStore = new FakeDocumentAuditStore();

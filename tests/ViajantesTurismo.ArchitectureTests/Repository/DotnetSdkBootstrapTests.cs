@@ -120,7 +120,7 @@ public sealed class DotnetSdkBootstrapTests
     [Theory(Skip = "SDK bootstrap fixtures run on Unix CI hosts.", SkipType = typeof(HostPlatform), SkipWhen = nameof(HostPlatform.IsWindows))]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Explicit_global_json_selects_its_exact_sdk_without_network(bool powershell)
+    public async Task Explicit_global_JSON_selects_its_exact_sdk_without_network(bool powershell)
     {
         // Arrange
         using var scope = new DotnetSdkBootstrapScope(powershell);

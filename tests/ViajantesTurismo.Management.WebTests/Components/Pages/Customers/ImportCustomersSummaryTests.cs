@@ -43,7 +43,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Render_summary_when_success_rows_contain_customer_ids_shows_view_customer_links_for_created_and_updated_rows()
+    public void Render_summary_when_success_rows_contain_customer_IDs_shows_view_customer_links_for_created_and_updated_rows()
     {
         var createdId = Guid.NewGuid();
         var updatedId = Guid.NewGuid();
@@ -69,7 +69,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Render_summary_when_success_row_has_no_customer_id_does_not_render_view_customer_link()
+    public void Render_summary_when_success_row_has_no_customer_ID_does_not_render_view_customer_link()
     {
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(
@@ -168,7 +168,7 @@ public sealed class ImportCustomersSummaryTests : BunitContext
     }
 
     [Fact]
-    public void Download_error_report_when_error_row_contains_special_characters_escapes_csv_values()
+    public void Download_error_report_when_error_row_contains_special_characters_escapes_CSV_values()
     {
         var cut = ImportCustomersSummaryTestsHelpers.ConfirmImportWithoutConflicts(this, _fakeCustomersApi,
             new ImportResultDto(

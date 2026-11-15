@@ -119,7 +119,7 @@ public sealed class CatalogIntegrationEventTransportRegistrationTests
     }
 
     [Fact]
-    public void Explicit_openapi_generation_registration_omits_catalog_outbox_relay()
+    public void Explicit_OpenApi_generation_registration_omits_catalog_outbox_relay()
     {
         // Arrange
         using var scenario = CatalogInfrastructureTestServices.CreateOpenApiBuildGenerationScenario();

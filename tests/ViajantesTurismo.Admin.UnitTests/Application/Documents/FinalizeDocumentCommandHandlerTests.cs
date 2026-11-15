@@ -244,7 +244,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_embeds_the_branding_logo_data_uri_in_the_finalized_artifact()
+    public async Task Handle_embeds_the_branding_logo_data_URI_in_the_finalized_artifact()
     {
         // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
@@ -476,7 +476,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_finalizes_an_artifact_without_http_or_root_relative_resource_references()
+    public async Task Handle_finalizes_an_artifact_without_HTTP_or_root_relative_resource_references()
     {
         // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;

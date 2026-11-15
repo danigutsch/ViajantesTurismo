@@ -7,7 +7,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     private static readonly HashSet<string> ApprovedProductionHttpPragmaSuppressions = [];
 
     [Fact]
-    public void Production_http_pragma_suppressions_should_require_one_allowlisted_statement_and_justification()
+    public void Production_HTTP_pragma_suppressions_should_require_one_allowlisted_statement_and_justification()
     {
         // Arrange
         const string broadSuppression = """
@@ -301,7 +301,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Production_http_source_suppressions_should_be_exact_site_and_allowlisted()
+    public void Production_HTTP_source_suppressions_should_be_exact_site_and_allowlisted()
     {
         // Arrange
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
@@ -332,7 +332,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [InlineData("[System.Diagnostics.CodeAnalysis.SuppressMessage(category: \"Architecture\", \"VTARCH001\")] public sealed class Suppressed { }")]
     [InlineData("[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage(category: \"Architecture\", \"VTARCH001\")] public sealed class Suppressed { }")]
     [InlineData("using Suppress = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute; [Suppress(\"Architecture\", \"VTARCH001\")] public sealed class Suppressed { }")]
-    public void Production_http_suppress_message_attributes_should_be_rejected(string source)
+    public void Production_HTTP_suppress_message_attributes_should_be_rejected(string source)
     {
         // Arrange
         ArgumentNullException.ThrowIfNull(source);
@@ -701,7 +701,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Unresolved_cross_file_suppress_message_check_ids_should_be_rejected()
+    public void Unresolved_cross_file_suppress_message_check_IDs_should_be_rejected()
     {
         // Arrange
         const string idsSource = "public static class RuleIds { public const string HttpBoundary = \"VTARCH001\"; }";
@@ -720,7 +720,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Resolved_non_target_suppress_message_check_ids_should_remain_allowed()
+    public void Resolved_non_target_suppress_message_check_IDs_should_remain_allowed()
     {
         // Arrange
         const string source = """
@@ -750,7 +750,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [InlineData("dotnet_analyzer_diagnostic.severity = none")]
     [InlineData("dotnet_analyzer_diagnostic.severity = silent")]
     [InlineData("dotnet_analyzer_diagnostic.severity = suggestion")]
-    public void Production_http_severity_suppressions_should_be_rejected(string setting)
+    public void Production_HTTP_severity_suppressions_should_be_rejected(string setting)
     {
         // Arrange
         ArgumentNullException.ThrowIfNull(setting);
@@ -790,7 +790,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [InlineData("<Project><PropertyGroup><TreatWarningsAsErrors>false</TreatWarningsAsErrors></PropertyGroup></Project>")]
     [InlineData("<Project><ItemGroup><GlobalAnalyzerConfigFiles Include=\"policy.txt\" /></ItemGroup></Project>")]
     [InlineData("<Project><PropertyGroup><CodeAnalysisRuleSet>disable-vtarch001.ruleset</CodeAnalysisRuleSet></PropertyGroup></Project>")]
-    public void Production_http_msbuild_suppressions_should_be_rejected(string setting)
+    public void Production_HTTP_msbuild_suppressions_should_be_rejected(string setting)
     {
         // Arrange
         ArgumentNullException.ThrowIfNull(setting);
@@ -876,7 +876,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "<Project><ItemGroup><ProjectReference Update=\"../ViajantesTurismo.Architecture.Analyzers/"
         + "ViajantesTurismo.Architecture.Analyzers.csproj\" OutputItemType=\"Analyzer\" /></ItemGroup></Project>")]
     [InlineData("<Project><ItemGroup><Analyzer Include=\"../ViajantesTurismo.Architecture.Analyzers.dll\" /></ItemGroup></Project>")]
-    public void Production_http_analyzer_opt_in_shapes_should_be_detected(string projectXml)
+    public void Production_HTTP_analyzer_opt_in_shapes_should_be_detected(string projectXml)
     {
         // Arrange
         ArgumentNullException.ThrowIfNull(projectXml);
@@ -889,7 +889,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Ordinary_project_references_should_not_enable_the_production_http_analyzer()
+    public void Ordinary_project_references_should_not_enable_the_production_HTTP_analyzer()
     {
         // Arrange
         const string projectXml = "<Project><ItemGroup><ProjectReference Include=\"../ViajantesTurismo.Architecture.Analyzers/"
@@ -903,7 +903,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Repository_policy_files_should_not_suppress_production_http_enforcement()
+    public void Repository_policy_files_should_not_suppress_production_HTTP_enforcement()
     {
         // Arrange
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
@@ -926,7 +926,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Production_http_analyzer_public_API_baselines_should_be_enforced()
+    public void Production_HTTP_analyzer_public_API_baselines_should_be_enforced()
     {
         // Arrange
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
@@ -955,7 +955,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     }
 
     [Fact]
-    public void Production_http_analyzer_should_be_app_owned_and_enabled_in_every_production_API()
+    public void Production_HTTP_analyzer_should_be_app_owned_and_enabled_in_every_production_API()
     {
         // Arrange
         var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();

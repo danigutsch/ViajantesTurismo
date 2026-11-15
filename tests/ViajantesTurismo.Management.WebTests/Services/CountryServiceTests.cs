@@ -9,7 +9,7 @@ public sealed class CountryServiceTests : IDisposable
     public void Dispose() => _temp.Dispose();
 
     [Fact]
-    public async Task GetCountries_valid_Json_returns_countries_ordered_by_name()
+    public async Task GetCountries_valid_JSON_returns_countries_ordered_by_name()
     {
         // Arrange
         CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, """{"de": {"name": "Germany"}, "br": {"name": "Brazil"}}""");
@@ -73,7 +73,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetCountries_invalid_Json_then_valid_file_returns_the_real_list()
+    public async Task GetCountries_invalid_JSON_then_valid_file_returns_the_real_list()
     {
         // Arrange
         CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, "not valid json {{{");
@@ -89,7 +89,7 @@ public sealed class CountryServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetCountries_invalid_Json_returns_fallback_countries()
+    public async Task GetCountries_invalid_JSON_returns_fallback_countries()
     {
         // Arrange
         CountryServiceTestsHelpers.WriteCountriesJson(_temp.Path, "not valid json {{{");

@@ -682,7 +682,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Catalog_media_image_accessibility_draft_endpoint_stores_ai_draft()
+    public async Task Catalog_media_image_accessibility_draft_endpoint_stores_AI_draft()
     {
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
@@ -797,7 +797,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Catalog_media_image_accessibility_draft_endpoint_returns_service_unavailable_when_ai_fails()
+    public async Task Catalog_media_image_accessibility_draft_endpoint_returns_service_unavailable_when_AI_fails()
     {
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
@@ -1330,7 +1330,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_tour_endpoint_hides_images_with_ai_draft_accessibility_text()
+    public async Task Public_tour_endpoint_hides_images_with_AI_draft_accessibility_text()
     {
         // Arrange
         var tourId = Guid.CreateVersion7();
@@ -1900,7 +1900,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Catalog_media_accessibility_review_promotes_an_ai_draft_to_public_delivery()
+    public async Task Catalog_media_accessibility_review_promotes_an_AI_draft_to_public_delivery()
     {
         // Arrange
         var tourId = Guid.CreateVersion7();
@@ -2015,7 +2015,7 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
-    public async Task Public_catalog_media_endpoint_selects_the_exact_id_width_and_format_rendition()
+    public async Task Public_catalog_media_endpoint_selects_the_exact_ID_width_and_format_rendition()
     {
         // Arrange
         var tourId = Guid.CreateVersion7();

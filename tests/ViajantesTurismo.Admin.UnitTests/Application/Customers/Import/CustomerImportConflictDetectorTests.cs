@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 public sealed class CustomerImportConflictDetectorTests
 {
     [Fact]
-    public async Task Unreadable_csv_content_reports_no_conflicts()
+    public async Task Unreadable_CSV_content_reports_no_conflicts()
     {
         // Arrange
         var detector = new CustomerImportConflictDetector(new FakeCustomerStore(["existing@example.com"]));

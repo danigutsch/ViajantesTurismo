@@ -9,7 +9,7 @@ public sealed class BookingStatusBadgeTests : BunitContext
     [InlineData(BookingStatusDto.Confirmed, "bg-success")]
     [InlineData(BookingStatusDto.Cancelled, "bg-danger")]
     [InlineData(BookingStatusDto.Completed, "bg-primary")]
-    public void Booking_status_badge_should_apply_correct_css_class_for_each_status(
+    public void Booking_status_badge_should_apply_correct_CSS_class_for_each_status(
         BookingStatusDto status,
         string expectedCssClass)
     {

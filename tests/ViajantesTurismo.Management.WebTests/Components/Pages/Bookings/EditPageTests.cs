@@ -30,7 +30,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    public void Page_renders_successfully_with_valid_id()
+    public void Page_renders_successfully_with_valid_ID()
     {
         // Arrange
         var booking = BuildBookingDto();

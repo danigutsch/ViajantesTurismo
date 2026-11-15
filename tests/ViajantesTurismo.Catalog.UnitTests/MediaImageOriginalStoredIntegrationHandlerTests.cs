@@ -227,7 +227,7 @@ public sealed class MediaImageOriginalStoredIntegrationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_throws_with_media_image_id_when_processed_ready_image_has_no_public_variants()
+    public async Task Handle_throws_with_media_image_ID_when_processed_ready_image_has_no_public_variants()
     {
         // Arrange
         var mediaImageId = Guid.CreateVersion7();
