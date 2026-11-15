@@ -261,7 +261,7 @@ public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IC
     }
 
     [Fact]
-    public async Task Provenance_like_json_members_are_ignored_and_server_audit_metadata_is_preserved()
+    public async Task Provenance_like_JSON_members_are_ignored_and_server_audit_metadata_is_preserved()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;

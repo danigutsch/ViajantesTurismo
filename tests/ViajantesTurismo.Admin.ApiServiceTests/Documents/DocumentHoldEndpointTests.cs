@@ -280,7 +280,7 @@ public sealed class DocumentHoldEndpointTests
     }
 
     [Fact]
-    public async Task A_hold_of_another_document_is_not_found_without_echoing_ids()
+    public async Task A_hold_of_another_document_is_not_found_without_echoing_IDs()
     {
         // Arrange
         var documentId = Guid.CreateVersion7();
@@ -326,7 +326,7 @@ public sealed class DocumentHoldEndpointTests
     }
 
     [Fact]
-    public async Task The_overview_filters_by_state_and_basis_and_returns_codes_and_ids_only()
+    public async Task The_overview_filters_by_state_and_basis_and_returns_codes_and_IDs_only()
     {
         // Arrange
         var documentId = Guid.CreateVersion7();

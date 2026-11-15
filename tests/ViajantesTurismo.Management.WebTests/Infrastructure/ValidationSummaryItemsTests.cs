@@ -8,7 +8,7 @@ namespace ViajantesTurismo.Management.WebTests.Infrastructure;
 public sealed class ValidationSummaryItemsTests
 {
     [Fact]
-    public void Lists_each_field_message_in_field_order_with_the_control_id_as_target()
+    public void Lists_each_field_message_in_field_order_with_the_control_ID_as_target()
     {
         // Arrange
         var editContext = new EditContext(new TestFormModel());

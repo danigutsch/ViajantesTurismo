@@ -131,7 +131,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Create_booking_dto_validate_with_invalid_discount_should_return_discount_validation_errors()
+    public void Create_booking_DTO_validate_with_invalid_discount_should_return_discount_validation_errors()
     {
         var dto = new CreateBookingDto
         {
@@ -156,7 +156,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Update_booking_details_dto_validate_with_invalid_combination_should_return_all_booking_rule_errors()
+    public void Update_booking_details_DTO_validate_with_invalid_combination_should_return_all_booking_rule_errors()
     {
         var dto = new UpdateBookingDetailsDto
         {
@@ -181,7 +181,7 @@ public class BookingContractValidationTests
     }
 
     [Fact]
-    public void Update_booking_discount_dto_validate_with_invalid_reason_should_return_discount_reason_error()
+    public void Update_booking_discount_DTO_validate_with_invalid_reason_should_return_discount_reason_error()
     {
         var dto = new UpdateBookingDiscountDto
         {

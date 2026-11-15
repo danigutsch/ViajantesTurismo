@@ -165,7 +165,7 @@ public sealed class HoldsPageTests : BunitContext
     }
 
     [Fact]
-    public void A_row_with_a_document_id_links_to_the_document_with_an_accessible_name()
+    public void A_row_with_a_document_ID_links_to_the_document_with_an_accessible_name()
     {
         // Arrange
         var hold = DocumentHoldTestData.Create();
@@ -186,7 +186,7 @@ public sealed class HoldsPageTests : BunitContext
     }
 
     [Fact]
-    public void A_row_without_a_document_id_shows_plain_text_and_no_link()
+    public void A_row_without_a_document_ID_shows_plain_text_and_no_link()
     {
         // Arrange
         documentsApiClient.OverviewHandler = _ => DocumentHoldTestData.OverviewPage([new GetDocumentHoldOverviewItemDto { LineageId = Guid.CreateVersion7(), DocumentId = null, Hold = DocumentHoldTestData.Create() }], hasMore: false);

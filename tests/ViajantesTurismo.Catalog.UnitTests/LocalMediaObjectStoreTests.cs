@@ -166,7 +166,7 @@ public sealed class LocalMediaObjectStoreTests
     }
 
     [Fact]
-    public async Task Put_escapes_public_uri_segments()
+    public async Task Put_escapes_public_URI_segments()
     {
         // Arrange
         using var directory = TemporaryMediaDirectory.Create();
@@ -187,7 +187,7 @@ public sealed class LocalMediaObjectStoreTests
     }
 
     [Fact]
-    public async Task Put_builds_relative_public_uri_when_base_uri_is_relative()
+    public async Task Put_builds_relative_public_URI_when_base_URI_is_relative()
     {
         // Arrange
         using var directory = TemporaryMediaDirectory.Create();

@@ -29,7 +29,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void Development_configuration_requires_oidc_and_security_store_settings()
+    public void Development_configuration_requires_OIDC_and_security_store_settings()
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(includeRequiredSettings: false);
@@ -104,7 +104,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void Development_configuration_rejects_http_authority_without_the_explicit_opt_in()
+    public void Development_configuration_rejects_HTTP_authority_without_the_explicit_opt_in()
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(
@@ -135,7 +135,7 @@ public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public async Task Development_configuration_allows_http_metadata_only_when_explicitly_enabled()
+    public async Task Development_configuration_allows_HTTP_metadata_only_when_explicitly_enabled()
     {
         // Arrange
         var configuration = ManagementAuthenticationTestConfiguration.Create(allowHttpDevelopmentAuthority: true);

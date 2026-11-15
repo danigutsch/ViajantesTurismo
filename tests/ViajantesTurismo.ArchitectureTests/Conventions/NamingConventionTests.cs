@@ -31,7 +31,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void ContractDtos_should_end_with_dto()
+    public void ContractDtos_should_end_with_DTO()
     {
         const string contractNamespace = ArchitectureProvider.Namespaces.Contracts;
         var offendingTypes = ArchitectureProvider.Assemblies
@@ -66,7 +66,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void Xunit_test_methods_should_follow_underscore_naming_convention()
+    public void XUnit_test_methods_should_follow_underscore_naming_convention()
     {
         var repositoryRoot = GetRepositoryRoot();
         var offendingMethods = Directory
@@ -81,7 +81,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void Xunit_method_scanner_resumes_after_single_line_raw_string_literal()
+    public void XUnit_method_scanner_resumes_after_single_line_raw_string_literal()
     {
         // Arrange
         var repositoryRoot = GetRepositoryRoot();
@@ -103,7 +103,7 @@ public sealed partial class NamingConventionTests
     }
 
     [Fact]
-    public void Xunit_method_scanner_resolves_aliases_without_matching_unrelated_attributes()
+    public void XUnit_method_scanner_resolves_aliases_without_matching_unrelated_attributes()
     {
         // Arrange
         var repositoryRoot = GetRepositoryRoot();

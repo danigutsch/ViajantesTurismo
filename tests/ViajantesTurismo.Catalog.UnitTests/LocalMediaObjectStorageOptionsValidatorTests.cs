@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class LocalMediaObjectStorageOptionsValidatorTests
 {
     [Fact]
-    public void Validate_fails_when_public_base_uri_is_null()
+    public void Validate_fails_when_public_base_URI_is_null()
     {
         // Arrange
         var options = new LocalMediaObjectStorageOptions();

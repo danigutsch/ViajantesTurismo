@@ -22,7 +22,7 @@ public class AddPageTests : BunitContext
 
     [Fact]
     [Trait(TestTraitNames.CategoryName, "Regression")]
-    public void Defaults_schedule_dates_from_the_controlled_utc_business_date()
+    public void Defaults_schedule_dates_from_the_controlled_UTC_business_date()
     {
         // Arrange
         Services.AddSingleton<TimeProvider>(new FakeTimeProvider(

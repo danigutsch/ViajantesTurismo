@@ -243,7 +243,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
     [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
-    public void Customer_update_operation_uses_required_JSON_body_and_only_required_id_path_parameter()
+    public void Customer_update_operation_uses_required_JSON_body_and_only_required_ID_path_parameter()
     {
         // Arrange
         var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()
@@ -279,7 +279,7 @@ public sealed class AdminOpenApiDocumentRegistrationTests
     }
 
     [Fact]
-    public void Documents_document_describes_html_download_as_binary()
+    public void Documents_document_describes_HTML_download_as_binary()
     {
         // Arrange
         var document = AdminOpenApiArtifactDriftGuard.CreateSnapshotSet()

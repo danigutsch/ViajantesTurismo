@@ -143,7 +143,7 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
-    public void Complete_state_with_optional_values_present_shows_socials_and_companion_id()
+    public void Complete_state_with_optional_values_present_shows_socials_and_companion_ID()
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(

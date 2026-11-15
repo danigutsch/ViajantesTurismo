@@ -41,7 +41,7 @@ public sealed class DocumentAuditPurgeRecordTests
     }
 
     [Fact]
-    public void Create_rejects_non_utc_timestamps()
+    public void Create_rejects_non_UTC_timestamps()
     {
         // Act
         var result = DocumentAuditPurgeRecord.Create(

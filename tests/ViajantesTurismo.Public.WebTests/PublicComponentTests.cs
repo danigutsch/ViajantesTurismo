@@ -195,7 +195,7 @@ public sealed class PublicComponentTests : BunitContext
     }
 
     [Fact]
-    public void Gallery_builds_local_media_links_from_the_image_id()
+    public void Gallery_builds_local_media_links_from_the_image_ID()
     {
         // Arrange
         var imageId = Guid.Parse("33333333-3333-3333-3333-333333333333");

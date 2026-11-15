@@ -84,7 +84,7 @@ public sealed class ObservabilityAssetsTests
     }
 
     [Fact]
-    public void Dashboards_do_not_group_by_unbounded_dimensions_and_use_unique_panel_ids()
+    public void Dashboards_do_not_group_by_unbounded_dimensions_and_use_unique_panel_IDs()
     {
         // Arrange
         var dashboards = LoadDashboards();

@@ -92,7 +92,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
     }
 
     [Fact]
-    public async Task Generate_draft_returns_invalid_when_image_id_is_empty()
+    public async Task Generate_draft_returns_invalid_when_image_ID_is_empty()
     {
         // Arrange
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7()));
@@ -132,7 +132,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
     }
 
     [Fact]
-    public async Task Generate_draft_stores_ai_text_that_requires_human_review()
+    public async Task Generate_draft_stores_AI_text_that_requires_human_review()
     {
         // Arrange
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7(), altText: "Existing alt");

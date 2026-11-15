@@ -11,7 +11,7 @@ public sealed class PaymentStatusBadgeTests : BunitContext
     [InlineData(PaymentStatusDto.PartiallyPaid, "bg-warning")]
     [InlineData(PaymentStatusDto.Paid, "bg-success")]
     [InlineData(PaymentStatusDto.Refunded, "bg-info")]
-    public void Payment_status_badge_should_apply_correct_css_class_for_each_status(
+    public void Payment_status_badge_should_apply_correct_CSS_class_for_each_status(
         PaymentStatusDto status,
         string expectedCssClass)
     {

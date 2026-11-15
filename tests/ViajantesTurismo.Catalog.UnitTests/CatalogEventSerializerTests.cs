@@ -122,7 +122,7 @@ public sealed class CatalogEventSerializerTests
     }
 
     [Fact]
-    public void Deserialize_rejects_invalid_json_for_registered_event_type()
+    public void Deserialize_rejects_invalid_JSON_for_registered_event_type()
     {
         // Arrange
         var serializer = new CatalogEventSerializer();

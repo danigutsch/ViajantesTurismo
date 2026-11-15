@@ -114,7 +114,7 @@ public sealed class DocumentAuditRecordTests
     }
 
     [Fact]
-    public void Create_rejects_a_non_utc_timestamp()
+    public void Create_rejects_a_non_UTC_timestamp()
     {
         // Arrange
         var occurredAt = new DateTime(2026, 7, 16, 8, 30, 0, DateTimeKind.Local);
@@ -430,7 +430,7 @@ public sealed class DocumentAuditRecordTests
     }
 
     [Fact]
-    public void Create_accepts_a_succeeded_hold_place_with_hold_id_and_basis_only()
+    public void Create_accepts_a_succeeded_hold_place_with_hold_ID_and_basis_only()
     {
         // Arrange
         var holdId = Guid.CreateVersion7();
@@ -449,7 +449,7 @@ public sealed class DocumentAuditRecordTests
     [InlineData("00000000-0000-0000-0000-000000000001", null)]
     [InlineData("00000000-0000-0000-0000-000000000001", "legal claim of Jane Doe")]
     [InlineData("00000000-0000-0000-0000-000000000001", "Jane.Doe@example.invalid")]
-    public void Create_rejects_a_succeeded_hold_record_without_a_valid_hold_id_and_basis(string? holdId, string? basis)
+    public void Create_rejects_a_succeeded_hold_record_without_a_valid_hold_ID_and_basis(string? holdId, string? basis)
     {
         // Arrange
         Guid? id = holdId is null ? null : Guid.Parse(holdId);
@@ -534,7 +534,7 @@ public sealed class DocumentAuditRecordTests
     [InlineData(DocumentAuditOperation.Read)]
     [InlineData(DocumentAuditOperation.Approve)]
     [InlineData(DocumentAuditOperation.PlaceHold)]
-    public void Create_requires_no_resource_ids_on_a_not_found_rejection(DocumentAuditOperation operation)
+    public void Create_requires_no_resource_IDs_on_a_not_found_rejection(DocumentAuditOperation operation)
     {
         // Arrange
         var occurredAt = new DateTime(2026, 7, 16, 8, 30, 0, DateTimeKind.Utc);

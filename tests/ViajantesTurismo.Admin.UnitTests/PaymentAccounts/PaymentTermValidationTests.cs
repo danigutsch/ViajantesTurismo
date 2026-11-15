@@ -118,7 +118,7 @@ public sealed class PaymentTermValidationTests
     [InlineData("zone")]
     [InlineData("reason")]
     [InlineData("undefined-reason")]
-    public void Approval_requires_an_explicit_confirmation_identified_actor_utc_instant_and_bounded_reason(string invalid)
+    public void Approval_requires_an_explicit_confirmation_identified_actor_UTC_instant_and_bounded_reason(string invalid)
     {
         // Arrange
         var actor = invalid switch

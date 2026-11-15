@@ -206,7 +206,7 @@ public sealed class DocumentCommandIdempotencyTests
     }
 
     [Fact]
-    public async Task Fresh_key_acquires_ownership_stages_completion_before_save_and_returns_the_document_id()
+    public async Task Fresh_key_acquires_ownership_stages_completion_before_save_and_returns_the_document_ID()
     {
         // Arrange
         var now = new DateTimeOffset(2026, 7, 24, 12, 0, 0, TimeSpan.Zero);

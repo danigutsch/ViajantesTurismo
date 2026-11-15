@@ -6,9 +6,13 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.547.1` at clean library revision
-[`cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965).
-On top of `0.1.0-alpha.541.1` it adds shared test doubles: `Testing.ObjectStorage` (`InMemoryObjectStore`),
+The published candidate is `0.1.0-alpha.557.1` at clean library revision
+[`4e3c3bbd36b84d48082027ed395f3d02d3680850`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/4e3c3bbd36b84d48082027ed395f3d02d3680850).
+On top of `0.1.0-alpha.547.1` it makes SKTEST002 require the canonical casing of listed acronyms and type names in test
+method names (`json` becomes `JSON`, `id` becomes `ID`, `uri` becomes `URI`), so this adoption renames the affected test
+methods. A repository can add its own segments with `sharedkernel_testing_additional_allowed_segments` in `.editorconfig`;
+SKTEST021 reports a malformed entry. It also makes the CI tool report a parse error for a non-numeric `--timeout-minutes`.
+Version `0.1.0-alpha.547.1` added shared test doubles: `Testing.ObjectStorage` (`InMemoryObjectStore`),
 `Testing.MalwareScanning` (`TestMalwareScanner`), recording, routing and gated HTTP handlers in `Testing.Http`,
 `StreamFormFile` in `Testing.AspNetCore`, and cancellation and disposal streams in `Testing`; the application's local
 copies of these fakes are removed. It also adds the `prune-prereleases` command of the SharedKernel CI tool and shortens
@@ -27,13 +31,14 @@ SharedKernel tools. Version `0.1.0-alpha.511.1` had split `PandaBear.SharedKerne
 `.RateLimiting`, `.Seo` and `PandaBear.Idempotency.AspNetCore`; `AddSecurityEventTelemetry` became
 `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry`). It keeps `lockExemptProjects` and SDK 10.0.403.
 The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.547.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.547.1).
+[`v0.1.0-alpha.557.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.557.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.541.1` at revision `324f99162a3249f628c33f87088136415af989d9`,
+The previous previews `0.1.0-alpha.547.1` at revision `cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965`,
+`0.1.0-alpha.541.1` at revision `324f99162a3249f628c33f87088136415af989d9`,
 `0.1.0-alpha.530.1` at revision `b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696`,
 `0.1.0-alpha.526.1` at revision `ba31554a17808af51f59d84bef8af4ba7a86631c` and
 `0.1.0-alpha.521.1` at revision `e65cb83570dbb331e871f5a2264a801822c19fe6` remain published. The library repository prunes

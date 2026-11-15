@@ -527,7 +527,7 @@ public sealed class GenerateContractDraftCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_omits_unsafe_branding_logo_uri_from_snapshot()
+    public async Task Handle_omits_unsafe_branding_logo_URI_from_snapshot()
     {
         // Arrange
         var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);

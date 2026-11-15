@@ -5,7 +5,7 @@ namespace ViajantesTurismo.Architecture.Analyzers.Tests;
 public sealed class ProductionApiHttpAnalyzerTests
 {
     [Fact]
-    public void Supported_diagnostics_match_the_production_API_http_contract()
+    public void Supported_diagnostics_match_the_production_API_HTTP_contract()
     {
         // Arrange
         var analyzer = new ProductionApiHttpAnalyzer();
@@ -158,7 +158,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Interpolated_uri_resolves_a_static_authority_alias()
+    public async Task Interpolated_URI_resolves_a_static_authority_alias()
     {
         // Arrange
         const string source = """
@@ -182,7 +182,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Repository_resource_tokens_in_a_uri_path_are_not_destinations()
+    public async Task Repository_resource_tokens_in_a_URI_path_are_not_destinations()
     {
         // Arrange
         const string source = """
@@ -205,7 +205,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Repository_resource_aliases_in_concatenated_uri_paths_are_not_destinations()
+    public async Task Repository_resource_aliases_in_concatenated_URI_paths_are_not_destinations()
     {
         // Arrange
         const string source = """
@@ -229,7 +229,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Composed_uri_resolves_a_static_prefix_alias()
+    public async Task Composed_URI_resolves_a_static_prefix_alias()
     {
         // Arrange
         const string source = """
@@ -253,7 +253,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Composed_uri_does_not_guess_a_runtime_configured_prefix()
+    public async Task Composed_URI_does_not_guess_a_runtime_configured_prefix()
     {
         // Arrange
         const string source = """
@@ -276,7 +276,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Composed_uri_resolves_a_repeated_static_local_component()
+    public async Task Composed_URI_resolves_a_repeated_static_local_component()
     {
         // Arrange
         const string source = """
@@ -324,7 +324,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Named_add_http_client_resolves_a_repository_resource_name_alias()
+    public async Task Named_add_HTTP_client_resolves_a_repository_resource_name_alias()
     {
         // Arrange
         const string source = """
@@ -454,7 +454,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Definitely_non_null_uri_local_coalesce_fallback_is_not_a_destination()
+    public async Task Definitely_non_null_URI_local_coalesce_fallback_is_not_a_destination()
     {
         // Arrange
         const string source = """
@@ -577,7 +577,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Base_address_uri_relative_component_is_not_a_destination()
+    public async Task Base_address_URI_relative_component_is_not_a_destination()
     {
         // Arrange
         const string source = """
@@ -604,7 +604,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [InlineData("/v1/settings")]
     [InlineData("?page=1")]
     [InlineData("#settings")]
-    public async Task Base_address_uri_internal_base_authority_remains_a_destination(string relativePath)
+    public async Task Base_address_URI_internal_base_authority_remains_a_destination(string relativePath)
     {
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
@@ -630,7 +630,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Base_address_uri_kind_relative_component_keeps_the_internal_base_destination()
+    public async Task Base_address_URI_kind_relative_component_keeps_the_internal_base_destination()
     {
         // Arrange
         const string source = """
@@ -655,7 +655,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Uri_kind_relative_rejects_an_absolute_destination_before_it_is_reachable()
+    public async Task URI_kind_relative_rejects_an_absolute_destination_before_it_is_reachable()
     {
         // Arrange
         const string source = """
@@ -680,7 +680,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [Theory]
     [InlineData("\"https://provider.example/v1/settings\"")]
     [InlineData("configuredEndpoint")]
-    public async Task Two_argument_uri_absolute_and_runtime_overrides_are_not_guessed(string overrideExpression)
+    public async Task Two_argument_URI_absolute_and_runtime_overrides_are_not_guessed(string overrideExpression)
     {
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideExpression);
@@ -711,7 +711,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [InlineData("new Uri(\"//provider.example\", UriKind.Relative)")]
     [InlineData("new Uri(\"//provider.example\", UriKind.RelativeOrAbsolute)")]
     [InlineData("networkPath")]
-    public async Task Two_argument_uri_network_path_overrides_replace_the_base_authority(string overrideExpression)
+    public async Task Two_argument_URI_network_path_overrides_replace_the_base_authority(string overrideExpression)
     {
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideExpression);
@@ -736,7 +736,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Typed_add_http_client_resolves_the_known_branding_client_symbol()
+    public async Task Typed_add_HTTP_client_resolves_the_known_branding_client_symbol()
     {
         // Arrange
         const string source = """
@@ -794,7 +794,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Http_client_factory_create_client_resolves_a_named_internal_client()
+    public async Task HTTP_client_factory_create_client_resolves_a_named_internal_client()
     {
         // Arrange
         const string source = """
@@ -818,7 +818,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Unrelated_http_client_factory_types_are_not_guessed()
+    public async Task Unrelated_HTTP_client_factory_types_are_not_guessed()
     {
         // Arrange
         const string source = """
@@ -850,7 +850,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Direct_http_client_call_resolves_a_uri_alias()
+    public async Task Direct_HTTP_client_call_resolves_a_URI_alias()
     {
         // Arrange
         const string source = """
@@ -905,7 +905,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [InlineData("var request = new HttpRequestMessage(HttpMethod.Get, new Uri($\"https+http://{ResourceNames.CatalogApi}/v1/settings\"));")]
     [InlineData("var request = new HttpRequestMessage { RequestUri = new Uri($\"https+http://{ResourceNames.CatalogApi}/v1/settings\") };")]
     [InlineData("var request = new HttpRequestMessage(); request.RequestUri = new Uri($\"https+http://{ResourceNames.CatalogApi}/v1/settings\");")]
-    public async Task Send_resolves_known_http_request_message_destinations(string requestDeclaration)
+    public async Task Send_resolves_known_HTTP_request_message_destinations(string requestDeclaration)
     {
         // Arrange
         ArgumentNullException.ThrowIfNull(requestDeclaration);
@@ -930,7 +930,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Unrelated_http_request_message_mutation_preserves_the_known_destination()
+    public async Task Unrelated_HTTP_request_message_mutation_preserves_the_known_destination()
     {
         // Arrange
         const string source = """
@@ -1012,7 +1012,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Runtime_request_uri_mutation_through_an_alias_invalidates_the_original_destination()
+    public async Task Runtime_request_URI_mutation_through_an_alias_invalidates_the_original_destination()
     {
         // Arrange
         const string source = """
@@ -1065,7 +1065,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Runtime_request_uri_mutation_through_two_definite_aliases_invalidates_the_original_destination()
+    public async Task Runtime_request_URI_mutation_through_two_definite_aliases_invalidates_the_original_destination()
     {
         // Arrange
         const string source = """
@@ -1119,7 +1119,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Http_request_message_destinations_reassigned_from_runtime_configuration_are_not_guessed()
+    public async Task HTTP_request_message_destinations_reassigned_from_runtime_configuration_are_not_guessed()
     {
         // Arrange
         const string source = """
@@ -1146,7 +1146,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [Theory]
     [InlineData("client.BaseAddress ??= new Uri($\"https+http://{ResourceNames.CatalogApi}\");")]
     [InlineData("var request = new HttpRequestMessage(); request.RequestUri ??= new Uri($\"https+http://{ResourceNames.CatalogApi}\");")]
-    public async Task Coalesce_assignments_resolve_known_http_destinations(string statement)
+    public async Task Coalesce_assignments_resolve_known_HTTP_destinations(string statement)
     {
         // Arrange
         ArgumentNullException.ThrowIfNull(statement);
@@ -1193,7 +1193,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Unrelated_http_client_extensions_are_not_treated_as_requests()
+    public async Task Unrelated_HTTP_client_extensions_are_not_treated_as_requests()
     {
         // Arrange
         const string source = """
@@ -1227,7 +1227,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Delete_from_json_resolves_known_http_destinations()
+    public async Task Delete_from_JSON_resolves_known_HTTP_destinations()
     {
         // Arrange
         const string source = """
@@ -1287,7 +1287,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     [InlineData("https+http://seaweedfs")]
     [InlineData("http://opentelemetry-collector:4318")]
     [InlineData("https://storage.example.test")]
-    public async Task External_identity_ai_storage_and_otlp_destinations_are_excluded(string destination)
+    public async Task External_identity_AI_storage_and_otlp_destinations_are_excluded(string destination)
     {
         // Arrange
         var source = $$"""
@@ -1310,7 +1310,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     }
 
     [Fact]
-    public async Task Health_telemetry_grpc_events_and_in_process_calls_are_not_ordinary_http_diagnostics()
+    public async Task Health_telemetry_grpc_events_and_in_process_calls_are_not_ordinary_HTTP_diagnostics()
     {
         // Arrange
         const string source = """

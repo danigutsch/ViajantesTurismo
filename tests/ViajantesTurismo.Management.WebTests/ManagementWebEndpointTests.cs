@@ -228,7 +228,7 @@ public sealed class ManagementWebEndpointTests
     }
 
     [Fact]
-    public async Task Login_rejects_a_backslash_network_path_return_url()
+    public async Task Login_rejects_a_backslash_network_path_return_URL()
     {
         // Arrange
         using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(Xunit.TestContext.Current.CancellationToken);
@@ -270,7 +270,7 @@ public sealed class ManagementWebEndpointTests
     }
 
     [Fact]
-    public async Task Logout_clears_the_local_session_before_signing_out_of_oidc()
+    public async Task Logout_clears_the_local_session_before_signing_out_of_OIDC()
     {
         // Arrange
         using var host = await ManagementWebEndpointTestHost.StartWithRecordingAuthentication(Xunit.TestContext.Current.CancellationToken);

@@ -137,7 +137,7 @@ public sealed class CustomerImportConflictResolutionTests
     }
 
     [Fact]
-    public async Task Commit_reports_unreadable_csv_content_as_a_single_csv_error()
+    public async Task Commit_reports_unreadable_CSV_content_as_a_single_CSV_error()
     {
         // Arrange
         var scenario = new CustomerImportWorkflowScenario();

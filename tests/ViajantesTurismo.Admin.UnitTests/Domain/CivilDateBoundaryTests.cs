@@ -96,7 +96,7 @@ public sealed class CivilDateBoundaryTests
     [InlineData(-1, true)]
     [InlineData(0, true)]
     [InlineData(1, false)]
-    public void Payment_validation_uses_the_utc_calendar_date(int daysAfterToday, bool valid)
+    public void Payment_validation_uses_the_UTC_calendar_date(int daysAfterToday, bool valid)
     {
         // Arrange
         var now = new DateTimeOffset(2030, 2, 3, 0, 0, 0, TimeSpan.Zero);

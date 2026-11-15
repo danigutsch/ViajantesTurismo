@@ -70,7 +70,7 @@ public sealed class AppHostModelTests
     [InlineData(ResourceNames.CatalogApi)]
     [InlineData(ResourceNames.WebApp)]
     [InlineData(ResourceNames.PublicWebApp)]
-    public async Task Http_projects_run_in_the_apphost_environment_with_a_health_check(string name)
+    public async Task HTTP_projects_run_in_the_apphost_environment_with_a_health_check(string name)
     {
         // Arrange
         var builder = AppHostTestBuilder.Create();

@@ -660,7 +660,7 @@ public sealed class CatalogToursApiClientTests
     }
 
     [Fact]
-    public async Task UploadTourImage_propagates_cancellation_to_the_http_request()
+    public async Task UploadTourImage_propagates_cancellation_to_the_HTTP_request()
     {
         // Arrange
         var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 public sealed class PublicMediaObjectResponseTests
 {
     [Fact]
-    public async Task Disposes_the_http_response_when_content_disposal_fails()
+    public async Task Disposes_the_HTTP_response_when_content_disposal_fails()
     {
         // Arrange
         var responseContent = new TrackingHttpContent();

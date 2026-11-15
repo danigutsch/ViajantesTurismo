@@ -7,7 +7,7 @@ public sealed class HostedTestSeamTests
     [Theory]
     [InlineData("Api")]
     [InlineData("System")]
-    public void Http_and_browser_test_bodies_do_not_construct_persistence_adapters(string seam)
+    public void HTTP_and_browser_test_bodies_do_not_construct_persistence_adapters(string seam)
     {
         // Arrange
         var root = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Admin", seam);

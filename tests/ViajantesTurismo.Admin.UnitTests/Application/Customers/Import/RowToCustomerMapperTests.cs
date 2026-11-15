@@ -51,7 +51,7 @@ public class RowToCustomerMapperTests
     }
 
     [Fact]
-    public void MapCustomer_maps_a_valid_companion_id()
+    public void MapCustomer_maps_a_valid_companion_ID()
     {
         // Arrange
         var companionId = Guid.NewGuid();

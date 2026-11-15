@@ -192,7 +192,7 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    public void Explicit_openapi_generation_registration_omits_admin_background_workers()
+    public void Explicit_OpenApi_generation_registration_omits_admin_background_workers()
     {
         // Arrange
         using var services = AdminInfrastructureModuleTestServices.CreateWithOpenApiBuildGenerationInfrastructureModule();

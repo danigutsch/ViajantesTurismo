@@ -35,7 +35,7 @@ public sealed class ImportCustomersCsvProcessorTests
     }
 
     [Fact]
-    public void BuildErrorReportDataUri_when_error_rows_have_special_characters_escapes_csv_content()
+    public void BuildErrorReportDataUri_when_error_rows_have_special_characters_escapes_CSV_content()
     {
         // Arrange
         var errorRows = new List<ImportErrorRowDto>

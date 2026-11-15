@@ -214,7 +214,7 @@ public sealed class CatalogTourPresentationTests
     }
 
     [Fact]
-    public void Rehydrate_uses_the_persisted_id_fallback_for_an_identifier_with_a_slash()
+    public void Rehydrate_uses_the_persisted_ID_fallback_for_an_identifier_with_a_slash()
     {
         // Arrange
         var created = new CatalogTourDraftCreated(
@@ -236,7 +236,7 @@ public sealed class CatalogTourPresentationTests
     }
 
     [Fact]
-    public void Rehydrate_preserves_distinct_persisted_id_fallbacks_for_identifiers_that_normalize_equally()
+    public void Rehydrate_preserves_distinct_persisted_ID_fallbacks_for_identifiers_that_normalize_equally()
     {
         // Arrange
         var firstId = Guid.Parse("019bfcc8-3815-7a68-a515-35a13c1cd7b8");

@@ -431,7 +431,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task ImportCustomers_propagates_cancellation_to_the_http_request()
+    public async Task ImportCustomers_propagates_cancellation_to_the_HTTP_request()
     {
         // Arrange
         var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -484,7 +484,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task CommitImportWithResolutions_propagates_cancellation_to_the_http_request()
+    public async Task CommitImportWithResolutions_propagates_cancellation_to_the_HTTP_request()
     {
         // Arrange
         var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

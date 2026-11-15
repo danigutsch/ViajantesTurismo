@@ -61,7 +61,7 @@ public sealed class DocumentBrandingSourceTests
     }
 
     [Fact]
-    public async Task Capture_embeds_the_projection_logo_as_a_webp_data_uri()
+    public async Task Capture_embeds_the_projection_logo_as_a_webp_data_URI()
     {
         // Arrange
         var settings = DocumentDraftTestData.CreateBrandingSettings();
@@ -79,7 +79,7 @@ public sealed class DocumentBrandingSourceTests
     }
 
     [Fact]
-    public async Task A_transparent_webp_logo_stays_a_valid_data_uri_and_is_rendered_with_its_alpha()
+    public async Task A_transparent_webp_logo_stays_a_valid_data_URI_and_is_rendered_with_its_alpha()
     {
         // Arrange
         using var transparent = new MagickImage(MagickColors.Transparent, 32, 16);
@@ -120,7 +120,7 @@ public sealed class DocumentBrandingSourceTests
     }
 
     [Fact]
-    public async Task Capture_records_the_logo_hash_in_the_version_not_the_uri()
+    public async Task Capture_records_the_logo_hash_in_the_version_not_the_URI()
     {
         // Arrange
         var settings = DocumentDraftTestData.CreateBrandingSettings();

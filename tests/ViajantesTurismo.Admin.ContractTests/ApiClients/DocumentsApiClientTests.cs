@@ -207,7 +207,7 @@ public sealed class DocumentsApiClientTests
     }
 
     [Fact]
-    public async Task DownloadFinalizedArtifact_returns_html_bytes_without_a_storage_url()
+    public async Task DownloadFinalizedArtifact_returns_HTML_bytes_without_a_storage_URL()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -250,7 +250,7 @@ public sealed class DocumentsApiClientTests
     }
 
     [Fact]
-    public async Task DownloadFinalizedArtifact_rejects_a_non_html_response()
+    public async Task DownloadFinalizedArtifact_rejects_a_non_HTML_response()
     {
         // Arrange
         var documentId = Guid.CreateVersion7();

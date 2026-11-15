@@ -513,7 +513,7 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
-    public void Create_accepts_raster_data_uri_branding_logo_and_custom_tokens()
+    public void Create_accepts_raster_data_URI_branding_logo_and_custom_tokens()
     {
         // Arrange
         var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
