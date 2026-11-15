@@ -33,20 +33,11 @@ The pin records Linux/Windows package consumption, NativeAOT and stable promotio
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.443.1` at revision
-`c5c6f41ae061dfc85d1962d441e54274c1d29c68`,
-`0.1.0-alpha.439.1` at revision `945d78101108f3e8f4841753fc4a6adcc9916424`,
-`0.1.0-alpha.425.1` at revision `c82b4469c099604587ed8314709ad30686f18b0c`,
-`0.1.0-alpha.421.1` at revision `2c9a17f0cdb035bd9d1690547e3877cfe9b71b61`,
-`0.1.0-alpha.418.1` at revision `b5bcfed6a35b40eb82d5e2cb7baa76d98fcf41cc`,
-`0.1.0-alpha.396.1` at revision `079cd9fb28192d027fb14d959da9e29f7ab6d2a4`,
-`0.1.0-alpha.389.1` at revision `9ef862a978a3915b0c63944a83fc65f67fa4a8fb`,
-`0.1.0-alpha.372.1` at revision `725be335280c3b7bdb659bf3043b2bfe747b9d12`,
-`0.1.0-alpha.368.1` at revision `4d54ab830508be0d4d3189d86858e909c6ed8641`,
-`0.1.0-alpha.359.1` at revision `7893ca689c8aa10602cb8accb66f83a7ac2f6525`,
-`0.1.0-alpha.339.1` at revision `7c62d629ac152de5993653bbcabf7430c40cfd35` and
-`0.1.0-alpha.336.1` at revision `529f0cc4e2df034a1718e2ff8e71fc38d59fc587` remain published. The releases of earlier previews were
-removed from the library repository while their tags stay, so they cannot be staged again; their application validation is
+The previous previews `0.1.0-alpha.541.1` at revision `324f99162a3249f628c33f87088136415af989d9`,
+`0.1.0-alpha.530.1` at revision `b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696`,
+`0.1.0-alpha.526.1` at revision `ba31554a17808af51f59d84bef8af4ba7a86631c` and
+`0.1.0-alpha.521.1` at revision `e65cb83570dbb331e871f5a2264a801822c19fe6` remain published. The library repository prunes
+older prerelease releases while their tags stay, so earlier previews cannot be staged again; their application validation is
 historical evidence.
 
 The former candidate `1.2.0-alpha.20261023.1` at library revision
