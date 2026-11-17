@@ -23,6 +23,6 @@ jobs:
     name: Actionlint
     permissions:
       contents: read
-    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/actionlint-reusable.yml@4e3c3bbd36b84d48082027ed395f3d02d3680850
+    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/actionlint-reusable.yml@db8fd3fcec1c362e8741c59ef441596e9499a7c3
     with:
       runner: ${{ vars.CI_UBUNTU_RUNNER }}

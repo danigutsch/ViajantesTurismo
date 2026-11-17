@@ -6,12 +6,19 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.557.1` at clean library revision
-[`4e3c3bbd36b84d48082027ed395f3d02d3680850`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/4e3c3bbd36b84d48082027ed395f3d02d3680850).
-On top of `0.1.0-alpha.547.1` it makes SKTEST002 require the canonical casing of listed acronyms and type names in test
-method names (`json` becomes `JSON`, `id` becomes `ID`, `uri` becomes `URI`), so this adoption renames the affected test
-methods. A repository can add its own segments with `sharedkernel_testing_additional_allowed_segments` in `.editorconfig`;
-SKTEST021 reports a malformed entry. It also makes the CI tool report a parse error for a non-numeric `--timeout-minutes`.
+The published candidate is `0.1.0-alpha.649.1` at clean library revision
+[`db8fd3fcec1c362e8741c59ef441596e9499a7c3`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/db8fd3fcec1c362e8741c59ef441596e9499a7c3).
+On top of `0.1.0-alpha.557.1` it moves to the .NET 10.0.15 security release and SDK 10.0.404 and raises OpenTelemetry to
+1.21, Microsoft.OpenApi to 2.13, Playwright to 1.64.1, xUnit v3 to 4.0.3 and Magick.NET to 15.1.0, so this adoption raises
+the matching central versions. The tool engines moved from `tools/Shared` into `src` libraries, so the setup scripts and
+`build-sharedkernel-tool` check out the `src` and `tools` cone. It adds `InvariantStringWriter` and SKTEST022 for captured test
+output, page-view targets in `AspNetCore.WebAnalytics` with an Umami website resource for Aspire, `Money.CreateFromInput`,
+CPF input that ignores separators anywhere, Pix email keys checked without a regular expression, accessible form fields and
+focus-keeping confirmations in `Blazor`, and a theme preview whose sample headings are no longer heading elements. The CI tool
+also blocks restores whose vulnerability audit could not run (NU1900 and NU1905). Version `0.1.0-alpha.557.1` made SKTEST002
+require the canonical casing of listed acronyms and type names in test method names (`json` becomes `JSON`, `id` becomes
+`ID`, `uri` becomes `URI`). A repository can add its own segments with `sharedkernel_testing_additional_allowed_segments` in `.editorconfig`;
+SKTEST021 reports a malformed entry. It also made the CI tool report a parse error for a non-numeric `--timeout-minutes`.
 Version `0.1.0-alpha.547.1` added shared test doubles: `Testing.ObjectStorage` (`InMemoryObjectStore`),
 `Testing.MalwareScanning` (`TestMalwareScanner`), recording, routing and gated HTTP handlers in `Testing.Http`,
 `StreamFormFile` in `Testing.AspNetCore`, and cancellation and disposal streams in `Testing`; the application's local
@@ -31,19 +38,16 @@ SharedKernel tools. Version `0.1.0-alpha.511.1` had split `PandaBear.SharedKerne
 `.RateLimiting`, `.Seo` and `PandaBear.Idempotency.AspNetCore`; `AddSecurityEventTelemetry` became
 `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry`). It keeps `lockExemptProjects` and SDK 10.0.403.
 The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.557.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.557.1).
+[`v0.1.0-alpha.649.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.649.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
-The previous previews `0.1.0-alpha.547.1` at revision `cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965`,
-`0.1.0-alpha.541.1` at revision `324f99162a3249f628c33f87088136415af989d9`,
-`0.1.0-alpha.530.1` at revision `b943f5ed8c1e0b8f645f8e8b2ad4df421aa11696`,
-`0.1.0-alpha.526.1` at revision `ba31554a17808af51f59d84bef8af4ba7a86631c` and
-`0.1.0-alpha.521.1` at revision `e65cb83570dbb331e871f5a2264a801822c19fe6` remain published. The library repository prunes
-older prerelease releases while their tags stay, so earlier previews cannot be staged again; their application validation is
-historical evidence.
+The library repository keeps only its newest prereleases and the versions that consumers pin; a pruned release keeps its
+tag but cannot be staged again. The previews this repository pinned before, from `0.1.0-alpha.557.1` at revision
+`4e3c3bbd36b84d48082027ed395f3d02d3680850` back to `0.1.0-alpha.521.1`, are pruned once this adoption lands; their
+application validation is historical evidence.
 
 The former candidate `1.2.0-alpha.20261023.1` at library revision
 `cc826be664bfc2dc087fe5a140f7232b4f65967d` is retired. Its release was deliberately deleted;
@@ -79,10 +83,11 @@ pwsh ./setup-dev.ps1 [-InstallSdk] [-LibraryRoot <path>] [-Feed <dir>]
 
 Without a library root, setup clones the public
 [PandaBear.SharedKernel source](https://github.com/danigutsch/PandaBear.SharedKernel) into the ignored
-`.local/sharedkernel-source/SharedKernel.CI.Tool` as a blobless, cone sparse checkout of
-`tools/SharedKernel.CI.Tool` and `tools/Shared`, fetches the pinned `libraryRevision`, and checks it out
-detached. It reuses that directory only when it is this sparse clone; otherwise it stops and leaves
-the directory in place. `--library-root` names a clean checkout of the exact revision instead.
+`.local/sharedkernel-source/SharedKernel.CI.Tool` as a blobless, cone sparse checkout of `src` and
+`tools`, which hold every library the tool can reference, fetches the pinned `libraryRevision`, and checks
+it out detached. It reuses that directory only when it is this sparse clone, or one made for the earlier
+`tools/SharedKernel.CI.Tool` and `tools/Shared` cone, which it moves to `src` and `tools`; otherwise it
+stops and leaves the directory in place. `--library-root` names a clean checkout of the exact revision instead.
 
 Setup builds the CI tool inside the checkout with a locked restore, then runs:
 
@@ -152,9 +157,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/db8fd3fcec1c362e8741c59ef441596e9499a7c3/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`cd5a2da6c4e7de4d21ff8ebd430f5b1731cd7965`, which equals the `libraryRevision` in
+`db8fd3fcec1c362e8741c59ef441596e9499a7c3`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 
@@ -193,7 +198,7 @@ unchanged. Do not merge before the ruleset accepts the new names, or the old che
 Hosted Linux and Windows jobs stage the candidate through `.github/actions/setup-ci-prerequisites`.
 It runs `.github/actions/build-sharedkernel-tool`, which reads the pinned `libraryRevision`, checks out
 `danigutsch/PandaBear.SharedKernel` at that revision into `.local/sharedkernel-source/<tool>` as a cone
-sparse checkout of `tools/<tool>` and `tools/Shared` without persisted credentials, builds the tool
+sparse checkout of `src` and `tools` without persisted credentials, builds the tool
 there with a locked restore, and exports `SHAREDKERNEL_SOURCE`. The setup action then runs
 `stage-candidate --repository danigutsch/PandaBear.SharedKernel`, which downloads the pinned assets
 from GitHub prerelease `v<packageVersion>` without a token. Missing assets, revision mismatches, and

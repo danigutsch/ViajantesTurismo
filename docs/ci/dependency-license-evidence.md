@@ -520,3 +520,58 @@ including transitive packages reports nothing. The workflow still permits only t
 Magick.NET-Q8-AnyCPU `15.0.0` metadata exceptions; no license category, vulnerability threshold or native distribution
 gate was relaxed. The SharedKernel `.github` directory and `global.json` are unchanged between the two library revisions.
 The preview approval in `.config/sharedkernel-repo.json` now names this exact version and revision.
+
+## Security release and tool engine candidate
+
+Candidate `0.1.0-alpha.649.1` uses clean library revision `db8fd3fcec1c362e8741c59ef441596e9499a7c3`. On top of
+`0.1.0-alpha.557.1` it moves to the .NET 10.0.15 security release and SDK 10.0.404, moves the tool engines from
+`tools/Shared` into `src` libraries, and adds the SharedKernel changes listed in
+[SharedKernel consumption](../sharedkernel/development.md). All 132 package hashes were verified by `stage-candidate` against
+the pin, which is the unedited `candidate.json` of CI run
+[44121623166](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/44121623166) and the GitHub prerelease. The
+pin records Linux/Windows package consumption, the API baseline comparison and stable promotion as `pending`.
+
+The candidate's packages require newer external versions than this repository pinned, which NuGet reports as NU1109
+downgrades. The central versions move to the .NET 10.0.15 packages, OpenTelemetry 1.21.0 (its two beta instrumentations to
+1.21.0-beta.1), Microsoft.OpenApi 2.13.0, Playwright 1.64.1, xunit.v3.mtp-v2 4.0.3, AWSSDK.S3 4.0.104.12 and
+Magick.NET-Q8-AnyCPU 15.1.0, the versions SharedKernel's own central package file uses at that revision.
+`Microsoft.Extensions.Configuration.EnvironmentVariables` gains a central 10.0.15 pin: `Aspire.Npgsql` requests 10.0.14, which
+the lock-exempt infrastructure projects would otherwise resolve while every locked project resolves 10.0.15. Against the
+`0.1.0-alpha.557.1` state of this repository, the lock files change 98 external package versions, all upgrades, and add one
+package id, `System.Diagnostics.DiagnosticSource` 11.0.0 (MIT, with a `net10.0` asset), which `OpenTelemetry.Api` 1.21.0
+requires and SharedKernel's locks already resolve. No package was removed and no lock file was added or removed. A
+vulnerability scan of the solution including transitive packages reports nothing. The SharedKernel `action-pins.json` is
+unchanged between the two library revisions; its reusable workflows change only their sparse checkout to `src` and `tools`.
+The preview approval in `.config/sharedkernel-repo.json` now names this exact version and revision.
+
+On November 17, 2026, the repository owner approved the declared Apache-2.0 license of Magick.NET-Q8-AnyCPU `15.1.0`, which
+replaces `15.0.0` in the package exception because the candidate's packages require it. The StreamJsonRpc `2.25.29` exception
+is unchanged. The approval is limited to candidate `0.1.0-alpha.649.1` at clean revision
+`db8fd3fcec1c362e8741c59ef441596e9499a7c3` and this exact version. It retains every-lock-entry verification, missing-package
+failure and the moderate vulnerability threshold, and grants no NOASSERTION, MS-PL, LGPL, other package, future version,
+stable release, or native redistribution approval.
+
+### Magick.NET-Q8-AnyCPU 15.1.0 native audit
+
+The same static audit as for `15.0.0` above, on the installed `Magick.NET-Q8-AnyCPU@15.1.0` without executing native code.
+The nuspec still declares Apache-2.0 and depends on `Magick.NET.Core` 15.1.0. `Notice.txt` lists the same native components
+with the same license texts; only their versions moved (ImageMagick 7.1.2-35, aom 3.15.2, brotli 1.2.1, freetype 2.15.0,
+fribidi 1.0.18, harfbuzz 15.0.0, libheif 1.23.7, libjpeg-turbo 3.2.1, libraw 0.22.3, libzip 1.12.1 and openh264 2.7.0) and
+libzip's copyright year changed. It keeps the 67 GNU Lesser General Public License mentions. The package adds a
+`linux-musl-arm64` runtime.
+
+| Runtime artifact under `runtimes/` | SHA-256 | Evidence |
+| --- | --- | --- |
+| `linux-x64/native/Magick.Native-Q8-x64.dll.so` | `b60c277cfd305efa7cf23f3c054cf559f9567a2b21b9107cf228ed6cdc21956c` | All five symbols are defined inside the ELF library; runtime-needed libraries are system libc/math/thread/resolver/loader |
+| `linux-arm64/native/Magick.Native-Q8-arm64.dll.so` | `9c73309dddd16cd75452f9e2835c8e416e8f01f26ca96977921916c6d710fba9` | All five sampled symbol strings present; linkage not separately verified |
+| `linux-musl-x64/native/Magick.Native-Q8-x64.dll.so` | `d4440d5aebe8ad6ef951439121d93b5012b80a063bcc1552306dbd46506ec9cf` | All five sampled symbol strings present; linkage not separately verified |
+| `linux-musl-arm64/native/Magick.Native-Q8-arm64.dll.so` | `9d85e5da03db930de7f4187e5a162e93272c38fe52bbed5386df9f48aae556c1` | All five sampled symbol strings present; linkage not separately verified |
+| `osx-arm64/native/Magick.Native-Q8-arm64.dll.dylib` | `1f5f75f17157d55403228d913caf6100e6550e5f8643a2b497fabddb63ddfd51` | All five sampled symbol strings present; linkage not separately verified |
+| `win-x64/native/Magick.Native-Q8-x64.dll` | `be0646326c15206e57c86542896278451126254dd7bf946084ac8b4199890d6a` | Sampled strings absent; this is not evidence those dependencies or obligations are absent |
+| `win-arm64/native/Magick.Native-Q8-arm64.dll` | `2624208e4fb242ececb941e456f604d819f289c9e9543c63db31b7ea744584f6` | Same limitation as Windows x64 |
+| `win-x86/native/Magick.Native-Q8-x86.dll` | `37250cf890413e5174d9b395686a69c5d64f9ccad249eb48609d7d5465206e08` | Same limitation as Windows x64 |
+
+Evidence hashes: package archive `32cea3cc74c2f104b1410ed8d62c4c6ab799bb90c22b3fddd09ab4c70247a33a`; nuspec
+`30265d8dd1c0b0805d3500a0d9c2aeb051f14949ecc1390faa00939474eb1586`; Notice.txt
+`d66c427812efbf0fccb98957e47dde3fc47b41b991cb79e7b5f11d5a76185efe`. As for `15.0.0`, the probes are technical inclusion
+evidence, not a legal compliance determination, and the native components' distribution obligations remain unresolved.

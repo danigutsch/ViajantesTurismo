@@ -77,12 +77,12 @@ runs:
         persist-credentials: false
         sparse-checkout-cone-mode: true
         sparse-checkout: |
-          tools/${{ inputs.tool }}
-          tools/Shared
+          src
+          tools
           ${{ inputs.sparse-extra }}
 
     - name: Set up the SDK and build SharedKernel tool
-      uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@4e3c3bbd36b84d48082027ed395f3d02d3680850
+      uses: danigutsch/PandaBear.SharedKernel/.github/actions/setup-dotnet-tool@db8fd3fcec1c362e8741c59ef441596e9499a7c3
       with:
         project: tools/${{ inputs.tool }}
         global-json-file: global.json

@@ -71,7 +71,8 @@ function Invoke-SharedKernelCandidateStaging {
             $isTopLevel = $LASTEXITCODE -eq 0 -and -not $cdup
             $promisor = git -C $sourceDir config --get remote.origin.promisor
             $sparse = (git -C $sourceDir sparse-checkout list) -join "`n"
-            if (-not $isTopLevel -or $promisor -cne 'true' -or $sparse -cne "tools/Shared`ntools/SharedKernel.CI.Tool") {
+            $knownSparse = $sparse -ceq "src`ntools" -or $sparse -ceq "tools/Shared`ntools/SharedKernel.CI.Tool"
+            if (-not $isTopLevel -or $promisor -cne 'true' -or -not $knownSparse) {
                 Write-Error "$sourceDir is not the expected sparse SharedKernel clone; move it away and rerun"
                 exit 1
             }
@@ -84,8 +85,10 @@ function Invoke-SharedKernelCandidateStaging {
     if (-not $LibraryRoot) {
         if ($clone) {
             git clone --filter=blob:none --no-checkout https://github.com/danigutsch/PandaBear.SharedKernel.git $sourceDir
-            git -C $sourceDir sparse-checkout set --cone tools/SharedKernel.CI.Tool tools/Shared
         }
+        # The src and tools cone holds every library the tool can reference. Setting it on each run also moves a clone
+        # made for the earlier tools/SharedKernel.CI.Tool and tools/Shared cone.
+        git -C $sourceDir sparse-checkout set --cone src tools
         if ($fetch) {
             git -C $sourceDir fetch --filter=blob:none origin $revision
         }
