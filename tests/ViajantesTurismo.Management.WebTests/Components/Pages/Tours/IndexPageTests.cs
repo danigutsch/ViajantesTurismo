@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components;
 using PandaBear.Testing;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Tours.Index;
 
@@ -241,8 +242,9 @@ public class IndexPageTests : BunitContext
         cut.WaitForState(() => cut.Markup.Contains("Alpha Tour", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Act
-        var nameButton = cut.FindAll("button").ShouldHaveSingleItem(button => button.TextContent.Trim() == "Name");
-        nameButton.Click();
+        var nameSortLink = cut.FindAll("a.col-title").ShouldHaveSingleItem(link => link.TextContent.Trim() == "Name");
+        // QuickGrid 11 renders a sortable header as a link to the sorted URL, which the browser follows.
+        Services.GetRequiredService<NavigationManager>().NavigateTo(nameSortLink.GetAttribute("href").ShouldNotBeNull());
 
         // Assert
         IndexPageTestsHelper.AssertNameSortIsAscending(cut);

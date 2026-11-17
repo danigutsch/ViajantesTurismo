@@ -1,3 +1,4 @@
+using System.Globalization;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Payments;
@@ -185,11 +186,13 @@ public sealed class BookingFinancialHistoryTests
     }
 
     [Theory]
-    [InlineData(0.5, 0.02)]
-    [InlineData(5.55555555, 0.17)]
-    public void Frozen_instructions_round_away_from_zero_and_assign_every_installment_remainder(decimal rate, decimal expectedTotal)
+    [InlineData("0.5", "0.02")]
+    [InlineData("5.55555555", "0.17")]
+    public void Frozen_instructions_round_away_from_zero_and_assign_every_installment_remainder(string rateText, string expectedTotalText)
     {
         // Arrange
+        var rate = decimal.Parse(rateText, CultureInfo.InvariantCulture);
+        var expectedTotal = decimal.Parse(expectedTotalText, CultureInfo.InvariantCulture);
         var scenario = new PaymentScenario();
         var now = PaymentScenario.Now;
         var installments = new[] { PaymentInstallment.Create(0.01m, PaymentScenario.DueDate).Value, PaymentInstallment.Create(0.01m, PaymentScenario.DueDate).Value, PaymentInstallment.Create(0.01m, PaymentScenario.DueDate).Value };
