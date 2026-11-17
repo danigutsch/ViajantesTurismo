@@ -255,4 +255,34 @@ public class NavMenuTests : BunitContext
         var brand = cut.Find(".navbar-brand");
         brand.GetAttribute("href").ShouldBe(string.Empty);
     }
+
+    [Fact]
+    public void Renders_no_inline_event_handler_that_the_strict_script_policy_blocks()
+    {
+        // Act
+        var cut = Render<NavMenu>();
+
+        // Assert
+        var inlineHandlers = cut.FindAll("*")
+            .SelectMany(static element => element.Attributes)
+            .Where(static attribute => attribute.Name.StartsWith("on", StringComparison.OrdinalIgnoreCase))
+            .Select(static attribute => attribute.Name)
+            .ToArray();
+        inlineHandlers.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Choosing_an_entry_collapses_the_expanded_menu()
+    {
+        // Arrange
+        var cut = Render<NavMenu>();
+        cut.Find(".navbar-toggler").Change(true);
+        cut.Find(".navbar-toggler").HasAttribute("checked").ShouldBeTrue();
+
+        // Act
+        cut.Find(".nav-scrollable").Click();
+
+        // Assert
+        cut.Find(".navbar-toggler").HasAttribute("checked").ShouldBeFalse();
+    }
 }
