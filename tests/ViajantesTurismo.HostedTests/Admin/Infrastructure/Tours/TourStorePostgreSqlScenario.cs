@@ -52,13 +52,21 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
+    /// <summary>Loads a tour by ID under a row lock.</summary>
+    public Task<Tour?> GetByIdForUpdate(Guid tourId, CancellationToken ct) =>
+        ReadLockedTour(store => store.GetByIdForUpdate(tourId, ct), ct);
+
     /// <summary>Loads the locked tour containing the booking with <paramref name="bookingId" />.</summary>
-    public async Task<Tour?> GetByBookingIdForUpdate(Guid bookingId, CancellationToken ct)
+    public Task<Tour?> GetByBookingIdForUpdate(Guid bookingId, CancellationToken ct) =>
+        ReadLockedTour(store => store.GetByBookingIdForUpdate(bookingId, ct), ct);
+
+    /// <summary>Attempts a locking lookup with no active transaction.</summary>
+    public async Task<Tour?> GetByIdWithoutTransaction(Guid tourId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
         using var protection = new PaymentProtection(new ConfigurationBuilder().Build());
-        return await new TourStore(dbContext, new PaymentHistoryStore(dbContext, protection)).GetByBookingIdForUpdate(bookingId, ct);
+        var store = new TourStore(dbContext, new PaymentHistoryStore(dbContext, protection));
+        return await store.GetByIdForUpdate(tourId, ct);
     }
 
     /// <summary>Exercises the transaction behavior with a confirmation and a supplied outcome after the save.</summary>
@@ -84,6 +92,14 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
 
     /// <summary>Disposes the test database.</summary>
     public ValueTask DisposeAsync() => database.DisposeAsync();
+
+    private async Task<Tour?> ReadLockedTour(Func<TourStore, Task<Tour?>> load, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+        using var protection = new PaymentProtection(new ConfigurationBuilder().Build());
+        return await load(new TourStore(dbContext, new PaymentHistoryStore(dbContext, protection)));
+    }
 
     private AdminWriteDbContext CreateDbContext()
     {

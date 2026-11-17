@@ -48,6 +48,42 @@ public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture
     }
 
     [Fact]
+    public async Task GetByIdForUpdate_loads_the_tour_and_its_bookings()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var tour = EntityBuilders.BuildTour();
+        var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
+        await Scenario.Seed(tour, ct);
+
+        // Act
+        var found = await Scenario.GetByIdForUpdate(tour.Id, ct);
+        var missing = await Scenario.GetByIdForUpdate(Guid.CreateVersion7(), ct);
+
+        // Assert
+        found.ShouldNotBeNull();
+        found.Id.ShouldBe(tour.Id);
+        found.Bookings.ShouldHaveSingleItem().Id.ShouldBe(booking.Id);
+        missing.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdForUpdate_rejects_lookup_without_a_transaction()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var tour = EntityBuilders.BuildTour();
+        await Scenario.Seed(tour, ct);
+
+        // Act
+        Func<Task> load = () => Scenario.GetByIdWithoutTransaction(tour.Id, ct);
+        var error = await load.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        error.Message.ShouldContain("requires an active transaction", StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Failed_confirmation_result_aborts_the_save_and_releases_the_tour_row()
     {
         // Arrange
