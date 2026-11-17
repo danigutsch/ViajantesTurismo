@@ -58,13 +58,11 @@
     {
         _isVisible = false;
         _tcs?.SetResult(true);
-        StateHasChanged();
     }
 
     private void Cancel()
     {
         _isVisible = false;
         _tcs?.SetResult(false);
-        StateHasChanged();
     }
 }

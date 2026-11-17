@@ -504,7 +504,6 @@ else
         _pendingRedirect = false;
         _redirectCancelled = true;
         await DisposeRedirectCancellation();
-        StateHasChanged();
     }
 
     public async ValueTask DisposeAsync()

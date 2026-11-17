@@ -1,5 +1,6 @@
 using PandaBear.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 using PandaBear.Blazor;
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
 /// <summary>Manages explicit EUR terms and actual settlement without automatic approvals.</summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1515", Justification = "Blazor instantiates public page components.")]
-public partial class Finances
+public sealed partial class Finances : IDisposable
 {
     /// <summary>Gets or sets the booking whose financial history is managed.</summary>
     [Parameter]
@@ -55,6 +56,22 @@ public partial class Finances
         "reconciliation" => [FinancialReasonDto.ExactReceipt, FinancialReasonDto.LateReceipt, FinancialReasonDto.ShortReceipt, FinancialReasonDto.ExcessReceipt, FinancialReasonDto.FeeDifference, FinancialReasonDto.MismatchedReceipt],
         _ => [_reason]
     };
+    /// <inheritdoc />
+    public void Dispose() => Authentication.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Authentication.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> state)
+    {
+        var actor = (await state).User.GetSubjectId();
+        await InvokeAsync(() =>
+        {
+            _actor = actor;
+            StateHasChanged();
+        });
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         _actor = (await Authentication.GetAuthenticationStateAsync()).User.GetSubjectId();
