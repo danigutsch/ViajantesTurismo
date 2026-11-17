@@ -10,12 +10,12 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 [TestScope(TestScope.Component)]
 public sealed class PaymentPagesTests : BunitContext
 {
-    private PaymentPageHttpHandler Handler => Services.GetRequiredService<PaymentPageHttpHandler>();
+    private PaymentPageHttpScenario Handler => Services.GetRequiredService<PaymentPageHttpScenario>();
     private readonly FakeBookingsApiClient _bookings = new();
     public PaymentPagesTests()
     {
-        Services.AddSingleton<PaymentPageHttpHandler>();
-        Services.AddSingleton(provider => new HttpClient(provider.GetRequiredService<PaymentPageHttpHandler>()) { BaseAddress = new Uri("https://payments.example.test") });
+        Services.AddSingleton<PaymentPageHttpScenario>();
+        Services.AddSingleton(provider => new HttpClient(provider.GetRequiredService<PaymentPageHttpScenario>().Transport, disposeHandler: false) { BaseAddress = new Uri("https://payments.example.test") });
         Services.AddSingleton<IBookingsApiClient>(_bookings);
         Services.AddSingleton<IBookingPaymentsApiClient>(provider => new BookingPaymentsApiClient(provider.GetRequiredService<HttpClient>()));
         Services.AddSingleton<IPaymentAccountsApiClient>(provider => new PaymentAccountsApiClient(provider.GetRequiredService<HttpClient>()));

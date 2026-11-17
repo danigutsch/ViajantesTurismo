@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 internal static class PaymentPageAuthentication
 {
     /// <summary>Serves one payment instruction, created by another administrator, that is open for independent review.</summary>
-    public static void ServeReviewableInstruction(PaymentPageHttpHandler handler)
+    public static void ServeReviewableInstruction(PaymentPageHttpScenario handler)
     {
         handler.Accounts = PaymentPageData.Accounts;
         handler.FinancialHistory = PaymentPageData.History;
