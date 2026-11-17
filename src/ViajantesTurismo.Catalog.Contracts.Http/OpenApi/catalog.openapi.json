@@ -1,5 +1,5 @@
 {
-  "openapi": "3.1.1",
+  "openapi": "3.2.0",
   "info": {
     "title": "ViajantesTurismo.Catalog.ApiService | catalog",
     "version": "1.0.0"
@@ -184,9 +184,6 @@
           "required": true
         },
         "responses": {
-          "204": {
-            "description": "No Content"
-          },
           "202": {
             "description": "Accepted",
             "headers": {
@@ -197,6 +194,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad Request",
@@ -262,9 +262,6 @@
           "required": true
         },
         "responses": {
-          "204": {
-            "description": "No Content"
-          },
           "202": {
             "description": "Accepted",
             "headers": {
@@ -275,6 +272,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad Request",
@@ -535,7 +535,14 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogMediaImageDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -589,7 +596,14 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogMediaImageDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -706,7 +720,14 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicContentDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",

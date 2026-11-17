@@ -190,7 +190,7 @@ public sealed class DocumentEndpointFailureTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/json");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
         var audit = auditStore.Records.ShouldHaveSingleItem();
         audit.Operation.ShouldBe(expectedOperation);
         audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
@@ -284,7 +284,7 @@ public sealed class DocumentEndpointFailureTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
-        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/json");
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
         problem.ShouldNotBeNull();
         problem.Status.ShouldBe((int?)HttpStatusCode.Conflict);
         problem.Title.ShouldBe("Conflict");

@@ -14,7 +14,7 @@ internal static class ToursOpenApiAssertions
     {
         ArgumentNullException.ThrowIfNull(contract);
 
-        contract.OpenApiVersion.ShouldBe("3.1.1");
+        contract.OpenApiVersion.ShouldBe("3.2.0");
         contract.Title.ShouldBe("ViajantesTurismo.Admin.ApiService | tours");
         contract.ListToursOperationId.ShouldBe("GetTours");
         contract.GetTourByIdOperationId.ShouldBe("GetTourById");
