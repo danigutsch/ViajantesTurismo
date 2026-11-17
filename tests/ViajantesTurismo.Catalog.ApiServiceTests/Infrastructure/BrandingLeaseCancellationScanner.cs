@@ -19,7 +19,8 @@ internal sealed class BrandingLeaseCancellationScanner : IMalwareScanner
     {
         await using var registration = ct.Register(() => cancelled.TrySetResult());
         entered.TrySetResult(content);
-        await cancelled.Task.WaitAsync(ct);
+        // Await the same registration that publishes the evidence, so cancellation cannot bypass it.
+        await cancelled.Task;
         ct.ThrowIfCancellationRequested();
         return MalwareScanResult.Passed;
     }

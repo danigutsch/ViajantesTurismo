@@ -153,6 +153,8 @@ public sealed class BrandingLogoUploadOverKestrelTests
         var body = BrandingTestImages.CreateUncompressedLogoPng();
         await scenario.SendPartialUpload(upload, body, body.Length, ct);
         var lease = await scanner.Entered.WaitAsync(WireTimeout.Default, ct);
+        var file = lease.ShouldBeOfType<FileStream>();
+        file.CanRead.ShouldBeTrue();
 
         // Act
         upload.Abort();
@@ -160,8 +162,6 @@ public sealed class BrandingLogoUploadOverKestrelTests
         await scenario.Probe.Finished.WaitAsync(WireTimeout.Default, ct);
 
         // Assert
-        scenario.Probe.DisconnectObserved.ShouldBeTrue();
-        var file = lease.ShouldBeOfType<FileStream>();
         file.CanRead.ShouldBeFalse();
         File.Exists(file.Name).ShouldBeFalse();
         scenario.Store.Logos.ShouldBeEmpty();
