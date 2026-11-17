@@ -93,9 +93,10 @@ Triage uses regular telemetry only. There is no separate error-tracking system.
 Current state:
 
 - Adopted in the Admin and Catalog API hosts: the SharedKernel exception handler (`AddUnhandledExceptionHandler`), which answers 500 with an RFC 9457
-  `application/problem+json` body holding only `status`, `title`, `type`, and `traceId`; and `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry` for authentication and rate-limit events and
-  rate-limit rejections. `ServiceDefaults` exports the `PandaBear.AspNetCore` meter, so `unhandled_exceptions_total`, `authentication_events_total`,
-  and `rate_limit_rejections_total` reach the OpenTelemetry pipeline.
+  `application/problem+json` body holding only `status`, `title`, `type`, and `traceId`; and `AddAuthenticationEventTelemetry` and
+  `AddRateLimitEventTelemetry` for authentication and rate-limit events and rate-limit rejections. `ServiceDefaults` exports the
+  `PandaBear.AspNetCore` meter, so `unhandled_exceptions_total`, `authentication_events_total`, and `rate_limit_rejections_total` reach the
+  OpenTelemetry pipeline.
 - Existing RFC 9457 error bodies and the error documentation links are unchanged; the handler only covers exceptions that no endpoint maps.
 - Not adopted: Management.Web and Public.Web render an error page through `UseExceptionHandler("/Error")`, so they do not register the handler.
   Reporting from those hosts is tracked separately.
