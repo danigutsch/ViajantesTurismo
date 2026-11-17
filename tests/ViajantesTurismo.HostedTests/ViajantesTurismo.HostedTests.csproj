@@ -33,7 +33,6 @@
         <PackageReference Include="Microsoft.Playwright.Xunit.v3" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Playwright" />
         <PackageReference Include="AWSSDK.S3" />
-        <PackageReference Include="Microsoft.Extensions.Options" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" />
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning" />

@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using PandaBear.MalwareScanning;

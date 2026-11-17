@@ -22,7 +22,7 @@ public sealed partial class NamingConventionTests
         var offendingTypes = ArchitectureProvider.Assemblies
             .SelectMany(assembly => assembly.GetExportedTypes())
             .Where(type => type.IsInterface && IsWithinSolution(type.Namespace, SolutionRootNamespaces))
-            .Where(type => !type.Name.StartsWith('I'))
+            .Where(type => !type.Name.StartsWith('I', StringComparison.Ordinal))
             .ToArray();
 
         var areDifferent = offendingTypes.Length != 0;

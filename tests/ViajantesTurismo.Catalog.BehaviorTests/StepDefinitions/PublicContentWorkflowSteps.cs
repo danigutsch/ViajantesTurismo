@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using Microsoft.AspNetCore.Http;
 using ViajantesTurismo.Catalog.ApiService;
 using ViajantesTurismo.Catalog.Contracts.Application;

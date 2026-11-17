@@ -40,7 +40,7 @@ internal static class PublicCultureRedirects
             return null;
         }
 
-        var segmentEnd = value.IndexOf('/', 1);
+        var segmentEnd = value.IndexOf('/', 1, StringComparison.Ordinal);
         var segment = segmentEnd < 0 ? value[1..] : value[1..segmentEnd];
         var culture = PublicSiteCultures.Supported.Resolve(segment.Trim());
         if (culture is null)
@@ -66,7 +66,7 @@ internal static class PublicCultureRedirects
 
     private static bool IsUnlocalized(PathString path)
     {
-        return path.Value?.AsSpan(path.Value.LastIndexOf('/') + 1).Contains('.') == true
+        return path.Value?.AsSpan(path.Value.LastIndexOf('/', StringComparison.Ordinal) + 1).Contains('.') == true
             || PublicSiteCultures.UnlocalizedPrefixes.Any(prefix => path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase));
     }
 }

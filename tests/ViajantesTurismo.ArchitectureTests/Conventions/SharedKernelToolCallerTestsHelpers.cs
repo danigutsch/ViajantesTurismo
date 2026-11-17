@@ -143,7 +143,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
             var trimmed = line.TrimEnd();
 
             // Bash continues a line with a trailing backslash and PowerShell with a trailing backtick.
-            if (trimmed.EndsWith('\\') || trimmed.EndsWith('`'))
+            if (trimmed.EndsWith('\\', StringComparison.Ordinal) || trimmed.EndsWith('`', StringComparison.Ordinal))
             {
                 current.Append(trimmed[..^1]).Append(' ');
                 continue;
@@ -202,7 +202,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
     private static IEnumerable<ToolCommandLine> ParseLine(string source, string line)
     {
         var trimmed = line.TrimStart();
-        if (trimmed.StartsWith('#') || trimmed.StartsWith("//", StringComparison.Ordinal))
+        if (trimmed.StartsWith('#', StringComparison.Ordinal) || trimmed.StartsWith("//", StringComparison.Ordinal))
         {
             yield break;
         }
@@ -236,7 +236,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
             {
                 lists = lists.SelectMany(list => alternatives.Select(alternative => (string[])[.. list, .. alternative]));
             }
-            else if (token.StartsWith('@') || token.Contains("[@]", StringComparison.Ordinal))
+            else if (token.StartsWith('@', StringComparison.Ordinal) || token.Contains("[@]", StringComparison.Ordinal))
             {
                 throw new InvalidOperationException($"Add the shell array {token} to {nameof(ArrayArguments)} with every value it can hold.");
             }

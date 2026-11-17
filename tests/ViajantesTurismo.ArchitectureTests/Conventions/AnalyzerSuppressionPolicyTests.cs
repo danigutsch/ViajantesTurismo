@@ -189,7 +189,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         foreach (var rawLine in File.ReadLines(Path.Combine(repositoryRoot, ".editorconfig")))
         {
             var line = rawLine.Trim();
-            if (line.StartsWith('[') && line.EndsWith(']'))
+            if (line.StartsWith('[', StringComparison.Ordinal) && line.EndsWith(']', StringComparison.Ordinal))
             {
                 section = line[1..^1];
             }

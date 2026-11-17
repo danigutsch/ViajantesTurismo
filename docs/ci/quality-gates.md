@@ -5,7 +5,7 @@ account, scanner, connected-mode configuration, or analysis token is required.
 
 ## Build analysis
 
-The pinned .NET SDK 10.0.402 supplies analyzers with `AnalysisLevel=latest`,
+The pinned .NET SDK 11.0.100 supplies analyzers with `AnalysisLevel=latest`,
 `AnalysisMode=All`, code-style enforcement, and warnings treated as errors.
 SharedKernel analyzers, architecture tests, test checks, dependency review, and secret
 scanning remain independent gates. `.editorconfig` owns scoped severity policy.

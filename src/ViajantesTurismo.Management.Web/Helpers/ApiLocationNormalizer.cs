@@ -32,7 +32,7 @@ internal static class ApiLocationNormalizer
             return fallbackPath;
         }
 
-        if (!localPath.StartsWith('/'))
+        if (!localPath.StartsWith('/', StringComparison.Ordinal))
         {
             localPath = $"/{localPath}";
         }

@@ -401,7 +401,15 @@ public sealed class DetailsPageTests : BunitContext
             .Select(action => action.TextContent.Trim())
             .ToArray();
         actualActionNames.ShouldBeEquivalentTo(expectedActionNames);
-        cut.FindAll("input[id^='document-field-']").Any().ShouldBe(expectsEditableField);
+        var editableFields = cut.FindAll("input[id^='document-field-']");
+        if (expectsEditableField)
+        {
+            editableFields.ShouldNotBeEmpty();
+        }
+        else
+        {
+            editableFields.ShouldBeEmpty();
+        }
     }
 
     [Fact]

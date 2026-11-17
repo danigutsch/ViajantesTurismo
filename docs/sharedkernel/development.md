@@ -6,12 +6,20 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.649.1` at clean library revision
-[`db8fd3fcec1c362e8741c59ef441596e9499a7c3`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/db8fd3fcec1c362e8741c59ef441596e9499a7c3).
-On top of `0.1.0-alpha.557.1` it moves to the .NET 10.0.15 security release and SDK 10.0.404 and raises OpenTelemetry to
-1.21, Microsoft.OpenApi to 2.13, Playwright to 1.64.1, xUnit v3 to 4.0.3 and Magick.NET to 15.1.0, so this adoption raises
+The published candidate is `0.1.0-alpha.653.1` at clean library revision
+[`d1a0676a24a8c0fbe876cf0986bf9db378c6377d`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/d1a0676a24a8c0fbe876cf0986bf9db378c6377d).
+On top of `0.1.0-alpha.649.1` it targets .NET 11 only, so this adoption moves the application to
+`net11.0` and SDK 11.0.100, the SDK `stage-candidate` requires to match SharedKernel's. ASP.NET Core and the
+`Microsoft.Extensions.*` packages the candidate requires are on the 11.0.0 line, `Microsoft.OpenApi` is 3.11.0 (required
+by `Microsoft.AspNetCore.OpenApi` 11) and the analyzers build against Roslyn 5.12. The Entity Framework family stays on
+10.x (EF Core 10.0.15, Npgsql's EF provider 10.0.3, the EF Core health check, data protection and Sqlite packages) until
+Npgsql's EF provider 11 is stable; `dotnet-ef` stays on the EF Core 10 line. `PandaBear.IO.ReadOnlyMemoryStream` is
+removed in favor of `System.IO.ReadOnlyMemoryStream`. .NET 11 also reports new analyzer diagnostics and changes some runtime
+behavior; SharedKernel's `docs/dotnet-multi-targeting.md` lists them. The history below applies to the earlier candidates.
+Version `0.1.0-alpha.649.1`, on top of `0.1.0-alpha.557.1`, moved to the .NET 10.0.15 security release and SDK 10.0.404 and raised OpenTelemetry to
+1.21, Microsoft.OpenApi to 2.13, Playwright to 1.64.1, xUnit v3 to 4.0.3 and Magick.NET to 15.1.0. That adoption raised
 the matching central versions. The tool engines moved from `tools/Shared` into `src` libraries, so the setup scripts and
-`build-sharedkernel-tool` check out the `src` and `tools` cone. It adds `InvariantStringWriter` and SKTEST022 for captured test
+`build-sharedkernel-tool` check out the `src` and `tools` cone. It added `InvariantStringWriter` and SKTEST022 for captured test
 output, page-view targets in `AspNetCore.WebAnalytics` with an Umami website resource for Aspire, `Money.CreateFromInput`,
 CPF input that ignores separators anywhere, Pix email keys checked without a regular expression, accessible form fields and
 focus-keeping confirmations in `Blazor`, and a theme preview whose sample headings are no longer heading elements. The CI tool
@@ -36,17 +44,17 @@ client-error body through `ProblemDetailsOptions`, and added the sandbox setting
 SharedKernel tools. Version `0.1.0-alpha.511.1` had split `PandaBear.SharedKernel.AspNetCore` into a core plus `AspNetCore.Authentication`,
 `AspNetCore.RateLimiting`, `AspNetCore.Seo` and `Idempotency.AspNetCore` (new namespaces `PandaBear.AspNetCore.Authentication`,
 `.RateLimiting`, `.Seo` and `PandaBear.Idempotency.AspNetCore`; `AddSecurityEventTelemetry` became
-`AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry`). It keeps `lockExemptProjects` and SDK 10.0.403.
+`AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry`). It kept `lockExemptProjects`.
 The packages, symbol archives and manifest are published in GitHub prerelease
-[`v0.1.0-alpha.649.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.649.1).
+[`v0.1.0-alpha.653.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.653.1).
 The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.
 
 The library repository keeps only its newest prereleases and the versions that consumers pin; a pruned release keeps its
-tag but cannot be staged again. The previews this repository pinned before, from `0.1.0-alpha.557.1` at revision
-`4e3c3bbd36b84d48082027ed395f3d02d3680850` back to `0.1.0-alpha.521.1`, are pruned once this adoption lands; their
+tag but cannot be staged again. The previews this repository pinned before, from `0.1.0-alpha.649.1` at revision
+`db8fd3fcec1c362e8741c59ef441596e9499a7c3` back to `0.1.0-alpha.521.1`, are pruned once this adoption lands; their
 application validation is historical evidence.
 
 The former candidate `1.2.0-alpha.20261023.1` at library revision
@@ -157,9 +165,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/db8fd3fcec1c362e8741c59ef441596e9499a7c3/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/d1a0676a24a8c0fbe876cf0986bf9db378c6377d/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`db8fd3fcec1c362e8741c59ef441596e9499a7c3`, which equals the `libraryRevision` in
+`d1a0676a24a8c0fbe876cf0986bf9db378c6377d`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

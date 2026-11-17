@@ -43,7 +43,7 @@ By default, the post-create script restores NuGet packages and builds `Viajantes
 
 ## Tooling taxonomy alignment
 
-- The devcontainer covers the main required contributor path by providing `.NET 10`,
+- The devcontainer covers the main required contributor path by providing `.NET 11`,
   Git, Docker access, and the repo-pinned `.NET` local tools after
   `dotnet tool restore`.
 - Optional host tools from the README taxonomy, such as `pwsh`,
@@ -92,7 +92,7 @@ dotnet tool run aspire run
 
 Expected outcomes:
 
-- `dotnet --version` reports the repo-pinned .NET 10 SDK line
+- `dotnet --version` reports the repo-pinned .NET 11 SDK line
 - `docker version` succeeds so the in-container Docker daemon can orchestrate Aspire's dependent services
 - `dotnet tool run aspire run` starts the AppHost and shows the Aspire dashboard URL
 

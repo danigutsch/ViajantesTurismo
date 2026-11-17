@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using System.Runtime.ExceptionServices;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Catalog.Contracts.Application;

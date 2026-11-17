@@ -43,5 +43,5 @@ internal static class RequiredCheckContractTestsHelpers
     }
 
     private static bool IsJobKey(string line) =>
-        line.Length > 2 && line.StartsWith("  ", StringComparison.Ordinal) && line[2] is not ' ' and not '#' && line.EndsWith(':');
+        line.Length > 2 && line.StartsWith("  ", StringComparison.Ordinal) && line[2] is not ' ' and not '#' && line.EndsWith(':', StringComparison.Ordinal);
 }

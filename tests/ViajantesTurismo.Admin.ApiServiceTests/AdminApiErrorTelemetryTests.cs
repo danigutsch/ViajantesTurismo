@@ -1,5 +1,4 @@
 using System.Diagnostics.Metrics;
-using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PandaBear.AspNetCore;
