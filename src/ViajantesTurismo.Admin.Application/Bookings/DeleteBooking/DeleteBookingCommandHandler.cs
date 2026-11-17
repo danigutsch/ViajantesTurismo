@@ -1,6 +1,5 @@
 using PandaBear.Mediator;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
@@ -10,7 +9,6 @@ namespace ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 /// </summary>
 public sealed class DeleteBookingCommandHandler(
     ITourStore tourStore,
-    ITourCapacityMutationLock capacityMutationLock,
     IUnitOfWork unitOfWork) : ICommandHandler<DeleteBookingCommand, Result>
 {
     /// <summary>
@@ -23,14 +21,7 @@ public sealed class DeleteBookingCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var tourId = await tourStore.GetTourIdByBookingId(command.BookingId, ct);
-        if (!tourId.TryGetValue(out var owningTourId))
-        {
-            return BookingErrors.BookingNotFound();
-        }
-
-        await using var capacityLease = await capacityMutationLock.Acquire(owningTourId, ct);
-        var tour = await tourStore.GetById(owningTourId, ct);
+        var tour = await tourStore.GetByBookingIdForUpdate(command.BookingId, ct);
         if (tour is null)
         {
             return BookingErrors.BookingNotFound();

@@ -1,3 +1,4 @@
+using PandaBear.Results;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
@@ -26,7 +27,7 @@ public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture
     }
 
     [Fact]
-    public async Task GetTourIdByBookingId_returns_some_for_an_existing_booking_and_none_when_missing()
+    public async Task GetByBookingIdForUpdate_loads_the_owning_tour_for_an_existing_booking()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -37,13 +38,53 @@ public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture
         await Scenario.Seed(tour, ct);
 
         // Act
-        var foundTourId = await Scenario.GetTourIdByBookingId(booking.Id, ct);
-        var missingTourId = await Scenario.GetTourIdByBookingId(Guid.CreateVersion7(), ct);
-        var found = foundTourId.TryGetValue(out var tourId);
+        var found = await Scenario.GetByBookingIdForUpdate(booking.Id, ct);
+        var missing = await Scenario.GetByBookingIdForUpdate(Guid.CreateVersion7(), ct);
 
         // Assert
-        found.ShouldBeTrue();
-        tourId.ShouldBe(tour.Id);
-        missingTourId.IsEmpty.ShouldBeTrue();
+        found.ShouldNotBeNull();
+        found.Id.ShouldBe(tour.Id);
+        missing.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Failed_confirmation_result_aborts_the_save_and_releases_the_tour_row()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var tour = EntityBuilders.BuildTour();
+        var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
+        await Scenario.Seed(tour, ct);
+        var failure = Result.Conflict(detail: "Rejected after saving confirmation.");
+
+        // Act
+        var result = await Scenario.ConfirmWithOutcome(booking.Id, () => failure, ct);
+        var reloaded = await Scenario.GetByBookingIdForUpdate(booking.Id, ct);
+
+        // Assert
+        result.ShouldBe(failure);
+        reloaded.ShouldNotBeNull();
+        reloaded.Bookings.ShouldHaveSingleItem().IsPending.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Thrown_confirmation_failure_aborts_the_save_and_releases_the_tour_row()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var tour = EntityBuilders.BuildTour();
+        var booking = BookingTestHelpers.AddSingleCustomerBooking(tour).Value;
+        await Scenario.Seed(tour, ct);
+        var failure = new InvalidOperationException("Confirmation failed after saving.");
+
+        // Act
+        Func<Task> confirm = () => Scenario.ConfirmWithOutcome(booking.Id, () => throw failure, ct);
+        var exception = await confirm.ShouldThrow<InvalidOperationException>();
+        var reloaded = await Scenario.GetByBookingIdForUpdate(booking.Id, ct);
+
+        // Assert
+        exception.ShouldBeSameAs(failure);
+        reloaded.ShouldNotBeNull();
+        reloaded.Bookings.ShouldHaveSingleItem().IsPending.ShouldBeTrue();
     }
 }

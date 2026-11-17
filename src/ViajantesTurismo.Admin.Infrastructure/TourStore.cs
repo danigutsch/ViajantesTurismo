@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
-using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
@@ -42,15 +41,34 @@ internal sealed class TourStore(AdminWriteDbContext dbContext, PaymentHistorySto
     }
 
     /// <inheritdoc />
-    public async Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct)
-    {
-        var booking = await dbContext.Set<Booking>()
-            .Where(currentBooking => currentBooking.Id == bookingId)
-            .Select(currentBooking => new { currentBooking.TourId })
-            .SingleOrDefaultAsync(ct);
+    public Task<Tour?> GetByIdForUpdate(Guid id, CancellationToken ct) =>
+        GetLockedTour(
+            $"""
+            SELECT "Id" AS "Value"
+            FROM "Tours"
+            WHERE "Id" = {id}
+            FOR UPDATE
+            """, ct);
 
-        return Option.FromNullable(booking)
-            .Map(currentBooking => currentBooking.TourId);
+    /// <inheritdoc />
+    public Task<Tour?> GetByBookingIdForUpdate(Guid bookingId, CancellationToken ct) =>
+        GetLockedTour(
+            $"""
+            SELECT "Id" AS "Value"
+            FROM "Tours"
+            WHERE "Id" = (SELECT "TourId" FROM "Booking" WHERE "Id" = {bookingId})
+            FOR UPDATE
+            """, ct);
+
+    private async Task<Tour?> GetLockedTour(FormattableString query, CancellationToken ct)
+    {
+        if (dbContext.Database.CurrentTransaction is null)
+        {
+            throw new InvalidOperationException("Loading a tour for update requires an active transaction.");
+        }
+
+        var id = await dbContext.Database.SqlQuery<Guid>(query).SingleOrDefaultAsync(ct);
+        return id == Guid.Empty ? null : await GetById(id, ct);
     }
 
     /// <inheritdoc />

@@ -1,5 +1,6 @@
 using PandaBear.Mediator;
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Application.Pipeline;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
@@ -12,4 +13,4 @@ public sealed record UpdateBookingDetailsCommand(
     RoomTypeDto RoomType,
     BikeTypeDto PrincipalBikeType,
     Guid? CompanionCustomerId,
-    BikeTypeDto? CompanionBikeType) : ICommand<Result>, IBookingScopedCommand;
+    BikeTypeDto? CompanionBikeType) : ICommand<Result>, ITransactionalAdminCommand, IBookingScopedCommand;

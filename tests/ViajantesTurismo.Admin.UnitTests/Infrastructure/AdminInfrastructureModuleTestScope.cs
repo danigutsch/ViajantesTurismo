@@ -11,7 +11,6 @@ using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency;
 using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -51,9 +50,8 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
     /// <summary>Gets the tour store resolved from the scope.</summary>
     public ITourStore TourStore => scope.ServiceProvider.GetRequiredService<ITourStore>();
 
-    /// <summary>Gets the tour capacity mutation lock resolved from the scope.</summary>
-    public ITourCapacityMutationLock TourCapacityMutationLock =>
-        scope.ServiceProvider.GetRequiredService<ITourCapacityMutationLock>();
+    /// <summary>Gets the context resolved for the mediator transaction behavior.</summary>
+    public DbContext TransactionContext => scope.ServiceProvider.GetRequiredService<DbContext>();
 
     /// <summary>Gets the customer store resolved from the scope.</summary>
     public ICustomerStore CustomerStore => scope.ServiceProvider.GetRequiredService<ICustomerStore>();

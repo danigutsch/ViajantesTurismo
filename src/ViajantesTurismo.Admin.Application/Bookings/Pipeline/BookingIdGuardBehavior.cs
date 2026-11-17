@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.Pipeline;
 
 /// <summary>
 /// Short-circuits a booking command that targets <see cref="Guid.Empty"/> with the not-found result
-/// the handler would return, so no store lookup or capacity lease is attempted for an identifier that cannot exist.
+/// the handler would return, so no store lookup or transaction is attempted for an identifier that cannot exist.
 /// </summary>
 /// <typeparam name="TRequest">The booking-scoped command type.</typeparam>
 /// <typeparam name="TResponse">The command response type.</typeparam>

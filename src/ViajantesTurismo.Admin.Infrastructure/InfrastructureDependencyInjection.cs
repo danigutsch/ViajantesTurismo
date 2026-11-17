@@ -20,7 +20,6 @@ using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
-using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
@@ -36,10 +35,8 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 /// </summary>
 public static class InfrastructureDependencyInjection
 {
-    private const int TourCapacityLockMaximumPoolSize = 8;
     private const string AdminDataSourceName = "admin";
     private const string BrandingTransportDataSourceName = "admin-branding-transport";
-    private const string TourCapacityLockDataSourceName = "admin-tour-capacity-lock";
 
     /// <summary>
     /// Applies Admin migrations from the dedicated database initialization application.
@@ -80,7 +77,6 @@ public static class InfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.AddTourCapacityMutationLock();
         builder.AddAdminWriteDbContext();
         builder.AddAdminReadDbContext();
 
@@ -103,6 +99,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IPaymentAccountQueryService, PaymentAccountQueryService>();
         builder.Services.AddScoped<IPaymentFinancialQueryService, PaymentFinancialQueryService>();
         builder.Services.AddScoped<IPaymentInstructionStore, PaymentInstructionStore>();
+        builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<IDocumentQueryService, DocumentQueryService>();
@@ -232,23 +229,6 @@ public static class InfrastructureDependencyInjection
         builder.AddNpgsqlDbContext<AdminWriteDbContext>(
             ResourceNames.AdminDatabase,
             configureDbContextOptions: options => ConfigureAdminWriteDbContext(builder, options));
-    }
-
-    private static void AddTourCapacityMutationLock<TApplicationBuilder>(this TApplicationBuilder builder)
-        where TApplicationBuilder : IHostApplicationBuilder
-    {
-        builder.AddKeyedNpgsqlDataSource(
-            ResourceNames.AdminDatabase,
-            configureDataSourceBuilder: dataSourceBuilder =>
-            {
-                ConfigureNpgsqlDataSource(dataSourceBuilder, TourCapacityLockDataSourceName);
-                dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = Math.Min(
-                    TourCapacityLockMaximumPoolSize,
-                    dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize);
-            });
-        builder.Services.AddSingleton<ITourCapacityMutationLock>(serviceProvider =>
-            new PostgreSqlTourCapacityMutationLock(
-                serviceProvider.GetRequiredKeyedService<NpgsqlDataSource>(ResourceNames.AdminDatabase)));
     }
 
     private static void AddAdminReadDbContext<TApplicationBuilder>(this TApplicationBuilder builder)

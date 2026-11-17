@@ -18,7 +18,6 @@ public sealed class ConfirmBookingCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var handler = new ConfirmBookingCommandHandler(
             tourStore,
-            new NoOpTourCapacityMutationLock(),
             unitOfWork);
 
         // Act
@@ -39,7 +38,6 @@ public sealed class ConfirmBookingCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var handler = new ConfirmBookingCommandHandler(
             new FakeTourStore(),
-            new NoOpTourCapacityMutationLock(),
             unitOfWork);
 
         // Act

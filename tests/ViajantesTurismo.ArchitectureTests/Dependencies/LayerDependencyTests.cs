@@ -244,28 +244,25 @@ public sealed class LayerDependencyTests
     }
 
     [Fact]
-    public void Admin_infrastructure_and_flow_documentation_should_not_describe_mediator_composition()
+    public void Admin_infrastructure_uses_mediator_for_transaction_composition()
     {
         // Arrange
         var repositoryRoot = GetRepositoryRoot();
-        var adminAssemblies = new[]
-        {
-            Assembly.Load("ViajantesTurismo.Admin.Infrastructure")
-        };
+        var infrastructure = Assembly.Load("ViajantesTurismo.Admin.Infrastructure");
         var flows = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "architecture", "FLOWS.md"));
         var eventsAndMessaging = File.ReadAllText(
             Path.Combine(repositoryRoot, "docs", "domain", "EVENTS_AND_MESSAGING.md"));
 
         // Act
-        var mediatorReferences = adminAssemblies
-            .SelectMany(assembly => assembly.GetReferencedAssemblies()
-                .Where(reference => reference.Name?.StartsWith("SharedKernel.Mediator", StringComparison.Ordinal) == true)
-                .Select(reference => $"{assembly.GetName().Name} -> {reference.Name}"))
+        var mediatorReferences = infrastructure.GetReferencedAssemblies()
+            .Select(reference => reference.Name)
+            .Where(name => name?.StartsWith("SharedKernel.Mediator", StringComparison.Ordinal) == true)
+            .Order(StringComparer.Ordinal)
             .ToArray();
 
         // Assert
-        mediatorReferences.ShouldBeEmpty();
-        flows.ShouldNotContain("SharedKernel.Mediator", StringComparison.Ordinal);
+        mediatorReferences.ShouldBe(["SharedKernel.Mediator.Abstractions", "SharedKernel.Mediator.EntityFrameworkCore"]);
+        flows.ShouldContain("SharedKernel.Mediator.EntityFrameworkCore", StringComparison.Ordinal);
         flows.ShouldNotContain("ServiceProviderIntegrationEventDispatcher", StringComparison.Ordinal);
         eventsAndMessaging.ShouldNotContain(
             "Event dispatch should extend `SharedKernel.Mediator`",

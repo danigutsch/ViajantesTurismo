@@ -465,6 +465,7 @@
           "PandaBear.SharedKernel.Idempotency.AspNetCore": "[0.1.0-alpha.653.1, )",
           "PandaBear.SharedKernel.Idempotency.EntityFrameworkCore": "[0.1.0-alpha.653.1, )",
           "PandaBear.SharedKernel.InputNormalization": "[0.1.0-alpha.653.1, )",
+          "PandaBear.SharedKernel.Mediator.EntityFrameworkCore": "[0.1.0-alpha.653.1, )",
           "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.653.1, )",
           "PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore": "[0.1.0-alpha.653.1, )",
           "PandaBear.SharedKernel.Npgsql": "[0.1.0-alpha.653.1, )",
@@ -783,6 +784,20 @@
         "requested": "[0.1.0-alpha.653.1, )",
         "resolved": "0.1.0-alpha.653.1",
         "contentHash": "1PQhyw7e2t12cmzE7he12GaWM2hGI53oXKjMPZi/1LnUnNMck5tjCKNAQcNNHgfUNjGZWazUg/9cD9uUnRLeDA=="
+      },
+      "PandaBear.SharedKernel.Mediator.EntityFrameworkCore": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.653.1, )",
+        "resolved": "0.1.0-alpha.653.1",
+        "contentHash": "QPytunBCBs9LRKsk3HG5/b1+kRKOeIFymLOBtKO0ZHPX+jdrbCuAsj4n7Z1QV0X6JB9QO4t2AacMdzpklZMpuA==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.15",
+          "Npgsql": "10.0.3",
+          "PandaBear.SharedKernel.EntityFrameworkCore": "0.1.0-alpha.653.1",
+          "PandaBear.SharedKernel.Mediator.Abstractions": "0.1.0-alpha.653.1",
+          "PandaBear.SharedKernel.Npgsql": "0.1.0-alpha.653.1",
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.653.1"
+        }
       },
       "PandaBear.SharedKernel.Messaging": {
         "type": "CentralTransitive",

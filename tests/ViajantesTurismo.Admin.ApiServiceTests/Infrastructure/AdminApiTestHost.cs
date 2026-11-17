@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -10,13 +11,14 @@ using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Documents;
-using ViajantesTurismo.Admin.Application.Tours;
-using ViajantesTurismo.Admin.Testing.Fakes;
+using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
+using ViajantesTurismo.Admin.Infrastructure;
+using PandaBear.Results;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
 
-/// <summary>Creates in-memory admin API hosts with test authentication, no hosted services and fake capacity locking.</summary>
+/// <summary>Creates in-memory admin API hosts with test authentication and no hosted services.</summary>
 internal static class AdminApiTestHost
 {
     private const string Audience = "admin-api";
@@ -42,8 +44,10 @@ internal static class AdminApiTestHost
                 services.Configure<HealthCheckServiceOptions>(options => options.Registrations.Clear());
                 ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
                 services.RemoveAll<IHostedService>();
-                services.Replace(
-                    ServiceDescriptor.Singleton<ITourCapacityMutationLock, NoOpTourCapacityMutationLock>());
+                var transactionOptions = new DbContextOptionsBuilder<DbContext>()
+                    .UseInMemoryDatabase(Guid.NewGuid().ToString("N"))
+                    .Options;
+                services.Replace(ServiceDescriptor.Scoped(_ => new DbContext(transactionOptions)));
                 configureTestServices?.Invoke(services);
             },
             configuration: configuration);
@@ -108,8 +112,7 @@ internal static class AdminApiTestHost
         _ = scope.ServiceProvider.GetRequiredService<CustomerImportWorkflowService>();
         _ = scope.ServiceProvider.GetRequiredService<IMalwareScanner>();
         _ = scope.ServiceProvider.GetRequiredService<ISender>();
-        scope.ServiceProvider.GetRequiredService<ITourCapacityMutationLock>()
-            .ShouldBeOfType<NoOpTourCapacityMutationLock>();
+        _ = scope.ServiceProvider.GetRequiredService<AdminTransactionBehavior<ConfirmBookingCommand, Result>>();
     }
 
     /// <summary>Asserts that the services required by the mapped document endpoints resolve.</summary>
