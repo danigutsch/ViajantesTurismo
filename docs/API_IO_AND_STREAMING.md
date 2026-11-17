@@ -225,9 +225,13 @@ server, not TestServer, with fake scanners and stores.
 | File over the file limit but within the request limit | `400`; no scan, nothing persisted |
 | Stalled client below a minimum body data rate | `408` from Kestrel; no scan, nothing persisted |
 
-No Branding wire test over real Kestrel exists yet, so disconnect, slow-client, over-limit, and data-rate behavior of the raw-body
-logo `PUT` are not covered by the table above. Branding tests cover the intake, the path validation, and the wire format of the
-event. Adding a Branding wire test with `tests/ViajantesTurismo.UploadWire.Testing` is tracked in the I/O hardening epic.
+`BrandingLogoUploadOverKestrelTests` drives the raw logo `PUT` through the same loopback wire harness.
+Kestrel returns `413` for oversized uploads with a declared content length and for chunked uploads.
+The declared-length request is rejected before any body read. A client below the configured minimum body data rate
+receives `408`. Oversized, stalled, and mid-body disconnect requests leave the scanner and store untouched.
+
+The slow-client test gates each chunk and checks that the scanner reads the original image once, after the final chunk.
+Cancellation while scanning closes the file-backed lease, deletes its temporary file, and leaves the logo store empty.
 
 Timeouts: the Admin and Catalog API hosts configure no `MinRequestBodyDataRate`, `RequestHeadersTimeout`, or
 `KeepAliveTimeout` (only `UseKestrelHttpsConfiguration`), so Kestrel framework defaults apply. The `408` test sets

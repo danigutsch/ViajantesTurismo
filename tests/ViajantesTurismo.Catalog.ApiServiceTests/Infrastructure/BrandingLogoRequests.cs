@@ -5,7 +5,8 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 /// <summary>Sends Branding logo upload and read requests in tests.</summary>
 internal static class BrandingLogoRequests
 {
-    private const string ManagementLogoPath = $"/api/v1/{BrandingRoutes.ManagementSettingsPath}/logo";
+    /// <summary>The versioned management upload and delete route.</summary>
+    internal const string ManagementLogoPath = $"/api/v1/{BrandingRoutes.ManagementSettingsPath}/logo";
     private const string PublicLogoPathPrefix = $"/api/v1/{BrandingRoutes.PublicSettingsPath}/logo/";
 
     /// <summary>Sends a PUT of raw image bytes with the declared content type and optional If-Match values.</summary>

@@ -13,17 +13,35 @@ public sealed class RawHttpUpload : IDisposable
     private readonly TcpClient connection = new();
 
     /// <summary>Connects, sends the headers and the first <paramref name="bytesToSend"/> body bytes.</summary>
-    public async Task Send(Uri baseUri, string path, string authorization, MultipartPayload payload, int bytesToSend, CancellationToken ct)
+    public Task Send(Uri baseUri, string path, string authorization, MultipartPayload payload, int bytesToSend, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(payload);
+        return Send(baseUri, HttpMethod.Post, path, authorization, payload.ContentType, payload.Body, bytesToSend, ifMatch: null, ct);
+    }
+
+    /// <summary>Connects, sends the specified request headers and writes a prefix of the raw body.</summary>
+    public async Task Send(
+        Uri baseUri,
+        HttpMethod method,
+        string path,
+        string authorization,
+        string contentType,
+        ReadOnlyMemory<byte> body,
+        int bytesToSend,
+        string? ifMatch,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(baseUri);
-        ArgumentNullException.ThrowIfNull(payload);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(bytesToSend, payload.Body.Length);
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentOutOfRangeException.ThrowIfNegative(bytesToSend);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(bytesToSend, body.Length);
 
         await connection.ConnectAsync(IPAddress.Loopback, baseUri.Port, ct).ConfigureAwait(false);
-        var head = $"POST {path} HTTP/1.1\r\nHost: {baseUri.Authority}\r\nAuthorization: {authorization}\r\nContent-Type: {payload.ContentType}\r\nContent-Length: {payload.Body.Length}\r\n\r\n";
+        var precondition = ifMatch is null ? string.Empty : $"If-Match: {ifMatch}\r\n";
+        var head = $"{method} {path} HTTP/1.1\r\nHost: {baseUri.Authority}\r\nAuthorization: {authorization}\r\nContent-Type: {contentType}\r\nContent-Length: {body.Length}\r\n{precondition}\r\n";
         var stream = connection.GetStream();
         await stream.WriteAsync(Encoding.ASCII.GetBytes(head), ct).ConfigureAwait(false);
-        await stream.WriteAsync(payload.Body[..bytesToSend], ct).ConfigureAwait(false);
+        await stream.WriteAsync(body[..bytesToSend], ct).ConfigureAwait(false);
         await stream.FlushAsync(ct).ConfigureAwait(false);
     }
 
