@@ -713,7 +713,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
 
     private static IEnumerable<string> FindNoWarnDiagnosticEntries(string text)
     {
-        if (!text.TrimStart().StartsWith('<'))
+        if (!text.TrimStart().StartsWith('<', StringComparison.Ordinal))
         {
             return [];
         }
@@ -732,7 +732,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
 
     private static IEnumerable<string> FindForbiddenAnalyzerPolicyInputs(string text, string displayPath)
     {
-        if (!text.TrimStart().StartsWith('<'))
+        if (!text.TrimStart().StartsWith('<', StringComparison.Ordinal))
         {
             return [];
         }

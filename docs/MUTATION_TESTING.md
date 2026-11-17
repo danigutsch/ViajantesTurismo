@@ -9,7 +9,7 @@ The repository currently standardizes on:
 
 - xUnit v3
 - Microsoft.Testing.Platform (MTP)
-- `.NET 10` with `global.json` test-runner configuration:
+- `.NET 11` with `global.json` test-runner configuration:
     - `"test": { "runner": "Microsoft.Testing.Platform" }`
 - `xunit.v3.mtp-v2` across test projects via central package management
 

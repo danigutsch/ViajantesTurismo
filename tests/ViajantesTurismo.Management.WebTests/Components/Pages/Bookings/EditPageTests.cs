@@ -664,7 +664,7 @@ public sealed class EditPageTests : BunitContext
         var label = cut.Find("label[for='discountAmount']");
         label.TextContent.ShouldContain("Discount Percentage", StringComparison.Ordinal);
 
-        var formText = cut.Find("#discountAmount + .form-text");
+        var formText = cut.Find("#discountAmount ~ .form-text");
         formText.TextContent.ShouldContain("between 0 and 100", StringComparison.Ordinal);
 
         var discountReason = cut.Find("#discountReason");
@@ -864,7 +864,7 @@ public sealed class EditPageTests : BunitContext
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
         cut.WaitForAssertion(() => cut.Find(HeadingOrAlertSelector));
         // Assert
-        var helpText = cut.Find("#discountReason + .form-text");
+        var helpText = cut.Find("#discountReason ~ .form-text");
         helpText.TextContent.ShouldContain("Required for audit purposes", StringComparison.Ordinal);
         helpText.TextContent.ShouldContain("10-500 characters", StringComparison.Ordinal);
     }

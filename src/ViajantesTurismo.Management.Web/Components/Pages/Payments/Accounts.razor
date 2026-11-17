@@ -1,4 +1,5 @@
 @using PandaBear.AspNetCore.Authentication
+@implements IDisposable
 @page "/payment-accounts"
 @attribute [Authorize(Roles = "Admin,Operator")]
 @inject IPaymentAccountsApiClient AccountsApi
@@ -127,8 +128,21 @@
     private PaymentAccountReviewOutcomeDto _reviewOutcome = PaymentAccountReviewOutcomeDto.Approved;
     private readonly IdempotentSubmission<GetPaymentAccountDto> _submission = new();
 
+    public void Dispose() => Authentication.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> state)
+    {
+        var actorId = (await state).User.GetSubjectId();
+        await InvokeAsync(() =>
+        {
+            _actorId = actorId;
+            StateHasChanged();
+        });
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        Authentication.AuthenticationStateChanged += OnAuthenticationStateChanged;
         _actorId = (await Authentication.GetAuthenticationStateAsync()).User.GetSubjectId();
         _checkedAt = Clock.GetUtcNow().UtcDateTime;
         await Load();

@@ -1,5 +1,6 @@
 using PandaBear.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 using PandaBear.Blazor;
@@ -8,7 +9,7 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
 /// <summary>Generates and explicitly approves immutable protected payment instruction revisions.</summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1515", Justification = "Blazor instantiates public page components.")]
-public partial class Instructions
+public sealed partial class Instructions : IDisposable
 {
     /// <summary>Gets or sets the owning booking.</summary>
     [Parameter]
@@ -32,6 +33,22 @@ public partial class Instructions
     private bool _changesRequested;
     private readonly IdempotentSubmission<GetPaymentInstructionDto> _submission = new();
     private bool Blocked => _loading || _submission.IsBusy || _submission.HasPending;
+    /// <inheritdoc />
+    public void Dispose() => Authentication.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => Authentication.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> state)
+    {
+        var actor = (await state).User.GetSubjectId();
+        await InvokeAsync(() =>
+        {
+            _actor = actor;
+            StateHasChanged();
+        });
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         _actor = (await Authentication.GetAuthenticationStateAsync()).User.GetSubjectId();

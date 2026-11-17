@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace ViajantesTurismo.Admin.Testing.Integration.Helpers;

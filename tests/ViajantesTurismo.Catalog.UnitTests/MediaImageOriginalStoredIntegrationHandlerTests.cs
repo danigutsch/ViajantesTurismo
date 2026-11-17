@@ -1,4 +1,3 @@
-using PandaBear.IO;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;

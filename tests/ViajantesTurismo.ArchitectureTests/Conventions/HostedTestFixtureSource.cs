@@ -31,7 +31,7 @@ internal static class HostedTestFixtureSource
             throw new InvalidOperationException($"HostedTestFixture.cs does not declare '{signature}'.");
         }
 
-        var open = source.IndexOf('{', start);
+        var open = source.IndexOf('{', start, StringComparison.Ordinal);
         if (open < 0)
         {
             throw new InvalidOperationException($"'{signature}' in HostedTestFixture.cs has no braced body.");

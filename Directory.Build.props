@@ -1,8 +1,7 @@
 <Project>
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<LangVersion>preview</LangVersion>
+		<TargetFramework>net11.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<NoDefaultExcludes>true</NoDefaultExcludes>

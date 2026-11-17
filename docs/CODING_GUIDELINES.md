@@ -6,7 +6,7 @@ Coding standards and conventions for C# development in ViajantesTurismo projects
 
 ### Language & Framework
 
-- **Target Framework:** .NET 10.0 (`net10.0`)
+- **Target Framework:** .NET 11.0 (`net11.0`)
 - **Language Version:** Preview (latest C# features)
 - **Nullable Reference Types:** Enabled (`<Nullable>enable</Nullable>`)
 - **Implicit Usings:** Enabled (`<ImplicitUsings>enable</ImplicitUsings>`)

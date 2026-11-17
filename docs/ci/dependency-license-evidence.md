@@ -16,6 +16,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Hosted-test lease candidate](#hosted-test-lease-candidate)
 - [Playwright ObjectModel dependency](#playwright-objectmodel-dependency)
 - [Remaining decision](#remaining-decision)
+- [Candidate that targets net11 only](#candidate-that-targets-net11-only)
 
 ## Hosted-test lease candidate
 
@@ -575,3 +576,41 @@ Evidence hashes: package archive `32cea3cc74c2f104b1410ed8d62c4c6ab799bb90c22b3f
 `30265d8dd1c0b0805d3500a0d9c2aeb051f14949ecc1390faa00939474eb1586`; Notice.txt
 `d66c427812efbf0fccb98957e47dde3fc47b41b991cb79e7b5f11d5a76185efe`. As for `15.0.0`, the probes are technical inclusion
 evidence, not a legal compliance determination, and the native components' distribution obligations remain unresolved.
+
+## Candidate that targets net11 only
+
+Candidate `0.1.0-alpha.653.1` uses clean library revision `d1a0676a24a8c0fbe876cf0986bf9db378c6377d` (the SharedKernel change
+"target .NET 11 only"). On top of `0.1.0-alpha.649.1` its packages target `net11.0` only, so this repository moves to
+`net11.0` and SDK 11.0.100, which `stage-candidate` requires to equal SharedKernel's. All 132 package hashes were verified
+by `stage-candidate` against the pin, which is the unedited `candidate.json` of the candidate. The action pin manifest
+(`.github/action-pins.json`) and the reusable workflows are unchanged between the two revisions, except that the shared
+`setup-dotnet-tool` action also installs the runtime of an older repository framework. The preview approval in
+`.config/sharedkernel-repo.json` names this exact version and revision. The Magick.NET-Q8-AnyCPU `15.1.0` and StreamJsonRpc
+`2.25.29` exceptions are unchanged, and so are their approvals and the native audit above.
+
+The candidate's packages require newer external versions than this repository pinned, which NuGet reports as NU1109
+downgrades. Following SharedKernel's rule that a package keeps an older major when that works and nothing requires the newer
+one, the central versions move as follows:
+
+- ASP.NET Core packages `Microsoft.AspNetCore.Authentication.JwtBearer`, `Mvc.Testing`, `TestHost` (the candidate's
+  `AspNetCore.Authentication` and `Testing.*` packages require 11.0.0), `OpenApi` and `Extensions.ApiDescription.Server`
+  (`Microsoft.AspNetCore.OpenApi` 11 pairs with `Microsoft.OpenApi` 3.11.0, which the candidate's OpenApi package requires),
+  and `Components.QuickGrid`, aligned to the 11.0.0 ASP.NET Core line although 10.0.15 restored.
+- `Microsoft.Extensions.*` `DependencyInjection`, `Diagnostics`, `Diagnostics.HealthChecks`, `Hosting`,
+  `Logging.Configuration`, `Options.ConfigurationExtensions`, `Configuration.EnvironmentVariables`, `Compliance.*`,
+  `Telemetry`, `Http.Resilience` and `ServiceDiscovery` to 11.0.0.
+- Roslyn to 5.12.0, `Microsoft.Build.Framework` and `Microsoft.NET.StringTools` to 18.12.2, and bUnit to 2.15.2 (bUnit 2.11.3
+  resolved ASP.NET Core 11.0.0-rc.1 packages for `net11.0`; 2.15.2 is the version SharedKernel uses and leaves no
+  prerelease in any lock file).
+- The Entity Framework family (EF Core 10.0.15, Npgsql 10.0.3 and its EF provider 10.0.3, the data protection and Sqlite
+  packages) and `dotnet-ef` stay on the EF Core 10 line.
+- The direct references to `Microsoft.Extensions.Options`, `Logging.Abstractions`, `Hosting.Abstractions` and
+  `DependencyInjection.Abstractions` and their central entries are removed: `Microsoft.NETCore.App` 11 contains these
+  packages, and restore reports the references as NU1510.
+
+Against the `0.1.0-alpha.649.1` state, the lock files change 82 external package ids, all upgrades. They add two package ids,
+`Microsoft.AspNetCore.WebUtilities` 11.0.0 and `Microsoft.Net.Http.Headers` 11.0.0 (Microsoft, MIT; the nuspec of each
+declares the MIT expression), which the shared framework supplied before. They remove 13 ids that the shared framework now
+contains or that no resolved package requires: the `Microsoft.Extensions` abstractions and `Primitives` packages,
+`System.ComponentModel.Annotations`, `System.Diagnostics.DiagnosticSource`, `System.Reflection.TypeExtensions` and
+`System.ValueTuple`. Lock files now hold the `net11.0` section.

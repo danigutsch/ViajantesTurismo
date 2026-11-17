@@ -49,7 +49,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         var tourNameCells = toursTable.Locator("tbody tr td:nth-child(2)");
 
         // Assert: tours sort by Name ascending / descending.
-        await toursTable.GetButton("Name").ClickAsync();
+        await toursTable.GetLink("Name", exact: true).ClickAsync();
         await Expect(toursTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
         await Expect(toursTable.GetByText(
                 ascendingSentinelName,
@@ -57,7 +57,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
             .ToBeVisibleAsync();
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(tourNameCells, descending: false);
 
-        await toursTable.GetButton("Name").ClickAsync();
+        await toursTable.GetLink("Name", exact: true).ClickAsync();
         await Expect(toursTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
         await Expect(toursTable.GetByText(
                 descendingSentinelName,
@@ -93,14 +93,14 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         var isValid = TotalPages >= 2;
         isValid.ShouldBeTrue($"Expected at least 2 pages, but found {TotalPages}.");
 
-        await customersTable.GetButton("Name").ClickAsync();
-        await customersTable.GetButton("Name").ClickAsync();
+        await customersTable.GetLink("Name", exact: true).ClickAsync();
+        await customersTable.GetLink("Name", exact: true).ClickAsync();
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
         var customerNameCells = customersTable.Locator("tbody tr td:nth-child(1)");
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
 
-        await paginator.Locator("button[aria-label='Go to next page']").ClickAsync();
+        await paginator.Locator("[aria-label='Go to next page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 2 of");
         var secondPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
         secondPage.CurrentPage.ShouldBe(2);
@@ -109,7 +109,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         await ListInteractionTestHelpers.AssertVisibleCellTextsAreSorted(customerNameCells, descending: true);
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
-        await paginator.Locator("button[aria-label='Go to previous page']").ClickAsync();
+        await paginator.Locator("[aria-label='Go to previous page']").ClickAsync();
         await Expect(paginationText).ToContainTextAsync("Page 1 of");
         var returnedPage = await ListInteractionTestHelpers.ReadPaginationState(paginationText);
         returnedPage.CurrentPage.ShouldBe(1);

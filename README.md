@@ -37,7 +37,7 @@ manage tours, travellers, bookings, payments, and customer-facing tour content i
 
 ## Technology Stack
 
-- **Application**: .NET 10, ASP.NET Core, Blazor Server, and .NET Aspire for the API,
+- **Application**: .NET 11, ASP.NET Core, Blazor Server, and .NET Aspire for the API,
     admin UI, orchestration, and observability.
 - **Persistence**: Entity Framework Core with PostgreSQL for relational storage and
     migrations.
@@ -64,7 +64,7 @@ view of project relationships; avoid duplicating that volatile list in this READ
 
 ### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) - Exact version specified in `global.json`
+- [.NET 11 SDK](https://dotnet.microsoft.com/download/dotnet/11.0) - Exact version specified in `global.json`
 - Container runtime (for PostgreSQL):
     - [Podman](https://podman.io/) (recommended, open source) or
     - [Docker Desktop](https://www.docker.com/products/docker-desktop)
@@ -114,7 +114,7 @@ This script will:
 
 Required local tools for normal development:
 
-- `.NET 10 SDK` matching `global.json`
+- `.NET 11 SDK` matching `global.json`
 - container runtime for Aspire-managed dependencies
 
 Optional local tools by task:

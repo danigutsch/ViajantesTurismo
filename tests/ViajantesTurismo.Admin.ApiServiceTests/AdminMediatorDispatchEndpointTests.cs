@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Fakes;
 

@@ -11,7 +11,7 @@ Install Playwright browsers (first time only):
 
 ```powershell
 dotnet build
-pwsh bin/Debug/net10.0/playwright.ps1 install
+pwsh bin/Debug/net11.0/playwright.ps1 install
 ```
 
 On supported Ubuntu versions, `sharedkernel-ci` installs browser OS dependencies too, as CI does.

@@ -102,7 +102,7 @@ internal static class ManagementWebEndpoints
     private static bool IsLocalReturnUrl(string? returnUrl)
     {
         return !string.IsNullOrWhiteSpace(returnUrl)
-               && returnUrl.StartsWith('/')
+               && returnUrl.StartsWith('/', StringComparison.Ordinal)
                && RedirectHttpResult.IsLocalUrl(returnUrl);
     }
 }

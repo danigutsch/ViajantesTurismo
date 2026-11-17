@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddRedisOutputCache(ResourceNames.Cache);
+builder.Services.AddOutputCache();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddManagementAuthentication(builder.Configuration, builder.Environment);
 

@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Application;

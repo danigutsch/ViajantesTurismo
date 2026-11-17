@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Testing.Integration.Helpers;

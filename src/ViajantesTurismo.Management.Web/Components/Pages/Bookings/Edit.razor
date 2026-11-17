@@ -515,7 +515,6 @@ else if (_booking is not null)
     private async Task CancelRedirect()
     {
         await _redirectState.CancelPendingRedirect();
-        StateHasChanged();
     }
 
     public async ValueTask DisposeAsync()

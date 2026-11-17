@@ -163,7 +163,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
         {
             var trimmedLine = lines[lineIndex].TrimStart();
-            if (!trimmedLine.StartsWith('[')
+            if (!trimmedLine.StartsWith('[', StringComparison.Ordinal)
                 || !SerialCollectionDefinitionRegex().IsMatch(trimmedLine))
             {
                 continue;
@@ -175,7 +175,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
                 .Any(static line =>
                 {
                     var candidate = line.TrimStart();
-                    return candidate.StartsWith('[')
+                    return candidate.StartsWith('[', StringComparison.Ordinal)
                         && candidate.Contains("SerialTestJustification", StringComparison.Ordinal);
                 });
 

@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <!-- .NET Standard 2.0 defaults to C# 7.3; compile the newest released C# version the SDK supports. -->
+        <LangVersion>latest</LangVersion>
         <IsAotCompatible>false</IsAotCompatible>
         <RootNamespace>ViajantesTurismo.Architecture.Analyzers</RootNamespace>
         <IsRoslynComponent>true</IsRoslynComponent>
