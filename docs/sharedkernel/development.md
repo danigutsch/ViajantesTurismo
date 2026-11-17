@@ -47,7 +47,9 @@ SharedKernel tools. Version `0.1.0-alpha.511.1` had split `PandaBear.SharedKerne
 `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry`). It kept `lockExemptProjects`.
 The packages, symbol archives and manifest are published in GitHub prerelease
 [`v0.1.0-alpha.653.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.653.1).
-The pin records Linux/Windows package consumption, NativeAOT and stable promotion as `pending`.
+The pin records Linux and Windows package consumption and NativeAOT for `net11.0` as `passed`, merged with
+`sharedkernel-version merge-evidence` from SharedKernel's published-candidate run
+[44146765771](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/44146765771), and stable promotion as `pending`.
 
 `SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
 `warning` once all test projects are tagged.

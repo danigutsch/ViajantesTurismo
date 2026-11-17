@@ -137,9 +137,23 @@
     "PandaBear.SharedKernel.Versioning.Tool.0.1.0-alpha.653.1.nupkg": "25a00017610740d6ea0f7f12a34d37e8cc3a59d17d14a51d113a4ed5644871d4"
   },
   "consumerCompatibility": "pending",
-  "linuxPackageConsumption": "pending",
-  "windowsPackageConsumption": "pending",
+  "linuxPackageConsumption": "passed",
+  "windowsPackageConsumption": "passed",
   "apiBaselineComparison": "pending",
   "apiValidation": "passed",
-  "stablePromotion": "pending"
+  "stablePromotion": "pending",
+  "linuxPackageConsumptionFrameworks": [
+    "net11.0"
+  ],
+  "linuxNativeAot": "passed",
+  "linuxNativeAotFrameworks": [
+    "net11.0"
+  ],
+  "windowsPackageConsumptionFrameworks": [
+    "net11.0"
+  ],
+  "windowsNativeAot": "passed",
+  "windowsNativeAotFrameworks": [
+    "net11.0"
+  ]
 }
