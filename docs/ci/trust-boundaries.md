@@ -46,7 +46,7 @@ write-scoped GitHub token permissions.
 package version, and package SHA-256 hashes.
 
 - `.github/actions/build-sharedkernel-tool` requires a 40-character lowercase hexadecimal
-  `libraryRevision`, checks out only `tools/<tool>` and `tools/Shared` from
+  `libraryRevision`, checks out only `src` and `tools` from
   `danigutsch/PandaBear.SharedKernel` at that commit with `persist-credentials: false` and no token,
   and builds the tool through SharedKernel's `setup-dotnet-tool` in locked restore mode. It accepts only
   `SharedKernel.CI.Tool` and `SharedKernel.RepoConfig.Tool`. The optional `revision` input replaces

@@ -45,14 +45,14 @@
     "approval": {
       "file": ".config/sharedkernel-candidate.json",
       "values": {
-        "packageVersion": "0.1.0-alpha.557.1",
-        "libraryRevision": "4e3c3bbd36b84d48082027ed395f3d02d3680850",
+        "packageVersion": "0.1.0-alpha.649.1",
+        "libraryRevision": "db8fd3fcec1c362e8741c59ef441596e9499a7c3",
         "libraryDirty": false
       }
     },
     "packages": {
       "StreamJsonRpc": "2.25.29",
-      "Magick.NET-Q8-AnyCPU": "15.0.0"
+      "Magick.NET-Q8-AnyCPU": "15.1.0"
     }
   },
   "links": {

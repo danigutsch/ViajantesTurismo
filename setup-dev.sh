@@ -112,16 +112,19 @@ stage_sharedkernel_candidate() {
         source_dir="${repo_root}/.local/sharedkernel-source/SharedKernel.CI.Tool"
         if [[ ! -e "${source_dir}" ]]; then
             git clone --filter=blob:none --no-checkout https://github.com/danigutsch/PandaBear.SharedKernel.git "${source_dir}"
-            git -C "${source_dir}" sparse-checkout set --cone tools/SharedKernel.CI.Tool tools/Shared
         else
             cdup="$(git -C "${source_dir}" rev-parse --show-cdup 2> /dev/null)" || cdup="not-top-level"
             promisor="$(git -C "${source_dir}" config --get remote.origin.promisor)" || promisor=""
             sparse="$(git -C "${source_dir}" sparse-checkout list)" || sparse=""
-            if [[ -n "${cdup}" || "${promisor}" != "true" || "${sparse}" != $'tools/Shared\ntools/SharedKernel.CI.Tool' ]]; then
+            if [[ -n "${cdup}" || "${promisor}" != "true" ]] \
+                || [[ "${sparse}" != $'src\ntools' && "${sparse}" != $'tools/Shared\ntools/SharedKernel.CI.Tool' ]]; then
                 printf "%b" "   ${RED}❌ ${source_dir} is not the expected sparse SharedKernel clone; move it away and rerun${NC}\n"
                 exit 1
             fi
         fi
+        # The src and tools cone holds every library the tool can reference. Setting it on each run also moves a clone
+        # made for the earlier tools/SharedKernel.CI.Tool and tools/Shared cone.
+        git -C "${source_dir}" sparse-checkout set --cone src tools
         if ! git -C "${source_dir}" cat-file -e "${revision}^{commit}" 2> /dev/null; then
             git -C "${source_dir}" fetch --filter=blob:none origin "${revision}"
         fi

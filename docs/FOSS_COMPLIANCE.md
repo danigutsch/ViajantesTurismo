@@ -39,7 +39,9 @@ subject to the exact preview metadata corrections below. Update this document an
 On October 21, 2026, the repository owner approved using the consumed packages' declared licenses
 for StreamJsonRpc `2.25.29` (MIT) and Magick.NET-Q8-AnyCPU `15.0.0` (Apache-2.0) while consuming
 SharedKernel candidate `1.0.0-alpha.20261021.2` at clean revision
-`f5975b60601e245bda6bb8e45559d8ce3a24a8e0`.
+`f5975b60601e245bda6bb8e45559d8ce3a24a8e0`. On November 17, 2026, the owner approved Magick.NET-Q8-AnyCPU `15.1.0`
+(Apache-2.0) in place of `15.0.0` for candidate `0.1.0-alpha.649.1`, after the
+[15.1.0 native audit](ci/dependency-license-evidence.md#security-release-and-tool-engine-candidate).
 
 The pinned review Action ignores versions in package license exemptions. Before emitting either
 package-specific exemption, the workflow therefore checks that exact candidate version, revision,

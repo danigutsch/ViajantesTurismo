@@ -12,7 +12,7 @@ namespace ViajantesTurismo.HostedTests.Management.Browser;
 [TestScope(TestScope.System)]
 public sealed class BrandingThemePreviewCspTests : ManagementWebBrowserTestBase
 {
-    private const string PreviewHeading = "#branding-preview h1";
+    private const string PreviewHeading = "#branding-preview .site-theme-preview__h1";
 
     public BrandingThemePreviewCspTests()
     {

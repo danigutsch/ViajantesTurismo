@@ -59,7 +59,7 @@ public sealed class ConsumerSetupContractTests
         content.ShouldContain("--output .local/sharedkernel-feed", StringComparison.Ordinal);
         content.ShouldContain(defaultSource, StringComparison.Ordinal);
         content.ShouldContain("git clone --filter=blob:none --no-checkout https://github.com/danigutsch/PandaBear.SharedKernel.git", StringComparison.Ordinal);
-        content.ShouldContain("sparse-checkout set --cone tools/SharedKernel.CI.Tool tools/Shared", StringComparison.Ordinal);
+        content.ShouldContain("sparse-checkout set --cone src tools", StringComparison.Ordinal);
         content.ShouldContain(".local/sharedkernel-source/SharedKernel.CI.Tool", StringComparison.Ordinal);
         content.ShouldContain("remote.origin.promisor", StringComparison.Ordinal);
         content.ShouldContain("dotnet restore tools/SharedKernel.CI.Tool --locked-mode", StringComparison.Ordinal);
@@ -207,7 +207,7 @@ public sealed class ConsumerSetupContractTests
         action.ShouldContain("        ref: ${{ steps.sharedkernel-source.outputs.revision }}\n", StringComparison.Ordinal);
         action.ShouldContain("        path: .local/sharedkernel-source/${{ inputs.tool }}\n", StringComparison.Ordinal);
         action.ShouldContain("        persist-credentials: false\n", StringComparison.Ordinal);
-        action.ShouldContain("        sparse-checkout-cone-mode: true\n        sparse-checkout: |\n          tools/${{ inputs.tool }}\n          tools/Shared\n          ${{ inputs.sparse-extra }}\n\n", StringComparison.Ordinal);
+        action.ShouldContain("        sparse-checkout-cone-mode: true\n        sparse-checkout: |\n          src\n          tools\n          ${{ inputs.sparse-extra }}\n\n", StringComparison.Ordinal);
         action.ShouldContain("git -C $source rev-parse --show-cdup", StringComparison.Ordinal);
         action.ShouldContain("$head -cne $revision", StringComparison.Ordinal);
         action.ShouldContain("git -C $source status --porcelain", StringComparison.Ordinal);
