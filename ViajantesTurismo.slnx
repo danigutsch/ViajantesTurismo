@@ -27,12 +27,12 @@
         <Project Path="src/ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj" />
         <Project Path="src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj" />
         <Project Path="src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj" />
-        <Project Path="src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj" />
+        <Project Path="src/ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj" />
         <Project Path="src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj" />
         <Project Path="src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj" />
     </Folder>
     <Folder Name="/src/Catalog/">
-        <Project Path="src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj" />
+        <Project Path="src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj" />
         <Project Path="src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj" />
         <Project Path="src/ViajantesTurismo.Catalog.Contracts.Application/ViajantesTurismo.Catalog.Contracts.Application.csproj" />
         <Project Path="src/ViajantesTurismo.Catalog.Contracts.Http/ViajantesTurismo.Catalog.Contracts.Http.csproj" />

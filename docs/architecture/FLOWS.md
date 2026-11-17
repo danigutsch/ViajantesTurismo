@@ -14,7 +14,7 @@ invariants, and EF Core persists state through the Admin write database.
 ```mermaid
 flowchart LR
     management[Management.Web]
-    api[Admin.ApiService endpoints]
+    api[Admin.Api endpoints]
     handler[Admin.Application handler]
     store[Admin store/query service]
     domain[Admin.Domain aggregate]
@@ -56,7 +56,7 @@ interception should live in a separate package over these EF Core primitives, no
 
 ```mermaid
 sequenceDiagram
-    participant API as Admin.ApiService
+    participant API as Admin.Api
     participant Handler as CreateTourCommandHandler
     participant Store as ITourStore
     participant Tour as Tour aggregate
@@ -258,7 +258,7 @@ variant has `RequiresHumanReview`; `Publish()` blocks publication while review i
 ```mermaid
 sequenceDiagram
     participant Editor as Management.Web editor
-    participant API as Catalog.ApiService
+    participant API as Catalog.Api
     participant Content as EditablePublicContent
     participant Store as IPublicContentStore
     participant Db as PublicContent tables
@@ -308,7 +308,7 @@ flowchart LR
 
 ### Current implementation
 
-Catalog.ApiService hosts the Branding module, which uses validation from `SharedKernel.Branding` and
+Catalog.Api hosts the Branding module, which uses validation from `SharedKernel.Branding` and
 owns persistence, endpoints, defaults, authorization, and cache invalidation. It keeps a separate
 `BrandingDbContext` and `branding` schema in the Catalog physical database. DTO, client, and route
 types belong to the ViajantesTurismo Branding module.
@@ -316,7 +316,7 @@ types belong to the ViajantesTurismo Branding module.
 ```mermaid
 sequenceDiagram
     participant Editor as Management.Web branding editor
-    participant API as Catalog.ApiService hosting the Branding module
+    participant API as Catalog.Api hosting the Branding module
     participant Core as SharedKernel.Branding
     participant Store as Branding settings store
     participant Public as Public.Web
@@ -342,7 +342,7 @@ Current rendering rules:
 
 ### State distribution
 
-Branding remains a logical module hosted by Catalog.ApiService. A write commits current state,
+Branding remains a logical module hosted by Catalog.Api. A write commits current state,
 an immutable full-state revision, and a Branding-owned outbox event in one transaction. The event
 is `BrandingSettingsChangedIntegrationEvent` and carries a non-empty source epoch, positive source revision, and
 complete immutable document snapshot. `Admin.IntegrationEventWorker` applies it through an Admin inbox to a
@@ -354,7 +354,7 @@ Admin document generation, regeneration, and payment instructions fail closed (`
 flowchart LR
     management[Management.Web]
     public[Public.Web]
-    catalogHost[Catalog.ApiService host]
+    catalogHost[Catalog.Api host]
     brandingModule[Branding ASP.NET/application module]
     current[(Branding current state)]
     revisions[(Append-only full-state revisions)]
@@ -364,7 +364,7 @@ flowchart LR
     worker[Admin.IntegrationEventWorker]
     adminInbox[(Admin Branding inbox + watermark)]
     adminProjection[(Admin Branding projection)]
-    adminApi[Admin.ApiService]
+    adminApi[Admin.Api]
 
     management -->|GET ETag / PUT If-Match; uncached| catalogHost
     public -->|60s fresh / 300s stale public HTTP| catalogHost
@@ -415,7 +415,7 @@ rendition metadata.
 ```mermaid
 flowchart LR
     management[Management.Web media editor]
-    api[Catalog.ApiService]
+    api[Catalog.Api]
     store[IPublicMediaImageStore]
     db[(PublicMediaImages tables)]
     mapper[MapTour]

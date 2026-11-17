@@ -1,5 +1,5 @@
 using PandaBear.Testing;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;

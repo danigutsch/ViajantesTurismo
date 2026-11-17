@@ -280,7 +280,7 @@ from the Aspire CLI bundle (`AspireUseCliBundle`), and `aspire update` keeps the
 For service-specific details, see:
 
 - [AppHost README](src/ViajantesTurismo.AppHost/README.md)
-- [Admin API README](src/ViajantesTurismo.Admin.ApiService/README.md)
+- [Admin API README](src/ViajantesTurismo.Admin.Api/README.md)
 - [Management Web README](src/ViajantesTurismo.Management.Web/README.md)
 
 ### Development Workflow

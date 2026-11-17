@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using PandaBear.AspNetCore.Authentication;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Testing.AspNetCore;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
 

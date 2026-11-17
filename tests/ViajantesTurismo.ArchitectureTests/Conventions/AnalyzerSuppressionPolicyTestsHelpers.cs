@@ -53,7 +53,7 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
 
         var normalizedPath = relativePath.Replace('\\', '/');
         if (!normalizedPath.StartsWith("src/", StringComparison.Ordinal)
-            || !normalizedPath.Contains(".ApiService/", StringComparison.Ordinal))
+            || !normalizedPath.Contains(".Api/", StringComparison.Ordinal))
         {
             return false;
         }

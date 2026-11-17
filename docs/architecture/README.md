@@ -100,7 +100,7 @@ feature ownership and proposes incremental moves within existing Clean Architect
 - Configurable Branding is an independent ViajantesTurismo module; `SharedKernel.Branding` retains
   only pure validation/normalization. The standalone API is current, while
   [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) accepts a gated move
-  into Catalog.ApiService without transferring contracts, routes, permissions, schema, or outbox
+  into Catalog.Api without transferring contracts, routes, permissions, schema, or outbox
   ownership to Catalog. The separation remains logical; the co-hosted modules share one process and
   credential blast radius.
 - Catalog media upload, management metadata, accessibility drafts, processing, reconciliation, and

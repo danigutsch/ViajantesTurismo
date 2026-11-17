@@ -18,105 +18,105 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 
 | Method | Route | Endpoint | Audience | Auth metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `GET` | `/` | GetBookingFinancialHistory | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `GET` | `/` | ListPaymentAccounts | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
-| `POST` | `/` | CreatePaymentAccount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
+| `GET` | `/` | GetBookingFinancialHistory | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `GET` | `/` | ListPaymentAccounts | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
+| `POST` | `/` | CreatePaymentAccount | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `GET` | `/Error` | inline | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
-| `POST` | `/allocation-releases` | ReleaseBookingPaymentAllocations | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `GET` | `/api/v1/bookings` | GetBookings | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
-| `POST` | `/api/v1/bookings` | CreateBooking | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCreateBookingEndpoint.cs` |
-| `GET` | `/api/v1/bookings/customer/{customerId:guid}` | GetBookingsByCustomerId | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
-| `GET` | `/api/v1/bookings/tour/{tourId:guid}` | GetBookingsByTourId | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
-| `DELETE` | `/api/v1/bookings/{id:guid}` | DeleteBooking | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsDeleteBookingEndpoint.cs` |
-| `GET` | `/api/v1/bookings/{id:guid}` | GetBookingById | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingEndpoints.cs` |
-| `POST` | `/api/v1/bookings/{id:guid}/cancel` | CancelBooking | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCancelBookingEndpoint.cs` |
-| `POST` | `/api/v1/bookings/{id:guid}/complete` | CompleteBooking | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsCompleteBookingEndpoint.cs` |
-| `POST` | `/api/v1/bookings/{id:guid}/confirm` | ConfirmBooking | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsConfirmBookingEndpoint.cs` |
-| `PUT` | `/api/v1/bookings/{id:guid}/details` | UpdateBookingDetails | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDetailsEndpoint.cs` |
-| `PUT` | `/api/v1/bookings/{id:guid}/discount` | UpdateBookingDiscount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingDiscountEndpoint.cs` |
-| `PATCH` | `/api/v1/bookings/{id:guid}/notes` | UpdateBookingNotes | management/internal | required | `ViajantesTurismo.Admin.ApiService/Bookings/BookingsUpdateBookingNotesEndpoint.cs` |
+| `POST` | `/allocation-releases` | ReleaseBookingPaymentAllocations | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `GET` | `/api/v1/bookings` | GetBookings | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
+| `POST` | `/api/v1/bookings` | CreateBooking | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingsCreateBookingEndpoint.cs` |
+| `GET` | `/api/v1/bookings/customer/{customerId:guid}` | GetBookingsByCustomerId | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
+| `GET` | `/api/v1/bookings/tour/{tourId:guid}` | GetBookingsByTourId | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
+| `DELETE` | `/api/v1/bookings/{id:guid}` | DeleteBooking | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingsDeleteBookingEndpoint.cs` |
+| `GET` | `/api/v1/bookings/{id:guid}` | GetBookingById | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
+| `POST` | `/api/v1/bookings/{id:guid}/cancel` | CancelBooking | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingsCancelBookingEndpoint.cs` |
+| `POST` | `/api/v1/bookings/{id:guid}/complete` | CompleteBooking | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingsCompleteBookingEndpoint.cs` |
+| `POST` | `/api/v1/bookings/{id:guid}/confirm` | ConfirmBooking | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingsConfirmBookingEndpoint.cs` |
+| `PUT` | `/api/v1/bookings/{id:guid}/details` | UpdateBookingDetails | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingsUpdateBookingDetailsEndpoint.cs` |
+| `PUT` | `/api/v1/bookings/{id:guid}/discount` | UpdateBookingDiscount | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingsUpdateBookingDiscountEndpoint.cs` |
+| `PATCH` | `/api/v1/bookings/{id:guid}/notes` | UpdateBookingNotes | management/internal | required | `ViajantesTurismo.Admin.Api/Bookings/BookingsUpdateBookingNotesEndpoint.cs` |
 | `GET` | `/api/v1/branding/settings` | GetManagementSettings | management/internal | required | `ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs` |
 | `PUT` | `/api/v1/branding/settings` | SaveSettings | management/internal | required | `ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs` |
-| `POST` | `/api/v1/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `PUT` | `/api/v1/catalog/media/images/{id:guid}/accessibility-review` | ReviewMediaImageAccessibility | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | GetManagementMediaPreview | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/catalog/public-content` | inline | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/catalog/public-content/{**key}` | GetPublicContentForManagement | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `PUT` | `/api/v1/catalog/public-content/{**key}` | UpsertPublicContent | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/catalog/tours` | GetTours | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/catalog/tours/{id:guid}` | GetTour | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/catalog/tours/{id:guid}/images` | ListTourImages | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `POST` | `/api/v1/catalog/tours/{id:guid}/images` | UploadTourImage | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `PUT` | `/api/v1/catalog/tours/{id:guid}/presentation` | UpsertTourPresentation | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `POST` | `/api/v1/catalog/tours/{id:guid}/publish` | PublishTour | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `POST` | `/api/v1/catalog/tours/{id:guid}/unpublish` | UnpublishTour | management/internal | required | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/customers` | GetCustomers | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `POST` | `/api/v1/customers` | CreateCustomer | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `POST` | `/api/v1/customers/import` | ImportCustomers | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` |
-| `POST` | `/api/v1/customers/import/commit` | CommitImportWithResolutions | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Customers/CustomerImportEndpoints.cs` |
-| `GET` | `/api/v1/customers/{id:guid}` | GetCustomerById | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `PUT` | `/api/v1/customers/{id:guid}` | UpdateCustomer | management/internal | required | `ViajantesTurismo.Admin.ApiService/Customers/CustomerEndpoints.cs` |
-| `GET` | `/api/v1/docs/errors` | GetErrorDocumentation | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
-| `GET` | `/api/v1/docs/errors/{identifier}` | GetErrorDocumentationByIdentifier | management/internal | not declared | `ViajantesTurismo.Admin.ApiService/Errors/ErrorDocumentationEndpoints.cs` |
-| `POST` | `/api/v1/documents/bookings/{bookingId:guid}/contract-drafts` | GenerateDocumentContractDraft | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `GET` | `/api/v1/documents/{id:guid}` | GetDocumentById | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `POST` | `/api/v1/documents/{id:guid}/approve` | ApproveDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `POST` | `/api/v1/documents/{id:guid}/changes-acknowledged` | AcknowledgeDocumentChanges | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `POST` | `/api/v1/documents/{id:guid}/changes-requested` | RequestDocumentChanges | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `GET` | `/api/v1/documents/{id:guid}/download` | DownloadDocumentArtifact | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `PATCH` | `/api/v1/documents/{id:guid}/fields/{fieldId}` | UpdateDocumentField | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `POST` | `/api/v1/documents/{id:guid}/finalize` | FinalizeDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `POST` | `/api/v1/documents/{id:guid}/regenerate` | RegenerateDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `POST` | `/api/v1/documents/{id:guid}/review` | BeginDocumentReview | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
-| `POST` | `/api/v1/documents/{id:guid}/void` | VoidDocument | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/catalog/media/images/{id:guid}/accessibility-draft` | GenerateMediaImageAccessibilityDraft | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `PUT` | `/api/v1/catalog/media/images/{id:guid}/accessibility-review` | ReviewMediaImageAccessibility | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | GetManagementMediaPreview | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/public-content` | inline | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/public-content/{**key}` | GetPublicContentForManagement | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `PUT` | `/api/v1/catalog/public-content/{**key}` | UpsertPublicContent | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/tours` | GetTours | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/tours/{id:guid}` | GetTour | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/catalog/tours/{id:guid}/images` | ListTourImages | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/images` | UploadTourImage | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `PUT` | `/api/v1/catalog/tours/{id:guid}/presentation` | UpsertTourPresentation | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/publish` | PublishTour | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/unpublish` | UnpublishTour | management/internal | required | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/customers` | GetCustomers | management/internal | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
+| `POST` | `/api/v1/customers` | CreateCustomer | management/internal | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
+| `POST` | `/api/v1/customers/import` | ImportCustomers | management/internal | not declared | `ViajantesTurismo.Admin.Api/Customers/CustomerImportEndpoints.cs` |
+| `POST` | `/api/v1/customers/import/commit` | CommitImportWithResolutions | management/internal | not declared | `ViajantesTurismo.Admin.Api/Customers/CustomerImportEndpoints.cs` |
+| `GET` | `/api/v1/customers/{id:guid}` | GetCustomerById | management/internal | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
+| `PUT` | `/api/v1/customers/{id:guid}` | UpdateCustomer | management/internal | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
+| `GET` | `/api/v1/docs/errors` | GetErrorDocumentation | management/internal | not declared | `ViajantesTurismo.Admin.Api/Errors/ErrorDocumentationEndpoints.cs` |
+| `GET` | `/api/v1/docs/errors/{identifier}` | GetErrorDocumentationByIdentifier | management/internal | not declared | `ViajantesTurismo.Admin.Api/Errors/ErrorDocumentationEndpoints.cs` |
+| `POST` | `/api/v1/documents/bookings/{bookingId:guid}/contract-drafts` | GenerateDocumentContractDraft | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `GET` | `/api/v1/documents/{id:guid}` | GetDocumentById | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/approve` | ApproveDocument | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/changes-acknowledged` | AcknowledgeDocumentChanges | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/changes-requested` | RequestDocumentChanges | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `GET` | `/api/v1/documents/{id:guid}/download` | DownloadDocumentArtifact | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `PATCH` | `/api/v1/documents/{id:guid}/fields/{fieldId}` | UpdateDocumentField | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/finalize` | FinalizeDocument | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/regenerate` | RegenerateDocument | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/review` | BeginDocumentReview | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `POST` | `/api/v1/documents/{id:guid}/void` | VoidDocument | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
 | `GET` | `/api/v1/public/branding` | GetPublicSettings | public API | not declared | `ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs` |
-| `GET` | `/api/v1/public/catalog/content/{**key}` | GetPublicContent | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/public/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/public/catalog/tours` | GetPublishedTours | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/public/catalog/tours/{slug}` | GetPublishedTour | public API | anonymous | `ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs` |
-| `GET` | `/api/v1/tours` | GetTours | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
-| `POST` | `/api/v1/tours` | CreateTour | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursCreateTourEndpoint.cs` |
-| `GET` | `/api/v1/tours/{id:guid}` | GetTourById | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursEndpoints.cs` |
-| `PUT` | `/api/v1/tours/{id:guid}` | UpdateTour | management/internal | required | `ViajantesTurismo.Admin.ApiService/Tours/ToursUpdateTourEndpoint.cs` |
-| `GET` | `/bookings/{bookingId:guid}/payment-instructions` | ListBookingPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
-| `POST` | `/bookings/{bookingId:guid}/payment-instructions` | GeneratePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
-| `POST` | `/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate` | RegeneratePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/content/{**key}` | GetPublicContent | public API | anonymous | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public API | anonymous | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/tours` | GetPublishedTours | public API | anonymous | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/tours/{slug}` | GetPublishedTour | public API | anonymous | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` |
+| `GET` | `/api/v1/tours` | GetTours | management/internal | required | `ViajantesTurismo.Admin.Api/Tours/ToursEndpoints.cs` |
+| `POST` | `/api/v1/tours` | CreateTour | management/internal | required | `ViajantesTurismo.Admin.Api/Tours/ToursCreateTourEndpoint.cs` |
+| `GET` | `/api/v1/tours/{id:guid}` | GetTourById | management/internal | required | `ViajantesTurismo.Admin.Api/Tours/ToursEndpoints.cs` |
+| `PUT` | `/api/v1/tours/{id:guid}` | UpdateTour | management/internal | required | `ViajantesTurismo.Admin.Api/Tours/ToursUpdateTourEndpoint.cs` |
+| `GET` | `/bookings/{bookingId:guid}/payment-instructions` | ListBookingPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `POST` | `/bookings/{bookingId:guid}/payment-instructions` | GeneratePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `POST` | `/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate` | RegeneratePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
 | `GET` | `/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | inline | management/internal | required | `ViajantesTurismo.Management.Web/ManagementWebEndpoints.cs` |
 | `GET` | `/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
-| `GET` | `/details` | GetBookingFinancialDetails | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
+| `GET` | `/details` | GetBookingFinancialDetails | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
 | `GET` | `/documents/{id:guid}/download` | Download | management/internal | required | `ViajantesTurismo.Management.Web/DocumentArtifactProxyEndpoints.cs` |
-| `GET` | `/holds` | ListDocumentHoldOverview | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
-| `POST` | `/quotes` | DraftBookingPaymentQuote | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/quotes/{quoteId:guid}/approve` | ApproveBookingPaymentQuote | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/receipts` | RecordBookingReceipt | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/receipts/{receiptId:guid}/allocations` | AllocateBookingPayment | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/receipts/{receiptId:guid}/reconciliations` | DraftBookingReceiptReconciliation | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/receipts/{receiptId:guid}/refunds` | DraftBookingPaymentRefund | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/receipts/{receiptId:guid}/reversals` | ReverseBookingReceipt | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/reconciliations/{reconciliationId:guid}/approve` | ApproveBookingReceiptReconciliation | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/records/{targetId:guid}/review` | ReviewBookingFinancialRecord | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/records/{targetId:guid}/withdraw-approval` | WithdrawBookingFinancialApproval | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/refunds/{refundId:guid}/approve` | ApproveBookingPaymentRefund | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/refunds/{refundId:guid}/corrections` | CorrectBookingPaymentRefund | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/schedules` | DraftBookingPaymentSchedule | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `POST` | `/schedules/{scheduleId:guid}/approve` | ApproveBookingPaymentSchedule | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/BookingFinancialEndpoints.cs` |
-| `GET` | `/{id:guid}` | GetPaymentAccount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
-| `PUT` | `/{id:guid}` | UpdatePaymentAccount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
-| `GET` | `/{id:guid}/holds` | ListDocumentHolds | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
-| `POST` | `/{id:guid}/holds` | PlaceDocumentHold | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
-| `GET` | `/{id:guid}/holds/{holdId:guid}` | GetDocumentHold | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
-| `POST` | `/{id:guid}/holds/{holdId:guid}/release` | ReleaseDocumentHold | management/internal | required | `ViajantesTurismo.Admin.ApiService/Documents/DocumentHoldEndpoints.cs` |
-| `GET` | `/{id:guid}/payment-instructions` | GetPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
-| `POST` | `/{id:guid}/payment-instructions/approve` | ApprovePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
-| `POST` | `/{id:guid}/payment-instructions/finalize` | FinalizePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
-| `POST` | `/{id:guid}/payment-instructions/review` | ReviewPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
-| `POST` | `/{id:guid}/payment-instructions/void` | VoidPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
-| `POST` | `/{id:guid}/payment-instructions/withdraw-approval` | WithdrawPaymentInstructionApproval | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentInstructionEndpoints.cs` |
-| `GET` | `/{id:guid}/recipient` | GetPaymentAccountRecipient | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
-| `POST` | `/{id:guid}/retire` | RetirePaymentAccount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
-| `POST` | `/{id:guid}/review` | ReviewPaymentAccount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
-| `POST` | `/{id:guid}/verify` | VerifyPaymentAccount | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
-| `POST` | `/{id:guid}/withdraw-verification` | WithdrawPaymentAccountVerification | management/internal | required | `ViajantesTurismo.Admin.ApiService/Payments/PaymentAccountEndpoints.cs` |
+| `GET` | `/holds` | ListDocumentHoldOverview | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentHoldEndpoints.cs` |
+| `POST` | `/quotes` | DraftBookingPaymentQuote | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/quotes/{quoteId:guid}/approve` | ApproveBookingPaymentQuote | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/receipts` | RecordBookingReceipt | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/receipts/{receiptId:guid}/allocations` | AllocateBookingPayment | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/receipts/{receiptId:guid}/reconciliations` | DraftBookingReceiptReconciliation | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/receipts/{receiptId:guid}/refunds` | DraftBookingPaymentRefund | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/receipts/{receiptId:guid}/reversals` | ReverseBookingReceipt | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/reconciliations/{reconciliationId:guid}/approve` | ApproveBookingReceiptReconciliation | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/records/{targetId:guid}/review` | ReviewBookingFinancialRecord | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/records/{targetId:guid}/withdraw-approval` | WithdrawBookingFinancialApproval | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/refunds/{refundId:guid}/approve` | ApproveBookingPaymentRefund | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/refunds/{refundId:guid}/corrections` | CorrectBookingPaymentRefund | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/schedules` | DraftBookingPaymentSchedule | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `POST` | `/schedules/{scheduleId:guid}/approve` | ApproveBookingPaymentSchedule | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
+| `GET` | `/{id:guid}` | GetPaymentAccount | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
+| `PUT` | `/{id:guid}` | UpdatePaymentAccount | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
+| `GET` | `/{id:guid}/holds` | ListDocumentHolds | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentHoldEndpoints.cs` |
+| `POST` | `/{id:guid}/holds` | PlaceDocumentHold | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentHoldEndpoints.cs` |
+| `GET` | `/{id:guid}/holds/{holdId:guid}` | GetDocumentHold | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentHoldEndpoints.cs` |
+| `POST` | `/{id:guid}/holds/{holdId:guid}/release` | ReleaseDocumentHold | management/internal | required | `ViajantesTurismo.Admin.Api/Documents/DocumentHoldEndpoints.cs` |
+| `GET` | `/{id:guid}/payment-instructions` | GetPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `POST` | `/{id:guid}/payment-instructions/approve` | ApprovePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `POST` | `/{id:guid}/payment-instructions/finalize` | FinalizePaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `POST` | `/{id:guid}/payment-instructions/review` | ReviewPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `POST` | `/{id:guid}/payment-instructions/void` | VoidPaymentInstructions | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `POST` | `/{id:guid}/payment-instructions/withdraw-approval` | WithdrawPaymentInstructionApproval | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `GET` | `/{id:guid}/recipient` | GetPaymentAccountRecipient | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
+| `POST` | `/{id:guid}/retire` | RetirePaymentAccount | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
+| `POST` | `/{id:guid}/review` | ReviewPaymentAccount | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
+| `POST` | `/{id:guid}/verify` | VerifyPaymentAccount | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
+| `POST` | `/{id:guid}/withdraw-verification` | WithdrawPaymentAccountVerification | management/internal | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 <!-- generated:api-endpoints:end -->
 
 ## Notes

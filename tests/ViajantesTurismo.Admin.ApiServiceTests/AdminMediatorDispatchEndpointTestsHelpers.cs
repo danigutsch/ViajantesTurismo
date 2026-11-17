@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Builders;

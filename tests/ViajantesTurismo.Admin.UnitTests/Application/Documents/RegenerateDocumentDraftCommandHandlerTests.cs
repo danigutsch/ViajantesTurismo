@@ -8,7 +8,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Fakes;
-using ViajantesTurismo.Admin.UnitTests.ApiService;
+using ViajantesTurismo.Admin.UnitTests.Api;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;

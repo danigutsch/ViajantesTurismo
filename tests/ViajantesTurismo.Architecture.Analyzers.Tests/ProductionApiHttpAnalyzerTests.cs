@@ -22,7 +22,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -62,7 +62,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 }
             }
 
-            namespace ViajantesTurismo.Admin.ApiService
+            namespace ViajantesTurismo.Admin.Api
             {
                 public static class Registration
                 {
@@ -111,7 +111,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 }
             }
 
-            namespace ViajantesTurismo.Admin.ApiService
+            namespace ViajantesTurismo.Admin.Api
             {
                 public static class Registration
                 {
@@ -139,7 +139,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -162,7 +162,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -186,7 +186,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -209,7 +209,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -233,7 +233,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -257,7 +257,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -280,7 +280,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -304,7 +304,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -328,7 +328,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -355,7 +355,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(statement);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -385,7 +385,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(statement);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -411,7 +411,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -434,7 +434,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -458,7 +458,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -482,7 +482,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -509,7 +509,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -532,7 +532,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -558,7 +558,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(statement);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -581,7 +581,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -609,7 +609,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -634,7 +634,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -659,7 +659,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -685,7 +685,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideExpression);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -716,7 +716,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideExpression);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -740,7 +740,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -774,7 +774,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 }
             }
 
-            namespace ViajantesTurismo.Admin.ApiService
+            namespace ViajantesTurismo.Admin.Api
             {
                 public static class Registration
                 {
@@ -798,7 +798,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class ClientFactory
             {
@@ -830,7 +830,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 }
             }
 
-            namespace ViajantesTurismo.Admin.ApiService
+            namespace ViajantesTurismo.Admin.Api
             {
                 public static class ClientFactory
                 {
@@ -854,7 +854,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -883,7 +883,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(statement);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -910,7 +910,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentNullException.ThrowIfNull(requestDeclaration);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -934,7 +934,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -962,7 +962,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(overrideExpression);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -989,7 +989,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -1016,7 +1016,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -1042,7 +1042,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -1069,7 +1069,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -1096,7 +1096,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -1123,7 +1123,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -1151,7 +1151,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         // Arrange
         ArgumentNullException.ThrowIfNull(statement);
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1174,7 +1174,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingReader
             {
@@ -1207,7 +1207,7 @@ public sealed class ProductionApiHttpAnalyzerTests
                 }
             }
 
-            namespace ViajantesTurismo.Admin.ApiService
+            namespace ViajantesTurismo.Admin.Api
             {
                 public static class Telemetry
                 {
@@ -1233,7 +1233,7 @@ public sealed class ProductionApiHttpAnalyzerTests
         const string source = """
             using System.Net.Http.Json;
 
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class BrandingWriter
             {
@@ -1291,7 +1291,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         var source = $$"""
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1314,7 +1314,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class ApprovedCommunication
             {
@@ -1370,7 +1370,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1393,7 +1393,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1418,7 +1418,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1443,7 +1443,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1468,7 +1468,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1497,7 +1497,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1547,7 +1547,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {
@@ -1572,7 +1572,7 @@ public sealed class ProductionApiHttpAnalyzerTests
     {
         // Arrange
         const string source = """
-            namespace ViajantesTurismo.Admin.ApiService;
+            namespace ViajantesTurismo.Admin.Api;
 
             public static class Registration
             {

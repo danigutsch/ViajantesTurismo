@@ -17,7 +17,7 @@ must remain replaceable.
   client using a secure, `HttpOnly`, `SameSite=Lax`, `__Host-` cookie.
 - APIs accept delegated bearer access tokens only. Each named scheme validates the configured issuer,
   discovery metadata, signature/JWKS, `RS256` algorithm, expiry, bounded clock skew, and exactly one
-  intended audience: `admin-api`, `catalog-api`, or `branding-api`. Catalog.ApiService co-hosting uses
+  intended audience: `admin-api`, `catalog-api`, or `branding-api`. Catalog.Api co-hosting uses
   `CatalogBearer` for `catalog-api` routes and `BrandingBearer` for protected `branding-api` routes;
   no route accepts both audiences. Management never forwards its source token to an API.
 - Map the validated `roles` claim centrally into application-owned `permission` claims. Policies
@@ -48,7 +48,7 @@ must remain replaceable.
   token; neither source nor exchanged tokens reach the browser. Exchanged tokens are protected and
   cached server-side by login session and audience, bound to a source-token fingerprint, and expire no
   later than the login session.
-- Management calls Branding routes hosted by Catalog.ApiService with the exact `branding-api` exchanged
+- Management calls Branding routes hosted by Catalog.Api with the exact `branding-api` exchanged
   audience; co-hosting adds no broad audience acceptance.
 - OIDC authority, issuer, client ID, and client-secret configuration remain deployment-provided.
   The current Management BFF implementation requires

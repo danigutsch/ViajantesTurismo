@@ -6,7 +6,7 @@ using ViajantesTurismo.Branding.Infrastructure;
 namespace ViajantesTurismo.Branding.AspNetCore;
 
 /// <summary>
-/// Composes the Branding HTTP module into Catalog.ApiService: routes, validation, the revision-aware writer, cache,
+/// Composes the Branding HTTP module into Catalog.Api: routes, validation, the revision-aware writer, cache,
 /// rate limits, CORS, permissions, and the Branding OpenAPI boundary documents.
 /// </summary>
 public static class BrandingModule

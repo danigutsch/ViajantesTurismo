@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Admin.ContractTests;
 internal static class AdminOpenApiArtifactDriftGuard
 {
     private const string CanonicalArtifactSuffix = ".openapi.json";
-    private const string GeneratedArtifactPrefix = "ViajantesTurismo.Admin.ApiService_";
+    private const string GeneratedArtifactPrefix = "ViajantesTurismo.Admin.Api_";
     private const string RefreshHint = "Generate with `dotnet tool run sharedkernel-ci -- openapi generate --target admin` in a fresh clone or worktree; refresh with `dotnet tool run sharedkernel-ci -- openapi refresh --target admin` after intentional HTTP contract changes.";
 
     /// <summary>
@@ -37,7 +37,7 @@ internal static class AdminOpenApiArtifactDriftGuard
             RefreshHint,
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["v1"] = "ViajantesTurismo.Admin.ApiService.json"
+                ["v1"] = "ViajantesTurismo.Admin.Api.json"
             });
     }
 }

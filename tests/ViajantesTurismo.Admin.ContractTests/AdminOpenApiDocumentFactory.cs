@@ -18,14 +18,14 @@ internal static class AdminOpenApiDocumentFactory
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(documentName);
 
-        var assembly = Assembly.Load("ViajantesTurismo.Admin.ApiService");
+        var assembly = Assembly.Load("ViajantesTurismo.Admin.Api");
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddEndpointsApiExplorer();
 
         InvokeInternalStaticMethod(
             assembly,
-            "ViajantesTurismo.Admin.ApiService.AdminOpenApiDocuments",
+            "ViajantesTurismo.Admin.Api.AdminOpenApiDocuments",
             "AddAdminOpenApiDocuments",
             builder.Services);
 
@@ -35,7 +35,7 @@ internal static class AdminOpenApiDocumentFactory
         {
             InvokeInternalStaticMethod(
                 assembly,
-                $"ViajantesTurismo.Admin.ApiService.{endpointMapperName[3..]}",
+                $"ViajantesTurismo.Admin.Api.{endpointMapperName[3..]}",
                 endpointMapperName,
                 app);
         }

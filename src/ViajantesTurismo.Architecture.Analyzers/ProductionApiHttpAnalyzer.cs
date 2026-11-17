@@ -1089,7 +1089,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
         };
     }
 
-    /// <summary>Maps a client type to the API it calls; Catalog.ApiService hosts the Branding routes, so Branding HTTP clients reach the Catalog API.</summary>
+    /// <summary>Maps a client type to the API it calls; Catalog.Api hosts the Branding routes, so Branding HTTP clients reach the Catalog API.</summary>
     private static ApiDestination GetClientTypeDestination(ITypeSymbol type)
     {
         var namespaceName = type.ContainingNamespace.ToDisplayString();
@@ -1113,8 +1113,8 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     {
         return assemblyName switch
         {
-            "ViajantesTurismo.Admin.ApiService" => ApiDestination.Admin,
-            "ViajantesTurismo.Catalog.ApiService" => ApiDestination.Catalog,
+            "ViajantesTurismo.Admin.Api" => ApiDestination.Admin,
+            "ViajantesTurismo.Catalog.Api" => ApiDestination.Catalog,
             _ => ApiDestination.None
         };
     }

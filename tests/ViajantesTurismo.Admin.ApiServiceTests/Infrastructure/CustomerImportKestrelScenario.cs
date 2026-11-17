@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PandaBear.MalwareScanning;
-using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Fakes;

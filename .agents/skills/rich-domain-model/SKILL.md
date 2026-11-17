@@ -34,7 +34,7 @@ themselves live in `docs/domain/RICH_DOMAIN_MODEL.md`; this skill is the workflo
      ```bash
      rg -nP --glob '*.{cs,razor}' --glob '!**/bin/**' --glob '!**/obj/**' \
        '(?:if|&&|\|\|)\s*\(?!?\s*(\w+)\??\.\w+[^;]*(?:&&|\|\|)\s*!?\s*\1\??\.\w+' \
-       src/ViajantesTurismo.*.Application src/ViajantesTurismo.*.ApiService src/ViajantesTurismo.*.Web
+       src/ViajantesTurismo.*.Application src/ViajantesTurismo.*.Api src/ViajantesTurismo.*.Web
      ```
 
    - Unchecked `Result` values in the application layer: `rg -n '\)\.Value;' src/ViajantesTurismo.*.Application`

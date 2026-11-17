@@ -146,7 +146,7 @@ Diagnostics should name the attribute option, the affected type, and the smalles
    - `src/ViajantesTurismo.Catalog.Domain/Media/MediaImageDimensions.cs`
 
 3. JSON serializer context registration that is mechanical and easy to miss:
-   - `src/ViajantesTurismo.Admin.ApiService/JsonSerializerContext.cs`
+   - `src/ViajantesTurismo.Admin.Api/JsonSerializerContext.cs`
 
 ### Medium payoff, higher risk
 

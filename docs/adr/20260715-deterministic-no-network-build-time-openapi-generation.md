@@ -33,7 +33,7 @@ from endpoint authorization metadata and the authenticated fallback policy; it d
 handler or identity-provider configuration.
 
 OpenAPI tool targets are logical contract owners, not permanent executable owners. The `branding`
-target (`dotnet tool run sharedkernel-ci -- openapi refresh --target branding`) builds Catalog.ApiService
+target (`dotnet tool run sharedkernel-ci -- openapi refresh --target branding`) builds Catalog.Api
 in a Branding-only generation mode. That mode produces the canonical `branding` and `public-branding`
 artifacts under `ViajantesTurismo.Branding.Contracts.Http/OpenApi`, with Branding contract-test ownership.
 Catalog's own `v1` document includes the co-hosted Branding routes. Catalog-hosted generation must not
@@ -46,7 +46,7 @@ list/weak-tag/`*` semantics, and distinct 400 malformed-syntax, 412 false-precon
 missing-precondition responses.
 
 Tool target tests, generated filename mapping, drift guards, refresh hints, and contract tests target
-Catalog.ApiService for Branding generation. Trusted generation still omits runtime relays, database
+Catalog.Api for Branding generation. Trusted generation still omits runtime relays, database
 access, service discovery, and OIDC/JWT registration while retaining both named route schemes'
 authorization metadata.
 

@@ -44,9 +44,9 @@ internal static class AppHostComposition
             ? builder.AddMediaObjectStorage()
             : null;
 
-        var catalogApiService = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
+        var catalogApi = builder.AddCatalogApi(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs, identityProvider);
         builder.AddAdminIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService);
-        var apiService = builder.AddAdminApi(adminDatabase, migrationService, clamAv, identityProvider);
+        var adminApi = builder.AddAdminApi(adminDatabase, migrationService, clamAv, identityProvider);
 
         if (profile is HostedProfile.Admin)
         {
@@ -63,11 +63,11 @@ internal static class AppHostComposition
         }
 
         builder.AddCatalogIntegrationEventWorker(adminDatabase, catalogDatabase, migrationService, clamAv, seaweedFs);
-        builder.AddManagementWeb(cache, securityDatabase, migrationService, identityProvider, managementWebClientSecret, apiService, catalogApiService);
-        builder.AddPublicWeb(catalogApiService);
+        builder.AddManagementWeb(cache, securityDatabase, migrationService, identityProvider, managementWebClientSecret, adminApi, catalogApi);
+        builder.AddPublicWeb(catalogApi);
         if (includeDeveloperTooling && identityProvider is not null)
         {
-            builder.AddAdminPerformanceSmoke(apiService, identityProvider);
+            builder.AddAdminPerformanceSmoke(adminApi, identityProvider);
         }
     }
 

@@ -588,7 +588,7 @@ internal static partial class LayerDependencyTestsHelpers
 
     private static bool IsApiProjectName(string projectName)
     {
-        return projectName.EndsWith(".ApiService", StringComparison.OrdinalIgnoreCase);
+        return projectName.EndsWith(".Api", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsWebProjectName(string projectName)
@@ -727,9 +727,9 @@ internal static partial class LayerDependencyTestsHelpers
     private static bool IsLayerDirectionViolation(string abstractionProjectName, string referencedProjectName)
     {
         return HasProjectNameSegment(abstractionProjectName, "Domain")
-            ? HasAnyProjectNameSegment(referencedProjectName, ["Application", "Infrastructure", "ApiService", "Web"])
+            ? HasAnyProjectNameSegment(referencedProjectName, ["Application", "Infrastructure", "Api", "Web"])
             : HasProjectNameSegment(abstractionProjectName, "Application")
-                && HasAnyProjectNameSegment(referencedProjectName, ["Infrastructure", "ApiService", "Web"]);
+                && HasAnyProjectNameSegment(referencedProjectName, ["Infrastructure", "Api", "Web"]);
     }
 
     private static bool IsSameFamilyImplementationProjectReference(string abstractionProjectName, string referencedProjectName)
@@ -757,7 +757,7 @@ internal static partial class LayerDependencyTestsHelpers
             projectName,
             [
                 "Analyzers",
-                "ApiService",
+                "Api",
                 "AspNet",
                 "AspNetCore",
                 "CloudEvents",

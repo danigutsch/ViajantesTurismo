@@ -13,7 +13,7 @@ Current boundary files:
 
 Ownership rules:
 
-- Source metadata lives in `src/ViajantesTurismo.Admin.ApiService`.
+- Source metadata lives in `src/ViajantesTurismo.Admin.Api`.
 - The refresh build generates intermediate documents under `OpenApi/.generated/`.
 - After a locked restore, `sharedkernel-ci openapi` starts the trusted document generator with a minimal environment. It preserves
   authorization metadata without registering JWT/OIDC; normal application runs stay fail-closed.

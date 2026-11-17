@@ -501,7 +501,7 @@ var builder = WebApplication.CreateBuilder(args);
 ### Known limitations
 
 - Contracts, Domain, Application: compatible; inherit the `src/` AOT default.
-- ApiService: compatible; inherits the `src/` AOT default and uses source generators.
+- Api: compatible; inherits the `src/` AOT default and uses source generators.
 - Infrastructure (EF Core): not compatible; EF Core DbContext and migrations block the AOT promise.
 - Web (Blazor Server or Razor Components): not compatible; these project types are not Native
   AOT-ready.

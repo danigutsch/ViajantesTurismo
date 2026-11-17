@@ -6,7 +6,7 @@ analyzers.
 
 ## `VTARCH001`: production API-to-API HTTP
 
-`VTARCH001` reports ordinary HTTP communication from one repository-owned production `ApiService`
+`VTARCH001` reports ordinary HTTP communication from one repository-owned production `Api`
 to another. Approved communication uses a versioned integration event, explicitly approved gRPC, or
 an in-process module call.
 
@@ -41,7 +41,7 @@ The centrally pinned `Microsoft.CodeAnalysis.PublicApiAnalyzers` package enforce
 
 ## Enforcement
 
-The analyzer is referenced explicitly by each production `ApiService` project (Admin and Catalog), which
+The analyzer is referenced explicitly by each production `Api` project (Admin and Catalog), which
 build with warnings as errors:
 
 ```xml
@@ -52,7 +52,7 @@ build with warnings as errors:
                   IsAspireProjectResource="false" />
 ```
 
-Catalog.ApiService hosts the Branding routes, so Branding HTTP clients and contracts resolve to the Catalog
+Catalog.Api hosts the Branding routes, so Branding HTTP clients and contracts resolve to the Catalog
 API destination. Do not add this reference to `Directory.Build.props`, tests, AppHost, tools, frontends, or
 external-provider projects.
 

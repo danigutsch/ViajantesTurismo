@@ -33,7 +33,7 @@ Current example:
 
 - `CatalogApiMarker` remains the static Catalog API assembly marker.
 - `CatalogApiEntryPoint` is the internal concrete type used by Catalog API startup tests.
-- `ViajantesTurismo.Catalog.ApiService` grants internals visibility to
+- `ViajantesTurismo.Catalog.Api` grants internals visibility to
   `ViajantesTurismo.Catalog.ApiServiceTests`.
 
 ## Consequences

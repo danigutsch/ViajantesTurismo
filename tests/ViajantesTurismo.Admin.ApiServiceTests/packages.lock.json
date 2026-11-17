@@ -617,7 +617,7 @@
           "xunit.v3.runner.common": "[4.0.3]"
         }
       },
-      "viajantesturismo.admin.apiservice": {
+      "viajantesturismo.admin.api": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",

@@ -106,7 +106,7 @@ Per-feature wire-test checklist (real Kestrel, `tests/ViajantesTurismo.UploadWir
 | SKIO002 | Hand-rolled read loop into a `MemoryStream` without a length bound | Use `SeekableContent.Create` |
 
 `PandaBear.SharedKernel.IO.Analyzers` (SKIO001, SKIO002, both Warning) is shipped and referenced in
-`ViajantesTurismo.Admin.ApiService`, `ViajantesTurismo.Catalog.Application`, and `ViajantesTurismo.Catalog.ApiService`. It is
+`ViajantesTurismo.Admin.Api`, `ViajantesTurismo.Catalog.Application`, and `ViajantesTurismo.Catalog.Api`. It is
 also referenced in `ViajantesTurismo.Branding.Infrastructure` and `ViajantesTurismo.Branding.AspNetCore`. The
 analysis is local: it does not see host-configured request limits or follow parameters. Treat warnings as errors; do not suppress
 without a written justification.

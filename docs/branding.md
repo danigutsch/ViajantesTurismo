@@ -1,7 +1,7 @@
 # Branding
 
 Branding is an independent logical module used by Management.Web, Public.Web, and Admin document
-generation. It is co-hosted in `ViajantesTurismo.Catalog.ApiService` without moving it into the
+generation. It is co-hosted in `ViajantesTurismo.Catalog.Api` without moving it into the
 Catalog bounded context.
 
 <!-- doc-fact:branding-architecture:start -->
@@ -59,7 +59,7 @@ co-location does not permit shared Catalog tables or a shared Catalog outbox.
 
 ### Catalog relationship
 
-`ViajantesTurismo.Catalog.ApiService` is the process host. Catalog does not own Branding
+`ViajantesTurismo.Catalog.Api` is the process host. Catalog does not own Branding
 fields, validation rules, workflows, contracts, permissions, tables, or public-rendering behavior.
 The Catalog host composes the Branding ASP.NET module and its separate DbContext; the Catalog domain
 does not reference Branding. This is logical separation only: both modules share one process, failure
@@ -68,7 +68,7 @@ domain, memory space, and the blast radius of every credential available to that
 ## Runtime
 
 - Public.Web and Management.Web call the Branding HTTP contract on
-  `ViajantesTurismo.Catalog.ApiService` through Catalog service discovery. There is no separate
+  `ViajantesTurismo.Catalog.Api` through Catalog service discovery. There is no separate
   Branding executable.
 - Admin document generation, regeneration, and payment instructions read only an Admin-owned local
   projection populated by `Admin.IntegrationEventWorker`. Admin has no Catalog/Branding HTTP or
@@ -128,7 +128,7 @@ framework.
 
 ## Authorization boundary
 
-Catalog.ApiService uses `CatalogBearer` for exact `catalog-api` audience routes and `BrandingBearer`
+Catalog.Api uses `CatalogBearer` for exact `catalog-api` audience routes and `BrandingBearer`
 for exact `branding-api` audience routes. Public Branding reads remain explicitly anonymous;
 Management routes preserve `branding.read` and `branding.write`. No route accepts both audiences, and
 no scheme authenticates by default: Catalog default/fallback policies select `CatalogBearer`, while
@@ -261,7 +261,7 @@ payloads, scripts, or arbitrary URL-bearing CSS.
 ## OpenAPI ownership through co-hosting
 
 `dotnet tool run sharedkernel-ci -- openapi refresh --target branding` regenerates the Branding
-artifacts. The `branding` target in `.config/sharedkernel-ci.json` builds Catalog.ApiService's
+artifacts. The `branding` target in `.config/sharedkernel-ci.json` builds Catalog.Api's
 Branding-only document generation mode. Canonical `branding` and `public-branding` artifacts remain
 under `ViajantesTurismo.Branding.Contracts.Http/OpenApi` and remain owned by Branding contracts;
 co-hosting does not merge them into Catalog contract ownership. Catalog's own `v1` document includes the

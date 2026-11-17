@@ -38,7 +38,7 @@ remain unversioned UI routes; typed API clients translate API calls to the versi
 OpenAPI artifacts keep the existing logical boundary files (`tours`, `customers`, `bookings`, `catalog`,
 `public-catalog`, `branding`, and `public-branding`) plus their version-level review documents. A
 shared process may generate more than one logical `v1` artifact: ADR-040 preserves Branding's
-Branding-only canonical `v1` after Catalog.ApiService co-hosting rather than merging contract ownership.
+Branding-only canonical `v1` after Catalog.Api co-hosting rather than merging contract ownership.
 Refresh committed artifacts only when the HTTP contract changes intentionally.
 
 Conditional request semantics are part of the versioned HTTP contract. Branding management v1 uses

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 

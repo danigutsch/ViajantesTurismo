@@ -27,8 +27,8 @@ flowchart LR
         managementWeb[Management.Web external frontend]
     end
     subgraph internalBoundary[Internal service boundary]
-        adminApi[Admin.ApiService internal API]
-        catalogApi[Catalog.ApiService internal API]
+        adminApi[Admin.Api internal API]
+        catalogApi[Catalog.Api internal API]
         worker[Catalog.IntegrationEventWorker]
         migration[MigrationService]
         sharedKernel[SharedKernel reusable modules]

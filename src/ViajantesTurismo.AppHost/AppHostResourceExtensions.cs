@@ -307,7 +307,7 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_ApiService>(ResourceNames.Api)
+        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_Api>(ResourceNames.Api)
             .WithReference(adminDatabase)
             .WaitFor(adminDatabase)
             .WaitForCompletion(migrationService)
@@ -336,7 +336,7 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<SeaweedFsResource>? seaweedFs,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_ApiService>(ResourceNames.CatalogApi)
+        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_Api>(ResourceNames.CatalogApi)
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
             .WaitFor(adminDatabase)
@@ -423,8 +423,8 @@ internal static class AppHostResourceExtensions
     /// <param name="migrationService">The migration service resource.</param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <param name="managementWebClientSecret">The confidential Management Web client secret.</param>
-    /// <param name="apiService">The Admin API resource.</param>
-    /// <param name="catalogApiService">The Catalog API resource, which also hosts the Branding routes.</param>
+    /// <param name="adminApi">The Admin API resource.</param>
+    /// <param name="catalogApi">The Catalog API resource, which also hosts the Branding routes.</param>
     /// <returns>The configured management web resource.</returns>
     public static IResourceBuilder<ProjectResource> AddManagementWeb(
         this IDistributedApplicationBuilder builder,
@@ -433,8 +433,8 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ContainerResource>? identityProvider,
         IResourceBuilder<ParameterResource> managementWebClientSecret,
-        IResourceBuilder<ProjectResource> apiService,
-        IResourceBuilder<ProjectResource> catalogApiService)
+        IResourceBuilder<ProjectResource> adminApi,
+        IResourceBuilder<ProjectResource> catalogApi)
     {
         return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
             .WithExternalHttpEndpoints()
@@ -448,10 +448,10 @@ internal static class AppHostResourceExtensions
             .WithEnvironment(AuthenticationClientSecretEnvironmentVariable, managementWebClientSecret)
             .WithEnvironment(AuthenticationTokenExchangeEnabledEnvironmentVariable, "true")
             .WithEnvironment(AuthenticationTokenExchangeProviderEnvironmentVariable, KeycloakTokenExchangeProvider)
-            .WithReference(apiService)
-            .WaitFor(apiService)
-            .WithReference(catalogApiService)
-            .WaitFor(catalogApiService);
+            .WithReference(adminApi)
+            .WaitFor(adminApi)
+            .WithReference(catalogApi)
+            .WaitFor(catalogApi);
     }
 
     private static IResourceBuilder<TResource> WithDevelopmentOidcAuthority<TResource>(
@@ -538,11 +538,11 @@ internal static class AppHostResourceExtensions
     /// Adds the public web frontend.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
-    /// <param name="catalogApiService">The Catalog API resource, which also hosts the Branding routes.</param>
+    /// <param name="catalogApi">The Catalog API resource, which also hosts the Branding routes.</param>
     /// <returns>The configured public web resource.</returns>
     public static IResourceBuilder<ProjectResource> AddPublicWeb(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> catalogApiService)
+        IResourceBuilder<ProjectResource> catalogApi)
     {
         var replicas = builder.Configuration.GetValue(PublicWebReplicasConfigurationKey, 1);
         if (replicas < 1)
@@ -554,7 +554,7 @@ internal static class AppHostResourceExtensions
             .WithReplicas(replicas)
             .WithExternalHttpEndpoints()
             .WithSelfOrigin(PublicWebSitemapCanonicalOriginEnvironmentVariable)
-            .WithReference(catalogApiService)
-            .WaitFor(catalogApiService);
+            .WithReference(catalogApi)
+            .WaitFor(catalogApi);
     }
 }

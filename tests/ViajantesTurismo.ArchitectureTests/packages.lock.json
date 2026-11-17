@@ -1022,7 +1022,7 @@
         "resolved": "18.1.0",
         "contentHash": "5K+9KFg2TdTl7VXv88Qzi/0lqK6JFoNP3lRuImPYGRV7K/QYklDyTrj4+A+KAki1JsQi6qKY+hDyY7d6WRqjrw=="
       },
-      "viajantesturismo.admin.apiservice": {
+      "viajantesturismo.admin.api": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
@@ -1188,7 +1188,7 @@
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
-      "viajantesturismo.catalog.apiservice": {
+      "viajantesturismo.catalog.api": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
