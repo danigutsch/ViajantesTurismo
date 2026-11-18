@@ -73,6 +73,33 @@ claimed batch. See [Events and messaging](../domain/EVENTS_AND_MESSAGING.md) and
 - [Domain aggregates](../domain/AGGREGATES.md)
 - [Glossary](../domain/GLOSSARY.md)
 
+## Country and currency reference data
+
+| Surface | Current responsibility |
+| --- | --- |
+| Management Web | `CountryService` loads the country selector catalog and translates known nationality demonyms for display. `CountrySelector` binds an alpha-2 code for addresses and a name for nationality. `CountryFormatter` resolves stored codes for detail and review pages. `CurrencyChoices` supplies display labels and form options. Forms own their initial selection. |
+| Admin contracts | Customer address country and nationality travel as separate string fields. Tour, booking, and payment contracts carry ISO currency codes as strings with amounts in separate fields. These representations let clients exchange codes without depending on the Admin domain types. |
+| Admin application and domain | Tour and payment handlers parse external codes through SharedKernel's `Currency`. The address value object validates assigned codes using SharedKernel's `CountryCode`. `FinancialCurrencies` allows BRL, EUR, and USD for tour pricing and allows EUR and BRL for obligations and settlements. Payment invariants further constrain specific operations. |
+| Persistence and rendering | EF stores address country codes and rehydrates them through `CountryCode.Restore`. Payment serialization preserves currency codes. The payment instruction renderer uses invariant numeric formatting. Management Web owns its localized display formatting. |
+
+Use SharedKernel BuildingBlocks as the canonical validator for assigned ISO codes. Keep
+presentation labels, localized money formatting, and nationality compatibility in their consumers.
+Keep eligibility, settlement rules, and any business defaults in Admin. A form's initial selection
+is a UI convenience and Admin still validates submissions.
+
+The Management Web country catalog is static deployment data. Its singleton service keeps the
+loaded data for the host lifetime and retries a missing or malformed catalog on subsequent calls.
+ISO code lookups use the SharedKernel value objects directly. Keep presentation catalogs
+read-only and in process, with no request-specific or user-specific state in the cache.
+
+The country selector and formatter use the deployed JSON catalog and SharedKernel English
+names, respectively. Before unifying these sources, compare supported address
+codes, nationality aliases, labels, and flag coverage. The tour and settlement forms also
+duplicate Admin's allowed subsets. If those subsets change, publish the selectable options
+through Admin's contracts or an application-owned read endpoint and verify the form against
+the corresponding command validation. Booking details and edit views should use the booking
+currency for display and cover BRL and USD alongside EUR.
+
 ## Measurement and media ownership
 
 - [Coupling and cohesion proposal](coupling-and-cohesion-metrics.md) defines advisory measurement and rollout criteria.
