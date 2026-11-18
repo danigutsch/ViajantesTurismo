@@ -30,7 +30,9 @@ source is discoverable.
 - **Endpoint maps**: generate from Minimal API route declarations and configured route-group prefixes.
 - **Event-flow maps**: generate from integration-event contracts, source-created events, consumer
   registrations, and handlers. Missing producers stay explicit instead of inferred.
-- **Data ownership maps**: generate after DbContext/store ownership metadata is standardized.
+- **Data ownership maps**: generate from the [architecture metadata](architecture-metadata.json).
+  Update ownership and table roles with their EF Core mappings or provider registrations. See the
+  [data ownership view](data-ownership.md) for the metadata rules and refresh command.
 
 ## Refresh path
 

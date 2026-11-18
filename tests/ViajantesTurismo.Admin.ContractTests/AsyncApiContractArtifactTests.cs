@@ -46,18 +46,18 @@ public sealed class AsyncApiContractArtifactTests
         {
             AdminTourCreatedIntegrationEvent.EventType,
             AdminTourCreatedIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture),
-            "eventId",
-            "occurredAt",
-            "adminTourId",
-            "identifier",
-            "name",
+            nameof(AdminTourCreatedIntegrationEvent.EventId),
+            nameof(AdminTourCreatedIntegrationEvent.OccurredAt),
+            nameof(AdminTourCreatedIntegrationEvent.AdminTourId),
+            nameof(AdminTourCreatedIntegrationEvent.Identifier),
+            nameof(AdminTourCreatedIntegrationEvent.Name),
             MediaImageOriginalStoredIntegrationEvent.EventType,
             MediaImageOriginalStoredIntegrationEvent.EventVersion.ToString(CultureInfo.InvariantCulture),
-            "eventId",
-            "occurredAt",
-            "mediaImageId",
-            "sourceObjectKey",
-            "processingVersion",
+            nameof(MediaImageOriginalStoredIntegrationEvent.EventId),
+            nameof(MediaImageOriginalStoredIntegrationEvent.OccurredAt),
+            nameof(MediaImageOriginalStoredIntegrationEvent.MediaImageId),
+            nameof(MediaImageOriginalStoredIntegrationEvent.SourceObjectKey),
+            nameof(MediaImageOriginalStoredIntegrationEvent.ProcessingVersion),
             IntegrationEventConsumerNames.Catalog,
             "producerContext",
             "consumerContexts",
@@ -101,13 +101,13 @@ public sealed class AsyncApiContractArtifactTests
         adminMetadata.GetProperty("sourceType").GetString().ShouldBe(typeof(AdminTourCreatedIntegrationEvent).FullName);
         adminMetadata.GetProperty("domainEventMapping").GetString().ShouldBe("ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourCreated");
         adminMetadata.GetProperty("outboxOwner").GetString().ShouldBe("AdminWriteDbContext");
-        adminMetadata.GetProperty("inboxOwner").GetString().ShouldBe("CatalogIntegrationTransportDbContext");
+        adminMetadata.GetProperty("inboxOwner").GetString().ShouldBe("CatalogDbContext");
         adminMetadata.GetProperty("handler").GetString().ShouldBe("ViajantesTurismo.Catalog.Application.Tours.AdminTourCreatedIntegrationHandler");
-        adminSchema.GetProperty("properties").TryGetProperty("eventId", out _).ShouldBeTrue();
-        adminSchema.GetProperty("properties").TryGetProperty("occurredAt", out _).ShouldBeTrue();
-        adminSchema.GetProperty("properties").TryGetProperty("adminTourId", out _).ShouldBeTrue();
-        adminSchema.GetProperty("properties").TryGetProperty("identifier", out _).ShouldBeTrue();
-        adminSchema.GetProperty("properties").TryGetProperty("name", out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty(nameof(AdminTourCreatedIntegrationEvent.EventId), out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty(nameof(AdminTourCreatedIntegrationEvent.OccurredAt), out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty(nameof(AdminTourCreatedIntegrationEvent.AdminTourId), out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty(nameof(AdminTourCreatedIntegrationEvent.Identifier), out _).ShouldBeTrue();
+        adminSchema.GetProperty("properties").TryGetProperty(nameof(AdminTourCreatedIntegrationEvent.Name), out _).ShouldBeTrue();
 
         mediaMessage.GetProperty("name").GetString().ShouldBe(MediaImageOriginalStoredIntegrationEvent.EventType);
         mediaMessage.GetProperty("payload").GetProperty("$ref").GetString().ShouldBe("#/components/schemas/MediaImageOriginalStoredIntegrationEventV1");
@@ -124,12 +124,12 @@ public sealed class AsyncApiContractArtifactTests
         mediaMetadata.GetProperty("sourceType").GetString().ShouldBe(typeof(MediaImageOriginalStoredIntegrationEvent).FullName);
         mediaMetadata.TryGetProperty("domainEventMapping", out _).ShouldBeFalse();
         mediaMetadata.GetProperty("outboxOwner").GetString().ShouldBe("CatalogDbContext");
-        mediaMetadata.GetProperty("inboxOwner").GetString().ShouldBe("CatalogIntegrationTransportDbContext");
+        mediaMetadata.GetProperty("inboxOwner").GetString().ShouldBe("CatalogDbContext");
         mediaMetadata.GetProperty("handler").GetString().ShouldBe("ViajantesTurismo.Catalog.Application.Media.MediaImageOriginalStoredIntegrationHandler");
-        mediaSchema.GetProperty("properties").TryGetProperty("eventId", out _).ShouldBeTrue();
-        mediaSchema.GetProperty("properties").TryGetProperty("occurredAt", out _).ShouldBeTrue();
-        mediaSchema.GetProperty("properties").TryGetProperty("mediaImageId", out _).ShouldBeTrue();
-        mediaSchema.GetProperty("properties").TryGetProperty("sourceObjectKey", out _).ShouldBeTrue();
-        mediaSchema.GetProperty("properties").TryGetProperty("processingVersion", out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty(nameof(MediaImageOriginalStoredIntegrationEvent.EventId), out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty(nameof(MediaImageOriginalStoredIntegrationEvent.OccurredAt), out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty(nameof(MediaImageOriginalStoredIntegrationEvent.MediaImageId), out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty(nameof(MediaImageOriginalStoredIntegrationEvent.SourceObjectKey), out _).ShouldBeTrue();
+        mediaSchema.GetProperty("properties").TryGetProperty(nameof(MediaImageOriginalStoredIntegrationEvent.ProcessingVersion), out _).ShouldBeTrue();
     }
 }

@@ -35,10 +35,13 @@ internal static class CatalogEndpoints
             .WithNoStoreResponses($"/api/{CatalogOpenApiDocuments.CurrentApiVersion.RouteSegment}/catalog");
 
         managementCatalog.MapGet("/tours", GetTours)
+            .WithName("GetTours")
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/tours/{id:guid}", GetTour)
+            .WithName("GetTour")
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapPut("/tours/{id:guid}/presentation", UpsertTourPresentation)
+            .WithName("UpsertTourPresentation")
             .Produces<CatalogTourDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status202Accepted)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
@@ -52,6 +55,7 @@ internal static class CatalogEndpoints
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
         managementCatalog.MapPost("/tours/{id:guid}/publish", PublishTour)
+            .WithName("PublishTour")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status202Accepted)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
@@ -65,6 +69,7 @@ internal static class CatalogEndpoints
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.CatalogPublish);
         managementCatalog.MapPost("/tours/{id:guid}/unpublish", UnpublishTour)
+            .WithName("UnpublishTour")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status202Accepted)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
@@ -78,13 +83,16 @@ internal static class CatalogEndpoints
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.CatalogPublish);
         managementCatalog.MapGet("/tours/{id:guid}/images", ListTourImages)
+            .WithName("ListTourImages")
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/media/images/{id:guid}/preview/{width:int}/{format}", GetManagementMediaPreview)
+            .WithName("GetManagementMediaPreview")
             .Produces<Stream>(StatusCodes.Status200OK, MediaImageContentTypes[0], MediaImageContentTypes[1..])
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status404NotFound)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapPost("/tours/{id:guid}/images", UploadTourImage)
+            .WithName("UploadTourImage")
             .Accepts<MediaImageUploadFormDto>("multipart/form-data")
             .Produces<CatalogMediaImageDto>(StatusCodes.Status201Created)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
@@ -115,12 +123,14 @@ internal static class CatalogEndpoints
             .DisableAntiforgery()
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
         managementCatalog.MapPost("/media/images/{id:guid}/accessibility-draft", GenerateMediaImageAccessibilityDraft)
+            .WithName("GenerateMediaImageAccessibilityDraft")
             .Produces(StatusCodes.Status200OK)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RemoveInferredResponseMetadata(StatusCodes.Status404NotFound)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.MediaAi);
         managementCatalog.MapPut("/media/images/{id:guid}/accessibility-review", ReviewMediaImageAccessibility)
+            .WithName("ReviewMediaImageAccessibility")
             .Produces(StatusCodes.Status200OK)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RemoveInferredResponseMetadata(StatusCodes.Status404NotFound)
@@ -128,21 +138,25 @@ internal static class CatalogEndpoints
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
 
         versionedApi.MapGet("/public/catalog/tours", GetPublishedTours)
+            .WithName("GetPublishedTours")
             .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
+            .WithName("GetPublishedTour")
             .Produces<TourDetailsDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/media/{id:guid}/{width:int}/{format}", GetPublicMedia)
+            .WithName("GetPublicMedia")
             .Produces<Stream>(StatusCodes.Status200OK, MediaImageContentTypes[0], MediaImageContentTypes[1..])
             .Produces(StatusCodes.Status404NotFound)
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/content/{**key}", GetPublicContent)
+            .WithName("GetPublicContent")
             .CacheOutput(policy => policy.Expire(PublicContentHttpCache.Freshness).SetVaryByQuery(PublicContentHttpCache.CultureQueryKey).Tag(PublicContentHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
@@ -150,10 +164,13 @@ internal static class CatalogEndpoints
         {
             var content = await store.ListContent(ct);
             return content.Select(MapPublicContent);
-        }).RequireAuthorization(CatalogAuthorization.CatalogRead);
+        }).WithName("ListPublicContentForManagement")
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/public-content/{**key}", GetPublicContentForManagement)
+            .WithName("GetPublicContentForManagement")
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapPut("/public-content/{**key}", UpsertPublicContent)
+            .WithName("UpsertPublicContent")
             .Produces(StatusCodes.Status200OK)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)

@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\scripts\ViajantesTurismo.AsyncApi.Tool\ViajantesTurismo.AsyncApi.Tool.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Api\ViajantesTurismo.Admin.Api.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Http\ViajantesTurismo.Admin.Contracts.Http.csproj" />

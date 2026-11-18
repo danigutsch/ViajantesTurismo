@@ -131,6 +131,25 @@ guidance:
 
 <!-- doc-content:provenance-expectations:end -->
 
+### Generated output metadata
+
+Record the current generator name, repository-relative inputs, and refresh and verification commands
+where a reviewer first encounters generated output. Use stable paths and names so a rerun gives the
+same metadata. In hybrid Markdown, keep these instructions with the manual prose and use
+`generated:<block>:start` and `generated:<block>:end` comments to delimit each tool-owned block.
+
+- Generated architecture pages link to their [generator configuration](architecture/generated-diagrams.json)
+  and [source inventory](architecture/generated-diagram-roadmap.md). The configuration names the
+  pinned `sharedkernel-docs` command, which also writes its attribution inside each generated block.
+- Generated JSON contract artifacts use a root `x-viajantes.provenance` object with `generator`,
+  `source`, `refreshCommand`, and `verifyCommand`. The source points to the generator's input
+  declarations when they aggregate several files. Keep manual guidance in the artifact's companion
+  document, such as [Asynchronous contracts](ASYNC_CONTRACTS.md).
+
+The diagram verification command checks generated attribution and content together. The architecture
+tests check the diagram configuration and Markdown refresh commands against the pinned tool manifest.
+The contract tests compare the generated JSON with the checked-in artifact, including its provenance.
+
 ## Composition and incremental adoption
 
 New or substantively revised durable documents should select the smallest useful set of blocks.
@@ -176,6 +195,21 @@ TOC when next substantively revised:
 - `docs/CODING_GUIDELINES.md`
 - `docs/DOMAIN_VALIDATION.md`
 - `docs/TEST_GUIDELINES.md`
+
+### Research decision
+
+- **Extend the pinned documentation tool.** A heading-derived block can use the same anchors as
+  the repository link verifier. The existing `generate` and `verify` commands update or check only
+  the opted-in block, with the Markdown headings as the input.
+- **Use a repository-owned .NET checker and updater.** A small command could check a Markdown
+  heading list and rewrite its marked TOC using local dependencies. This would need its own
+  heading and anchor handling, invocation, fixtures, and CI maintenance.
+
+Use the pinned documentation tool when it supports heading-derived blocks. Compare the first
+generated result against this page's authored heading links, then opt in the reference documents
+above as they are revised. Keep the TOC label outside the selected heading range to avoid a self-link.
+Keep the existing Markdown link check so duplicate headings, punctuation, and edits to heading names
+are checked against the same anchor rules.
 
 ## Validation and tooling
 

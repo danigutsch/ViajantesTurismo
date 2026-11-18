@@ -31,25 +31,30 @@ internal static class BrandingEndpoints
             .WithNoStoreResponses();
 
         publicBranding.MapGet("/", GetPublicSettings)
+            .WithName("GetPublicBrandingSettings")
             .CacheOutput(policy => policy.AddPolicy<BrandingCacheTelemetryPolicy>().Expire(BrandingHttpCache.PublicFreshness).Tag(BrandingHttpCache.PublicBrandingTag))
             .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);
         publicBranding.MapGet(BrandingLogoPath.Template, GetLogo)
+            .WithName("GetPublicBrandingLogo")
             .Produces(StatusCodes.Status200OK, contentType: BrandingLogo.EncodedContentType)
             .Produces(StatusCodes.Status304NotModified)
             .Produces(StatusCodes.Status404NotFound)
             .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);
         managementBranding.MapGet("/", GetManagementSettings)
+            .WithName("GetManagementBrandingSettings")
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithEntityTagResponseHeader()
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingRead);
         managementBranding.MapPut("/", SaveSettings)
+            .WithName("SaveBrandingSettings")
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
             .WithIfMatchPrecondition()
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
         managementBranding.MapPut(BrandingLogoPath.ManagementTemplate, UploadLogo)
+            .WithName("UploadBrandingLogo")
             .Accepts<byte[]>("image/png", "image/jpeg", "image/webp")
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
@@ -61,6 +66,7 @@ internal static class BrandingEndpoints
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
 
         managementBranding.MapDelete(BrandingLogoPath.ManagementTemplate, RemoveLogo)
+            .WithName("RemoveBrandingLogo")
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithIfMatchPrecondition()

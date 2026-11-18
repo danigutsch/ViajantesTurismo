@@ -13,29 +13,29 @@ internal static class PaymentAccountEndpoints
     /// <summary>Maps the payment account endpoints under the payment workflow policy.</summary>
     public static void MapPaymentAccountEndpoints(this WebApplication app)
     {
-        var group = app.MapPaymentAccountsGroup().WithPaymentWorkflowPolicy();
-        group.MapGet("/", List).RequireAuthorization(AdminAuthorization.PaymentRead)
+        var paymentAccountsGroup = app.MapPaymentAccountsGroup().WithPaymentWorkflowPolicy();
+        paymentAccountsGroup.MapGet("/", List).RequireAuthorization(AdminAuthorization.PaymentRead)
             .WithAdminMetadata("ListPaymentAccounts", "Lists masked recipient accounts.", "Lists masked payment accounts.");
-        group.MapGet("/{id:guid}", GetById).RequireAuthorization(AdminAuthorization.PaymentRead)
+        paymentAccountsGroup.MapGet("/{id:guid}", GetById).RequireAuthorization(AdminAuthorization.PaymentRead)
             .WithAdminMetadata("GetPaymentAccount", "Retrieves masked account and revision metadata.", "Retrieves a masked payment account.");
-        group.MapGet("/{id:guid}/recipient", GetRecipient).RequireAuthorization(AdminAuthorization.PaymentManage)
+        paymentAccountsGroup.MapGet("/{id:guid}/recipient", GetRecipient).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("GetPaymentAccountRecipient", "Audits Admin access to full recipient details.", "Retrieves sensitive recipient details.");
-        group.MapPost("/", CreatePaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
+        paymentAccountsGroup.MapPost("/", CreatePaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("CreatePaymentAccount", "Executes the revision-preconditioned CreatePaymentAccount operation.", "CreatePaymentAccount operation.");
-        group.MapPut("/{id:guid}", UpdatePaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
+        paymentAccountsGroup.MapPut("/{id:guid}", UpdatePaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("UpdatePaymentAccount", "Executes the revision-preconditioned UpdatePaymentAccount operation.", "UpdatePaymentAccount operation.");
-        group.MapPost("/{id:guid}/verify", VerifyPaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
+        paymentAccountsGroup.MapPost("/{id:guid}/verify", VerifyPaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("VerifyPaymentAccount", "Executes the revision-preconditioned VerifyPaymentAccount operation.", "VerifyPaymentAccount operation.");
-        group.MapPost("/{id:guid}/review", ReviewPaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
+        paymentAccountsGroup.MapPost("/{id:guid}/review", ReviewPaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("ReviewPaymentAccount", "Executes the revision-preconditioned ReviewPaymentAccount operation.", "ReviewPaymentAccount operation.");
-        group.MapPost("/{id:guid}/retire", RetirePaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
+        paymentAccountsGroup.MapPost("/{id:guid}/retire", RetirePaymentAccount).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("RetirePaymentAccount", "Executes the revision-preconditioned RetirePaymentAccount operation.", "RetirePaymentAccount operation.");
-        group.MapPost("/{id:guid}/withdraw-verification", WithdrawPaymentAccountVerification).RequireAuthorization(AdminAuthorization.PaymentManage)
+        paymentAccountsGroup.MapPost("/{id:guid}/withdraw-verification", WithdrawPaymentAccountVerification).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("WithdrawPaymentAccountVerification", "Executes the revision-preconditioned WithdrawPaymentAccountVerification operation.", "WithdrawPaymentAccountVerification operation.");
     }

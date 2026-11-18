@@ -404,6 +404,26 @@
         "resolved": "2.23.0",
         "contentHash": "nWArUZTdU7iqZLycLKWe0TDms48KKGE6pONH2terYNa8REXiqixrMOkf1sk5DHGMaUTqONU2YkS4SAXBhLStgw=="
       },
+      "Microsoft.AspNetCore.Cryptography.Internal": {
+        "type": "Transitive",
+        "resolved": "10.0.15",
+        "contentHash": "QsgH1P7/bDthx8inoa659//xBmWyKQri+NxQz9X7TgubhQzNL/eZllbay0jB2LXoxf3i1BJ8xgdNzyUqZuwhTw=="
+      },
+      "Microsoft.AspNetCore.DataProtection": {
+        "type": "Transitive",
+        "resolved": "10.0.15",
+        "contentHash": "q4+BtDuIXPydxMuBlC6zI6ePckPQlIvBX/UERVU3KMoVBQwGD5DJZ3Xle/jGjs3g3tGxrBGoRWWnmwerWWxGiA==",
+        "dependencies": {
+          "Microsoft.AspNetCore.Cryptography.Internal": "10.0.15",
+          "Microsoft.AspNetCore.DataProtection.Abstractions": "10.0.15",
+          "System.Security.Cryptography.Xml": "10.0.15"
+        }
+      },
+      "Microsoft.AspNetCore.DataProtection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.15",
+        "contentHash": "Jm8UPQkNEzqgX3bu9ceIFu//8Knk5XN7xgGERBCoaAHOXXvmrU+WWWm6dhPZVp0vxnvAQQpgZ2O7cPgx/d+2Sw=="
+      },
       "Microsoft.AspNetCore.WebUtilities": {
         "type": "Transitive",
         "resolved": "11.0.0",
@@ -421,6 +441,11 @@
         "type": "Transitive",
         "resolved": "10.0.2",
         "contentHash": "LG9Yll3B5aNpxv0+D47g6LiOiKBIlodhcHdQwcYzo8VeexFLGqx5ymetmA2aBRyo9cCcWsQWrFsdbsr8LvmWDw=="
+      },
+      "Microsoft.Bcl.TimeProvider": {
+        "type": "Transitive",
+        "resolved": "10.0.5",
+        "contentHash": "LtRd4Zq2yXONwWDDigM3zkLmhyt07QwZZNzSZn3HkQ61oHkgraz+eq1+IljcXKEwdgldXP8LxDph0fMZ1ZP3sg=="
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
@@ -943,6 +968,19 @@
         "resolved": "6.0.1",
         "contentHash": "IQ4NXP/B3Ayzvw0rDQzVTYsCKyy0Jp9KI6aYcK7UnGVlR9+Awz++TIPCQtPYfLJfOpm8ajowMR09V7quD3sEHw=="
       },
+      "System.Security.Cryptography.Pkcs": {
+        "type": "Transitive",
+        "resolved": "10.0.15",
+        "contentHash": "4jEv/lXDuQkh60lPU3hlwASErXdv1ZMKmsxVuBfZWiVKT5Q2QGo58kTa6rN519+PU+m4Hsj1m3yT8fN+Xw0XZw=="
+      },
+      "System.Security.Cryptography.Xml": {
+        "type": "Transitive",
+        "resolved": "10.0.15",
+        "contentHash": "KV9nyhwORMX8BsErzPzxMFPlstLQFdBqYM6/t+N0F9BZdCAqMmanP4X4NJpegMNq+AoNZmtOmn/1hL0zPQaPiA==",
+        "dependencies": {
+          "System.Security.Cryptography.Pkcs": "10.0.15"
+        }
+      },
       "System.Threading.RateLimiting": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -1138,6 +1176,12 @@
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
+      "viajantesturismo.architecture.tool": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Documentation": "[0.1.0-alpha.653.1, )"
+        }
+      },
       "viajantesturismo.branding.aspnetcore": {
         "type": "Project",
         "dependencies": {
@@ -1282,6 +1326,14 @@
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+        }
+      },
+      "viajantesturismo.management.security": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": "[10.0.15, )",
+          "Microsoft.Extensions.Caching.Postgres": "[1.2.2, )",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )"
         }
       },
       "viajantesturismo.public.web": {
@@ -1539,6 +1591,16 @@
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.19.2"
         }
       },
+      "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "5MxWxwFz0ZahD60+YnYFQQtWvwmCMnXDDvWuAncRxy5Fmf7wbdTrwe2CHGcW1wqow023wfJpgItaXFt9g86huQ==",
+        "dependencies": {
+          "Microsoft.AspNetCore.DataProtection": "10.0.15",
+          "Microsoft.EntityFrameworkCore": "10.0.15"
+        }
+      },
       "Microsoft.AspNetCore.OpenApi": {
         "type": "CentralTransitive",
         "requested": "[11.0.0, )",
@@ -1582,6 +1644,16 @@
         "requested": "[11.0.0, )",
         "resolved": "11.0.0",
         "contentHash": "jWLQHPiHyyHw9CIAbfZ0bh2pdLBD3cZ+h9el1zv769cf9yeti13LBLj6i9Vp8NR1PTh1qOG4Myl7j+sfgjnlUw=="
+      },
+      "Microsoft.Extensions.Caching.Postgres": {
+        "type": "CentralTransitive",
+        "requested": "[1.2.2, )",
+        "resolved": "1.2.2",
+        "contentHash": "IWc8MmruXykho2yT7sQ5kgqsB9y6j1V5LPQDOv6yvfiU8c6XeQStju+Ufddzxvc5BthVEVBgUI9BEfr9cxPi5g==",
+        "dependencies": {
+          "Microsoft.Bcl.TimeProvider": "10.0.5",
+          "Npgsql": "10.0.2"
+        }
       },
       "Microsoft.Extensions.Compliance.Abstractions": {
         "type": "CentralTransitive",

@@ -13,8 +13,9 @@ metadata the code does not expose.
 | Supplemental workflows | `.github/workflows/*.yml` workflow names. | `ci-validation-flows.md` | Same generator config. | Generated. |
 | Minimal API endpoints | `MapGet`, `MapPost`, `MapPut`, `MapPatch`, and `MapDelete` declarations. | `generated-endpoint-route-map.md` | Same generator config; stale output fails the existing lint path. | Generated. |
 | Events and messages | Integration-event contracts, event creation sites, consumer registrations, and handlers. | `generated-event-message-flow-map.md` | Same generator config; missing metadata is shown as missing. | Generated. |
+| Data store ownership | [Architecture metadata](architecture-metadata.json). | `data-ownership.md` | Repository architecture CLI and architecture tests. | Generated. |
 | Machine-readable architecture facts | Stable fact markers plus configured C# switches, registrations, and required invocations. | `FLOWS.md` and the documentation index. | `sharedkernel-docs check` in the CI Lint job. | Source-conformance checked. |
-| Mediator workflows | Existing mediator generator output and request/handler source. | No generated diagram yet. | Research only until request, handler, pipeline, notification, and stream metadata are explicit. | Deferred. |
+| Mediator workflows | Versioned topology from the SharedKernel mediator generator. | Mediator workflow diagram after adoption. | Generate and verify with the matching SharedKernel documentation tool. | Awaiting a reviewed SharedKernel candidate. |
 | Code-generation strategy | Repository .NET tool model and local tool security policy. | This roadmap and `diagram-guidance.md`. | No new scripts, Python, npm, or transient tooling. | Use existing .NET generator. |
 
 ## Validation integration
@@ -30,10 +31,12 @@ Refresh with `dotnet tool run sharedkernel-docs -- generate --config docs/archit
 
 ## Mediator diagrams
 
-Mediator diagrams are not generated because the current source generator output does not yet expose a
-stable, docs-oriented topology for request/handler, pipeline behavior, notification, and stream paths.
-Generating those diagrams from naming conventions alone would make the documentation look more certain
-than the source model.
+SharedKernel owns the versioned mediator topology and its documentation renderer. Adopt the
+application generator and documentation tool together through the
+[reviewed candidate workflow](../sharedkernel/development.md).
+When a reviewed candidate carries the versioned topology contract, generate from the real Admin
+and Catalog compiler output, verify the diagram with the same candidate, and record the source
+inputs and refresh command in the resulting document.
 
 ## Code-generation research result
 

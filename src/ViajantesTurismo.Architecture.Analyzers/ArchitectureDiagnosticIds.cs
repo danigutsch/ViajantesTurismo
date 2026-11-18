@@ -19,4 +19,7 @@ public static class ArchitectureDiagnosticIds
     /// Diagnostic emitted for a domain error class whose name does not end with Errors.
     /// </summary>
     public const string ErrorClassName = "VTARCH003";
+
+    /// <summary>Diagnostic emitted for a direct HTTP request in a tool wrapper.</summary>
+    public const string ToolWrapperHttp = "VTARCH004";
 }

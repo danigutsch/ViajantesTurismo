@@ -69,10 +69,11 @@ internal static class AnalyzerTestHarness
         DiagnosticAnalyzer analyzer,
         string source,
         string assemblyName = AdminApiAssemblyName,
-        string path = "TestSource.cs")
+        string path = "TestSource.cs",
+        AnalyzerConfigOptionsProvider? optionsProvider = null)
     {
         var compilation = CreateCompilation(source, assemblyName, path);
-        var analyzerOptions = new AnalyzerOptions([]);
+        var analyzerOptions = optionsProvider is null ? new AnalyzerOptions([]) : new AnalyzerOptions([], optionsProvider);
         var compilationOptions = new CompilationWithAnalyzersOptions(
             analyzerOptions,
             onAnalyzerException: null,

@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net11.0": {
+      "PandaBear.SharedKernel.Documentation": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.653.1, )",
+        "resolved": "0.1.0-alpha.653.1",
+        "contentHash": "gRF9zCJtiTkmVjg1mp5JRg09wo3UmLE7bi/qb35az7+a8aOZGxhaP373djf5o3ly0Wa3bvZSXTKwURnHia7V+A==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzers": "5.12.0",
+          "Microsoft.CodeAnalysis.CSharp": "5.12.0"
+        }
+      },
+      "PandaBear.SharedKernel.Style.Analyzers": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.653.1, )",
+        "resolved": "0.1.0-alpha.653.1",
+        "contentHash": "y8DZwtSQB7yAZVNoCWVt/iGJ9xMWFV4OTfFO95r1WPrgICHB47XMpiHOGvuygKgqLz6JRkxdQwef/ri8zg1ghw=="
+      },
+      "PandaBear.SharedKernel.Style.CodeFixes": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.653.1, )",
+        "resolved": "0.1.0-alpha.653.1",
+        "contentHash": "jVVCmP9x5wHmJX2tbLeTkga4jsOuRt2xJfJaC5kcp3oupKC3Sv8WXbsZN/PvYq81k/YfUHTP1CbKn5dCyoSrRw=="
+      },
+      "Microsoft.CodeAnalysis.Common": {
+        "type": "Transitive",
+        "resolved": "5.12.0",
+        "contentHash": "0C7o9ys497xp0kZ64sL7C6nY/5WPQlxia28VlezdonBmjxbC6mIovAYs8mBoh/QooxBBZQCo/wMuZnV1kNk9GA==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzers": "5.9.0"
+        }
+      },
+      "Microsoft.CodeAnalysis.Analyzers": {
+        "type": "CentralTransitive",
+        "requested": "[5.12.0, )",
+        "resolved": "5.12.0",
+        "contentHash": "9tqr42A8A0CdhIJylAW9/Ca6Bd+kZPXQbWVBxl5CaklvUIdjdN1jYKsmCNvW1GsvnJalug4kfvFPsW17wjhCGA=="
+      },
+      "Microsoft.CodeAnalysis.CSharp": {
+        "type": "CentralTransitive",
+        "requested": "[5.12.0, )",
+        "resolved": "5.12.0",
+        "contentHash": "6W6vBcpQFjlxog+KUGNM2fFy+XA2StC1PtnkEkechk68vFy3a28tGjEdnoA7NrxhMdr8a+zh/AmiUtBAmdkQPg==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzers": "5.9.0",
+          "Microsoft.CodeAnalysis.Common": "[5.12.0]"
+        }
+      }
+    }
+  }
+}

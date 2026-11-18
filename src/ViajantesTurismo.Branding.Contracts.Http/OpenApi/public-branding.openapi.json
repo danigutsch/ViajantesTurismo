@@ -10,6 +10,7 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "operationId": "GetPublicBrandingSettings",
         "responses": {
           "200": {
             "description": "OK"
@@ -22,6 +23,7 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "operationId": "GetPublicBrandingLogo",
         "parameters": [
           {
             "name": "sha256",

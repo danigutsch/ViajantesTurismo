@@ -53,8 +53,7 @@ build with warnings as errors:
 ```
 
 Catalog.Api hosts the Branding routes, so Branding HTTP clients and contracts resolve to the Catalog
-API destination. Do not add this reference to `Directory.Build.props`, tests, AppHost, tools, frontends, or
-external-provider projects.
+API destination. Keep production API references project-local.
 
 ## `VTARCH002`: integration event names
 
@@ -72,3 +71,29 @@ and is not reported. The analyzer is referenced by the `*.Domain` projects.
 
 Both rules are enabled project by project with the same `OutputItemType="Analyzer"` project reference as
 `VTARCH001`, never centrally.
+
+## `VTARCH004`: HTTP transport in tool wrappers
+
+Use conventional `.csproj` tool projects under `scripts/` so solution builds, locked restores,
+and command contract tests use the same entry points. Enable `VTARCH004` in each tool project
+by referencing the architecture analyzer and exposing the tool property to the compiler.
+
+```xml
+<PropertyGroup>
+    <ViajantesTurismoToolWrapper>true</ViajantesTurismoToolWrapper>
+</PropertyGroup>
+<ItemGroup>
+    <CompilerVisibleProperty Include="ViajantesTurismoToolWrapper" />
+    <ProjectReference Include="../../src/ViajantesTurismo.Architecture.Analyzers/ViajantesTurismo.Architecture.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all"
+                      IsAspireProjectResource="false" />
+</ItemGroup>
+```
+
+The rule reports framework HTTP calls through `HttpClient`, `HttpMessageInvoker`, and the
+HTTP JSON extensions. Move request execution into a client under `src/` and invoke that client
+from the wrapper. Forge commands can compose the shared GitHub client. The wrapper owns
+arguments, configuration, dependency composition, and presentation.
+Creating or configuring a client for composition is permitted.

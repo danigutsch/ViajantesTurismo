@@ -13,32 +13,32 @@ internal static class PaymentInstructionEndpoints
     /// <summary>Maps the payment instruction endpoints under the payment workflow policy.</summary>
     public static void MapPaymentInstructionEndpoints(this WebApplication app)
     {
-        var group = app.MapDocumentsGroup().WithPaymentWorkflowPolicy();
-        group.MapGet("/bookings/{bookingId:guid}/payment-instructions", List).RequireAuthorization(AdminAuthorization.PaymentManage)
+        var documentsGroup = app.MapDocumentsGroup().WithPaymentWorkflowPolicy();
+        documentsGroup.MapGet("/bookings/{bookingId:guid}/payment-instructions", List).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("ListBookingPaymentInstructions", "Lists retained protected payment instruction revisions.", "Lists booking payment instructions.");
-        group.MapGet("/{id:guid}/payment-instructions", Read).RequireAuthorization(AdminAuthorization.PaymentManage)
+        documentsGroup.MapGet("/{id:guid}/payment-instructions", Read).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("GetPaymentInstructions", "Retrieves masked generated instruction fields and approval metadata.", "Retrieves payment instructions.");
-        group.MapPost("/bookings/{bookingId:guid}/payment-instructions", Generate).RequireAuthorization(AdminAuthorization.PaymentManage)
+        documentsGroup.MapPost("/bookings/{bookingId:guid}/payment-instructions", Generate).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithAdminMetadata("GeneratePaymentInstructions", "Generates a new immutable protected instruction draft.", "Generates payment instructions.");
-        group.MapPost("/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate", Regenerate).RequireAuthorization(AdminAuthorization.PaymentManage)
+        documentsGroup.MapPost("/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate", Regenerate).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithAdminMetadata("RegeneratePaymentInstructions", "Creates an immutable replacement from current approved sources.", "Regenerates payment instructions.");
-        group.MapPost("/{id:guid}/payment-instructions/approve", ApprovePaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
+        documentsGroup.MapPost("/{id:guid}/payment-instructions/approve", ApprovePaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("ApprovePaymentInstructions", "Executes a confirmed, revision-preconditioned ApprovePaymentInstructions operation.", "ApprovePaymentInstructions operation.");
-        group.MapPost("/{id:guid}/payment-instructions/finalize", FinalizePaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
+        documentsGroup.MapPost("/{id:guid}/payment-instructions/finalize", FinalizePaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("FinalizePaymentInstructions", "Executes a confirmed, revision-preconditioned FinalizePaymentInstructions operation.", "FinalizePaymentInstructions operation.");
-        group.MapPost("/{id:guid}/payment-instructions/withdraw-approval", WithdrawPaymentInstructionApproval).RequireAuthorization(AdminAuthorization.PaymentManage)
+        documentsGroup.MapPost("/{id:guid}/payment-instructions/withdraw-approval", WithdrawPaymentInstructionApproval).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("WithdrawPaymentInstructionApproval", "Executes a confirmed, revision-preconditioned WithdrawPaymentInstructionApproval operation.", "WithdrawPaymentInstructionApproval operation.");
-        group.MapPost("/{id:guid}/payment-instructions/void", VoidPaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
+        documentsGroup.MapPost("/{id:guid}/payment-instructions/void", VoidPaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("VoidPaymentInstructions", "Executes a confirmed, revision-preconditioned VoidPaymentInstructions operation.", "VoidPaymentInstructions operation.");
-        group.MapPost("/{id:guid}/payment-instructions/review", ReviewPaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
+        documentsGroup.MapPost("/{id:guid}/payment-instructions/review", ReviewPaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("ReviewPaymentInstructions", "Executes a confirmed, revision-preconditioned ReviewPaymentInstructions operation.", "ReviewPaymentInstructions operation.");
     }

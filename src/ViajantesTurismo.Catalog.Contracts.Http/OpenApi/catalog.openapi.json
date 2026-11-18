@@ -10,6 +10,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetTours",
         "responses": {
           "200": {
             "description": "OK",
@@ -43,6 +44,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetTour",
         "parameters": [
           {
             "name": "id",
@@ -77,6 +79,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "UpsertTourPresentation",
         "parameters": [
           {
             "name": "id",
@@ -162,6 +165,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "PublishTour",
         "parameters": [
           {
             "name": "id",
@@ -240,6 +244,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "UnpublishTour",
         "parameters": [
           {
             "name": "id",
@@ -318,6 +323,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "ListTourImages",
         "parameters": [
           {
             "name": "id",
@@ -350,6 +356,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "UploadTourImage",
         "parameters": [
           {
             "name": "id",
@@ -435,6 +442,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetManagementMediaPreview",
         "parameters": [
           {
             "name": "id",
@@ -515,6 +523,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GenerateMediaImageAccessibilityDraft",
         "parameters": [
           {
             "name": "id",
@@ -576,6 +585,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "ReviewMediaImageAccessibility",
         "parameters": [
           {
             "name": "id",
@@ -637,6 +647,7 @@
         "tags": [
           "ViajantesTurismo.Catalog.Api"
         ],
+        "operationId": "ListPublicContentForManagement",
         "responses": {
           "200": {
             "description": "OK",
@@ -670,6 +681,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublicContentForManagement",
         "parameters": [
           {
             "name": "key",
@@ -701,6 +713,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "UpsertPublicContent",
         "parameters": [
           {
             "name": "key",
