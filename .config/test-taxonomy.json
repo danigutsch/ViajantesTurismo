@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "sutRoots": ["src"],
+  "testRoots": ["tests"],
+  "suts": [
+    {"path":"src/ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj","directOwner":"Admin","requiredTypes":["Api","Contract","Integration"]},
+    {"path":"src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj","directOwner":"Admin","requiredTypes":["Architecture","Component","Unit"]},
+    {"path":"src/ViajantesTurismo.Admin.Contracts.Application/ViajantesTurismo.Admin.Contracts.Application.csproj","directOwner":"Admin","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.Admin.Contracts.Http/ViajantesTurismo.Admin.Contracts.Http.csproj","directOwner":"Admin","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj","directOwner":"Admin","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj","directOwner":"Admin","requiredTypes":["Unit"]},
+    {"path":"src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj","directOwner":"Admin","requiredTypes":["Integration","Unit"]},
+    {"path":"src/ViajantesTurismo.Admin.IntegrationEventWorker/ViajantesTurismo.Admin.IntegrationEventWorker.csproj","directOwner":"Admin","requiredTypes":["Unit"]},
+    {"path":"src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj","directOwner":"Application platform","requiredTypes":["Architecture","System"]},
+    {"path":"src/ViajantesTurismo.Architecture.Analyzers/ViajantesTurismo.Architecture.Analyzers.csproj","directOwner":"Architecture","requiredTypes":["Unit"]},
+    {"path":"src/ViajantesTurismo.Branding.AspNetCore/ViajantesTurismo.Branding.AspNetCore.csproj","directOwner":"Branding","requiredTypes":["Api"]},
+    {"path":"src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj","directOwner":"Branding","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj","directOwner":"Branding","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.Branding.Infrastructure/ViajantesTurismo.Branding.Infrastructure.csproj","directOwner":"Branding","requiredTypes":["Integration"]},
+    {"path":"src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj","directOwner":"Catalog","requiredTypes":["Api","Contract"]},
+    {"path":"src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj","directOwner":"Catalog","requiredTypes":["Architecture","Component","Unit"]},
+    {"path":"src/ViajantesTurismo.Catalog.Contracts.Application/ViajantesTurismo.Catalog.Contracts.Application.csproj","directOwner":"Catalog","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.Catalog.Contracts.Http/ViajantesTurismo.Catalog.Contracts.Http.csproj","directOwner":"Catalog","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj","directOwner":"Catalog","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj","directOwner":"Catalog","requiredTypes":["Unit"]},
+    {"path":"src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj","directOwner":"Catalog","requiredTypes":["Integration","Unit"]},
+    {"path":"src/ViajantesTurismo.Catalog.IntegrationEventWorker/ViajantesTurismo.Catalog.IntegrationEventWorker.csproj","directOwner":"Catalog","requiredTypes":["Unit"]},
+    {"path":"src/ViajantesTurismo.DatabaseObservability/ViajantesTurismo.DatabaseObservability.csproj","directOwner":"Application platform","requiredTypes":["Component"]},
+    {"path":"src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj","directOwner":"Management Web","requiredTypes":["Integration","Unit"]},
+    {"path":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","directOwner":"Management Web","requiredTypes":["Component","Integration","System","Unit"]},
+    {"path":"src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj","directOwner":"Application platform","requiredTypes":["Unit"]},
+    {"path":"src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj","directOwner":"Public Web","requiredTypes":["Component","Integration","Unit"]},
+    {"path":"src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj","directOwner":"Application platform","requiredTypes":["Contract"]},
+    {"path":"src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj","directOwner":"Application platform","requiredTypes":["Integration"]}
+  ],
+  "suites": [
+    {
+      "path": "tests/ViajantesTurismo.Admin.ApiServiceTests/ViajantesTurismo.Admin.ApiServiceTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "In-process HTTP suite includes wire-level Kestrel cases.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj","type":"Api","dependency":"test-server-and-loopback-kestrel","capabilities":["http-endpoints","multipart-wire","authorization"],"lane":"fast-validation-1"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Admin.BehaviorTests/ViajantesTurismo.Admin.BehaviorTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Retains the Reqnroll scenario assembly for separate domain and application seams.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj","type":"Unit","dependency":"in-process","capabilities":["booking","customer","tour-rules"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj","type":"Component","dependency":"in-process-fakes","capabilities":["booking-and-tour-workflows","payments"],"lane":"fast-validation-2"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "One executable verifies Admin public contracts and resources.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj","type":"Contract","dependency":"generated-artifacts","capabilities":["openapi"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Admin.Contracts.Application/ViajantesTurismo.Admin.Contracts.Application.csproj","type":"Contract","dependency":"in-process","capabilities":["application-contracts"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Admin.Contracts.Http/ViajantesTurismo.Admin.Contracts.Http.csproj","type":"Contract","dependency":"in-process","capabilities":["http-contracts"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj","type":"Contract","dependency":"in-process","capabilities":["integration-events"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj","type":"Contract","dependency":"in-process","capabilities":["localization-resources"],"lane":"fast-validation-1"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj",
+      "register": "tests/ViajantesTurismo.Admin.UiIntegrationTests/README.md",
+      "seams": []
+    },
+    {
+      "path": "tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "One legacy executable owns unit seams across Admin and its shared persistence/security fixtures.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["command-and-query-handlers"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj","type":"Unit","dependency":"in-process","capabilities":["aggregates","validation"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["repository-and-transaction-behavior"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Admin.IntegrationEventWorker/ViajantesTurismo.Admin.IntegrationEventWorker.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["event-dispatch"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["token-and-ticket-lifecycle"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["migration-orchestration"],"lane":"fast-validation-1"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Architecture.Analyzers.Tests/ViajantesTurismo.Architecture.Analyzers.Tests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Retains the existing analyzer unit-test name pending the naming migration.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Architecture.Analyzers/ViajantesTurismo.Architecture.Analyzers.csproj","type":"Unit","dependency":"roslyn-in-process","capabilities":["diagnostics"],"lane":"fast-validation-2"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Runs composition and dependency policy across project boundaries in one executable.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj","type":"Architecture","dependency":"repository-and-compiled-assemblies","capabilities":["resource-topology","solution-boundaries"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj","type":"Architecture","dependency":"compiled-assemblies","capabilities":["application-boundaries"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj","type":"Architecture","dependency":"compiled-assemblies","capabilities":["application-boundaries"],"lane":"fast-validation-2"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "One executable verifies Branding's HTTP and messaging compatibility.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj","type":"Contract","dependency":"generated-artifacts","capabilities":["openapi","http-contracts"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj","type":"Contract","dependency":"in-process","capabilities":["integration-events"],"lane":"fast-validation-1"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Branding.InfrastructureTests/ViajantesTurismo.Branding.InfrastructureTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Retains the existing infrastructure test name pending the naming migration.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Branding.Infrastructure/ViajantesTurismo.Branding.Infrastructure.csproj","type":"Integration","dependency":"storage-and-database-fixtures","capabilities":["revisions","logo-storage","ef-persistence"],"lane":"fast-validation-1"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Retains the historical assembly while API project names move.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj","type":"Api","dependency":"test-server-and-loopback-kestrel","capabilities":["http-endpoints","multipart-wire","branding-routes"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Branding.AspNetCore/ViajantesTurismo.Branding.AspNetCore.csproj","type":"Api","dependency":"test-server-and-loopback-kestrel","capabilities":["logo-upload","logo-serving"],"lane":"fast-validation-2"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Catalog.BehaviorTests/ViajantesTurismo.Catalog.BehaviorTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Groups two in-process application and HTTP scenario seams in one Reqnroll executable.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj","type":"Api","dependency":"test-server","capabilities":["catalog-tour-workflows","public-content"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj","type":"Component","dependency":"in-process-fakes","capabilities":["duplicate-event-delivery"],"lane":"fast-validation-2"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "One executable verifies Catalog HTTP, application and messaging compatibility.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj","type":"Contract","dependency":"generated-artifacts","capabilities":["openapi"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Catalog.Contracts.Application/ViajantesTurismo.Catalog.Contracts.Application.csproj","type":"Contract","dependency":"in-process","capabilities":["application-contracts"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Catalog.Contracts.Http/ViajantesTurismo.Catalog.Contracts.Http.csproj","type":"Contract","dependency":"in-process","capabilities":["http-contracts"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj","type":"Contract","dependency":"in-process","capabilities":["integration-events"],"lane":"fast-validation-1"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Catalog.UnitTests/ViajantesTurismo.Catalog.UnitTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "One legacy executable owns unit seams across Catalog and Branding.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["command-and-query-handlers"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj","type":"Unit","dependency":"in-process","capabilities":["aggregates","validation"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["repository-and-bucket-configuration"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.Catalog.IntegrationEventWorker/ViajantesTurismo.Catalog.IntegrationEventWorker.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["event-dispatch"],"lane":"fast-validation-1"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.DatabaseObservability.Tests/ViajantesTurismo.DatabaseObservability.Tests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Retains the legacy test name while the project taxonomy is reported.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.DatabaseObservability/ViajantesTurismo.DatabaseObservability.csproj","type":"Component","dependency":"in-process","capabilities":["metrics-host-registration"],"lane":"fast-validation-1"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj",
+      "register": "tests/ViajantesTurismo.HostedTests/README.md",
+      "migrationException": "One xUnit fixture owns the shared services and application stacks during the hosted ownership migration.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj","type":"Integration","dependency":"aspire-services","capabilities":["http-and-postgresql"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj","type":"Integration","dependency":"postgresql","capabilities":["migrations","locking","persistence"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj","type":"Integration","dependency":"postgresql-and-object-storage","capabilities":["persistence","catalog-media"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj","type":"Integration","dependency":"postgresql","capabilities":["protected-tickets","token-store"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","type":"System","dependency":"browser-and-aspire","capabilities":["admin-staff-workflows"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj","type":"System","dependency":"browser-and-aspire","capabilities":["hosted-application-composition"],"lane":"hosted-tests"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Keeps in-process, TestServer and component cases together during ownership migration.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["page-support"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","type":"Component","dependency":"bunit","capabilities":["component-rendering"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","type":"Integration","dependency":"test-server","capabilities":["route-and-middleware-composition"],"lane":"fast-validation-2"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Keeps in-process, TestServer and component cases together during ownership migration.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj","type":"Unit","dependency":"in-process-fakes","capabilities":["page-support"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj","type":"Component","dependency":"bunit","capabilities":["component-rendering"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj","type":"Integration","dependency":"test-server","capabilities":["public-browsing","route-composition"],"lane":"fast-validation-2"}
+      ]
+    },
+    {
+      "path": "tests/ViajantesTurismo.ServiceDefaults.Tests/ViajantesTurismo.ServiceDefaults.Tests.csproj",
+      "register": "tests/TEST_FIXTURE_SEAM.md",
+      "migrationException": "Retains the legacy test name pending the naming migration.",
+      "seams": [
+        {"sut":"src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj","type":"Integration","dependency":"in-process-host","capabilities":["service-composition","telemetry"],"lane":"fast-validation-1"}
+      ]
+    }
+  ],
+  "supportProjects": [
+    "tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj",
+    "tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj",
+    "tests/ViajantesTurismo.UploadWire.Testing/ViajantesTurismo.UploadWire.Testing.csproj"
+  ]
+}

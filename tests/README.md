@@ -134,11 +134,32 @@ fixture contract as a repository-wide test abstraction.
 
 ## Naming rules
 
-- Name projects by **system under test** and **scope**.
+- Name new projects `<SUT>.Tests.<Type>`. Use the owning production project name for `<SUT>` and one of
+  `Unit`, `Component`, `Api`, `Contract`, `Integration`, `System`, `Architecture`, and `Performance` for `<Type>`.
 - Do not encode temporary host technology in permanent project names.
-- Use `SystemTests` for the long-term full-system browser lane; do not introduce alternate end-to-end project names.
-- Use `ContractTests` only when a public or external compatibility boundary matters independently.
+- Use `System` for full-system browser or cross-deployable workflows.
+- Use `Contract` when a public or external compatibility boundary matters independently.
 - Treat snapshot testing as a technique inside a project before promoting it to a project family.
+
+The [test taxonomy inventory](../.config/test-taxonomy.json) declares which tracked production projects, test suites,
+and test-support projects exist. The entries carry the direct project owner, the existing seam and its dependency,
+capabilities, CI lane, and any temporary naming or ownership exception. Behavior describes scenario intent.
+In-process rules can stay in unit or component suites. Provider-backed scenarios belong to integration, while
+cross-deployable scenarios belong to system. The typed test attributes still govern runtime selection.
+
+GitHub Projects owns planning metadata for future coverage, resources, owners, and exceptions. The checked-in
+inventory describes the actual projects and current seams. An empty `requiredTypes` list says that the local inventory
+has no established test type for that SUT yet.
+
+Once the pinned repository tool provides the verifier, run this command during the naming and ownership migration.
+
+```sh
+dotnet tool run sharedkernel-repo -- verify-test-taxonomy --root . --report
+```
+
+The validator reads tracked files and explicit declarations. Stage new project files and seam registers before running
+it. Use the diagnostics to register omitted projects, correct type and ownership entries, and split or document
+legacy suites. Strict enforcement follows the migration.
 
 ## Tagging Model
 
