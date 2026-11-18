@@ -11,7 +11,7 @@
     },
     {
       "path": "docs/privacy-classification.md",
-      "requiredText": ["## Logging and telemetry", "Customer and booking baseline"]
+      "requiredText": ["## Logging and telemetry", "### Admin data inventory"]
     }
   ]
 }

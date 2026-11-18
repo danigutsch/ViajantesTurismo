@@ -17,18 +17,28 @@ The engineering rule is: collect less, store less, expose less, log less.
 These are technical handling classes only. They do not encode legal basis, consent, purpose, or
 retention periods.
 
-### Customer and booking baseline
+### Admin data inventory
 
-| Field group | Examples | Classification | Logging rule |
-| --- | --- | --- | --- |
-| Customer identity and contact | Name, email, phone, address, nationality, occupation, social handles, emergency contacts | Personal | Do not log values; use bounded operation outcomes |
-| Customer high-risk details | National identifiers, birth date, health, allergy, medical, accommodation, and physical information | Sensitive | Never log or attach to telemetry |
-| Booking relationship and free text | Customer-linked booking identifiers, traveller assignments, notes, discount reasons, and accommodation requests | Personal or Sensitive | Do not log identifiers or content |
-| Payment and pricing | Payment references, payment notes, customer-linked prices, discounts, and balances | Financial | Do not log values; expose only bounded payment status when needed |
-| Authentication material | Passwords, tokens, cookies, tickets, API keys, and connection secrets | Credential | Never log, trace, or return in error payloads |
+| Owner and API representation | Fields and classes | Handling |
+| --- | --- | --- |
+| `Customer` with `PersonalInfo` and `GetCustomerDto` / `PersonalInfoDto` | Customer ID, first and last names, gender, nationality and occupation are personal. Date of birth is sensitive. The list projection also carries email, mobile and bike choice. | Require the Admin customer read permissions. Use the list projection for list views and request the details only for the selected customer. Keep IDs and values out of telemetry. |
+| `IdentificationInfo` and `IdentificationInfoDto` | National ID is sensitive. Issuing nationality is personal and the combination identifies the document holder. | Keep values within authorized customer details and approved document sources. Never include these values in generic errors, events or telemetry. |
+| `ContactInfo`, `Address` and `EmergencyContact` with the corresponding detail DTOs | Email, mobile, Instagram and Facebook handles, street, complement, neighborhood, postal code, city, state and country are personal. The emergency contact name and mobile identify another person. | Restrict customer and emergency-contact data to the authorized workflow. Omit contact values and complete addresses from diagnostics. |
+| `PhysicalInfo`, `AccommodationPreferences`, `MedicalInfo` and their DTOs | Weight, height, allergies and additional medical notes are sensitive. Bike, room and bed preferences and companion ID are personal. Treat free text as sensitive. | Return these values in the authorized detail scope. Keep health, physical measurements and notes out of public and integration payloads and telemetry. |
+| `Booking` and `GetBookingDto` | Booking ID, booking date, customer and companion IDs and names, room type, bike type and booking status describe an identifiable booking. Notes and discount reasons can contain sensitive free text. Total, discount, currency, paid amount, balance and the approved obligation are financial in this context. Tour catalog fields alone are public only when published. | Booking reads that include financial data require booking and payment read permission. Treat every joined booking projection as personal, including when it uses public tour names or identifiers. |
+| Booking financial history and payment DTOs | Receipt references, quotes, payment instructions, settlement amounts and evidence links are financial. Payment-routing secrets and credentials use the credential handling class. | Keep financial evidence in Admin and use operation-specific permissions. Logs and metrics may carry bounded outcomes. They must omit all references, account values and amounts. |
+| Customer CSV and `ImportResultDto` | The upload may hold all customer field classes. Conflict rows carry email. Success rows may carry email and customer ID. Error rows may carry email, row number, field and error message. | Treat the uploaded file and the staff error report as personal data. Prevent raw rows, filenames, local paths and scanner output from reaching logs or traces. Treat the downloaded error report as a restricted copy. |
 
-This table is the focused logging baseline. A complete model, DTO, storage, import/export, and event
-flow inventory remains a separate architecture concern.
+### Data flows and copies
+
+| Flow | Current boundary and handling |
+| --- | --- |
+| Management Web to Admin | Customer and booking reads and writes traverse the authenticated application API. Admin authorization owns customer, sensitive-customer, booking and payment permissions. Avoid shared response caches for these records and avoid URLs containing field values. |
+| Admin persistence | PostgreSQL stores the customer record and its owned personal, identification, contact, address, physical, accommodation, emergency-contact and medical rows. Booking and financial records remain in Admin's database. Apply the same data classifications to database backups, restored copies and export jobs. |
+| CSV validation and import | Management Web accepts the file and prepares column mappings. The Admin import endpoints enforce the configured file bound and scan the raw upload before parsing. Preview and conflict handling return only authorized import results. Commit persists accepted customer rows. The endpoint disposes its input and seekable lease, while the browser's original file and downloaded error report remain staff-controlled copies. |
+| Staff exports and documents | The implemented import error report is generated from failed rows for a staff download. Generated customer documents can contain private booking, traveler and financial values, so use the document-specific authorization, audit and artifact policies for preparation and delivery. Record any future bulk export as its own data flow. |
+| Admin to Catalog and Public Web | `AdminTourCreatedIntegrationEvent` contains the event ID and timestamp plus the Admin tour ID, business identifier and name. Customer and booking fields remain in Admin. Catalog public projections and public DTOs expose published tour and media content. Review new event and projection schemas before adding fields. |
+| Errors, logs, traces and metrics | Error responses expose bounded error codes or field names. Staff import results have a separate data boundary. Application providers and the trusted Collector apply the controls below. Keep raw exception payloads, SQL values, URLs with identifiers and uploaded content out of exported signals. |
 
 ## Logging and telemetry
 
@@ -83,6 +93,7 @@ downstream transport.
 - Microsoft Learn: <https://learn.microsoft.com/en-us/dotnet/core/extensions/compliance>
 - Microsoft Learn data classification: <https://learn.microsoft.com/en-us/dotnet/core/extensions/data-classification>
 - Microsoft Learn data redaction: <https://learn.microsoft.com/en-us/dotnet/core/extensions/data-redaction>
+- [API I/O and streaming](API_IO_AND_STREAMING.md)
 - [Document retention and legal-hold policy](operations/document-retention-and-legal-hold.md)
 - GDPR Article 5, 9, 25, and 32: <https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng>
 - Brazil LGPD law: <https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm>
