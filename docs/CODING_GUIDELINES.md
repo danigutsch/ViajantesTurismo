@@ -39,6 +39,18 @@ All projects use `.editorconfig` for consistent formatting. Key settings:
 | Local Variable        | camelCase                  | `result`, `tour`                     |
 | Const                 | PascalCase                 | `MaxNameLength`                      |
 
+### Governed configuration literals
+
+Production C# builds load [the application catalog](../.config/GovernedLiterals.txt) as a Roslyn
+additional file. SKSTYLE012 reports an exact string that duplicates a registered canonical constant.
+SKSTYLE013 reports invalid catalog entries. The catalog records each value, its assembly name, and
+the fully qualified field published by its owner. The initial entries cover .NET host environment
+names, API authentication keys, and ClamAV configuration keys.
+
+Use the owning constant in application code. Record any required, narrowly scoped exception with
+its owner and review date. Test fixtures, launch settings, and the AppHost environment forms that
+use double underscores are outside this catalog.
+
 ### Specific Conventions
 
 **Asynchronous methods:** Do not use the `Async` suffix. Name methods for their
