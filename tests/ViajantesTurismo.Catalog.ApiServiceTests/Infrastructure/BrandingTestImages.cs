@@ -14,6 +14,15 @@ internal static class BrandingTestImages
         return image.ToByteArray();
     }
 
+    /// <summary>Creates a valid PNG large enough to spill the upload copy to a temporary file.</summary>
+    public static byte[] CreateUncompressedLogoPng()
+    {
+        using var image = new MagickImage(MagickColors.SeaGreen, 512, 256);
+        image.Settings.SetDefine("png:color-type", "6");
+        image.Settings.SetDefine("png:compression-level", "0");
+        return image.ToByteArray(MagickFormat.Png);
+    }
+
     /// <summary>Creates a fully transparent PNG that is forced to store an alpha channel.</summary>
     public static byte[] CreateTransparentPng(uint width, uint height)
     {
