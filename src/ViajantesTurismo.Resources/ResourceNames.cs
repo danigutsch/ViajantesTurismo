@@ -26,6 +26,12 @@ public static class ResourceNames
     /// </summary>
     public const string DatabaseServer = "database-server";
 
+    /// <summary>The name of the PostgreSQL server metrics username parameter.</summary>
+    public const string PostgreSqlServerMetricsUsername = "postgresql-server-metrics-username";
+
+    /// <summary>The name of the PostgreSQL server metrics password parameter.</summary>
+    public const string PostgreSqlServerMetricsPassword = "postgresql-server-metrics-password";
+
     /// <summary>
     /// The name of the Admin database resource.
     /// </summary>

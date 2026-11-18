@@ -1,6 +1,7 @@
 using PandaBear.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
+using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilitySignalCatalog;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -112,6 +113,29 @@ public sealed class ObservabilityAssetsTests
         string.Join('\n', violations).ShouldBe(string.Empty);
     }
 
+    [Theory]
+    [InlineData("Mediator spans", new[] { "time", "name", "duration", "mediator.request.name", "mediator.outcome" })]
+    [InlineData("Failed mediator results", new[] { "time", "name", "duration" })]
+    public void Mediator_trace_panels_display_only_bounded_span_fields(string title, string[] expectedFields)
+    {
+        // Arrange
+        var dashboard = LoadDashboards()["traces"];
+
+        // Act
+        var panel = dashboard.RootElement.GetProperty("panels").EnumerateArray()
+            .Where(item => item.GetProperty("title").GetString() == title)
+            .ShouldHaveSingleItem();
+        var transformation = panel.GetProperty("transformations").EnumerateArray().ShouldHaveSingleItem();
+        var target = panel.GetProperty("targets").EnumerateArray().ShouldHaveSingleItem();
+        var displayedFields = transformation.GetProperty("options").GetProperty("include").GetProperty("names")
+            .EnumerateArray().Select(static field => field.GetString()).ToArray();
+
+        // Assert
+        transformation.GetProperty("id").GetString().ShouldBe("filterFieldsByName");
+        target.GetProperty("tableType").GetString().ShouldBe("spans");
+        displayedFields.ShouldBe(expectedFields);
+    }
+
     [Fact]
     public void Every_alert_rule_has_a_summary_a_description_and_a_runbook_section()
     {
@@ -148,16 +172,51 @@ public sealed class ObservabilityAssetsTests
     {
         // Arrange
         var catalog = File.ReadAllText(CatalogPath());
-        var meterTable = catalog.Split("## Meters", 2)[1].Split("## Metrics", 2)[0];
-        var registered = RegisteredMeterPatterns();
+        var registered = RegisteredNames("AddMeter");
 
         // Act
-        var listed = MeterTableRow().Matches(meterTable).Select(match => match.Groups["meter"].Value).ToArray();
-        var unregistered = listed.Where(meter => !registered.Any(pattern => MatchesMeterPattern(pattern, meter)));
-        var unlisted = registered.Where(pattern => !listed.Any(meter => MatchesMeterPattern(pattern, meter)));
+        var listed = CatalogKeys(catalog, "Meters");
+        var unregistered = listed.Where(meter => !registered.Any(pattern => MatchesRegistration(pattern, meter)));
+        var unlisted = registered.Where(pattern => !listed.Any(meter => MatchesRegistration(pattern, meter)))
+            .Concat(ApplicationMeters().Except(listed, StringComparer.Ordinal));
 
         // Assert
         string.Join(", ", unregistered.Concat(unlisted)).ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void Catalog_covers_registered_activity_sources()
+    {
+        // Arrange
+        var catalog = File.ReadAllText(CatalogPath());
+        var registered = RegisteredNames("AddSource");
+        var expected = ApplicationActivitySources().Concat(SharedKernelActivitySources)
+            .Concat(registered.Where(name => !name.EndsWith('*', StringComparison.Ordinal))).Distinct(StringComparer.Ordinal);
+
+        // Act
+        var listed = CatalogKeys(catalog, "Activity sources");
+        var missing = expected.Except(listed, StringComparer.Ordinal);
+        var stale = listed.Except(expected, StringComparer.Ordinal);
+        var unregistered = listed.Where(source => !registered.Any(pattern => MatchesRegistration(pattern, source)));
+
+        // Assert
+        string.Join(", ", missing.Concat(stale).Concat(unregistered)).ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void Catalog_covers_application_log_events_by_owner_and_ID()
+    {
+        // Arrange
+        var catalog = File.ReadAllText(CatalogPath());
+        var expected = ApplicationLogEvents().Concat(SharedKernelLogEvents);
+
+        // Act
+        var listed = CatalogKeys(catalog, "Log events");
+        var missing = expected.Except(listed, StringComparer.Ordinal);
+        var stale = listed.Except(expected, StringComparer.Ordinal);
+
+        // Assert
+        string.Join(", ", missing.Concat(stale)).ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -196,5 +255,20 @@ public sealed class ObservabilityAssetsTests
 
         // Assert
         string.Join('\n', missing).ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void The_event_store_append_conflict_panel_queries_the_pinned_counter()
+    {
+        // Arrange
+        var counter = PandaBear.EventSourcing.Npgsql.PostgreSqlEventSourcingTelemetry.MetricAppendConflicts;
+        var prometheusName = $"{counter.Replace('.', '_')}_total";
+
+        // Act
+        var expression = DashboardTargets().ShouldHaveSingleItem(target => target.Dashboard == "event-store" && target.Panel == "Append conflicts").Expression;
+        var metricNames = MetricNames(expression);
+
+        // Assert
+        metricNames.ShouldContain(prometheusName);
     }
 }

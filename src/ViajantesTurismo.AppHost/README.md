@@ -325,6 +325,11 @@ The resources are:
 - optional `tempo`: sanitized trace backend
 - optional `prometheus`: metric backend scraping the Collector's Prometheus exporter and its internal metrics on port 8888
 
+With the local stack enabled, `Aspire:Features:PostgreSqlServerMetrics=true` adds
+server connection metrics for the AppHost-owned PostgreSQL instance. Configure the
+dedicated monitoring credentials and permissions described in
+[PostgreSQL observability](../../docs/architecture/postgresql-observability.md#postgresql-server-connection-metrics).
+
 Raw telemetry exists on the trusted application-to-Collector hop. AppHost forwarding covers the
 normal AppHost OTLP annotation contract, but a manually constructed exporter or a process outside this
 AppHost can send directly to another endpoint and bypass the gateway. Restrict backend network access

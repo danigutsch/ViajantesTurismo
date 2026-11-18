@@ -1,0 +1,14 @@
+groups:
+  - name: ratio-alert-tests
+    interval: 1m
+    rules:
+      - record: test:http_5xx_ratio
+        expr: "(sum((http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"} unless http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"} offset 5m) or increase(http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum((http_server_request_duration_seconds_count unless http_server_request_duration_seconds_count offset 5m) or increase(http_server_request_duration_seconds_count[5m])), 1)"
+      - alert: Http5xxRatio
+        expr: test:http_5xx_ratio > 0.05
+        for: 10m
+      - record: test:catalog_event_errors
+        expr: "(sum((catalog_integration_event_total{catalog_outcome=\"error\"} unless catalog_integration_event_total{catalog_outcome=\"error\"} offset 5m) or increase(catalog_integration_event_total{catalog_outcome=\"error\"}[5m])) or vector(0)) / clamp_min(sum((catalog_integration_event_total unless catalog_integration_event_total offset 5m) or increase(catalog_integration_event_total[5m])), 1)"
+      - alert: CatalogEventErrors
+        expr: test:catalog_event_errors > 0.1
+        for: 10m

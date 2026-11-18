@@ -39,6 +39,8 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
             return Task.CompletedTask;
         });
         using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
+        List<(string? Unit, double Duration, KeyValuePair<string, object?>[] Tags)> durations = [];
+        using var meterListener = DatabaseInitializationWorkerTestHelpers.CreateDurationListener(harness.MeterFactory, durations);
         var worker = harness.CreateWorker();
 
         // Act
@@ -54,6 +56,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         activity.Tags.ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
         activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
         initializationCalled.ShouldBeTrue();
+        durations.ShouldRecordInitializationDuration("success");
     }
 
     [Fact]
@@ -68,6 +71,8 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
             throw new InvalidOperationException("boom");
         });
         using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
+        List<(string? Unit, double Duration, KeyValuePair<string, object?>[] Tags)> durations = [];
+        using var meterListener = DatabaseInitializationWorkerTestHelpers.CreateDurationListener(harness.MeterFactory, durations);
         var worker = harness.CreateWorker();
 
         // Act
@@ -86,6 +91,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         activity.Tags.ShouldNotContain(static tag => tag.Key.StartsWith("exception.", StringComparison.Ordinal));
         activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
         initializationCalled.ShouldBeTrue();
+        durations.ShouldRecordInitializationDuration("error");
     }
 
     [Fact]
@@ -103,6 +109,8 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
             return Task.CompletedTask;
         });
         using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
+        List<(string? Unit, double Duration, KeyValuePair<string, object?>[] Tags)> durations = [];
+        using var meterListener = DatabaseInitializationWorkerTestHelpers.CreateDurationListener(harness.MeterFactory, durations);
         var worker = harness.CreateWorker();
 
         // Act
@@ -118,6 +126,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         activity.Tags.ShouldContain(static tag => tag.Key == "worker.type" && tag.Value == "migration");
         activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
         initializationCalled.ShouldBeTrue();
+        durations.ShouldRecordInitializationDuration("cancelled");
     }
 
     [Fact]
@@ -127,6 +136,8 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         List<Activity> stoppedActivities = [];
         using var harness = DatabaseInitializationWorkerHarness.Create(_ => throw new OperationCanceledException("unexpected"));
         using var listener = DatabaseInitializationWorkerTestHelpers.CreateCapturingListener(harness.ActivitySource, stoppedActivities);
+        List<(string? Unit, double Duration, KeyValuePair<string, object?>[] Tags)> durations = [];
+        using var meterListener = DatabaseInitializationWorkerTestHelpers.CreateDurationListener(harness.MeterFactory, durations);
         var worker = harness.CreateWorker();
 
         // Act
@@ -139,6 +150,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         activity.Tags.ShouldContain(static tag =>
             tag.Key == "error.type" && tag.Value == nameof(OperationCanceledException));
         activity.Events.ShouldNotContain(static activityEvent => activityEvent.Name == "exception");
+        durations.ShouldRecordInitializationDuration("error");
     }
 
     [Fact]
@@ -146,6 +158,8 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
     {
         // Arrange
         using var harness = DatabaseInitializationWorkerHarness.CreateWithDefaultInitialization(Environments.Development);
+        List<(string? Unit, double Duration, KeyValuePair<string, object?>[] Tags)> durations = [];
+        using var meterListener = DatabaseInitializationWorkerTestHelpers.CreateDurationListener(harness.MeterFactory, durations);
         var worker = harness.CreateDefaultWorker();
 
         // Act
@@ -157,6 +171,7 @@ public sealed class DatabaseInitializationWorkerTelemetryTests
         probe.CatalogResolved.ShouldBeTrue();
         probe.BrandingResolved.ShouldBeTrue();
         probe.ManagementSecurityResolved.ShouldBeTrue();
+        durations.ShouldRecordInitializationDuration("success");
     }
 
     [Fact]

@@ -1,0 +1,14 @@
+groups:
+  - name: collector-export-alert-tests
+    interval: 1m
+    rules:
+      - record: test:collector_export_failures
+        expr: "(sum((otelcol_exporter_send_failed_spans_total unless otelcol_exporter_send_failed_spans_total offset 5m) or increase(otelcol_exporter_send_failed_spans_total[5m])) or vector(0)) +
+          (sum((otelcol_exporter_send_failed_metric_points_total unless otelcol_exporter_send_failed_metric_points_total offset 5m) or increase(otelcol_exporter_send_failed_metric_points_total[5m])) or vector(0)) +
+          (sum((otelcol_exporter_send_failed_log_records_total unless otelcol_exporter_send_failed_log_records_total offset 5m) or increase(otelcol_exporter_send_failed_log_records_total[5m])) or vector(0)) +
+          (sum((otelcol_exporter_enqueue_failed_spans_total unless otelcol_exporter_enqueue_failed_spans_total offset 5m) or increase(otelcol_exporter_enqueue_failed_spans_total[5m])) or vector(0)) +
+          (sum((otelcol_exporter_enqueue_failed_metric_points_total unless otelcol_exporter_enqueue_failed_metric_points_total offset 5m) or increase(otelcol_exporter_enqueue_failed_metric_points_total[5m])) or vector(0)) +
+          (sum((otelcol_exporter_enqueue_failed_log_records_total unless otelcol_exporter_enqueue_failed_log_records_total offset 5m) or increase(otelcol_exporter_enqueue_failed_log_records_total[5m])) or vector(0))"
+      - alert: CollectorExportFailing
+        expr: test:collector_export_failures > 0
+        for: 1m

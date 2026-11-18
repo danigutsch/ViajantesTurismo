@@ -6,6 +6,45 @@ groups:
     folder: ViajantesTurismo
     interval: 1m
     rules:
+      - uid: migration-initialization-failed
+        title: Database initialization failed
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "sum(last_over_time(migration_database_initialization_duration_seconds_count{migration_outcome=\"error\"}[5m]))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: Database initialization failed
+          description: The migration worker reported an error while running migrations or initializing development data.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#migration-initialization-failed
+        labels:
+          severity: warning
       - uid: collector-refusing-telemetry
         title: Collector is refusing telemetry
         condition: C
@@ -55,7 +94,12 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "sum(increase(otelcol_exporter_send_failed_spans_total[5m])) + sum(increase(otelcol_exporter_send_failed_metric_points_total[5m])) + sum(increase(otelcol_exporter_send_failed_log_records_total[5m]))"
+              expr: "(sum((otelcol_exporter_send_failed_spans_total unless otelcol_exporter_send_failed_spans_total offset 5m) or increase(otelcol_exporter_send_failed_spans_total[5m])) or vector(0)) +
+                (sum((otelcol_exporter_send_failed_metric_points_total unless otelcol_exporter_send_failed_metric_points_total offset 5m) or increase(otelcol_exporter_send_failed_metric_points_total[5m])) or vector(0)) +
+                (sum((otelcol_exporter_send_failed_log_records_total unless otelcol_exporter_send_failed_log_records_total offset 5m) or increase(otelcol_exporter_send_failed_log_records_total[5m])) or vector(0)) +
+                (sum((otelcol_exporter_enqueue_failed_spans_total unless otelcol_exporter_enqueue_failed_spans_total offset 5m) or increase(otelcol_exporter_enqueue_failed_spans_total[5m])) or vector(0)) +
+                (sum((otelcol_exporter_enqueue_failed_metric_points_total unless otelcol_exporter_enqueue_failed_metric_points_total offset 5m) or increase(otelcol_exporter_enqueue_failed_metric_points_total[5m])) or vector(0)) +
+                (sum((otelcol_exporter_enqueue_failed_log_records_total unless otelcol_exporter_enqueue_failed_log_records_total offset 5m) or increase(otelcol_exporter_enqueue_failed_log_records_total[5m])) or vector(0))"
               instant: true
               refId: A
           - refId: B
@@ -80,7 +124,7 @@ groups:
         for: 1m
         annotations:
           summary: Collector cannot export telemetry
-          description: A downstream backend (Aspire, Tempo, Loki or the Prometheus exporter) rejected or did not receive telemetry from the gateway.
+          description: The gateway rejected telemetry at a full exporter queue or could not send telemetry to a backend.
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#collector-export-failing
         labels:
           severity: warning
@@ -133,7 +177,7 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_server_request_duration_seconds_count[5m])), 0.1)"
+              expr: "(sum((http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"} unless http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"} offset 5m) or increase(http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum((http_server_request_duration_seconds_count unless http_server_request_duration_seconds_count offset 5m) or increase(http_server_request_duration_seconds_count[5m])), 1)"
               instant: true
               refId: A
           - refId: B
@@ -158,7 +202,7 @@ groups:
         for: 10m
         annotations:
           summary: High 5xx ratio
-          description: More than 5 percent of responses were 5xx for 10 minutes.
+          description: The five-minute 5xx ratio exceeded 5 percent for 10 minutes.
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#http-5xx-ratio
         labels:
           severity: critical
@@ -211,7 +255,7 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "sum(rate(catalog_integration_event_total{catalog_outcome=\"error\"}[5m])) / clamp_min(sum(rate(catalog_integration_event_total[5m])), 0.01)"
+              expr: "(sum((catalog_integration_event_total{catalog_outcome=\"error\"} unless catalog_integration_event_total{catalog_outcome=\"error\"} offset 5m) or increase(catalog_integration_event_total{catalog_outcome=\"error\"}[5m])) or vector(0)) / clamp_min(sum((catalog_integration_event_total unless catalog_integration_event_total offset 5m) or increase(catalog_integration_event_total[5m])), 1)"
               instant: true
               refId: A
           - refId: B
@@ -236,7 +280,7 @@ groups:
         for: 10m
         annotations:
           summary: Catalog integration events failing
-          description: More than 10 percent of Catalog integration events ended in error for 10 minutes, so the public catalog may fall behind Admin.
+          description: The five-minute Catalog integration event error ratio exceeded 10 percent for 10 minutes, so the public catalog may fall behind Admin.
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#catalog-event-errors
         labels:
           severity: warning
@@ -277,5 +321,200 @@ groups:
           summary: Branding cache invalidation failing
           description: Branding cache invalidation reported failed, so public pages may serve stale branding.
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#branding-invalidation-failures
+        labels:
+          severity: warning
+      - uid: customer-import-failures
+        title: Customer imports failing
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "(sum(increase(admin_customer_import_attempts_total{import_outcome=\"failed\"}[10m])) or vector(0)) + (sum(admin_customer_import_attempts_total{import_outcome=\"failed\"} unless admin_customer_import_attempts_total{import_outcome=\"failed\"} offset 10m) or vector(0))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: Customer imports failing
+          description: At least one customer import failed in a dependency or the Admin workflow. Input rejections and canceled requests use separate outcomes.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#customer-import-failures
+        labels:
+          severity: warning
+      - uid: customer-import-latency
+        title: Customer import processing slow
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "histogram_quantile(0.95, sum by (le) (rate(admin_customer_import_duration_seconds_bucket{import_outcome=\"completed\"}[15m]))) and sum(increase(admin_customer_import_duration_seconds_count{import_outcome=\"completed\"}[15m])) >= 3"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [30]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: Customer import processing slow
+          description: The 95th percentile of completed customer import processing exceeded 30 seconds with at least three attempts in the last 15 minutes.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#customer-import-latency
+        labels:
+          severity: warning
+      - uid: catalog-media-upload-failures
+        title: Catalog media upload dependencies failing
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "sum by (upload_outcome) ((increase(catalog_media_upload_attempts_total{upload_outcome=~\"scanner_unavailable|storage_failed\"}[10m]) > 0) or (catalog_media_upload_attempts_total{upload_outcome=~\"scanner_unavailable|storage_failed\"} unless catalog_media_upload_attempts_total{upload_outcome=~\"scanner_unavailable|storage_failed\"} offset 10m))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: Catalog media upload dependencies failing
+          description: The media scanner was unavailable or an original object write failed. Inspect the reported outcome to choose the dependency to check.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#catalog-media-upload-failures
+        labels:
+          severity: warning
+      - uid: catalog-media-upload-latency
+        title: Catalog media upload stage slow
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "histogram_quantile(0.95, sum by (le, upload_stage) (rate(catalog_media_upload_stage_duration_seconds_bucket[15m]))) and sum by (upload_stage) (increase(catalog_media_upload_stage_duration_seconds_count[15m])) >= 3"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [10]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: Catalog media upload stage slow
+          description: The 95th percentile for media scan or store exceeded 10 seconds, with at least three observations of that stage in 15 minutes.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#catalog-media-upload-latency
+        labels:
+          severity: warning
+      - uid: management-session-ticket-failures
+        title: Management Web session ticket operations failing
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "sum by (operation) ((increase(bff_session_ticket_failures_total[10m]) > 0) or (bff_session_ticket_failures_total unless bff_session_ticket_failures_total offset 10m))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: Management Web session ticket operations failing
+          description: A session ticket protection, unprotection, or cache operation failed. Follow the runbook for the reported operation.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#management-session-ticket-failures
         labels:
           severity: warning

@@ -215,7 +215,7 @@
       "id": 6,
       "type": "timeseries",
       "title": "Append conflicts",
-      "description": "eventsourcing_postgresql_conflict_total in conflicts/s. Question: do concurrent writers collide on the same stream?",
+      "description": "eventsourcing_postgresql_append_conflict_total in conflicts/s. Question: do concurrent writers collide on the same stream?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -250,7 +250,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum(rate(eventsourcing_postgresql_conflict_total[$__rate_interval])) or vector(0)",
+          "expr": "sum(rate(eventsourcing_postgresql_append_conflict_total[$__rate_interval])) or vector(0)",
           "legendFormat": "conflicts",
           "refId": "A"
         }

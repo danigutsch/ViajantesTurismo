@@ -19,7 +19,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**Purpose:** Fast yes/no: is the local telemetry pipeline scraped and are the applications reporting?\n\n**Audience:** Developers starting the local stack.\n\n**Decision supported:** Whether to debug the stack (Collector or Prometheus down) or the application.\n"
+        "content": "**Purpose:** Fast yes/no: is the local telemetry pipeline scraped and are the applications reporting?\n\n**Audience:** Developers starting the local stack.\n\n**Decision supported:** Whether to debug the stack (Collector or Prometheus down) or the application, and whether database initialization finished during startup.\\n"
       }
     },
     {
@@ -108,6 +108,96 @@
           },
           "expr": "count(count by (exported_job) (http_server_request_duration_seconds_count))",
           "legendFormat": "services",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Recent database initializations",
+      "description": "Latest histogram counts observed in the past five minutes by outcome. This one-shot worker is normally quiet after startup. Question: did initialization succeed, fail or stop cooperatively?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (migration_outcome) (last_over_time(migration_database_initialization_duration_seconds_count[5m]))",
+          "legendFormat": "{{migration_outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Recent database initialization duration",
+      "description": "Mean elapsed seconds per outcome from the latest histogram sums and counts observed in the past five minutes. Question: how long did the completed initialization take?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (migration_outcome) (last_over_time(migration_database_initialization_duration_seconds_sum[5m])) / sum by (migration_outcome) (last_over_time(migration_database_initialization_duration_seconds_count[5m]))",
+          "legendFormat": "{{migration_outcome}}",
           "refId": "A"
         }
       ]

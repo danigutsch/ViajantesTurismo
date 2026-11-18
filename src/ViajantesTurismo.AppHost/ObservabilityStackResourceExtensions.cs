@@ -31,6 +31,7 @@ internal static class ObservabilityStackResourceExtensions
         if (IsEnabled(builder.Configuration[GrafanaLgtmStackDefaults.EnableObservabilityStackVariable]))
         {
             builder.AddGrafanaLgtmStack(observabilityRoot);
+            builder.AddPostgreSqlServerMetrics(observabilityRoot);
             return;
         }
 

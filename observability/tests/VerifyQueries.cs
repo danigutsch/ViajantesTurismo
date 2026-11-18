@@ -1,20 +1,24 @@
-#:property TreatWarningsAsErrors=false
 #:property PublishAot=false
-#:property NoWarn=$(NoWarn);CA2007;CA2234;CA1849;CA1307
 
-// Runs every dashboard panel query through the Grafana datasource proxy. Panels with verify "data" must
-// return series after smoke traffic; panels with "idle-ok" only need a valid query.
+// Checks the file-provisioned dashboard queries and runs them through the Grafana datasource proxy.
+// Panels with verify "data" must return series after smoke traffic.
+// Panels with "idle-ok" only need a valid query.
 //
-// Run: dotnet run observability/tests/VerifyQueries.cs -- <grafanaUrl>
+// Run: dotnet run observability/tests/VerifyQueries.cs -- <grafanaUrl> [--dashboard <uid>]
 // Optional Basic credentials come from GRAFANA_USER and GRAFANA_PASSWORD and are only sent over https or loopback.
 
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using QueryTarget = (int PanelId, string Title, string RefId, string DatasourceType, string DatasourceUid, string Query, string Mode);
 
-if (args.Length != 1 || !Uri.TryCreate(args[0], UriKind.Absolute, out var grafanaUri) || grafanaUri.Scheme is not ("http" or "https"))
+var dashboardUid = args is [_, "--dashboard", var requestedUid] ? requestedUid : null;
+if ((args.Length != 1 && string.IsNullOrWhiteSpace(dashboardUid))
+    || !Uri.TryCreate(args[0], UriKind.Absolute, out var grafanaUri)
+    || grafanaUri.Scheme is not ("http" or "https"))
 {
-    Console.Error.WriteLine("Usage: dotnet run observability/tests/VerifyQueries.cs -- <http(s)://grafana-host:port>");
+    await Console.Error.WriteLineAsync("Usage: dotnet run observability/tests/VerifyQueries.cs -- <http(s)://grafana-host:port> [--dashboard <uid>]")
+        .ConfigureAwait(false);
     return 2;
 }
 
@@ -27,11 +31,22 @@ while (repositoryRoot is not null && !File.Exists(Path.Combine(repositoryRoot.Fu
 
 if (repositoryRoot is null)
 {
-    Console.Error.WriteLine("Run from inside the repository.");
+    await Console.Error.WriteLineAsync("Run from inside the repository.").ConfigureAwait(false);
     return 2;
 }
 
 var dashboardDirectory = Path.Combine(repositoryRoot.FullName, "observability", "grafana", "dashboards");
+var files = Directory.EnumerateFiles(dashboardDirectory, "*.json")
+    .Where(file => dashboardUid is null || string.Equals(Path.GetFileNameWithoutExtension(file), dashboardUid, StringComparison.Ordinal))
+    .Order(StringComparer.Ordinal)
+    .ToArray();
+if (files.Length == 0)
+{
+    await Console.Error.WriteLineAsync(dashboardUid is null
+        ? "No checked-in dashboard files were found."
+        : $"No checked-in dashboard has UID '{dashboardUid}'.").ConfigureAwait(false);
+    return 2;
+}
 
 using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
 var user = Environment.GetEnvironmentVariable("GRAFANA_USER");
@@ -43,84 +58,125 @@ if (!string.IsNullOrEmpty(user) && (grafanaUri.Scheme == "https" || grafanaUri.I
 }
 
 var failures = new List<string>();
-var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+var now = TimeProvider.System.GetUtcNow().ToUnixTimeSeconds();
 
-foreach (var file in Directory.EnumerateFiles(dashboardDirectory, "*.json").Order(StringComparer.Ordinal))
+foreach (var file in files)
 {
-    using var document = JsonDocument.Parse(await File.ReadAllTextAsync(file));
-    var uid = document.RootElement.GetProperty("uid").GetString();
-    foreach (var panel in document.RootElement.GetProperty("panels").EnumerateArray())
+    using var document = JsonDocument.Parse(await File.ReadAllTextAsync(file).ConfigureAwait(false));
+    var uid = document.RootElement.GetProperty("uid").GetString()!;
+    using var response = await Get($"{grafana}/api/dashboards/uid/{Uri.EscapeDataString(uid)}").ConfigureAwait(false);
+    var live = response.RootElement;
+    if (!live.TryGetProperty("dashboard", out var provisioned)
+        || !live.TryGetProperty("meta", out var meta)
+        || !meta.TryGetProperty("provisioned", out var fromFile)
+        || fromFile.ValueKind != JsonValueKind.True)
     {
-        var type = panel.GetProperty("type").GetString();
-        if (type is "row" or "text")
-        {
-            continue;
-        }
+        await Console.Error.WriteLineAsync($"FAIL {uid} requires a file-provisioned dashboard.").ConfigureAwait(false);
+        failures.Add(uid);
+        continue;
+    }
 
-        var title = panel.GetProperty("title").GetString();
-        var mode = panel.TryGetProperty("verify", out var verify) ? verify.GetString() : "data";
-        foreach (var target in panel.GetProperty("targets").EnumerateArray())
+    var targets = ReadTargets(document.RootElement).ToArray();
+    if (!targets.SequenceEqual(ReadTargets(provisioned)))
+    {
+        await Console.Error.WriteLineAsync($"FAIL {uid} has panel targets that differ from the checked-in dashboard.").ConfigureAwait(false);
+        failures.Add(uid);
+        continue;
+    }
+
+    foreach (var target in targets)
+    {
+        var (ok, series) = await RunTarget(target).ConfigureAwait(false);
+        var passed = ok && (series > 0 || target.Mode == "idle-ok");
+        await Console.Out.WriteLineAsync($"{(passed ? "ok  " : "FAIL")} {uid}/{target.Title} [{target.RefId}] series={series} mode={target.Mode}")
+            .ConfigureAwait(false);
+        if (!passed)
         {
-            var datasource = target.TryGetProperty("datasource", out var own) ? own : panel.GetProperty("datasource");
-            var query = target.TryGetProperty("expr", out var expr) ? expr : target.GetProperty("query");
-            var (ok, series) = await RunTarget(datasource.GetProperty("type").GetString()!, query.GetString()!);
-            var passed = ok && (series > 0 || mode == "idle-ok");
-            Console.WriteLine($"{(passed ? "ok  " : "FAIL")} {uid}/{title} [{target.GetProperty("refId").GetString()}] series={series} mode={mode}");
-            if (!passed)
-            {
-                failures.Add($"{uid}/{title}");
-            }
+            failures.Add($"{uid}/{target.Title}");
         }
     }
 }
 
-Console.WriteLine(failures.Count == 0 ? "All panel queries verified." : $"\n{failures.Count} failing panel(s)");
+await Console.Out.WriteLineAsync(failures.Count == 0 ? "All panel queries verified." : $"\n{failures.Count} failed verification(s)")
+    .ConfigureAwait(false);
 return failures.Count == 0 ? 0 : 1;
 
-async Task<(bool Ok, int Series)> RunTarget(string type, string expr)
+static IEnumerable<QueryTarget> ReadTargets(JsonElement dashboard)
 {
-    switch (type)
+    foreach (var panel in dashboard.GetProperty("panels").EnumerateArray())
+    {
+        if (panel.GetProperty("type").GetString() is "row" or "text")
+        {
+            continue;
+        }
+
+        var panelId = panel.GetProperty("id").GetInt32();
+        var title = panel.GetProperty("title").GetString()!;
+        var mode = panel.TryGetProperty("verify", out var verify) ? verify.GetString() ?? "data" : "data";
+        foreach (var target in panel.GetProperty("targets").EnumerateArray())
+        {
+            var datasource = target.TryGetProperty("datasource", out var own) ? own : panel.GetProperty("datasource");
+            var query = target.TryGetProperty("expr", out var expr) ? expr : target.GetProperty("query");
+            yield return (
+                panelId,
+                title,
+                target.GetProperty("refId").GetString()!,
+                datasource.GetProperty("type").GetString()!,
+                datasource.GetProperty("uid").GetString()!,
+                query.GetString()!,
+                mode);
+        }
+    }
+}
+
+async Task<(bool Ok, int Series)> RunTarget(QueryTarget target)
+{
+    var proxy = $"{grafana}/api/datasources/proxy/uid/{Uri.EscapeDataString(target.DatasourceUid)}";
+    switch (target.DatasourceType)
     {
         case "prometheus":
-            var promQuery = expr.Replace("$service", ".*").Replace("$__rate_interval", "5m").Replace("$__interval", "1m");
-            using (var response = await Get($"{grafana}/api/datasources/proxy/uid/Prometheus/api/v1/query?query={Uri.EscapeDataString(promQuery)}"))
+            var promQuery = target.Query.Replace("$service", ".*", StringComparison.Ordinal)
+                .Replace("$__rate_interval", "5m", StringComparison.Ordinal)
+                .Replace("$__interval", "1m", StringComparison.Ordinal);
+            using (var response = await Get($"{proxy}/api/v1/query?query={Uri.EscapeDataString(promQuery)}").ConfigureAwait(false))
             {
                 return (response.RootElement.GetProperty("status").GetString() == "success",
                     response.RootElement.GetProperty("data").GetProperty("result").GetArrayLength());
             }
 
         case "loki":
-            var lokiQuery = expr.Replace("$__auto", "5m").Replace("$__range", "1h");
-            var lokiUrl = $"{grafana}/api/datasources/proxy/uid/Loki/loki/api/v1/query_range?query={Uri.EscapeDataString(lokiQuery)}"
+            var lokiQuery = target.Query.Replace("$__auto", "5m", StringComparison.Ordinal)
+                .Replace("$__range", "1h", StringComparison.Ordinal);
+            var lokiUrl = $"{proxy}/loki/api/v1/query_range?query={Uri.EscapeDataString(lokiQuery)}"
                 + $"&start={(now - 3600) * 1_000_000_000}&end={now * 1_000_000_000}&limit=1";
-            using (var response = await Get(lokiUrl))
+            using (var response = await Get(lokiUrl).ConfigureAwait(false))
             {
                 return (response.RootElement.GetProperty("status").GetString() == "success",
                     response.RootElement.GetProperty("data").GetProperty("result").GetArrayLength());
             }
 
         case "tempo":
-            var tempoUrl = $"{grafana}/api/datasources/proxy/uid/Tempo/api/search?q={Uri.EscapeDataString(expr)}&start={now - 3600}&end={now}&limit=1";
-            using (var response = await Get(tempoUrl))
+            var tempoUrl = $"{proxy}/api/search?q={Uri.EscapeDataString(target.Query)}&start={now - 3600}&end={now}&limit=1";
+            using (var response = await Get(tempoUrl).ConfigureAwait(false))
             {
                 var failed = response.RootElement.TryGetProperty("status", out var status) && status.GetString() == "error";
                 return (!failed, response.RootElement.TryGetProperty("traces", out var traces) ? traces.GetArrayLength() : 0);
             }
 
         default:
-            throw new InvalidOperationException($"Unknown datasource type {type}.");
+            throw new InvalidOperationException($"Unknown datasource type {target.DatasourceType}.");
     }
 }
 
 async Task<JsonDocument> Get(string url)
 {
-    using var response = await http.GetAsync(url);
-    var body = await response.Content.ReadAsStringAsync();
+    var address = new Uri(url, UriKind.Absolute);
+    using var response = await http.GetAsync(address).ConfigureAwait(false);
     if (response.IsSuccessStatusCode)
     {
-        return JsonDocument.Parse(body);
+        return JsonDocument.Parse(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
     }
 
-    Console.Error.WriteLine($"HTTP {(int)response.StatusCode} from {new Uri(url).AbsolutePath}: {body[..Math.Min(body.Length, 200)]}");
+    await Console.Error.WriteLineAsync($"HTTP {(int)response.StatusCode} from {address.AbsolutePath}.").ConfigureAwait(false);
     return JsonDocument.Parse("""{"status":"error","data":{"result":[]},"traces":[]}""");
 }

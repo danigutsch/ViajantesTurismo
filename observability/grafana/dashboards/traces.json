@@ -158,7 +158,7 @@
       "id": 6,
       "type": "table",
       "title": "Mediator spans",
-      "description": "Traces with mediator send, publish and notification-handler spans. Question: are mediator dispatch spans exported and correlated with requests?",
+      "description": "Tempo mediator.send and command spans with duration in ns. Which Admin commands dispatch slowly, throw, or cancel?",
       "datasource": {
         "type": "tempo",
         "uid": "Tempo"
@@ -174,6 +174,16 @@
         "defaults": {},
         "overrides": []
       },
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": ["time", "name", "duration", "mediator.request.name", "mediator.outcome"]
+            }
+          }
+        }
+      ],
       "targets": [
         {
           "datasource": {
@@ -181,8 +191,9 @@
             "uid": "Tempo"
           },
           "queryType": "traceql",
-          "query": "{ instrumentation:name = \"SharedKernel.Mediator\" } | select(name)",
-          "expr": "{ instrumentation:name = \"SharedKernel.Mediator\" } | select(name)",
+          "query": "{ instrumentation:name = \"SharedKernel.Mediator\" && (name = \"mediator.send\" || span.sharedkernel.mediator.outcome != nil) } | select(name, span.mediator.request.name, span.mediator.outcome)",
+          "expr": "{ instrumentation:name = \"SharedKernel.Mediator\" && (name = \"mediator.send\" || span.sharedkernel.mediator.outcome != nil) } | select(name, span.mediator.request.name, span.mediator.outcome)",
+          "tableType": "spans",
           "limit": 20,
           "refId": "A"
         }
@@ -192,7 +203,7 @@
       "id": 7,
       "type": "table",
       "title": "Failed mediator results",
-      "description": "Request spans whose command returned a failed Result (mediator.result=\"failed\"), which mediator_outcome counts as success. Question: which commands end in a domain failure?",
+      "description": "Tempo command spans tagged mediator.result=failed with duration in ns. Which Admin commands return a failed Result such as a booking 404?",
       "datasource": {
         "type": "tempo",
         "uid": "Tempo"
@@ -208,6 +219,16 @@
         "defaults": {},
         "overrides": []
       },
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": ["time", "name", "duration"]
+            }
+          }
+        }
+      ],
       "targets": [
         {
           "datasource": {
@@ -215,8 +236,9 @@
             "uid": "Tempo"
           },
           "queryType": "traceql",
-          "query": "{ span.mediator.result = \"failed\" } | select(name)",
-          "expr": "{ span.mediator.result = \"failed\" } | select(name)",
+          "query": "{ instrumentation:name = \"SharedKernel.Mediator\" && span.mediator.result = \"failed\" } | select(name)",
+          "expr": "{ instrumentation:name = \"SharedKernel.Mediator\" && span.mediator.result = \"failed\" } | select(name)",
+          "tableType": "spans",
           "limit": 20,
           "refId": "A"
         }

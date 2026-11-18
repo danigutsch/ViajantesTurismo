@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using PandaBear.EntityFrameworkCore;
 using Npgsql;
 using PandaBear.EventSourcing.Npgsql;
@@ -13,6 +14,7 @@ namespace ViajantesTurismo.MigrationService;
 internal sealed class DatabaseInitializationWorker
 {
     private const string ActivityOperationName = "DatabaseInitialization";
+    private const string MeterName = "ViajantesTurismo.MigrationService";
     /// <summary>Name of the activity source that traces database initialization.</summary>
     public const string ActivitySourceName = "ViajantesTurismo.MigrationService.DatabaseInitializationWorker";
     private static readonly ActivitySource DefaultActivitySource = new(
@@ -22,6 +24,7 @@ internal sealed class DatabaseInitializationWorker
     private readonly Func<IServiceProvider, CancellationToken, Task> developmentDataOperation;
     private readonly IHostEnvironment environment;
     private readonly ILogger logger;
+    private readonly Meter meter;
     private readonly Func<IServiceProvider, CancellationToken, Task> migrationOperation;
     private readonly IServiceScopeFactory scopeFactory;
 
@@ -29,11 +32,13 @@ internal sealed class DatabaseInitializationWorker
     public DatabaseInitializationWorker(
         IServiceScopeFactory scopeFactory,
         IHostEnvironment environment,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        IMeterFactory meterFactory)
         : this(
             scopeFactory,
             environment,
             loggerFactory.CreateLogger<DatabaseInitializationWorker>(),
+            meterFactory,
             RunMigrations,
             RunDevelopmentDataInitialization,
             DefaultActivitySource)
@@ -45,6 +50,7 @@ internal sealed class DatabaseInitializationWorker
         IServiceScopeFactory scopeFactory,
         IHostEnvironment environment,
         ILogger logger,
+        IMeterFactory meterFactory,
         Func<IServiceProvider, CancellationToken, Task> migrationOperation,
         Func<IServiceProvider, CancellationToken, Task> developmentDataOperation,
         ActivitySource? activitySource = null)
@@ -52,6 +58,7 @@ internal sealed class DatabaseInitializationWorker
         ArgumentNullException.ThrowIfNull(scopeFactory);
         ArgumentNullException.ThrowIfNull(environment);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(meterFactory);
         ArgumentNullException.ThrowIfNull(migrationOperation);
         ArgumentNullException.ThrowIfNull(developmentDataOperation);
 
@@ -61,12 +68,19 @@ internal sealed class DatabaseInitializationWorker
         this.migrationOperation = migrationOperation;
         this.developmentDataOperation = developmentDataOperation;
         this.activitySource = activitySource ?? DefaultActivitySource;
+        meter = meterFactory.Create(MeterName);
     }
 
     /// <summary>Runs the migration and, in development, the development data operation inside a traced scope.</summary>
     internal async Task Run(CancellationToken ct)
     {
+        var duration = meter.CreateHistogram<double>(
+            "migration.database_initialization.duration",
+            "s",
+            "Duration of database migrations and any development data initialization.");
         using var activity = activitySource.StartActivity(ActivityOperationName, ActivityKind.Producer, parentContext: default);
+        var started = Stopwatch.GetTimestamp();
+        var outcome = "error";
 
         try
         {
@@ -86,9 +100,11 @@ internal sealed class DatabaseInitializationWorker
 
             activity?.SetStatus(ActivityStatusCode.Ok);
             logger.InitializationCompleted();
+            outcome = "success";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
+            outcome = "cancelled";
             logger.InitializationCancelled();
             throw;
         }
@@ -99,6 +115,12 @@ internal sealed class DatabaseInitializationWorker
 
             logger.InitializationFailed(exception.GetType().Name);
             throw;
+        }
+        finally
+        {
+            duration.Record(
+                Stopwatch.GetElapsedTime(started).TotalSeconds,
+                new KeyValuePair<string, object?>("migration.outcome", outcome));
         }
     }
 
