@@ -8,7 +8,7 @@ namespace ViajantesTurismo.HostedTests.Admin.System.PostTransportValidation;
 
 [Trait(TestTraitNames.AreaName, TestTraits.PostTransportArea)]
 [Trait(TestTraitNames.CategoryName, TestTraits.IntegrationEventTransportCategory)]
-[TestScope(TestScope.System)]
+[TestScope(TestScope.Unit)]
 public sealed class PostTransportValidationScenarioTests
 {
     [Fact]

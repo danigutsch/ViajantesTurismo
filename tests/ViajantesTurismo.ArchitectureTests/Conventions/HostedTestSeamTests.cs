@@ -23,4 +23,23 @@ public sealed class HostedTestSeamTests
         // Assert
         violations.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void System_tests_use_the_shared_application_fixture()
+    {
+        // Arrange
+        var root = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Admin", "System");
+
+        // Act
+        var violations = Directory.GetFiles(root, "*Tests.cs", SearchOption.AllDirectories)
+            .Where(path => !IsGeneratedTestPath(path))
+            .Select(path => (Path: path, Source: File.ReadAllText(path)))
+            .Where(file => file.Source.Contains("[TestScope(TestScope.System)]", StringComparison.Ordinal)
+                && !file.Source.Contains("AspireSystemTestFixture", StringComparison.Ordinal))
+            .Select(file => Path.GetRelativePath(root, file.Path))
+            .ToArray();
+
+        // Assert
+        violations.ShouldBeEmpty();
+    }
 }

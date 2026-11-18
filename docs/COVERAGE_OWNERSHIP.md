@@ -1,6 +1,8 @@
 # Coverage Ownership
 
 This document defines how coverage should be interpreted for repository quality decisions.
+See the [project test coverage inventory](testing/PROJECT_TEST_COVERAGE.md) for the expected
+acceptance layers and current evidence for each production project.
 
 ## Principle
 

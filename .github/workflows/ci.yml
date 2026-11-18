@@ -189,8 +189,7 @@ jobs:
         if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs['fast-validation-2_required'] == 'true' && matrix.id == 'fast-validation-2' }}
         run: dotnet restore ViajantesTurismo.slnx --locked-mode
 
-      # Playwright 1.60 has no Ubuntu 26.04 browser manifests yet (microsoft/playwright#40117), so it installs the
-      # Ubuntu 24.04 builds and dependencies there.
+      # The pinned Playwright version uses the Ubuntu 24.04 browser builds on Ubuntu 26.04.
       - name: Select the Playwright host platform
         if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' && matrix.id == 'hosted-tests' }}
         shell: bash
@@ -209,9 +208,11 @@ jobs:
         shell: bash
         env:
           SLICE: ${{ matrix.id }}
+          PLAYWRIGHT_DEPENDENCIES: ${{ matrix.id != 'hosted-tests' || vars.CI_UBUNTU_RUNNER != 'ubuntu-26.04' }}
         run: |
           dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
-            run --slice "$SLICE" --coverage --install-playwright --playwright-dependencies --github-summary "$GITHUB_STEP_SUMMARY"
+            run --slice "$SLICE" --coverage --install-playwright \
+            --playwright-dependencies "$PLAYWRIGHT_DEPENDENCIES" --github-summary "$GITHUB_STEP_SUMMARY"
 
       - name: Report the .NET environment
         if: failure()

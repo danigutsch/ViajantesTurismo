@@ -26,6 +26,10 @@ New full-host Admin fixtures must follow those exact seam boundaries instead of 
 - Prefer no heavyweight shared fixture at all.
 - Use local setup or narrow class fixtures only when they improve readability or cost.
 - Do not invent host abstractions for tests that do not host the app.
+- Keep component fixtures behind fake backend clients. The component suite architecture check follows
+  project references through test-support libraries and reports undeclared API or AppHost projects.
+  Suites that also own an API, integration, or system seam register its exact host project in the
+  [test taxonomy inventory](../.config/test-taxonomy.json).
 
 ### API integration tests
 

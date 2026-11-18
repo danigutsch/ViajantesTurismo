@@ -33,4 +33,22 @@ public sealed class CiSliceConfigurationTests
             detection.ShouldContain($"      {slice}_required: ${{{{ steps.change-scope.outputs['{slice}_required'] }}}}", StringComparison.Ordinal);
         }
     }
+
+    [Fact]
+    public void Chromium_uses_preinstalled_dependencies_only_on_the_verified_hosted_runner()
+    {
+        // Arrange
+        var root = RepositoryRoot.Locate();
+        var workflow = File.ReadAllText(Path.Combine(root, ".github", "workflows", "ci.yml"));
+
+        // Act
+        var testSlices = workflow.Split("\n  test-slices:\n", StringSplitOptions.None)[1]
+            .Split("\n  build-and-test:", StringSplitOptions.None)[0];
+
+        // Assert
+        testSlices.ShouldContain(
+            "PLAYWRIGHT_DEPENDENCIES: ${{ matrix.id != 'hosted-tests' || vars.CI_UBUNTU_RUNNER != 'ubuntu-26.04' }}",
+            StringComparison.Ordinal);
+        testSlices.ShouldContain("--playwright-dependencies \"$PLAYWRIGHT_DEPENDENCIES\"", StringComparison.Ordinal);
+    }
 }

@@ -43,19 +43,36 @@ internal static class TestCoverageMatrixTestsHelpers
             + "it has no test project of its own."
     };
 
+    /// <summary>Returns source project names from the solution in ordinal order.</summary>
+    public static string[] ReadSourceProjectNames()
+    {
+        var root = LayerDependencyTestsHelpers.GetRepositoryRoot();
+        return SelectSourceProjectNames(ReadSolutionProjects(root));
+    }
+
+    /// <summary>Returns the source project names in the coverage inventory in ordinal order.</summary>
+    public static string[] ReadDocumentedProjectNames()
+    {
+        var root = LayerDependencyTestsHelpers.GetRepositoryRoot();
+        var inventory = Path.Combine(root, "docs", "testing", "PROJECT_TEST_COVERAGE.md");
+        return [.. File.ReadLines(inventory)
+            .Where(line => line.StartsWith("| `ViajantesTurismo.", StringComparison.Ordinal))
+            .Select(line => line.Split('`')[1])
+            .Order(StringComparer.Ordinal)];
+    }
+
     /// <summary>Returns the sorted source projects (from the solution) that lack a direct test project of the required category.</summary>
     public static string[] FindUncoveredProjects()
     {
         var root = LayerDependencyTestsHelpers.GetRepositoryRoot();
         var solutionProjects = ReadSolutionProjects(root);
-        var sources = solutionProjects.Where(path => path.StartsWith("src/", StringComparison.Ordinal))
-            .Select(Path.GetFileNameWithoutExtension).OfType<string>().ToArray();
+        var sources = SelectSourceProjectNames(solutionProjects);
         var testReferences = solutionProjects.Where(path => path.StartsWith("tests/", StringComparison.Ordinal))
             .Select(path => (Name: Path.GetFileNameWithoutExtension(path), References: ReadReferences(root, path)))
             .Where(test => test.Name != ArchitectureTestProject && test.Name.EndsWith("Tests", StringComparison.Ordinal))
             .ToArray();
 
-        return [.. sources.Where(source => !IsCovered(source, testReferences)).Order(StringComparer.Ordinal)];
+        return [.. sources.Where(source => !IsCovered(source, testReferences))];
     }
 
     private static bool IsCovered(string source, (string Name, string[] References)[] tests)
@@ -70,6 +87,10 @@ internal static class TestCoverageMatrixTestsHelpers
         [.. XDocument.Load(Path.Combine(root, "ViajantesTurismo.slnx"))
             .Descendants("Project")
             .Select(project => (project.Attribute("Path")?.Value ?? string.Empty).Replace('\\', '/'))];
+
+    private static string[] SelectSourceProjectNames(string[] solutionProjects) =>
+        [.. solutionProjects.Where(path => path.StartsWith("src/", StringComparison.Ordinal))
+            .Select(Path.GetFileNameWithoutExtension).OfType<string>().Order(StringComparer.Ordinal)];
 
     private static string[] ReadReferences(string root, string projectPath) =>
         [.. XDocument.Load(Path.Combine(root, projectPath))

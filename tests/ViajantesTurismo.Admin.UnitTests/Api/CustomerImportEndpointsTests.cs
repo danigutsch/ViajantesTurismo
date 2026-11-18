@@ -1,17 +1,11 @@
 using PandaBear.Testing.AspNetCore;
-using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using PandaBear.MalwareScanning;
 using PandaBear.Results;
 using PandaBear.Testing;
-using ViajantesTurismo.Admin.Api;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.Api.Customers;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -267,42 +261,6 @@ public sealed class CustomerImportEndpointsTests
         entry.Message.ShouldNotContain(sensitiveText, StringComparison.Ordinal);
         entry.Message.ShouldNotContain("customers-private", StringComparison.Ordinal);
         entry.Exception.ShouldBeNull();
-    }
-
-    [Fact]
-    public async Task Rejects_requests_larger_than_the_import_request_limit()
-    {
-        // Arrange
-        var cancellationToken = TestContext.Current.CancellationToken;
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = Environments.Development
-        });
-        builder.Services.AddTestRequestBindingDefaults();
-        builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
-        builder.Services.AddAdminSecurityBaseline(builder.Configuration);
-        builder.Services.AddAuthorization(options =>
-            options.AddPolicy(AdminAuthorization.CustomerImport, policy => policy.RequireAssertion(static _ => true)));
-        await using var app = builder.Build();
-        app.UseRateLimiter();
-        app.UseAuthorization();
-        app.MapCustomerImportEndpoints();
-
-        await app.StartAsync(cancellationToken);
-        using var client = new HttpClient
-        {
-            BaseAddress = new Uri(app.Urls.ShouldHaveSingleItem())
-        };
-        using var requestContent = new MultipartFormDataContent();
-        using var fileContent = new ByteArrayContent(new byte[ContractConstants.CustomerImportMaxRequestBytes + 1]);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(ContractConstants.CustomerImportTextCsvContentType);
-        requestContent.Add(fileContent, "file", "customers.csv");
-
-        // Act
-        using var response = await client.PostAsync(new Uri("/api/v1/customers/import", UriKind.Relative), requestContent, cancellationToken);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.RequestEntityTooLarge);
     }
 
     [Fact]

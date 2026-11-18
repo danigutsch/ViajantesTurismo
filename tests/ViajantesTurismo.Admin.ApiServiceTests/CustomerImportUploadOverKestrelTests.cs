@@ -231,6 +231,26 @@ public sealed class CustomerImportUploadOverKestrelTests
         scenario.Store.AllCustomers.ShouldHaveSingleItem();
     }
 
+    [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    public async Task Rejects_requests_larger_than_the_import_request_limit()
+    {
+        // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await using var scenario = CustomerImportKestrelScenario.Start(CustomerImportKestrelScenario.ImportRoute);
+        using var requestContent = new MultipartFormDataContent();
+        using var fileContent = MultipartPayload.FilePart(
+            new byte[ContractConstants.CustomerImportMaxRequestBytes + 1], ContractConstants.CustomerImportTextCsvContentType);
+        requestContent.Add(fileContent, "file", "customers.csv");
+
+        // Act
+        using var response = await scenario.Client.PostAsync(
+            new Uri(CustomerImportKestrelScenario.ImportRoute, UriKind.Relative), requestContent, cancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.RequestEntityTooLarge);
+    }
+
     [Theory]
     [InlineData(CustomerImportKestrelScenario.ImportRoute)]
     [InlineData(CustomerImportKestrelScenario.CommitRoute)]
