@@ -24,6 +24,7 @@ const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
+builder.WebHost.ConfigureApiRequestLimits();
 
 builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 
@@ -59,6 +60,7 @@ builder.Services.AddApiSecurity(
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default));
 
 builder.Services.AddAdminOpenApiDocuments();
+builder.Services.AddMultipartUploadTimeout();
 builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
 
 builder.AddApplication();
@@ -83,6 +85,7 @@ app.UseNoStoreResponses();
 
 app.UseApiSecurity();
 app.UseRateLimiter();
+app.UseApiRequestTimeouts();
 
 app.MapToursEndpoints();
 app.MapCustomerEndpoints()

@@ -10,6 +10,7 @@ using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
+using ViajantesTurismo.ServiceDefaults;
 
 namespace ViajantesTurismo.Admin.Api.Customers;
 
@@ -44,7 +45,15 @@ internal static class CustomerImportEndpoints
             .WithDescription("Imports customers from a CSV file.")
             .WithSummary("Imports customers from a CSV file.")
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .WithMetadata(new RequestSizeLimitAttribute(ContractConstants.CustomerImportMaxRequestBytes))
+            .Produces(StatusCodes.Status504GatewayTimeout)
+            .WithMetadata(
+                new RequestSizeLimitAttribute(ContractConstants.CustomerImportMaxRequestBytes),
+                new RequestFormLimitsAttribute
+                {
+                    MultipartBodyLengthLimit = ContractConstants.CustomerImportMaxFileBytes,
+                    ValueCountLimit = 1
+                })
+            .WithRequestTimeout(ApiRequestLimits.MultipartUploadTimeoutPolicy)
             .DisableAntiforgery();
 
         importGroup.MapPost("/commit", CommitImportWithResolutions)
@@ -53,7 +62,15 @@ internal static class CustomerImportEndpoints
             .WithSummary("Commits customer import applying conflict resolutions.")
             .Accepts<CommitCustomerImportFormDto>("multipart/form-data")
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .WithMetadata(new RequestSizeLimitAttribute(ContractConstants.CustomerImportMaxRequestBytes))
+            .Produces(StatusCodes.Status504GatewayTimeout)
+            .WithMetadata(
+                new RequestSizeLimitAttribute(ContractConstants.CustomerImportMaxRequestBytes),
+                new RequestFormLimitsAttribute
+                {
+                    MultipartBodyLengthLimit = ContractConstants.CustomerImportMaxFileBytes,
+                    ValueCountLimit = 2
+                })
+            .WithRequestTimeout(ApiRequestLimits.MultipartUploadTimeoutPolicy)
             .DisableAntiforgery();
 
         return app;
@@ -98,6 +115,14 @@ internal static class CustomerImportEndpoints
                 detail: problem.Detail,
                 title: problem.Title,
                 statusCode: problem.Status);
+        }
+
+        if (form.ConflictResolutions is { } resolutions
+            && Encoding.UTF8.GetByteCount(resolutions) > ContractConstants.CustomerImportConflictResolutionsMaxBytes)
+        {
+            return TypedResults.Problem(
+                detail: "Customer import conflict resolutions exceed the allowed size.",
+                statusCode: StatusCodes.Status400BadRequest);
         }
 
         var csvResult = await ReadCsv(form.File, scanner, logger, ct);

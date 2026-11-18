@@ -105,7 +105,7 @@ public sealed class CatalogOpenApiUploadContractTests
             ("/api/v1/catalog/tours/{id}/presentation", "put", "200", ["200", "202", "400", "401", "403", "404", "409"]),
             ("/api/v1/catalog/tours/{id}/publish", "post", "204", ["202", "204", "400", "401", "403", "404", "409"]),
             ("/api/v1/catalog/tours/{id}/unpublish", "post", "204", ["202", "204", "400", "401", "403", "404", "409"]),
-            ("/api/v1/catalog/tours/{id}/images", "post", "201", ["201", "400", "401", "403"]),
+            ("/api/v1/catalog/tours/{id}/images", "post", "201", ["201", "400", "401", "403", "504"]),
             ("/api/v1/catalog/media/images/{id}/accessibility-draft", "post", "200", ["200", "400", "401", "403"]),
             ("/api/v1/catalog/media/images/{id}/accessibility-review", "put", "200", ["200", "400", "401", "403"]),
             ("/api/v1/catalog/public-content/{key}", "put", "200", ["200", "400", "401", "403"])
