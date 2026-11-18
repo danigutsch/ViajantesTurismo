@@ -6,6 +6,12 @@ namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 [TestScope(TestScope.Component)]
 public class CountrySelectorTests : BunitContext
 {
+    /// <summary>Completes the browser focus call when the dropdown closes.</summary>
+    public CountrySelectorTests()
+    {
+        JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetVoidResult();
+    }
+
     [Fact]
     public void Renders_with_default_placeholder_when_no_value_selected()
     {
@@ -27,7 +33,7 @@ public class CountrySelectorTests : BunitContext
         // Assert
         var button = cut.Find("button.form-select");
         button.MarkupMatches("""
-                             <button type="button" class="form-select text-start d-flex align-items-center">
+                             <button type="button" class="form-select text-start d-flex align-items-center" aria-expanded="false">
                                  <span class="text-muted">-- Select Country --</span>
                              </button>
                              """);
@@ -54,8 +60,8 @@ public class CountrySelectorTests : BunitContext
         // Assert
         var button = cut.Find("button.form-select");
         button.MarkupMatches("""
-                             <button type="button" class="form-select text-start d-flex align-items-center">
-                                 <span class="fi fi-PT me-2"></span>
+                             <button type="button" class="form-select text-start d-flex align-items-center" aria-expanded="false">
+                                 <span class="fi fi-pt me-2" aria-hidden="true"></span>
                                  <span>Portugal</span>
                              </button>
                              """);
@@ -267,7 +273,7 @@ public class CountrySelectorTests : BunitContext
         // Assert - Spain is selected
         var selectedButton = cut.Find("button.form-select");
         selectedButton.TextContent.ShouldContain("Spain", StringComparison.Ordinal);
-        selectedButton.InnerHtml.ShouldContain("fi-ES", StringComparison.Ordinal);
+        selectedButton.InnerHtml.ShouldContain("fi-es", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -542,7 +548,7 @@ public class CountrySelectorTests : BunitContext
 
         // Assert
         var item = cut.Find(".country-dropdown-item");
-        item.InnerHtml.ShouldContain("fi-PT", StringComparison.Ordinal);
+        item.InnerHtml.ShouldContain("fi-pt", StringComparison.Ordinal);
         item.TextContent.ShouldContain("Portugal", StringComparison.Ordinal);
     }
 

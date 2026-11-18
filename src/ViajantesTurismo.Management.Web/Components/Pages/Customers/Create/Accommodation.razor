@@ -9,7 +9,7 @@
 <PageTitle>Create Customer - Accommodation Preferences</PageTitle>
 
 <div class="container mt-4">
-    <h2>Create New Customer</h2>
+    <h1 class="h2">Create New Customer</h1>
     <WizardProgress/>
 
     @if (_errorMessage is not null)
@@ -19,7 +19,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h4>Step 6 of 8: Accommodation Preferences</h4>
+            <h2 class="h4">Step 6 of 8: Accommodation Preferences</h2>
         </div>
         <div class="card-body">
             <EditForm Model="@_model" OnValidSubmit="@HandleValidSubmit" FormName="createCustomerAccommodation">

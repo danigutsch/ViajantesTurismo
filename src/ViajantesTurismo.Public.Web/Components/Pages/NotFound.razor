@@ -1,15 +1,20 @@
 @page "/not-found"
 @layout Layout.MainLayout
 
-<PageTitle>Page not found - Viajantes Turismo</PageTitle>
+<PageTitle>@Title - Viajantes Turismo</PageTitle>
 
-<Section Title="Page not found" Level="1">
-    <p>The page you requested could not be found.</p>
+<Section Title="@Title" Level="1">
+    <p>@(Culture.IsPortuguese ? "A página solicitada não foi encontrada." : "The page you requested could not be found.")</p>
 </Section>
 
 @code {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
+
+    [CascadingParameter]
+    private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
+
+    private string Title => Culture.IsPortuguese ? "Página não encontrada" : "Page not found";
 
     /// <inheritdoc />
     protected override void OnInitialized()

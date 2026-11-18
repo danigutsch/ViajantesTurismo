@@ -64,6 +64,56 @@ public sealed class DetailsPageTests : BunitContext
         editLink.GetAttribute("href").ShouldBe($"/bookings/{booking.Id}/edit");
     }
 
+    [Theory]
+    [InlineData("BRL")]
+    [InlineData("USD")]
+    [InlineData("EUR")]
+    public void Displays_booking_prices_in_the_booking_currency_and_payments_in_euros(string currency)
+    {
+        // Arrange
+        var booking = BuildBookingDto(
+            currency: currency,
+            totalPrice: 3250.50m,
+            discountType: DiscountTypeDto.Absolute,
+            discountAmount: 25.25m,
+            amountPaid: 72.35m,
+            remainingBalance: 180.45m);
+        _fakeBookingsApi.AddBooking(booking);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
+        cut.WaitForAssertion(() => cut.Find("h1"));
+
+        // Assert
+        var terms = cut.FindAll("dt");
+        var total = terms.ShouldHaveSingleItem(term => term.TextContent.Trim() == "Total Price").NextElementSibling;
+        var discount = terms.ShouldHaveSingleItem(term => term.TextContent.Trim() == "Discount").NextElementSibling;
+        var paid = terms.ShouldHaveSingleItem(term => term.TextContent.Trim() == "Amount Paid").NextElementSibling;
+        var balance = terms.ShouldHaveSingleItem(term => term.TextContent.Trim() == "Remaining Balance").NextElementSibling;
+
+        total.ShouldNotBeNull().TextContent.Trim().ShouldBe(MoneyText.Of(booking.TotalPrice, currency));
+        paid.ShouldNotBeNull().TextContent.Trim().ShouldBe(MoneyText.Of(booking.AmountPaid, "EUR"));
+        balance.ShouldNotBeNull().TextContent.Trim().ShouldBe(MoneyText.Of(booking.RemainingBalance, "EUR"));
+        discount.ShouldNotBeNull().TextContent.Trim().ShouldBe(MoneyText.Of(booking.DiscountAmount, currency));
+    }
+
+    [Fact]
+    public void Displays_percentage_discounts_as_percentages()
+    {
+        // Arrange
+        var booking = BuildBookingDto(currency: "USD", discountType: DiscountTypeDto.Percentage, discountAmount: 25m);
+        _fakeBookingsApi.AddBooking(booking);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
+        cut.WaitForAssertion(() => cut.Find("h1"));
+
+        // Assert
+        var term = cut.FindAll("dt").ShouldHaveSingleItem(item => item.TextContent.Trim() == "Discount");
+        var discount = term.NextElementSibling.ShouldNotBeNull();
+        discount.TextContent.Trim().ShouldBe("25 %");
+    }
+
     [Fact]
     [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]

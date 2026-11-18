@@ -100,8 +100,10 @@ names, respectively. Before unifying these sources, compare supported address
 codes, nationality aliases, labels, and flag coverage. The tour and settlement forms also
 duplicate Admin's allowed subsets. If those subsets change, publish the selectable options
 through Admin's contracts or an application-owned read endpoint and verify the form against
-the corresponding command validation. Booking details and edit views should use the booking
-currency for display and cover BRL and USD alongside EUR.
+the corresponding command validation. Booking details format the price and absolute discount in
+the booking currency. The edit form labels the absolute discount with the same currency. Amounts
+paid and remaining balances are in EUR because they describe approved payment obligations. The
+booking views cover BRL and USD alongside EUR.
 
 ## Measurement and media ownership
 

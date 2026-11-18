@@ -672,23 +672,37 @@ public sealed class EditPageTests : BunitContext
         reasonValue.ShouldContain("Early bird discount", StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void Shows_discount_amount_field_when_absolute_selected()
+    [Theory]
+    [InlineData("BRL")]
+    [InlineData("USD")]
+    [InlineData("EUR")]
+    public void Shows_the_absolute_discount_currency_and_keeps_payment_totals_in_euros(string currency)
     {
         // Arrange
         var booking = BuildBookingDto(
+            currency: currency,
+            totalPrice: 3250.50m,
             discountType: DiscountTypeDto.Absolute,
             discountAmount: 250m,
-            discountReason: "Group discount"
+            discountReason: "Group discount",
+            amountPaid: 72.35m,
+            remainingBalance: 180.45m
         );
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
         cut.WaitForAssertion(() => cut.Find(HeadingOrAlertSelector));
+
         // Assert
+        cut.Find("#totalPrice").GetAttribute(ValueAttributeName).ShouldBe(MoneyText.Of(booking.TotalPrice, currency));
+        var payments = cut.FindAll(".card-header").ShouldHaveSingleItem(header => header.TextContent.Contains("Payments", StringComparison.Ordinal));
+        var paymentAmounts = payments.NextElementSibling.ShouldNotBeNull();
+        paymentAmounts.QuerySelector(".h5.text-success").ShouldNotBeNull().TextContent.Trim().ShouldBe(MoneyText.Of(booking.AmountPaid, "EUR"));
+        paymentAmounts.QuerySelector(".h5.text-danger").ShouldNotBeNull().TextContent.Trim().ShouldBe(MoneyText.Of(booking.RemainingBalance, "EUR"));
+
         var label = cut.Find("label[for='discountAmount']");
-        label.TextContent.ShouldContain("Discount Amount", StringComparison.Ordinal);
+        label.TextContent.ShouldContain($"Discount Amount ({currency})", StringComparison.Ordinal);
         label.TextContent.ShouldNotContain("Percentage", StringComparison.Ordinal);
     }
 

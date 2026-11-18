@@ -4,6 +4,13 @@
     flex-direction: column;
 }
 
+.skip-link {
+    position: fixed;
+    inset-block-start: 1rem;
+    inset-inline-start: 1rem;
+    z-index: 1100;
+}
+
 main {
     flex: 1;
 }
