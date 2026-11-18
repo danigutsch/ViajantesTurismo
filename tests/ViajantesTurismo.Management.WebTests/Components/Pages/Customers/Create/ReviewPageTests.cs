@@ -1,9 +1,8 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Microsoft.AspNetCore.Components;
-using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
-using ViajantesTurismo.Management.Web.Models;
+using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using HttpOutcome = PandaBear.HttpClients.HttpOutcome;
 using HttpOutcomeKind = PandaBear.HttpClients.HttpOutcomeKind;
 

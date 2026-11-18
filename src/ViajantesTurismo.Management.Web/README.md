@@ -26,14 +26,12 @@ and real-time updates using Blazor Server components.
 
 ## Architecture
 
-- **Components**: Reusable Blazor components in `Components/`
-    - `BookingCreateForm.razor`: Booking creation with discount support
-    - Shared forms and layout components
+- **Components**: Feature-owned pages and workflow components, shared controls, and layout
 - **API Clients**: Typed HTTP clients for API communication
     - Parse 400 Bad Request validation errors
     - Map server errors to form field validation
-- **Services**: `CustomerCreationState`, `CountryService`
-- **Models**: View models (`BookingFormModel`) with client-side validation
+- **State**: The scoped `CustomerCreationState` belongs to the customer creation wizard
+- **Reference data**: `CountryService` supplies the shared country selector
 - **Helpers**: `UserFacingErrorMessage`, `ValidationSummaryItems`; server validation binding, error summary,
   HTTP outcome copy, and handled-failure reporting come from `PandaBear.SharedKernel.Blazor`
 
@@ -46,25 +44,31 @@ documented module-boundary and typed-client governance.
 
 ### Folder Ownership
 
-Keep page-level workflow code under the existing Blazor component structure. Existing typed clients currently live at
-the project root; use `Clients/<Context>/` as the target location for new context-owned clients and for future client
-relocation work.
+Application workflow code lives under `Components/Pages/<Workflow>/`. The component test
+project follows the same paths for workflow-specific tests.
 
-- `Components/Pages/<Workflow>/`: routable pages and page-specific child components for one operator workflow.
-- `Components/Shared/`: reusable UI components that are not owned by a single workflow.
-- `Components/Layout/`: app shell, navigation, and layout-only components.
-- `Models/<Workflow>/`: form and view models used by one workflow.
-- `Services/<Workflow>/`: UI state or orchestration services used by one workflow.
-- `Clients/<Context>/`: target location for web-side typed client implementations and helpers owned by one backend
-  bounded context. Keep `I*ApiClient` interfaces and DTOs in the owning context's `*.Contracts` project.
+| Workflow | Pages, local state, validation, and mapping | Contract clients and test coverage |
+| --- | --- | --- |
+| Tours | List, detail, create, and edit. Tour pages own their form mapping and use booking components for booking actions | Admin tours, bookings, and customers. See `Components/Pages/Tours` tests |
+| Bookings | List, detail, edit, booking forms, badges, pricing preview, and redirect state. Tour and customer details reuse booking forms | Admin bookings, customers, and documents. See `Components/Pages/Bookings` tests |
+| Customers | List, detail, edit, and create. Create and edit share customer form models, and the wizard owns `Create` state and progress | Admin customers with bookings and tours on details. See `Components/Pages/Customers` and `Customers/Create` tests |
+| Customer import | `Customers/Import` owns the upload page, CSV/header mapping, preview, conflict resolution, and cancellation state | Admin customers. See `Components/Pages/Customers/Import` tests |
+| Payments | Account, finance, and instruction pages with their form models and allocation editor | Admin booking payments, payment instructions, accounts, and bookings. See `Components/Pages/Payments` tests |
+| Catalog | Tour presentation, media upload and accessibility review, and public content | Catalog tours and public content. See `Components/Pages/Catalog` tests |
+| Branding | Theme and logo management under the Branding authorization policy | Branding management. See `Components/Pages/Branding` tests |
+| Documents | Review and hold pages, hold validation and controls. The host maps the artifact download proxy | Admin documents. See `Components/Pages/Documents` and artifact proxy endpoint tests |
 
-Avoid sharing workflow-specific components by moving them to `Components/Shared/` prematurely. Promote a component only
-after a second workflow needs the same behavior and the shared API can stay independent of the original workflow.
+`Components/Shared/` holds shared controls such as the country selector, confirmation,
+validation, and toast components. `Components/Layout/` holds the app shell and navigation.
+The host owns security, antiforgery, ticket and token persistence, and the download proxy.
+Customers, Catalog, and Payments compose their related registrations through feature startup
+extensions. Individual client registrations remain in `Program.cs`. Typed clients and DTOs
+belong to their backend contract projects.
 
 ### Typed API Clients
 
 All backend calls must go through typed clients; components and UI state services should not call raw `HttpClient`
-directly. Current Admin clients use concise names because Admin is the only implemented backend context today:
+directly. The Admin contracts provide concise names for their clients.
 
 - `IToursApiClient` for Admin tour operations.
 - `IBookingsApiClient` for Admin booking operations.
@@ -72,7 +76,7 @@ directly. Current Admin clients use concise names because Admin is the only impl
 
 Use context-prefixed names for new backend contexts or when a name would otherwise collide:
 
-- `ICatalogTourPresentationApiClient` for future Catalog presentation operations.
+- `ICatalogToursApiClient` for Catalog presentation and media operations.
 - `IAdminToursApiClient` only if an additional `IToursApiClient` owner makes the current concise name ambiguous.
 
 Typed client implementations own HTTP paths, request/response DTO calls, validation-error parsing, and service-discovery
@@ -95,39 +99,10 @@ Use these dependency directions:
 
 Avoid these dependency directions:
 
-- `Components/Shared/` depending on `Clients/<Context>/`.
+- `Components/Shared/` depending on a workflow's typed client or state.
 - One workflow service depending on another workflow service.
 - A typed client combining endpoints owned by different backend bounded contexts.
 - Public website concerns or public SEO/content models leaking into `Management.Web`.
-
-### Concrete Example
-
-A future Catalog presentation editor should keep Catalog-specific code separate from existing Admin booking UI. The
-`Clients/` folders below show the target structure for web-side implementations, while interfaces and DTOs remain in
-the owning `*.Contracts` projects:
-
-```text
-src/ViajantesTurismo.Management.Web/
-├── Clients/
-│   ├── Admin/
-│   │   └── ToursApiClient.cs
-│   └── Catalog/
-│       └── CatalogTourPresentationApiClient.cs
-├── Components/
-│   ├── Pages/
-│   │   ├── Bookings/
-│   │   └── CatalogPresentation/
-│   └── Shared/
-├── Models/
-│   ├── Bookings/
-│   └── CatalogPresentation/
-└── Services/
-    ├── Bookings/
-    └── CatalogPresentation/
-```
-
-If a `CatalogPresentation` page needs Admin tour facts, it should use `IToursApiClient` alongside
-`ICatalogTourPresentationApiClient`. It should not move Admin tour calls into the Catalog client.
 
 ### PR Review Checklist
 

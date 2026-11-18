@@ -1,0 +1,104 @@
+namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;
+
+/// <summary>Helpers for duplicate-resolution import tests.</summary>
+internal static class ImportCustomersDuplicateResolutionTestHelper
+{
+    /// <summary>Parses a CSV with one header row and one data row into a header-to-value map; throws InvalidDataException otherwise.</summary>
+    public static IReadOnlyDictionary<string, string> ParseSingleDataRow(byte[] fileContent)
+    {
+        var csv = System.Text.Encoding.UTF8.GetString(fileContent);
+        var lines = csv.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length != 2)
+        {
+            throw new InvalidDataException(
+                $"Expected exactly one header row and one data row, but found {lines.Length} non-empty row(s).");
+        }
+
+        var headers = lines[0].Split(',');
+        var values = lines[1].Split(',');
+        if (values.Length != headers.Length)
+        {
+            throw new InvalidDataException(
+                $"Expected {headers.Length} data value(s) to match the headers, but found {values.Length}.");
+        }
+
+        return headers
+            .Select((header, index) => new KeyValuePair<string, string>(header, values[index]))
+            .ToDictionary(StringComparer.Ordinal);
+    }
+
+    /// <summary>Adds a customer and its full details to the fake API under a new id.</summary>
+    public static void SeedExistingCustomer(FakeCustomersApiClient fakeCustomersApi, string email, string firstName, string lastName)
+    {
+        var customerId = Guid.NewGuid();
+
+        fakeCustomersApi.AddCustomer(new GetCustomerDto
+        {
+            Id = customerId,
+            FirstName = firstName,
+            LastName = lastName,
+            Email = email,
+            Mobile = "+551111111111",
+            Nationality = "Brazilian",
+            BikeType = BikeTypeDto.Regular,
+        });
+
+        fakeCustomersApi.AddCustomerDetails(new CustomerDetailsDto
+        {
+            Id = customerId,
+            PersonalInfo = new PersonalInfoDto
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Gender = "Female",
+                BirthDate = DateOnly.FromDateTime(new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Unspecified)),
+                Nationality = "Brazilian",
+                Occupation = "Engineer",
+            },
+            IdentificationInfo = new IdentificationInfoDto
+            {
+                NationalId = "A123",
+                IdNationality = "Brazilian",
+            },
+            ContactInfo = new ContactInfoDto
+            {
+                Email = email,
+                Mobile = "+551111111111",
+                Instagram = null,
+                Facebook = null,
+            },
+            Address = new AddressDto
+            {
+                Street = "Rua A",
+                Complement = null,
+                Neighborhood = "Centro",
+                PostalCode = "01000-000",
+                City = "São Paulo",
+                State = "SP",
+                Country = "BR",
+            },
+            PhysicalInfo = new PhysicalInfoDto
+            {
+                WeightKg = 70,
+                HeightCentimeters = 170,
+                BikeType = BikeTypeDto.Regular,
+            },
+            AccommodationPreferences = new AccommodationPreferencesDto
+            {
+                RoomType = RoomTypeDto.DoubleOccupancy,
+                BedType = BedTypeDto.SingleBed,
+                CompanionId = null,
+            },
+            EmergencyContact = new EmergencyContactDto
+            {
+                Name = "Emergency Contact",
+                Mobile = "+55222222222",
+            },
+            MedicalInfo = new MedicalInfoDto
+            {
+                Allergies = null,
+                AdditionalInfo = null,
+            },
+        });
+    }
+}

@@ -1,3 +1,4 @@
+using BookingFormModel = ViajantesTurismo.Management.Web.Components.Pages.Bookings.BookingFormModel;
 using PandaBear.Testing;
 using System.Globalization;
 using System.Net;

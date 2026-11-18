@@ -1,8 +1,7 @@
 using PandaBear.Testing;
 using Microsoft.AspNetCore.Components;
-using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
-using ViajantesTurismo.Management.Web.Models;
+using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;

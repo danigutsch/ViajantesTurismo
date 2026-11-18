@@ -1,5 +1,5 @@
-using ViajantesTurismo.Management.Web;
-using ViajantesTurismo.Management.Web.Models;
+using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
+using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
