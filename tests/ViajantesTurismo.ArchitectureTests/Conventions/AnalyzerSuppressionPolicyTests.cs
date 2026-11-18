@@ -30,6 +30,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "tests/ViajantesTurismo.Admin.UnitTests/MigrationService/MigrationProcessTestHost.cs",
         "tests/ViajantesTurismo.HostedTests/Management/Security/PostgreSqlTestServerFixture.cs",
         "tests/ViajantesTurismo.HostedTests/Infrastructure/HostedTestFixture.cs",
+        // CA1040 permits a marker that the mediator generator uses as a compile-time constraint.
+        "src/ViajantesTurismo.Admin.Application/Pipeline/ITransactionalAdminCommand.cs",
     ];
 
     [Fact]

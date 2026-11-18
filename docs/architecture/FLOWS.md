@@ -39,13 +39,15 @@ Implemented workflow groups:
 - Payments: recorded through the booking aggregate; payment status is calculated from payments and
   booking total.
 
-Tour creation uses a directly resolved scoped `CreateTourCommandHandler`. `SaveEntities(ct)` invokes the
-EF Core domain-event interceptor; the generated exhaustive mapper enqueues
+Tour creation dispatches `CreateTourCommand` through the generated mediator. `SaveEntities(ct)` invokes
+the EF Core domain-event interceptor. The generated exhaustive mapper enqueues
 `AdminTourCreatedIntegrationEvent` in the transactional outbox before the same save commits.
 
-Admin command handlers remain direct scoped services. They retain their explicit `SaveEntities(ct)`
-pattern; stores may still use a local transaction when one persistence operation requires multiple
-`SaveChanges` calls to remain atomic.
+Booking confirmation, booking deletion, booking detail updates, and tour updates use
+`SharedKernel.Mediator.EntityFrameworkCore` to run in a read committed transaction on the Admin write
+context. The store locks the tour row before loading bookings and holds that lock through commit or
+rollback. The execution strategy can replay the whole attempt after a transient database error.
+Handlers call `SaveEntities(ct)` inside the transaction to persist changes and dispatch domain events.
 
 Each module owns one DbContext registration method that applies all module options inside the actual
 provider registration callback. EF Core `ConfigureDbContext<TContext>()` can compose options for
@@ -57,6 +59,7 @@ interception should live in a separate package over these EF Core primitives, no
 ```mermaid
 sequenceDiagram
     participant API as Admin.Api
+    participant Sender as Generated mediator
     participant Handler as CreateTourCommandHandler
     participant Store as ITourStore
     participant Tour as Tour aggregate
@@ -65,7 +68,8 @@ sequenceDiagram
     participant Outbox as messaging.outbox_messages
     participant Db as Admin PostgreSQL
 
-    API->>Handler: CreateTourCommand
+    API->>Sender: CreateTourCommand
+    Sender->>Handler: Handle command
     Handler->>Store: IdentifierExists(identifier)
     Handler->>Tour: Tour.Create(definition)
     Tour-->>Handler: Result<Tour>
@@ -73,7 +77,8 @@ sequenceDiagram
     Context->>Interceptor: Dispatch TourCreatedDomainEvent
     Interceptor->>Outbox: Enqueue AdminTourCreatedIntegrationEvent
     Context->>Db: Commit tour and outbox row atomically
-    Handler-->>API: Result<Guid>
+    Handler-->>Sender: Result<Guid>
+    Sender-->>API: Result<Guid>
 ```
 
 ### Current durable boundary

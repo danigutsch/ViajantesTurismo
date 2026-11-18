@@ -38,15 +38,19 @@ public sealed class BookingCapacityConcurrencyTests(ApiFixture fixture) : IClass
         var firstConfirmation = fixture.Client.ConfirmBooking(firstBooking.Id, ct);
         var secondConfirmation = fixture.Client.ConfirmBooking(secondBooking.Id, ct);
         await scenario.WaitForConcurrentRequests(ct);
+        var canLockTour = await scenario.CanLockTour(ct);
         await scenario.ReleaseBookingWrites(ct);
         using var firstResponse = await firstConfirmation;
         using var secondResponse = await secondConfirmation;
+        var canLockTourAfterResponses = await scenario.CanLockTour(ct);
         using var getTourResponse = await fixture.Client.GetAsync(
             new Uri($"/api/v1/tours/{tour.Id}", UriKind.Relative),
             ct);
         var persistedTour = await getTourResponse.Content.ReadFromJsonAsync<GetTourDto>(ct);
 
         // Assert
+        canLockTour.ShouldBeFalse();
+        canLockTourAfterResponses.ShouldBeTrue();
         HttpStatusCode[] statuses = [firstResponse.StatusCode, secondResponse.StatusCode];
         statuses.ShouldContain(HttpStatusCode.OK);
         statuses.ShouldContain(HttpStatusCode.Conflict);

@@ -63,7 +63,7 @@ public sealed class TourCurrencyCommandHandlerTests
         var tour = EntityBuilders.BuildTour();
         tourStore.Add(tour);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new UpdateTourCommandHandler(tourStore, new NoOpTourCapacityMutationLock(), unitOfWork);
+        var handler = new UpdateTourCommandHandler(tourStore, unitOfWork);
 
         // Act
         var result = await handler.Handle(TourCommandFactory.Update(tour.Id, tour.Pricing.BasePrice, code), CancellationToken.None);
@@ -81,7 +81,7 @@ public sealed class TourCurrencyCommandHandlerTests
         var tourStore = new FakeTourStore();
         var tour = EntityBuilders.BuildTour();
         tourStore.Add(tour);
-        var handler = new UpdateTourCommandHandler(tourStore, new NoOpTourCapacityMutationLock(), new FakeUnitOfWork());
+        var handler = new UpdateTourCommandHandler(tourStore, new FakeUnitOfWork());
 
         // Act
         var result = await handler.Handle(TourCommandFactory.Update(tour.Id, tour.Pricing.BasePrice, "brl"), CancellationToken.None);

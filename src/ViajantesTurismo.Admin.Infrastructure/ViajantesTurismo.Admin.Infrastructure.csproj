@@ -31,6 +31,7 @@
         <PackageReference Include="PandaBear.SharedKernel.EntityFrameworkCore.Npgsql" />
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
+        <PackageReference Include="PandaBear.SharedKernel.Mediator.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents" />
         <PackageReference Include="PandaBear.SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore" />
         <PackageReference Include="PandaBear.SharedKernel.Npgsql" />

@@ -25,7 +25,7 @@ internal sealed class DataSourceNamingScenario : IDisposable
         this.provider = provider;
     }
 
-    /// <summary>Composes the Admin API infrastructure and touches its write and tour capacity lock data sources.</summary>
+    /// <summary>Composes the Admin API infrastructure and touches its write and read contexts.</summary>
     public static DataSourceNamingScenario ForAdmin()
     {
         var builder = CreateBuilder();
@@ -33,7 +33,6 @@ internal sealed class DataSourceNamingScenario : IDisposable
         var scenario = new DataSourceNamingScenario(builder.Services.BuildServiceProvider());
         scenario.TouchContext<AdminWriteDbContext>();
         scenario.TouchContext<AdminReadDbContext>();
-        scenario.TouchKeyedDataSource(ResourceNames.AdminDatabase);
 
         return scenario;
     }

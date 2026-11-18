@@ -28,7 +28,7 @@ public sealed class UpdateBookingDetailsCommandHandlerTests
         }
         tourStore.AddExistingTour(tour);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new UpdateBookingDetailsCommandHandler(tourStore, customers, new NoOpTourCapacityMutationLock(), unitOfWork);
+        var handler = new UpdateBookingDetailsCommandHandler(tourStore, customers, unitOfWork);
         var command = new UpdateBookingDetailsCommand(booking.Id, RoomTypeDto.DoubleOccupancy, BikeTypeDto.Regular, companion.Id, BikeTypeDto.EBike);
 
         // Act
@@ -64,7 +64,7 @@ public sealed class UpdateBookingDetailsCommandHandlerTests
         }
         tourStore.AddExistingTour(tour);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new UpdateBookingDetailsCommandHandler(tourStore, new FakeCustomerStore(), new NoOpTourCapacityMutationLock(), unitOfWork);
+        var handler = new UpdateBookingDetailsCommandHandler(tourStore, new FakeCustomerStore(), unitOfWork);
         var command = new UpdateBookingDetailsCommand(booking.Id, RoomTypeDto.DoubleOccupancy, BikeTypeDto.EBike, Guid.CreateVersion7(), BikeTypeDto.Regular);
 
         // Act
@@ -89,7 +89,6 @@ public sealed class UpdateBookingDetailsCommandHandlerTests
         var handler = new UpdateBookingDetailsCommandHandler(
             tourStore,
             new FakeCustomerStore(),
-            new NoOpTourCapacityMutationLock(),
             unitOfWork);
         var command = new UpdateBookingDetailsCommand(
             booking.Id,
@@ -115,7 +114,6 @@ public sealed class UpdateBookingDetailsCommandHandlerTests
         var handler = new UpdateBookingDetailsCommandHandler(
             new FakeTourStore(),
             new FakeCustomerStore(),
-            new NoOpTourCapacityMutationLock(),
             unitOfWork);
         var command = new UpdateBookingDetailsCommand(
             Guid.CreateVersion7(),

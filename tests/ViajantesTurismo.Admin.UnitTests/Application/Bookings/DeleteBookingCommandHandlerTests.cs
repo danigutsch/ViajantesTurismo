@@ -18,7 +18,6 @@ public sealed class DeleteBookingCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var handler = new DeleteBookingCommandHandler(
             tourStore,
-            new NoOpTourCapacityMutationLock(),
             unitOfWork);
 
         // Act
@@ -39,7 +38,6 @@ public sealed class DeleteBookingCommandHandlerTests
         var unitOfWork = new FakeUnitOfWork();
         var handler = new DeleteBookingCommandHandler(
             new FakeTourStore(),
-            new NoOpTourCapacityMutationLock(),
             unitOfWork);
 
         // Act

@@ -60,16 +60,16 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    public void AddInfrastructure_registers_the_tour_capacity_mutation_lock()
+    public void AddInfrastructure_shares_the_write_context_with_the_transaction_behavior()
     {
         // Arrange
         using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule();
 
         // Act
-        var capacityMutationLock = services.TourCapacityMutationLock;
+        var transactionContext = services.TransactionContext;
 
         // Assert
-        capacityMutationLock.ShouldNotBeNull();
+        transactionContext.ShouldBeSameAs(services.WriteContext);
     }
 
     [Fact]

@@ -1,16 +1,20 @@
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 
@@ -48,16 +52,54 @@ internal sealed class TourStorePostgreSqlScenario : IAsyncDisposable
         await dbContext.SaveEntities(ct);
     }
 
-    /// <summary>Looks up the id of the tour containing the booking with <paramref name="bookingId" />.</summary>
-    public async Task<Option<Guid>> GetTourIdByBookingId(Guid bookingId, CancellationToken ct)
+    /// <summary>Loads a tour by ID under a row lock.</summary>
+    public Task<Tour?> GetByIdForUpdate(Guid tourId, CancellationToken ct) =>
+        ReadLockedTour(store => store.GetByIdForUpdate(tourId, ct), ct);
+
+    /// <summary>Loads the locked tour containing the booking with <paramref name="bookingId" />.</summary>
+    public Task<Tour?> GetByBookingIdForUpdate(Guid bookingId, CancellationToken ct) =>
+        ReadLockedTour(store => store.GetByBookingIdForUpdate(bookingId, ct), ct);
+
+    /// <summary>Attempts a locking lookup with no active transaction.</summary>
+    public async Task<Tour?> GetByIdWithoutTransaction(Guid tourId, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        using var protection = new ViajantesTurismo.Admin.Infrastructure.Payments.PaymentProtection(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
-        return await new TourStore(dbContext, new ViajantesTurismo.Admin.Infrastructure.Payments.PaymentHistoryStore(dbContext, protection)).GetTourIdByBookingId(bookingId, ct);
+        using var protection = new PaymentProtection(new ConfigurationBuilder().Build());
+        var store = new TourStore(dbContext, new PaymentHistoryStore(dbContext, protection));
+        return await store.GetByIdForUpdate(tourId, ct);
+    }
+
+    /// <summary>Exercises the transaction behavior with a confirmation and a supplied outcome after the save.</summary>
+    public async Task<Result> ConfirmWithOutcome(Guid bookingId, Func<Result> afterSave, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        using var protection = new PaymentProtection(new ConfigurationBuilder().Build());
+        using var services = new ServiceCollection().BuildServiceProvider();
+        var behavior = new AdminTransactionBehavior<ConfirmBookingCommand, Result>(
+            dbContext,
+            services.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<AdminTransactionBehavior<ConfirmBookingCommand, Result>>.Instance);
+        var store = new TourStore(dbContext, new PaymentHistoryStore(dbContext, protection));
+        var handler = new ConfirmBookingCommandHandler(store, dbContext);
+        var command = new ConfirmBookingCommand(bookingId);
+
+        return await behavior.Handle(command, async () =>
+        {
+            var confirmation = await handler.Handle(command, ct);
+            return confirmation.IsSuccess ? afterSave() : confirmation;
+        }, ct);
     }
 
     /// <summary>Disposes the test database.</summary>
     public ValueTask DisposeAsync() => database.DisposeAsync();
+
+    private async Task<Tour?> ReadLockedTour(Func<TourStore, Task<Tour?>> load, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+        using var protection = new PaymentProtection(new ConfigurationBuilder().Build());
+        return await load(new TourStore(dbContext, new PaymentHistoryStore(dbContext, protection)));
+    }
 
     private AdminWriteDbContext CreateDbContext()
     {

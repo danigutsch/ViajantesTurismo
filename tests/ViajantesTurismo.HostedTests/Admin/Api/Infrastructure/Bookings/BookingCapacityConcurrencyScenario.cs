@@ -1,6 +1,3 @@
-using System.Buffers.Binary;
-using System.Security.Cryptography;
-using System.Text;
 using Npgsql;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Bookings;
@@ -13,7 +10,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
     private readonly NpgsqlDataSource dataSource;
     private readonly Guid firstBookingId;
     private readonly Guid secondBookingId;
-    private readonly long tourCapacityLockKey;
+    private readonly Guid tourId;
     private NpgsqlConnection? blockingConnection;
     private NpgsqlTransaction? blockingTransaction;
     private int? blockingProcessId;
@@ -22,12 +19,12 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
         NpgsqlDataSource dataSource,
         Guid firstBookingId,
         Guid secondBookingId,
-        long tourCapacityLockKey)
+        Guid tourId)
     {
         this.dataSource = dataSource;
         this.firstBookingId = firstBookingId;
         this.secondBookingId = secondBookingId;
-        this.tourCapacityLockKey = tourCapacityLockKey;
+        this.tourId = tourId;
     }
 
     /// <summary>Creates the scenario from a connection string, requiring both bookings to belong to one tour.</summary>
@@ -75,7 +72,7 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
                 dataSource,
                 firstBookingId,
                 secondBookingId,
-                CreateTourCapacityLockKey(tourId));
+                tourId);
         }
         catch
         {
@@ -164,33 +161,14 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
                         FROM pg_stat_activity AS blocked
                         INNER JOIN blocked_requests AS blocker
                             ON blocker.pid = ANY(pg_blocking_pids(blocked.pid))
-                    ),
-                    target_tour_advisory_waiters(pid) AS (
-                        SELECT advisory.pid
-                        FROM pg_locks AS advisory
-                        WHERE advisory.locktype = 'advisory'
-                          AND advisory.database = (
-                              SELECT oid
-                              FROM pg_database
-                              WHERE datname = current_database())
-                          AND advisory.objsubid = 1
-                          AND NOT advisory.granted
-                          AND ((advisory.classid::bigint << 32) | advisory.objid::bigint)
-                              = @tourCapacityLockKey
-                    ),
-                    target_request_pids(pid) AS (
-                        SELECT pid FROM blocked_requests
-                        UNION
-                        SELECT pid FROM target_tour_advisory_waiters
                     )
                     SELECT COUNT(*) >= @expectedRequestCount
-                    FROM target_request_pids
+                    FROM blocked_requests
                     WHERE pid IS NOT NULL
                       AND pid <> @processId;
                     """,
                     connection);
                 command.Parameters.AddWithValue("processId", processId);
-                command.Parameters.AddWithValue("tourCapacityLockKey", tourCapacityLockKey);
                 command.Parameters.AddWithValue("expectedRequestCount", expectedRequestCount);
                 var requestsAreWaiting = await command.ExecuteScalarAsync(linkedCts.Token);
                 if (requestsAreWaiting is true)
@@ -208,6 +186,34 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
 
         ct.ThrowIfCancellationRequested();
         throw new TimeoutException("Concurrent booking confirmations did not reach the persistence barrier.");
+    }
+
+    /// <summary>Checks whether a separate session can immediately take the tour row lock.</summary>
+    public async Task<bool> CanLockTour(CancellationToken ct)
+    {
+        await using var command = dataSource.CreateCommand(
+            """
+            SELECT "Id"
+            FROM "Tours"
+            WHERE "Id" = @tourId
+            FOR UPDATE NOWAIT;
+            """);
+        command.Parameters.AddWithValue("tourId", tourId);
+
+        try
+        {
+            var lockedId = await command.ExecuteScalarAsync(ct);
+            if (lockedId is not Guid id || id != tourId)
+            {
+                throw new InvalidOperationException("The capacity concurrency scenario could not find the tour.");
+            }
+
+            return true;
+        }
+        catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.LockNotAvailable)
+        {
+            return false;
+        }
     }
 
     /// <summary>Rolls back the holding transaction and releases the booking rows.</summary>
@@ -241,14 +247,5 @@ internal sealed class BookingCapacityConcurrencyScenario : IAsyncDisposable
         }
 
         await dataSource.DisposeAsync();
-    }
-
-    private static long CreateTourCapacityLockKey(Guid tourId)
-    {
-        var lockIdentity = string.Concat(
-            "admin:tour-capacity:",
-            tourId.ToString("D", global::System.Globalization.CultureInfo.InvariantCulture));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(lockIdentity));
-        return BinaryPrimitives.ReadInt64BigEndian(hash);
     }
 }

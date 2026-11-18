@@ -33,7 +33,7 @@ See [Test guidelines](../TEST_GUIDELINES.md) for how tests use these helpers.
 | `PostgreSqlTestDatabasePool` | `PandaBear.Npgsql.Testing` package | wrapped by `PostgreSqlTestServerFixture` | Shared library (already consumed) |
 | `FakeTimeProvider` | `tests/ViajantesTurismo.Admin.Testing/Fakes` | 21 | Project-level reusable. Adds `AutoAdvance` and `ReadCount` beyond a plain fixed clock |
 | `FakeUnitOfWork`, `FakeCustomerStore`, `FakeTourStore` | `Admin.Testing/Fakes` | 36, 23, 13 | Project-level reusable. They implement Admin application ports |
-| `ThrowingUnitOfWork`, `CapturingDomainEventDispatcher`, `NoOpTourCapacityMutationLock` | `Admin.Testing/Fakes` | 4, 3, 6 | Project-level reusable. Admin ports, few callers |
+| `ThrowingUnitOfWork`, `CapturingDomainEventDispatcher` | `Admin.Testing/Fakes` | 4, 3 | Project-level reusable. Admin ports, few callers |
 | `EntityBuilders`, `DtoBuilders`, `BookingTestHelpers` | `Admin.Testing` | 46, 15, 20 | Project-level reusable. Domain-specific sample data |
 | `ApiTestExtensions`, `ToursApiHelper`, `BookingsApiHelper`, `CustomersApiHelper`, `PricingHelper` | `Admin.Testing/Integration/Helpers` | shared by Admin API, hosted and UI suites | Project-level reusable. Admin API surface only |
 | `DocumentNoStoreHeaders` | `Admin.Testing` | 5 | Project-level reusable |

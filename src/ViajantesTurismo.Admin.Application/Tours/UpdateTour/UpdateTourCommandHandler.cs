@@ -10,7 +10,6 @@ namespace ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 /// </summary>
 public sealed class UpdateTourCommandHandler(
     ITourStore tourStore,
-    ITourCapacityMutationLock capacityMutationLock,
     IUnitOfWork unitOfWork) : ICommandHandler<UpdateTourCommand, Result>
 {
     /// <summary>
@@ -23,8 +22,7 @@ public sealed class UpdateTourCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        await using var capacityLease = await capacityMutationLock.Acquire(command.TourId, ct);
-        var tour = await tourStore.GetById(command.TourId, ct);
+        var tour = await tourStore.GetByIdForUpdate(command.TourId, ct);
         if (tour is null)
         {
             return TourErrors.TourNotFound();
