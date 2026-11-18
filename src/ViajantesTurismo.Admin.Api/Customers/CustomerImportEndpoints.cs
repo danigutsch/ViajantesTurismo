@@ -77,7 +77,7 @@ internal static class CustomerImportEndpoints
         return app;
     }
 
-    private static Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> ImportCustomers(
+    private static ValueTask<Results<Ok<ImportResultDto>, ProblemHttpResult>> ImportCustomers(
         [Required]
         IFormFile? file,
         [FromServices] IMalwareScanner scanner,
@@ -87,7 +87,7 @@ internal static class CustomerImportEndpoints
         CancellationToken ct) =>
         ProcessImport(file, null, CustomerImportTelemetry.Operation.Import, scanner, logger, workflow, telemetry, ct);
 
-    private static Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> CommitImportWithResolutions(
+    private static ValueTask<Results<Ok<ImportResultDto>, ProblemHttpResult>> CommitImportWithResolutions(
         [AsParameters] CommitCustomerImportFormDto form,
         [FromServices] IMalwareScanner scanner,
         [FromServices] ILogger<CustomerImportEndpointsCategory> logger,
@@ -96,7 +96,7 @@ internal static class CustomerImportEndpoints
         CancellationToken ct) =>
         ProcessImport(form.File, form.ConflictResolutions, CustomerImportTelemetry.Operation.Commit, scanner, logger, workflow, telemetry, ct);
 
-    private static async Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> ProcessImport(
+    private static async ValueTask<Results<Ok<ImportResultDto>, ProblemHttpResult>> ProcessImport(
         IFormFile? file,
         string? resolutions,
         CustomerImportTelemetry.Operation operation,
