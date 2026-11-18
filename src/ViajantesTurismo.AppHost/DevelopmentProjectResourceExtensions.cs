@@ -1,3 +1,5 @@
+using PandaBear.AspNetCore;
+
 namespace ViajantesTurismo.AppHost;
 
 /// <summary>
@@ -5,7 +7,6 @@ namespace ViajantesTurismo.AppHost;
 /// </summary>
 internal static class DevelopmentProjectResourceExtensions
 {
-    private const string DotNetEnvironmentVariable = "DOTNET_ENVIRONMENT";
     private const string DevelopmentEnvironment = "Development";
     private const string ContainerImageTagConfigurationKey = "VT_ASPIRE_CONTAINER_IMAGE_TAG";
     private const string ContainerRegistryConfigurationKey = "VT_ASPIRE_CONTAINER_REGISTRY";
@@ -49,7 +50,7 @@ internal static class DevelopmentProjectResourceExtensions
         var project = builder.AddProject<TProject>(name, launchProfileName: null);
         if (builder.ExecutionContext.IsRunMode)
         {
-            project.WithEnvironment(DotNetEnvironmentVariable, DevelopmentEnvironment);
+            project.WithEnvironment(HostEnvironmentVariableNames.DotNetEnvironment, DevelopmentEnvironment);
         }
 
         return project.WithReleasePublishing(builder);

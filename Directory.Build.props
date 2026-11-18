@@ -56,6 +56,10 @@
 		<AdditionalFiles Include="$(MSBuildThisFileDirectory)CodeMetricsConfig.txt" Link="CodeMetricsConfig.txt" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([System.String]::Copy('$(MSBuildProjectDirectory)').StartsWith('$(MSBuildThisFileDirectory)src'))">
+		<AdditionalFiles Include="$(MSBuildThisFileDirectory).config/GovernedLiterals.txt" />
+	</ItemGroup>
+
 	<PropertyGroup Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'True' or '$(GITHUB_ACTIONS)' == 'true'">
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<RestoreLockedMode>true</RestoreLockedMode>
