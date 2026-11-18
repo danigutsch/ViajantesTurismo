@@ -34,7 +34,8 @@ timeout is five seconds.
 The server connection total includes the monitoring connection. Use the two gauges together
 to assess headroom. Reserved connection slots mean an ordinary client can exhaust available
 slots before the configured limit. Npgsql client pools and index-health advisories keep
-their separate signals and operator questions. [PostgreSQL table of cumulative statistics](https://www.postgresql.org/docs/18/monitoring-stats.html#PG-STAT-DATABASE-VIEW)
+their separate signals and operator questions.
+[PostgreSQL table of cumulative statistics](https://www.postgresql.org/docs/18/monitoring-stats.html#PG-STAT-DATABASE-VIEW)
 
 The Collector uses `sqlquery/postgresql_server` from the pinned Contrib image. It reads only
 the two aggregate values and strips all resource and data-point attributes before adding
@@ -42,7 +43,8 @@ the fixed service name `postgresql-server`. Query logging stays disabled. The na
 avoids the pinned PostgreSQL receiver's per-database table, index, lock, size and replication
 queries. The SQL Query receiver and its PostgreSQL driver are already bundled in the image.
 Review the receiver and its exported series against this contract when changing the image.
-[Pinned SQL Query receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/sqlqueryreceiver/README.md) · [Pinned PostgreSQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/postgresqlreceiver/scraper.go)
+[Pinned SQL Query receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/sqlqueryreceiver/README.md) ·
+[Pinned PostgreSQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/postgresqlreceiver/scraper.go)
 
 Set `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` and configure the AppHost settings below.
 Use a dedicated login with `CONNECT` to `postgres` and read access to the `datid` and
