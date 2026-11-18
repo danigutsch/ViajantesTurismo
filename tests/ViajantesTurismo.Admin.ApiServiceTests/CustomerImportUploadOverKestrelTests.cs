@@ -1,6 +1,8 @@
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Http.Timeouts;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.UploadWire.Testing;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests;
@@ -9,8 +11,57 @@ namespace ViajantesTurismo.Admin.ApiServiceTests;
 /// Issue 706: the customer import endpoints exercised over real HTTP on a loopback Kestrel server (not TestServer),
 /// proving disconnect, slow-client and oversize behavior of the upload intake.
 /// </summary>
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 public sealed class CustomerImportUploadOverKestrelTests
 {
+    [Theory]
+    [InlineData(CustomerImportKestrelScenario.ImportRoute, false)]
+    [InlineData(CustomerImportKestrelScenario.CommitRoute, true)]
+    public async Task Import_rejects_an_extra_multipart_section_before_scanning(string route, bool includesResolutions)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = CustomerImportKestrelScenario.Start(route);
+        using var form = new MultipartFormDataContent();
+        var csv = Encoding.UTF8.GetBytes(CustomerImportKestrelScenario.ValidCsv);
+        form.Add(MultipartPayload.FilePart(csv, ContractConstants.CustomerImportTextCsvContentType), "file", "customers.csv");
+        if (includesResolutions)
+        {
+            form.Add(new StringContent("[]"), "conflictResolutions");
+        }
+
+        form.Add(new StringContent("Unexpected"), "extra");
+
+        // Act
+        using var response = await scenario.Client.PostAsync(new Uri(route, UriKind.Relative), form, ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        scenario.Scanner.Recorder.CallCount.ShouldBe(0);
+        scenario.Store.AllCustomers.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Commit_rejects_conflict_resolutions_over_the_field_budget_before_scanning()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        const string route = CustomerImportKestrelScenario.CommitRoute;
+        await using var scenario = CustomerImportKestrelScenario.Start(route);
+        using var form = new MultipartFormDataContent();
+        var csv = Encoding.UTF8.GetBytes(CustomerImportKestrelScenario.ValidCsv);
+        form.Add(MultipartPayload.FilePart(csv, ContractConstants.CustomerImportTextCsvContentType), "file", "customers.csv");
+        form.Add(new StringContent(new string(' ', (int)ContractConstants.CustomerImportConflictResolutionsMaxBytes) + "[]"), "conflictResolutions");
+
+        // Act
+        using var response = await scenario.Client.PostAsync(new Uri(route, UriKind.Relative), form, ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        scenario.Scanner.Recorder.CallCount.ShouldBe(0);
+        scenario.Store.AllCustomers.ShouldBeEmpty();
+    }
+
     [Theory]
     [InlineData(CustomerImportKestrelScenario.ImportRoute)]
     [InlineData(CustomerImportKestrelScenario.CommitRoute)]
@@ -118,20 +169,47 @@ public sealed class CustomerImportUploadOverKestrelTests
     public async Task Import_answers_408_without_scanning_when_a_stalled_upload_falls_below_the_server_minimum_body_data_rate(string route)
     {
         // Arrange
-        await using var scenario = CustomerImportKestrelScenario.Start(
-            route,
-            host => host.ConfigureServices(services => services.Configure<KestrelServerOptions>(options => options.Limits.MinRequestBodyDataRate = new MinDataRate(bytesPerSecond: 1_000_000, gracePeriod: TimeSpan.FromMilliseconds(1_001)))));
-        var csv = Encoding.UTF8.GetBytes(CustomerImportKestrelScenario.ValidCsv);
+        await using var scenario = CustomerImportKestrelScenario.Start(route);
+        var csv = Encoding.UTF8.GetBytes(CustomerImportKestrelScenario.ValidCsv + "\n" + new string('x', 16_384));
         var payload = await CustomerImportKestrelScenario.Form(csv, TestContext.Current.CancellationToken);
         using var upload = new RawHttpUpload();
+        const int prefixLength = 8_192;
 
         // Act
-        await upload.Send(scenario.BaseUri, route, scenario.Authorization, payload, payload.Body.Length / 2, TestContext.Current.CancellationToken);
-        await scenario.Probe.Finished.WaitAsync(WireTimeout.Default, TestContext.Current.CancellationToken);
+        await upload.Send(scenario.BaseUri, route, scenario.Authorization, payload, prefixLength, TestContext.Current.CancellationToken);
         var statusLine = await upload.ReadStatusLine(TestContext.Current.CancellationToken).WaitAsync(WireTimeout.Default, TestContext.Current.CancellationToken);
+        await scenario.Probe.Finished.WaitAsync(WireTimeout.Default, TestContext.Current.CancellationToken);
 
         // Assert
         statusLine.ShouldBe("HTTP/1.1 408 Request Timeout");
+        scenario.Scanner.Recorder.CallCount.ShouldBe(0);
+        scenario.Store.AllCustomers.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(CustomerImportKestrelScenario.ImportRoute)]
+    [InlineData(CustomerImportKestrelScenario.CommitRoute)]
+    public async Task Import_deadline_returns_504_while_the_multipart_body_is_incomplete(string route)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = CustomerImportKestrelScenario.Start(route, host => host.ConfigureServices(services =>
+            services.Configure<RequestTimeoutOptions>(options =>
+                options.AddPolicy(ApiRequestLimits.MultipartUploadTimeoutPolicy, TimeSpan.FromSeconds(2)))));
+        var csv = Encoding.UTF8.GetBytes(CustomerImportKestrelScenario.ValidCsv + "\n" + new string('x', 32_768));
+        var payload = await CustomerImportKestrelScenario.Form(csv, ct);
+        using var upload = new RawHttpUpload();
+        const int prefixLength = 16_384;
+        await upload.Send(scenario.BaseUri, route, scenario.Authorization, payload, prefixLength, ct);
+        await scenario.Probe.WaitForBytes(prefixLength).WaitAsync(WireTimeout.Default, ct);
+
+        // Act
+        using var wait = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        wait.CancelAfter(TimeSpan.FromSeconds(8));
+        var statusLine = await upload.ReadStatusLine(wait.Token);
+
+        // Assert
+        statusLine.ShouldBe("HTTP/1.1 504 Gateway Timeout");
         scenario.Scanner.Recorder.CallCount.ShouldBe(0);
         scenario.Store.AllCustomers.ShouldBeEmpty();
     }

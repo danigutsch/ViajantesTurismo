@@ -16,12 +16,14 @@ using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
+using ViajantesTurismo.ServiceDefaults;
 
 namespace ViajantesTurismo.Catalog.Api;
 
 /// <summary>Maps the Catalog management and public HTTP endpoints.</summary>
 internal static class CatalogEndpoints
 {
+    private const long MediaUploadMaxRequestBytes = MediaUploadValidationOptions.DefaultMaxLengthBytes + 16_384;
 
     /// <summary>Maps all Catalog endpoints on the versioned API group.</summary>
     internal static IEndpointRouteBuilder MapCatalogEndpoints(this IEndpointRouteBuilder app)
@@ -86,6 +88,7 @@ internal static class CatalogEndpoints
             .Accepts<MediaImageUploadFormDto>("multipart/form-data")
             .Produces<CatalogMediaImageDto>(StatusCodes.Status201Created)
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status504GatewayTimeout)
             .RemoveInferredResponseMetadata(StatusCodes.Status404NotFound)
             .AddOpenApiOperationTransformer((operation, _, _) =>
             {
@@ -100,7 +103,14 @@ internal static class CatalogEndpoints
 
                 return Task.CompletedTask;
             })
-            .WithMetadata(new RequestSizeLimitAttribute(MediaUploadValidationOptions.DefaultMaxLengthBytes + 16_384))
+            .WithMetadata(
+                new RequestSizeLimitAttribute(MediaUploadMaxRequestBytes),
+                new RequestFormLimitsAttribute
+                {
+                    MultipartBodyLengthLimit = MediaUploadValidationOptions.DefaultMaxLengthBytes,
+                    ValueCountLimit = 5
+                })
+            .WithRequestTimeout(ApiRequestLimits.MultipartUploadTimeoutPolicy)
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .DisableAntiforgery()
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);

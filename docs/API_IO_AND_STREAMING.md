@@ -223,7 +223,9 @@ server, not TestServer, with fake scanners and stores.
 | Slow client, small chunks | Completes; the scanner receives the exact bytes once, only after the last chunk was sent. Body reads are at most 81,920 bytes |
 | Request over the `RequestSizeLimit` | `413` from Kestrel before the body is read; no scan, nothing persisted |
 | File over the file limit but within the request limit | `400`; no scan, nothing persisted |
+| Multipart form above its section count or conflict-resolution budget | `400`; no scan, nothing persisted |
 | Stalled client below a minimum body data rate | `408` from Kestrel; no scan, nothing persisted |
+| Multipart upload reaches its application deadline while reading the body | `504`; no scan, nothing persisted |
 
 `BrandingLogoUploadOverKestrelTests` drives the raw logo `PUT` through the same loopback wire harness.
 Kestrel returns `413` for oversized uploads with a declared content length and for chunked uploads.
@@ -233,21 +235,63 @@ receives `408`. Oversized, stalled, and mid-body disconnect requests leave the s
 The slow-client test gates each chunk and checks that the scanner reads the original image once, after the final chunk.
 Cancellation while scanning closes the file-backed lease, deletes its temporary file, and leaves the logo store empty.
 
-Kestrel uses the framework defaults in the Admin and Catalog hosts. The minimum body rate is
-240 bytes per second with a five-second grace period. The header deadline is 30 seconds, and the
-keep-alive timeout is 130 seconds.
-The wire tests for `408` set the minimum rate on their test servers.
-See [KestrelServerLimits](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.core.kestrelserverlimits?view=aspnetcore-11.0).
+### Transport and form limits
+
+Admin and Catalog use an 8 MiB Kestrel request body backstop. This leaves about 3 MiB of headroom
+above the largest current endpoint budget and covers endpoints with no explicit content budget.
+The framework defaults are 30,000,000 bytes and 240 bytes per second with a five-second grace
+period. Both hosts require 1 KiB per second and use the five-second grace period for the initial
+burst. They pin the framework's 30-second header deadline and 130-second idle keep-alive timeout.
+The Admin and Catalog multipart wire tests exercise the configured rate on their real hosts with
+no test override.
+See [Kestrel server limits](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.core.kestrelserverlimits?view=aspnetcore-11.0).
+
+| Endpoint | Total request body | Multipart section size | Count of multipart sections |
+| --- | ---: | ---: | ---: |
+| Customer import | 1 MiB + 32 KiB | 1 MiB | 1 file |
+| Customer import commit | 1 MiB + 32 KiB | 1 MiB | 1 file and 1 optional conflict-resolution field |
+| Catalog tour image upload | 5 MiB + 16 KiB | 5 MiB | 1 file and up to 4 text fields |
+| Branding logo upload | 1 MiB | Raw image body | Raw image body |
+
+ASP.NET Core applies the multipart section limit to file and text parts. Its `ValueLengthLimit`
+and `KeyLengthLimit` apply to URL-encoded forms. For multipart forms, the section and total body
+limits cap text bytes during parsing, and the framework's per-section header limit bounds field
+names. Import commit checks the decoded conflict resolutions' UTF-8 byte count against the 16 KiB
+field budget before scanning. Catalog retains its field-specific domain validation for captions,
+alternative text, attribution, and copyright. The multipart memory threshold stays at 64 KiB and
+larger file sections spool to temporary storage.
+See [ASP.NET Core form parsing](https://github.com/dotnet/aspnetcore/blob/v11.0.0/src/Http/Http/src/Features/FormFeature.cs).
+
+### Application deadlines
+
+Customer import, import commit, and Catalog tour image uploads have a two-minute application
+deadline. This gives the 5 MiB maximum multipart upload time to transfer alongside ClamAV's default
+30-second scan, validation, processing, and storage. The request body passes the deadline token into
+the framework's multipart reads without adding a buffer. The multipart deadline wire tests shorten
+the policy and leave the client connected with a partial form to verify the `504` response.
 
 The Branding logo `PUT` has a 60-second application deadline. This gives the 1 MiB upload,
 image processing, and storage a budget alongside ClamAV's default 30-second scan timeout.
-The deadline starts after authorization and rate limiting. If cancellation ends the upload before a response
-starts, the request timeout middleware returns `504`. Two Kestrel tests shorten the named policy to verify
-cancellation during body intake and scanning. The scan test also verifies removal of the temporary file.
+Two Kestrel tests shorten the named policy to verify cancellation during body intake and scanning.
+The scan test also verifies removal of the temporary file. All application upload deadlines start after
+authorization and rate limiting. If cancellation ends the request before a response starts, the request
+timeout middleware returns `504`.
 See [ASP.NET Core request timeouts](https://learn.microsoft.com/aspnet/core/performance/timeouts).
 
-Branding management requests share an IP-partitioned fixed-window limit of 20 requests per minute.
-Management settings reads, settings updates, logo uploads, and logo deletion share that budget.
+### Rate-limit partitioning and browser requests
+
+Admin imports share five requests per minute per remote IP. Catalog image uploads share Catalog's
+mutation budget of 20 requests per minute per remote IP. Branding management settings reads and
+updates, logo uploads, and logo deletion share a separate budget of 20 requests per minute per remote IP.
+Each API applies trusted forwarded headers before evaluating the partition. Clients behind the same
+proxy or NAT share a budget if the API observes the same remote address. These fixed windows are
+request admission budgets. The separate in-flight limit decision needs a deployed replica memory budget
+and measured memory use with the production host, scanner, and stores.
+
+Branding logo `PUT` and `DELETE` use the Branding CORS policy and require a bearer token with
+Branding write permission. Browsers may preflight requests from origins listed in
+`Security:Cors:AllowedOrigins`. CORS responses omit `Access-Control-Allow-Credentials`. The Management Web BFF
+applies antiforgery to its own cookie-authenticated surface.
 
 ## Decisions not taken
 

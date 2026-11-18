@@ -524,6 +524,9 @@
               }
             }
           },
+          "504": {
+            "description": "Gateway Timeout"
+          },
           "401": {
             "description": "Authentication is required."
           },
@@ -587,6 +590,9 @@
                 }
               }
             }
+          },
+          "504": {
+            "description": "Gateway Timeout"
           },
           "401": {
             "description": "Authentication is required."
