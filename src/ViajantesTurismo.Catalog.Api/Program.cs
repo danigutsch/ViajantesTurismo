@@ -41,6 +41,7 @@ app.UseNoStoreResponses();
 
 app.UseApiSecurity();
 app.UseRateLimiter();
+app.UseRequestTimeouts();
 app.UseOutputCache();
 app.MapCatalogEndpoints();
 app.MapBrandingModule();

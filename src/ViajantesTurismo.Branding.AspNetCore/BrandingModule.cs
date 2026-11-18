@@ -14,6 +14,9 @@ public static class BrandingModule
     /// <summary>The bearer scheme a co-hosting API registers for the Branding audience.</summary>
     public const string BearerScheme = "BrandingBearer";
 
+    /// <summary>The request deadline policy for uploading a Branding logo.</summary>
+    internal const string LogoUploadTimeoutPolicy = "branding-logo-upload";
+
     /// <summary>The Branding role-to-permission table.</summary>
     public static IReadOnlyDictionary<string, IReadOnlyCollection<string>> PermissionsByRole => BrandingAuthorization.PermissionsByRole;
 
@@ -29,6 +32,8 @@ public static class BrandingModule
 
         builder.Services.AddSingleton<BrandingTelemetry>();
         builder.Services.AddScoped<BrandingLogoIntake>();
+        builder.Services.AddRequestTimeouts(options =>
+            options.AddPolicy(LogoUploadTimeoutPolicy, TimeSpan.FromMinutes(1)));
         builder.Services.AddBrandingSecurityBaseline(builder.Configuration);
         builder.Services.AddBrandingOpenApiDocuments();
         builder.AddBrandingInfrastructure(addOutboxRelay);
