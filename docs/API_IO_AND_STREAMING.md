@@ -243,7 +243,8 @@ The framework defaults are 30,000,000 bytes and 240 bytes per second with a five
 period. Both hosts require 1 KiB per second and use the five-second grace period for the initial
 burst. They pin the framework's 30-second header deadline and 130-second idle keep-alive timeout.
 The Admin and Catalog multipart wire tests exercise the configured rate on their real hosts with
-no test override. See [Kestrel server limits](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.core.kestrelserverlimits?view=aspnetcore-11.0).
+no test override.
+See [Kestrel server limits](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.core.kestrelserverlimits?view=aspnetcore-11.0).
 
 | Endpoint | Total request body | Multipart section size | Count of multipart sections |
 | --- | ---: | ---: | ---: |
