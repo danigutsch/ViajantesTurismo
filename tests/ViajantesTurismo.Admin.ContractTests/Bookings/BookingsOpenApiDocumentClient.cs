@@ -145,5 +145,5 @@ internal static class BookingsOpenApiDocumentClient
         => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts.Http", "OpenApi", "bookings.openapi.json");
 
     private static string GetGeneratedDocumentPath()
-        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts.Http", "OpenApi", ".generated", "ViajantesTurismo.Admin.ApiService_bookings.json");
+        => Path.Combine(ContractTestRepository.RootPath, "src", "ViajantesTurismo.Admin.Contracts.Http", "OpenApi", ".generated", "ViajantesTurismo.Admin.Api_bookings.json");
 }

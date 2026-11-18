@@ -1,7 +1,7 @@
 {
   "openapi": "3.2.0",
   "info": {
-    "title": "ViajantesTurismo.Catalog.ApiService | public-catalog",
+    "title": "ViajantesTurismo.Catalog.Api | public-catalog",
     "version": "1.0.0"
   },
   "paths": {

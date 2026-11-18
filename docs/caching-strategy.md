@@ -66,7 +66,7 @@ integration event does not evict, so the public view can lag by up to the 60-sec
 ## Eventual consistency
 
 Catalog and Branding mutations evict same-process public API output-cache entries before returning
-success. This remains host-local when Branding moves into Catalog.ApiService. Public Web pages cache
+success. This remains host-local when Branding moves into Catalog.Api. Public Web pages cache
 rendered HTML in the Public Web process, so catalog or branding changes can remain visible there until
 the 60-second freshness window expires. Intermediaries may serve stale public API responses for up to
 another 300 seconds while they revalidate; Public Web pages carry no `stale-while-revalidate`.

@@ -1,7 +1,7 @@
 using PandaBear.Testing.ObjectStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http.Resilience;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Public.Web.Components;
 

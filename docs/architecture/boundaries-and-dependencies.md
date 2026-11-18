@@ -16,7 +16,7 @@ Admin owns booking and management workflows. Catalog owns public tour presentati
 independent logical module: `SharedKernel.Branding` owns pure validation/normalization, while the
 ViajantesTurismo Branding module owns contracts, application behavior, persistence, routes, defaults,
 permissions, and cache policy. The current executable is separate; ADR-040's target composes the module
-inside Catalog.ApiService without transferring ownership to Catalog. Admin publishes integration events;
+inside Catalog.Api without transferring ownership to Catalog. Admin publishes integration events;
 Catalog consumes them and builds public read models.
 
 ```mermaid
@@ -53,10 +53,10 @@ Boundary rules:
 - Reusable Branding validation and normalization stay in `SharedKernel.Branding`.
 - ViajantesTurismo Branding HTTP/integration contracts, schema, persistence, ASP.NET module, UI
   interpretation, and defaults stay outside SharedKernel.
-- Catalog.ApiService may host the Branding module; Catalog domain and application projects must not
+- Catalog.Api may host the Branding module; Catalog domain and application projects must not
   absorb Branding behavior, contracts, permissions, or tables.
 - Co-hosting is not process isolation. Catalog and Branding share process availability, memory, and
-  every credential loaded into Catalog.ApiService; separate DbContexts/schema grants mitigate accidental
+  every credential loaded into Catalog.Api; separate DbContexts/schema grants mitigate accidental
   access only.
 - Cross-context interaction uses contracts and integration events, not direct domain references.
 - Public web reads Catalog contracts; it does not reference Admin projects.
@@ -75,12 +75,12 @@ This diagram is generated from source project references.
 
 ```mermaid
 flowchart TB
-    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application]
-    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
-    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http]
-    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure]
-    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_Architecture_Analyzers[ViajantesTurismo.Architecture.Analyzers]
-    ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_Admin_Api[ViajantesTurismo.Admin.Api] --> ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application]
+    ViajantesTurismo_Admin_Api[ViajantesTurismo.Admin.Api] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
+    ViajantesTurismo_Admin_Api[ViajantesTurismo.Admin.Api] --> ViajantesTurismo_Admin_Contracts_Http[ViajantesTurismo.Admin.Contracts.Http]
+    ViajantesTurismo_Admin_Api[ViajantesTurismo.Admin.Api] --> ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure]
+    ViajantesTurismo_Admin_Api[ViajantesTurismo.Admin.Api] --> ViajantesTurismo_Architecture_Analyzers[ViajantesTurismo.Architecture.Analyzers]
+    ViajantesTurismo_Admin_Api[ViajantesTurismo.Admin.Api] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> ViajantesTurismo_Admin_Contracts_Application[ViajantesTurismo.Admin.Contracts.Application]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> ViajantesTurismo_Admin_Contracts_IntegrationEvents[ViajantesTurismo.Admin.Contracts.IntegrationEvents]
     ViajantesTurismo_Admin_Application[ViajantesTurismo.Admin.Application] --> ViajantesTurismo_Admin_Domain[ViajantesTurismo.Admin.Domain]
@@ -94,9 +94,9 @@ flowchart TB
     ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker] --> ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure]
     ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker] --> ViajantesTurismo_Branding_Contracts_IntegrationEvents[ViajantesTurismo.Branding.Contracts.IntegrationEvents]
     ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
-    ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Admin_ApiService[ViajantesTurismo.Admin.ApiService]
+    ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Admin_Api[ViajantesTurismo.Admin.Api]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker]
-    ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService]
+    ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Catalog_Api[ViajantesTurismo.Catalog.Api]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Catalog_IntegrationEventWorker[ViajantesTurismo.Catalog.IntegrationEventWorker]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_DatabaseObservability[ViajantesTurismo.DatabaseObservability]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Management_Web[ViajantesTurismo.Management.Web]
@@ -109,13 +109,13 @@ flowchart TB
     ViajantesTurismo_Branding_Contracts_IntegrationEvents[ViajantesTurismo.Branding.Contracts.IntegrationEvents] --> ViajantesTurismo_Architecture_Analyzers[ViajantesTurismo.Architecture.Analyzers]
     ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> ViajantesTurismo_Branding_Contracts_IntegrationEvents[ViajantesTurismo.Branding.Contracts.IntegrationEvents]
     ViajantesTurismo_Branding_Infrastructure[ViajantesTurismo.Branding.Infrastructure] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
-    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Architecture_Analyzers[ViajantesTurismo.Architecture.Analyzers]
-    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Branding_AspNetCore[ViajantesTurismo.Branding.AspNetCore]
-    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application]
-    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
-    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
-    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
-    ViajantesTurismo_Catalog_ApiService[ViajantesTurismo.Catalog.ApiService] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_Catalog_Api[ViajantesTurismo.Catalog.Api] --> ViajantesTurismo_Architecture_Analyzers[ViajantesTurismo.Architecture.Analyzers]
+    ViajantesTurismo_Catalog_Api[ViajantesTurismo.Catalog.Api] --> ViajantesTurismo_Branding_AspNetCore[ViajantesTurismo.Branding.AspNetCore]
+    ViajantesTurismo_Catalog_Api[ViajantesTurismo.Catalog.Api] --> ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application]
+    ViajantesTurismo_Catalog_Api[ViajantesTurismo.Catalog.Api] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
+    ViajantesTurismo_Catalog_Api[ViajantesTurismo.Catalog.Api] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
+    ViajantesTurismo_Catalog_Api[ViajantesTurismo.Catalog.Api] --> ViajantesTurismo_Catalog_Infrastructure[ViajantesTurismo.Catalog.Infrastructure]
+    ViajantesTurismo_Catalog_Api[ViajantesTurismo.Catalog.Api] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Admin_Contracts_IntegrationEvents[ViajantesTurismo.Admin.Contracts.IntegrationEvents]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Catalog_Contracts_Application[ViajantesTurismo.Catalog.Contracts.Application]
     ViajantesTurismo_Catalog_Application[ViajantesTurismo.Catalog.Application] --> ViajantesTurismo_Catalog_Contracts_IntegrationEvents[ViajantesTurismo.Catalog.Contracts.IntegrationEvents]

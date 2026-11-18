@@ -22,13 +22,13 @@ source of truth for local runtime wiring.
 flowchart LR
     AdminIntegrationEventWorker[Admin Integration Event Worker]
     AdminPerformanceSmoke[Admin Performance Smoke]
-    apiService[Admin.ApiService]
+    adminApi[Admin.Api]
     adminDatabase[Application Database]
     catalogDatabase[Application Database]
     securityDatabase[Application Database]
     Cache[Cache]
     CatalogIntegrationEventWorker[Catalog Integration Event Worker]
-    catalogApiService[Catalog.ApiService]
+    catalogApi[Catalog.Api]
     clamAv[ClamAV]
     DatabaseObservability[Database Observability]
     managementWebClientSecret[Generated Secret]
@@ -39,7 +39,7 @@ flowchart LR
     AdminIntegrationEventWorker --> adminDatabase
     AdminIntegrationEventWorker --> catalogDatabase
     AdminIntegrationEventWorker --> migrationService
-    AdminPerformanceSmoke --> apiService
+    AdminPerformanceSmoke --> adminApi
     CatalogIntegrationEventWorker --> adminDatabase
     CatalogIntegrationEventWorker --> catalogDatabase
     CatalogIntegrationEventWorker --> clamAv
@@ -47,19 +47,19 @@ flowchart LR
     DatabaseObservability --> adminDatabase
     DatabaseObservability --> catalogDatabase
     DatabaseObservability --> migrationService
-    ManagementWeb --> apiService
-    ManagementWeb --> catalogApiService
+    ManagementWeb --> adminApi
+    ManagementWeb --> catalogApi
     ManagementWeb --> managementWebClientSecret
     ManagementWeb --> migrationService
     ManagementWeb --> securityDatabase
-    PublicWeb --> catalogApiService
-    apiService --> adminDatabase
-    apiService --> clamAv
-    apiService --> migrationService
-    catalogApiService --> adminDatabase
-    catalogApiService --> catalogDatabase
-    catalogApiService --> clamAv
-    catalogApiService --> migrationService
+    PublicWeb --> catalogApi
+    adminApi --> adminDatabase
+    adminApi --> clamAv
+    adminApi --> migrationService
+    catalogApi --> adminDatabase
+    catalogApi --> catalogDatabase
+    catalogApi --> clamAv
+    catalogApi --> migrationService
     migrationService --> adminDatabase
     migrationService --> catalogDatabase
     migrationService --> securityDatabase
@@ -96,24 +96,24 @@ Current AppHost rules:
 ## Branding co-hosting
 
 Per ADR-040, the independent Branding ASP.NET module and `BrandingDbContext` are composed in
-`ViajantesTurismo.Catalog.ApiService`; there is no separate Branding resource. Catalog hosts the module
+`ViajantesTurismo.Catalog.Api`; there is no separate Branding resource. Catalog hosts the module
 but does not own its contracts, `branding` schema, outbox, permissions, or application behavior. This
 is not process isolation: Catalog and Branding share process availability, memory, and the blast radius
-of every credential available to Catalog.ApiService.
+of every credential available to Catalog.Api.
 
 Public.Web and Management.Web call Branding HTTP on the Catalog host through service discovery.
 `Admin.IntegrationEventWorker` carries full-state, revisioned Branding events to an Admin-owned inbox and
 local projection. Admin API reads that projection and has no Catalog/Branding HTTP or database
 credential. Ordinary production API-to-API HTTP is not used for Branding state transfer.
 
-The Branding relay in Catalog.ApiService atomically moves each envelope from `branding.outbox_messages`
+The Branding relay in Catalog.Api atomically moves each envelope from `branding.outbox_messages`
 into the Catalog database's default `messaging.transport_messages` table with `ConsumerName = 'admin'` and
 marks the outbox row published. The worker claims and updates that transport row with its restricted
 Catalog database credential, commits Admin inbox/projection/watermark through a separate restricted Admin
 credential, and only then marks transport `ProcessedAt`. Lease-expiry redelivery covers a crash between
 the Admin commit and transport acknowledgement.
 
-Catalog.ApiService validates the exact `branding-api` audience for Branding routes. The production
+Catalog.Api validates the exact `branding-api` audience for Branding routes. The production
 platform and concrete runtime/database roles remain undecided; see
 [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) and
 [production readiness](../operations/production-readiness.md#branding-co-hosting-readiness).

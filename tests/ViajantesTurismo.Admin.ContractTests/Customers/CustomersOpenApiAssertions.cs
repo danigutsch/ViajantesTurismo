@@ -15,7 +15,7 @@ internal static class CustomersOpenApiAssertions
         ArgumentNullException.ThrowIfNull(contract);
 
         contract.OpenApiVersion.ShouldBe("3.2.0");
-        contract.Title.ShouldBe("ViajantesTurismo.Admin.ApiService | customers");
+        contract.Title.ShouldBe("ViajantesTurismo.Admin.Api | customers");
         contract.ListCustomersOperationId.ShouldBe("GetCustomers");
         contract.GetCustomerByIdOperationId.ShouldBe("GetCustomerById");
         contract.CreateCustomerOperationId.ShouldBe("CreateCustomer");

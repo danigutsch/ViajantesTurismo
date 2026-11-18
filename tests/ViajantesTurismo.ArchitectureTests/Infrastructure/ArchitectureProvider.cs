@@ -1,9 +1,9 @@
 using ArchUnitNET.Domain;
 using ArchUnitNET.Loader;
-using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain;
@@ -59,7 +59,7 @@ internal static class ArchitectureProvider
         /// <summary>Root namespace of the Admin infrastructure layer.</summary>
         internal const string Infrastructure = "ViajantesTurismo.Admin.Infrastructure";
         /// <summary>Root namespace of the Admin API service.</summary>
-        internal const string Api = "ViajantesTurismo.Admin.ApiService";
+        internal const string Api = "ViajantesTurismo.Admin.Api";
         /// <summary>Root namespace of the Admin contracts.</summary>
         internal const string Contracts = "ViajantesTurismo.Admin.Contracts";
         /// <summary>Root namespace of the Catalog domain layer.</summary>
@@ -69,7 +69,7 @@ internal static class ArchitectureProvider
         /// <summary>Root namespace of the Catalog infrastructure layer.</summary>
         internal const string CatalogInfrastructure = "ViajantesTurismo.Catalog.Infrastructure";
         /// <summary>Root namespace of the Catalog API service.</summary>
-        internal const string CatalogApi = "ViajantesTurismo.Catalog.ApiService";
+        internal const string CatalogApi = "ViajantesTurismo.Catalog.Api";
         /// <summary>Root namespace of the Catalog contracts.</summary>
         internal const string CatalogContracts = "ViajantesTurismo.Catalog.Contracts";
     }

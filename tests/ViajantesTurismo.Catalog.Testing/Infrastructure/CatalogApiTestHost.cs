@@ -11,7 +11,7 @@ using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Testing.AspNetCore;
 using PandaBear.Testing.ObjectStorage;
 using ViajantesTurismo.Branding.AspNetCore;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;

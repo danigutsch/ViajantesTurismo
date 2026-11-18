@@ -1,7 +1,7 @@
 {
   "openapi": "3.2.0",
   "info": {
-    "title": "ViajantesTurismo.Admin.ApiService | payment-accounts",
+    "title": "ViajantesTurismo.Admin.Api | payment-accounts",
     "version": "1.0.0"
   },
   "paths": {

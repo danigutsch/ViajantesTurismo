@@ -122,7 +122,7 @@ and connection-resiliency guidance on transaction commit ambiguity:
 ### Catalog media metadata management API
 
 - Trigger: `CatalogEndpoints.UpsertMediaImage`.
-- Code: `src/ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs`.
+- Code: `src/ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs`.
 - Systems touched: Catalog read model lookup and media metadata database store.
 - Failure window: none across durable systems; both operations are database reads/writes in Catalog.
 - Existing mitigation: validates every tour link before saving metadata.
@@ -131,14 +131,14 @@ and connection-resiliency guidance on transaction commit ambiguity:
 ### Public content management
 
 - Trigger: `CatalogEndpoints.UpsertPublicContent`.
-- Code: `src/ViajantesTurismo.Catalog.ApiService/CatalogEndpoints.cs`.
+- Code: `src/ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs`.
 - Systems touched: Catalog database only.
 - Failure window: single durable store.
 - Recommendation: no multi-store pattern.
 
 ### Branding settings management
 
-- Trigger: `BrandingEndpoints.SaveSettings` in the Branding module hosted by Catalog.ApiService.
+- Trigger: `BrandingEndpoints.SaveSettings` in the Branding module hosted by Catalog.Api.
 - Code: `src/ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs`.
 - Concurrent editor boundary: Management `GET` returns source epoch/revision and a strong opaque ETag; full-state
   `PUT` requires `If-Match`. A syntactically valid false condition returns 412 without

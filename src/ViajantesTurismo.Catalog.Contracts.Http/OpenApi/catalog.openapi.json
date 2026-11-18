@@ -1,7 +1,7 @@
 {
   "openapi": "3.2.0",
   "info": {
-    "title": "ViajantesTurismo.Catalog.ApiService | catalog",
+    "title": "ViajantesTurismo.Catalog.Api | catalog",
     "version": "1.0.0"
   },
   "paths": {
@@ -632,7 +632,7 @@
     "/api/v1/catalog/public-content": {
       "get": {
         "tags": [
-          "ViajantesTurismo.Catalog.ApiService"
+          "ViajantesTurismo.Catalog.Api"
         ],
         "responses": {
           "200": {
@@ -1353,7 +1353,7 @@
       "name": "CatalogEndpoints"
     },
     {
-      "name": "ViajantesTurismo.Catalog.ApiService"
+      "name": "ViajantesTurismo.Catalog.Api"
     }
   ]
 }

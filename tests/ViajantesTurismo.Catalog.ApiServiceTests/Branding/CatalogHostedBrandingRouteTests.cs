@@ -5,7 +5,7 @@ using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestT
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
 /// <summary>
-/// Verifies that Catalog.ApiService hosts the Branding module behind its own exact-audience scheme.
+/// Verifies that Catalog.Api hosts the Branding module behind its own exact-audience scheme.
 /// </summary>
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]

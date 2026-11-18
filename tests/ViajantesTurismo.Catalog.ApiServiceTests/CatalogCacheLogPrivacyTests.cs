@@ -1,4 +1,4 @@
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;

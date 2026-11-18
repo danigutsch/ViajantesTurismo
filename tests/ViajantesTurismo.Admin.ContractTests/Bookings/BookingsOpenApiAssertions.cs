@@ -15,7 +15,7 @@ internal static class BookingsOpenApiAssertions
         ArgumentNullException.ThrowIfNull(contract);
 
         contract.OpenApiVersion.ShouldBe("3.2.0");
-        contract.Title.ShouldBe("ViajantesTurismo.Admin.ApiService | bookings");
+        contract.Title.ShouldBe("ViajantesTurismo.Admin.Api | bookings");
         contract.ListBookingsOperationId.ShouldBe("GetBookings");
         contract.GetBookingByIdOperationId.ShouldBe("GetBookingById");
         contract.CreateBookingOperationId.ShouldBe("CreateBooking");

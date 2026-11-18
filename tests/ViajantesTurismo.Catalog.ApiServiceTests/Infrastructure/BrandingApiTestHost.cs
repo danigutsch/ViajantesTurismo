@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 using PandaBear.MalwareScanning;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Branding.Infrastructure;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using PandaBear.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 
-/// <summary>Hosts the Branding routes in Catalog.ApiService with in-memory Branding settings.</summary>
+/// <summary>Hosts the Branding routes in Catalog.Api with in-memory Branding settings.</summary>
 internal static class BrandingApiTestHost
 {
     private const string Audience = "branding-api";

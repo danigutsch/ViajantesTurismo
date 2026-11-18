@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using PandaBear.Testing;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;

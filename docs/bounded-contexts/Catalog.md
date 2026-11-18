@@ -5,7 +5,7 @@ website experiences.
 
 Catalog does not own Branding changes. `SharedKernel.Branding` supplies pure validation and
 normalization; the ViajantesTurismo Branding module owns its contracts, application behavior,
-permissions, `branding` schema, outbox, and rendering contract. Catalog.ApiService is the accepted
+permissions, `branding` schema, outbox, and rendering contract. Catalog.Api is the accepted
 process host, not the Branding domain or data owner. It is nevertheless one process/credential blast
 radius; schema and DbContext separation do not provide process isolation.
 
@@ -30,7 +30,7 @@ presentation model.
   diagnostics, and projection rebuilds.
 - **Editable public website content** - Own business-editable website text and SEO content for
   English and Brazilian Portuguese variants.
-- **Branding relationship** - In ADR-040's accepted target, Catalog.ApiService composes the
+- **Branding relationship** - In ADR-040's accepted target, Catalog.Api composes the
   independent Branding ASP.NET module; Catalog domain and application code do not absorb Branding
   behavior or data ownership.
 

@@ -756,7 +756,7 @@
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
-      "viajantesturismo.catalog.apiservice": {
+      "viajantesturismo.catalog.api": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
@@ -866,7 +866,7 @@
           "PandaBear.SharedKernel.Testing": "[0.1.0-alpha.653.1, )",
           "PandaBear.SharedKernel.Testing.AspNetCore": "[0.1.0-alpha.653.1, )",
           "PandaBear.SharedKernel.Testing.ObjectStorage": "[0.1.0-alpha.653.1, )",
-          "ViajantesTurismo.Catalog.ApiService": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Api": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Catalog.Domain": "[0.1.0-alpha.0, )"
         }

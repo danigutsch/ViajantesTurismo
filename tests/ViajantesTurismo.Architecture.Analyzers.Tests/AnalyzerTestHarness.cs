@@ -9,9 +9,9 @@ namespace ViajantesTurismo.Architecture.Analyzers.Tests;
 internal static class AnalyzerTestHarness
 {
     /// <summary>Assembly name of the Admin API service.</summary>
-    public const string AdminApiAssemblyName = "ViajantesTurismo.Admin.ApiService";
+    public const string AdminApiAssemblyName = "ViajantesTurismo.Admin.Api";
     /// <summary>Assembly name of the Catalog API service.</summary>
-    public const string CatalogApiAssemblyName = "ViajantesTurismo.Catalog.ApiService";
+    public const string CatalogApiAssemblyName = "ViajantesTurismo.Catalog.Api";
 
     private const string DefaultUsings = """
         using System;

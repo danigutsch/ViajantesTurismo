@@ -157,21 +157,21 @@
   "openApi": [
     {
       "name": "admin",
-      "project": "src/ViajantesTurismo.Admin.ApiService/ViajantesTurismo.Admin.ApiService.csproj",
+      "project": "src/ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj",
       "generateProperty": "GenerateAdminOpenApiArtifacts",
       "refreshProperty": "RefreshAdminOpenApiArtifacts",
       "preserveEnvironment": ["REMOTE_CONTAINERS"]
     },
     {
       "name": "branding",
-      "project": "src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj",
+      "project": "src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj",
       "generateProperty": "GenerateBrandingOpenApiArtifacts",
       "refreshProperty": "RefreshBrandingOpenApiArtifacts",
       "preserveEnvironment": ["REMOTE_CONTAINERS"]
     },
     {
       "name": "catalog",
-      "project": "src/ViajantesTurismo.Catalog.ApiService/ViajantesTurismo.Catalog.ApiService.csproj",
+      "project": "src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj",
       "generateProperty": "GenerateCatalogOpenApiArtifacts",
       "refreshProperty": "RefreshCatalogOpenApiArtifacts",
       "preserveEnvironment": ["REMOTE_CONTAINERS"]

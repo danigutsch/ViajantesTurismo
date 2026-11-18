@@ -166,6 +166,6 @@ private static async Task<Results<Created<GetTourDto>, ValidationProblem>> Creat
 
 - [Domain Layer README](../ViajantesTurismo.Admin.Domain/README.md)
 - [Infrastructure Layer README](../ViajantesTurismo.Admin.Infrastructure/README.md)
-- [API Layer README](../ViajantesTurismo.Admin.ApiService/README.md)
+- [API Layer README](../ViajantesTurismo.Admin.Api/README.md)
 - [Architecture Decisions](../../docs/ARCHITECTURE_DECISIONS.md)
 - [Coding Guidelines](../../docs/CODING_GUIDELINES.md)

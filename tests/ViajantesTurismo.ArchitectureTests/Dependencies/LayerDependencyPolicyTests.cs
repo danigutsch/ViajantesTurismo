@@ -3,9 +3,9 @@ namespace ViajantesTurismo.ArchitectureTests.Dependencies;
 public sealed class LayerDependencyPolicyTests
 {
     [Theory]
-    [InlineData("ViajantesTurismo.Catalog.ApiService", "ViajantesTurismo.Branding.AspNetCore", false)]
+    [InlineData("ViajantesTurismo.Catalog.Api", "ViajantesTurismo.Branding.AspNetCore", false)]
     [InlineData("ViajantesTurismo.Branding.AspNetCore", "ViajantesTurismo.Branding.Infrastructure", false)]
-    [InlineData("ViajantesTurismo.Branding.AspNetCore", "ViajantesTurismo.Catalog.ApiService", true)]
+    [InlineData("ViajantesTurismo.Branding.AspNetCore", "ViajantesTurismo.Catalog.Api", true)]
     [InlineData("ViajantesTurismo.Branding.AspNetCore", "ViajantesTurismo.Admin.Infrastructure", true)]
     [InlineData("ViajantesTurismo.Branding.Infrastructure", "ViajantesTurismo.Branding.Contracts.IntegrationEvents", false)]
     [InlineData("ViajantesTurismo.Branding.Infrastructure", "ViajantesTurismo.Admin.Contracts.IntegrationEvents", true)]

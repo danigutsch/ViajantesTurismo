@@ -100,7 +100,7 @@
       ],
       "invocationRequirements": [
         {
-          "sourcePath": "src/ViajantesTurismo.Admin.ApiService/Program.cs",
+          "sourcePath": "src/ViajantesTurismo.Admin.Api/Program.cs",
           "invokedMethodName": "AddInfrastructure",
           "expectedCount": 1
         },

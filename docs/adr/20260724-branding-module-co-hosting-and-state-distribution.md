@@ -33,12 +33,12 @@ is deployed or production-ready.
 ### Module and host boundaries
 
 - Branding remains an independent logical module and owns the `branding` schema. It is co-hosted in
-  `ViajantesTurismo.Catalog.ApiService`; co-hosting does not transfer Branding behavior, contracts, data,
+  `ViajantesTurismo.Catalog.Api`; co-hosting does not transfer Branding behavior, contracts, data,
   or permissions to the Catalog bounded context.
 - Catalog and Branding deliberately share one process, failure domain, memory space, and credential blast
   radius. Separate DbContexts, connection roles, schemas, transactions, route policies, and module dependencies
   reduce accidental coupling; they do not provide process isolation after code execution is compromised.
-- Catalog.ApiService is the only Branding HTTP host. There is no standalone Branding executable.
+- Catalog.Api is the only Branding HTTP host. There is no standalone Branding executable.
 - `SharedKernel.Branding` retains only host-agnostic, pure validation and normalization rules. Branding's
   HTTP contracts, integration-event contracts, application behavior, infrastructure, defaults, and ASP.NET
   endpoint module are ViajantesTurismo-owned.
@@ -212,7 +212,7 @@ is deployed or production-ready.
 
 ### Authorization and identity
 
-- Catalog.ApiService registers separate named bearer schemes: `CatalogBearer` validates only
+- Catalog.Api registers separate named bearer schemes: `CatalogBearer` validates only
   `catalog-api`, and `BrandingBearer` validates only `branding-api`. Catalog routes select
   `CatalogBearer`; protected Branding routes select `BrandingBearer`, retain `branding.read` and
   `branding.write`, and do not inherit Catalog permissions merely because they share a host. Public Branding
@@ -232,7 +232,7 @@ The removal is done. With no production deployment there was no traffic to drain
 standalone `ViajantesTurismo.Branding.ApiService` executable, its `branding-api` AppHost resource and
 service-discovery references, and Admin's Branding HTTP client were removed directly. The `branding-api` token
 audience remains the exact audience of the Catalog-hosted Branding routes. Branding `branding` and
-`public-branding` OpenAPI artifacts are generated from Catalog.ApiService.
+`public-branding` OpenAPI artifacts are generated from Catalog.Api.
 
 A future production deployment must still prove that the Catalog API and its Branding routes have the intended
 private/public exposure, with no accidental backend ingress expansion caused by co-hosting.
@@ -262,7 +262,7 @@ These are requirements for a future deployment design, not evidence that product
 
 ### Shared-process extraction criteria
 
-Co-hosting accepts that a Catalog.ApiService compromise, memory leak, resource exhaustion, or bad deployment can
+Co-hosting accepts that a Catalog.Api compromise, memory leak, resource exhaustion, or bad deployment can
 affect both modules and reach every credential granted to that process. Logical schemas and DI boundaries are
 maintainability and least-privilege controls, not a security sandbox.
 
@@ -298,7 +298,7 @@ expanded into Branding by this decision.
   authorized transition `Recovering` -> reseed-only publish/claim/delivery -> `Ready`. Failure injection before
   recovery publish, after publish/before claim, and during delivery proves authorization is retained, the exact
   reseed row remains retryable, projection state stays `Recovering`, and unrelated rows remain fenced.
-- OpenAPI tool and drift tests prove the `branding` OpenAPI target generates from Catalog.ApiService while
+- OpenAPI tool and drift tests prove the `branding` OpenAPI target generates from Catalog.Api while
   preserving Branding-owned artifact names/content boundaries. Authorization tests prove Catalog and Branding
   routes select only their named exact-audience scheme.
 
@@ -315,16 +315,16 @@ As of 2026-10-25 this decision is implemented in code; no production deployment 
   Management.Web.
 - Recovery persists `Ready`/`Recovering`, an operator authorization for exactly one reseed event, and an
   append-only recovery audit on both sides. Branding provides same-epoch republish and epoch rotation.
-- Catalog.ApiService co-hosts the shared `ViajantesTurismo.Branding.AspNetCore` module with `CatalogBearer` and
+- Catalog.Api co-hosts the shared `ViajantesTurismo.Branding.AspNetCore` module with `CatalogBearer` and
   `BrandingBearer` schemes; no scheme authenticates by default. Catalog default and fallback policies select
   `CatalogBearer`; Branding policies select `BrandingBearer`. Public.Web and Management.Web call Branding
-  through Catalog service discovery. Catalog.ApiService relays the Branding outbox to the Catalog-database
+  through Catalog service discovery. Catalog.Api relays the Branding outbox to the Catalog-database
   transport for consumer `admin`, and `Admin.IntegrationEventWorker` applies it to the `branding_projection`
   schema.
-- Branding `branding` and `public-branding` OpenAPI artifacts are generated from Catalog.ApiService with
+- Branding `branding` and `public-branding` OpenAPI artifacts are generated from Catalog.Api with
   `dotnet tool run sharedkernel-ci -- openapi refresh --target branding`. Catalog's own `v1` document includes
   the co-hosted Branding routes; there is no Branding-only `v1` artifact.
-- `VTARCH001` is enabled in Admin.ApiService and Catalog.ApiService; Branding HTTP clients resolve to the Catalog
+- `VTARCH001` is enabled in Admin.Api and Catalog.Api; Branding HTTP clients resolve to the Catalog
   API destination.
 
 Recorded deviations:

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.TestHost;
 using PandaBear.Testing.ObjectStorage;
-using ViajantesTurismo.Catalog.ApiService;
+using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.UploadWire.Testing;

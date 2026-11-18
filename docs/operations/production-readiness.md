@@ -129,7 +129,7 @@ restore-time suppression are tracked as follow-up work in that policy.
 ## Branding co-hosting readiness
 
 [ADR-040](../adr/20260724-branding-module-co-hosting-and-state-distribution.md) makes
-Catalog.ApiService the host for the independent Branding module. The production platform, identity
+Catalog.Api the host for the independent Branding module. The production platform, identity
 provider, concrete identity names, database role names, and alert thresholds are undecided. Therefore
 the co-hosted topology is not yet production-ready.
 

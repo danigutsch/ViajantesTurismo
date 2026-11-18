@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Application.Documents;
-using ViajantesTurismo.Admin.UnitTests.ApiService;
+using ViajantesTurismo.Admin.UnitTests.Api;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 

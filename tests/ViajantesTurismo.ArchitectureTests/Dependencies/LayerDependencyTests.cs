@@ -69,7 +69,7 @@ public sealed class LayerDependencyTests
         var forbiddenReferences = new[]
         {
             "ViajantesTurismo.Management.Web",
-            "ViajantesTurismo.Admin.ApiService",
+            "ViajantesTurismo.Admin.Api",
             "ViajantesTurismo.Admin.Application",
             "ViajantesTurismo.Admin.Contracts",
             "ViajantesTurismo.Admin.Contracts.Application",
@@ -131,7 +131,7 @@ public sealed class LayerDependencyTests
         // Arrange
         var forbiddenReferences = new[]
         {
-            "ViajantesTurismo.Admin.ApiService",
+            "ViajantesTurismo.Admin.Api",
             "ViajantesTurismo.Admin.Application",
             "ViajantesTurismo.Admin.Domain",
             "ViajantesTurismo.Admin.Infrastructure"

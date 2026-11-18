@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.Api;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 

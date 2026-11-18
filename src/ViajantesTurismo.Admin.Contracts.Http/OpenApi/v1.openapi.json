@@ -1,7 +1,7 @@
 {
   "openapi": "3.2.0",
   "info": {
-    "title": "ViajantesTurismo.Admin.ApiService | v1",
+    "title": "ViajantesTurismo.Admin.Api | v1",
     "version": "1.0"
   },
   "paths": {

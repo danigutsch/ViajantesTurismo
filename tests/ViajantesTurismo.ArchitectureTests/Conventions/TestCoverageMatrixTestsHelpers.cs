@@ -15,7 +15,7 @@ internal static class TestCoverageMatrixTestsHelpers
     private static readonly CategoryRule[] Rules =
     [
         new("Contracts", name => name.Contains(".Contracts.", StringComparison.Ordinal), ["ContractTests"]),
-        new("Api", name => name.EndsWith(".ApiService", StringComparison.Ordinal), ["ApiServiceTests"]),
+        new("Api", name => name.EndsWith(".Api", StringComparison.Ordinal), ["ApiServiceTests"]),
         new("Web", name => name.EndsWith(".Web", StringComparison.Ordinal), ["WebTests"]),
         new("DomainOrApplication",
             name => name.EndsWith(".Domain", StringComparison.Ordinal)

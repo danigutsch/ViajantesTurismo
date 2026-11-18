@@ -6,7 +6,7 @@ using PandaBear.MalwareScanning;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Mediator;
 using PandaBear.Testing.AspNetCore;
-using ViajantesTurismo.Admin.ApiService;
+using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Documents;

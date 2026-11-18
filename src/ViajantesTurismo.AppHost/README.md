@@ -234,7 +234,7 @@ Other services retain one instance until their coordination requirements have be
 ## Local malware scanning
 
 ClamAV exposes only its private TCP `clamd` endpoint on port `3310`; it has no public endpoint or
-HTTP health check. Admin.ApiService, Catalog.ApiService, and Integration Event Worker receive the
+HTTP health check. Admin.Api, Catalog.Api, and Integration Event Worker receive the
 private host and port through AppHost configuration and wait for the ClamAV PING/PONG health check.
 
 The AppHost keeps the definitions in the named volume `clamav-definitions` at `/var/lib/clamav`, and
