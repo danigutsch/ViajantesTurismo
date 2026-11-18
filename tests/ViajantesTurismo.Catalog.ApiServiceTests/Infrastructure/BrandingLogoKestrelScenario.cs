@@ -1,7 +1,9 @@
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.TestHost;
 using PandaBear.MalwareScanning;
+using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.UploadWire.Testing;
 
@@ -46,7 +48,10 @@ internal sealed class BrandingLogoKestrelScenario : IAsyncDisposable
     }
 
     /// <summary>Starts the Branding endpoint with the supplied scanner and optional body data-rate settings.</summary>
-    public static BrandingLogoKestrelScenario Start(IMalwareScanner scanner, MinDataRate? minimumRate = null)
+    public static BrandingLogoKestrelScenario Start(
+        IMalwareScanner scanner,
+        MinDataRate? minimumRate = null,
+        TimeSpan? requestTimeout = null)
     {
         var store = TestBrandingSettingsStore.Seeded();
         var probe = new RequestLifetimeProbe(BrandingLogoRequests.ManagementLogoPath);
@@ -57,6 +62,10 @@ internal sealed class BrandingLogoKestrelScenario : IAsyncDisposable
             {
                 RequestProbeStartupFilter.Register(services, probe);
                 services.Replace(ServiceDescriptor.Singleton(scanner));
+                if (requestTimeout is { } timeout)
+                {
+                    services.Configure<RequestTimeoutOptions>(options => options.AddPolicy(BrandingModule.LogoUploadTimeoutPolicy, timeout));
+                }
             });
             if (minimumRate is not null)
             {
@@ -83,6 +92,22 @@ internal sealed class BrandingLogoKestrelScenario : IAsyncDisposable
             bytesToSend,
             IfMatch,
             ct);
+
+    /// <summary>Waits for a wire response and aborts the client if the wait is cancelled.</summary>
+    public static async Task<string> ReadStatusOrAbort(RawHttpUpload upload, TimeSpan wait, CancellationToken ct)
+    {
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cancellation.CancelAfter(wait);
+        try
+        {
+            return await upload.ReadStatusLine(cancellation.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            upload.Abort();
+            throw;
+        }
+    }
 
     /// <summary>Starts an authenticated client request and transfers ownership of its content.</summary>
     public PendingBrandingLogoUpload StartUpload(HttpContent content, CancellationToken ct, bool chunked = false)

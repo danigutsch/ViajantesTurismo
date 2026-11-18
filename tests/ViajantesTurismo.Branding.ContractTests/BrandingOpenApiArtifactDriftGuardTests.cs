@@ -63,7 +63,7 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
             .Select(content => content.Key).Order(StringComparer.Ordinal).ToArray();
 
         // Assert
-        responseStatuses.ShouldBe(["200", "400", "401", "403", "412", "428", "503"]);
+        responseStatuses.ShouldBe(["200", "400", "401", "403", "412", "428", "503", "504"]);
         bodyTypes.ShouldBe(["image/jpeg", "image/png", "image/webp"]);
         operation["parameters"].ShouldNotBeNull().AsArray()
             .ShouldContain(parameter => parameter != null && parameter["name"] != null && parameter["name"]?.GetValue<string>() == "If-Match");

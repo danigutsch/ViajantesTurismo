@@ -233,10 +233,21 @@ receives `408`. Oversized, stalled, and mid-body disconnect requests leave the s
 The slow-client test gates each chunk and checks that the scanner reads the original image once, after the final chunk.
 Cancellation while scanning closes the file-backed lease, deletes its temporary file, and leaves the logo store empty.
 
-Timeouts: the Admin and Catalog API hosts configure no `MinRequestBodyDataRate`, `RequestHeadersTimeout`, or
-`KeepAliveTimeout` (only `UseKestrelHttpsConfiguration`), so Kestrel framework defaults apply. The `408` test sets
-`MinRequestBodyDataRate` on the test server only, to prove the endpoints abort the read and never scan when a rate is
-enforced. It does not claim production configures one.
+Kestrel uses the framework defaults in the Admin and Catalog hosts. The minimum body rate is
+240 bytes per second with a five-second grace period. The header deadline is 30 seconds, and the
+keep-alive timeout is 130 seconds.
+The wire tests for `408` set the minimum rate on their test servers.
+See [KestrelServerLimits](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.server.kestrel.core.kestrelserverlimits?view=aspnetcore-11.0).
+
+The Branding logo `PUT` has a 60-second application deadline. This gives the 1 MiB upload,
+image processing, and storage a budget alongside ClamAV's default 30-second scan timeout.
+The deadline starts after authorization and rate limiting. If cancellation ends the upload before a response
+starts, the request timeout middleware returns `504`. Two Kestrel tests shorten the named policy to verify
+cancellation during body intake and scanning. The scan test also verifies removal of the temporary file.
+See [ASP.NET Core request timeouts](https://learn.microsoft.com/aspnet/core/performance/timeouts).
+
+Branding management requests share an IP-partitioned fixed-window limit of 20 requests per minute.
+Management settings reads, settings updates, logo uploads, and logo deletion share that budget.
 
 ## Decisions not taken
 

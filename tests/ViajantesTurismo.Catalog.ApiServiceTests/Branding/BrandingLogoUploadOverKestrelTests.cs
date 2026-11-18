@@ -143,6 +143,56 @@ public sealed class BrandingLogoUploadOverKestrelTests
     }
 
     [Fact]
+    public async Task Upload_deadline_returns_504_while_the_body_is_incomplete()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var scanner = TestMalwareScanner.Clean();
+        await using var scenario = BrandingLogoKestrelScenario.Start(scanner, requestTimeout: TimeSpan.FromSeconds(2));
+        using var upload = new RawHttpUpload();
+        var body = BrandingTestImages.CreateUncompressedLogoPng();
+        const int prefixLength = 384 * 1024;
+        await scenario.SendPartialUpload(upload, body, prefixLength, ct);
+        await scenario.Probe.WaitForBytes(prefixLength).WaitAsync(WireTimeout.Default, ct);
+
+        // Act
+        var response = await BrandingLogoKestrelScenario.ReadStatusOrAbort(upload, TimeSpan.FromSeconds(8), ct);
+        await scenario.Probe.Finished.WaitAsync(WireTimeout.Default, ct);
+
+        // Assert
+        response.ShouldBe("HTTP/1.1 504 Gateway Timeout");
+        scanner.CallCount.ShouldBe(0);
+        scenario.Store.Logos.ShouldBeEmpty();
+        scenario.Store.WriteCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Upload_deadline_returns_504_and_releases_the_spooled_body()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var scanner = new BrandingLeaseCancellationScanner();
+        await using var scenario = BrandingLogoKestrelScenario.Start(scanner, requestTimeout: TimeSpan.FromSeconds(2));
+        using var upload = new RawHttpUpload();
+        var body = BrandingTestImages.CreateUncompressedLogoPng();
+        await scenario.SendPartialUpload(upload, body, body.Length, ct);
+        var lease = await scanner.Entered.WaitAsync(WireTimeout.Default, ct);
+
+        // Act
+        var response = await BrandingLogoKestrelScenario.ReadStatusOrAbort(upload, TimeSpan.FromSeconds(8), ct);
+        await scenario.Probe.Finished.WaitAsync(WireTimeout.Default, ct);
+
+        // Assert
+        response.ShouldBe("HTTP/1.1 504 Gateway Timeout");
+        scanner.Cancelled.IsCompletedSuccessfully.ShouldBeTrue();
+        var file = lease.ShouldBeOfType<FileStream>();
+        file.CanRead.ShouldBeFalse();
+        File.Exists(file.Name).ShouldBeFalse();
+        scenario.Store.Logos.ShouldBeEmpty();
+        scenario.Store.WriteCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Client_cancellation_during_scanning_disposes_the_spooled_lease_and_leaves_no_logo()
     {
         // Arrange

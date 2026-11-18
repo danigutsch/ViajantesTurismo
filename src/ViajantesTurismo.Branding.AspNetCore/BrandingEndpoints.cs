@@ -53,7 +53,9 @@ internal static class BrandingEndpoints
             .Accepts<byte[]>("image/png", "image/jpeg", "image/webp")
             .Produces<BrandingManagementSettingsDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .Produces(StatusCodes.Status504GatewayTimeout)
             .WithMetadata(new RequestSizeLimitAttribute(BrandingLogoLimits.MaxUploadBytes))
+            .WithRequestTimeout(BrandingModule.LogoUploadTimeoutPolicy)
             .WithIfMatchPrecondition()
             .RequireRateLimiting(BrandingSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(BrandingAuthorization.BrandingWrite);
