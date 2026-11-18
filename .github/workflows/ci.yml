@@ -184,6 +184,11 @@ jobs:
           name: ci-selection
           path: TestResults/selection
 
+      # LockFilePolicyTests reads restore assets for exempt projects outside the selected test graph.
+      - name: Restore repository lock-policy inputs
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs['fast-validation-2_required'] == 'true' && matrix.id == 'fast-validation-2' }}
+        run: dotnet restore ViajantesTurismo.slnx --locked-mode
+
       # Playwright 1.60 has no Ubuntu 26.04 browser manifests yet (microsoft/playwright#40117), so it installs the
       # Ubuntu 24.04 builds and dependencies there.
       - name: Select the Playwright host platform
