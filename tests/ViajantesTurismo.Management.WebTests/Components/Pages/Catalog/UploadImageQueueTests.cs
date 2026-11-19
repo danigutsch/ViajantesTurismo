@@ -18,6 +18,29 @@ public sealed class UploadImageQueueTests : BunitContext
     }
 
     [Fact]
+    public async Task The_shared_picker_explains_first_frame_behavior_before_and_after_selection()
+    {
+        // Arrange
+        const string notice = "The gallery shows only the first frame of animated images.";
+        const string sharedHelp = "[data-catalog-image-drop-zone] #imageFileHelp";
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var file = new FakeBrowserFile([0x01], "scenery.webp", "image/webp");
+        var picker = cut.FindComponent<InputFile>().Instance;
+
+        // Act
+        var before = cut.Find(sharedHelp).TextContent;
+        await cut.InvokeAsync(() => picker.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
+        var after = cut.Find(sharedHelp).TextContent;
+
+        // Assert
+        before.ShouldContain(notice, StringComparison.Ordinal);
+        after.ShouldContain(notice, StringComparison.Ordinal);
+        cut.Find("#imageFile").GetAttribute("aria-describedby").ShouldBe("imageFileHelp");
+        cut.Find("#imageFolder").GetAttribute("aria-describedby").ShouldBe("imageFileHelp");
+        file.MaximumAllowedSize.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Multiple_selected_images_are_inspectable_and_removable_before_upload()
     {
         // Arrange

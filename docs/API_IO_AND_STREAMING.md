@@ -223,8 +223,9 @@ change.
    a delete that fails is left to `MediaObjectReconciliationService`. The variant handler compensates its variant objects the
    same way.
 
-Animated PNG and WebP uploads are accepted. The pipeline keeps only the first frame; see
-[Media image processing flow](media-image-processing.md#animated-images). AVIF image sequences are not detected either.
+Animated PNG and WebP uploads are accepted. Catalog serves a still rendition built from the first
+frame. The shared upload picker tells staff this for file selection, folder selection, and drops.
+See [Media image processing flow](media-image-processing.md#animated-images). AVIF image sequences are not detected.
 
 ## Branding logo flow
 

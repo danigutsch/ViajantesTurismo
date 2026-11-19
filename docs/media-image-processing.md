@@ -91,6 +91,9 @@ The fingerprint and storage keys are private and omitted from upload response fi
 
 ## Animated images
 
+Catalog serves a still image from the first frame of animated uploads. The shared upload picker
+explains this for file selection, folder selection, and drag and drop.
+
 Catalog gallery uploads may be animated WebP or animated PNG (APNG), and are accepted by policy; there is no animation check.
 The pipeline reduces them to a still image: the decode probe and every variant (WebP, JPEG, AVIF, ICO) are built from the first
 frame only, so the stored original stays animated but no served rendition is (ICO is built the same way but is not covered by
