@@ -1,6 +1,6 @@
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Hosting;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
@@ -11,7 +11,7 @@ public sealed class PublicWebSecurityHeadersTests
     public async Task Public_web_root_emits_security_headers()
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = PublicWebTestHost.CreateFactory();
         using var client = factory.CreateClient();
 
         // Act

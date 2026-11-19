@@ -1,6 +1,6 @@
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Hosting;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
@@ -16,7 +16,7 @@ public sealed class ForwardedHeadersHostTests
             ["https_port"] = "443",
             ["Security:ForwardedHeaders:KnownProxies:0"] = "127.0.0.1"
         };
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(configuration: configuration);
+        await using var factory = PublicWebTestHost.CreateFactory(configuration: configuration);
         using var client = new HttpClient(factory.Server.CreateHandler(
             context => context.Connection.RemoteIpAddress = IPAddress.Loopback))
         {
@@ -41,7 +41,7 @@ public sealed class ForwardedHeadersHostTests
             ["https_port"] = "443",
             ["Security:ForwardedHeaders:KnownProxies:0"] = "192.0.2.1"
         };
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(configuration: configuration);
+        await using var factory = PublicWebTestHost.CreateFactory(configuration: configuration);
         using var client = new HttpClient(factory.Server.CreateHandler(
             context => context.Connection.RemoteIpAddress = IPAddress.Loopback))
         {
@@ -66,7 +66,7 @@ public sealed class ForwardedHeadersHostTests
             ["https_port"] = "443",
             ["ForwardedHeaders_Enabled"] = bool.TrueString
         };
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(configuration: configuration);
+        await using var factory = PublicWebTestHost.CreateFactory(configuration: configuration);
         using var client = new HttpClient(factory.Server.CreateHandler(
             context => context.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.10")))
         {

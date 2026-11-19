@@ -5,6 +5,7 @@ using PandaBear.Blazor.Site.Theming;
 using PandaBear.BuildingBlocks;
 using PandaBear.HttpCaching.AspNetCore;
 using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Public.Web.Branding;
 using ViajantesTurismo.Public.Web.Components;
 
 namespace ViajantesTurismo.Public.Web;

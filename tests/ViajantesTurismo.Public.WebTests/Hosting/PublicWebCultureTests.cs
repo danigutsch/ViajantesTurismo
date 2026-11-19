@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Hosting;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
@@ -15,7 +15,7 @@ public sealed class PublicWebCultureTests
     public async Task Root_redirects_to_the_visitors_language(string? acceptLanguage, string expectedLocation)
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = PublicWebTestHost.CreateFactory();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/", UriKind.Relative));
         if (acceptLanguage is not null)
@@ -40,7 +40,7 @@ public sealed class PublicWebCultureTests
     public async Task Former_culture_query_addresses_move_permanently_to_the_culture_path(string path, string expectedLocation)
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = PublicWebTestHost.CreateFactory();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         // Act
@@ -61,7 +61,7 @@ public sealed class PublicWebCultureTests
         string expectedLocation)
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = PublicWebTestHost.CreateFactory();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         // Act
@@ -89,7 +89,7 @@ public sealed class PublicWebCultureTests
             Title = "Cycle safely",
             Body = "Guided tours for everyone."
         });
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -108,8 +108,8 @@ public sealed class PublicWebCultureTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi, canonicalOrigin: "https://public.example.test");
+        catalogApi.AddTour(PublicTourTestData.CreateDetails("camino-norte", "Camino Norte"));
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi, canonicalOrigin: "https://public.example.test");
         using var client = factory.CreateClient();
 
         // Act
@@ -129,7 +129,7 @@ public sealed class PublicWebCultureTests
     public async Task Language_switcher_and_navigation_stay_on_the_page_in_each_language()
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = PublicWebTestHost.CreateFactory();
         using var client = factory.CreateClient();
 
         // Act
@@ -153,7 +153,7 @@ public sealed class PublicWebCultureTests
     public async Task Files_and_health_endpoints_are_not_redirected_to_a_culture(string path)
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = PublicWebTestHost.CreateFactory();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         // Act

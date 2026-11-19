@@ -1,7 +1,7 @@
 using PandaBear.Blazor.Site;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
-namespace ViajantesTurismo.Public.Web;
+namespace ViajantesTurismo.Public.Web.Components.Shared;
 
 /// <summary>Chooses catalog image renditions and builds their local media addresses.</summary>
 internal static class TourImageRenditions

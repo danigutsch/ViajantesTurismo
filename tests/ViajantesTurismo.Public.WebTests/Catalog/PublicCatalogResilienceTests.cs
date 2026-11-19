@@ -1,29 +1,15 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
 using Polly.Retry;
+using ViajantesTurismo.Public.Web.Catalog;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Catalog;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [TestScope(TestScope.Unit)]
-public sealed class PublicWebSecurityBaselineTests
+public sealed class PublicCatalogResilienceTests
 {
-    [Fact]
-    public void A_rejected_request_is_answered_with_too_many_requests()
-    {
-        // Arrange
-        const int tooManyRequests = StatusCodes.Status429TooManyRequests;
-
-        // Act
-        var options = PublicWebSecurityBaselineTestsHelpers.ConfiguredRateLimiterOptions();
-
-        // Assert
-        options.RejectionStatusCode.ShouldBe(tooManyRequests);
-        options.OnRejected.ShouldNotBeNull();
-    }
-
     [Theory]
     [InlineData("/api/v1/public/catalog/tours", HttpStatusCode.TooManyRequests, false)]
     [InlineData("/api/v1/public/branding", HttpStatusCode.TooManyRequests, true)]
@@ -32,7 +18,7 @@ public sealed class PublicWebSecurityBaselineTests
     {
         // Arrange
         var options = new HttpStandardResilienceOptions();
-        PublicWebSecurityBaseline.ConfigureCatalogResilience(options);
+        PublicCatalogClientServiceCollectionExtensions.ConfigureResilience(options);
         using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri("https://catalog.test"), path));
         using var response = new HttpResponseMessage(status) { RequestMessage = request };
         var context = ResilienceContextPool.Shared.Get(TestContext.Current.CancellationToken);

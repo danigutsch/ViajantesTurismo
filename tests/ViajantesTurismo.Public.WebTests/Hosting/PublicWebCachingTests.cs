@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Hosting;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
@@ -18,8 +18,8 @@ public sealed class PublicWebCachingTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        catalogApi.AddTour(PublicTourTestData.CreateDetails("camino-norte", "Camino Norte"));
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -37,7 +37,7 @@ public sealed class PublicWebCachingTests
     public async Task Culture_redirect_is_not_publicly_cacheable()
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = PublicWebTestHost.CreateFactory();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -58,14 +58,14 @@ public sealed class PublicWebCachingTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
-        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("camino-norte", "Camino Norte"));
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        catalogApi.AddTour(PublicTourTestData.CreateDetails("camino-norte", "Camino Norte"));
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
         using var firstResponse = await client.GetAsync(new Uri("/en/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
         var firstContent = await firstResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        catalogApi.AddTour(PublicWebEndpointTestsHelpers.CreateTour("atlantic-way", "Atlantic Way"));
+        catalogApi.AddTour(PublicTourTestData.CreateDetails("atlantic-way", "Atlantic Way"));
         using var updatedResponse = await client.GetAsync(new Uri("/en/group-bike-tours", UriKind.Relative), TestContext.Current.CancellationToken);
         var updatedContent = await updatedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
@@ -82,7 +82,7 @@ public sealed class PublicWebCachingTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -106,7 +106,7 @@ public sealed class PublicWebCachingTests
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient { FailListRequests = true };
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(catalogApi);
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -127,7 +127,7 @@ public sealed class PublicWebCachingTests
     public async Task Error_endpoint_is_not_cacheable()
     {
         // Arrange
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory();
+        await using var factory = PublicWebTestHost.CreateFactory();
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false

@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Catalog;
 
 /// <summary>Helpers for inspecting the outbound HttpClient handler pipeline of Public Web.</summary>
 internal static class PublicWebCatalogClientPipelineTestsHelpers
