@@ -2,12 +2,14 @@
 @using ViajantesTurismo.Management.Web.Services
 @inherits InputBase<string>
 
-<div class="position-relative">
-    <button type="button" id="@Id" class="form-select text-start d-flex align-items-center" @onclick="ToggleDropdown">
+<div class="position-relative" @onkeydown="HandleKeyDown">
+    <button type="button" id="@Id" class="form-select text-start d-flex align-items-center"
+            aria-expanded="@(_isOpen ? "true" : "false")" aria-describedby="@CurrentSelectionId"
+            @ref="_toggleButton" @onclick="ToggleDropdown">
         @if (!string.IsNullOrEmpty(Value) && _selectedCountry != null)
         {
-            <span class="fi fi-@_selectedCountry.Code me-2"></span>
-            <span>@_selectedCountry.Name</span>
+            <span class="fi fi-@_selectedCountry.Code.ToLowerInvariant() me-2" aria-hidden="true"></span>
+            <span id="@CurrentSelectionId">@_selectedCountry.Name</span>
         }
         else
         {
@@ -18,7 +20,7 @@
     @if (_isOpen)
     {
         <div class="country-dropdown-menu">
-            <input type="text"
+            <input type="text" aria-label="Search countries"
                    class="form-control form-control-sm mb-2"
                    placeholder="Search countries..."
                    @bind="_searchText"
@@ -28,15 +30,15 @@
             <div class="country-dropdown-list">
                 @foreach (var country in FilteredCountries)
                 {
-                    <div class="country-dropdown-item" @onclick="() => SelectCountry(country)">
-                        <span class="fi fi-@country.Code me-2"></span>
+                    <button type="button" class="country-dropdown-item" @onclick="() => SelectCountry(country)">
+                        <span class="fi fi-@country.Code.ToLowerInvariant() me-2" aria-hidden="true"></span>
                         <span>@country.Name</span>
-                    </div>
+                    </button>
                 }
 
                 @if (!FilteredCountries.Any())
                 {
-                    <div class="text-muted p-2">No countries found</div>
+                    <div class="text-muted p-2" role="status">No countries found</div>
                 }
             </div>
         </div>
@@ -63,6 +65,9 @@
     private bool _isOpen;
     private string _searchText = string.Empty;
     private CountryInfo? _selectedCountry;
+    private ElementReference _toggleButton;
+
+    private string? CurrentSelectionId => Id is not null && _selectedCountry is not null ? $"{Id}-selection" : null;
 
     private IEnumerable<CountryInfo> FilteredCountries =>
         (Countries ?? [])
@@ -104,12 +109,26 @@
         }
     }
 
-    private void SelectCountry(CountryInfo country)
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (_isOpen && args.Key == "Escape")
+        {
+            await CloseDropdown();
+        }
+    }
+
+    private async Task SelectCountry(CountryInfo country)
     {
         CurrentValue = BindCode ? country.Code : country.Name;
         _selectedCountry = country;
+        await CloseDropdown();
+    }
+
+    private async Task CloseDropdown()
+    {
         _isOpen = false;
         _searchText = string.Empty;
+        await _toggleButton.FocusAsync();
     }
 
     protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
@@ -143,8 +162,12 @@
 
     .country-dropdown-item {
         padding: 0.5rem;
-        cursor: pointer;
+        width: 100%;
+        border: 0;
         border-radius: 0.25rem;
+        color: inherit;
+        background: transparent;
+        text-align: start;
         display: flex;
         align-items: center;
     }

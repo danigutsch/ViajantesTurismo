@@ -10,16 +10,16 @@
 
 @if (_loadFailed)
 {
-    <PageTitle>Tour unavailable - Viajantes Turismo</PageTitle>
-    <Section Title="Tour unavailable" Level="1">
-        <p>This tour could not be loaded right now. Try again later.</p>
+    <PageTitle>@UnavailableTitle - Viajantes Turismo</PageTitle>
+    <Section Title="@UnavailableTitle" Level="1">
+        <p>@(Culture.IsPortuguese ? "Não foi possível carregar esta viagem. Tente novamente mais tarde." : "This tour could not be loaded right now. Try again later.")</p>
     </Section>
 }
 else if (_tour is null)
 {
-    <PageTitle>Tour not found - Viajantes Turismo</PageTitle>
-    <Section Title="Tour not found" Level="1">
-        <p>The requested tour is not published.</p>
+    <PageTitle>@NotFoundTitle - Viajantes Turismo</PageTitle>
+    <Section Title="@NotFoundTitle" Level="1">
+        <p>@(Culture.IsPortuguese ? "A viagem solicitada não foi publicada." : "The requested tour is not published.")</p>
     </Section>
 }
 else
@@ -36,27 +36,29 @@ else
         <Hero Title="@_tour.Title" Subtitle="@_tour.Summary"
               Image="@(coverImage is null ? null : TourImageRenditions.Responsive(LinkGenerator, coverImage, TourImageRenditions.HalfWidthSizes))">
             <Actions>
-                <ButtonLink Href="@LinkTarget.FromString(Culture.Localize("/group-bike-tours"))" Variant="ButtonVariant.Outline">All tours</ButtonLink>
+                <ButtonLink Href="@LinkTarget.FromString(Culture.Localize("/group-bike-tours"))" Variant="ButtonVariant.Outline">
+                    @(Culture.IsPortuguese ? "Todas as viagens" : "All tours")
+                </ButtonLink>
             </Actions>
         </Hero>
 
         @if (!string.IsNullOrWhiteSpace(_tour.Description))
         {
-            <Section Title="About this tour" HeadingId="tour-description">
+            <Section Title="@(Culture.IsPortuguese ? "Sobre esta viagem" : "About this tour")" HeadingId="tour-description">
                 <p>@_tour.Description</p>
             </Section>
         }
 
         @if (!string.IsNullOrWhiteSpace(_tour.Itinerary))
         {
-            <Section Title="Itinerary" HeadingId="tour-itinerary">
+            <Section Title="@(Culture.IsPortuguese ? "Roteiro" : "Itinerary")" HeadingId="tour-itinerary">
                 <p>@_tour.Itinerary</p>
             </Section>
         }
 
         @if (galleryImages.Count > 0)
         {
-            <Section Title="Gallery" HeadingId="tour-gallery">
+            <Section Title="@(Culture.IsPortuguese ? "Galeria" : "Gallery")" HeadingId="tour-gallery">
                 <ImageGrid Images="@TourImageRenditions.Gallery(LinkGenerator, galleryImages)" />
             </Section>
         }
@@ -75,6 +77,10 @@ else
 
     private TourDetailsDto? _tour;
     private bool _loadFailed;
+
+    private string UnavailableTitle => Culture.IsPortuguese ? "Viagem indisponível" : "Tour unavailable";
+
+    private string NotFoundTitle => Culture.IsPortuguese ? "Viagem não encontrada" : "Tour not found";
 
     private string TourPath => $"/group-bike-tours/{Uri.EscapeDataString(_tour?.Slug ?? Slug)}";
 

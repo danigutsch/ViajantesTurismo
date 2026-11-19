@@ -11,6 +11,9 @@ internal sealed record PublicPageCulture(ContentCulture UrlCulture, PathString P
     /// <summary>Gets the content language of the page (<c>pt-BR</c> or <c>en-US</c>).</summary>
     public ContentCulture ContentLanguage => PublicSiteCultures.ContentLanguage(UrlCulture);
 
+    /// <summary>Gets whether built-in page text should use Brazilian Portuguese.</summary>
+    public bool IsPortuguese => UrlCulture.Equals(PublicSiteCultures.Portuguese);
+
     /// <summary>Reads the culture of a request path, or the default culture when the path has none.</summary>
     public static PublicPageCulture FromPath(PathString path)
     {

@@ -51,6 +51,7 @@ public sealed class AddressPageTests : BunitContext
     public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_physical()
     {
         // Arrange
+        JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetVoidResult();
         var navigationManager = Services.GetRequiredService<NavigationManager>();
         var cut = Render<Address>();
 

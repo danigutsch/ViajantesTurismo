@@ -131,7 +131,14 @@
                             <dd class="col-sm-8">
                                 @if (_booking.DiscountType != DiscountTypeDto.None)
                                 {
-                                    <span>@_booking.DiscountAmount @(_booking.DiscountType == DiscountTypeDto.Percentage ? "%" : CurrencyChoices.DisplayName(_booking.Currency))</span>
+                                    @if (_booking.DiscountType == DiscountTypeDto.Percentage)
+                                    {
+                                        <span>@_booking.DiscountAmount %</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@Money.Restore(_booking.DiscountAmount, Currency.Restore(_booking.Currency)).ToString("C", CultureInfo.CurrentUICulture)</span>
+                                    }
                                     @if (!string.IsNullOrEmpty(_booking.DiscountReason))
                                     {
                                         <br /><small class="text-muted">Reason: @_booking.DiscountReason</small>

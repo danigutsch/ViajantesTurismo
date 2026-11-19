@@ -13,7 +13,7 @@ specialized docs instead of repeating the same policy.
 | --- | --- | --- |
 | Setup and tooling | [README](../README.md#getting-started) | [Local tool security](local-tool-security.md), [Dev containers](DEVCONTAINERS.md) |
 | Coding standards | [Coding guidelines](CODING_GUIDELINES.md) | [.editorconfig](../.editorconfig), [Code quality](CODE_QUALITY.md) |
-| Testing | [Test guidelines](TEST_GUIDELINES.md) | [Tests README](../tests/README.md), [BDD guide](../tests/BDD_GUIDE.md) |
+| Testing | [Test guidelines](TEST_GUIDELINES.md) | [Tests README](../tests/README.md), [BDD guide](../tests/BDD_GUIDE.md), [Web quality checks](testing/WEB_QUALITY.md) |
 | Architecture and ADRs | [Architecture overview](architecture/README.md) and [Architecture decisions](ARCHITECTURE_DECISIONS.md) | [Bounded contexts](bounded-contexts/Admin.md), [Domain aggregates](domain/AGGREGATES.md) |
 | Domain validation | [Domain validation](DOMAIN_VALIDATION.md) | [Rich domain model](domain/RICH_DOMAIN_MODEL.md), [Domain aggregates](domain/AGGREGATES.md), [Glossary](domain/GLOSSARY.md) |
 | API request and client boundaries | [API request shape policy](API_REQUEST_SHAPES.md), [API I/O and streaming contracts](API_IO_AND_STREAMING.md), and [API client boundaries](API_CLIENT_BOUNDARIES.md) | [API compatibility](API_COMPATIBILITY.md), [API versioning](API_VERSIONING.md) |

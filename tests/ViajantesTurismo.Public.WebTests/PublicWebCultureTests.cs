@@ -136,11 +136,13 @@ public sealed class PublicWebCultureTests
         var content = await client.GetStringAsync(new Uri("/pt/gallery", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
-        content.ShouldContain("<nav class=\"site-language-switcher\" aria-label=\"Language\">", StringComparison.Ordinal);
+        content.ShouldContain("aria-label=\"Navega&#xE7;&#xE3;o principal\"", StringComparison.Ordinal);
+        content.ShouldContain("<nav class=\"site-language-switcher\" aria-label=\"Idioma\">", StringComparison.Ordinal);
+        content.ShouldContain("<a href=\"/pt/gallery#main-content\" class=\"site-skip-link\">Ir para o conte&#xFA;do</a>", StringComparison.Ordinal);
         content.ShouldContain("<a href=\"/en/gallery\" hreflang=\"en-US\" lang=\"en-US\">English</a>", StringComparison.Ordinal);
         content.ShouldContain("<a href=\"/pt/gallery\" hreflang=\"pt-BR\" lang=\"pt-BR\" aria-current=\"true\">Portugu&#xEA;s</a>", StringComparison.Ordinal);
-        content.ShouldContain("<a href=\"/pt/group-bike-tours\">Bike Tours</a>", StringComparison.Ordinal);
-        content.ShouldContain("<a href=\"/pt/gallery\" aria-current=\"page\">Gallery</a>", StringComparison.Ordinal);
+        content.ShouldContain("<a href=\"/pt/group-bike-tours\">Viagens de bicicleta</a>", StringComparison.Ordinal);
+        content.ShouldContain("<a href=\"/pt/gallery\" aria-current=\"page\">Galeria</a>", StringComparison.Ordinal);
     }
 
     [Theory]

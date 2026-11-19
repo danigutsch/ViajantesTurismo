@@ -2,22 +2,22 @@
 @page "/pt"
 @inject IPublicCatalogApiClient CatalogApi
 
-<PublicPageHead Title="@PageTitle" Description="@HeroBody" Path="/" />
+<PublicPageHead Title="@PageTitle" Description="@MetadataDescription" Path="/" />
 
 <Hero Title="@HeroTitle" Subtitle="@HeroBody" />
 
-<Section Title="Our tours" HeadingId="published-tours">
+<Section Title="@(Culture.IsPortuguese ? "Nossas viagens" : "Our tours")" HeadingId="published-tours">
     @if (_loadFailed)
     {
-        <p>Tours could not be loaded right now. Try again later.</p>
+        <p>@(Culture.IsPortuguese ? "Não foi possível carregar as viagens. Tente novamente mais tarde." : "Tours could not be loaded right now. Try again later.")</p>
     }
     else if (_tours is null)
     {
-        <p><em>Loading tours...</em></p>
+        <p><em>@(Culture.IsPortuguese ? "Carregando viagens..." : "Loading tours...")</em></p>
     }
     else if (_tours.Length == 0)
     {
-        <p>New tours will be published soon.</p>
+        <p>@(Culture.IsPortuguese ? "Novas viagens serão publicadas em breve." : "New tours will be published soon.")</p>
     }
     else
     {
@@ -41,11 +41,15 @@
     private PublicContentVariantDto? _hero;
     private bool _loadFailed;
 
-    private string PageTitle => _hero?.SeoTitle ?? HeroTitle;
+    private string PageTitle => string.IsNullOrWhiteSpace(_hero?.SeoTitle) ? HeroTitle : _hero.SeoTitle;
 
-    private string HeroTitle => _hero?.Title ?? "Cycle tourism around the world!";
+    private string MetadataDescription => string.IsNullOrWhiteSpace(_hero?.MetaDescription) ? HeroBody : _hero.MetaDescription;
 
-    private string HeroBody => _hero?.Body ?? "Travel differently. ViajantesTurismo is culture, health, and fun.";
+    private string HeroTitle => _hero?.Title ?? (Culture.IsPortuguese ? "Cicloturismo pelo mundo!" : "Cycle tourism around the world!");
+
+    private string HeroBody => _hero?.Body ?? (Culture.IsPortuguese
+        ? "Viaje de um jeito diferente. ViajantesTurismo é cultura, saúde e diversão."
+        : "Travel differently. ViajantesTurismo is culture, health, and fun.");
 
     /// <inheritdoc />
     /// <remarks>

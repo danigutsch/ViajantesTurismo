@@ -42,6 +42,7 @@ public sealed class IdentificationPageTests : BunitContext
     public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_contact()
     {
         // Arrange
+        JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetVoidResult();
         var navigationManager = Services.GetRequiredService<NavigationManager>();
         var cut = Render<Identification>();
         await cut.InvokeAsync(() => Task.CompletedTask);

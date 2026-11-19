@@ -4,20 +4,20 @@
 @inject IPublicCatalogApiClient CatalogApi
 @inject LinkGenerator LinkGenerator
 
-<PublicPageHead Title="Gallery - Viajantes Turismo" Description="Moments from Viajantes Turismo cycle tours." Path="/gallery" />
+<PublicPageHead Title="@DocumentTitle" Description="@Description" Path="/gallery" />
 
-<Section Title="Gallery" Level="1" Intro="Moments from Viajantes Turismo cycle tours.">
+<Section Title="@Heading" Level="1" Intro="@Description">
     @if (_loadFailed)
     {
-        <p>The gallery could not be loaded right now. Try again later.</p>
+        <p>@(Culture.IsPortuguese ? "Não foi possível carregar a galeria. Tente novamente mais tarde." : "The gallery could not be loaded right now. Try again later.")</p>
     }
     else if (_tours is null)
     {
-        <p><em>Loading gallery...</em></p>
+        <p><em>@(Culture.IsPortuguese ? "Carregando galeria..." : "Loading gallery...")</em></p>
     }
     else if (!_tours.Any(tour => tour.Images.Count > 0))
     {
-        <p>New photos will be published soon.</p>
+        <p>@(Culture.IsPortuguese ? "Novas fotos serão publicadas em breve." : "New photos will be published soon.")</p>
     }
 </Section>
 
@@ -35,8 +35,19 @@
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
+    [CascadingParameter]
+    private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
+
     private TourSummaryDto[]? _tours;
     private bool _loadFailed;
+
+    private string DocumentTitle => $"{Heading} - Viajantes Turismo";
+
+    private string Heading => Culture.IsPortuguese ? "Galeria" : "Gallery";
+
+    private string Description => Culture.IsPortuguese
+        ? "Momentos das viagens de bicicleta da Viajantes Turismo."
+        : "Moments from Viajantes Turismo cycle tours.";
 
     /// <inheritdoc />
     /// <remarks>

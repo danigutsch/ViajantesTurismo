@@ -424,7 +424,7 @@ public sealed class PublicWebEndpointTests
 
     [Theory]
     [InlineData("/en/group-bike-tours", "Group Bike Tours")]
-    [InlineData("/pt/gallery", "Gallery")]
+    [InlineData("/pt/gallery", "Galeria")]
     public async Task Public_ssr_routes_return_expected_content(string path, string expectedHeading)
     {
         // Arrange

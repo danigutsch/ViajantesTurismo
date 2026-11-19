@@ -29,7 +29,7 @@ public sealed class PublicWebThemeTests
         var theme = PublicBranding.Theme(PublicWebThemeTestsHelpers.CreateBranding());
         content.ShouldContain($"<link rel=\"stylesheet\" href=\"/theme.css?v={SiteThemeStylesheet.Hash(theme)}\" />", StringComparison.Ordinal);
         content.ShouldNotContain("<style", StringComparison.OrdinalIgnoreCase);
-        content.ShouldContain("<a href=\"#main-content\" class=\"site-skip-link\">Skip to content</a>", StringComparison.Ordinal);
+        content.ShouldContain("<a href=\"/en/#main-content\" class=\"site-skip-link\">Skip to content</a>", StringComparison.Ordinal);
         content.ShouldContain("<main id=\"main-content\" tabindex=\"-1\">", StringComparison.Ordinal);
         content.ShouldContain("<nav class=\"site-nav\" aria-label=\"Main navigation\">", StringComparison.Ordinal);
         content.ShouldContain("Camino Riders", StringComparison.Ordinal);

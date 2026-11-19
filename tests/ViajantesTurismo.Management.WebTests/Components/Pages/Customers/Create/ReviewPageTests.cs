@@ -26,6 +26,23 @@ public sealed class ReviewPageTests : BunitContext
     }
 
     [Fact]
+    public void Completed_review_has_an_ordered_heading_for_each_customer_section()
+    {
+        // Arrange
+        CustomerCreationStateTestHelper.SeedCompletedState(_state);
+
+        // Act
+        var cut = Render<Review>();
+
+        // Assert
+        cut.Find("h1").TextContent.ShouldBe("Create New Customer");
+        cut.Find("h2").TextContent.ShouldBe("Review Your Information");
+        var sections = cut.FindAll("h3").Select(heading => heading.TextContent.Trim()).ToArray();
+        sections.ShouldBe(["Personal Information", "Identification", "Contact Information", "Address",
+            "Physical Information", "Accommodation", "Emergency Contact", "Medical Information"]);
+    }
+
+    [Fact]
     public async Task SubmitCustomer_when_create_fails_shows_sanitized_error_message()
     {
         // Arrange

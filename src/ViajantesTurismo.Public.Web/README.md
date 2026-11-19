@@ -33,7 +33,7 @@ not reference `ViajantesTurismo.Management.Web` or operator-only UI dependencies
 
 ## SharedKernel building blocks
 
-- `PandaBear.SharedKernel.Blazor.Site`: `SkipLink`, `SiteHeader`, `SiteFooter`, `LanguageSwitcher`, `Hero`, `Section`,
+- `PandaBear.SharedKernel.Blazor.Site`: `SiteHeader`, `SiteFooter`, `LanguageSwitcher`, `Hero`, `Section`,
   `Card`/`CardGrid`, `ButtonLink`, `PageHead` and `site.css`.
 - `PandaBear.SharedKernel.AspNetCore.Localization`: `UseCulturePathRedirect`, `PathCultureRequestCultureProvider`, `CulturePath`.
 - `PandaBear.SharedKernel.AspNetCore.Seo`: `MapRobotsTxt`, `SitemapXmlSerializer` with `SitemapAlternate`.
@@ -43,3 +43,6 @@ not reference `ViajantesTurismo.Management.Web` or operator-only UI dependencies
 
 Catalog images keep a local `ResponsiveTourImage` (`<picture>` with AVIF, WebP and JPEG `srcset`), because the package's
 `Hero`, `Card` and `ImageGrid` render a single `src`. Tour cards use `Card` with one JPEG rendition of at least 640 pixels.
+
+The layout uses the shared skip link styling with a target on the current localized route.
+See [search metadata and web accessibility](../../docs/testing/WEB_QUALITY.md) for the checks.

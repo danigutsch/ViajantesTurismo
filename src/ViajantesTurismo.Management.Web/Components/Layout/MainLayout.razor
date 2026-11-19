@@ -6,11 +6,13 @@
      inert="@(!RendererInfo.IsInteractive ? "inert" : null)"
      aria-busy="@(!RendererInfo.IsInteractive ? "true" : "false")"
      data-interactive="@RendererInfo.IsInteractive.ToString().ToLowerInvariant()">
+    <a class="skip-link visually-hidden-focusable btn btn-primary"
+       href="@MainContentLink" @onclick="SkipToMainContent" @onclick:preventDefault>Skip to main content</a>
     <div class="sidebar">
         <NavMenu />
     </div>
 
-    <main>
+    <main id="main-content" tabindex="-1" @ref="_mainContent">
         <div class="top-row px-4 d-flex justify-content-between align-items-center">
             <span class="text-muted">
                 <strong>ViajantesTurismo</strong> Admin Portal
@@ -44,6 +46,14 @@
 @code {
     private RecoveryErrorBoundary? _boundary;
     private string _path = string.Empty;
+    private ElementReference _mainContent;
+
+    private string MainContentLink => new Uri(Navigation.Uri).PathAndQuery + "#main-content";
+
+    private async Task SkipToMainContent()
+    {
+        await _mainContent.FocusAsync();
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()

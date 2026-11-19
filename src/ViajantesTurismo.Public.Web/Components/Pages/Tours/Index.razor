@@ -2,20 +2,20 @@
 @page "/pt/group-bike-tours"
 @inject IPublicCatalogApiClient CatalogApi
 
-<PublicPageHead Title="Group Bike Tours - Viajantes Turismo" Path="/group-bike-tours" />
+<PublicPageHead Title="@DocumentTitle" Description="@MetadataDescription" Path="/group-bike-tours" />
 
-<Section Title="Group Bike Tours" Level="1">
+<Section Title="@Heading" Level="1">
     @if (_loadFailed)
     {
-        <p>Tours could not be loaded right now. Try again later.</p>
+        <p>@(Culture.IsPortuguese ? "Não foi possível carregar as viagens. Tente novamente mais tarde." : "Tours could not be loaded right now. Try again later.")</p>
     }
     else if (_tours is null)
     {
-        <p><em>Loading tours...</em></p>
+        <p><em>@(Culture.IsPortuguese ? "Carregando viagens..." : "Loading tours...")</em></p>
     }
     else if (_tours.Length == 0)
     {
-        <p>New tours will be published soon.</p>
+        <p>@(Culture.IsPortuguese ? "Novas viagens serão publicadas em breve." : "New tours will be published soon.")</p>
     }
     else
     {
@@ -32,8 +32,19 @@
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
+    [CascadingParameter]
+    private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
+
     private TourSummaryDto[]? _tours;
     private bool _loadFailed;
+
+    private string DocumentTitle => $"{Heading} - Viajantes Turismo";
+
+    private string Heading => Culture.IsPortuguese ? "Viagens de bicicleta em grupo" : "Group Bike Tours";
+
+    private string MetadataDescription => Culture.IsPortuguese
+        ? "Conheça nossas viagens de bicicleta em grupo."
+        : "Explore our published group cycling tours.";
 
     /// <inheritdoc />
     /// <remarks>

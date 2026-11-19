@@ -1,8 +1,9 @@
 @inherits LayoutComponentBase
+@inject NavigationManager Navigation
 
-<SkipLink>Skip to content</SkipLink>
+<a href="@MainContentLink" class="site-skip-link">@(Culture.IsPortuguese ? "Ir para o conteúdo" : "Skip to content")</a>
 
-<SiteHeader Label="Main navigation" Items="NavItems" CurrentPath="@CurrentPath">
+<SiteHeader Label="@(Culture.IsPortuguese ? "Navegação principal" : "Main navigation")" Items="NavItems" CurrentPath="@CurrentPath">
     <Brand>
         <a class="public-brand" href="@Culture.Localize("/")" aria-label="@HomeAriaLabel">
             @if (Logo is not null)
@@ -17,7 +18,7 @@
         </a>
     </Brand>
     <Actions>
-        <LanguageSwitcher Label="Language" Languages="Languages" />
+        <LanguageSwitcher Label="@(Culture.IsPortuguese ? "Idioma" : "Language")" Languages="Languages" />
     </Actions>
 </SiteHeader>
 
@@ -38,7 +39,7 @@
 
     private string BrandName => PublicBranding.BrandName(Branding);
 
-    private string HomeAriaLabel => $"{BrandName} home";
+    private string HomeAriaLabel => Culture.IsPortuguese ? $"Página inicial de {BrandName}" : $"{BrandName} home";
 
     private string BrandInitials => string.Concat(BrandName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(static part => char.ToUpperInvariant(part[0])));
 
@@ -46,11 +47,13 @@
 
     private string CurrentPath => Culture.Switch(Culture.UrlCulture);
 
+    private string MainContentLink => new Uri(Navigation.Uri).PathAndQuery + "#main-content";
+
     private IReadOnlyList<SiteNavItem> NavItems =>
     [
-        new("Home", LinkTarget.FromString(Culture.Localize("/"))),
-        new("Bike Tours", LinkTarget.FromString(Culture.Localize("/group-bike-tours"))),
-        new("Gallery", LinkTarget.FromString(Culture.Localize("/gallery")))
+        new(Culture.IsPortuguese ? "Início" : "Home", LinkTarget.FromString(Culture.Localize("/"))),
+        new(Culture.IsPortuguese ? "Viagens de bicicleta" : "Bike Tours", LinkTarget.FromString(Culture.Localize("/group-bike-tours"))),
+        new(Culture.IsPortuguese ? "Galeria" : "Gallery", LinkTarget.FromString(Culture.Localize("/gallery")))
     ];
 
     private IReadOnlyList<LanguageLink> Languages => PublicSiteCultures.Supported.Cultures
