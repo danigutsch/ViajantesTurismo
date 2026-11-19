@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization.Metadata;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using Microsoft.EntityFrameworkCore;
@@ -113,11 +112,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IDocumentHoldQuery, DocumentHoldQuery>();
         builder.Services.AddScoped<IDocumentIdempotencyRetentionStore, DocumentIdempotencyRetentionStore>();
         builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
-        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
-        builder.Services.AddIntegrationEventContract(
-            AdminTourCreatedIntegrationEvent.EventType,
-            adminTourCreatedJsonTypeInfo);
+        AddAdminTourIntegrationEventContracts(builder.Services);
         builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
@@ -140,11 +135,7 @@ public static class InfrastructureDependencyInjection
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddAdminWriteDbContext();
-        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
-        builder.Services.AddIntegrationEventContract(
-            AdminTourCreatedIntegrationEvent.EventType,
-            adminTourCreatedJsonTypeInfo);
+        AddAdminTourIntegrationEventContracts(builder.Services);
         builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
@@ -176,11 +167,7 @@ public static class InfrastructureDependencyInjection
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddAdminWriteDbContext();
-        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
-        builder.Services.AddIntegrationEventContract(
-            AdminTourCreatedIntegrationEvent.EventType,
-            adminTourCreatedJsonTypeInfo);
+        AddAdminTourIntegrationEventContracts(builder.Services);
         builder.Services.AddDomainEventProcessing();
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddIntegrationEventTransportStorage<AdminWriteDbContext>();
@@ -200,6 +187,16 @@ public static class InfrastructureDependencyInjection
             IntegrationEventConsumerNames.Admin);
 
         return builder;
+    }
+
+    private static void AddAdminTourIntegrationEventContracts(IServiceCollection services)
+    {
+        services.AddIntegrationEventContract(
+            AdminTourCreatedIntegrationEvent.EventType,
+            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent);
+        services.AddIntegrationEventContract(
+            AdminTourRetiredIntegrationEvent.EventType,
+            AdminIntegrationEventJsonContext.Default.AdminTourRetiredIntegrationEvent);
     }
 
     private static TApplicationBuilder AddAdminRuntimeBackgroundServices<TApplicationBuilder>(
