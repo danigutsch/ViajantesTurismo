@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ViajantesTurismo.Admin.Contracts.Application;
 
 /// <summary>Represents the Admin-safe read model for one generated document revision.</summary>
@@ -89,6 +91,13 @@ public sealed record GetDocumentDto
 
     /// <summary>Gets why source or template changes need acknowledgement, kept after acknowledgement.</summary>
     public DocumentManualReviewReasonsDto ManualReviewReasons
+    {
+        get; init;
+    }
+
+    /// <summary>Gets current source and template warnings for a pending contract review decision.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public DocumentReviewFreshnessWarningsDto ReviewFreshnessWarnings
     {
         get; init;
     }

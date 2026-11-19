@@ -220,6 +220,10 @@ public sealed class DocumentDraft : IEntity<Guid>
     /// <summary>Gets whether staff review can start, which a generated draft or one with requested changes allows.</summary>
     public bool CanBeginReview => Status is DocumentStatus.DraftGenerated or DocumentStatus.ChangesRequested;
 
+    /// <summary>Gets whether this contract revision may be assessed before approval or finalization.</summary>
+    public bool CanAssessReviewFreshness => Type == DocumentType.BookingConfirmationContract
+        && Status is DocumentStatus.InReview or DocumentStatus.Approved;
+
     /// <summary>Gets whether this revision is the finalized, customer-issued version.</summary>
     public bool IsFinalized => Status == DocumentStatus.Finalized;
 
@@ -632,6 +636,27 @@ public sealed class DocumentDraft : IEntity<Guid>
         string.Equals(SourceVersion, currentSourceVersion, StringComparison.Ordinal)
             ? Result.Ok()
             : DocumentErrors.SourceChangedSinceDraft();
+
+    /// <summary>Classifies the revision's source and template freshness without changing the lifecycle.</summary>
+    public DocumentReviewFreshnessWarnings AssessReviewFreshness(Option<string> currentSourceVersion)
+    {
+        if (!CanAssessReviewFreshness)
+        {
+            return DocumentReviewFreshnessWarnings.None;
+        }
+
+        var warnings = EnsureTemplateIsCurrent().IsFailure
+            ? DocumentReviewFreshnessWarnings.TemplateChanged
+            : DocumentReviewFreshnessWarnings.None;
+        if (!currentSourceVersion.TryGetValue(out var version))
+        {
+            return warnings | DocumentReviewFreshnessWarnings.SourceUnavailable;
+        }
+
+        return EnsureSourceIsCurrent(version).IsFailure
+            ? warnings | DocumentReviewFreshnessWarnings.SourceChanged
+            : warnings;
+    }
 
     /// <summary>Checks that the document is under active staff review, which approval requires.</summary>
     internal Result EnsureCanApprove() =>

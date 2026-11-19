@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PandaBear.Blazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -101,6 +102,55 @@ public sealed class DetailsPageTests : BunitContext
             cut.FindComponents<Details>().ShouldBeEmpty();
             cut.Markup.ShouldContain("Not authorized", StringComparison.Ordinal);
         });
+    }
+
+    [Fact]
+    public async Task Review_shows_the_captured_source_and_template_versions()
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(DocumentStatusDto.InReview) with
+        {
+            TemplateVersion = "2",
+            SourceVersion = "E40F3B9DD65A37EE1BD41957F5AE49235E0A2E4B639FED29CDC0B4366EBA7F8D"
+        };
+        documentsApiClient.AddDocument(document);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        var template = cut.FindAll("dt").ShouldHaveSingleItem(term => term.TextContent == "Template");
+        template.NextElementSibling.ShouldNotBeNull().TextContent.ShouldBe($"{document.TemplateId} {document.TemplateVersion}");
+        var source = cut.FindAll("dt").ShouldHaveSingleItem(term => term.TextContent == "Source version");
+        source.NextElementSibling.ShouldNotBeNull().TextContent.ShouldBe(document.SourceVersion);
+    }
+
+    [Theory]
+    [InlineData(DocumentStatusDto.InReview, 1, "Source data has changed since this revision was generated.", "Approve")]
+    [InlineData(DocumentStatusDto.Approved, 2, "The template has changed since this revision was generated.", "Finalize")]
+    [InlineData(DocumentStatusDto.InReview, 4, "The source booking or tour is unavailable.", "Approve")]
+    public async Task Review_shows_current_freshness_warnings_before_staff_submit(
+        DocumentStatusDto status,
+        int warnings,
+        string expectedWarning,
+        string action)
+    {
+        // Arrange
+        var document = DocumentDetailsTestData.Create(status);
+        var payload = JsonSerializer.SerializeToNode(document).ShouldNotBeNull().AsObject();
+        payload["ReviewFreshnessWarnings"] = warnings;
+        var projectedDocument = payload.Deserialize<GetDocumentDto>().ShouldNotBeNull();
+        documentsApiClient.AddDocument(projectedDocument);
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, document.Id));
+        await cut.WaitForAssertionAsync(() => cut.Find("h1"));
+
+        // Assert
+        var notice = cut.Find("[role='status'][aria-labelledby='document-freshness-heading']");
+        notice.TextContent.ShouldContain(expectedWarning, StringComparison.Ordinal);
+        cut.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == action).HasAttribute("disabled").ShouldBeFalse();
     }
 
     [Fact]

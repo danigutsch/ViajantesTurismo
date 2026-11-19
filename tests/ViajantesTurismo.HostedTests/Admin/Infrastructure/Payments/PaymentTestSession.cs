@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.Idempotency.EntityFrameworkCore;
@@ -17,6 +18,7 @@ using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
+using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
@@ -53,6 +55,7 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         services.AddScoped<ITourStore, TourStore>();
         services.AddScoped<IDocumentStore, DocumentStore>();
         services.AddScoped<IDocumentQueryService, DocumentQueryService>();
+        services.Replace(ServiceDescriptor.Singleton<IDocumentSourceVersionReader, UnexpectedContractSourceVersionReader>());
         services.AddScoped<IPaymentInstructionStore, PaymentInstructionStore>();
         services.AddScoped<IPaymentFinancialQueryService, PaymentFinancialQueryService>();
         return new PaymentTestSession(services.BuildServiceProvider());
