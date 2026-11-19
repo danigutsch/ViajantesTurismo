@@ -1,0 +1,16 @@
+.catalog-image-drop-zone {
+    border: 2px dashed var(--bs-secondary-color);
+}
+
+.catalog-image-drop-zone:focus-within {
+    border-style: solid;
+}
+
+.catalog-image-drop-zone[data-drag-active] {
+    border-style: solid;
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+.catalog-image-drop-feedback {
+    font-weight: 600;
+}

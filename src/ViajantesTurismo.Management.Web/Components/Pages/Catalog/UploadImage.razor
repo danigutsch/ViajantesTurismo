@@ -18,14 +18,17 @@
 }
 
 <EditForm Model="@_entries" OnSubmit="@HandleSubmit" FormName="uploadCatalogTourImage">
-    <div class="mb-3">
+    <div class="catalog-image-drop-zone mb-3 rounded p-3" data-catalog-image-drop-zone>
         <label for="imageFile" class="form-label">Image files</label>
         <InputFile id="imageFile" class="form-control" OnChange="HandleFileSelection" multiple
                    accept="@AcceptedImageTypes" aria-describedby="imageFileHelp" disabled="@IsUploading" />
         <div id="imageFileHelp" class="form-text">
+            Drop images here or use the file picker.
             JPEG, PNG, WebP, or AVIF. Maximum size: @MaximumFileSizeInMebibytes MiB.
             Select up to @MaximumSelectionCount images. A new selection replaces this list.
         </div>
+        <div class="catalog-image-drop-feedback" role="status" data-catalog-image-drop-feedback
+             data-release-message="Release to select images"></div>
     </div>
 
     @if (_entries.Count > 0)
