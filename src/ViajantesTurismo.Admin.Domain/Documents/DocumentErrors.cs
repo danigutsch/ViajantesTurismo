@@ -47,8 +47,8 @@ public static class DocumentErrors
         detail: $"Document field '{fieldId}' is not editable.");
 
     /// <summary>Returns an unknown-field failure.</summary>
-    public static Result FieldNotFound(string fieldId) => Result.NotFound(
-        detail: $"Document field '{fieldId}' was not found.");
+    public static Result FieldNotFound() => Result.NotFound(
+        detail: "The requested document field was not found.");
 
     /// <summary>Returns a duplicate-field failure.</summary>
     public static Result DuplicateFieldId(string fieldId) => Result.Invalid(
