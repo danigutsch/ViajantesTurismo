@@ -1,0 +1,52 @@
+receivers:
+  sqlquery/postgresql_server:
+    driver: postgres
+    host: ${env:VT_POSTGRES_SERVER_METRICS_HOST}
+    port: 5432
+    database: postgres
+    username: ${env:VT_POSTGRES_SERVER_METRICS_USER}
+    password: ${env:VT_POSTGRES_SERVER_METRICS_PASSWORD}
+    additional_params:
+      sslmode: disable
+      connect_timeout: "5"
+      statement_timeout: "5000"
+      default_transaction_read_only: "on"
+    max_open_conn: 1
+    collection_interval: 30s
+    telemetry:
+      logs:
+        query: false
+    queries:
+      - sql: >
+          SELECT COALESCE(SUM(numbackends), 0) AS used_connections,
+                 pg_catalog.current_setting('max_connections')::bigint AS connection_limit
+          FROM pg_catalog.pg_stat_database
+          WHERE datid <> 0
+        metrics:
+          - metric_name: postgresql.server.connections.used
+            description: Current connections across databases on the PostgreSQL server
+            value_column: used_connections
+            unit: "{connection}"
+          - metric_name: postgresql.server.connections.limit
+            description: Configured PostgreSQL server connection limit
+            value_column: connection_limit
+            unit: "{connection}"
+
+processors:
+  transform/postgresql_server_privacy:
+    error_mode: propagate
+    metric_statements:
+      - context: resource
+        statements:
+          - keep_keys(resource.attributes, [])
+          - set(resource.attributes["service.name"], "postgresql-server")
+      - context: datapoint
+        statements:
+          - keep_keys(attributes, [])
+
+service:
+  pipelines:
+    metrics/postgresql_server:
+      receivers: [sqlquery/postgresql_server]
+      processors: [memory_limiter, transform/postgresql_server_privacy, batch]
+      exporters: [prometheus]

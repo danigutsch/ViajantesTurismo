@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using PandaBear.ObjectStorage;
 using System.Globalization;
@@ -74,6 +75,7 @@ public sealed partial class MediaImageUploadIntake(
 
         if (request.MediaImageId == Guid.Empty)
         {
+            MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
             return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, nameof(request.MediaImageId), "Media image id is required.");
         }
 
@@ -84,6 +86,7 @@ public sealed partial class MediaImageUploadIntake(
         }
         catch (InvalidDataException)
         {
+            MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
             return Result.Invalid<MediaImageUploadIntakeResult>(
                 InvalidUploadMessage,
                 nameof(request.Length),
@@ -105,6 +108,7 @@ public sealed partial class MediaImageUploadIntake(
 
         if (validationErrors.Count > 0)
         {
+            MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
             return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, validationErrors);
         }
 
@@ -118,6 +122,7 @@ public sealed partial class MediaImageUploadIntake(
             var sanitized = ImageSanitizer.SanitizeInPlace(buffer.AsMemory(0, (int)actualLength), SanitizerOptions);
             if (IsWrongFormat(sanitized, canonicalContentType))
             {
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
                 return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, ContentField, SignatureMismatchMessage);
             }
 
@@ -126,12 +131,14 @@ public sealed partial class MediaImageUploadIntake(
             if (scanResult.Status is MediaUploadScanStatus.Failed)
             {
                 LogScanDiagnostic(scanResult.Status);
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.ScannerUnavailable);
                 return Result.Unavailable<MediaImageUploadIntakeResult>(ScannerUnavailableMessage);
             }
 
             if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
             {
                 LogScanDiagnostic(scanResult.Status);
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.ScanRejected);
                 return Result.Invalid<MediaImageUploadIntakeResult>(
                     InvalidUploadMessage,
                     nameof(scanResult.Status),
@@ -140,6 +147,7 @@ public sealed partial class MediaImageUploadIntake(
 
             if (sanitized.IsFailure)
             {
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
                 return sanitized.ConvertError<SanitizedImage, MediaImageUploadIntakeResult>();
             }
 
@@ -159,6 +167,7 @@ public sealed partial class MediaImageUploadIntake(
             }
             catch (ImageProcessingException)
             {
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
                 return Result.Invalid<MediaImageUploadIntakeResult>(
                     InvalidUploadMessage,
                     nameof(request.Content),
@@ -168,7 +177,7 @@ public sealed partial class MediaImageUploadIntake(
             content.Position = 0;
             var checksum = ComputeChecksum(content);
             content.Position = 0;
-            var stored = await objectStore.Put(
+            var stored = await StoreOriginal(
                 ObjectWriteRequest.Create(objectKey, content, canonicalContentType, actualLength, checksum),
                 ct).ConfigureAwait(false);
             var imageResult = PublicMediaImage.Create(
@@ -193,6 +202,7 @@ public sealed partial class MediaImageUploadIntake(
             {
                 await MediaObjectCompensation.Delete(objectStore, objectKey.Value).ConfigureAwait(false);
 
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
                 return imageResult.ConvertError<PublicMediaImage, MediaImageUploadIntakeResult>();
             }
 
@@ -211,9 +221,11 @@ public sealed partial class MediaImageUploadIntake(
             }
             catch (MediaGalleryPlacementConflictException)
             {
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.GalleryConflict);
                 return Result.Conflict<MediaImageUploadIntakeResult>(GalleryPlacementConflictMessage);
             }
 
+            MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.Accepted);
             return Result.Ok(new MediaImageUploadIntakeResult(image, originalStoredEvent, scanResult.Status));
         }
         finally
@@ -224,6 +236,7 @@ public sealed partial class MediaImageUploadIntake(
 
     private async ValueTask<MediaUploadScanResult> Scan(ObjectStorageKey objectKey, Stream content, string contentType, long length, CancellationToken ct)
     {
+        var started = Stopwatch.GetTimestamp();
         try
         {
             var result = await scanner.Scan(new MediaUploadScanRequest(objectKey.Value, content, contentType, length), ct).ConfigureAwait(false);
@@ -239,6 +252,28 @@ public sealed partial class MediaImageUploadIntake(
             LogScannerFailure(logger, exception.GetType().Name);
             content.Position = 0;
             return new MediaUploadScanResult(MediaUploadScanStatus.Failed, ScannerUnavailableMessage);
+        }
+        finally
+        {
+            MediaImageUploadMetrics.RecordStage(MediaImageUploadMetrics.Stage.Scan, started);
+        }
+    }
+
+    private async ValueTask<ObjectWriteResult> StoreOriginal(ObjectWriteRequest request, CancellationToken ct)
+    {
+        var started = Stopwatch.GetTimestamp();
+        try
+        {
+            return await objectStore.Put(request, ct).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
+        {
+            MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.StorageFailed);
+            throw;
+        }
+        finally
+        {
+            MediaImageUploadMetrics.RecordStage(MediaImageUploadMetrics.Stage.Store, started);
         }
     }
 

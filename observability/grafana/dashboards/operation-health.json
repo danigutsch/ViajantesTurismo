@@ -1,0 +1,272 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose**\n\nTrack customer imports, Catalog media intake, and Management Web session ticket failures.\n\n**Audience**\n\nOperators and developers supporting the management workflows.\n\n**Decision supported**\n\nDistinguish input rejections from dependency failures, identify slow stages, and see whether session failures came from protection or cache operations.\n"
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Customer import attempts by outcome",
+      "description": "admin_customer_import_attempts_total in attempts per second. Are imports completing, being rejected, failing, or being canceled?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (import_operation, import_outcome) (rate(admin_customer_import_attempts_total[$__rate_interval]))",
+          "legendFormat": "{{import_operation}} · {{import_outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Customer import p95 by file size",
+      "description": "admin_customer_import_duration_seconds in seconds. Which file size buckets take longer to process for successful imports and commits?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, import_operation, import_size_bucket) (rate(admin_customer_import_duration_seconds_bucket{import_outcome=\"completed\"}[$__rate_interval])))",
+          "legendFormat": "{{import_operation}} · {{import_size_bucket}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Media upload outcomes",
+      "description": "catalog_media_upload_attempts_total in attempts per second. Are uploads being accepted, rejected by intake, or failing in a dependency?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (upload_outcome) (rate(catalog_media_upload_attempts_total[$__rate_interval]))",
+          "legendFormat": "{{upload_outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Media scan and store p95",
+      "description": "catalog_media_upload_stage_duration_seconds in seconds. Is the scanner or object write slowing image intake?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, upload_stage) (rate(catalog_media_upload_stage_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "{{upload_stage}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Session ticket failures by operation",
+      "description": "bff_session_ticket_failures_total by operation in the last ten minutes. Are ticket-protection errors or cache failures disrupting Management Web sessions?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (operation) ((increase(bff_session_ticket_failures_total[10m]) > 0) or (bff_session_ticket_failures_total unless bff_session_ticket_failures_total offset 10m))",
+          "legendFormat": "{{operation}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [
+    "admin",
+    "catalog",
+    "management",
+    "operations"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Operation Health",
+  "uid": "operation-health",
+  "version": 1,
+  "weekStart": ""
+}

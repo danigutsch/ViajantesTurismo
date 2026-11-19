@@ -11,7 +11,7 @@ internal static partial class ObservabilityAssetsTestsHelpers
     public static readonly string[] ExpectedDashboards =
     [
         "branding-cache", "catalog-pipeline", "collector-gateway", "event-store", "http-platform", "logs",
-        "media-accessibility", "mediator", "platform-smoke", "postgresql-observability", "runtime", "traces"
+        "media-accessibility", "mediator", "operation-health", "platform-smoke", "postgresql-observability", "runtime", "traces"
     ];
 
     /// <summary>Prefixes of platform metrics that the catalog does not enumerate.</summary>
@@ -27,8 +27,11 @@ internal static partial class ObservabilityAssetsTestsHelpers
     /// <summary>Alert rule uids the repository must provision.</summary>
     public static readonly string[] ExpectedAlertRules =
     [
-        "branding-invalidation-failures", "catalog-event-errors", "collector-export-failing",
-        "collector-refusing-telemetry", "collector-self-telemetry-down", "http-5xx-ratio", "unhandled-exceptions"
+        "branding-invalidation-failures", "catalog-event-errors", "catalog-media-upload-failures",
+        "catalog-media-upload-latency", "collector-export-failing",
+        "collector-refusing-telemetry", "collector-self-telemetry-down", "customer-import-failures",
+        "customer-import-latency", "http-5xx-ratio", "management-session-ticket-failures",
+        "migration-initialization-failed", "unhandled-exceptions"
     ];
 
     /// <summary>Datasource uids an alert rule query may use.</summary>
@@ -46,6 +49,12 @@ internal static partial class ObservabilityAssetsTestsHelpers
         ("branding_cache_invalidations_total", "outcome", "src/ViajantesTurismo.Branding.AspNetCore/BrandingTelemetry.cs", ["succeeded", "failed"]),
         ("branding_cache_requests_total", "outcome", "src/ViajantesTurismo.Branding.AspNetCore/BrandingTelemetry.cs", ["hit", "miss"]),
         ("catalog_integration_event_total", "catalog_outcome", "src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs", ["success", "skipped", "acquired", "completed", "error"]),
+        ("admin_customer_import_attempts_total", "import_outcome", "src/ViajantesTurismo.Admin.Api/Customers/CustomerImportTelemetry.cs", ["completed", "rejected", "failed", "canceled"]),
+        ("admin_customer_import_duration_seconds_bucket", "import_outcome", "src/ViajantesTurismo.Admin.Api/Customers/CustomerImportTelemetry.cs", ["completed", "rejected", "failed", "canceled"]),
+        ("admin_customer_import_duration_seconds_count", "import_outcome", "src/ViajantesTurismo.Admin.Api/Customers/CustomerImportTelemetry.cs", ["completed", "rejected", "failed", "canceled"]),
+        ("catalog_media_upload_attempts_total", "upload_outcome", "src/ViajantesTurismo.Catalog.Application/Media/MediaImageUploadMetrics.cs", ["accepted", "invalid_file", "scan_rejected", "scanner_unavailable", "gallery_conflict", "storage_failed"]),
+        ("catalog_media_upload_stage_duration_seconds_bucket", "upload_stage", "src/ViajantesTurismo.Catalog.Application/Media/MediaImageUploadMetrics.cs", ["scan", "store"]),
+        ("migration_database_initialization_duration_seconds_count", "migration_outcome", "src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs", ["success", "error", "cancelled"]),
     ];
 
     /// <summary>Headings every dashboard purpose panel must contain.</summary>
@@ -57,17 +66,9 @@ internal static partial class ObservabilityAssetsTestsHelpers
     /// <summary>Alert provisioning files that must exist.</summary>
     public static readonly string[] AlertingFiles = ["rules.yaml", "contact-points.yaml", "policies.yaml", "templates.yaml"];
 
-    /// <summary>Captures string constants declared in ServiceDefaults.</summary>
-    [GeneratedRegex(@"const string (?<name>\w+) = ""(?<value>[^""]+)""", RegexOptions.CultureInvariant)]
-    public static partial Regex MeterNameConstant();
-
-    /// <summary>Captures the argument of each AddMeter call.</summary>
-    [GeneratedRegex(@"AddMeter\((?<argument>[^)]+)\)", RegexOptions.CultureInvariant)]
-    public static partial Regex AddMeterCall();
-
-    /// <summary>Captures the meter name in the first cell of a catalog meter table row.</summary>
-    [GeneratedRegex(@"^\| `(?<meter>[^`]+)` \|", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
-    public static partial Regex MeterTableRow();
+    /// <summary>Captures the signal key in the first cell of a catalog row.</summary>
+    [GeneratedRegex(@"^\| `(?<key>[^`]+)` \|", RegexOptions.CultureInvariant)]
+    public static partial Regex CatalogKey();
 
     /// <summary>Extracts metric names from a PromQL expression, ignoring labels, literals, functions, and variables.</summary>
     public static IEnumerable<string> MetricNames(string expression)
@@ -78,29 +79,6 @@ internal static partial class ObservabilityAssetsTestsHelpers
         stripped = GrafanaVariable().Replace(stripped, " ");
         return Identifier().Matches(stripped).Select(match => match.Value).Where(name => !PromQlKeywords.Contains(name));
     }
-
-    /// <summary>
-    /// Resolves the meter names and name patterns the application registers: the AddMeter calls in ServiceDefaults and every SharedKernel
-    /// meter, which the SharedKernel service defaults register by pattern.
-    /// </summary>
-    public static string[] RegisteredMeterPatterns()
-    {
-        var source = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(), "src", "ViajantesTurismo.ServiceDefaults", "ViajantesTurismoServiceDefaults.cs"));
-        var constants = MeterNameConstant().Matches(source).ToDictionary(match => match.Groups["name"].Value, match => match.Groups["value"].Value);
-        var resolved = AddMeterCall().Matches(source)
-            .SelectMany(match => match.Groups["argument"].Value.Split(',', StringSplitOptions.TrimEntries))
-            .Select(argument => constants.TryGetValue(argument, out var value)
-                ? value
-                : throw new InvalidOperationException($"AddMeter({argument}) has no known meter name."));
-        return [.. resolved.Concat(PandaBear.Observability.SharedKernelInstrumentationExtensions.NamePatterns).Distinct(StringComparer.Ordinal)];
-    }
-
-    /// <summary>Gets whether a meter name matches a registered name or a <c>Prefix.*</c> pattern.</summary>
-    public static bool MatchesMeterPattern(string pattern, string meter) =>
-        pattern.EndsWith(".*", StringComparison.Ordinal)
-            ? meter.StartsWith(pattern[..^1], StringComparison.Ordinal)
-            : string.Equals(pattern, meter, StringComparison.Ordinal);
 
     /// <summary>Strips series, unit, and counter suffixes from a Prometheus metric name.</summary>
     public static string BaseMetricName(string metric)
@@ -167,8 +145,13 @@ internal static partial class ObservabilityAssetsTestsHelpers
 
     /// <summary>Enumerates the alert rule queries from the provisioned rules file with escaped quotes resolved.</summary>
     public static IEnumerable<string> AlertExpressions() =>
-        AlertExpressionLine().Matches(File.ReadAllText(Path.Combine(AlertingRoot(), "rules.yaml")))
-            .Select(match => match.Groups[1].Value.Replace("\\\"", "\"", StringComparison.Ordinal));
+        AlertExpressions(File.ReadAllText(Path.Combine(AlertingRoot(), "rules.yaml")));
+
+    /// <summary>Enumerates quoted PromQL expressions, folding continued lines and resolving escaped quotes.</summary>
+    public static IEnumerable<string> AlertExpressions(string yaml) =>
+        QuotedAlertExpression().Matches(yaml)
+            .Select(match => string.Join(' ', match.Groups[1].Value.Split('\n', StringSplitOptions.TrimEntries))
+                .Replace("\\\"", "\"", StringComparison.Ordinal));
 
     /// <summary>Matches a Prometheus selector with its metric name and matcher body.</summary>
     [GeneratedRegex(@"(?<metric>[a-z][a-z0-9_]*)\{(?<body>[^}]*)\}", RegexOptions.CultureInvariant)]
@@ -178,12 +161,12 @@ internal static partial class ObservabilityAssetsTestsHelpers
     [GeneratedRegex(@"(?<label>[a-z_][a-z0-9_]*)\s*(?<op>=~|!=|!~|=)\s*""(?<value>[^""]*)""", RegexOptions.CultureInvariant)]
     public static partial Regex LabelMatcher();
 
-    /// <summary>Matches the expression line of an alert rule query.</summary>
-    [GeneratedRegex(@"^\s+expr: ""(.*)""\s*$", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
-    public static partial Regex AlertExpressionLine();
+    /// <summary>Matches a quoted alert rule expression and any continuation lines.</summary>
+    [GeneratedRegex("""^[ \t]+expr: "((?:\\.|[^"\\])*)"[ \t]*\r?$""", RegexOptions.Multiline | RegexOptions.CultureInvariant)]
+    public static partial Regex QuotedAlertExpression();
 
-    /// <summary>Matches a Loki stream selector and captures its body.</summary>
-    [GeneratedRegex(@"\{(?<body>[^}|]*)\}", RegexOptions.CultureInvariant)]
+    /// <summary>Matches a Loki stream selector with quoted matchers, outside log templates.</summary>
+    [GeneratedRegex("""(?<!\{)\{(?<body>\s*(?=[a-zA-Z_][a-zA-Z0-9_]*\s*(?:=~|!~|!=|=))(?:"(?:\\.|[^"\\])*"|`[^`]*`|[^"`{}|])*)\}(?!\})""", RegexOptions.CultureInvariant)]
     public static partial Regex StreamSelector();
 
     /// <summary>Matches a detected_level label filter and captures its pattern.</summary>

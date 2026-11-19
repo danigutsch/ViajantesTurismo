@@ -18,7 +18,69 @@ Sources:
 - [PostgreSQL predefined roles](https://www.postgresql.org/docs/16/predefined-roles.html)
 - [Npgsql data sources](https://www.npgsql.org/doc/basic-usage.html#data-source)
 
-## Metrics
+## PostgreSQL server connection metrics
+
+The optional local LGTM stack can measure connections across the AppHost-owned PostgreSQL
+server. The supported server major versions are 17 and 18, verified with 17.12 and 18.4.
+The local Collector owns the 30-second scrape, using a single read-only connection to the
+`postgres` maintenance database. The connection timeout is five seconds and the statement
+timeout is five seconds.
+
+| OTel metric | Prometheus series | Unit and use |
+| --- | --- | --- |
+| `postgresql.server.connections.used` | `postgresql_server_connections_used` | Connections, current sum of `pg_stat_database.numbackends` across databases |
+| `postgresql.server.connections.limit` | `postgresql_server_connections_limit` | Connections, configured `max_connections` |
+
+The server connection total includes the monitoring connection. Use the two gauges together
+to assess headroom. Reserved connection slots mean an ordinary client can exhaust available
+slots before the configured limit. Npgsql client pools and index-health advisories keep
+their separate signals and operator questions.
+[PostgreSQL table of cumulative statistics](https://www.postgresql.org/docs/18/monitoring-stats.html#PG-STAT-DATABASE-VIEW)
+
+The Collector uses `sqlquery/postgresql_server` from the pinned Contrib image. It reads only
+the two aggregate values and strips all resource and data-point attributes before adding
+the fixed service name `postgresql-server`. Query logging stays disabled. The narrower query
+avoids the pinned PostgreSQL receiver's per-database table, index, lock, size and replication
+queries. The SQL Query receiver and its PostgreSQL driver are already bundled in the image.
+Review the receiver and its exported series against this contract when changing the image.
+[Pinned SQL Query receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/sqlqueryreceiver/README.md) ·
+[Pinned PostgreSQL receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.130.0/receiver/postgresqlreceiver/scraper.go)
+
+Set `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` and configure the AppHost settings below.
+Use a dedicated login with `CONNECT` to `postgres` and read access to the `datid` and
+`numbackends` columns of `pg_catalog.pg_stat_database`. Keep credentials in the AppHost
+secret store. Grant only the privileges the query uses. The database owner controls
+implicit privileges inherited through `PUBLIC` and provisions the account outside AppHost.
+This configuration uses the local container network. [PostgreSQL predefined roles](https://www.postgresql.org/docs/18/predefined-roles.html)
+
+```text
+Aspire:Features:PostgreSqlServerMetrics=true
+Parameters:postgresql-server-metrics-username=<dedicated login>
+Parameters:postgresql-server-metrics-password=<dedicated password>
+```
+
+The feature defaults off. Startup and ongoing application OTLP use the existing gateway.
+If PostgreSQL denies access or becomes unavailable, the Collector continues accepting
+OTLP and records `Error scraping metrics` for `sqlquery/postgresql_server`. Check that
+`otelcol_scraper_scraped_metric_points_total` with
+`receiver="sqlquery/postgresql_server"` advances while monitoring is enabled. A failed
+connection can leave the errored-point count at zero because the query produced no
+points. Inspect successful scrape progress before interpreting recently cached data.
+
+For the real boundary tests, run the repository verifier against a synthetic loopback
+PostgreSQL fixture and the pinned native Collector binary. Give the probe three consecutive
+free loopback ports beginning at the third argument.
+
+```bash
+bash observability/tests/VerifyPostgreSqlServerMetrics.sh "${collector_bin}" 55418 56411 healthy
+```
+
+Use `VT_POSTGRES_SERVER_METRICS_USER` and `VT_POSTGRES_SERVER_METRICS_PASSWORD` for the
+fixture login. Run `healthy` with an authorized role, `denied` with a role barred from
+the maintenance database, `unavailable` against an unbound port, and `disabled` to check
+the gateway alone. The verifier checks that normal OTLP export works in each case.
+
+## Index-health metrics
 
 Service defaults subscribe to these meters:
 

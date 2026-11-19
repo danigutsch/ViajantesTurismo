@@ -19,7 +19,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**Purpose:** Application logs by service and severity, with navigation to traces through trace ids. The Collector removes credential-like resource attributes only; log records carry no personal data by application contract, not by gateway enforcement.\n\n**Audience:** Developers and operators investigating a fault.\n\n**Decision supported:** Which service is logging errors, how often, and which trace to open next.\n"
+        "content": "**Purpose:** Log volume by service and severity, plus recent warnings and errors with trace correlation. The recent rows show severity and a validated trace ID when available. Application logging policy governs the raw records.\n\n**Audience:** Developers and operators investigating a fault.\n\n**Decision supported:** Which service is logging errors, how often, and which trace to open next.\n"
       }
     },
     {
@@ -116,7 +116,7 @@
       "id": 4,
       "type": "logs",
       "title": "Recent warnings and errors",
-      "description": "Latest warning, error and critical log lines. Message templates are static by application contract; the gateway does not scrub log records.",
+      "description": "Recent warnings and higher severities. Each row shows the severity and a validated trace ID when available.",
       "datasource": {
         "type": "loki",
         "uid": "Loki"
@@ -143,43 +143,7 @@
             "type": "loki",
             "uid": "Loki"
           },
-          "expr": "{service_name=~\".+\"} | detected_level=~\"(?i)warn|warning|error|critical\"",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "type": "logs",
-      "title": "Recent logs",
-      "description": "Latest log lines from all services. Use a record's trace id to open the trace in Tempo.",
-      "datasource": {
-        "type": "loki",
-        "uid": "Loki"
-      },
-      "verify": "data",
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 23
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "options": {
-        "showTime": true,
-        "wrapLogMessage": true,
-        "sortOrder": "Descending"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "Loki"
-          },
-          "expr": "{service_name=~\".+\"}",
+          "expr": "{service_name=~\".+\"} | detected_level=~\"(?i)warn|warning|error|critical|fatal\" | keep detected_level, trace_id | label_format trace_id=`{{ if and .trace_id (eq (count \"(?i)^[0-9a-f]{32}$\" .trace_id) 1) }}{{ .trace_id }}{{ end }}` | line_format `{{ .detected_level }}` | __error__=\"\"",
           "refId": "A"
         }
       ]

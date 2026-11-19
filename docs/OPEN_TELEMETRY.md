@@ -4,23 +4,9 @@ The signal inventory, per-signal use, and keep-or-remove verdicts live in
 [OBSERVABILITY_CATALOG.md](OBSERVABILITY_CATALOG.md). This document keeps the registration, privacy,
 and span and log contract rules.
 
-This document lists repository-defined custom telemetry (logs, ActivitySource, and Meter), where
-each surface is registered, and how to verify the emitted signals locally.
-
-## Custom telemetry surfaces
-
-| Surface type | Name | Defined in | Notes |
-| --- | --- | --- | --- |
-| ActivitySource | `SharedKernel.Mediator` | `PandaBear.SharedKernel.Mediator.Abstractions` package (`MediatorTelemetry`) | Emits `mediator.send` and `mediator.stream` spans plus one span per request type from the activity pipeline behavior (for example `CompleteBookingCommand`, attributes `sharedkernel.mediator.request_type`, `sharedkernel.mediator.response_type`, `sharedkernel.mediator.outcome`). Verified live in Tempo: all carry instrumentation scope `SharedKernel.Mediator`. |
-| Meter | `SharedKernel.Mediator` | `PandaBear.SharedKernel.Mediator.Abstractions` package (`MediatorTelemetry`) | Emits `mediator.requests`, `mediator.request.duration`, `mediator.notifications`. Prometheus names verified live: `mediator_requests_total`, `mediator_request_duration_milliseconds_{bucket,count,sum}` with labels `mediator_request_name`, `mediator_outcome`, `otel_scope_name="SharedKernel.Mediator"`. |
-| ActivitySource | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, stream update, and projection spans. |
-| Meter | `ViajantesTurismo.Catalog` | `src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs` | Emits Catalog integration event, idempotency, stream update, and projection metrics. |
-| Meter | `ViajantesTurismo.Branding` | `src/ViajantesTurismo.Branding.AspNetCore/BrandingTelemetry.cs` | Emits `branding.cache.requests` and `branding.cache.invalidations` tagged with `outcome` only, plus the `branding.settings.source_revision` gauge. No Branding values are recorded. |
-| Meter | `PandaBear.AspNetCore` | `PandaBear.SharedKernel.AspNetCore` (`AspNetCoreTelemetry.MeterName`) | Emits `unhandled_exceptions_total`, `authentication_events_total` and `rate_limit_rejections_total` from the Admin and Catalog API hosts. Log `EventId` values 4001, 4101 and 4102 carry bounded fields only; no exception text, token or claim. |
-| Meter | `PandaBear.Blazor` | `PandaBear.SharedKernel.Blazor` (`UiFailureReporter.MeterName`) | Emits `handled_ui_failures_total` tagged `error_type` and `operation` from Management.Web. Log `EventId` 7001 carries the operation, exception type and trace id only. |
-| ActivitySource | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store append/load/checkpoint spans. |
-| Meter | `SharedKernel.EventSourcing.Npgsql` | `src/SharedKernel/SharedKernel.EventSourcing.Npgsql/PostgreSqlEventSourcingTelemetry.cs` | Emits PostgreSQL event-store duration, count, and conflict metrics. |
-| ActivitySource | `ViajantesTurismo.MigrationService.DatabaseInitializationWorker` | `src/ViajantesTurismo.MigrationService/DatabaseInitializationWorker.cs` | Emits the `DatabaseInitialization` span around migrations and Development-only atomic data initialization. |
+Use the catalog for source names, media accessibility, Admin contract outcomes, PostgreSQL index
+health, and privacy-safe document retention logs. This guide explains how hosts export those signals
+and how to verify them locally.
 
 ## Telemetry contract documentation rules
 
@@ -136,6 +122,10 @@ The .NET logging category remains the `ILogger<TCategoryName>` category, normall
 qualified type name. Active trace context is exported with log records by the OpenTelemetry provider
 when a log is written inside an `Activity`.
 
+The default Logs dashboard aggregates log counts by service and severity. Its recent rows display warning-level
+and higher severities, with a trace ID when the ID has the expected hexadecimal format. The row query projects
+these fields in Loki. Application logging policy governs the raw records stored in Loki.
+
 ### Shared defaults registration
 
 `ViajantesTurismo.ServiceDefaults` centralizes shared registration used by services calling
@@ -246,8 +236,13 @@ surface-owned tag contract.
     - `sharedkernel.mediator.outcome`
     - `error.type` on failures only
 - Admin command request spans carry `mediator.result` (`ok` or `failed`), set by `ResultTagBehavior` for
-  `IResultLike` responses. It is a span attribute only, not a metric tag, because `mediator.outcome` already
-  covers the metric dimension and a failed `Result` still counts as `success` there.
+  `IResultLike` responses. Prometheus counts returned failures such as a booking 404 under
+  `mediator.outcome="success"`. Use the Traces dashboard's Failed mediator results panel to
+  identify those commands. The Mediator Dispatch dashboard's Request exception ratio shows
+  thrown exceptions as a share of active dispatches. It shows 0% when commands are active
+  and none throws in the query window.
+  `mediator.request.name` is the command type literal compiled into the generated mediator.
+  It is bounded by the deployed command set and used to group request rate and duration.
 - `SharedKernel.Mediator` generated spans require:
     - `mediator.outcome`
     - `error.type` on failures only
@@ -348,11 +343,10 @@ least two production surfaces need the same lifecycle API and tag contract.
     - Confirm structured fields come from stable message-template placeholders or scopes.
 
 4. Verify traces:
-    - Find mediator spans (emitted for the Bookings commands that dispatch through the mediator):
+    - Find Admin booking and tour commands in the Mediator spans and Failed mediator results
+      panels on the Traces dashboard.
         - `mediator.send`
-        - `mediator.stream`
-        - `mediator.publish`
-        - `mediator.notification.handle`
+        - Request spans named after the command type, such as `CompleteBookingCommand`
     - Find migration service span:
         - `DatabaseInitialization`
     - Find Catalog spans:
@@ -365,13 +359,10 @@ least two production surfaces need the same lifecycle API and tag contract.
         - `eventsourcing.postgresql.checkpoint`
 
 5. Verify metrics:
-    - Meter: `SharedKernel.Mediator` (emits only after the first production dispatch)
+    - Meter: `SharedKernel.Mediator` (emits request measurements on dispatch)
     - Expected custom metric names:
         - `mediator.requests`
         - `mediator.request.duration`
-        - `mediator.notifications`
-        - `mediator.notification.duration`
-        - `mediator.streams`
     - Additional custom meters:
         - `ViajantesTurismo.Catalog`
         - `SharedKernel.EventSourcing.Npgsql`

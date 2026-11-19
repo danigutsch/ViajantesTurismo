@@ -1,6 +1,9 @@
 using System.Text;
 using Microsoft.AspNetCore.Http.Timeouts;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using PandaBear.MalwareScanning;
 using PandaBear.Testing;
+using PandaBear.Testing.MalwareScanning;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.UploadWire.Testing;
@@ -14,6 +17,115 @@ namespace ViajantesTurismo.Admin.ApiServiceTests;
 [Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 public sealed class CustomerImportUploadOverKestrelTests
 {
+    [Theory]
+    [InlineData(CustomerImportKestrelScenario.ImportRoute, "import", true, "completed")]
+    [InlineData(CustomerImportKestrelScenario.CommitRoute, "commit", true, "completed")]
+    [InlineData(CustomerImportKestrelScenario.ImportRoute, "import", false, "rejected")]
+    [InlineData(CustomerImportKestrelScenario.CommitRoute, "commit", false, "rejected")]
+    public async Task Import_records_one_attempt_and_duration_with_only_bounded_dimensions(
+        string route,
+        string operation,
+        bool valid,
+        string outcome)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = CustomerImportKestrelScenario.Start(route);
+        using var metrics = scenario.RecordMetrics();
+        using var form = new MultipartFormDataContent();
+        var csv = Encoding.UTF8.GetBytes(valid ? CustomerImportKestrelScenario.ValidCsv : "Unexpected header\nprivate-data@example.test");
+        form.Add(MultipartPayload.FilePart(csv, ContractConstants.CustomerImportTextCsvContentType), "file", "untrusted-customer-name.csv");
+        KeyValuePair<string, object?>[] tags =
+        [
+            new("import.operation", operation),
+            new("import.outcome", outcome),
+            new("import.size_bucket", "up_to_64_kib"),
+        ];
+
+        // Act
+        using var response = await scenario.Client.PostAsync(new Uri(route, UriKind.Relative), form, ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var attempts = metrics.Counters("admin.customer_import.attempts");
+        var durations = metrics.Histograms("admin.customer_import.duration");
+        attempts.Length.ShouldBe(1);
+        attempts[0].Value.ShouldBe(1L);
+        attempts[0].Tags.ShouldBe(tags);
+        durations.Length.ShouldBe(1);
+        var duration = durations[0].Value;
+        var finite = double.IsFinite(duration);
+        finite.ShouldBeTrue();
+        duration.ShouldBeGreaterThanOrEqualTo(0d);
+        durations[0].Tags.ShouldBe(tags);
+    }
+
+    [Theory]
+    [InlineData(65_536, "up_to_64_kib")]
+    [InlineData(65_537, "up_to_256_kib")]
+    [InlineData(262_144, "up_to_256_kib")]
+    [InlineData(262_145, "up_to_1_mib")]
+    public async Task Import_records_only_the_size_bucket_when_the_scanner_is_unavailable(int size, string bucket)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        const string route = CustomerImportKestrelScenario.ImportRoute;
+        var scanner = TestMalwareScanner.Throwing(new IOException("Cannot scan traveler@example.test in private.csv"));
+        await using var scenario = CustomerImportKestrelScenario.Start(
+            route,
+            host => host.ConfigureServices(services => services.Replace(ServiceDescriptor.Singleton<IMalwareScanner>(scanner))));
+        using var metrics = scenario.RecordMetrics();
+        using var form = new MultipartFormDataContent();
+        form.Add(MultipartPayload.FilePart(new byte[size], ContractConstants.CustomerImportTextCsvContentType), "file", "private.csv");
+        KeyValuePair<string, object?>[] tags =
+        [
+            new("import.operation", "import"),
+            new("import.outcome", "failed"),
+            new("import.size_bucket", bucket),
+        ];
+
+        // Act
+        using var response = await scenario.Client.PostAsync(new Uri(route, UriKind.Relative), form, ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+        var (count, attemptTags) = metrics.Counters("admin.customer_import.attempts").ShouldHaveSingleItem();
+        var (_, durationTags) = metrics.Histograms("admin.customer_import.duration").ShouldHaveSingleItem();
+        count.ShouldBe(1L);
+        attemptTags.ShouldBe(tags);
+        durationTags.ShouldBe(tags);
+        scenario.Store.AllCustomers.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Import_records_a_disconnect_during_scanning_as_canceled()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        const string route = CustomerImportKestrelScenario.ImportRoute;
+        var gate = new MalwareScanGate();
+        var scanner = TestMalwareScanner.Blocking(gate);
+        await using var scenario = CustomerImportKestrelScenario.Start(
+            route,
+            host => host.ConfigureServices(services => services.Replace(ServiceDescriptor.Singleton<IMalwareScanner>(scanner))));
+        using var metrics = scenario.RecordMetrics();
+        var csv = Encoding.UTF8.GetBytes(CustomerImportKestrelScenario.ValidCsv);
+        var payload = await CustomerImportKestrelScenario.Form(csv, ct);
+        using var upload = new RawHttpUpload();
+        await upload.Send(scenario.BaseUri, route, scenario.Authorization, payload, payload.Body.Length, ct);
+        await gate.Entered.WaitAsync(WireTimeout.Default, ct);
+
+        // Act
+        upload.Abort();
+        await scenario.Probe.Finished.WaitAsync(WireTimeout.Default, ct);
+
+        // Assert
+        var (count, tags) = metrics.Counters("admin.customer_import.attempts").ShouldHaveSingleItem();
+        count.ShouldBe(1L);
+        tags.ShouldContain(new KeyValuePair<string, object?>("import.outcome", "canceled"));
+        scenario.Store.AllCustomers.ShouldBeEmpty();
+    }
+
     [Theory]
     [InlineData(CustomerImportKestrelScenario.ImportRoute, false)]
     [InlineData(CustomerImportKestrelScenario.CommitRoute, true)]

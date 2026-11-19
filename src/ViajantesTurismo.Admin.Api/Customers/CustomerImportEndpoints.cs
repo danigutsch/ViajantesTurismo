@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.ComponentModel.DataAnnotations;
@@ -76,68 +77,85 @@ internal static class CustomerImportEndpoints
         return app;
     }
 
-    private static async Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> ImportCustomers(
+    private static ValueTask<Results<Ok<ImportResultDto>, ProblemHttpResult>> ImportCustomers(
         [Required]
         IFormFile? file,
         [FromServices] IMalwareScanner scanner,
         [FromServices] ILogger<CustomerImportEndpointsCategory> logger,
         [FromServices] CustomerImportWorkflowService workflow,
-        CancellationToken ct)
-    {
-        if (!TryValidateImportFile(file, out var problem))
-        {
-            return TypedResults.Problem(
-                detail: problem.Detail,
-                title: problem.Title,
-                statusCode: problem.Status);
-        }
+        [FromServices] CustomerImportTelemetry telemetry,
+        CancellationToken ct) =>
+        ProcessImport(file, null, CustomerImportTelemetry.Operation.Import, scanner, logger, workflow, telemetry, ct);
 
-        var csvResult = await ReadCsv(file, scanner, logger, ct);
-        if (csvResult.IsFailure)
-        {
-            return CreateScanProblem(csvResult);
-        }
-
-        var result = await workflow.Import(csvResult.Value, ct);
-        return TypedResults.Ok(result);
-    }
-
-    private static async Task<Results<Ok<ImportResultDto>, ProblemHttpResult>> CommitImportWithResolutions(
+    private static ValueTask<Results<Ok<ImportResultDto>, ProblemHttpResult>> CommitImportWithResolutions(
         [AsParameters] CommitCustomerImportFormDto form,
         [FromServices] IMalwareScanner scanner,
         [FromServices] ILogger<CustomerImportEndpointsCategory> logger,
         [FromServices] CustomerImportWorkflowService workflow,
+        [FromServices] CustomerImportTelemetry telemetry,
+        CancellationToken ct) =>
+        ProcessImport(form.File, form.ConflictResolutions, CustomerImportTelemetry.Operation.Commit, scanner, logger, workflow, telemetry, ct);
+
+    private static async ValueTask<Results<Ok<ImportResultDto>, ProblemHttpResult>> ProcessImport(
+        IFormFile? file,
+        string? resolutions,
+        CustomerImportTelemetry.Operation operation,
+        IMalwareScanner scanner,
+        ILogger<CustomerImportEndpointsCategory> logger,
+        CustomerImportWorkflowService workflow,
+        CustomerImportTelemetry telemetry,
         CancellationToken ct)
     {
-        if (!TryValidateImportFile(form.File, out var problem))
+        var start = Stopwatch.GetTimestamp();
+        var outcome = CustomerImportTelemetry.Outcome.Failed;
+        try
         {
-            return TypedResults.Problem(
-                detail: problem.Detail,
-                title: problem.Title,
-                statusCode: problem.Status);
-        }
+            if (!TryValidateImportFile(file, out var problem))
+            {
+                outcome = CustomerImportTelemetry.Outcome.Rejected;
+                return TypedResults.Problem(
+                    detail: problem.Detail,
+                    title: problem.Title,
+                    statusCode: problem.Status);
+            }
 
-        if (form.ConflictResolutions is { } resolutions
-            && Encoding.UTF8.GetByteCount(resolutions) > ContractConstants.CustomerImportConflictResolutionsMaxBytes)
+            if (resolutions is not null
+                && Encoding.UTF8.GetByteCount(resolutions) > ContractConstants.CustomerImportConflictResolutionsMaxBytes)
+            {
+                outcome = CustomerImportTelemetry.Outcome.Rejected;
+                return TypedResults.Problem(
+                    detail: "Customer import conflict resolutions exceed the allowed size.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var csvResult = await ReadCsv(file, scanner, logger, ct);
+            if (csvResult.IsFailure)
+            {
+                outcome = csvResult.Status == ResultStatus.Invalid
+                    ? CustomerImportTelemetry.Outcome.Rejected
+                    : CustomerImportTelemetry.Outcome.Failed;
+                return CreateScanProblem(csvResult);
+            }
+
+            var result = operation == CustomerImportTelemetry.Operation.Import
+                ? await workflow.Import(csvResult.Value, ct)
+                : await workflow.Commit(csvResult.Value, ConflictResolutionSerialization.Parse(resolutions), ct);
+            outcome = result.SuccessCount == 0
+                && (result.ErrorCount > 0 || result.ErrorRows is { Count: > 0 } || result.Conflicts is { Count: > 0 })
+                ? CustomerImportTelemetry.Outcome.Rejected
+                : CustomerImportTelemetry.Outcome.Completed;
+
+            return TypedResults.Ok(result);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            return TypedResults.Problem(
-                detail: "Customer import conflict resolutions exceed the allowed size.",
-                statusCode: StatusCodes.Status400BadRequest);
+            outcome = CustomerImportTelemetry.Outcome.Canceled;
+            throw;
         }
-
-        var csvResult = await ReadCsv(form.File, scanner, logger, ct);
-        if (csvResult.IsFailure)
+        finally
         {
-            return CreateScanProblem(csvResult);
+            telemetry.Record(operation, outcome, file?.Length ?? 0, start);
         }
-
-        var parsedConflictResolutions = ConflictResolutionSerialization.Parse(form.ConflictResolutions);
-        var result = await workflow.Commit(
-            csvResult.Value,
-            parsedConflictResolutions,
-            ct);
-
-        return TypedResults.Ok(result);
     }
 
     /// <summary>Reads the uploaded CSV into memory within the size limit and scans it, returning UTF-8 bytes, failing closed on invalid or unscannable files.</summary>

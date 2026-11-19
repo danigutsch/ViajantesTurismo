@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PandaBear.MalwareScanning;
 using ViajantesTurismo.Admin.Api;
@@ -90,6 +91,9 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
 
     /// <summary>Gets the Authorization header value of the client.</summary>
     public string Authorization => Client.DefaultRequestHeaders.Authorization!.ToString();
+
+    /// <summary>Starts a recorder scoped to this server's metrics.</summary>
+    public MeterFactoryRecorder RecordMetrics() => new(factory.Services.GetRequiredService<IMeterFactory>());
 
     /// <summary>Starts the server; <paramref name="routeSuffix"/> selects the observed route.</summary>
     public static CustomerImportKestrelScenario Start(string routeSuffix, Action<IWebHostBuilder>? configureHost = null)

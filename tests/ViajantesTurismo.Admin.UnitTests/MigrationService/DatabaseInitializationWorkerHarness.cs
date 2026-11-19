@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +57,9 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
     /// </summary>
     public ActivitySource ActivitySource => activitySource;
 
+    /// <summary>Gets the meter factory for this worker's isolated host.</summary>
+    public IMeterFactory MeterFactory => serviceProvider.GetRequiredService<IMeterFactory>();
+
     /// <summary>
     /// Creates a production-environment harness whose migration runs <paramref name="initializationOperation"/> and development data is a no-op.
     /// </summary>
@@ -80,6 +84,7 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         ArgumentNullException.ThrowIfNull(developmentDataOperation);
 
         var services = new ServiceCollection();
+        services.AddMetrics();
         services.AddDbContext<CatalogDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
         var environment = new TestHostEnvironment("ViajantesTurismo.MigrationService.Tests")
         {
@@ -99,6 +104,7 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
     public static DatabaseInitializationWorkerHarness CreateWithDefaultInitialization(string environmentName)
     {
         var services = new ServiceCollection();
+        services.AddMetrics();
         var adminDatabaseRoot = new InMemoryDatabaseRoot();
         var adminDatabaseName = Guid.NewGuid().ToString("N");
         var probe = new MigrationStoreResolutionProbe();
@@ -164,6 +170,7 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
             environment,
             NullLogger<DatabaseInitializationWorker>.Instance,
+            MeterFactory,
             migrationOperation,
             developmentDataOperation,
             activitySource);
@@ -177,7 +184,8 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         return new DatabaseInitializationWorker(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
             environment,
-            NullLoggerFactory.Instance);
+            NullLoggerFactory.Instance,
+            MeterFactory);
     }
 
     /// <summary>
@@ -190,7 +198,8 @@ internal sealed class DatabaseInitializationWorkerHarness : IDisposable
         return new DatabaseInitializationWorker(
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
             environment,
-            loggerFactory);
+            loggerFactory,
+            MeterFactory);
     }
 
     /// <summary>

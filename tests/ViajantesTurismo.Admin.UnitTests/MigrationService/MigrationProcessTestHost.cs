@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -42,6 +43,7 @@ internal sealed class MigrationProcessTestHost : IHost
         applicationStopping = lifetime.ApplicationStopping;
 
         var services = new ServiceCollection();
+        services.AddMetrics();
         services.AddSingleton<IHostApplicationLifetime>(lifetime);
         services.AddSingleton<IHostEnvironment>(new TestHostEnvironment("ViajantesTurismo.MigrationService.Tests")
         {
@@ -51,6 +53,7 @@ internal sealed class MigrationProcessTestHost : IHost
             serviceProvider.GetRequiredService<IServiceScopeFactory>(),
             serviceProvider.GetRequiredService<IHostEnvironment>(),
             NullLogger<DatabaseInitializationWorker>.Instance,
+            serviceProvider.GetRequiredService<IMeterFactory>(),
             (_, ct) => RunInitialization(initializationOperation, ct),
             static (_, _) => Task.CompletedTask,
             activitySource));

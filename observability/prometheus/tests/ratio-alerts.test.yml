@@ -1,0 +1,129 @@
+rule_files:
+  - ratio-alerts.rules.yml
+evaluation_interval: 1m
+fuzzy_compare: true
+
+tests:
+  # Each failing series starts at one and never increments again. Their overlapping windows keep the ratio high.
+  - interval: 1m
+    input_series:
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="200"}'
+        values: '0+0x16'
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="500"}'
+        values: '_ 1+0x15'
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="502"}'
+        values: '_ _ _ _ _ 1+0x11'
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="503"}'
+        values: '_ _ _ _ _ _ _ _ _ 1+0x7'
+      - series: 'catalog_integration_event_total{catalog_outcome="applied"}'
+        values: '0+0x16'
+      - series: 'catalog_integration_event_total{catalog_outcome="error",catalog_event_type="fixture-first"}'
+        values: '_ 1+0x15'
+      - series: 'catalog_integration_event_total{catalog_outcome="error",catalog_event_type="fixture-second"}'
+        values: '_ _ _ _ _ 1+0x11'
+      - series: 'catalog_integration_event_total{catalog_outcome="error",catalog_event_type="fixture-third"}'
+        values: '_ _ _ _ _ _ _ _ _ 1+0x7'
+    promql_expr_test:
+      - expr: test:http_5xx_ratio
+        eval_time: 1m
+        exp_samples:
+          - labels: '{__name__="test:http_5xx_ratio"}'
+            value: 1
+      - expr: test:catalog_event_errors
+        eval_time: 1m
+        exp_samples:
+          - labels: '{__name__="test:catalog_event_errors"}'
+            value: 1
+    alert_rule_test:
+      - alertname: Http5xxRatio
+        eval_time: 10m
+        exp_alerts: []
+      - alertname: CatalogEventErrors
+        eval_time: 10m
+        exp_alerts: []
+      - alertname: Http5xxRatio
+        eval_time: 11m
+        exp_alerts: [{}]
+      - alertname: CatalogEventErrors
+        eval_time: 11m
+        exp_alerts: [{}]
+      - alertname: Http5xxRatio
+        eval_time: 14m
+        exp_alerts: []
+      - alertname: CatalogEventErrors
+        eval_time: 14m
+        exp_alerts: []
+
+  # An isolated error can affect the five-minute ratio, yet expires before the hold can finish.
+  - interval: 1m
+    input_series:
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="500"}'
+        values: '_ 1+0x15'
+      - series: 'catalog_integration_event_total{catalog_outcome="error"}'
+        values: '_ 1+0x15'
+    alert_rule_test:
+      - alertname: Http5xxRatio
+        eval_time: 11m
+        exp_alerts: []
+      - alertname: CatalogEventErrors
+        eval_time: 11m
+        exp_alerts: []
+
+  # Established, ordinary-volume counters keep their five-minute ratios and recover after errors stop.
+  - interval: 1m
+    input_series:
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="200"}'
+        values: '0+90x18'
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="500"}'
+        values: '0+10x12 120+0x5'
+      - series: 'catalog_integration_event_total{catalog_outcome="applied"}'
+        values: '0+80x18'
+      - series: 'catalog_integration_event_total{catalog_outcome="error"}'
+        values: '0+20x12 240+0x5'
+    promql_expr_test:
+      - expr: test:http_5xx_ratio
+        eval_time: 11m
+        exp_samples:
+          - labels: '{__name__="test:http_5xx_ratio"}'
+            value: 0.1
+      - expr: test:catalog_event_errors
+        eval_time: 11m
+        exp_samples:
+          - labels: '{__name__="test:catalog_event_errors"}'
+            value: 0.2
+    alert_rule_test:
+      - alertname: Http5xxRatio
+        eval_time: 11m
+        exp_alerts: [{}]
+      - alertname: CatalogEventErrors
+        eval_time: 11m
+        exp_alerts: [{}]
+      - alertname: Http5xxRatio
+        eval_time: 17m
+        exp_alerts: []
+      - alertname: CatalogEventErrors
+        eval_time: 17m
+        exp_alerts: []
+
+  # The new series' current value already includes its second increment. Count it once.
+  - interval: 1m
+    input_series:
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="200"}'
+        values: '0+10x8'
+      - series: 'http_server_request_duration_seconds_count{http_response_status_code="500"}'
+        values: '_ _ _ _ _ _ 1 3 3'
+      - series: 'catalog_integration_event_total{catalog_outcome="applied"}'
+        values: '0+10x8'
+      - series: 'catalog_integration_event_total{catalog_outcome="error"}'
+        values: '_ _ _ _ _ _ 1 3 3'
+    promql_expr_test:
+      - expr: test:http_5xx_ratio
+        eval_time: 7m
+        exp_samples:
+          - labels: '{__name__="test:http_5xx_ratio"}'
+            value: 0.05660377358490566
+      - expr: test:catalog_event_errors
+        eval_time: 7m
+        exp_samples:
+          - labels: '{__name__="test:catalog_event_errors"}'
+            value: 0.05660377358490566

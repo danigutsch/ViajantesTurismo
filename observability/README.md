@@ -15,8 +15,8 @@ Enable the additional local backends with:
 ASPIRE_ENABLE_OBSERVABILITY_STACK=1 dotnet tool run aspire run
 ```
 
-Grafana, Loki, Tempo, and Prometheus are disabled by default. The Collector remains present because it
-is the telemetry privacy boundary.
+Keep Grafana, Loki, Tempo, and Prometheus opt-in. They add startup time and resource use for dashboard
+work. The default AppHost profile still starts the Collector as its telemetry privacy boundary.
 
 ## Resources
 
@@ -69,9 +69,19 @@ dotnet run observability/tests/VerifyQueries.cs -- http://127.0.0.1:<grafana-por
 dotnet run observability/tests/VerifyDashboards.cs -- http://127.0.0.1:<grafana-port> <screenshot-dir>
 ```
 
-`VerifyQueries.cs` runs every panel query through Grafana's datasource proxy. `VerifyDashboards.cs` renders
-each dashboard in headless Chromium with Playwright, fails on "No data" for `data` panels or a panel
-error, and writes screenshots for review. Install browsers once with the Playwright tool if needed.
+`VerifyQueries.cs` checks that Grafana provisioned each dashboard from a file and that its live query
+targets match the checkout. It runs each query through the target's configured datasource and checks
+for data where required. A missing or stale provisioned dashboard fails verification.
+
+Pass `--dashboard <uid>` to verify one dashboard after editing it.
+
+```bash
+dotnet run observability/tests/VerifyQueries.cs -- http://127.0.0.1:<grafana-port> --dashboard media-accessibility
+```
+
+`VerifyDashboards.cs` renders each dashboard in headless Chromium with Playwright, fails on "No data"
+for `data` panels or a panel error, and writes screenshots for review. Install browsers once with the
+Playwright tool if needed.
 
 ## Local security boundary
 

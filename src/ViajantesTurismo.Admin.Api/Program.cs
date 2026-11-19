@@ -29,6 +29,7 @@ builder.WebHost.ConfigureApiRequestLimits();
 builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<CustomerImportTelemetry>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddUnhandledExceptionHandler();
