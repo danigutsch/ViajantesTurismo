@@ -1,3 +1,4 @@
+using System.Net;
 using PandaBear.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
@@ -18,6 +19,38 @@ namespace ViajantesTurismo.HostedTests.Admin.System.PostTransportValidation;
 [TestScope(TestScope.System)]
 public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
+    [Fact]
+    public async Task Retiring_a_tour_withdraws_the_warmed_public_listing_before_acknowledgement()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        using var catalogApiClient = await Fixture.CreateCatalogApiClient(ct);
+        var catalogTours = new CatalogToursApiClient(catalogApiClient);
+        var scenario = new PostTransportValidationScenario(ApiClient, catalogTours);
+        var unique = Guid.CreateVersion7().ToString("N")[..12];
+        var title = $"Retiring Tour {unique}";
+        var publicList = new Uri(Fixture.PublicWebAppUrl, "/en/group-bike-tours");
+        var adminTour = await scenario.CreateAdminTour($"RET-{unique}", title);
+        var catalogTour = await scenario.WaitForCatalogTour(adminTour.Id, ct);
+        await scenario.PublishCatalogTour(catalogTour, title, $"retiring-tour-{unique}", ct);
+        await NavigateTo(publicList);
+        var tourLink = Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = title });
+        await Expect(tourLink).ToBeVisibleAsync();
+
+        // Act
+        var retirementPath = new Uri($"/api/v1/tours/{adminTour.Id:D}", UriKind.Relative);
+        using var initialResult = await ApiClient.DeleteAsync(retirementPath, ct);
+
+        // Assert
+        initialResult.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+        initialResult.Headers.Location.ShouldBe(new Uri($"{retirementPath}/retirement", UriKind.Relative));
+        await scenario.WaitForRetirement(adminTour.Id, ct);
+        await NavigateTo(publicList);
+        await Expect(tourLink).ToHaveCountAsync(0);
+        var retainedTour = await catalogTours.GetTour(catalogTour.Id, ct);
+        retainedTour.Value.ShouldNotBeNull().IsPublished.ShouldBeFalse();
+    }
+
     [Fact]
     public async Task Catalog_API_exposes_tour_after_admin_event_is_delivered()
     {

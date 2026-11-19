@@ -87,4 +87,25 @@ internal sealed class PostTransportValidationScenario(
             ? reloaded
             : throw new InvalidOperationException($"Catalog tour '{tour.Id}' was not found after publication.");
     }
+
+    /// <summary>Waits for a retirement replay to confirm that Catalog has withdrawn the tour.</summary>
+    public async Task WaitForRetirement(Guid adminTourId, CancellationToken ct)
+    {
+        var path = new Uri($"/api/v1/tours/{adminTourId:D}", UriKind.Relative);
+        await Eventually.Until(
+            async ct =>
+            {
+                using var response = await adminApi.DeleteAsync(path, ct);
+                if (response.StatusCode is HttpStatusCode.Accepted)
+                {
+                    return null;
+                }
+
+                return response.StatusCode is HttpStatusCode.NoContent
+                    ? path
+                    : throw new HttpRequestException("Tour retirement replay failed.", null, response.StatusCode);
+            },
+            ProjectionTimeout,
+            ct);
+    }
 }
