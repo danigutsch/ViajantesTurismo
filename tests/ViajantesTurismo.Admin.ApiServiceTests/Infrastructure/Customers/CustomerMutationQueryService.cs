@@ -23,6 +23,12 @@ internal sealed class CustomerMutationQueryService(
     public Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
+    public Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
