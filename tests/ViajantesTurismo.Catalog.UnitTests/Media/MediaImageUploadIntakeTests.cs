@@ -109,8 +109,9 @@ public sealed class MediaImageUploadIntakeTests
         storedObjectKey.ShouldStartWith($"media/{mediaImageId:N}/original-", StringComparison.Ordinal);
         storedObjectKey.ShouldEndWith(".jpg", StringComparison.Ordinal);
         objectStore.ObjectKeys.ShouldNotContain("client-photo.jpg");
-        result.Value.OriginalStoredEvent.SourceObjectKey.ShouldBe(storedObjectKey);
-        result.Value.OriginalStoredEvent.OccurredAt.ShouldBe(new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero));
+        var originalStored = result.Value.OriginalStoredEvent.ShouldNotBeNull();
+        originalStored.SourceObjectKey.ShouldBe(storedObjectKey);
+        originalStored.OccurredAt.ShouldBe(new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero));
         scanner.LastRequest.ShouldNotBeNull();
         scanner.LastRequest.ObjectKey.ShouldBe(storedObjectKey);
     }
@@ -206,7 +207,8 @@ public sealed class MediaImageUploadIntakeTests
         result.IsSuccess.ShouldBeTrue();
         var integrationEvent = outbox.IntegrationEvent.ShouldBeOfType<MediaImageOriginalStoredIntegrationEvent>();
         integrationEvent.MediaImageId.ShouldBe(mediaImageId);
-        integrationEvent.SourceObjectKey.ShouldBe(result.Value.OriginalStoredEvent.SourceObjectKey);
+        var originalStored = result.Value.OriginalStoredEvent.ShouldNotBeNull();
+        integrationEvent.SourceObjectKey.ShouldBe(originalStored.SourceObjectKey);
     }
 
     [Fact]

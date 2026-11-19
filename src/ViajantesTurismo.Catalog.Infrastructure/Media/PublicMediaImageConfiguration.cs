@@ -16,6 +16,8 @@ internal sealed class PublicMediaImageConfiguration : IEntityTypeConfiguration<P
         entity.ToTable("PublicMediaImages");
         entity.HasKey(image => image.Id);
         entity.Property(image => image.Id).ValueGeneratedNever();
+        entity.Property<string?>(PublicMediaImageSchema.UploadFingerprint).HasMaxLength(64);
+        entity.HasIndex(PublicMediaImageSchema.UploadFingerprint).IsUnique();
 
         entity.Property(image => image.SourceObjectKey).HasMaxLength(1024).IsRequired();
         entity.Property(image => image.Checksum).HasMaxLength(CatalogDomainLimits.MaxChecksumLength).IsRequired();

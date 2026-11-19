@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 using PandaBear.BuildingBlocks;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore.Npgsql;
+using PandaBear.Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using PandaBear.InputNormalization;
@@ -12,9 +15,33 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Media;
 /// EF Core store for public media images, sanitizing text fields on write and read.
 /// </summary>
 /// <param name="dbContext">The Catalog context.</param>
-internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPublicMediaImageStore
+internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPublicMediaImageStore, IMediaImageUploadStore
 {
     private static readonly NpgsqlUniqueViolationParser UniqueViolationParser = new();
+
+    /// <inheritdoc />
+    public async ValueTask<IMediaImageUploadLease> Reserve(string fingerprint, CancellationToken ct)
+    {
+        var transaction = await dbContext.Database.BeginTransactionAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var connection = (NpgsqlConnection)dbContext.Database.GetDbConnection();
+            var npgsqlTransaction = (NpgsqlTransaction)transaction.GetDbTransaction();
+            var key = PostgreSqlAdvisoryLockKey.FromUtf8Sha256BigEndian("catalog-image-upload:" + fingerprint);
+            await PostgreSqlTransactionAdvisoryLock.Acquire(connection, npgsqlTransaction, key, ct).ConfigureAwait(false);
+
+            var existing = await ReadImages()
+                .AsSingleQuery()
+                .SingleOrDefaultAsync(image => EF.Property<string?>(image, PublicMediaImageSchema.UploadFingerprint) == fingerprint, ct)
+                .ConfigureAwait(false);
+            return new UploadLease(this, transaction, fingerprint, existing is null ? null : ToReturnedImage(existing, catalogTourId: null));
+        }
+        catch
+        {
+            await transaction.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
+    }
 
     /// <inheritdoc />
     public async ValueTask Upsert(PublicMediaImage image, CancellationToken ct)
@@ -45,6 +72,9 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             .AsSplitQuery()
             .SingleOrDefaultAsync(current => current.Id == image.Id, ct)
             .ConfigureAwait(false);
+        var fingerprint = existing is not null && MatchesUploadOrigin(existing, image)
+            ? dbContext.Entry(existing).Property<string?>(PublicMediaImageSchema.UploadFingerprint).CurrentValue
+            : null;
 
         if (existing is not null && dbContext.Database.IsRelational())
         {
@@ -52,7 +82,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
             await using var _ = transaction.ConfigureAwait(false);
             dbContext.PublicMediaImages.Remove(existing);
             await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
-            dbContext.PublicMediaImages.Add(image);
+            AddImage(image, fingerprint);
             await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
         }
@@ -64,8 +94,7 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                 await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
             }
 
-            dbContext.PublicMediaImages.Add(image);
-
+            AddImage(image, fingerprint);
             await dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct).ConfigureAwait(false);
         }
     }
@@ -73,17 +102,42 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
     /// <inheritdoc />
     public async ValueTask<PublicMediaImage?> GetImage(Guid imageId, CancellationToken ct)
     {
-        var image = await dbContext.PublicMediaImages
-            .AsNoTracking()
-            .Include(current => current.ResponsiveVariants)
-            .Include(current => current.TourLinks)
-            .Include(current => current.AccessibilityTexts)
+        var image = await ReadImages()
             .AsSplitQuery()
             .SingleOrDefaultAsync(current => current.Id == imageId, ct)
             .ConfigureAwait(false);
 
         return image is null ? null : ToReturnedImage(image, catalogTourId: null);
     }
+
+    private IQueryable<PublicMediaImage> ReadImages() =>
+        dbContext.PublicMediaImages
+            .AsNoTracking()
+            .Include(current => current.ResponsiveVariants)
+            .Include(current => current.TourLinks)
+            .Include(current => current.AccessibilityTexts);
+
+    private void AddImage(PublicMediaImage image, string? fingerprint)
+    {
+        dbContext.PublicMediaImages.Add(image).Property<string?>(PublicMediaImageSchema.UploadFingerprint).CurrentValue = fingerprint;
+    }
+
+    private static bool MatchesUploadOrigin(PublicMediaImage current, PublicMediaImage updated) =>
+        current.SourceObjectKey == updated.SourceObjectKey &&
+        current.Checksum == updated.Checksum &&
+        current.ContentType == updated.ContentType &&
+        current.FileSizeBytes == updated.FileSizeBytes &&
+        current.Dimensions == updated.Dimensions &&
+        current.AltText == updated.AltText &&
+        current.Caption == updated.Caption &&
+        current.Attribution == updated.Attribution &&
+        current.Copyright == updated.Copyright &&
+        current.IsDecorative == updated.IsDecorative &&
+        current.RequiresHumanReview == updated.RequiresHumanReview &&
+        current.IsAiGenerated == updated.IsAiGenerated &&
+        current.Tags.SequenceEqual(updated.Tags, StringComparer.Ordinal) &&
+        current.TourLinks.Select(link => link.CatalogTourId).Order()
+            .SequenceEqual(updated.TourLinks.Select(link => link.CatalogTourId).Order());
 
     /// <inheritdoc />
     public async ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct)
@@ -225,4 +279,34 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                 .OrderBy(link => link.DisplayOrder)],
             sanitizedImage.AccessibilityTexts);
     }
+
+    private sealed class UploadLease(
+        EfPublicMediaImageStore owner,
+        IDbContextTransaction transaction,
+        string fingerprint,
+        PublicMediaImage? existingImage) : IMediaImageUploadLease
+    {
+        public PublicMediaImage? ExistingImage => existingImage;
+
+        public ValueTask DisposeAsync() => transaction.DisposeAsync();
+
+        public async ValueTask Save(PublicMediaImage image, CancellationToken ct)
+        {
+            owner.AddImage(Sanitize(image), fingerprint);
+            try
+            {
+                await owner.SaveUploadChanges(ct).ConfigureAwait(false);
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+            }
+            catch (UniqueConstraintViolationException exception) when (exception.Rule == PublicMediaImageSchema.GalleryPlacementRule)
+            {
+                throw new MediaGalleryPlacementConflictException(
+                    "The tour gallery changed while the media image was being saved.",
+                    exception);
+            }
+        }
+    }
+
+    private Task<int> SaveUploadChanges(CancellationToken ct) =>
+        dbContext.SaveChangesTranslatingUniqueViolations(UniqueViolationParser, ct);
 }

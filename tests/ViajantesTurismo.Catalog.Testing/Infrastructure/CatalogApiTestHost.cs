@@ -225,7 +225,9 @@ internal static class CatalogApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<IEventStore>(configuredEventStore));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourSlugLock>(new TestCatalogTourSlugLock()));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourMutationLock>(new TestCatalogTourMutationLock()));
-                services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(mediaStore ?? new TestPublicMediaImageStore()));
+                var images = mediaStore ?? new TestPublicMediaImageStore();
+                services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(images));
+                services.Replace(ServiceDescriptor.Singleton<IMediaImageUploadStore>(new DelegatingMediaImageUploadStore(images)));
                 services.Replace(ServiceDescriptor.Singleton<IObjectStore>(objectStore ?? MediaObjectStoreTestFactory.Create()));
                 services.Replace(ServiceDescriptor.Singleton<IIntegrationEventOutbox, TestIntegrationEventOutbox>());
                 if (imageTextGenerator is not null)

@@ -25,7 +25,7 @@ public sealed partial class MediaImageUploadIntake(
     IMediaUploadValidator validator,
     IMediaUploadScanner scanner,
     IObjectStore objectStore,
-    IPublicMediaImageStore imageStore,
+    IMediaImageUploadStore uploadStore,
     IIntegrationEventOutbox outbox,
     IOptions<MediaUploadValidationOptions> validationOptions,
     ILogger<MediaImageUploadIntake> logger,
@@ -52,6 +52,12 @@ public sealed partial class MediaImageUploadIntake(
 
     private const string SignatureMismatchMessage = "File signature does not match the allowed content type.";
 
+    private const string DecodedImageLimitMessage = "Image content could not be decoded or exceeds the configured decoded image limits.";
+
+    private const int SignaturePrefixBytes = 12;
+
+    private const int MinimumAvifFileTypeBytes = 16;
+
     private readonly MediaUploadValidationOptions options = validationOptions.Value;
 
     private ImageSanitizerOptions SanitizerOptions => new()
@@ -66,7 +72,7 @@ public sealed partial class MediaImageUploadIntake(
     /// </summary>
     /// <param name="request">The upload intake request.</param>
     /// <param name="ct">The cancellation token.</param>
-    /// <returns>The accepted metadata and processing event.</returns>
+    /// <returns>The accepted metadata and any new processing event.</returns>
     public async ValueTask<Result<MediaImageUploadIntakeResult>> Accept(MediaImageUploadIntakeRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -113,36 +119,56 @@ public sealed partial class MediaImageUploadIntake(
         }
 
         var canonicalContentType = GetCanonicalContentType(request.ContentType);
+        if (!await HasExpectedSignature(content, canonicalContentType, actualLength, ct).ConfigureAwait(false))
+        {
+            MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
+            return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, ContentField, SignatureMismatchMessage);
+        }
+
+        var objectKey = CreateOriginalObjectKey(request.MediaImageId, Guid.CreateVersion7(), canonicalContentType);
+        var scanResult = await Scan(objectKey, content, canonicalContentType, actualLength, ct).ConfigureAwait(false);
+        if (scanResult.Status is MediaUploadScanStatus.Failed)
+        {
+            LogScanDiagnostic(scanResult.Status);
+            MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.ScannerUnavailable);
+            return Result.Unavailable<MediaImageUploadIntakeResult>(ScannerUnavailableMessage);
+        }
+
+        if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
+        {
+            LogScanDiagnostic(scanResult.Status);
+            MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.ScanRejected);
+            return Result.Invalid<MediaImageUploadIntakeResult>(
+                InvalidUploadMessage,
+                nameof(scanResult.Status),
+                ScanRejectedMessage);
+        }
+
         var buffer = ArrayPool<byte>.Shared.Rent((int)actualLength);
         try
         {
-            content.Position = 0;
-            await content.ReadExactlyAsync(buffer.AsMemory(0, (int)actualLength), ct).ConfigureAwait(false);
-            content.Position = 0;
-            var sanitized = ImageSanitizer.SanitizeInPlace(buffer.AsMemory(0, (int)actualLength), SanitizerOptions);
+            var original = buffer.AsMemory(0, (int)actualLength);
+            await content.ReadExactlyAsync(original, ct).ConfigureAwait(false);
+            var fingerprint = MediaImageUploadFingerprint.Create(request, canonicalContentType, original.Span);
+            var upload = await uploadStore.Reserve(fingerprint, ct).ConfigureAwait(false);
+            await using var ownedUpload = upload.ConfigureAwait(false);
+            if (upload.ExistingImage is { } existing)
+            {
+                if (!WithinDecodedLimits(existing.Dimensions))
+                {
+                    MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
+                    return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, ContentField, DecodedImageLimitMessage);
+                }
+
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.Accepted);
+                return Result.Ok(new MediaImageUploadIntakeResult(existing, null, scanResult.Status));
+            }
+
+            var sanitized = ImageSanitizer.SanitizeInPlace(original, SanitizerOptions);
             if (IsWrongFormat(sanitized, canonicalContentType))
             {
                 MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
                 return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, ContentField, SignatureMismatchMessage);
-            }
-
-            var objectKey = CreateOriginalObjectKey(request.MediaImageId, Guid.CreateVersion7(), canonicalContentType);
-            var scanResult = await Scan(objectKey, content, canonicalContentType, actualLength, ct).ConfigureAwait(false);
-            if (scanResult.Status is MediaUploadScanStatus.Failed)
-            {
-                LogScanDiagnostic(scanResult.Status);
-                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.ScannerUnavailable);
-                return Result.Unavailable<MediaImageUploadIntakeResult>(ScannerUnavailableMessage);
-            }
-
-            if (scanResult.Status is MediaUploadScanStatus.Rejected or MediaUploadScanStatus.Pending)
-            {
-                LogScanDiagnostic(scanResult.Status);
-                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.ScanRejected);
-                return Result.Invalid<MediaImageUploadIntakeResult>(
-                    InvalidUploadMessage,
-                    nameof(scanResult.Status),
-                    ScanRejectedMessage);
             }
 
             if (sanitized.IsFailure)
@@ -171,7 +197,7 @@ public sealed partial class MediaImageUploadIntake(
                 return Result.Invalid<MediaImageUploadIntakeResult>(
                     InvalidUploadMessage,
                     nameof(request.Content),
-                    "Image content could not be decoded or exceeds the configured decoded image limits.");
+                    DecodedImageLimitMessage);
             }
 
             content.Position = 0;
@@ -217,7 +243,7 @@ public sealed partial class MediaImageUploadIntake(
 
             try
             {
-                await StoreImageEventAndCompensateObject(image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
+                await StoreImageEventAndCompensateObject(upload, image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
             }
             catch (MediaGalleryPlacementConflictException)
             {
@@ -232,6 +258,30 @@ public sealed partial class MediaImageUploadIntake(
         {
             ArrayPool<byte>.Shared.Return(buffer);
         }
+    }
+
+    private bool WithinDecodedLimits(MediaImageDimensions dimensions) =>
+        dimensions.Width <= options.MaxDecodedWidth &&
+        dimensions.Height <= options.MaxDecodedHeight &&
+        (long)dimensions.Width * dimensions.Height <= options.MaxDecodedPixelCount;
+
+    private static async ValueTask<bool> HasExpectedSignature(Stream content, string contentType, long length, CancellationToken ct)
+    {
+        var signature = new byte[SignaturePrefixBytes];
+        var bytesRead = await content.ReadAtLeastAsync(
+            signature, signature.Length, throwOnEndOfStream: false, cancellationToken: ct).ConfigureAwait(false);
+        content.Position = 0;
+        var prefix = signature.AsSpan(0, bytesRead);
+
+        return contentType switch
+        {
+            "image/jpeg" => prefix.StartsWith((ReadOnlySpan<byte>)[0xFF, 0xD8, 0xFF]),
+            "image/png" => prefix.StartsWith((ReadOnlySpan<byte>)[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
+            "image/webp" => prefix.Length == SignaturePrefixBytes && prefix[..4].SequenceEqual("RIFF"u8) && prefix[8..].SequenceEqual("WEBP"u8),
+            // AVIF compatible brands can follow the fixed prefix. The sanitizer checks them after scanning.
+            "image/avif" => length >= MinimumAvifFileTypeBytes && prefix.Length == SignaturePrefixBytes && prefix[4..8].SequenceEqual("ftyp"u8),
+            _ => false
+        };
     }
 
     private async ValueTask<MediaUploadScanResult> Scan(ObjectStorageKey objectKey, Stream content, string contentType, long length, CancellationToken ct)
@@ -278,6 +328,7 @@ public sealed partial class MediaImageUploadIntake(
     }
 
     private async ValueTask StoreImageEventAndCompensateObject(
+        IMediaImageUploadLease upload,
         PublicMediaImage image,
         MediaImageOriginalStoredIntegrationEvent originalStoredEvent,
         ObjectStorageKey objectKey,
@@ -289,7 +340,7 @@ public sealed partial class MediaImageUploadIntake(
                 async ct =>
                 {
                     await outbox.Enqueue(originalStoredEvent, ct).ConfigureAwait(false);
-                    await imageStore.Upsert(image, ct).ConfigureAwait(false);
+                    await upload.Save(image, ct).ConfigureAwait(false);
                 },
                 _ => MediaObjectCompensation.Delete(objectStore, objectKey.Value),
                 ct).ConfigureAwait(false);
@@ -303,8 +354,7 @@ public sealed partial class MediaImageUploadIntake(
     }
 
     /// <summary>
-    /// Gets whether the content is a different image format than declared, or no image at all: the cases the declared-type check refuses
-    /// before the scan. A damaged file of the declared format is scanned first, so a scanner rejection is reported instead.
+    /// Checks the actual format reported by the sanitizer, including the AVIF brands beyond the bounded prefix.
     /// </summary>
     private static bool IsWrongFormat(Result<SanitizedImage> sanitized, string canonicalContentType) => sanitized.IsSuccess
         ? !string.Equals(sanitized.Value.ContentType, canonicalContentType, StringComparison.Ordinal)
@@ -330,8 +380,7 @@ public sealed partial class MediaImageUploadIntake(
             CatalogDomainLimits.MaxMediaObjectKeyLength);
 
     /// <summary>
-    /// Maps the declared type to the canonical one. The validator has already matched the file signature, which is the format the
-    /// decoder selects, to this type, so the canonical value is the decoded type and never the client string.
+    /// Maps a type allowed by the upload validator to its canonical media type.
     /// </summary>
     private static string GetCanonicalContentType(string contentType) => contentType.Trim().ToUpperInvariant() switch
     {

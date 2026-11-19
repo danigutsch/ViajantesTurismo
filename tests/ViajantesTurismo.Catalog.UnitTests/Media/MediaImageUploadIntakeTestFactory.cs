@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
@@ -33,7 +34,7 @@ internal static class MediaImageUploadIntakeTestFactory
             new MediaUploadValidator(validationOptions),
             scanner,
             objectStore,
-            imageStore,
+            new DelegatingMediaImageUploadStore(imageStore),
             outbox ?? new CapturingIntegrationEventOutbox(),
             Options.Create(validationOptions),
             logger ?? NullLogger<MediaImageUploadIntake>.Instance, timeProvider ?? TimeProvider.System);

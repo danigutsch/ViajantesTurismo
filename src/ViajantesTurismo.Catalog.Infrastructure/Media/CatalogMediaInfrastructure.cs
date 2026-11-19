@@ -35,7 +35,9 @@ internal static class CatalogMediaInfrastructure
         }
         builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
         builder.Services.AddSingleton<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
-        builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
+        builder.Services.AddScoped<EfPublicMediaImageStore>();
+        builder.Services.AddScoped<IPublicMediaImageStore>(services => services.GetRequiredService<EfPublicMediaImageStore>());
+        builder.Services.AddScoped<IMediaImageUploadStore>(services => services.GetRequiredService<EfPublicMediaImageStore>());
 
         return builder;
     }
