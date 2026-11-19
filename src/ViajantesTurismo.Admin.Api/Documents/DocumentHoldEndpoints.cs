@@ -15,9 +15,9 @@ internal static class DocumentHoldEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var group = app.MapDocumentsGroup();
+        var documentsGroup = app.MapDocumentsGroup();
 
-        group.MapPost("/{id:guid}/holds", PlaceHold)
+        documentsGroup.MapPost("/{id:guid}/holds", PlaceHold)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentHold)
             .Produces<GetDocumentHoldDto>(StatusCodes.Status201Created)
@@ -25,25 +25,25 @@ internal static class DocumentHoldEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .WithAdminMetadata("PlaceDocumentHold", "Places a disposition hold on the lineage of a document so purges skip it. The 201 Location is the created hold.", "Places a document hold.");
 
-        group.MapGet("/{id:guid}/holds", ListHolds)
+        documentsGroup.MapGet("/{id:guid}/holds", ListHolds)
             .RequireAuthorization(AdminAuthorization.DocumentHold)
             .Produces<IReadOnlyList<GetDocumentHoldDto>>()
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .WithAdminMetadata("ListDocumentHolds", "Lists every hold, released or not, on the lineage of a document.", "Lists document holds.");
 
-        group.MapGet("/{id:guid}/holds/{holdId:guid}", GetHold)
+        documentsGroup.MapGet("/{id:guid}/holds/{holdId:guid}", GetHold)
             .RequireAuthorization(AdminAuthorization.DocumentHold)
             .Produces<GetDocumentHoldDto>()
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .WithAdminMetadata("GetDocumentHold", "Reads one hold, released or not, on the lineage of a document. An unknown hold and a hold of another document are both not found.", "Gets a document hold.");
 
-        group.MapGet("/holds", ListHoldOverview)
+        documentsGroup.MapGet("/holds", ListHoldOverview)
             .RequireAuthorization(AdminAuthorization.DocumentHold)
             .Produces<GetDocumentHoldOverviewPageDto>()
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
             .WithAdminMetadata("ListDocumentHoldOverview", "Lists holds across documents, oldest placement first, one bounded page at a time. Filters: state (the states are disjoint: Active is unreleased with a review date at or after now, OverdueReview is unreleased with a review date before now, Released is released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Page defaults to 1 and pageSize to 25, at most 100.", "Lists holds across documents.");
 
-        group.MapPost("/{id:guid}/holds/{holdId:guid}/release", ReleaseHold)
+        documentsGroup.MapPost("/{id:guid}/holds/{holdId:guid}/release", ReleaseHold)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentHold)
             .Produces<GetDocumentHoldDto>()

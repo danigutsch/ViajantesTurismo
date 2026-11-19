@@ -10,6 +10,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublishedTours",
         "responses": {
           "200": {
             "description": "OK",
@@ -32,6 +33,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublishedTour",
         "parameters": [
           {
             "name": "slug",
@@ -64,6 +66,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublicMedia",
         "parameters": [
           {
             "name": "id",
@@ -130,6 +133,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublicContent",
         "parameters": [
           {
             "name": "key",

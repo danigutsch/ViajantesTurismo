@@ -3,7 +3,7 @@
   "info": {
     "title": "ViajantesTurismo integration events",
     "version": "1.0.0",
-    "description": "Hand-authored AsyncAPI-compatible contract for current durable integration events. The contract documents event names, payload shape, producers, consumers, and versioning without adding a generator dependency."
+    "description": "Generated from the runtime JSON contracts and durable integration-event topology."
   },
   "defaultContentType": "application/json",
   "channels": {
@@ -12,6 +12,14 @@
       "messages": {
         "adminTourCreatedV1": {
           "$ref": "#/components/messages/AdminTourCreatedV1"
+        }
+      }
+    },
+    "branding.settings.changed": {
+      "address": "branding.settings.changed",
+      "messages": {
+        "brandingSettingsChangedV1": {
+          "$ref": "#/components/messages/BrandingSettingsChangedV1"
         }
       }
     },
@@ -32,10 +40,10 @@
       },
       "messages": [
         {
-          "$ref": "#/components/messages/AdminTourCreatedV1"
+          "$ref": "#/channels/admin.tour.created/messages/adminTourCreatedV1"
         }
       ],
-      "summary": "Admin publishes a created-tour event for Catalog projection intake."
+      "summary": "Admin publishes admin.tour.created for Catalog."
     },
     "consumeAdminTourCreatedV1": {
       "action": "receive",
@@ -44,10 +52,34 @@
       },
       "messages": [
         {
-          "$ref": "#/components/messages/AdminTourCreatedV1"
+          "$ref": "#/channels/admin.tour.created/messages/adminTourCreatedV1"
         }
       ],
-      "summary": "Catalog consumes Admin tour creation events from the catalog consumer stream."
+      "summary": "Catalog consumes admin.tour.created from the catalog consumer stream."
+    },
+    "publishBrandingSettingsChangedV1": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/branding.settings.changed"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/branding.settings.changed/messages/brandingSettingsChangedV1"
+        }
+      ],
+      "summary": "Branding publishes branding.settings.changed for Admin."
+    },
+    "consumeBrandingSettingsChangedV1": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/branding.settings.changed"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/branding.settings.changed/messages/brandingSettingsChangedV1"
+        }
+      ],
+      "summary": "Admin consumes branding.settings.changed from the admin consumer stream."
     },
     "publishMediaImageOriginalStoredV1": {
       "action": "send",
@@ -56,10 +88,10 @@
       },
       "messages": [
         {
-          "$ref": "#/components/messages/MediaImageOriginalStoredV1"
+          "$ref": "#/channels/catalog.media-image.original-stored/messages/mediaImageOriginalStoredV1"
         }
       ],
-      "summary": "Catalog publishes original media-image storage events for Catalog media processing."
+      "summary": "Catalog publishes catalog.media-image.original-stored for Catalog."
     },
     "consumeMediaImageOriginalStoredV1": {
       "action": "receive",
@@ -68,10 +100,10 @@
       },
       "messages": [
         {
-          "$ref": "#/components/messages/MediaImageOriginalStoredV1"
+          "$ref": "#/channels/catalog.media-image.original-stored/messages/mediaImageOriginalStoredV1"
         }
       ],
-      "summary": "Catalog consumes original media-image storage events from the catalog consumer stream."
+      "summary": "Catalog consumes catalog.media-image.original-stored from its in-process outbox relay."
     }
   },
   "components": {
@@ -109,10 +141,50 @@
           ],
           "channel": "admin.tour.created",
           "sourceType": "ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours.AdminTourCreatedIntegrationEvent",
-          "domainEventMapping": "ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourCreated",
           "outboxOwner": "AdminWriteDbContext",
-          "inboxOwner": "CatalogIntegrationTransportDbContext",
-          "handler": "ViajantesTurismo.Catalog.Application.Tours.AdminTourCreatedIntegrationHandler"
+          "inboxOwner": "CatalogDbContext",
+          "handler": "ViajantesTurismo.Catalog.Application.Tours.AdminTourCreatedIntegrationHandler",
+          "domainEventMapping": "ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourCreated",
+          "transportConsumer": "CatalogIntegrationTransportDbContext"
+        }
+      },
+      "BrandingSettingsChangedV1": {
+        "name": "branding.settings.changed",
+        "title": "Branding settings changed v1",
+        "contentType": "application/json",
+        "headers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "eventType",
+            "eventVersion"
+          ],
+          "properties": {
+            "eventType": {
+              "const": "branding.settings.changed"
+            },
+            "eventVersion": {
+              "const": 1
+            }
+          }
+        },
+        "payload": {
+          "$ref": "#/components/schemas/BrandingSettingsChangedIntegrationEventV1"
+        },
+        "x-viajantes": {
+          "producerContext": "Branding",
+          "consumerContexts": [
+            "Admin"
+          ],
+          "consumerNames": [
+            "admin"
+          ],
+          "channel": "branding.settings.changed",
+          "sourceType": "ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding.BrandingSettingsChangedIntegrationEvent",
+          "outboxOwner": "BrandingDbContext",
+          "inboxOwner": "AdminWriteDbContext",
+          "handler": "ViajantesTurismo.Admin.IntegrationEventWorker.BrandingSettingsChangedIntegrationHandler",
+          "transportConsumer": "AdminBrandingTransportDbContext"
         }
       },
       "MediaImageOriginalStoredV1": {
@@ -149,7 +221,7 @@
           "channel": "catalog.media-image.original-stored",
           "sourceType": "ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media.MediaImageOriginalStoredIntegrationEvent",
           "outboxOwner": "CatalogDbContext",
-          "inboxOwner": "CatalogIntegrationTransportDbContext",
+          "inboxOwner": "CatalogDbContext",
           "handler": "ViajantesTurismo.Catalog.Application.Media.MediaImageOriginalStoredIntegrationHandler"
         }
       }
@@ -157,72 +229,163 @@
     "schemas": {
       "AdminTourCreatedIntegrationEventV1": {
         "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "eventId",
-          "occurredAt",
-          "adminTourId",
-          "identifier",
-          "name"
-        ],
         "properties": {
-          "eventId": {
+          "EventId": {
             "type": "string",
             "format": "uuid"
           },
-          "occurredAt": {
+          "OccurredAt": {
             "type": "string",
             "format": "date-time"
           },
-          "adminTourId": {
+          "AdminTourId": {
             "type": "string",
             "format": "uuid"
           },
-          "identifier": {
+          "Identifier": {
             "type": "string"
           },
-          "name": {
+          "Name": {
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "EventId",
+          "OccurredAt",
+          "AdminTourId",
+          "Identifier",
+          "Name"
+        ],
+        "additionalProperties": false
+      },
+      "BrandingSettingsChangedIntegrationEventV1": {
+        "type": "object",
+        "properties": {
+          "EventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "OccurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "SourceEpoch": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "SourceRevision": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "BrandName": {
+            "type": "string"
+          },
+          "PrimaryColor": {
+            "type": "string"
+          },
+          "AccentColor": {
+            "type": "string"
+          },
+          "BackgroundColor": {
+            "type": "string"
+          },
+          "TextColor": {
+            "type": "string"
+          },
+          "HeadingFontFamily": {
+            "type": "string"
+          },
+          "BodyFontFamily": {
+            "type": "string"
+          },
+          "LogoUri": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri-reference"
+          },
+          "LogoSha256": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "LogoContentType": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "LogoContent": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null,
+            "contentEncoding": "base64"
+          }
+        },
+        "required": [
+          "EventId",
+          "OccurredAt",
+          "SourceEpoch",
+          "SourceRevision",
+          "BrandName",
+          "PrimaryColor",
+          "AccentColor",
+          "BackgroundColor",
+          "TextColor",
+          "HeadingFontFamily",
+          "BodyFontFamily",
+          "LogoUri"
+        ],
+        "additionalProperties": false
       },
       "MediaImageOriginalStoredIntegrationEventV1": {
         "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "eventId",
-          "occurredAt",
-          "mediaImageId",
-          "sourceObjectKey",
-          "processingVersion"
-        ],
         "properties": {
-          "eventId": {
+          "EventId": {
             "type": "string",
             "format": "uuid"
           },
-          "occurredAt": {
+          "OccurredAt": {
             "type": "string",
             "format": "date-time"
           },
-          "mediaImageId": {
+          "MediaImageId": {
             "type": "string",
             "format": "uuid"
           },
-          "sourceObjectKey": {
+          "SourceObjectKey": {
             "type": "string"
           },
-          "processingVersion": {
+          "ProcessingVersion": {
             "type": "integer",
             "format": "int32"
           }
-        }
+        },
+        "required": [
+          "EventId",
+          "OccurredAt",
+          "MediaImageId",
+          "SourceObjectKey",
+          "ProcessingVersion"
+        ],
+        "additionalProperties": false
       }
     }
   },
   "x-viajantes": {
     "scope": "Current durable integration events only.",
     "versioning": "Event type strings are stable names; eventVersion increments on breaking payload changes.",
-    "workflow": "Hand-authored JSON guarded by contract tests; no transient npm tooling."
+    "provenance": {
+      "generator": "ViajantesTurismo.AsyncApi.Tool",
+      "source": "scripts/ViajantesTurismo.AsyncApi.Tool/AsyncApiDocument.cs",
+      "refreshCommand": "dotnet run --project scripts/ViajantesTurismo.AsyncApi.Tool -- generate docs/asyncapi.json",
+      "verifyCommand": "dotnet run --project scripts/ViajantesTurismo.AsyncApi.Tool -- verify docs/asyncapi.json"
+    }
   }
 }

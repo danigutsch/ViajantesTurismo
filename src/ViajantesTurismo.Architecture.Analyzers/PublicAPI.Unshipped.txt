@@ -11,3 +11,8 @@ ViajantesTurismo.Architecture.Analyzers.NamingConventionAnalyzer
 ViajantesTurismo.Architecture.Analyzers.NamingConventionAnalyzer.NamingConventionAnalyzer() -> void
 override ViajantesTurismo.Architecture.Analyzers.NamingConventionAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
 override ViajantesTurismo.Architecture.Analyzers.NamingConventionAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+const ViajantesTurismo.Architecture.Analyzers.ArchitectureDiagnosticIds.ToolWrapperHttp = "VTARCH004" -> string!
+ViajantesTurismo.Architecture.Analyzers.ThinToolWrapperAnalyzer
+ViajantesTurismo.Architecture.Analyzers.ThinToolWrapperAnalyzer.ThinToolWrapperAnalyzer() -> void
+override ViajantesTurismo.Architecture.Analyzers.ThinToolWrapperAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override ViajantesTurismo.Architecture.Analyzers.ThinToolWrapperAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>

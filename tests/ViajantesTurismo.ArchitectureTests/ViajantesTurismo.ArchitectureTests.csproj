@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\scripts\ViajantesTurismo.Architecture.Tool\ViajantesTurismo.Architecture.Tool.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.AppHost\ViajantesTurismo.AppHost.csproj" IsAspireProjectResource="false" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
@@ -36,6 +37,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Contracts.IntegrationEvents\ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Infrastructure\ViajantesTurismo.Catalog.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Management.Security\ViajantesTurismo.Management.Security.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"/>
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.Grafana" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" />

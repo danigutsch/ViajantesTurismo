@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using PandaBear.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Repository;
@@ -5,6 +7,34 @@ namespace ViajantesTurismo.ArchitectureTests.Repository;
 [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
 public sealed class DocumentationCiTests
 {
+    [Fact]
+    public void Generated_architecture_pages_name_the_pinned_generator_in_their_refresh_command()
+    {
+        // Arrange
+        const string manifestPath = ".config/dotnet-tools.json";
+        const string configPath = "docs/architecture/generated-diagrams.json";
+        var root = RepositoryRoot.Locate();
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, manifestPath)));
+        using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, configPath)));
+        var pinnedCommands = manifest.RootElement.GetProperty("tools")
+            .GetProperty("pandabear.sharedkernel.documentation.tool").GetProperty("commands");
+        var generatorName = config.RootElement.GetProperty("generatorName").GetString().ShouldNotBeNull();
+        var docsPath = config.RootElement.GetProperty("docsPath").GetString().ShouldNotBeNull();
+
+        // Act
+        var targetPaths = config.RootElement.GetProperty("blocks").EnumerateArray()
+            .Select(block => block.GetProperty("targetPath").GetString().ShouldNotBeNull())
+            .Distinct(StringComparer.Ordinal).ToArray();
+
+        // Assert
+        pinnedCommands.EnumerateArray().Select(command => command.GetString()).ShouldContain(generatorName);
+        foreach (var targetPath in targetPaths)
+        {
+            var document = File.ReadAllText(Path.Combine(root, docsPath, targetPath));
+            document.ShouldContain($"`dotnet tool run {generatorName} -- generate --config {configPath}`", StringComparison.Ordinal);
+        }
+    }
+
     [Fact]
     public void Documentation_workflow_avoids_hidden_test_runs_and_lints_every_change_alike()
     {

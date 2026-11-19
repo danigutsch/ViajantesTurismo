@@ -1000,6 +1000,16 @@ public sealed partial class AnalyzerSuppressionPolicyTests
                 || path.EndsWith(".Contracts.IntegrationEvents.csproj", StringComparison.Ordinal))
             .ToArray();
         allowedAnalyzerProjectFiles.UnionWith(namingConventionProjects);
+        var scriptsPath = Path.Combine(repositoryRoot, "scripts") + Path.DirectorySeparatorChar;
+        var toolWrapperProjects = allProjectFiles
+            .Where(path => path.StartsWith(scriptsPath, StringComparison.Ordinal))
+            .Where(path => XDocument.Load(path).Descendants("ViajantesTurismoToolWrapper")
+                .Any(element => string.Equals(element.Value, "true", StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
+        allowedAnalyzerProjectFiles.UnionWith(toolWrapperProjects);
+        var enabledToolWrapperProjects = toolWrapperProjects
+            .Where(AnalyzerSuppressionPolicyTestsHelpers.EnablesProductionHttpAnalyzer)
+            .ToArray();
         var namingConventionAnalyzerReferences = namingConventionProjects
             .Where(path => File.ReadAllText(path).Contains("ViajantesTurismo.Architecture.Analyzers", StringComparison.OrdinalIgnoreCase))
             .ToArray();
@@ -1014,6 +1024,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         var enabledNonProductionProjects = allProjectFiles
             .Where(path => !productionApiProjectSet.Contains(path))
             .Where(path => !namingConventionProjects.Contains(path))
+            .Where(path => !toolWrapperProjects.Contains(path))
             .Where(AnalyzerSuppressionPolicyTestsHelpers.EnablesProductionHttpAnalyzer)
             .Select(path => Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'))
             .ToArray();
@@ -1040,6 +1051,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         namingConventionAnalyzerReferences.Length.ShouldBe(namingConventionProjects.Length);
         enabledNonProductionProjects.ShouldBeEmpty();
         unauthorizedAnalyzerProjectReferences.ShouldBeEmpty();
+        enabledToolWrapperProjects.ShouldBe(toolWrapperProjects);
         centralAnalyzerEnablement.ShouldBeEmpty();
         centralAnalyzerReferences.ShouldBeEmpty();
         analyzerProject.ShouldNotContain("SharedKernel.", StringComparison.Ordinal);

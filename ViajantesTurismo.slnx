@@ -11,6 +11,10 @@
         <File Path=".gitignore" />
         <File Path="opencode.json" />
     </Folder>
+    <Folder Name="/scripts/">
+        <Project Path="scripts/ViajantesTurismo.Architecture.Tool/ViajantesTurismo.Architecture.Tool.csproj" />
+        <Project Path="scripts/ViajantesTurismo.AsyncApi.Tool/ViajantesTurismo.AsyncApi.Tool.csproj" />
+    </Folder>
     <Folder Name="/src/">
         <Project Path="src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj" />
         <Project Path="src/ViajantesTurismo.Architecture.Analyzers/ViajantesTurismo.Architecture.Analyzers.csproj" />

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <IsPackable>false</IsPackable>
+        <ViajantesTurismoToolWrapper>true</ViajantesTurismoToolWrapper>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="ViajantesTurismo.Admin.ContractTests" />
+        <CompilerVisibleProperty Include="ViajantesTurismoToolWrapper" />
+        <ProjectReference Include="../../src/ViajantesTurismo.Architecture.Analyzers/ViajantesTurismo.Architecture.Analyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false"
+                          PrivateAssets="all" IsAspireProjectResource="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Contracts.IntegrationEvents\ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Contracts.IntegrationEvents\ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\..\src\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
+    </ItemGroup>
+
+</Project>

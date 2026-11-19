@@ -19,6 +19,8 @@
       "NuGet.Config",
       "opencode.json",
       "scripts/*",
+      "docs/architecture/architecture-metadata.json",
+      "docs/architecture/data-ownership.md",
       "setup-dev.ps1",
       "setup-dev.sh",
       "tests/testconfig.json",

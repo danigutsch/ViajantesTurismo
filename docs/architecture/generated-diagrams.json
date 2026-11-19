@@ -110,6 +110,7 @@
       "kind": "endpoint-routes",
       "sourcePath": "src",
       "routePrefixes": {
+        "bookingFinancesGroup": "/api/v1/bookings/{bookingId:guid}/finances",
         "bookingsGroup": "/api/v1/bookings",
         "customersGroup": "/api/v1/customers",
         "documentsGroup": "/api/v1/documents",
@@ -117,6 +118,7 @@
         "importGroup": "/api/v1/customers/import",
         "managementBranding": "/api/v1/branding/settings",
         "managementCatalog": "/api/v1/catalog",
+        "paymentAccountsGroup": "/api/v1/payment-accounts",
         "publicBranding": "/api/v1/public/branding",
         "toursGroup": "/api/v1/tours",
         "versionedApi": "/api/v1"
@@ -126,13 +128,15 @@
         "WithName"
       ],
       "sourceAudiences": {
-        "ViajantesTurismo.Public.Web/": "public web"
+        "ViajantesTurismo.Public.Web/": "public web",
+        "ViajantesTurismo.Management.Web/": "management web"
       },
       "routeAudiences": {
         "^/public/": "public API",
-        "^/api/v[0-9]+(?:[.][0-9]+)?/public/": "public API"
+        "^/api/v[0-9]+(?:[.][0-9]+)?/public/": "public API",
+        "^/api/v[0-9]+(?:[.][0-9]+)?/(?:bookings|branding/settings|catalog|customers|docs/errors|documents|payment-accounts|tours)(?:/|$)": "management API"
       },
-      "defaultAudience": "management/internal"
+      "defaultAudience": "internal"
     },
     {
       "name": "integration-events",
@@ -146,15 +150,39 @@
       "kind": "apphost-resources",
       "sourcePath": "src/ViajantesTurismo.AppHost/AppHostComposition.cs",
       "labels": {
+        "AdminPerformanceSmoke": "Admin k6 smoke - Full profile with local OIDC and VT_ASPIRE_ENABLE_PERFORMANCE_TESTS",
+        "DatabaseObservability": "Database observability - Full profile with local PostgreSQL and Aspire:Features:DatabaseObservability",
+        "ManagementWeb": "Management.Web external HTTP",
+        "ObservabilityStack": "Optional Grafana LGTM backends - ASPIRE_ENABLE_OBSERVABILITY_STACK",
+        "PublicWeb": "Public.Web external HTTP",
         "clamAv": "ClamAV",
         "seaweedFs": "SeaweedFS",
         "databaseServer": "PostgreSQL server",
         "database": "database",
         "cache": "Redis cache",
         "migrationService": "MigrationService",
-        "adminApi": "Admin.Api",
-        "catalogApi": "Catalog.Api"
+        "adminApi": "Admin.Api internal HTTP",
+        "catalogApi": "Catalog.Api internal HTTP"
       }
+    },
+    {
+      "name": "apphost-relationship-kinds",
+      "targetPath": "runtime-wiring-and-deployment.md",
+      "kind": "mermaid-flowchart",
+      "flowchart": "flowchart LR",
+      "lines": [
+        "    web[Management.Web]",
+        "    publicSite[Public.Web]",
+        "    admin[Admin.Api]",
+        "    catalog[Catalog.Api]",
+        "    migration[MigrationService]",
+        "    web -->|service discovery| admin",
+        "    web -->|service discovery| catalog",
+        "    publicSite -->|service discovery| catalog",
+        "    web -->|waits for completion| migration",
+        "    admin -->|waits for completion| migration",
+        "    catalog -->|waits for completion| migration"
+      ]
     },
     {
       "name": "ci-main-jobs",

@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "boundaries": {
+    "public": "Public trust boundary",
+    "management": "Management trust boundary",
+    "internal": "Internal service boundary",
+    "data": "Data trust boundary",
+    "external": "External dependency boundary"
+  },
+  "lifecycle": {
+    "implemented": "Implemented",
+    "planned": "Planned"
+  },
+  "dataClasses": {
+    "public": "Published content",
+    "personal": "Personal",
+    "sensitive": "Sensitive",
+    "credential": "Credential",
+    "financial": "Financial",
+    "operational": "Operational"
+  },
+  "tableRoles": {
+    "domain": "Domain",
+    "outbox": "Outbox",
+    "inbox": "Inbox/idempotency",
+    "transport": "Transport",
+    "event-store": "Event store",
+    "projection": "Projection",
+    "authentication": "Authentication"
+  },
+  "services": [
+    {
+      "id": "AdminApi",
+      "label": "Admin.Api",
+      "boundary": "internal",
+      "audiences": ["management"],
+      "state": "implemented"
+    },
+    {
+      "id": "AdminWorker",
+      "label": "Admin.IntegrationEventWorker",
+      "boundary": "internal",
+      "audiences": ["internal"],
+      "state": "implemented"
+    },
+    {
+      "id": "CatalogApi",
+      "label": "Catalog.Api",
+      "boundary": "internal",
+      "audiences": ["management", "public"],
+      "state": "implemented"
+    },
+    {
+      "id": "CatalogWorker",
+      "label": "Catalog.IntegrationEventWorker",
+      "boundary": "internal",
+      "audiences": ["internal"],
+      "state": "implemented"
+    },
+    {
+      "id": "ManagementWeb",
+      "label": "Management.Web",
+      "boundary": "management",
+      "audiences": ["management"],
+      "state": "implemented"
+    }
+  ],
+  "stores": [
+    {
+      "id": "AdminReadDbContext",
+      "dbContext": "AdminReadDbContext",
+      "database": "admin-database",
+      "owner": "Admin",
+      "access": "reads",
+      "boundary": "data",
+      "state": "implemented",
+      "consumers": ["AdminApi"],
+      "tables": [
+        {"schema": "public", "name": "Customers", "role": "domain", "dataClasses": ["personal"]},
+        {"schema": "public", "name": "Booking", "role": "domain", "dataClasses": ["personal", "sensitive", "financial"]}
+      ]
+    },
+    {
+      "id": "AdminWriteDbContext",
+      "dbContext": "AdminWriteDbContext",
+      "database": "admin-database",
+      "owner": "Admin",
+      "access": "reads and writes",
+      "boundary": "data",
+      "state": "implemented",
+      "consumers": ["AdminApi", "AdminWorker"],
+      "tables": [
+        {"schema": "public", "name": "Customers", "role": "domain", "dataClasses": ["personal"]},
+        {"schema": "public", "name": "Booking", "role": "domain", "dataClasses": ["personal", "sensitive", "financial"]},
+        {"schema": "messaging", "name": "outbox_messages", "role": "outbox", "dataClasses": ["operational"]},
+        {"schema": "branding_projection", "name": "inbox_messages", "role": "inbox", "dataClasses": ["operational"]},
+        {"schema": "branding_projection", "name": "settings", "role": "projection", "dataClasses": ["public", "operational"]}
+      ]
+    },
+    {
+      "id": "AdminBrandingTransportDbContext",
+      "dbContext": "AdminBrandingTransportDbContext",
+      "database": "catalog-database",
+      "owner": "Admin",
+      "access": "claims transport messages",
+      "boundary": "data",
+      "state": "implemented",
+      "consumers": ["AdminWorker"],
+      "tables": [
+        {"schema": "messaging", "name": "transport_messages", "role": "transport", "dataClasses": ["operational"]}
+      ]
+    },
+    {
+      "id": "CatalogDbContext",
+      "dbContext": "CatalogDbContext",
+      "database": "catalog-database",
+      "owner": "Catalog",
+      "access": "reads and writes",
+      "boundary": "data",
+      "state": "implemented",
+      "consumers": ["CatalogApi", "CatalogWorker"],
+      "tables": [
+        {"schema": "messaging", "name": "idempotency_keys", "role": "inbox", "dataClasses": ["operational"]},
+        {"schema": "messaging", "name": "outbox_messages", "role": "outbox", "dataClasses": ["operational"]},
+        {"schema": "public", "name": "CatalogTourReadModels", "role": "projection", "dataClasses": ["operational", "public"]},
+        {"schema": "public", "name": "PublicContent", "role": "domain", "dataClasses": ["operational", "public"]}
+      ]
+    },
+    {
+      "id": "CatalogIntegrationTransportDbContext",
+      "dbContext": "CatalogIntegrationTransportDbContext",
+      "database": "admin-database",
+      "owner": "Catalog",
+      "access": "claims transport messages",
+      "boundary": "data",
+      "state": "implemented",
+      "consumers": ["CatalogWorker"],
+      "tables": [
+        {"schema": "messaging", "name": "transport_messages", "role": "transport", "dataClasses": ["operational"]}
+      ]
+    },
+    {
+      "id": "CatalogEventStore",
+      "dbContext": null,
+      "database": "catalog-database",
+      "owner": "Catalog",
+      "access": "loads and appends events",
+      "boundary": "data",
+      "state": "implemented",
+      "consumers": ["CatalogApi", "CatalogWorker"],
+      "tables": [
+        {"schema": "event_sourcing", "name": "event_streams", "role": "event-store", "dataClasses": ["operational"]},
+        {"schema": "event_sourcing", "name": "events", "role": "event-store", "dataClasses": ["operational"]},
+        {"schema": "event_sourcing", "name": "projection_checkpoints", "role": "projection", "dataClasses": ["operational"]}
+      ]
+    },
+    {
+      "id": "BrandingDbContext",
+      "dbContext": "BrandingDbContext",
+      "database": "catalog-database",
+      "owner": "Branding",
+      "access": "reads and writes",
+      "boundary": "data",
+      "state": "implemented",
+      "consumers": ["CatalogApi"],
+      "tables": [
+        {"schema": "branding", "name": "BrandingSettings", "role": "domain", "dataClasses": ["operational", "public"]},
+        {"schema": "branding", "name": "outbox_messages", "role": "outbox", "dataClasses": ["operational"]}
+      ]
+    },
+    {
+      "id": "ManagementSecurityDbContext",
+      "dbContext": "ManagementSecurityDbContext",
+      "database": "security-database",
+      "owner": "Management",
+      "access": "reads and writes",
+      "boundary": "data",
+      "state": "implemented",
+      "consumers": ["ManagementWeb"],
+      "tables": [
+        {"schema": "security", "name": "data_protection_keys", "role": "authentication", "dataClasses": ["credential"]},
+        {"schema": "security", "name": "management_cookie_tickets", "role": "authentication", "dataClasses": ["credential", "personal"]}
+      ]
+    }
+  ]
+}

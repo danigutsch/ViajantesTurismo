@@ -18,6 +18,9 @@ The Aspire AppHost is the source of truth for local runtime wiring. For the gene
 deployment mapping, service discovery, migration startup, and secret boundaries, see
 [Runtime wiring and deployment mapping](runtime-wiring-and-deployment.md).
 
+For database access surfaces, EF Core ownership, data handling classes, and persistence roles, see
+[Data ownership and trust boundaries](data-ownership.md).
+
 ## Project boundary map
 
 Keep business rules in domain projects. Keep provider-specific persistence and external adapters in

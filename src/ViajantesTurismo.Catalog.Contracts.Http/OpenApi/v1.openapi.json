@@ -10,6 +10,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetTours",
         "responses": {
           "200": {
             "description": "OK",
@@ -43,6 +44,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetTour",
         "parameters": [
           {
             "name": "id",
@@ -77,6 +79,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "UpsertTourPresentation",
         "parameters": [
           {
             "name": "id",
@@ -162,6 +165,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "PublishTour",
         "parameters": [
           {
             "name": "id",
@@ -240,6 +244,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "UnpublishTour",
         "parameters": [
           {
             "name": "id",
@@ -318,6 +323,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "ListTourImages",
         "parameters": [
           {
             "name": "id",
@@ -350,6 +356,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "UploadTourImage",
         "parameters": [
           {
             "name": "id",
@@ -435,6 +442,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetManagementMediaPreview",
         "parameters": [
           {
             "name": "id",
@@ -515,6 +523,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GenerateMediaImageAccessibilityDraft",
         "parameters": [
           {
             "name": "id",
@@ -576,6 +585,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "ReviewMediaImageAccessibility",
         "parameters": [
           {
             "name": "id",
@@ -637,6 +647,7 @@
         "tags": [
           "ViajantesTurismo.Catalog.Api"
         ],
+        "operationId": "ListPublicContentForManagement",
         "responses": {
           "200": {
             "description": "OK",
@@ -670,6 +681,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublicContentForManagement",
         "parameters": [
           {
             "name": "key",
@@ -701,6 +713,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "UpsertPublicContent",
         "parameters": [
           {
             "name": "key",
@@ -761,6 +774,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublishedTours",
         "responses": {
           "200": {
             "description": "OK",
@@ -783,6 +797,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublishedTour",
         "parameters": [
           {
             "name": "slug",
@@ -815,6 +830,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublicMedia",
         "parameters": [
           {
             "name": "id",
@@ -881,6 +897,7 @@
         "tags": [
           "CatalogEndpoints"
         ],
+        "operationId": "GetPublicContent",
         "parameters": [
           {
             "name": "key",
@@ -917,6 +934,7 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "operationId": "GetPublicBrandingSettings",
         "responses": {
           "200": {
             "description": "OK"
@@ -929,6 +947,7 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "operationId": "GetPublicBrandingLogo",
         "parameters": [
           {
             "name": "sha256",
@@ -957,6 +976,7 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "operationId": "GetManagementBrandingSettings",
         "responses": {
           "200": {
             "description": "OK",
@@ -1004,6 +1024,7 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "operationId": "SaveBrandingSettings",
         "parameters": [
           {
             "name": "If-Match",
@@ -1085,6 +1106,7 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "operationId": "UploadBrandingLogo",
         "parameters": [
           {
             "name": "If-Match",
@@ -1190,6 +1212,7 @@
         "tags": [
           "BrandingEndpoints"
         ],
+        "operationId": "RemoveBrandingLogo",
         "parameters": [
           {
             "name": "If-Match",
