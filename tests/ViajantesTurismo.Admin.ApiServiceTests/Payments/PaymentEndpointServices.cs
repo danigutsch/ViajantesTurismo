@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -8,7 +9,7 @@ namespace ViajantesTurismo.Admin.ApiServiceTests.Payments;
 /// <summary>Registers payment fakes for endpoint boundary tests.</summary>
 internal static class PaymentEndpointServices
 {
-    /// <summary>Replaces payment stores and services with the transaction, queries and empty stores.</summary>
+    /// <summary>Replaces payment stores and prevents payment tests from reading booking contract sources.</summary>
     public static void Configure(IServiceCollection services, PaymentEndpointTransaction transaction, PaymentAccountQueryProbe queries)
     {
         services.RemoveAll<IPaymentTransaction>();
@@ -23,5 +24,7 @@ internal static class PaymentEndpointServices
         services.AddSingleton<IPaymentAccountQueryService>(queries);
         services.RemoveAll<ITourStore>();
         services.AddSingleton<ITourStore, FakeTourStore>();
+        services.RemoveAll<IDocumentSourceVersionReader>();
+        services.AddSingleton<IDocumentSourceVersionReader, UnexpectedContractSourceVersionReader>();
     }
 }
