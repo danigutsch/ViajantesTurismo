@@ -436,12 +436,13 @@ public required int Duration { get; init; }
 
 ### EF Core Migrations
 
-Create EF Core migrations from the model whenever possible:
+Create EF Core migrations from the model whenever possible. Use the owning project as both the
+migration project and startup project. Its design-time factory supplies a placeholder connection:
 
 ```bash
-dotnet tool run dotnet-ef migrations add <MigrationName> \
-    --project src/<Context>.Infrastructure \
-    --startup-project src/ViajantesTurismo.MigrationService \
+dotnet tool run dotnet-ef -- migrations add <MigrationName> \
+    --project <OwningProject> \
+    --startup-project <OwningProject> \
     --context <DbContextName>
 ```
 
@@ -458,6 +459,11 @@ dotnet tool run dotnet-ef migrations add <MigrationName> \
 - Prefer model-driven constructs for dynamic concepts, such as owned collections for localized variants,
   instead of hardcoded per-language columns.
 - Keep generated migration files in source control with the model snapshot.
+
+The [governed PostgreSQL migration decision](adr/20261118-governed-postgresql-migrations.md)
+defines the production script, phase, and recovery model. The
+[migration service guide](../src/ViajantesTurismo.MigrationService/README.md#design-time-ef-core)
+lists the owning projects and the offline validation commands.
 
 #### Migration history reset before launch
 

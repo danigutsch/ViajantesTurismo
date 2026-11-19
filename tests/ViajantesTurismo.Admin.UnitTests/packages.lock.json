@@ -961,8 +961,10 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting": "[11.0.0, )",
+          "Npgsql": "[10.0.3, )",
           "PandaBear.SharedKernel.Branding": "[0.1.0-alpha.653.1, )",
           "PandaBear.SharedKernel.EventSourcing.Npgsql": "[0.1.0-alpha.653.1, )",
+          "PandaBear.SharedKernel.IO": "[0.1.0-alpha.653.1, )",
           "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Admin.Infrastructure": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Branding.Infrastructure": "[0.1.0-alpha.0, )",
