@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
-namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
+namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings.UpdateBookingDetails;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
 public sealed class UpdateBookingDetailsCommandHandlerTests

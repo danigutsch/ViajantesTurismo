@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
-namespace ViajantesTurismo.Admin.ApiServiceTests;
+namespace ViajantesTurismo.Admin.ApiServiceTests.Tours;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.EndpointCategory)]
 [Trait(PandaBear.Testing.TestTraitNames.HostName, PandaBear.Testing.TestTraitValues.TestServerHost)]

@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Infrastructure.Tours;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using PandaBear.Messaging.IntegrationEvents;
@@ -191,6 +192,36 @@ public sealed class AdminInfrastructureModuleTests
 
         // Assert
         hasScopedLifetime.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void AddInfrastructure_preserves_supplied_tour_stores()
+    {
+        // Arrange
+        var suppliedStore = new FakeTourStore();
+        using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule(tourStore: suppliedStore);
+
+        // Act
+        var aggregateStore = services.TourStore;
+        var commandStore = services.TourCommandStore;
+
+        // Assert
+        aggregateStore.ShouldBeSameAs(suppliedStore);
+        commandStore.ShouldBeSameAs(suppliedStore);
+    }
+
+    [Fact]
+    public void Tour_persistence_requires_the_admin_write_context()
+    {
+        // Arrange
+        using var services = AdminInfrastructureModuleTestServices.CreateWithTourPersistenceOnly();
+        Action resolveCommandStore = () => _ = services.TourCommandStore;
+
+        // Act
+        var error = resolveCommandStore.ShouldThrow<InvalidOperationException>();
+
+        // Assert
+        error.Message.ShouldContain(nameof(AdminWriteDbContext), StringComparison.Ordinal);
     }
 
     [Fact]

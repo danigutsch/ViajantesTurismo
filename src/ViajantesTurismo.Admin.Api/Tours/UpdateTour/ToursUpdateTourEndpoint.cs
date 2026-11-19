@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 using ViajantesTurismo.Admin.Contracts.Application;
 using PandaBear.Results;
 
-namespace ViajantesTurismo.Admin.Api.Tours;
+namespace ViajantesTurismo.Admin.Api.Tours.UpdateTour;
 
 /// <summary>
 /// Maps the tour update endpoint as its own vertical slice.

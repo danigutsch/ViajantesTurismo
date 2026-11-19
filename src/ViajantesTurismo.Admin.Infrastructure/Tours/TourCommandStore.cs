@@ -3,7 +3,7 @@ using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.Infrastructure;
+namespace ViajantesTurismo.Admin.Infrastructure.Tours;
 
 /// <summary>Loads Tour aggregates under a PostgreSQL row lock owned by the command transaction.</summary>
 internal sealed class TourCommandStore(AdminWriteDbContext dbContext, ITourStore tours) : ITourCommandStore

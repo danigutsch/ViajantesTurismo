@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Bookings;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;

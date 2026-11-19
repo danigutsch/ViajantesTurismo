@@ -1,5 +1,6 @@
 using PandaBear.BuildingBlocks;
 using Microsoft.EntityFrameworkCore;
+using ViajantesTurismo.Admin.Application.Bookings;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;

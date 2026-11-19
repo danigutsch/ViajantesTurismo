@@ -131,18 +131,19 @@ approve a wire-contract change. Preserve [request semantics](API_REQUEST_SHAPES.
 
 ## Admin sequence
 
-1. Capture route/OpenAPI, handler, aggregate, and persistence baseline for the selected operation.
-   Start with the already separated booking notes operation; preserve its PATCH route and errors.
-2. Align only that endpoint, command, mapping, and matching tests by operation. Keep shared
-   `IQueryService`, `IUnitOfWork`, and route-group composition until a later justified extraction.
-3. Expand through booking details/discount and then lifecycle/payment operations. Preserve tour
-   capacity locking, payment rules, and transaction/outbox atomicity with provider tests.
-4. Move tour create/update and customer create/update. Retain contract assemblies and serializer
-   metadata; coordinate date-related files with the separate deterministic-time work.
-5. Move import as one workflow boundary: parsing, conflict detection/resolution, scan limits, commit,
+Booking mutations and Tour create and update have matching operation folders in the API and
+Application. Booking mapping and focused tests follow their owning feature. The Tour aggregate
+store, locking command store, and EF mappings live together in Admin Infrastructure. The
+application host composes the Booking and Tour route groups and registers the two scoped Tour
+stores through infrastructure. Explicit store registrations can supply either store before that
+composition. The shared write context owns the transaction and the mapping model.
+
+1. Move customer create/update. Retain contract assemblies and serializer metadata. Coordinate
+   date-related files with the separate deterministic-time work.
+2. Move import as one workflow boundary: parsing, conflict detection/resolution, scan limits, commit,
    and UI handoff. Avoid splitting its state machine between unrelated ownership folders.
-6. Move documents last, keeping review/finalization, idempotency, audit, retention, and artifact
-   storage seams together. Regeneration is not an ordinary update of a finalized artifact.
+3. Continue with payment and document workflow ownership. Keep review/finalization, idempotency,
+   audit, retention, and artifact storage together. Regeneration is a separate workflow.
 
 Prerequisites: inventory current consumers and test seams; record any intended contract change
 separately. Risks: aggregate-wide transaction rules, broad query contracts, generated metadata,

@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.Api.Tours;
+namespace ViajantesTurismo.Admin.Api.Tours.CreateTour;
 
 /// <summary>
 /// Maps the tour creation endpoint as its own vertical slice.

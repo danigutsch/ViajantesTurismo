@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
-namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
+namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings.ConfirmBooking;
 
 public sealed class ConfirmBookingCommandHandlerTests
 {

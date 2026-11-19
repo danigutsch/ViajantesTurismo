@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.Api.Bookings;
+namespace ViajantesTurismo.Admin.Api.Bookings.CancelBooking;
 
 /// <summary>Endpoint for cancelling a booking.</summary>
 internal static class BookingsCancelBookingEndpoint

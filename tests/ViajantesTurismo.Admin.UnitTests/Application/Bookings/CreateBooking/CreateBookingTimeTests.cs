@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
-namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
+namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings.CreateBooking;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
 public sealed class CreateBookingTimeTests

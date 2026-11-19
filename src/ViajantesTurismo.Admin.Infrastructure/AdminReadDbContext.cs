@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Infrastructure.Tours;
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Domain.Customers;

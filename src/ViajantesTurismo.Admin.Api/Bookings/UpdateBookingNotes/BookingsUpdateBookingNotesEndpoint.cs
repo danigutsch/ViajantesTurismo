@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.Api.Bookings;
+namespace ViajantesTurismo.Admin.Api.Bookings.UpdateBookingNotes;
 
 /// <summary>Endpoint for updating the notes of a booking.</summary>
 internal static class BookingsUpdateBookingNotesEndpoint

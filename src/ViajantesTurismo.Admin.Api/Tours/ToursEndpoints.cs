@@ -1,3 +1,5 @@
+using ViajantesTurismo.Admin.Api.Tours.CreateTour;
+using ViajantesTurismo.Admin.Api.Tours.UpdateTour;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;

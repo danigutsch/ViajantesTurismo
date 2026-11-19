@@ -3,6 +3,7 @@ using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Payments;
+using ViajantesTurismo.Admin.Application.Bookings;
 using ViajantesTurismo.Admin.Application.Mappings;
 
 namespace ViajantesTurismo.Admin.Application.Payments;

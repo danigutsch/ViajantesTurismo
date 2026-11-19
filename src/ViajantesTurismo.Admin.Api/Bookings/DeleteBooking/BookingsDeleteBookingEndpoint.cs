@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 
-namespace ViajantesTurismo.Admin.Api.Bookings;
+namespace ViajantesTurismo.Admin.Api.Bookings.DeleteBooking;
 
 /// <summary>Endpoint for deleting a booking.</summary>
 internal static class BookingsDeleteBookingEndpoint

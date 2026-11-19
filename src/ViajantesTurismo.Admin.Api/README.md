@@ -9,6 +9,9 @@ error handling.
 
 ## Endpoints
 
+Booking mutations and Tour create and update live in operation directories under `Bookings` and
+`Tours`. Each feature's route group owns its reads and maps the operations at startup.
+
 ### Tours
 
 - `GET /tours` - List all tours

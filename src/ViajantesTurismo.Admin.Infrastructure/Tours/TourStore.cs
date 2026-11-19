@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.Infrastructure;
+namespace ViajantesTurismo.Admin.Infrastructure.Tours;
 
 /// <summary>Tour repository backed by the Admin write database context.</summary>
 /// <param name="dbContext">The Admin write database context.</param>
