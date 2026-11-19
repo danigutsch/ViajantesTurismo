@@ -7,6 +7,9 @@ namespace ViajantesTurismo.Catalog.Domain.Tours;
 /// </summary>
 public static class CatalogTourErrors
 {
+    /// <summary>Indicates that the retired tour is retained for history and cannot be changed.</summary>
+    public static Result Retired() => Result.Conflict("Retired tours cannot be edited or published.");
+
     /// <summary>
     /// Indicates that a published tour must be unpublished before its presentation can change.
     /// </summary>

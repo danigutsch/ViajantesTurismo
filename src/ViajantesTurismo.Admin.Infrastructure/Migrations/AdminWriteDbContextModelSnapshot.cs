@@ -711,6 +711,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTimeOffset?>("CatalogRetirementAppliedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Identifier")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -720,6 +723,12 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
+
+                    b.Property<DateTimeOffset?>("RetiredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RetirementId")
+                        .HasColumnType("uuid");
 
                     b.PrimitiveCollection<string[]>("_includedServices")
                         .IsRequired()
@@ -734,7 +743,40 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Tours");
+                    b.HasIndex("RetirementId")
+                        .IsUnique();
+
+                    b.ToTable("Tours", t =>
+                        {
+                            t.HasCheckConstraint("CK_Tours_RetirementState", "(\"RetirementId\" IS NULL) = (\"RetiredAt\" IS NULL)\nAND (\"CatalogRetirementAppliedAt\" IS NULL OR \"RetirementId\" IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Tours.TourRetirementAuditRecord", b =>
+                {
+                    b.Property<Guid>("RetirementId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("RetirementId");
+
+                    b.HasIndex("TourId");
+
+                    b.ToTable("TourRetirementAuditRecords");
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Infrastructure.Branding.BrandingInboxRecord", b =>

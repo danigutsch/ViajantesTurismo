@@ -201,6 +201,11 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     {
         ArgumentNullException.ThrowIfNull(definition);
 
+        if (IsRetired)
+        {
+            return TourErrors.TourIsRetired();
+        }
+
         var identifier = StringSanitizer.Sanitize(definition.Identifier);
         var name = StringSanitizer.Sanitize(definition.Name);
 
@@ -464,6 +469,11 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        if (IsRetired)
+        {
+            return TourErrors.TourIsRetired().ConvertError<Booking>();
+        }
+
         if (bookingId is { } existingId && HasBooking(existingId))
         {
             return BookingErrors.IdentifierAlreadyExists().ConvertError<Booking>();
@@ -623,6 +633,11 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <returns>A result indicating success or failure.</returns>
     public Result ConfirmBooking(Guid bookingId)
     {
+        if (IsRetired)
+        {
+            return TourErrors.TourIsRetired();
+        }
+
         var bookingResult = FindBooking(bookingId).ToNotFoundResult(bookingId, "this tour");
         if (bookingResult.IsFailure)
         {
@@ -851,45 +866,8 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         return Result.Ok();
     }
 
-    /// <summary>
-    /// Checks if the tour can be deleted.
-    /// Tours with confirmed bookings cannot be deleted (INV-TOUR-015).
-    /// </summary>
-    /// <returns>A result indicating whether the tour can be deleted.</returns>
-    private Result CanBeDeleted()
-    {
-        if (_bookings.Any(booking => booking.HasFinancialHistory))
-        {
-            return Payments.FinancialErrors.Unavailable();
-        }
-        var confirmedBookings = _bookings.Count(booking => booking.IsConfirmed);
-        if (confirmedBookings > 0)
-        {
-            return TourErrors.CannotDeleteTourWithConfirmedBookings(confirmedBookings);
-        }
-
-        return Result.Ok();
-    }
-
     private Option<Booking> FindBooking(Guid bookingId) =>
         Option.FromNullable(_bookings.FirstOrDefault(booking => booking.Id == bookingId));
-
-    /// <summary>
-    /// Marks the tour for deletion after validating business rules.
-    /// Tours with confirmed bookings cannot be deleted (INV-TOUR-015).
-    /// This method can raise domain events for later processing.
-    /// </summary>
-    /// <returns>A result indicating success or validation errors.</returns>
-    public Result Delete()
-    {
-        var canDeleteResult = CanBeDeleted();
-        if (canDeleteResult.IsFailure)
-        {
-            return canDeleteResult;
-        }
-
-        return Result.Ok();
-    }
 
     private static void AddDetailsErrors(ValidationErrors errors, string identifier, string name)
     {

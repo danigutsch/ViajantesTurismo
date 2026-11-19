@@ -25,6 +25,32 @@ public sealed class AdminOpenApiDocumentRegistrationTests
         document.Paths.Keys.ShouldNotContain("/api/v1/bookings");
     }
 
+    [Theory]
+    [InlineData("tours")]
+    [InlineData("v1")]
+    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    public async Task Tour_retirement_describes_the_accepted_response_location(string documentName)
+    {
+        // Arrange
+        var document = await AdminOpenApiDocumentFactory.CreateDocument(
+            documentName,
+            TestContext.Current.CancellationToken,
+            "MapToursEndpoints");
+
+        // Act
+        var delete = document.Paths["/api/v1/tours/{id}"].Operations.ShouldNotBeNull()[HttpMethod.Delete];
+        var accepted = delete.Responses.ShouldNotBeNull()["202"];
+
+        // Assert
+        var location = accepted.Headers.ShouldNotBeNull()["Location"];
+        location.Required.ShouldBeTrue();
+        var schema = location.Schema.ShouldNotBeNull();
+        schema.Type.ShouldBe(JsonSchemaType.String);
+        schema.Format.ShouldBe("uri-reference");
+        document.Paths["/api/v1/tours/{id}/retirement"].Operations.ShouldNotBeNull().Keys.ShouldContain(HttpMethod.Get);
+    }
+
     [Fact]
     [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
     [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]

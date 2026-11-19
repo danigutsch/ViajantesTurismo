@@ -31,7 +31,5 @@ public sealed class FakeTourStore : ITourStore, ITourCommandStore
             string.Equals(t.Identifier, identifier, StringComparison.OrdinalIgnoreCase) &&
             t.Id != excludeTourId));
 
-    public void Delete(Tour tour) => _tours.Remove(tour);
-
     public void AddExistingTour(Tour tour) => _tours.Add(tour);
 }

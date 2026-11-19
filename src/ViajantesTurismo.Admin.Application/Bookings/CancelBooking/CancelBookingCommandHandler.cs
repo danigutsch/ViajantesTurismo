@@ -1,5 +1,6 @@
 using PandaBear.Mediator;
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
@@ -8,7 +9,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 /// Handles the cancellation of a booking.
 /// </summary>
 public sealed class CancelBookingCommandHandler(
-    ITourStore tourStore,
+    ITourCommandStore tourStore,
     IUnitOfWork unitOfWork) : ICommandHandler<CancelBookingCommand, Result>
 {
     /// <summary>
@@ -21,8 +22,8 @@ public sealed class CancelBookingCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var tour = await tourStore.GetByBookingId(command.BookingId, ct);
-        if (tour is null)
+        var storedTour = await tourStore.GetByBookingId(command.BookingId, ct);
+        if (!storedTour.TryGetValue(out var tour))
         {
             return BookingErrors.BookingNotFound();
         }

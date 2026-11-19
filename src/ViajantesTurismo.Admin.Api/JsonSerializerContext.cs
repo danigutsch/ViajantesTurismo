@@ -10,6 +10,7 @@ namespace ViajantesTurismo.Admin.Api;
 [JsonSerializable(typeof(CreateTourDto))]
 [JsonSerializable(typeof(UpdateTourDto))]
 [JsonSerializable(typeof(GetTourDto))]
+[JsonSerializable(typeof(GetTourRetirementDto))]
 [JsonSerializable(typeof(IReadOnlyList<GetTourDto>))]
 [JsonSerializable(typeof(CreateCustomerDto))]
 [JsonSerializable(typeof(UpdateCustomerDto))]

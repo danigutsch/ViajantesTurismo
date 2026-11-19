@@ -88,6 +88,8 @@ Decisions about application architecture and layer responsibilities.
   Scope Attribute
 - **[ADR-045](adr/20261031-seekablecontent-bounded-buffering-for-uploads.md)** — SeekableContent as the
   Bounded Buffering Pattern for Uploads
+- **[ADR-047](adr/20261119-retire-tours-with-booking-history.md)** — Tour Retirement with Retained
+  Booking History
 
 ### Versioning & Release
 

@@ -34,7 +34,15 @@
           "sourcePath": "src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs",
           "methodName": "ApplyEvent",
           "parameterCount": 1
-        },
+        }
+      ]
+    },
+    {
+      "name": "catalog-tour-projection-events",
+      "documentPath": "docs/architecture/FLOWS.md",
+      "markerName": "catalog-tour-projection-events",
+      "factName": "projection-event",
+      "switchSources": [
         {
           "sourcePath": "src/ViajantesTurismo.Catalog.Application/Tours/CatalogTourReadModelProjection.cs",
           "methodName": "Apply",

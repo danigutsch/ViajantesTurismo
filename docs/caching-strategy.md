@@ -2,19 +2,20 @@
 
 ## Scope
 
-Public catalog reads and public web server-side rendered pages are cacheable. Management, Admin API,
-authenticated, PII-bearing, upload, import, and mutation responses are non-cacheable unless a later issue
-documents a narrower safe exception.
+Public content, Branding, and immutable public assets are cacheable under the policies below.
+Tour visibility, management, Admin API, authenticated and PII-bearing reads, plus uploads, imports,
+and mutations, use non-cacheable responses.
 
 ## Policies
 
 | Surface | Policy | Freshness | Invalidation |
 | --- | --- | --- | --- |
-| Catalog API `/public/catalog/tours` and `/public/catalog/tours/{slug}` | Public HTTP metadata plus server output cache | 60 seconds plus `stale-while-revalidate=300` | Catalog presentation and media writes evict `public-catalog` |
+| Catalog API `/public/catalog/tours` and `/public/catalog/tours/{slug}` | `Cache-Control: no-store` | None | Reads current public visibility |
 | Catalog API `/public/catalog/content/{key}` | Public HTTP metadata plus server output cache varied by canonical `culture` | 60 seconds plus `stale-while-revalidate=300` | Public content writes evict `public-content` |
 | Branding public settings route (Catalog-hosted) | Public HTTP metadata plus host-local server output cache | 60 seconds plus `stale-while-revalidate=300` | Branding writes evict public branding cache entries in the active host |
 | Branding management settings routes | No cache; `Cache-Control: no-store` | None | Not applicable |
-| Public Web `/{culture}/`, `/{culture}/group-bike-tours`, `/{culture}/group-bike-tours/{slug}`, `/{culture}/gallery`, `/theme.css` | `UseDefaultPublicCaching`: `public` for anonymous `200` GET/HEAD responses without their own `Cache-Control` or a cookie; failures and the not-found page are `no-store`; the culture is part of the path | 60 seconds | Server output cache is not used because Catalog API invalidation is service-local |
+| Public Web home, tour list and detail, gallery, sitemap, and Catalog rendition proxy | `Cache-Control: no-store` | None | Reads current public visibility |
+| Public Web `/theme.css` | Public for anonymous successful reads | 60 seconds, immutable when the URL carries the content hash | A new content hash produces a new URL |
 | Public Web redirects to a culture (`/`, `/gallery`) | Not public: they vary on `Accept-Language` and `Cookie` | None | Not applicable |
 
 ## Non-cacheable responses
@@ -59,17 +60,16 @@ latency yet.
 
 ### Already cached
 
-Anonymous public catalog tours, public content, and public branding settings are output-cached for 60 seconds
-per instance with tag eviction from the mutating endpoints. A read-model change that arrives from an Admin
-integration event does not evict, so the public view can lag by up to the 60-second lifetime. This is accepted.
+Anonymous public content and public Branding settings are output-cached for 60 seconds per instance,
+with tag eviction from the mutating endpoints. Tour visibility reads bypass output caches so a
+retirement acknowledgement can follow the durable withdrawal.
 
 ## Eventual consistency
 
-Catalog and Branding mutations evict same-process public API output-cache entries before returning
-success. This remains host-local when Branding moves into Catalog.Api. Public Web pages cache
-rendered HTML in the Public Web process, so catalog or branding changes can remain visible there until
-the 60-second freshness window expires. Intermediaries may serve stale public API responses for up to
-another 300 seconds while they revalidate; Public Web pages carry no `stale-while-revalidate`.
+Public content and Branding mutations evict same-process output-cache entries before returning success.
+Branding can be served stale while intermediaries revalidate during its documented window. For tour
+withdrawal and the procedure for a future upgrade, see
+[tour retirement and response caches](operations/public-visitor-deployment-validation.md#tour-retirement-and-response-caches).
 
 The accepted Branding window does not justify Redis or another distributed cache. Add one only after
 measured multi-instance invalidation, scale, or stricter freshness requirements show that host-local
@@ -96,8 +96,8 @@ observed from the Admin projection watermark and health.
 
 ## Observability and checks
 
-Catalog cache invalidation emits fixed-area logs: `public-catalog` and `public-content`. Branding
-cache invalidation should use a separate fixed area such as `public-branding`. Tests cover public cache
+Public content and Branding cache invalidation emit fixed-area logs for `public-content`
+and `public-branding`. Tests cover public cache
 metadata, output-cache hits, and update-then-read invalidation. Load checks should measure public list,
 detail, content, and branding reads separately from management writes, and should avoid
 high-cardinality dimensions such as tour slug or content key.

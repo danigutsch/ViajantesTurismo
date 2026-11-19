@@ -23,7 +23,7 @@ public sealed class PublicMediaEndpointTests
     }
 
     [Fact]
-    public async Task Public_media_streams_catalog_content_with_public_cache_storage()
+    public async Task Public_media_streams_catalog_content_without_storing_tour_visibility()
     {
         // Arrange
         using var upstreamResponse = new HttpResponseMessage();
@@ -45,9 +45,7 @@ public sealed class PublicMediaEndpointTests
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
-        cacheControl.Public.ShouldBeTrue();
-        cacheControl.NoStore.ShouldBeFalse();
-        cacheControl.MaxAge.ShouldBe(PublicWebHttpCache.PublishedContentFreshness);
+        cacheControl.NoStore.ShouldBeTrue();
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         content.ShouldBe("image"u8.ToArray());
         catalogApi.LastMediaId.ShouldBe(Guid.Parse("6db0b8be-e4e8-4500-a398-b44e7709a640"));

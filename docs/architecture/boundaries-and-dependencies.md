@@ -93,6 +93,7 @@ flowchart TB
     ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker] --> ViajantesTurismo_Admin_Infrastructure[ViajantesTurismo.Admin.Infrastructure]
     ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker] --> ViajantesTurismo_Branding_Contracts_IntegrationEvents[ViajantesTurismo.Branding.Contracts.IntegrationEvents]
+    ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker] --> ViajantesTurismo_Catalog_Contracts_IntegrationEvents[ViajantesTurismo.Catalog.Contracts.IntegrationEvents]
     ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Admin_Api[ViajantesTurismo.Admin.Api]
     ViajantesTurismo_AppHost[ViajantesTurismo.AppHost] --> ViajantesTurismo_Admin_IntegrationEventWorker[ViajantesTurismo.Admin.IntegrationEventWorker]

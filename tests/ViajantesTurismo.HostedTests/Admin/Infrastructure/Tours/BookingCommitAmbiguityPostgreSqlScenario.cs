@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -46,7 +47,7 @@ internal static class BookingCommitAmbiguityPostgreSqlScenario
 
         var command = new CreateBookingCommand(tour.Id, customer.Id, BikeTypeDto.Regular,
             null, null, RoomTypeDto.DoubleOccupancy, DiscountTypeDto.None, 0m, null, null);
-        var handler = new CreateBookingCommandHandler(services.GetRequiredService<ITourStore>(),
+        var handler = new CreateBookingCommandHandler(services.GetRequiredService<ITourCommandStore>(),
             services.GetRequiredService<ICustomerStore>(), db, services.GetRequiredService<TimeProvider>());
         var behavior = new AdminTransactionBehavior<CreateBookingCommand, Result<Guid>>(
             db, services.GetRequiredService<IServiceScopeFactory>(),

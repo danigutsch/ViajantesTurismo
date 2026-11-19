@@ -1,6 +1,7 @@
 using ViajantesTurismo.Admin.Domain.Customers;
 using PandaBear.Mediator;
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
@@ -9,7 +10,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 /// Handles the creation of a new booking with application-level validation.
 /// </summary>
 public sealed class CreateBookingCommandHandler(
-    ITourStore tourStore,
+    ITourCommandStore tourStore,
     ICustomerStore customerStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider) : ICommandHandler<CreateBookingCommand, Result<Guid>>
@@ -24,8 +25,8 @@ public sealed class CreateBookingCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var tour = await tourStore.GetById(command.TourId, ct);
-        if (tour is null)
+        var storedTour = await tourStore.GetById(command.TourId, ct);
+        if (!storedTour.TryGetValue(out var tour))
         {
             return TourErrors.TourNotFound().ConvertError<Guid>();
         }

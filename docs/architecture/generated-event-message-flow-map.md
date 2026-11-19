@@ -19,7 +19,9 @@ Source: `src/**/*.cs` integration-event contracts and registrations.
 | Event | Event type | Version | Producers | Consumers | Handlers |
 | --- | --- | --- | --- | --- | --- |
 | AdminTourCreatedIntegrationEvent | `admin.tour.created` | 1 | `ViajantesTurismo.Admin.Application/Tours/TourIntegrationEventMappings.cs` | `ViajantesTurismo.Catalog.Application/Tours/CatalogTourDependencyInjection.cs` | `AdminTourCreatedIntegrationHandler` |
+| AdminTourRetiredIntegrationEvent | `admin.tour.retired` | 1 | `ViajantesTurismo.Admin.Application/Tours/TourIntegrationEventMappings.cs` | `ViajantesTurismo.Catalog.Application/Tours/CatalogTourDependencyInjection.cs` | `AdminTourRetiredIntegrationHandler` |
 | BrandingSettingsChangedIntegrationEvent | `branding.settings.changed` | 1 | `ViajantesTurismo.Branding.Infrastructure/EfBrandingSettingsStore.cs` | `ViajantesTurismo.Admin.IntegrationEventWorker/AdminWorkerIntegrationEvents.cs` | `BrandingSettingsChangedIntegrationHandler` |
+| CatalogTourRetirementAppliedIntegrationEvent | `catalog.tour.retirement-applied` | 1 | `ViajantesTurismo.Catalog.Infrastructure/Tours/EfCatalogTourRetirementStore.cs` | `ViajantesTurismo.Admin.IntegrationEventWorker/AdminWorkerIntegrationEvents.cs` | `CatalogTourRetirementAppliedIntegrationHandler` |
 | MediaImageOriginalStoredIntegrationEvent | `catalog.media-image.original-stored` | 1 | `ViajantesTurismo.Catalog.Application/Media/MediaImageUploadIntake.cs` | `ViajantesTurismo.Catalog.Application/Media/MediaDependencyInjection.cs` | `MediaImageOriginalStoredIntegrationHandler` |
 <!-- generated:integration-events:end -->
 

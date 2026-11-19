@@ -14,20 +14,28 @@ implementation facts, not as transport contracts.
 | Contract | Type | Producer | Consumer | Channel | Payload | Storage |
 | --- | --- | --- | --- | --- | --- | --- |
 | `admin.tour.created` v1 | Integration event | Admin | Catalog | `admin.tour.created` | `EventId`, `OccurredAt`, `AdminTourId`, `Identifier`, `Name` | Admin outbox, Catalog inbox/idempotency |
+| `admin.tour.retired` v1 | Integration event | Admin | Catalog | `admin.tour.retired` | `EventId`, `OccurredAt`, `AdminTourId`, `RetirementId` | Admin outbox, Catalog retirement fence |
 | `branding.settings.changed` v1 | Integration event | Branding | Admin | `branding.settings.changed` | Settings revision and optional logo fields | Branding outbox, Admin inbox/idempotency |
 | `catalog.media-image.original-stored` v1 | Integration event | Catalog | Catalog | `catalog.media-image.original-stored` | `EventId`, `OccurredAt`, `MediaImageId`, `SourceObjectKey`, `ProcessingVersion` | Catalog outbox and in-process relay, Catalog inbox/idempotency |
+| `catalog.tour.retirement-applied` v1 | Integration event | Catalog | Admin | `catalog.tour.retirement-applied` | `EventId`, `OccurredAt`, `AdminTourId`, `RetirementId` | Catalog outbox, Admin retirement status |
 
 Current domain event to integration event mapping:
 
 - `TourCreatedDomainEvent` maps to `AdminTourCreatedIntegrationEvent` through
   `TourIntegrationEventMappings.MapTourCreated`.
+- `TourRetiredDomainEvent` maps to `AdminTourRetiredIntegrationEvent` through
+  `TourIntegrationEventMappings.MapTourRetired`.
 
 Current integration-event handlers:
 
 - `AdminTourCreatedIntegrationHandler` consumes `admin.tour.created` for Catalog tour projection intake.
+- `AdminTourRetiredIntegrationHandler` consumes `admin.tour.retired` to withdraw the Catalog tour and
+  record the source fence.
 - `BrandingSettingsChangedIntegrationHandler` consumes `branding.settings.changed` for the Admin Branding projection.
 - `MediaImageOriginalStoredIntegrationHandler` consumes `catalog.media-image.original-stored` for Catalog
   public media processing.
+- `CatalogTourRetirementAppliedIntegrationHandler` consumes `catalog.tour.retirement-applied` and
+  records completion on the matching Admin tour retirement.
 
 ## Generation and drift checks
 

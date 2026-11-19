@@ -4,37 +4,32 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 
-/// <summary>
-/// Handles the deletion of a tour with business rule validation.
-/// </summary>
+/// <summary>Retires the locked tour and saves its transition in the mediator transaction.</summary>
 public sealed class DeleteTourCommandHandler(
-    ITourStore tourStore,
+    ITourCommandStore tourStore,
     IUnitOfWork unitOfWork) : ICommandHandler<DeleteTourCommand, Result>
 {
-    /// <summary>
-    /// Handles the DeleteTourCommand and deletes the tour if business rules allow.
-    /// </summary>
-    /// <param name="command">The command containing the tour ID to delete.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>Result indicating success or validation errors.</returns>
+    /// <inheritdoc />
     public async ValueTask<Result> Handle(DeleteTourCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var tour = await tourStore.GetById(command.TourId, ct);
-        if (tour is null)
+        var storedTour = await tourStore.GetById(command.TourId, ct);
+        if (!storedTour.TryGetValue(out var tour))
         {
             return TourErrors.TourNotFound();
         }
 
-        var deleteResult = tour.Delete();
-        if (deleteResult.IsFailure)
+        var retirement = tour.Retire(command.RetirementId, command.ActorId, command.RequestedAt);
+        if (retirement.IsFailure)
         {
-            return deleteResult;
+            return retirement.ConvertError();
         }
 
-        tourStore.Delete(tour);
-        await unitOfWork.SaveEntities(ct);
+        if (retirement.Value)
+        {
+            await unitOfWork.SaveEntities(ct);
+        }
 
         return Result.Ok();
     }

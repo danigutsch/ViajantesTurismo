@@ -30,6 +30,10 @@ internal static class CatalogTourDependencyInjection
         services.AddIntegrationEventConsumer(
             AdminTourCreatedIntegrationEvent.EventType,
             adminTourCreatedJsonTypeInfo);
+        services.TryAddScoped<IIntegrationEventHandler<AdminTourRetiredIntegrationEvent>, AdminTourRetiredIntegrationHandler>();
+        services.AddIntegrationEventConsumer(
+            AdminTourRetiredIntegrationEvent.EventType,
+            AdminIntegrationEventJsonContext.Default.AdminTourRetiredIntegrationEvent);
         services.TryAddScoped<CatalogTourPresentationService>();
     }
 }

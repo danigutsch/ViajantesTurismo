@@ -412,6 +412,12 @@
           "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.653.1, )"
         }
       },
+      "viajantesturismo.catalog.contracts.integrationevents": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.653.1, )"
+        }
+      },
       "viajantesturismo.resources": {
         "type": "Project"
       },

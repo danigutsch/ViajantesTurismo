@@ -17,68 +17,68 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
     public async Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct)
     {
         var tours = await dbContext.Tours
-            .Include(t => t.Bookings)
+            .Where(tour => tour.RetirementId == null)
+            .Include(tour => tour.Bookings)
             .OrderByDescending(tour => tour.Id)
             .ToArrayAsync(ct);
 
-        return
-        [
-            ..tours.Select(tour =>
-            {
-                return new GetTourDto()
-                {
-                    Id = tour.Id,
-                    Identifier = tour.Identifier,
-                    Name = tour.Name,
-                    StartDate = tour.Schedule.StartDate,
-                    EndDate = tour.Schedule.EndDate,
-                    Price = tour.Pricing.BasePrice,
-                    SingleRoomSupplementPrice = tour.Pricing.SingleRoomSupplementPrice,
-                    RegularBikePrice = tour.Pricing.RegularBikePrice,
-                    EBikePrice = tour.Pricing.EBikePrice,
-                    Currency = tour.Pricing.Currency.Code,
-                    IncludedServices = [..tour.IncludedServices],
-                    MinCustomers = tour.Capacity.MinCustomers,
-                    MaxCustomers = tour.Capacity.MaxCustomers,
-                    CurrentCustomerCount = tour.CurrentCustomerCount,
-                    AvailableSpots = tour.AvailableSpots,
-                    IsFullyBooked = tour.IsFullyBooked,
-                    IsAtMinimumCapacity = tour.IsAtMinimumCapacity
-                };
-            })
-        ];
+        return [.. tours.Select(MapTour)];
     }
 
     /// <inheritdoc />
     public async Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct)
     {
         var tour = await dbContext.Tours
-            .Include(t => t.Bookings)
-            .FirstOrDefaultAsync(t => t.Id == id, ct);
+            .Include(tour => tour.Bookings)
+            .FirstOrDefaultAsync(tour => tour.Id == id, ct);
 
-        return tour is null
-            ? null
-            : new GetTourDto
-            {
-                Id = tour.Id,
-                Identifier = tour.Identifier,
-                Name = tour.Name,
-                StartDate = tour.Schedule.StartDate,
-                EndDate = tour.Schedule.EndDate,
-                Price = tour.Pricing.BasePrice,
-                SingleRoomSupplementPrice = tour.Pricing.SingleRoomSupplementPrice,
-                RegularBikePrice = tour.Pricing.RegularBikePrice,
-                EBikePrice = tour.Pricing.EBikePrice,
-                Currency = tour.Pricing.Currency.Code,
-                IncludedServices = [.. tour.IncludedServices],
-                MinCustomers = tour.Capacity.MinCustomers,
-                MaxCustomers = tour.Capacity.MaxCustomers,
-                CurrentCustomerCount = tour.CurrentCustomerCount,
-                AvailableSpots = tour.AvailableSpots,
-                IsFullyBooked = tour.IsFullyBooked,
-                IsAtMinimumCapacity = tour.IsAtMinimumCapacity
-            };
+        return tour is null ? null : MapTour(tour);
     }
+
+    /// <inheritdoc />
+    public async Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct)
+    {
+        var tour = await dbContext.Tours
+            .Include(tour => tour.Bookings)
+            .FirstOrDefaultAsync(tour => tour.Id == id && tour.RetirementId == null, ct);
+
+        return tour is null ? null : MapTour(tour);
+    }
+
+    /// <inheritdoc />
+    public async Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct)
+    {
+        return await dbContext.Tours
+            .Where(tour => tour.Id == id && tour.RetiredAt.HasValue)
+            .Select(tour => new GetTourRetirementDto
+            {
+                TourId = tour.Id,
+                RetiredAt = tour.RetiredAt.GetValueOrDefault(),
+                CompletedAt = tour.CatalogRetirementAppliedAt
+            })
+            .SingleOrDefaultAsync(ct);
+    }
+
+    private static GetTourDto MapTour(Tour tour) => new()
+    {
+        Id = tour.Id,
+        Identifier = tour.Identifier,
+        Name = tour.Name,
+        StartDate = tour.Schedule.StartDate,
+        EndDate = tour.Schedule.EndDate,
+        Price = tour.Pricing.BasePrice,
+        SingleRoomSupplementPrice = tour.Pricing.SingleRoomSupplementPrice,
+        RegularBikePrice = tour.Pricing.RegularBikePrice,
+        EBikePrice = tour.Pricing.EBikePrice,
+        Currency = tour.Pricing.Currency.Code,
+        IncludedServices = [.. tour.IncludedServices],
+        MinCustomers = tour.Capacity.MinCustomers,
+        MaxCustomers = tour.Capacity.MaxCustomers,
+        CurrentCustomerCount = tour.CurrentCustomerCount,
+        AvailableSpots = tour.AvailableSpots,
+        IsFullyBooked = tour.IsFullyBooked,
+        IsAtMinimumCapacity = tour.IsAtMinimumCapacity
+    };
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct)

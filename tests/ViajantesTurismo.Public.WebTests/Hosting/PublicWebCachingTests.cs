@@ -13,8 +13,8 @@ public sealed class PublicWebCachingTests
     [InlineData("/pt/group-bike-tours")]
     [InlineData("/en/group-bike-tours/camino-norte")]
     [InlineData("/pt/gallery")]
-    [InlineData("/theme.css")]
-    public async Task Public_ssr_routes_emit_cache_metadata(string path)
+    [InlineData("/sitemap.xml")]
+    public async Task Tour_dependent_content_is_not_stored(string path)
     {
         // Arrange
         var catalogApi = new FakePublicCatalogApiClient();
@@ -24,6 +24,24 @@ public sealed class PublicWebCachingTests
 
         // Act
         using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Unversioned_theme_stylesheet_retains_public_cache_metadata()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddTour(PublicTourTestData.CreateDetails("camino-norte", "Camino Norte"));
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/theme.css", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);

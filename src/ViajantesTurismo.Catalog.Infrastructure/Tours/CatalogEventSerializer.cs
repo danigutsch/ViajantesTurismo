@@ -11,6 +11,7 @@ internal sealed class CatalogEventSerializer : IEventSerializer
     private const string CatalogTourPresentationChangedEventType = "catalog.tours.presentation-changed.v1";
     private const string CatalogTourPublishedEventType = "catalog.tours.published.v1";
     private const string CatalogTourUnpublishedEventType = "catalog.tours.unpublished.v1";
+    private const string CatalogTourRetiredEventType = "catalog.tours.retired.v1";
 
     /// <summary>Returns the durable event type name for a registered Catalog event.</summary>
     public string GetEventType(object eventData)
@@ -23,6 +24,7 @@ internal sealed class CatalogEventSerializer : IEventSerializer
             CatalogTourPresentationChanged => CatalogTourPresentationChangedEventType,
             CatalogTourPublished => CatalogTourPublishedEventType,
             CatalogTourUnpublished => CatalogTourUnpublishedEventType,
+            CatalogTourRetired => CatalogTourRetiredEventType,
             _ => throw new NotSupportedException($"Catalog event type '{eventData.GetType().FullName}' is not registered for durable serialization.")
         };
     }
@@ -38,6 +40,7 @@ internal sealed class CatalogEventSerializer : IEventSerializer
             CatalogTourPresentationChanged presentationChanged => JsonSerializer.Serialize(presentationChanged),
             CatalogTourPublished published => JsonSerializer.Serialize(published),
             CatalogTourUnpublished unpublished => JsonSerializer.Serialize(unpublished),
+            CatalogTourRetired retired => JsonSerializer.Serialize(retired),
             _ => throw new NotSupportedException($"Catalog event type '{eventData.GetType().FullName}' is not registered for durable serialization.")
         };
     }
@@ -56,6 +59,8 @@ internal sealed class CatalogEventSerializer : IEventSerializer
             CatalogTourPublishedEventType => JsonSerializer.Deserialize<CatalogTourPublished>(payloadJson)
                 ?? throw new InvalidOperationException($"Catalog event payload for '{eventType}' was empty."),
             CatalogTourUnpublishedEventType => JsonSerializer.Deserialize<CatalogTourUnpublished>(payloadJson)
+                ?? throw new InvalidOperationException($"Catalog event payload for '{eventType}' was empty."),
+            CatalogTourRetiredEventType => JsonSerializer.Deserialize<CatalogTourRetired>(payloadJson)
                 ?? throw new InvalidOperationException($"Catalog event payload for '{eventType}' was empty."),
             _ => throw new NotSupportedException($"Catalog event type '{eventType}' is not registered for durable deserialization.")
         };

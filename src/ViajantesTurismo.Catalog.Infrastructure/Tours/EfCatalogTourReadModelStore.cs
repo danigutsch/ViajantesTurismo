@@ -145,7 +145,7 @@ internal sealed class EfCatalogTourReadModelStore(
         return await dbContext.CatalogTourReadModels
             .OrderBy(tour => tour.Title)
             .ThenBy(tour => tour.CatalogTourId)
-            .Select(tour => ToReadModel(tour))
+            .Select(tour => ToReadModel(tour, dbContext.CatalogTourRetirements.Any(retirement => retirement.AdminTourId == tour.AdminTourId)))
             .ToArrayAsync(ct)
             .ConfigureAwait(false);
     }
@@ -153,12 +153,12 @@ internal sealed class EfCatalogTourReadModelStore(
     /// <inheritdoc />
     public async ValueTask<CatalogTourDraftReadModel?> GetTour(Guid catalogTourId, CancellationToken ct)
     {
-        var tour = await dbContext.CatalogTourReadModels
+        return await dbContext.CatalogTourReadModels
             .AsNoTracking()
-            .SingleOrDefaultAsync(tour => tour.CatalogTourId == catalogTourId, ct)
+            .Where(tour => tour.CatalogTourId == catalogTourId)
+            .Select(tour => ToReadModel(tour, dbContext.CatalogTourRetirements.Any(retirement => retirement.AdminTourId == tour.AdminTourId)))
+            .SingleOrDefaultAsync(ct)
             .ConfigureAwait(false);
-
-        return tour is null ? null : ToReadModel(tour);
     }
 
     /// <inheritdoc />
@@ -172,7 +172,8 @@ internal sealed class EfCatalogTourReadModelStore(
         }
 
         var tour = await dbContext.CatalogTourReadModels
-            .Where(tour => tour.IsPublished)
+            .Where(tour => tour.IsPublished
+                && !dbContext.CatalogTourRetirements.Any(retirement => retirement.AdminTourId == tour.AdminTourId))
             .SingleOrDefaultAsync(tour => tour.Slug == normalizedSlug, ct)
             .ConfigureAwait(false);
 
@@ -202,7 +203,7 @@ internal sealed class EfCatalogTourReadModelStore(
         };
     }
 
-    private static CatalogTourDraftReadModel ToReadModel(CatalogTourReadModelEntity tour)
+    private static CatalogTourDraftReadModel ToReadModel(CatalogTourReadModelEntity tour, bool isRetired = false)
     {
         return new CatalogTourDraftReadModel(
             tour.CatalogTourId,
@@ -210,7 +211,7 @@ internal sealed class EfCatalogTourReadModelStore(
             tour.Identifier,
             tour.Title,
             tour.Slug,
-            tour.IsPublished,
+            tour.IsPublished && !isRetired,
             tour.Position,
             tour.UpdatedAt)
         {

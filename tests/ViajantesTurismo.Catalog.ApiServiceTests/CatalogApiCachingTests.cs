@@ -11,12 +11,44 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiCachingTests
 {
+    [Fact]
+    public async Task Retirement_invalidates_a_warm_list_and_detail_across_serving_instances()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var tour = CatalogApiCachingTestData.CreatePublishedTour(Guid.CreateVersion7(), "Camino Norte", "camino-norte");
+        var store = new TestCatalogTourReadModelStore();
+        await store.UpsertDraft(tour, ct);
+        await using var firstHost = CatalogApiTestHost.Create(store, new TestPublicContentStore());
+        await using var secondHost = CatalogApiTestHost.Create(store, new TestPublicContentStore());
+        using var first = firstHost.CreateClient();
+        using var second = secondHost.CreateClient();
+        first.DefaultRequestHeaders.Authorization = null;
+        second.DefaultRequestHeaders.Authorization = null;
+        var listUri = new Uri("/api/v1/public/catalog/tours", UriKind.Relative);
+        var detailUri = new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative);
+        using var warmList = await first.GetAsync(listUri, ct);
+        using var warmDetail = await second.GetAsync(detailUri, ct);
+        warmList.StatusCode.ShouldBe(HttpStatusCode.OK);
+        warmDetail.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        // Act
+        await store.Withdraw(new CatalogTourRetired(tour.AdminTourId, Guid.CreateVersion7()), ct);
+        using var list = await first.GetAsync(listUri, ct);
+        using var detail = await second.GetAsync(detailUri, ct);
+        var returnedTourList = await list.Content.ReadFromJsonAsync<TourSummaryDto[]>(ct);
+
+        // Assert
+        returnedTourList.ShouldNotBeNull().ShouldBeEmpty();
+        detail.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
     [Theory]
-    [InlineData("/api/v1/public/catalog/tours")]
-    [InlineData("/api/v1/public/catalog/tours/camino-norte")]
-    [InlineData("/api/v1/public/catalog/content/home.hero?culture=en-US")]
-    [InlineData("/API/V1/PUBLIC/CATALOG/TOURS")]
-    public async Task Public_catalog_reads_emit_cache_metadata(string path)
+    [InlineData("/api/v1/public/catalog/tours", false)]
+    [InlineData("/api/v1/public/catalog/tours/camino-norte", false)]
+    [InlineData("/api/v1/public/catalog/content/home.hero?culture=en-US", true)]
+    [InlineData("/API/V1/PUBLIC/CATALOG/TOURS", false)]
+    public async Task Public_catalog_reads_emit_cache_metadata(string path, bool cacheable)
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -37,6 +69,12 @@ public sealed class CatalogApiCachingTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var cacheControl = response.Headers.CacheControl.ShouldNotBeNull();
+        cacheControl.NoStore.ShouldBe(!cacheable);
+        if (!cacheable)
+        {
+            return;
+        }
+
         cacheControl.Public.ShouldBeTrue();
         cacheControl.MaxAge.ShouldBe(TimeSpan.FromSeconds(60));
         cacheControl.Extensions.Select(extension => extension.Name).ShouldNotContain("stale-while-revalidate");
@@ -103,7 +141,7 @@ public sealed class CatalogApiCachingTests
     }
 
     [Fact]
-    public async Task Catalog_tour_publication_cycle_invalidates_cached_public_tour_reads()
+    public async Task Catalog_tour_publication_cycle_is_visible_to_public_reads()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -121,13 +159,13 @@ public sealed class CatalogApiCachingTests
         var firstTour = await firstResponse.Content.ReadFromJsonAsync<TourDetailsDto>(cancellationToken);
         _ = await tourStore.UpdatePresentation(
             tourId,
-            CatalogApiCachingTestData.CreatePresentationUpdate("Unpublished store-only change", "camino-norte"),
+            CatalogApiCachingTestData.CreatePresentationUpdate("Fresh store-only change", "camino-norte"),
             streamVersion: 4,
             position: 2,
             TimeProvider.System.GetUtcNow(),
             cancellationToken);
-        using var cachedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
-        var cachedTour = await cachedResponse.Content.ReadFromJsonAsync<TourDetailsDto>(cancellationToken);
+        using var freshResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
+        var freshTour = await freshResponse.Content.ReadFromJsonAsync<TourDetailsDto>(cancellationToken);
         CatalogApiTestHost.ConfigureAuthenticatedClient(client);
         using var unpublishResponse = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{tourId}/unpublish", UriKind.Relative),
@@ -151,43 +189,15 @@ public sealed class CatalogApiCachingTests
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstTour.ShouldNotBeNull();
         firstTour.Title.ShouldBe("Original tour");
-        cachedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-        cachedTour.ShouldNotBeNull();
-        cachedTour.Title.ShouldBe("Original tour");
+        freshResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        freshTour.ShouldNotBeNull();
+        freshTour.Title.ShouldBe("Fresh store-only change");
         unpublishResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
         updateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         publishResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
         refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         refreshedTour.ShouldNotBeNull();
         refreshedTour.Title.ShouldBe("Invalidated tour");
-    }
-
-    [Fact]
-    public async Task Post_commit_cache_eviction_does_not_capture_request_cancellation()
-    {
-        // Arrange
-        var tourId = Guid.CreateVersion7();
-        var tourStore = new TestCatalogTourReadModelStore();
-        await tourStore.UpsertDraft(
-            CatalogApiCachingTestData.CreatePublishedTour(tourId, "Published tour", "published-tour"),
-            TestContext.Current.CancellationToken);
-        var cacheStore = new RecordingOutputCacheStore();
-        await using var baseFactory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
-        await using var factory = baseFactory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
-            services.Replace(ServiceDescriptor.Singleton<IOutputCacheStore>(cacheStore))));
-        using var client = factory.CreateClient();
-        using var requestCancellation = new CancellationTokenSource();
-
-        // Act
-        using var response = await client.PostAsJsonAsync(
-            new Uri($"/api/v1/catalog/tours/{tourId}/unpublish", UriKind.Relative),
-            new CatalogTourPublicationRequest { ExpectedVersion = 3 },
-            requestCancellation.Token);
-
-        // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        cacheStore.EvictionObserved.ShouldBeTrue();
-        cacheStore.EvictionCancellationToken.ShouldBe(CancellationToken.None);
     }
 
     [Fact]
@@ -201,13 +211,7 @@ public sealed class CatalogApiCachingTests
         tourStore.FailNextPublicationProjection = true;
         var eventStore = new TestEventStore();
         eventStore.SeedTour(tour);
-        var cacheStore = new RecordingOutputCacheStore
-        {
-            EvictionException = new InvalidOperationException("Simulated cache eviction failure.")
-        };
-        await using var baseFactory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), eventStore);
-        await using var factory = baseFactory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
-            services.Replace(ServiceDescriptor.Singleton<IOutputCacheStore>(cacheStore))));
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), eventStore);
         using var client = factory.CreateClient();
 
         // Act
@@ -227,7 +231,6 @@ public sealed class CatalogApiCachingTests
         persisted.Count.ShouldBe(4);
         var unpublishEnvelope = persisted.OrderBy(envelope => envelope.Revision.Value).Last();
         unpublishEnvelope.Data.ShouldBeOfType<CatalogTourUnpublished>();
-        cacheStore.EvictionObserved.ShouldBeTrue();
         var staleTour = await tourStore.GetTour(tourId, TestContext.Current.CancellationToken);
         staleTour.ShouldNotBeNull();
         staleTour.IsPublished.ShouldBeTrue();

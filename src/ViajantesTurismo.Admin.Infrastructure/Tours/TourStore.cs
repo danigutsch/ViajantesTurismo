@@ -48,6 +48,4 @@ internal sealed class TourStore(AdminWriteDbContext dbContext, PaymentHistorySto
     public async Task<bool> IdentifierExistsExcluding(string identifier, Guid excludeTourId, CancellationToken ct) =>
         await dbContext.Tours.AnyAsync(t => t.Identifier == identifier && t.Id != excludeTourId, ct);
 
-    /// <inheritdoc />
-    public void Delete(Tour tour) => dbContext.Tours.Remove(tour);
 }

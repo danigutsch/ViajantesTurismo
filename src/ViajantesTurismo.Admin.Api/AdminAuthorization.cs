@@ -33,6 +33,8 @@ internal static class AdminAuthorization
     public const string PaymentWrite = "payment.write";
     /// <summary>Permission to read tours.</summary>
     public const string TourRead = "tour.read";
+    /// <summary>Permission to retire tours and read their retirement status.</summary>
+    public const string TourDelete = "tour.delete";
     /// <summary>Permission to create and modify tours.</summary>
     public const string TourWrite = "tour.write";
 
@@ -59,6 +61,7 @@ internal static class AdminAuthorization
                 PaymentRead,
                 PaymentWrite,
                 TourRead,
+                TourDelete,
                 TourWrite
             ],
             ["Operator"] =

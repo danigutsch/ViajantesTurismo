@@ -100,7 +100,7 @@ publisher resolves the Catalog handler, whose idempotency wrapper writes Catalog
 - current-runtime: `AddCatalogIntegrationEventTransportConsumer`
 - current-runtime: `AddCatalogIntegrationEventTransportContext`
 - current-runtime: `AddCatalogIntegrationEventWorkerInfrastructure`
-- current-runtime: `AddIntegrationEventContract`
+- current-runtime: `AddAdminTourIntegrationEventContracts`
 - current-runtime: `AddIntegrationEventOutbox`
 - current-runtime: `AddIntegrationEventOutboxRelay`
 - current-runtime: `AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims`
@@ -178,12 +178,25 @@ rehydrate the aggregate, append versioned events, and attempt inline projection.
 but projection is deferred, the API returns `202 Accepted`; the background projection runner retries
 from the unchanged checkpoint.
 
+An Admin retirement closes the same event stream with `CatalogTourRetired`. The retirement handler
+writes the public withdrawal marker and queues confirmation in a separate Catalog transaction.
+Ordinary projection may still catch up with earlier events, but the withdrawal marker controls
+public visibility independently of that projection.
+
 <!-- doc-fact:catalog-tour-events:start -->
 - current-event: `CatalogTourDraftCreated`
 - current-event: `CatalogTourPresentationChanged`
 - current-event: `CatalogTourPublished`
 - current-event: `CatalogTourUnpublished`
+- current-event: `CatalogTourRetired`
 <!-- doc-fact:catalog-tour-events:end -->
+
+<!-- doc-fact:catalog-tour-projection-events:start -->
+- projection-event: `CatalogTourDraftCreated`
+- projection-event: `CatalogTourPresentationChanged`
+- projection-event: `CatalogTourPublished`
+- projection-event: `CatalogTourUnpublished`
+<!-- doc-fact:catalog-tour-projection-events:end -->
 
 ```mermaid
 sequenceDiagram

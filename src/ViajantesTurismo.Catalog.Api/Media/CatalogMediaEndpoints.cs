@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.OpenApi;
 using PandaBear.BuildingBlocks;
 using PandaBear.HttpCaching.AspNetCore;
@@ -290,8 +289,6 @@ internal static class CatalogMediaEndpoints
         CatalogGalleryMutationGuard galleryGuard,
         IAuthorizationService authorization,
         HttpContext context,
-        IOutputCacheStore outputCacheStore,
-        ILogger<CatalogApiHostEntryPoint> logger,
         CancellationToken ct)
     {
         if (id == Guid.Empty)
@@ -332,7 +329,6 @@ internal static class CatalogMediaEndpoints
 
         if (result.IsSuccess)
         {
-            await PublicCatalogHttpCache.Invalidate(outputCacheStore, logger);
             return TypedResults.Ok(MapManagementMediaImage(result.Value));
         }
 
@@ -352,8 +348,6 @@ internal static class CatalogMediaEndpoints
         CatalogGalleryMutationGuard galleryGuard,
         IAuthorizationService authorization,
         HttpContext context,
-        IOutputCacheStore outputCacheStore,
-        ILogger<CatalogApiHostEntryPoint> logger,
         TimeProvider timeProvider,
         CancellationToken ct)
     {
@@ -397,7 +391,6 @@ internal static class CatalogMediaEndpoints
 
             await imageStore.Upsert(image, ct).ConfigureAwait(false);
             MediaAccessibilityTelemetry.RecordReview(edited ? "edited" : "approved", language, queueAge);
-            await PublicCatalogHttpCache.Invalidate(outputCacheStore, logger);
             return TypedResults.Ok(MapManagementMediaImage(image));
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))

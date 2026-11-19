@@ -66,7 +66,7 @@ public sealed class BookingIdGuardBehaviorTests
 
         // Act
         var result = await behavior.Handle(
-            new DeleteTourCommand(Guid.Empty),
+            new DeleteTourCommand(Guid.Empty, "admin-subject", DateTimeOffset.UnixEpoch),
             () =>
             {
                 called = true;

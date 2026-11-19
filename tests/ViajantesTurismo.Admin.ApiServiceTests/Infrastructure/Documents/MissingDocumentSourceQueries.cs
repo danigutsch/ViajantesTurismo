@@ -10,6 +10,10 @@ internal sealed class MissingDocumentSourceQueries : IQueryService
     public Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) => Task.FromResult<IReadOnlyList<GetTourDto>>([]);
     /// <summary>Returns no tour.</summary>
     public Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct) => Task.FromResult<GetTourDto?>(null);
+    /// <inheritdoc />
+    public Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct) => Task.FromResult<GetTourDto?>(null);
+    /// <inheritdoc />
+    public Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct) => Task.FromResult<GetTourRetirementDto?>(null);
     /// <summary>Returns no customers.</summary>
     public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => Task.FromResult<IReadOnlyList<GetCustomerDto>>([]);
     /// <summary>Returns no customer details.</summary>

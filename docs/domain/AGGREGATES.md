@@ -75,7 +75,7 @@ The Admin context manages tour operations, customer information, and booking lif
 - Capacity: 1 <= minCustomers <= maxCustomers <= 20
 - Cannot reduce maximum capacity below current confirmed bookings
 - Bookings can only be created/modified through Tour methods (aggregate boundary)
-- Cannot delete tour with confirmed bookings
+- Cannot retire a tour with pending or confirmed bookings
 
 **Booking Entity:**
 

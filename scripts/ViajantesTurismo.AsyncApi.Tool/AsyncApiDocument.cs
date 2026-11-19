@@ -33,6 +33,17 @@ internal static class AsyncApiDocument
             transportConsumer: "CatalogIntegrationTransportDbContext",
             domainEventMapping: "ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourCreated"),
         AsyncApiEvent.Describe(
+            AdminIntegrationEventJsonContext.Default.AdminTourRetiredIntegrationEvent,
+            title: "Admin tour retired",
+            producer: "Admin",
+            consumer: "Catalog",
+            consumerName: IntegrationEventConsumerNames.Catalog,
+            outbox: "AdminWriteDbContext",
+            inbox: "CatalogDbContext",
+            handler: "ViajantesTurismo.Catalog.Application.Tours.AdminTourRetiredIntegrationHandler",
+            transportConsumer: "CatalogIntegrationTransportDbContext",
+            domainEventMapping: "ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourRetired"),
+        AsyncApiEvent.Describe(
             BrandingIntegrationEventJsonContext.Default.BrandingSettingsChangedIntegrationEvent,
             title: "Branding settings changed",
             producer: "Branding",
@@ -51,6 +62,16 @@ internal static class AsyncApiDocument
             outbox: "CatalogDbContext",
             inbox: "CatalogDbContext",
             handler: "ViajantesTurismo.Catalog.Application.Media.MediaImageOriginalStoredIntegrationHandler"),
+        AsyncApiEvent.Describe(
+            CatalogIntegrationEventJsonContext.Default.CatalogTourRetirementAppliedIntegrationEvent,
+            title: "Catalog tour retirement applied",
+            producer: "Catalog",
+            consumer: "Admin",
+            consumerName: IntegrationEventConsumerNames.Admin,
+            outbox: "CatalogDbContext",
+            inbox: "AdminWriteDbContext",
+            handler: "ViajantesTurismo.Admin.IntegrationEventWorker.CatalogTourRetirementAppliedIntegrationHandler",
+            transportConsumer: "AdminBrandingTransportDbContext"),
     ];
 
     private static readonly JsonSerializerOptions DocumentOptions = new() { WriteIndented = true };

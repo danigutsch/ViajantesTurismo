@@ -74,6 +74,12 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
         get; private set;
     }
 
+    /// <summary>Gets the retirement that permanently withdrew this tour, when present.</summary>
+    public Guid? RetirementId
+    {
+        get; private set;
+    }
+
     /// <summary>Determines whether gallery content can change with the caller's publication authority.</summary>
     /// <param name="canPublish">Whether the caller can approve public Catalog content.</param>
     /// <param name="isPubliclyVisible">Whether the current public projection still exposes the tour.</param>
@@ -81,6 +87,11 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
     /// <returns>Whether gallery changes are permitted in the current publication state.</returns>
     public bool CanEditGallery(bool canPublish, bool isPubliclyVisible, long projectionVersion)
     {
+        if (RetirementId is not null)
+        {
+            return false;
+        }
+
         return canPublish || (!IsPublished && !isPubliclyVisible && projectionVersion == Version);
     }
 
@@ -153,6 +164,29 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
         return catalogTour;
     }
 
+    /// <summary>Retires an existing tour or closes its stream before a delayed create can arrive.</summary>
+    public void Retire(Guid adminTourId, Guid retirementId)
+    {
+        if (adminTourId == Guid.Empty || retirementId == Guid.Empty)
+        {
+            throw new ArgumentException("Tour retirement requires source and retirement identifiers.");
+        }
+
+        if (AdminTourId != Guid.Empty && AdminTourId != adminTourId)
+        {
+            throw new InvalidOperationException("Retirement must match the Admin tour identifier.");
+        }
+
+        if (RetirementId is null)
+        {
+            AddEvent(new CatalogTourRetired(adminTourId, retirementId));
+        }
+        else if (RetirementId != retirementId)
+        {
+            throw new InvalidOperationException("The Catalog tour already has a different retirement identifier.");
+        }
+    }
+
     /// <summary>
     /// Updates the editable customer-facing presentation values.
     /// </summary>
@@ -182,6 +216,11 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
         ArgumentNullException.ThrowIfNull(itinerary);
         ArgumentNullException.ThrowIfNull(seoTitle);
         ArgumentNullException.ThrowIfNull(seoDescription);
+
+        if (RetirementId is not null)
+        {
+            return CatalogTourErrors.Retired();
+        }
 
         if (IsPublished)
         {
@@ -231,6 +270,11 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
     /// <returns>A success result, or a validation failure when required public content is missing.</returns>
     public Result Publish()
     {
+        if (RetirementId is not null)
+        {
+            return CatalogTourErrors.Retired();
+        }
+
         if (IsPublished)
         {
             return Result.Ok();
@@ -290,6 +334,11 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
                 break;
             case CatalogTourUnpublished unpublished:
                 EnsureCatalogTourId(unpublished.CatalogTourId);
+                IsPublished = false;
+                break;
+            case CatalogTourRetired retired:
+                AdminTourId = retired.AdminTourId;
+                RetirementId = retired.RetirementId;
                 IsPublished = false;
                 break;
             default:

@@ -41,7 +41,7 @@ public sealed class FinancialHistoryDeletionTests
     }
 
     [Fact]
-    public void Parent_tour_with_a_cancelled_booking_receipt_cannot_be_deleted()
+    public void Parent_tour_can_retire_and_retain_a_cancelled_booking_receipt()
     {
         // Arrange
         var scenario = new PaymentScenario();
@@ -50,10 +50,12 @@ public sealed class FinancialHistoryDeletionTests
         scenario.Tour.CancelBooking(scenario.Booking.Id).IsSuccess.ShouldBeTrue();
 
         // Act
-        var result = scenario.Tour.Delete();
+        var result = scenario.Tour.Retire(Guid.CreateVersion7(), "admin-subject", PaymentScenario.Now);
 
         // Assert
-        result.IsFailure.ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
+        scenario.Tour.IsRetired.ShouldBeTrue();
+        scenario.Tour.Bookings.ShouldHaveSingleItem().ShouldBeSameAs(scenario.Booking);
         scenario.Booking.FinancialHistory.ShouldNotBeNull();
         scenario.Booking.HasFinancialHistory.ShouldBeTrue();
         scenario.History.ExportState().Receipts.Length.ShouldBe(1);
