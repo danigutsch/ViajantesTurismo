@@ -18,7 +18,7 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("branding")
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -251,7 +251,10 @@ namespace ViajantesTurismo.Branding.Infrastructure.Migrations
 
                     b.HasKey("Sha256");
 
-                    b.ToTable("BrandingLogos", "branding");
+                    b.ToTable("BrandingLogos", "branding", t =>
+                        {
+                            t.HasCheckConstraint("CK_BrandingLogos_ContentLength", "octet_length(\"Content\") BETWEEN 1 AND 40960");
+                        });
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Branding.Infrastructure.BrandingRecoveryAuditRecord", b =>

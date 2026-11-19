@@ -148,8 +148,12 @@ remove action; it has no logo address field.
   other type, refuses animated WebP and APNG (400 on `Content`, nothing stored; the check walks the container chunks
   after the malware scan and before the decode), scans for malware (a hit is 400, an unavailable scanner is 503), decodes within 2048 x 2048 pixels and
   4,000,000 pixels, and re-encodes to WebP of at most 40 KiB. Metadata is stripped by the re-encode.
-- The result is stored once by lowercase SHA-256 in `branding."BrandingLogos"` and never updated; the same image
-  uploaded again reuses the row. Settings and revisions keep the hash.
+- The result is stored once by lowercase SHA-256 in `branding."BrandingLogos"` and never updated. PostgreSQL checks
+  that each blob contains 1 to 40,960 bytes. Concurrent uploads of the same image reuse the row through
+  `INSERT ON CONFLICT DO NOTHING`. The logo row, new revision, and outbox entry commit in one transaction.
+- Settings and revisions keep the hash. The Catalog host reclaims logos older than one day that have no current
+  or historical revision reference, in batches of 128. The sweep skips locked rows. A writer locks the logo
+  through commit so collection cannot remove a blob while it is being referenced.
 - `DELETE /api/v1/branding/settings/logo` (`BrandingWrite`, `If-Match` required) removes the logo as a new revision;
   Management.Web uses it so unsaved edits to other fields are kept after an upload or a removal.
 - `LogoUri` is always `null` or `/api/v1/public/branding/logo/{sha256}`. `PUT settings` accepts only `null` (remove)
@@ -165,12 +169,42 @@ remove action; it has no logo address field.
 - Document snapshots embed the projected bytes as a `data:image/webp;base64,...` URI and record the logo hash in the
   branding version; see [Generated travel documents](generated-travel-documents.md).
 
-### Logo operating notes
+### Event size and recovery
 
-- Every revision re-ships the logo bytes (about 54 KB as base64) in the outbox payload. Sending the bytes only when the
-  hash changes is a possible follow-up.
-- Logos are never deleted: replaced or removed logos stay in `branding."BrandingLogos"`. Orphan growth is bounded by
-  upload rate limits and the 40 KiB cap; garbage collection is a follow-up.
+Each revision that has a logo carries its full WebP bytes. The Admin consumer can apply any newer revision when
+previous revisions arrive later or are missing. A delta referring to logo bytes from a skipped revision could
+neither render that logo nor close the gap. Reseeds and epoch rotations use the same self-contained payload.
+The maximum logo adds 54,616 base64 characters. The measured snapshot with a maximum-size unchanged logo
+and a 120-character escaped brand name was 55,909 UTF-8 bytes, within the 65,536-byte JSON payload budget.
+
+The producer and Admin worker check UTF-8 payload size before enqueue and deserialization, respectively.
+PostgreSQL enforces the budget on `branding.outbox_messages` and on the Admin Branding messages in the Catalog
+database's `messaging.transport_messages` broker. The Admin inbox records identity, epoch, revision, and
+outcome only. Its projection checks the decoded logo against the 40 KiB budget and its content address.
+
+A deterministic 1024 × 512 noisy JPEG measured 364,843 bytes. Its first WebP candidate at 512 pixels and
+quality 90 measured 80,028 bytes. The 384 × 192 variant at quality 60 fit at 20,946 bytes. The 40 KiB cap
+and variant ladder are unchanged.
+
+Apply the Catalog and Branding migrations before deploying the process that collects orphans. Apply the
+Branding migration while the old Catalog writers are stopped or drained so the collectors and writers use
+the same row-lock protocol. Before migrating an existing database, count out-of-bound logo and payload rows.
+If any exist, stop the migration and review those rows through the recovery process before correction.
+Current and historic revisions retain their logos. A cumulative retained-history limit requires a separate
+revision retention decision.
+
+```sql
+SELECT count(*) FROM branding."BrandingLogos"
+WHERE octet_length("Content") NOT BETWEEN 1 AND 40960;
+
+SELECT count(*) FROM branding.outbox_messages
+WHERE octet_length("Payload") > 65536;
+
+SELECT count(*) FROM messaging.transport_messages
+WHERE "ConsumerName" = 'admin'
+  AND "EventType" = 'branding.settings.changed'
+  AND octet_length("Payload") > 65536;
+```
 
 ## Styling safety
 

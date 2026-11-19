@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,7 +12,9 @@ internal sealed class BrandingLogoConfiguration : IEntityTypeConfiguration<Brand
     /// <inheritdoc />
     public void Configure(EntityTypeBuilder<BrandingLogoRecord> entity)
     {
-        entity.ToTable("BrandingLogos", BrandingDbContext.SchemaName);
+        entity.ToTable("BrandingLogos", BrandingDbContext.SchemaName, table => table.HasCheckConstraint(
+            "CK_BrandingLogos_ContentLength",
+            string.Create(CultureInfo.InvariantCulture, $"""octet_length("Content") BETWEEN 1 AND {BrandingLogoLimits.MaxEncodedBytes}""")));
 
         entity.HasKey(logo => logo.Sha256);
         entity.Property(logo => logo.Sha256).HasMaxLength(BrandingLogoPath.HashLength).IsFixedLength().ValueGeneratedNever();

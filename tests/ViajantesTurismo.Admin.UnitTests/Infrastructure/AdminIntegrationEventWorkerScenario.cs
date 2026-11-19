@@ -45,7 +45,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
     }
 
     /// <summary>Creates a scenario whose branding projection store runs on a fresh in-memory database with worker event delivery registered.</summary>
-    public static AdminIntegrationEventWorkerScenario InMemoryProjection()
+    public static AdminIntegrationEventWorkerScenario InMemoryProjection(bool registerDeliveryTwice = false)
     {
         var databaseName = Guid.CreateVersion7().ToString("N");
         var root = new InMemoryDatabaseRoot();
@@ -57,6 +57,10 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
         services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
         services.AddAdminBrandingProjection();
         AdminWorker::ViajantesTurismo.Admin.IntegrationEventWorker.AdminWorkerIntegrationEvents.AddAdminWorkerIntegrationEventDelivery(services);
+        if (registerDeliveryTwice)
+        {
+            AdminWorker::ViajantesTurismo.Admin.IntegrationEventWorker.AdminWorkerIntegrationEvents.AddAdminWorkerIntegrationEventDelivery(services);
+        }
 
         return new AdminIntegrationEventWorkerScenario(services.BuildServiceProvider());
     }
@@ -96,7 +100,13 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
     }
 
     /// <summary>Delivers one event as a transport envelope through the worker's generated publisher.</summary>
-    public async Task Deliver(BrandingSettingsChangedIntegrationEvent integrationEvent, CancellationToken ct)
+    public Task Deliver(BrandingSettingsChangedIntegrationEvent integrationEvent, CancellationToken ct) =>
+        Deliver(integrationEvent, JsonSerializer.Serialize(
+            integrationEvent,
+            BrandingIntegrationEventJsonContext.Default.BrandingSettingsChangedIntegrationEvent), ct);
+
+    /// <summary>Delivers an exact wire payload for the event through the worker.</summary>
+    public async Task Deliver(BrandingSettingsChangedIntegrationEvent integrationEvent, string payload, CancellationToken ct)
     {
         var envelope = new EventEnvelope(
             "cloudevents",
@@ -109,9 +119,7 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
             subject: null,
             "application/json",
             dataSchema: null,
-            JsonSerializer.Serialize(
-                integrationEvent,
-                BrandingIntegrationEventJsonContext.Default.BrandingSettingsChangedIntegrationEvent),
+            payload,
             EventPayloadEncoding.Json,
             extensionAttributesJson: null);
         await provider.GetRequiredService<IEventEnvelopePublisher>().Publish(envelope, ct);

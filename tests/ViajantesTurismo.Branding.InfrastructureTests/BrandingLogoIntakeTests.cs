@@ -1,4 +1,5 @@
 using ImageMagick;
+using PandaBear.ImageProcessing;
 using PandaBear.MalwareScanning;
 using PandaBear.Results;
 using PandaBear.Testing.MalwareScanning;
@@ -15,6 +16,36 @@ public sealed class BrandingLogoIntakeTests
     private const string ScanRefusal = "Logo did not pass security scanning.";
     private const string AnimationRefusal = "Logo must be a still image; animated images are not accepted.";
     private const string MalformedRefusal = "Logo could not be decoded or exceeds the allowed image dimensions.";
+
+    [Fact]
+    public async Task A_noisy_landscape_uses_a_later_webp_variant_and_stays_within_the_logo_budget()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var body = LogoImageBytes.NoisyJpeg();
+        using var firstAttempt = new MemoryStream(body);
+        var initial = MagickImageProcessor.Process(new ImageProcessingRequest(
+            firstAttempt,
+            [new ImageVariantRequest("first", ImageOutputFormat.WebP, 512, 90, 512)],
+            ImageProcessingLimits.WebDefault), ct).Variants.ShouldHaveSingleItem();
+        var scanner = new TestMalwareScanner();
+        using var upload = new MemoryStream(body);
+
+        // Act
+        var result = await LogoIntakeHelpers.Create(scanner).Process(upload, "image/jpeg", ct);
+
+        // Assert
+        body.Length.ShouldBeLessThanOrEqualTo(BrandingLogoLimits.MaxUploadBytes);
+        initial.Content.Length.ShouldBeGreaterThan(BrandingLogoLimits.MaxEncodedBytes);
+        result.IsSuccess.ShouldBeTrue();
+        var logo = result.Value;
+        logo.Content.Length.ShouldBeInRange(1, BrandingLogoLimits.MaxEncodedBytes);
+        logo.ContentType.ShouldBe("image/webp");
+        scanner.CallCount.ShouldBe(1);
+        using var selected = new MagickImage(logo.Content.ToArray());
+        TestContext.Current.TestOutputHelper?.WriteLine(
+            $"Input {body.Length} bytes. First 512 px quality 90 {initial.Content.Length} bytes. Selected {selected.Width}x{selected.Height} at {logo.Content.Length} bytes.");
+    }
 
     [Fact]
     public async Task An_animated_png_is_refused_before_any_scan()
