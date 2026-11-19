@@ -4,6 +4,21 @@ namespace ViajantesTurismo.Branding.InfrastructureTests;
 public sealed class BrandingDbContextDiagnosticsTests
 {
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Branding_logo_reclamation_runs_in_the_catalog_host_only(bool runtimeHost)
+    {
+        // Arrange
+        using var scope = BrandingInfrastructureRegistrationScope.Create(addOutboxRelay: runtimeHost);
+
+        // Act
+        var registered = scope.HostedServiceNames().Contains("BrandingLogoReclamationHostedService", StringComparer.Ordinal);
+
+        // Assert
+        registered.ShouldBe(runtimeHost);
+    }
+
+    [Theory]
     [InlineData("Development", true)]
     [InlineData("Production", false)]
     public void Branding_context_gates_sensitive_logging_by_environment(string environmentName, bool expected)

@@ -84,13 +84,22 @@ internal sealed class EfBrandingSettingsStore(
     }
 
     /// <inheritdoc />
-    public async Task<BrandingSettingsSnapshot?> ReplaceLogoIfMatch(
+    public Task<BrandingSettingsSnapshot?> ReplaceLogoIfMatch(
         BrandingLogo? logo,
         Func<BrandingSettingsSnapshot?, bool> precondition,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(precondition);
 
+        return dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+            _ => ReplaceLogoRevision(logo, precondition, ct), ct);
+    }
+
+    private async Task<BrandingSettingsSnapshot?> ReplaceLogoRevision(
+        BrandingLogo? logo,
+        Func<BrandingSettingsSnapshot?, bool> precondition,
+        CancellationToken ct)
+    {
         var existing = await Load(ct).ConfigureAwait(false);
         if (!precondition(ToSnapshot(existing)))
         {
@@ -107,20 +116,58 @@ internal sealed class EfBrandingSettingsStore(
             return ToSnapshot(existing);
         }
 
-        if (logo is not null && !await dbContext.BrandingLogos.AnyAsync(stored => stored.Sha256 == logo.Sha256, ct).ConfigureAwait(false))
+        if (logo is { Content.Length: <= 0 or > BrandingLogoLimits.MaxEncodedBytes })
         {
-            dbContext.BrandingLogos.Add(BrandingLogoRecord.Create(logo, timeProvider.GetUtcNow()));
+            throw new ArgumentException("The encoded Branding logo is outside the allowed size range.", nameof(logo));
         }
 
         var dto = current.ToDto();
         dto.LogoUri = logo is null ? null : BrandingLogoPath.For(logo.Sha256);
         var updated = BrandingSettings.Create(dto, BrandingFontFamilies.All);
-        existing.ApplyLogoRevision(
-            updated.TryGetValue(out var settings) ? settings : throw new InvalidOperationException("The generated logo URL is not a valid Branding logo URI."),
-            logo?.Sha256);
+        if (!updated.TryGetValue(out var settings))
+        {
+            throw new InvalidOperationException("The generated logo URL is not a valid Branding logo URI.");
+        }
 
-        await CommitRevision(existing, ct).ConfigureAwait(false);
-        return ToSnapshot(await Load(ct).ConfigureAwait(false));
+        if (logo is not null && dbContext.Database.IsNpgsql())
+        {
+            await CommitPostgreSqlLogoRevision(existing, settings, logo, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            if (logo is not null && !await dbContext.BrandingLogos.AnyAsync(stored => stored.Sha256 == logo.Sha256, ct).ConfigureAwait(false))
+            {
+                dbContext.BrandingLogos.Add(BrandingLogoRecord.Create(logo, timeProvider.GetUtcNow()));
+            }
+
+            existing.ApplyLogoRevision(settings, logo?.Sha256);
+            await CommitRevision(existing, ct).ConfigureAwait(false);
+        }
+
+        return ToSnapshot(existing);
+    }
+
+    private async Task CommitPostgreSqlLogoRevision(
+        BrandingSettingsRecord current,
+        BrandingSettings settings,
+        BrandingLogo logo,
+        CancellationToken ct)
+    {
+        var transaction = await dbContext.Database.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await using var _ = transaction.ConfigureAwait(false);
+        try
+        {
+            await PostgreSqlBrandingLogos.InsertOrReuse(dbContext, logo, timeProvider.GetUtcNow(), ct).ConfigureAwait(false);
+            current.ApplyLogoRevision(settings, logo.Sha256);
+            await CommitRevision(current, ct).ConfigureAwait(false);
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            // The execution strategy must reload the revision and recreate tracked inserts when it retries.
+            dbContext.ChangeTracker.Clear();
+            throw;
+        }
     }
 
     /// <inheritdoc />

@@ -31,6 +31,7 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
         });
         builder.Configuration["ConnectionStrings:catalog-database"] = "Host=localhost;Database=catalog-database;Username=postgres";
         builder.Services.AddOpenTelemetry().WithTracing(static _ => { });
+        builder.Services.AddSingleton(TimeProvider.System);
         builder.AddBrandingInfrastructure(addOutboxRelay);
 
         return new BrandingInfrastructureRegistrationScope(builder.Services.BuildServiceProvider());
@@ -63,6 +64,10 @@ internal sealed class BrandingInfrastructureRegistrationScope : IDisposable
     {
         return services.GetService<MeterProvider>() is not null;
     }
+
+    /// <summary>Returns the names of the hosted services registered by this composition.</summary>
+    public string[] HostedServiceNames() =>
+        [.. services.GetServices<IHostedService>().Select(service => service.GetType().Name)];
 
     /// <summary>Reports which outbox, transport and serializer registrations exist for the Branding context, with their table schemas.</summary>
     public (

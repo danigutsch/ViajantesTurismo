@@ -1,5 +1,7 @@
+using System.Text;
 using System.Text.Json;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
+using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Branding.Infrastructure;
 using TestTraits = ViajantesTurismo.Branding.InfrastructureTests.Infrastructure.TestTraits;
 
@@ -8,6 +10,53 @@ namespace ViajantesTurismo.Branding.InfrastructureTests;
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 public sealed class BrandingLogoWireFormatTests
 {
+    [Fact]
+    public void A_full_snapshot_with_a_maximum_size_logo_fits_the_message_budget()
+    {
+        // Arrange
+        var integrationEvent = BrandingLogoWireFormatData.CreateEvent(new byte[BrandingLogoLimits.MaxEncodedBytes]);
+        var serializer = new BrandingIntegrationEventSerializer();
+
+        // Act
+        var payload = serializer.Serialize(integrationEvent);
+        var bytes = Encoding.UTF8.GetByteCount(payload);
+
+        // Assert
+        BrandingLogoLimits.MaxEncodedBytes.ShouldBe(BrandingEventLimits.MaxLogoBytes);
+        bytes.ShouldBeLessThanOrEqualTo(64 * 1024);
+    }
+
+    [Fact]
+    public void The_outbox_refuses_a_serialized_event_over_the_message_budget()
+    {
+        // Arrange
+        var integrationEvent = BrandingLogoWireFormatData.CreateEvent(null) with
+        {
+            BrandName = new string('x', 64 * 1024)
+        };
+        var serializer = new BrandingIntegrationEventSerializer();
+
+        // Act
+        var serialize = () => serializer.Serialize(integrationEvent);
+
+        // Assert
+        serialize.ShouldThrow<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void The_outbox_refuses_logo_bytes_over_the_logo_budget_even_if_the_event_fits()
+    {
+        // Arrange
+        var integrationEvent = BrandingLogoWireFormatData.CreateEvent(new byte[BrandingLogoLimits.MaxEncodedBytes + 1]);
+        var serializer = new BrandingIntegrationEventSerializer();
+
+        // Act
+        var serialize = () => serializer.Serialize(integrationEvent);
+
+        // Assert
+        serialize.ShouldThrow<InvalidOperationException>();
+    }
+
     [Fact]
     public void The_outbox_serializer_writes_the_logo_as_one_base64_string()
     {

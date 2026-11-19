@@ -17,6 +17,20 @@ internal static class LogoImageBytes
         return image.ToByteArray();
     }
 
+    /// <summary>Creates a reproducible 1024 by 512 photographic-noise fixture within the raw upload budget.</summary>
+    public static byte[] NoisyJpeg()
+    {
+        var header = "P6\n1024 512\n255\n"u8;
+        var imageData = new byte[header.Length + (1024 * 512 * 3)];
+        header.CopyTo(imageData);
+        new Random(42).NextBytes(imageData.AsSpan(header.Length));
+        using var image = new MagickImage(imageData)
+        {
+            Quality = 84
+        };
+        return image.ToByteArray(MagickFormat.Jpeg);
+    }
+
     /// <summary>Creates a decodable APNG-shaped PNG: a still PNG with an <c>acTL</c> chunk before the image data.</summary>
     public static byte[] RealAnimatedPng()
     {

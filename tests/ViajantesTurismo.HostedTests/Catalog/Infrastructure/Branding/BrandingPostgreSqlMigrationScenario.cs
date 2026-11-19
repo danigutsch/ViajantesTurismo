@@ -1,5 +1,6 @@
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using PandaBear.EntityFrameworkCore;
@@ -43,7 +44,7 @@ public sealed class BrandingPostgreSqlMigrationScenario(HostedTestFixture shared
         _dataSource = _database.CreateDataSource("branding-migration-test");
     }
 
-    public BrandingDbContext CreateDbContext()
+    public BrandingDbContext CreateDbContext(IInterceptor? interceptor = null)
     {
         var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
         var services = new ServiceCollection();
@@ -59,18 +60,21 @@ public sealed class BrandingPostgreSqlMigrationScenario(HostedTestFixture shared
         using var provider = services.BuildServiceProvider();
         var configurations = provider.GetServices<IDbContextConfiguration<BrandingDbContext>>().ToArray();
         var options = new DbContextOptionsBuilder<BrandingDbContext>()
-            .UseNpgsql(dataSource, providerOptions => providerOptions.MigrationsHistoryTable(BrandingMigrationsHistoryTable, schema: "public"))
-            .Options;
+            .UseNpgsql(dataSource, providerOptions => providerOptions.MigrationsHistoryTable(BrandingMigrationsHistoryTable, schema: "public"));
+        if (interceptor is not null)
+        {
+            options.AddInterceptors(interceptor);
+        }
 
-        return new BrandingDbContext(options, configurations);
+        return new BrandingDbContext(options.Options, configurations);
     }
 
     /// <summary>Creates a Branding settings store lease backed by a new database context on the scenario database.</summary>
-    internal BrandingStoreLease CreateStore()
+    internal BrandingStoreLease CreateStore(IInterceptor? interceptor = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(TimeProvider.System);
-        services.AddScoped(_ => CreateDbContext());
+        services.AddScoped(_ => CreateDbContext(interceptor));
         services.AddKeyedSingleton<IIntegrationEventSerializer, BrandingIntegrationEventSerializer>(typeof(BrandingDbContext));
         services.AddIntegrationEventOutbox<BrandingDbContext>();
         services.AddScoped<EfBrandingSettingsStore>();
@@ -78,6 +82,44 @@ public sealed class BrandingPostgreSqlMigrationScenario(HostedTestFixture shared
         var scope = provider.CreateAsyncScope();
 
         return new BrandingStoreLease(provider, scope, scope.ServiceProvider.GetRequiredService<EfBrandingSettingsStore>());
+    }
+
+    /// <summary>Inserts a logo on a separate PostgreSQL connection with the specified storage timestamp.</summary>
+    internal async Task InsertLogo(BrandingLogo logo, DateTimeOffset storedAt, CancellationToken ct)
+    {
+        var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        await using var command = dataSource.CreateCommand("""
+            INSERT INTO branding."BrandingLogos" ("Sha256", "ContentType", "Content", "StoredAt")
+            VALUES (@sha256, @contentType, @content, @storedAt);
+            """);
+        command.Parameters.AddWithValue("sha256", logo.Sha256);
+        command.Parameters.AddWithValue("contentType", logo.ContentType);
+        command.Parameters.AddWithValue("content", logo.Content.ToArray());
+        command.Parameters.AddWithValue("storedAt", storedAt);
+        await command.ExecuteNonQueryAsync(ct);
+    }
+
+    /// <summary>Reads the number of stored logos from a fresh database context.</summary>
+    internal async Task<int> LogoCount(CancellationToken ct)
+    {
+        await using var context = CreateDbContext();
+        return await context.BrandingLogos.CountAsync(ct);
+    }
+
+    /// <summary>Runs a reclamation batch on its own connection and transaction.</summary>
+    internal async Task<int> ReclaimLogos(DateTimeOffset cutoff, int batchSize, CancellationToken ct)
+    {
+        await using var context = CreateDbContext();
+        return await PostgreSqlBrandingLogos.Reclaim(context, cutoff, batchSize, ct);
+    }
+
+    /// <summary>Replaces the test outbox payload directly, exercising the storage boundary.</summary>
+    internal async Task ReplaceOutboxPayload(string payload, CancellationToken ct)
+    {
+        var dataSource = _dataSource ?? throw new InvalidOperationException("The Branding PostgreSQL migration scenario has not started.");
+        await using var command = dataSource.CreateCommand("""UPDATE branding.outbox_messages SET "Payload" = @payload;""");
+        command.Parameters.AddWithValue("payload", payload);
+        await command.ExecuteNonQueryAsync(ct);
     }
 
     public async Task<(long CurrentRevision, long Revisions, long OutboxMessages)> ReadRevisionCounts(CancellationToken ct)

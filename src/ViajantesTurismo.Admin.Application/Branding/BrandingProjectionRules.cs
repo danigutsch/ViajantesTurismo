@@ -6,8 +6,6 @@ namespace ViajantesTurismo.Admin.Application.Branding;
 /// <summary>Orders Branding revisions for the Admin projection (ADR-040).</summary>
 public static class BrandingProjectionRules
 {
-    private const int MaxLogoBytes = 40 * 1024;
-
     private const string LogoContentType = "image/webp";
 
     /// <summary>Decides how an incoming revision affects the current projection.</summary>
@@ -67,7 +65,7 @@ public static class BrandingProjectionRules
             return true;
         }
 
-        return incoming is { LogoSha256: { } sha256, LogoContentType: LogoContentType, LogoContent: { Length: > 0 and <= MaxLogoBytes } content }
+        return incoming is { LogoSha256: { } sha256, LogoContentType: LogoContentType, LogoContent: { Length: > 0 and <= BrandingEventLimits.MaxLogoBytes } content }
             && string.Equals(sha256, Convert.ToHexStringLower(SHA256.HashData(content.Span)), StringComparison.Ordinal);
     }
 }

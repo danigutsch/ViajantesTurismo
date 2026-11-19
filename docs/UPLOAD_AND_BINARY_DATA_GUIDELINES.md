@@ -183,10 +183,11 @@ The Branding intake bounds the body through the endpoint limit and the `Seekable
   ([TOAST](https://www.postgresql.org/docs/current/storage-toast.html)). The repository does not set it.
 - Npgsql reads `bytea` as `byte[]` by default and supports `GetStream()` with `CommandBehavior.SequentialAccess` for large values
   ([Npgsql types](https://www.npgsql.org/doc/types/basic.html)).
-- Orphans: logos are never deleted today, so replaced and removed logos stay. Growth is bounded by the rate limit and the size
-  cap; garbage collection is a follow-up tracked in the I/O hardening epic. New blob tables need a stated cleanup rule.
-- Event and outbox payloads that carry bytes need a size cap enforced by both producer and consumer. Every Branding revision
-  re-ships the logo bytes (about 54 KB as base64) in the outbox payload.
+- Branding periodically reclaims unreferenced logos after a grace period. Current and historical revision references protect
+  their logos. New blob tables need a stated cleanup rule.
+- Event and outbox payloads that carry bytes need a size cap enforced by both producer and consumer. Branding sends a complete
+  snapshot so the consumer can recover after missed or out-of-order revisions. The producer, outbox, Admin broker queue, and
+  consumer enforce a 64 KiB UTF-8 payload limit. See [Branding](branding.md) for measurements and the rollout checks.
 
 ## Logging and telemetry
 
