@@ -52,6 +52,12 @@ internal sealed class FakeDocumentStore : IDocumentStore
         return Task.FromResult<DocumentLineage?>(lineage);
     }
 
+    /// <summary>Returns the stored bytes only for an available finalized revision.</summary>
+    public Task<ReadOnlyMemory<byte>?> ReadFinalizedArtifactContent(Guid documentId, CancellationToken ct) =>
+        Task.FromResult(Documents.GetValueOrDefault(documentId) is { HasAvailableFinalizedArtifact: true } document
+            ? document.CopyFinalizedArtifactContent()
+            : null);
+
     /// <summary>Removes expired drafts as of the given time and returns how many were removed.</summary>
     public async Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
     {

@@ -17,7 +17,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
@@ -335,6 +335,24 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentArtifactBody", b =>
+                {
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("_content")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("Content");
+
+                    b.HasKey("DocumentId");
+
+                    b.ToTable("DocumentArtifactBodies", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_DocumentArtifactBodies_ContentLength", "octet_length(\"Content\") BETWEEN 1 AND 1048576");
+                        });
+                });
+
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentAuditPurgeRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -566,9 +584,9 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<byte[]>("_finalizedArtifactContent")
-                        .HasColumnType("bytea")
-                        .HasColumnName("FinalizedArtifactContent");
+                    b.Property<bool>("_hasFinalizedArtifact")
+                        .HasColumnType("boolean")
+                        .HasColumnName("HasFinalizedArtifact");
 
                     b.HasKey("Id");
 
@@ -1283,6 +1301,15 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentArtifactBody", b =>
+                {
+                    b.HasOne("ViajantesTurismo.Admin.Domain.Documents.DocumentDraft", null)
+                        .WithOne("_finalizedArtifact")
+                        .HasForeignKey("ViajantesTurismo.Admin.Domain.Documents.DocumentArtifactBody", "DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentDraft", b =>
                 {
                     b.HasOne("ViajantesTurismo.Admin.Domain.Documents.DocumentLineage", null)
@@ -1538,6 +1565,11 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasForeignKey("ViajantesTurismo.Admin.Infrastructure.Payments.PaymentInstructionRow", "DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentDraft", b =>
+                {
+                    b.Navigation("_finalizedArtifact");
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Admin.Domain.Documents.DocumentLineage", b =>

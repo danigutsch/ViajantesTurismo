@@ -76,6 +76,12 @@ public static class DocumentErrors
         field: "artifact",
         message: "Artifact content is required.");
 
+    /// <summary>Returns the validation failure for an artifact above the finalization limit.</summary>
+    public static Result ArtifactContentTooLarge() => Result.Invalid(
+        detail: "The finalized artifact exceeds the size limit.",
+        field: "artifact",
+        message: "Artifact content exceeds the maximum size.");
+
     /// <summary>Returns a failure when a document has no sealed artifact available for download.</summary>
     public static Result FinalizedArtifactNotAvailable() => Result.Conflict(
         detail: "A finalized document artifact is not available.");

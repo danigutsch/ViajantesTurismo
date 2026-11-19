@@ -5,6 +5,7 @@ using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Payments;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 
@@ -114,9 +115,9 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
     /// <inheritdoc />
     public async Task<byte[]?> GetArtifact(Guid documentId, CancellationToken ct)
     {
-        var document = await context.DocumentDrafts.SingleOrDefaultAsync(item => item.Id == documentId, ct);
-        var ciphertext = document?.CopyFinalizedArtifactContent();
-        return document?.Type == DocumentType.PaymentInstructions && ciphertext is { } content
-            ? protection.InstructionArtifacts.Unprotect(documentId.ToString("N"), content.ToArray()) : null;
+        var ciphertext = await DocumentStore.QueryBody(context, documentId)
+            .Where(_ => context.DocumentDrafts.Any(draft => draft.Id == documentId && draft.Type == DocumentType.PaymentInstructions))
+            .SingleOrDefaultAsync(ct);
+        return ciphertext is null ? null : protection.InstructionArtifacts.Unprotect(documentId.ToString("N"), ciphertext);
     }
 }

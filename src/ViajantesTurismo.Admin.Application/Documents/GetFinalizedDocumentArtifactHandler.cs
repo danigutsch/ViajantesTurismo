@@ -24,8 +24,13 @@ public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentS
             return paymentInstructions is not null ? await paymentInstructions.Download(query.DocumentId, query.ActorId, ct)
                 : DocumentErrors.FinalizedArtifactNotAvailable().ConvertError<FinalizedDocumentArtifact>();
         }
-        var artifactContent = document.CopyFinalizedArtifactContent();
-        if (!document.HasAvailableFinalizedArtifact || artifactContent is null || document.FinalizedArtifactName is null)
+        if (!document.HasAvailableFinalizedArtifact || document.FinalizedArtifactName is not { } fileName)
+        {
+            return DocumentErrors.FinalizedArtifactNotAvailable().ConvertError<FinalizedDocumentArtifact>();
+        }
+
+        var artifactContent = await documentStore.ReadFinalizedArtifactContent(query.DocumentId, ct);
+        if (artifactContent is null)
         {
             return DocumentErrors.FinalizedArtifactNotAvailable().ConvertError<FinalizedDocumentArtifact>();
         }
@@ -35,6 +40,6 @@ public sealed class GetFinalizedDocumentArtifactHandler(IDocumentStore documentS
             document.BookingId,
             document.Revision,
             artifactContent.Value,
-            document.FinalizedArtifactName));
+            fileName));
     }
 }

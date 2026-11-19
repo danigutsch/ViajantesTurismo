@@ -45,6 +45,45 @@ public sealed class DocumentDraftTests
     }
 
     [Fact]
+    public void Finalize_rejects_an_artifact_above_one_mebibyte_without_changing_the_draft()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(now);
+        draft.BeginReview(now).IsSuccess.ShouldBeTrue();
+        draft.Approve(now).IsSuccess.ShouldBeTrue();
+        var artifact = new byte[(1024 * 1024) + 1];
+
+        // Act
+        var result = draft.Finalize(artifact, now);
+
+        // Assert
+        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
+        draft.Status.ShouldBe(DocumentStatus.Approved);
+        draft.FinalizedAt.ShouldBeNull();
+        draft.HasAvailableFinalizedArtifact.ShouldBeFalse();
+        draft.CopyFinalizedArtifactContent().ShouldBeNull();
+    }
+
+    [Fact]
+    public void Finalize_accepts_an_artifact_at_the_one_mebibyte_limit()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var draft = DocumentDraftTestData.Create(now);
+        draft.BeginReview(now).IsSuccess.ShouldBeTrue();
+        draft.Approve(now).IsSuccess.ShouldBeTrue();
+        var artifact = new byte[1024 * 1024];
+
+        // Act
+        var result = draft.Finalize(artifact, now);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        draft.CopyFinalizedArtifactContent().ShouldNotBeNull().Length.ShouldBe(artifact.Length);
+    }
+
+    [Fact]
     public void EnsureSourceIsCurrent_accepts_the_version_the_draft_was_generated_from()
     {
         // Arrange

@@ -404,7 +404,7 @@ internal static class DocumentEndpoints
         httpContext.Response.Headers.Pragma = "no-cache";
         httpContext.Response.Headers.Expires = "0";
         httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
-        return TypedResults.File(artifact.Content.ToArray(), HtmlMediaType, artifact.FileName, enableRangeProcessing: false);
+        return TypedResults.Bytes(artifact.Content, HtmlMediaType, artifact.FileName, enableRangeProcessing: false);
     }
 
     private static async Task<IResult> GetDocumentAfterCommand(
