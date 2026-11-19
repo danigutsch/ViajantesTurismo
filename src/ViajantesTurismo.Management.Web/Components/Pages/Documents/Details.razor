@@ -43,6 +43,27 @@
             </div>
         }
 
+        @if (_document.ReviewFreshnessWarnings != DocumentReviewFreshnessWarningsDto.None)
+        {
+            <div class="alert alert-warning" role="status" aria-labelledby="document-freshness-heading">
+                <h2 id="document-freshness-heading" class="h5">Review warnings</h2>
+                <ul class="mb-0">
+                    @if (_document.ReviewFreshnessWarnings.HasFlag(DocumentReviewFreshnessWarningsDto.SourceUnavailable))
+                    {
+                        <li>The source booking or tour is unavailable.</li>
+                    }
+                    @if (_document.ReviewFreshnessWarnings.HasFlag(DocumentReviewFreshnessWarningsDto.SourceChanged))
+                    {
+                        <li>Source data has changed since this revision was generated.</li>
+                    }
+                    @if (_document.ReviewFreshnessWarnings.HasFlag(DocumentReviewFreshnessWarningsDto.TemplateChanged))
+                    {
+                        <li>The template has changed since this revision was generated.</li>
+                    }
+                </ul>
+            </div>
+        }
+
         <div class="card mb-4">
             <div class="card-body">
                 <dl class="row mb-0">

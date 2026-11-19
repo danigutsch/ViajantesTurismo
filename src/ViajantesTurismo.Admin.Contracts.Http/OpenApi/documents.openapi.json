@@ -1950,6 +1950,9 @@
       "DocumentManualReviewReasonsDto": {
         "type": "integer"
       },
+      "DocumentReviewFreshnessWarningsDto": {
+        "type": "integer"
+      },
       "DocumentStatusDto": {
         "type": "integer"
       },
@@ -2137,6 +2140,9 @@
           },
           "manualReviewReasons": {
             "$ref": "#/components/schemas/DocumentManualReviewReasonsDto"
+          },
+          "reviewFreshnessWarnings": {
+            "$ref": "#/components/schemas/DocumentReviewFreshnessWarningsDto"
           }
         }
       },

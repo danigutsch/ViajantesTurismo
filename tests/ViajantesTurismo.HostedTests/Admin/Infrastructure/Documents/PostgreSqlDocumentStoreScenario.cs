@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using PandaBear.Domain.EntityFrameworkCore;
@@ -21,6 +22,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Resources;
@@ -220,17 +222,26 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     }
 
     /// <summary>Reads the audit metadata projection for a document id.</summary>
-    public async ValueTask<DocumentAuditMetadata?> GetAuditMetadataById(Guid id, CancellationToken ct)
-    {
-        await using var dbContext = CreateReadDbContext();
-        return await new DocumentQueryService(dbContext).GetAuditMetadataById(id, ct);
-    }
+    public ValueTask<DocumentAuditMetadata?> GetAuditMetadataById(Guid id, CancellationToken ct) =>
+        WithDocumentReadServices((documents, _) => documents.GetAuditMetadataById(id, ct));
 
     /// <summary>Reads the document query projection for a document id.</summary>
-    public async ValueTask<GetDocumentDto?> GetDocumentProjectionById(Guid id, CancellationToken ct)
+    public ValueTask<GetDocumentDto?> GetDocumentProjectionById(Guid id, CancellationToken ct) =>
+        WithDocumentReadServices((documents, _) => documents.GetById(id, ct));
+
+    /// <summary>Reads the current source version from the seeded booking and tour.</summary>
+    public ValueTask<DocumentSourceVersionRead> GetDocumentSourceVersion(Guid bookingId, CancellationToken ct) =>
+        WithDocumentReadServices((_, sources) => sources.Read(bookingId, ct));
+
+    private async ValueTask<T> WithDocumentReadServices<T>(
+        Func<DocumentQueryService, IDocumentSourceVersionReader, Task<T>> action)
     {
-        await using var dbContext = CreateReadDbContext();
-        return await new DocumentQueryService(dbContext).GetById(id, ct);
+        await using var readContext = CreateReadDbContext();
+        await using var writeContext = CreateDbContext();
+        using var protection = new PaymentProtection(new ConfigurationBuilder().Build());
+        var queries = new QueryService(readContext, new PaymentHistoryStore(writeContext, protection));
+        var sources = new DocumentSourceVersionReader(queries);
+        return await action(new DocumentQueryService(readContext, sources), sources);
     }
 
     /// <summary>Returns whether a lineage update loaded concurrently by two contexts fails with a concurrency conflict.</summary>
@@ -1031,7 +1042,9 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         foreach (var bookingId in bookingIds.Distinct())
         {
             var tourId = Guid.CreateVersion7();
-            var customerId = Guid.CreateVersion7();
+            var customer = EntityBuilders.BuildCustomer(new CustomerOptions(Email: $"{bookingId:N}@example.test"));
+            dbContext.Customers.Add(customer);
+            _ = await dbContext.SaveChangesAsync(ct);
             var bookingDate = TimeProvider.System.GetUtcNow().UtcDateTime;
             var tourIdentifier = $"document-fixture-{tourId:N}";
 
@@ -1054,7 +1067,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                     "PrincipalCustomer_CustomerId", "PrincipalCustomer_BikeType", "PrincipalCustomer_BikePrice",
                     "Discount_Type", "Discount_Amount", "BookingDate", "Status")
                 VALUES (
-                    {bookingId}, {tourId}, 0, 'DoubleOccupancy', 0, {customerId}, 'Regular', 0, 'None', 0,
+                    {bookingId}, {tourId}, 0, 'DoubleOccupancy', 0, {customer.Id}, 'Regular', 0, 'None', 0,
                     {bookingDate}, {bookingStatus.ToString()});
                 """,
                 ct);

@@ -1,3 +1,4 @@
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 
@@ -7,7 +8,18 @@ namespace ViajantesTurismo.Admin.Application.Mappings;
 public static class DocumentMapper
 {
     /// <summary>Maps a document revision to its Admin read projection.</summary>
-    public static GetDocumentDto MapToGetDocumentDto(DocumentDraft document)
+    public static GetDocumentDto MapToGetDocumentDto(DocumentDraft document) =>
+        MapToGetDocumentDto(document, DocumentReviewFreshnessWarnings.None);
+
+    /// <summary>Maps a document revision together with freshness warnings from its current source.</summary>
+    public static GetDocumentDto MapToGetDocumentDto(DocumentDraft document, Option<string> currentSourceVersion)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        return MapToGetDocumentDto(document, document.AssessReviewFreshness(currentSourceVersion));
+    }
+
+    private static GetDocumentDto MapToGetDocumentDto(DocumentDraft document, DocumentReviewFreshnessWarnings warnings)
     {
         ArgumentNullException.ThrowIfNull(document);
 
@@ -35,7 +47,8 @@ public static class DocumentMapper
             ReplacesDocumentId = document.ReplacesDocumentId,
             HasFinalizedArtifact = document.HasAvailableFinalizedArtifact,
             RequiresManualReview = document.RequiresManualReview,
-            ManualReviewReasons = MapToDocumentManualReviewReasonsDto(document.ManualReviewReasons)
+            ManualReviewReasons = MapToDocumentManualReviewReasonsDto(document.ManualReviewReasons),
+            ReviewFreshnessWarnings = (DocumentReviewFreshnessWarningsDto)(int)warnings
         };
     }
 

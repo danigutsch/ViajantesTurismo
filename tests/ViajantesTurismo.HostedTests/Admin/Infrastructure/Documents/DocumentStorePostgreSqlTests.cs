@@ -133,6 +133,39 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task Review_projection_reports_changed_source_and_template_as_bounded_warning_flags()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc);
+        var context = DocumentDraftInfrastructureTestData.CreateAuditContext();
+        var lineage = DocumentLineage.Create(
+            Guid.CreateVersion7(),
+            DocumentType.BookingConfirmationContract,
+            DocumentAudience.Customer,
+            DocumentDraftInfrastructureTestData.CreateContent("2"),
+            now,
+            context).Value;
+        var draft = lineage.Revisions.ShouldHaveSingleItem();
+        lineage.BeginReview(draft.Id, now, context).IsSuccess.ShouldBeTrue();
+        lineage.ClearDomainEvents();
+        await Scenario.Seed(lineage);
+        var currentSource = await Scenario.GetDocumentSourceVersion(draft.BookingId, ct);
+        currentSource.Result.IsSuccess.ShouldBeTrue();
+
+        // Act
+        var projection = await Scenario.GetDocumentProjectionById(draft.Id, ct);
+
+        // Assert
+        var payload = JsonSerializer.SerializeToElement(projection.ShouldNotBeNull());
+        var hasWarnings = payload.TryGetProperty("ReviewFreshnessWarnings", out var warnings);
+        hasWarnings.ShouldBeTrue();
+        warnings.GetInt32().ShouldBe(3);
+        payload.GetProperty("SourceVersion").GetString().ShouldBe(draft.SourceVersion);
+        payload.GetRawText().ShouldNotContain(currentSource.Result.Value, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Manual_review_state_round_trips_through_the_database()
     {
         // Arrange

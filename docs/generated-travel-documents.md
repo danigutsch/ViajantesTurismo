@@ -222,10 +222,17 @@ Rules:
   default (a pending Product decision); see [document retention and legal hold](operations/document-retention-and-legal-hold.md).
 - The first vertical slice is Admin-only with global staff scope; it does not introduce a per-booking
   assignment model.
+- The same authorized Admin can generate, review, approve, and finalize a revision. Each action has
+  its own audit record with the actor and timestamp.
 - Customer-facing contract drafts can be generated or regenerated only for `Confirmed` or `Completed`
   bookings; `Pending` and `Cancelled` bookings are ineligible.
 - Authorization must evaluate the actor role, document audience, operation, and booking/document scope.
-- Review must show the source-data timestamp/version used by the draft.
+- Review shows the captured source version and template version. For in-review and approved
+  contract revisions, the details projection includes `reviewFreshnessWarnings` when it finds
+  a problem with the current source or template. The Management Web page displays the warnings
+  before staff submit a decision. The flags report source changed, template changed, or source unavailable without
+  exposing the current source version or field values. Approval and finalization verify freshness
+  again on submission.
 - Staff edits must be limited to fields declared editable for the document type.
 - High-risk source data changes require updating the source record first, then regenerating.
 - A regenerated revision whose source or template version changed cannot be approved until a reviewer
