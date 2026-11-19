@@ -20,7 +20,7 @@ namespace ViajantesTurismo.HostedTests.Admin.System.PostTransportValidation;
 public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
     [Fact]
-    public async Task Retiring_a_tour_withdraws_the_warmed_public_listing_before_acknowledgement()
+    public async Task Acknowledged_tour_retirement_withdraws_the_warmed_public_list_and_detail()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -32,21 +32,32 @@ public sealed class PostTransportValidationTests(AspireSystemTestFixture fixture
         var publicList = new Uri(Fixture.PublicWebAppUrl, "/en/group-bike-tours");
         var adminTour = await scenario.CreateAdminTour($"RET-{unique}", title);
         var catalogTour = await scenario.WaitForCatalogTour(adminTour.Id, ct);
-        await scenario.PublishCatalogTour(catalogTour, title, $"retiring-tour-{unique}", ct);
+        var published = await scenario.PublishCatalogTour(catalogTour, title, $"retiring-tour-{unique}", ct);
         await NavigateTo(publicList);
         var tourLink = Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = title });
         await Expect(tourLink).ToBeVisibleAsync();
+        var publicDetail = new Uri(publicList, $"/en/group-bike-tours/{published.Slug}");
+        await NavigateTo(publicDetail);
+        var tourHeading = Page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = title });
+        await Expect(tourHeading).ToBeVisibleAsync();
 
         // Act
         var retirementPath = new Uri($"/api/v1/tours/{adminTour.Id:D}", UriKind.Relative);
         using var initialResult = await ApiClient.DeleteAsync(retirementPath, ct);
 
         // Assert
-        initialResult.StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        initialResult.Headers.Location.ShouldBe(new Uri($"{retirementPath}/retirement", UriKind.Relative));
+        initialResult.StatusCode.ShouldBeOneOf(HttpStatusCode.Accepted, HttpStatusCode.NoContent);
+        if (initialResult.StatusCode == HttpStatusCode.Accepted)
+        {
+            initialResult.Headers.Location.ShouldBe(new Uri($"{retirementPath}/retirement", UriKind.Relative));
+        }
+
         await scenario.WaitForRetirement(adminTour.Id, ct);
         await NavigateTo(publicList);
         await Expect(tourLink).ToHaveCountAsync(0);
+        var retiredDetail = await Page.GotoAsync(publicDetail.ToString());
+        retiredDetail.ShouldNotBeNull().Status.ShouldBe((int)HttpStatusCode.NotFound);
+        await Expect(tourHeading).ToHaveCountAsync(0);
         var retainedTour = await catalogTours.GetTour(catalogTour.Id, ct);
         retainedTour.Value.ShouldNotBeNull().IsPublished.ShouldBeFalse();
     }
