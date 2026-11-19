@@ -4,8 +4,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Testing;
-using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

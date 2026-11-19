@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using PandaBear.Testing;
@@ -12,16 +13,44 @@ using PandaBear.EventSourcing.Npgsql;
 using PandaBear.MalwareScanning;
 using Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
-using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
+using ViajantesTurismo.Catalog.Infrastructure.PublicContent;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
+using ViajantesTurismo.Catalog.UnitTests.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
 public sealed class InfrastructureDependencyInjectionTests
 {
+    [Fact]
+    public void Catalog_infrastructure_preserves_consumer_clock_registration()
+    {
+        // Arrange
+        var clock = new FakeTimeProvider(new DateTimeOffset(2030, 2, 3, 14, 0, 0, TimeSpan.Zero));
+        // Act
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario(services => services.AddSingleton<TimeProvider>(clock));
+
+        // Assert
+        scenario.ShouldResolve<TimeProvider>().ShouldBeSameAs(clock);
+    }
+
+    [Fact]
+    public void Catalog_infrastructure_preserves_consumer_read_model_registration()
+    {
+        // Arrange
+        var store = new StubCatalogTourReadModelStore();
+
+        // Act
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario(services => services.AddSingleton<ICatalogTourReadModelStore>(store));
+
+        // Assert
+        scenario.ShouldResolve<ICatalogTourReadModelStore>().ShouldBeSameAs(store);
+    }
+
     [Theory]
     [InlineData("Development", true)]
     [InlineData("Production", false)]
@@ -51,9 +80,13 @@ public sealed class InfrastructureDependencyInjectionTests
         scenario.ShouldResolve<CatalogDbContext>();
         scenario.ShouldResolveSingleton<NpgsqlDataSource>();
         scenario.ShouldResolveAs<IPublicContentStore, EfPublicContentStore>();
+        scenario.ShouldResolveAs<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
+        scenario.ShouldResolveAs<IPublicMediaImageStore, EfPublicMediaImageStore>();
         scenario.ShouldResolveAs<IObjectStore, LocalMediaObjectStore>();
         scenario.ShouldResolveAs<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
         scenario.ShouldResolveAs<IMediaUploadValidator, MediaUploadValidator>();
+        scenario.ShouldResolve<MediaImageUploadIntake>();
+        scenario.ShouldResolve<MediaObjectReconciliationService>();
         scenario.ShouldResolveAs<IEventSerializer, CatalogEventSerializer>();
         scenario.ShouldResolveAs<IEventStore, PostgreSqlEventStore>();
         scenario.ShouldResolveAs<IProjectionCheckpointStore, PostgreSqlProjectionCheckpointStore>();

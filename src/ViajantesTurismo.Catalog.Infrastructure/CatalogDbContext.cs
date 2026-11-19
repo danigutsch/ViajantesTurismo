@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
-using ViajantesTurismo.Catalog.Infrastructure.ModelConfigurations;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
+using ViajantesTurismo.Catalog.Infrastructure.PublicContent;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 

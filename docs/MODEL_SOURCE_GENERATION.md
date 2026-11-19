@@ -155,8 +155,8 @@ Diagnostics should name the attribute option, the affected type, and the smalles
    - `src/ViajantesTurismo.Admin.Infrastructure/ModelConfigurations/TourConfiguration.cs`
    - `src/ViajantesTurismo.Admin.Infrastructure/Bookings/BookingConfiguration.cs`
    - `src/ViajantesTurismo.Admin.Infrastructure/Bookings/PaymentConfiguration.cs`
-   - `src/ViajantesTurismo.Catalog.Infrastructure/ModelConfigurations/EditablePublicContentConfiguration.cs`
-   - `src/ViajantesTurismo.Catalog.Infrastructure/ModelConfigurations/PublicMediaImageConfiguration.cs`
+   - `src/ViajantesTurismo.Catalog.Infrastructure/PublicContent/EditablePublicContentConfiguration.cs`
+   - `src/ViajantesTurismo.Catalog.Infrastructure/Media/PublicMediaImageConfiguration.cs`
 
 2. Contract DTO metadata and validation shape:
     - `src/ViajantesTurismo.Admin.Contracts.Application/CreateTourDto.cs`

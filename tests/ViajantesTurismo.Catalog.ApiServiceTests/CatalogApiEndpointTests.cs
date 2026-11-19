@@ -10,6 +10,9 @@ using PandaBear.AI;
 using PandaBear.EventSourcing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Api;
+using ViajantesTurismo.Catalog.Api.Media;
+using ViajantesTurismo.Catalog.Api.PublicContent;
+using ViajantesTurismo.Catalog.Api.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;
@@ -39,20 +42,21 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Theory]
-    [InlineData("UpsertPublicContent", typeof(Task<Results<Ok<PublicContentDto>, BadRequest, ValidationProblem>>))]
-    [InlineData("UpsertTourPresentation", typeof(Task<Results<Ok<CatalogTourDto>, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
-    [InlineData("PublishTour", typeof(Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
-    [InlineData("UnpublishTour", typeof(Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
-    [InlineData("UploadTourImage", typeof(Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult, ForbidHttpResult>>))]
-    [InlineData("GenerateMediaImageAccessibilityDraft", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, ValidationProblem, NotFound, ProblemHttpResult, ForbidHttpResult>>))]
-    [InlineData("ReviewMediaImageAccessibility", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ForbidHttpResult>>))]
-    public void Catalog_mutation_handlers_expose_explicit_typed_result_unions(string methodName, Type expectedReturnType)
+    [InlineData(typeof(CatalogPublicContentEndpoints), "UpsertPublicContent", typeof(Task<Results<Ok<PublicContentDto>, BadRequest, ValidationProblem>>))]
+    [InlineData(typeof(CatalogTourEndpoints), "UpsertTourPresentation", typeof(Task<Results<Ok<CatalogTourDto>, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
+    [InlineData(typeof(CatalogTourEndpoints), "PublishTour", typeof(Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
+    [InlineData(typeof(CatalogTourEndpoints), "UnpublishTour", typeof(Task<Results<NoContent, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>>))]
+    [InlineData(typeof(CatalogMediaEndpoints), "UploadTourImage", typeof(Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult, ForbidHttpResult>>))]
+    [InlineData(typeof(CatalogMediaEndpoints), "GenerateMediaImageAccessibilityDraft", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, ValidationProblem, NotFound, ProblemHttpResult, ForbidHttpResult>>))]
+    [InlineData(typeof(CatalogMediaEndpoints), "ReviewMediaImageAccessibility", typeof(Task<Results<Ok<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ForbidHttpResult>>))]
+    public void Catalog_mutation_handlers_expose_explicit_typed_result_unions(Type endpointsType, string methodName, Type expectedReturnType)
     {
         // Arrange
-        var endpointsType = typeof(CatalogEndpoints);
+        ArgumentNullException.ThrowIfNull(endpointsType);
+        const BindingFlags endpointFlags = BindingFlags.Static | BindingFlags.NonPublic;
 
         // Act
-        var method = endpointsType.GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
+        var method = endpointsType.GetMethod(methodName, endpointFlags);
 
         // Assert
         method.ShouldNotBeNull();

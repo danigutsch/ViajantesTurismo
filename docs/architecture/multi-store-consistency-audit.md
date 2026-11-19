@@ -121,17 +121,17 @@ and connection-resiliency guidance on transaction commit ambiguity:
 
 ### Catalog media metadata management API
 
-- Trigger: `CatalogEndpoints.UpsertMediaImage`.
-- Code: `src/ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs`.
-- Systems touched: Catalog read model lookup and media metadata database store.
-- Failure window: none across durable systems; both operations are database reads/writes in Catalog.
-- Existing mitigation: validates every tour link before saving metadata.
+- Trigger: `CatalogMediaEndpoints.ReviewMediaImageAccessibility`.
+- Code: `src/ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs`.
+- Systems touched: Catalog media metadata and public response cache.
+- Failure window: a metadata write can succeed while cache eviction fails.
+- Existing mitigation: cache invalidation is attempted after the write. The cache has a finite freshness interval.
 - Recommendation: no change.
 
 ### Public content management
 
-- Trigger: `CatalogEndpoints.UpsertPublicContent`.
-- Code: `src/ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs`.
+- Trigger: `CatalogPublicContentEndpoints.UpsertPublicContent`.
+- Code: `src/ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs`.
 - Systems touched: Catalog database only.
 - Failure window: single durable store.
 - Recommendation: no multi-store pattern.

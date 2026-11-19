@@ -1,6 +1,7 @@
 using PandaBear.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
+using ViajantesTurismo.Catalog.UnitTests.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

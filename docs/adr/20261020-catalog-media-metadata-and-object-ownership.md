@@ -17,7 +17,7 @@ Current evidence:
   identity, checksum, dimensions, processing status, accessibility, variants, and tour links.
 - [Upload intake](../../src/ViajantesTurismo.Catalog.Application/Media/MediaImageUploadIntake.cs)
   coordinates validated storage and metadata persistence.
-- [LocalMediaObjectStore](../../src/ViajantesTurismo.Catalog.Infrastructure/LocalMediaObjectStore.cs)
+- [LocalMediaObjectStore](../../src/ViajantesTurismo.Catalog.Infrastructure/Media/LocalMediaObjectStore.cs)
   writes through a temporary file and replaces an existing destination; reads infer content type
   from the key and do not return a persisted application checksum.
 - [S3ObjectStore](https://github.com/danigutsch/PandaBear.SharedKernel/blob/main/src/SharedKernel/SharedKernel.ObjectStorage.S3/S3ObjectStore.cs)
@@ -113,7 +113,7 @@ Existing coverage to preserve:
   existing-reader stability across replacements.
 - [S3 adapter tests](https://github.com/danigutsch/PandaBear.SharedKernel/blob/main/tests/SharedKernel.ObjectStorage.S3.Tests/S3ObjectStoreTests.cs)
   (SharedKernel): checksum metadata, not-found, pagination, key safety, and provisioning behavior.
-- [Reconciliation tests](../../tests/ViajantesTurismo.Catalog.UnitTests/MediaObjectReconciliationServiceTests.cs):
+- [Reconciliation tests](../../tests/ViajantesTurismo.Catalog.UnitTests/Media/MediaObjectReconciliationServiceTests.cs):
   missing/orphan reports, explicit deletion, grace, and retryable failures.
 
 Required conformance follow-ups: byte/hash round-trip, create-only conflict and identical retry,

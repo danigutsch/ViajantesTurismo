@@ -12,8 +12,8 @@ using PandaBear.Results;
 using PandaBear.Testing.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
-using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Media;
 
