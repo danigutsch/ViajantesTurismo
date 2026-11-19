@@ -340,17 +340,17 @@ public sealed class DocumentDraftTests
         // Act
         var sourceVersionResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-            "tour-service-contract", "1", new string('s', 65), fields, "BRANDING-VERSION", "Viajantes Turismo", null, now);
+            "tour-service-contract", "1", new string('s', 65), fields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now);
         var brandingVersionResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-            "tour-service-contract", "1", "SOURCE-VERSION", fields, new string('b', 65), "Viajantes Turismo", null, now);
+            "tour-service-contract", "1", "SOURCE-VERSION", fields, new string('b', 65), "Viajantes Turismo", null, brandingSourceRevision: 1, now);
         var brandingNameResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-            "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", new string('n', 129), null, now);
+            "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", new string('n', 129), null, brandingSourceRevision: 1, now);
         var brandingLogoResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
             "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo",
-            new Uri($"data:image/webp;base64,{new string('A', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Absolute), now);
+            new Uri($"data:image/webp;base64,{new string('A', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Absolute), brandingSourceRevision: 1, now);
 
         // Assert
         sourceVersionResult.IsFailure.ShouldBeTrue();
@@ -377,22 +377,22 @@ public sealed class DocumentDraftTests
         {
             "bookingId" => DocumentDraft.Create(
                 Guid.Empty, DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-                "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, now),
+                "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now),
             "templateId" => DocumentDraft.Create(
                 Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-                " ", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, now),
+                " ", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now),
             "templateVersion" => DocumentDraft.Create(
                 Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-                "tour-service-contract", " ", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, now),
+                "tour-service-contract", " ", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now),
             "sourceVersion" => DocumentDraft.Create(
                 Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-                "tour-service-contract", "1", " ", fields, "BRANDING-VERSION", "Viajantes Turismo", null, now),
+                "tour-service-contract", "1", " ", fields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now),
             "brandingVersion" => DocumentDraft.Create(
                 Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-                "tour-service-contract", "1", "SOURCE-VERSION", fields, " ", "Viajantes Turismo", null, now),
+                "tour-service-contract", "1", "SOURCE-VERSION", fields, " ", "Viajantes Turismo", null, brandingSourceRevision: 1, now),
             _ => DocumentDraft.Create(
                 Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-                "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", " ", null, now),
+                "tour-service-contract", "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", " ", null, brandingSourceRevision: 1, now),
         };
 
         // Assert
@@ -409,10 +409,10 @@ public sealed class DocumentDraftTests
         // Act
         var templateIdResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-            new string('t', DocumentLimits.MaxTemplateIdLength + 1), "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, now);
+            new string('t', DocumentLimits.MaxTemplateIdLength + 1), "1", "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now);
         var templateVersionResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-            "tour-service-contract", new string('v', DocumentLimits.MaxTemplateVersionLength + 1), "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, now);
+            "tour-service-contract", new string('v', DocumentLimits.MaxTemplateVersionLength + 1), "SOURCE-VERSION", fields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now);
 
         // Assert
         templateIdResult.IsFailure.ShouldBeTrue();
@@ -459,6 +459,7 @@ public sealed class DocumentDraftTests
             headingFont,
             bodyFont,
             footerText,
+            brandingSourceRevision: 1,
             now);
 
         // Assert
@@ -491,6 +492,7 @@ public sealed class DocumentDraftTests
             "Montserrat",
             "Inter",
             "Legal footer",
+            brandingSourceRevision: 1,
             now);
 
         // Assert
@@ -506,7 +508,7 @@ public sealed class DocumentDraftTests
         // Act
         var emptyFieldsResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-            "tour-service-contract", "1", "SOURCE-VERSION", [], "BRANDING-VERSION", "Viajantes Turismo", null, now);
+            "tour-service-contract", "1", "SOURCE-VERSION", [], "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now);
 
         // Assert
         emptyFieldsResult.IsFailure.ShouldBeTrue();
@@ -539,6 +541,7 @@ public sealed class DocumentDraftTests
             "Montserrat",
             "Inter",
             "Legal footer",
+            brandingSourceRevision: 1,
             now);
 
         // Assert
@@ -561,13 +564,13 @@ public sealed class DocumentDraftTests
         // Act
         var invalidTypeResult = DocumentDraft.Create(
             Guid.CreateVersion7(), (DocumentType)99, DocumentAudience.Customer,
-            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields.Take(1), "BRANDING-VERSION", "Viajantes Turismo", null, now);
+            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields.Take(1), "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now);
         var invalidAudienceResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, (DocumentAudience)99,
-            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields.Take(1), "BRANDING-VERSION", "Viajantes Turismo", null, now);
+            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields.Take(1), "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now);
         var duplicateFieldsResult = DocumentDraft.Create(
             Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
-            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields, "BRANDING-VERSION", "Viajantes Turismo", null, now);
+            "tour-service-contract", "1", "SOURCE-VERSION", duplicateFields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now);
 
         // Assert
         invalidTypeResult.IsFailure.ShouldBeTrue();
@@ -636,7 +639,7 @@ public sealed class DocumentDraftTests
         ];
 
         // Act
-        var revision = draft.CreateRevision("tour-service-contract", "2", "SOURCE-VERSION-2", fields, "BRANDING-VERSION", "Viajantes Turismo", null, now);
+        var revision = draft.CreateRevision("tour-service-contract", "2", "SOURCE-VERSION-2", fields, "BRANDING-VERSION", "Viajantes Turismo", null, brandingSourceRevision: 1, now);
 
         // Assert
         update.IsSuccess.ShouldBeTrue();
@@ -665,6 +668,7 @@ public sealed class DocumentDraftTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             new Uri($"data:image/webp;base64,{new string('A', DocumentLimits.MaxBrandingLogoUriLength)}", UriKind.Absolute),
+            brandingSourceRevision: 1,
             now);
 
         // Assert
@@ -698,6 +702,7 @@ public sealed class DocumentDraftTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             new Uri(logoValue, UriKind.RelativeOrAbsolute),
+            brandingSourceRevision: 1,
             now);
 
         // Assert
@@ -721,6 +726,7 @@ public sealed class DocumentDraftTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             new Uri("/\\evil.test/logo.svg", UriKind.Relative),
+            brandingSourceRevision: 1,
             now);
 
         // Assert

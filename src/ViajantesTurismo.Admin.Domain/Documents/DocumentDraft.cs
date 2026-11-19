@@ -32,6 +32,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingHeadingFontFamily,
         string brandingBodyFontFamily,
         string brandingFooterText,
+        long brandingSourceRevision,
         DateTime createdAt,
         Guid? replacesDocumentId = null,
         Guid? documentLineageId = null)
@@ -47,6 +48,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         SourceVersion = sourceVersion;
         _fields.AddRange(fields);
         BrandingVersion = brandingVersion;
+        BrandingSourceRevision = brandingSourceRevision;
         BrandingName = brandingName;
         BrandingLogoUri = brandingLogoUri;
         BrandingPrimaryColor = brandingPrimaryColor;
@@ -121,13 +123,10 @@ public sealed class DocumentDraft : IEntity<Guid>
     /// <summary>Gets the immutable captured branding version.</summary>
     public string BrandingVersion { get; private init; } = default!;
 
-    /// <summary>
-    /// Gets the Branding source revision of the captured snapshot; <see langword="null" /> for documents captured
-    /// before revision provenance existed or when the capture could not be attributed to a revision.
-    /// </summary>
-    public long? BrandingSourceRevision
+    /// <summary>Gets the positive Branding source revision of the captured snapshot.</summary>
+    public long BrandingSourceRevision
     {
-        get; private set;
+        get; private init;
     }
 
     /// <summary>Gets the immutable captured branding display name.</summary>
@@ -260,6 +259,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingVersion,
         string brandingName,
         Uri? brandingLogoUri,
+        long brandingSourceRevision,
         DateTime createdAt) => Create(
             bookingId,
             type,
@@ -278,6 +278,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             "system-ui, sans-serif",
             "system-ui, sans-serif",
             brandingName,
+            brandingSourceRevision,
             createdAt);
 
     /// <summary>Creates the initial document draft revision.</summary>
@@ -299,6 +300,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingHeadingFontFamily,
         string brandingBodyFontFamily,
         string brandingFooterText,
+        long brandingSourceRevision,
         DateTime createdAt)
     {
         ArgumentNullException.ThrowIfNull(fields);
@@ -321,7 +323,8 @@ public sealed class DocumentDraft : IEntity<Guid>
             brandingTextColor,
             brandingHeadingFontFamily,
             brandingBodyFontFamily,
-            brandingFooterText);
+            brandingFooterText,
+            brandingSourceRevision);
         if (validation.IsFailure)
         {
             return validation.ConvertError<DocumentDraft>();
@@ -349,6 +352,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             brandingHeadingFontFamily,
             brandingBodyFontFamily,
             brandingFooterText,
+            brandingSourceRevision,
             createdAt));
     }
 
@@ -361,6 +365,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingVersion,
         string brandingName,
         Uri? brandingLogoUri,
+        long brandingSourceRevision,
         DateTime createdAt) => CreateRevision(
             templateId,
             templateVersion,
@@ -376,6 +381,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             "system-ui, sans-serif",
             "system-ui, sans-serif",
             brandingName,
+            brandingSourceRevision,
             createdAt);
 
     /// <summary>Creates a replacement draft with refreshed source data.</summary>
@@ -394,6 +400,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingHeadingFontFamily,
         string brandingBodyFontFamily,
         string brandingFooterText,
+        long brandingSourceRevision,
         DateTime createdAt)
     {
         ArgumentNullException.ThrowIfNull(fields);
@@ -416,7 +423,8 @@ public sealed class DocumentDraft : IEntity<Guid>
             brandingTextColor,
             brandingHeadingFontFamily,
             brandingBodyFontFamily,
-            brandingFooterText);
+            brandingFooterText,
+            brandingSourceRevision);
         if (validation.IsFailure)
         {
             return validation.ConvertError<DocumentDraft>();
@@ -446,6 +454,7 @@ public sealed class DocumentDraft : IEntity<Guid>
             brandingHeadingFontFamily,
             brandingBodyFontFamily,
             brandingFooterText,
+            brandingSourceRevision,
             createdAt,
             Id,
             DocumentLineageId));
@@ -461,12 +470,6 @@ public sealed class DocumentDraft : IEntity<Guid>
         DateTime createdAt)
     {
         ArgumentNullException.ThrowIfNull(content);
-        var revisionValidation = ValidateBrandingSourceRevision(content.BrandingSourceRevision);
-        if (revisionValidation.IsFailure)
-        {
-            return revisionValidation.ConvertError<DocumentDraft>();
-        }
-
         var result = Create(
             bookingId,
             type,
@@ -485,11 +488,11 @@ public sealed class DocumentDraft : IEntity<Guid>
             content.BrandingHeadingFontFamily,
             content.BrandingBodyFontFamily,
             content.BrandingFooterText,
+            content.BrandingSourceRevision,
             createdAt);
         if (result.IsSuccess)
         {
             result.Value.DocumentLineageId = documentLineageId;
-            result.Value.BrandingSourceRevision = content.BrandingSourceRevision;
         }
 
         return result;
@@ -520,16 +523,11 @@ public sealed class DocumentDraft : IEntity<Guid>
             content.BrandingTextColor,
             content.BrandingHeadingFontFamily,
             content.BrandingBodyFontFamily,
-            content.BrandingFooterText);
+            content.BrandingFooterText,
+            content.BrandingSourceRevision);
         if (validation.IsFailure)
         {
             return validation.ConvertError<DocumentDraft>();
-        }
-
-        var revisionValidation = ValidateBrandingSourceRevision(content.BrandingSourceRevision);
-        if (revisionValidation.IsFailure)
-        {
-            return revisionValidation.ConvertError<DocumentDraft>();
         }
 
         var ownedFields = fieldList
@@ -557,11 +555,11 @@ public sealed class DocumentDraft : IEntity<Guid>
             content.BrandingHeadingFontFamily,
             content.BrandingBodyFontFamily,
             content.BrandingFooterText,
+            content.BrandingSourceRevision,
             createdAt,
             Id,
             DocumentLineageId)
         {
-            BrandingSourceRevision = content.BrandingSourceRevision,
             ManualReviewReasons = manualReviewReasons,
             RequiresManualReview = RequiresManualReview || manualReviewReasons != DocumentManualReviewReasons.None
         });
@@ -761,11 +759,6 @@ public sealed class DocumentDraft : IEntity<Guid>
         && RetentionExpiresAt is { } retentionExpiresAt
         && retentionExpiresAt <= now;
 
-    private static Result ValidateBrandingSourceRevision(long? brandingSourceRevision) =>
-        brandingSourceRevision is <= 0
-            ? DocumentErrors.InvalidValue("brandingSourceRevision")
-            : Result.Ok();
-
     private static Result Validate(
         Guid bookingId,
         DocumentType type,
@@ -783,7 +776,8 @@ public sealed class DocumentDraft : IEntity<Guid>
         string brandingTextColor,
         string brandingHeadingFontFamily,
         string brandingBodyFontFamily,
-        string brandingFooterText)
+        string brandingFooterText,
+        long brandingSourceRevision)
     {
         var metadataValidation = ValidateDocumentMetadata(
             bookingId,
@@ -794,7 +788,8 @@ public sealed class DocumentDraft : IEntity<Guid>
             sourceVersion,
             brandingVersion,
             brandingName,
-            brandingLogoUri);
+            brandingLogoUri,
+            brandingSourceRevision);
         if (metadataValidation.IsFailure)
         {
             return metadataValidation;
@@ -825,7 +820,8 @@ public sealed class DocumentDraft : IEntity<Guid>
         string sourceVersion,
         string brandingVersion,
         string brandingName,
-        Uri? brandingLogoUri)
+        Uri? brandingLogoUri,
+        long brandingSourceRevision)
     {
         if (bookingId == Guid.Empty)
         {
@@ -880,6 +876,11 @@ public sealed class DocumentDraft : IEntity<Guid>
         if (brandingVersion.Length > DocumentLimits.MaxBrandingVersionLength)
         {
             return DocumentErrors.ValueTooLong("brandingVersion", DocumentLimits.MaxBrandingVersionLength);
+        }
+
+        if (brandingSourceRevision <= 0)
+        {
+            return DocumentErrors.InvalidValue("brandingSourceRevision");
         }
 
         if (string.IsNullOrWhiteSpace(brandingName))

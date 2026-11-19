@@ -119,10 +119,13 @@ public sealed class DocumentLineageTests
     }
 
     [Fact]
-    public void Create_keeps_an_unknown_branding_source_revision_null()
+    public void Create_rejects_an_unspecified_branding_source_revision()
     {
         // Arrange
-        var content = DocumentLineageTestData.CreateContent();
+        var content = DocumentLineageTestData.CreateContent() with
+        {
+            BrandingSourceRevision = default
+        };
 
         // Act
         var result = DocumentLineage.Create(
@@ -134,8 +137,7 @@ public sealed class DocumentLineageTests
             DocumentAuditTestData.CreateContext());
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.Revisions.ShouldHaveSingleItem().BrandingSourceRevision.ShouldBeNull();
+        result.Status.ShouldBe(ResultStatus.Invalid);
     }
 
     [Theory]
@@ -183,7 +185,31 @@ public sealed class DocumentLineageTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.BrandingSourceRevision.ShouldBe(7);
-        previous.BrandingSourceRevision.ShouldBeNull();
+        previous.BrandingSourceRevision.ShouldBe(1);
+    }
+
+    [Fact]
+    public void CreateRevision_rejects_an_unspecified_branding_source_revision()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentLineageTestData.Create(now: now);
+        var previous = lineage.Revisions.ShouldHaveSingleItem();
+        var content = DocumentLineageTestData.CreateContent("2") with
+        {
+            BrandingSourceRevision = default
+        };
+
+        // Act
+        var result = lineage.CreateRevision(
+            previous.Id,
+            content,
+            now.AddMinutes(1),
+            DocumentAuditTestData.CreateContext());
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        lineage.Revisions.ShouldHaveSingleItem().Id.ShouldBe(previous.Id);
     }
 
     [Fact]

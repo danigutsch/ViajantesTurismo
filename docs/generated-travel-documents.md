@@ -141,7 +141,7 @@ truth for bookings, customers, tours, pricing, payments, or operational data.
 | Pricing and payment state | Admin pricing/payment model | Use booking price snapshots and coarse payment state. Do not include payment secrets, card data, or processor payloads. |
 | Discount data | Admin pricing/discount model | Read discount labels or totals only when required for customer-facing explanation or finance traceability. Do not expose internal approval notes or rules. |
 | Localization data | Localization resources or content owner | Render in the requested supported language with safe fallback rules. Track language and template version; do not auto-publish machine-translated legal or customer text without human review. |
-| Branding data | Current: Branding HTTP client captured as an immutable document snapshot. Target: Admin-owned local projection under ADR-040 | Preserve captured values for existing artifacts. The target records source epoch/revision and gates generation during recovery; do not claim revision provenance or recovery fencing before that rollout. |
+| Branding data | Admin-owned local Branding projection under ADR-040 | Capture the projected values and their positive source revision for each draft. Generation and regeneration require a usable projection. Retain the captured values for existing artifacts. |
 | Staff-entered document edits | Document draft | Store only approved document-specific text. Do not write edits back to booking, customer, tour, or payment records. |
 | Template metadata | Document template record or deployed template version | Record template identifier and version used for draft and PDF generation. |
 

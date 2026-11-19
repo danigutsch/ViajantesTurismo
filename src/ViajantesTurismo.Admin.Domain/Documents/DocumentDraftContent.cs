@@ -31,11 +31,8 @@ public sealed record DocumentDraftContent(
     string BrandingBodyFontFamily,
     string BrandingFooterText)
 {
-    /// <summary>
-    /// Gets the Branding source revision the snapshot was captured from, or <see langword="null" /> when the
-    /// capture path could not attribute it to a revision.
-    /// </summary>
-    public long? BrandingSourceRevision
+    /// <summary>Gets the positive Branding source revision captured in this snapshot.</summary>
+    public required long BrandingSourceRevision
     {
         get; init;
     }

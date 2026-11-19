@@ -39,6 +39,26 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task The_document_schema_rejects_a_missing_branding_source_revision()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var draft = DocumentDraftInfrastructureTestData.CreateDraft(new DateTime(2026, 7, 11, 0, 0, 0, DateTimeKind.Utc));
+        await Scenario.Seed(draft);
+
+        // Act
+        var clearRevision = () => Scenario.ClearBrandingSourceRevision(draft.Id, ct);
+
+        // Assert
+        var rejected = await clearRevision.ShouldThrow<PostgresException>();
+        rejected.SqlState.ShouldBe(PostgresErrorCodes.NotNullViolation);
+        rejected.ColumnName.ShouldBe("BrandingSourceRevision");
+        var documents = await Scenario.GetDocuments(ct);
+        var reloaded = documents.ShouldHaveSingleItem();
+        reloaded.BrandingSourceRevision.ShouldBe(draft.BrandingSourceRevision);
+    }
+
+    [Fact]
     public async Task PurgeExpiredDrafts_deletes_only_expired_unfinalized_documents()
     {
         // Arrange
@@ -275,6 +295,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
             "BRANDING-VERSION",
             "Viajantes Turismo",
             null,
+            brandingSourceRevision: 1,
             now);
         documentResult.IsSuccess.ShouldBeTrue();
         var document = documentResult.Value;
@@ -708,6 +729,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
             Guid.CreateVersion7().ToString("N"),
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             now.AddMinutes(1));
         secondResult.IsSuccess.ShouldBeTrue();
         var second = secondResult.Value;

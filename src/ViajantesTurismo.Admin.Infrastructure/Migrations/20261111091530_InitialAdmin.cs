@@ -558,7 +558,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     SourceVersion = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     BrandingVersion = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-                    BrandingSourceRevision = table.Column<long>(type: "bigint", nullable: true),
+                    BrandingSourceRevision = table.Column<long>(type: "bigint", nullable: false),
                     BrandingName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     BrandingLogoUri = table.Column<string>(type: "character varying(60000)", maxLength: 60000, nullable: true),
                     BrandingPrimaryColor = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),

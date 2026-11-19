@@ -624,6 +624,15 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         await PostgreSqlPublicSchemaReset.Reset(connection, ["DocumentAuditRecords"], ct);
     }
 
+    /// <summary>Attempts to clear the captured Branding revision of a stored document.</summary>
+    public async Task ClearBrandingSourceRevision(Guid documentId, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        _ = await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"""UPDATE "DocumentDrafts" SET "BrandingSourceRevision" = NULL WHERE "Id" = {documentId}""",
+            ct);
+    }
+
     /// <summary>Overwrites the actor id of one document audit record with raw SQL.</summary>
     public async Task UpdateAuditActor(Guid id, string actorId, CancellationToken ct)
     {

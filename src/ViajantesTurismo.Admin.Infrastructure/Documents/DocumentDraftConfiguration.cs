@@ -33,6 +33,7 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             .HasUniqueRule(DocumentDraftSchema.RevisionUniqueRule);
         entity.Property(document => document.SourceVersion).HasMaxLength(DocumentLimits.MaxSourceVersionLength).IsRequired();
         entity.Property(document => document.BrandingVersion).HasMaxLength(DocumentLimits.MaxBrandingVersionLength).IsRequired();
+        entity.Property(document => document.BrandingSourceRevision).IsRequired();
         entity.Property(document => document.BrandingName).HasMaxLength(DocumentLimits.MaxBrandingNameLength).IsRequired();
         entity.Property(document => document.BrandingLogoUri)
             .HasConversion(new ValueConverter<Uri?, string?>(
