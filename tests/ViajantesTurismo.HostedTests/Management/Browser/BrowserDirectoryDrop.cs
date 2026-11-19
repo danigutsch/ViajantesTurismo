@@ -6,10 +6,14 @@ namespace ViajantesTurismo.HostedTests.Management.Browser;
 internal static class BrowserDirectoryDrop
 {
     /// <summary>Drops one directory that produces the supplied pages, followed by an empty page.</summary>
-    public static Task Dispatch(ILocator target, IReadOnlyList<IReadOnlyList<string>> pages) =>
+    public static Task Dispatch(
+        ILocator target,
+        IReadOnlyList<IReadOnlyList<string>> pages,
+        int fileSize = 4,
+        bool deferFirstPage = false) =>
         target.EvaluateAsync(
             """
-            (zone, pages) => {
+            (zone, { pages, fileSize, deferFirstPage }) => {
                 let readCount = 0;
                 const folderName = "catalog-test-drop";
                 const makeFileEntry = name => ({
@@ -17,7 +21,7 @@ internal static class BrowserDirectoryDrop
                     isDirectory: false,
                     name,
                     fullPath: `/${folderName}/${name}`,
-                    file: onRead => queueMicrotask(() => onRead(new File(["test"], name, { type: "image/png" })))
+                    file: onRead => queueMicrotask(() => onRead(new File([new Uint8Array(fileSize)], name, { type: "image/png" })))
                 });
                 const root = {
                     isFile: false,
@@ -28,7 +32,12 @@ internal static class BrowserDirectoryDrop
                         readEntries: onRead => {
                             const page = pages[readCount++] ?? [];
                             zone.dataset.testDirectoryReads = readCount;
-                            queueMicrotask(() => onRead(page.map(makeFileEntry)));
+                            const reportPage = () => onRead(page.map(makeFileEntry));
+                            if (deferFirstPage && readCount === 1) {
+                                zone.addEventListener("test-directory-page-release", reportPage, { once: true });
+                            } else {
+                                queueMicrotask(reportPage);
+                            }
                         }
                     })
                 };
@@ -40,5 +49,10 @@ internal static class BrowserDirectoryDrop
                 zone.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
             }
             """,
-            pages);
+            new
+            {
+                pages,
+                fileSize,
+                deferFirstPage
+            });
 }

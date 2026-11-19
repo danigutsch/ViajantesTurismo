@@ -9,6 +9,12 @@ Catalog revalidates each request. Selecting a new batch replaces the previous se
 Dropping files over the image picker uses the same queue, validation, and sequential uploads.
 Keyboard users can browse from the native picker.
 
+Browsers with folder selection support can choose an image folder from a separate native picker.
+Browsers that expose dropped directory entries can also drop folders over the image picker.
+Dropped directories are read in pages and each folder selection is limited to ten images, 5 MiB
+per image, and 50 MiB in total. A folder that exceeds a limit leaves the current queue in place.
+Only file basenames and the existing upload description and stream metadata reach Catalog.
+
 ## Current implemented flow
 
 ```mermaid

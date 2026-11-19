@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using PandaBear.Testing;
+using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
 using ViajantesTurismo.HostedTests.Catalog.Infrastructure;
 
@@ -35,7 +36,8 @@ public sealed class UploadImageFolderIntakeTests : ManagementWebBrowserTestBase
         var selected = Page.GetByRole(AriaRole.List, new PageGetByRoleOptions { Name = "Selected images" });
 
         // Act
-        await Expect(folder).ToBeAttachedAsync();
+        await Expect(folder).ToBeVisibleAsync();
+        await Expect(folder).ToHaveAccessibleNameAsync("Image folder");
         await folder.SetInputFilesAsync(album.FullName);
         await Expect(selected.GetByText("cover.png", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
         await Expect(selected.GetByText("trail.webp", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
@@ -107,5 +109,98 @@ public sealed class UploadImageFolderIntakeTests : ManagementWebBrowserTestBase
         await Expect(zone).ToHaveAttributeAsync("data-test-directory-reads", "2");
         await Expect(selected).ToHaveCountAsync(0);
         catalog.UploadStarted.IsCompleted.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task A_dropped_directory_stops_traversal_at_an_oversized_file()
+    {
+        // Arrange
+        await NavigateTo($"/catalog/tours/{catalog.Tour.Id}/images/upload");
+        var zone = Page.Locator("[data-catalog-image-drop-zone]");
+        var selected = Page.GetByRole(AriaRole.List, new PageGetByRoleOptions { Name = "Selected images" });
+        var oversized = checked((int)ContractConstants.MaxMediaUploadBytes + 1);
+
+        // Act
+        await BrowserDirectoryDrop.Dispatch(zone, [["oversized.png"], ["unvisited.png"]], oversized);
+
+        // Assert
+        await Expect(Page.GetByRole(AriaRole.Alert).Filter(new LocatorFilterOptions
+        {
+            HasText = "Select an image no larger than 5 MiB."
+        })).ToBeVisibleAsync();
+        await Expect(zone).ToHaveAttributeAsync("data-test-directory-reads", "1");
+        await Expect(selected).ToHaveCountAsync(0);
+        catalog.UploadStarted.IsCompleted.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task A_dropped_directory_checks_accumulated_bytes_before_handing_files_to_the_queue()
+    {
+        // Arrange
+        await NavigateTo($"/catalog/tours/{catalog.Tour.Id}/images/upload");
+        var zone = Page.Locator("[data-catalog-image-drop-zone]");
+        var selected = Page.GetByRole(AriaRole.List, new PageGetByRoleOptions { Name = "Selected images" });
+        // Lower the browser aggregate bound to isolate it from the production count and per-file bounds.
+        await zone.EvaluateAsync("element => element.dataset.maximumTotalBytes = '6'");
+
+        // Act
+        await BrowserDirectoryDrop.Dispatch(zone, [["first.png"], ["second.png"], ["unvisited.png"]]);
+
+        // Assert
+        await Expect(Page.GetByRole(AriaRole.Alert).Filter(new LocatorFilterOptions
+        {
+            HasText = "Select images totaling no more than"
+        })).ToBeVisibleAsync();
+        await Expect(zone).ToHaveAttributeAsync("data-test-directory-reads", "2");
+        await Expect(selected).ToHaveCountAsync(0);
+        catalog.UploadStarted.IsCompleted.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task A_browser_without_directory_drop_entries_retains_the_flat_drop_path()
+    {
+        // Arrange
+        await Page.AddInitScriptAsync("""
+            delete DataTransferItem.prototype.getAsEntry;
+            delete DataTransferItem.prototype.webkitGetAsEntry;
+            delete DataTransferItem.prototype.getAsFileSystemHandle;
+            """);
+        await NavigateTo($"/catalog/tours/{catalog.Tour.Id}/images/upload");
+        var selected = Page.GetByRole(AriaRole.List, new PageGetByRoleOptions { Name = "Selected images" });
+
+        // Act
+        var dropCanceled = await BrowserFileSelection.DispatchFileDrag(Page, "label[for='imageFile']", "drop",
+            [("cover.png", "image/png", 3), ("trail.webp", "image/webp", 4)]);
+
+        // Assert
+        dropCanceled.ShouldBeTrue();
+        await Expect(selected.GetByRole(AriaRole.Listitem)).ToHaveCountAsync(2);
+        catalog.UploadStarted.IsCompleted.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task A_directory_read_cannot_replace_a_newer_native_file_selection()
+    {
+        // Arrange
+        await NavigateTo($"/catalog/tours/{catalog.Tour.Id}/images/upload");
+        var zone = Page.Locator("[data-catalog-image-drop-zone]");
+        var selected = Page.GetByRole(AriaRole.List, new PageGetByRoleOptions { Name = "Selected images" });
+        await BrowserDirectoryDrop.Dispatch(zone, [["stale.png"]], deferFirstPage: true);
+        await Expect(zone).ToHaveAttributeAsync("data-test-directory-reads", "1");
+
+        // Act
+        await BrowserFileSelection.Select(Page, "#imageFile", "current.png", "image/png", "test");
+        await Expect(selected.GetByText("current.png", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
+        await zone.EvaluateAsync("""
+            element => {
+                element.dispatchEvent(new Event("test-directory-page-release"));
+                return new Promise(requestAnimationFrame);
+            }
+            """);
+
+        // Assert
+        await Expect(zone).ToHaveAttributeAsync("data-test-directory-reads", "1");
+        await Expect(selected.GetByRole(AriaRole.Listitem)).ToHaveCountAsync(1);
+        await Expect(selected.GetByText("current.png", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
     }
 }
