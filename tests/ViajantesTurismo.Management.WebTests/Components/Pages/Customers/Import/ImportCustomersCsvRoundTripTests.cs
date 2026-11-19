@@ -9,6 +9,31 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import
 [TestScope(TestScope.Unit)]
 public sealed class ImportCustomersCsvRoundTripTests
 {
+    [Fact]
+    public void A_second_mixed_edit_uses_the_effective_email_from_the_first_upload()
+    {
+        // Arrange
+        ReadOnlyMemory<byte> csv = "Email,FirstName,LastName\nold@example.test,Original,Before"u8.ToArray();
+        var first = new ImportCustomerConflictState(
+            "old@example.test", null, new Dictionary<string, string> { ["Email"] = "changed@example.test" });
+        first.SetDecision("mixed", Array.Empty<CustomerImportField>());
+        first.SetFieldSource("Email", ImportConflictFieldSource.Existing);
+        var second = new ImportCustomerConflictState(
+            "changed@example.test", null, new Dictionary<string, string> { ["LastName"] = "After" });
+        second.SetDecision("mixed", Array.Empty<CustomerImportField>());
+        second.SetFieldSource("LastName", ImportConflictFieldSource.Existing);
+
+        // Act
+        var (_, retryPayload) = new ImportCustomersCsvPayload(null).Prepare(csv, [first]);
+        var (retry, _) = retryPayload.Prepare(csv, [second]);
+        var rows = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(retry);
+
+        // Assert
+        rows.Keys.ShouldHaveSingleItem().ShouldBe("changed@example.test");
+        rows["changed@example.test"]["FirstName"].ShouldBe("Original");
+        rows["changed@example.test"]["LastName"].ShouldBe("After");
+    }
+
     private const string QuotedFile =
         "\"Last, Name\",Email,Notes\r\n\"O'Neil, Jr.\",ada@example.com,\"Said \"\"hi\"\"\nthen left\"\r\n Plain ,bob@example.com,+351 912 000 000\r\n";
 
@@ -72,7 +97,7 @@ public sealed class ImportCustomersCsvRoundTripTests
         state.SetFieldSource("Notes", ImportConflictFieldSource.Existing);
 
         // Act
-        var written = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(bytes, [state]);
+        var (written, _) = new ImportCustomersCsvPayload(null).Prepare(bytes, [state]);
         var rows = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(written);
 
         // Assert

@@ -40,6 +40,8 @@ internal static class CustomerImportHeaderMatcher
         new(CustomerImportFieldNames.AdditionalInfo, "Additional Info", false),
     ];
 
+    private static readonly HashSet<string> FieldNames = Fields.Select(field => field.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Matches each import field to a CSV header by case-insensitive name, leaving unmatched fields without a header.</summary>
     public static IReadOnlyList<CustomerImportFieldMapping> AutoMatch(IReadOnlyList<string> csvHeaders)
     {
@@ -55,8 +57,8 @@ internal static class CustomerImportHeaderMatcher
     }
 
     /// <summary>Rewrites the CSV header row using automatic and user mappings, with user mappings taking precedence.</summary>
-    public static byte[] ApplyMapping(
-        byte[] fileBytes,
+    public static ReadOnlyMemory<byte> ApplyMapping(
+        ReadOnlyMemory<byte> fileBytes,
         IReadOnlyList<CustomerImportFieldMapping> autoMappings,
         IReadOnlyDictionary<string, string?> userMappings
     )
@@ -67,24 +69,33 @@ internal static class CustomerImportHeaderMatcher
             return fileBytes;
         }
 
-        var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var mapping in autoMappings.Where(m => m.IsAutoMatched))
-        {
-            lookup[mapping.MatchedCsvHeader!] = mapping.Field.Name;
-        }
+        var headers = GetMappedHeaders(document.Headers, autoMappings, userMappings);
+        return headers is null
+            ? fileBytes
+            : ImportCustomersCsvProcessor.WriteImportFile(headers, document.Rows);
+    }
 
-        foreach (var (fieldName, csvHeader) in userMappings)
+    /// <summary>Resolves the effective header names once, returning null when no rewrite is necessary.</summary>
+    internal static IReadOnlyList<string>? GetMappedHeaders(
+        IReadOnlyList<string> headers,
+        IReadOnlyList<CustomerImportFieldMapping> autoMappings,
+        IReadOnlyDictionary<string, string?> userMappings)
+    {
+        var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var mapping in autoMappings)
         {
+            var fieldName = mapping.Field.Name;
+            var csvHeader = userMappings.GetValueOrDefault(fieldName, mapping.MatchedCsvHeader);
             if (csvHeader is not null)
             {
                 lookup[csvHeader] = fieldName;
             }
         }
 
-        string[] newHeaders = [.. document.Headers.Select(h => lookup.GetValueOrDefault(h, h))];
+        string[] newHeaders = [.. headers.Select(header => lookup.TryGetValue(header, out var field)
+            ? field
+            : FieldNames.Contains(header) ? $"{header} (unmapped)" : header)];
 
-        return newHeaders.SequenceEqual(document.Headers, StringComparer.Ordinal)
-            ? fileBytes
-            : ImportCustomersCsvProcessor.WriteImportFile(newHeaders, document.Rows);
+        return newHeaders.SequenceEqual(headers, StringComparer.Ordinal) ? null : newHeaders;
     }
 }

@@ -1,6 +1,6 @@
-using ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
-using PandaBear.Testing;
 using System.Text;
+using PandaBear.Testing;
+using ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;
 
@@ -83,7 +83,7 @@ public sealed class CustomerImportHeaderMatcherTests
 
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
-        var text = Encoding.UTF8.GetString(result);
+        var text = Encoding.UTF8.GetString(result.Span);
         text.ShouldStartWith("FirstName,LastName", StringComparison.Ordinal);
     }
 
@@ -100,7 +100,7 @@ public sealed class CustomerImportHeaderMatcherTests
 
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, userMappings);
 
-        var text = Encoding.UTF8.GetString(result);
+        var text = Encoding.UTF8.GetString(result.Span);
         text.ShouldStartWith("FirstName,Email", StringComparison.Ordinal);
     }
 
@@ -112,7 +112,7 @@ public sealed class CustomerImportHeaderMatcherTests
 
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
-        var text = Encoding.UTF8.GetString(result);
+        var text = Encoding.UTF8.GetString(result.Span);
         text.ShouldStartWith("FirstName,SomeExtra,Email", StringComparison.Ordinal);
     }
 
@@ -124,9 +124,31 @@ public sealed class CustomerImportHeaderMatcherTests
 
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
-        var text = Encoding.UTF8.GetString(result);
+        var text = Encoding.UTF8.GetString(result.Span);
         text.ShouldContain("john,doe", StringComparison.Ordinal);
         text.ShouldContain("jane,smith", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Confirmed_mapping_replaces_the_default_source_and_omits_a_cleared_optional_field()
+    {
+        // Arrange
+        var bytes = Encoding.UTF8.GetBytes("FirstName,AlternateName,Instagram\nAlice,Sam,profile\n");
+        var mappings = CustomerImportHeaderMatcher.AutoMatch(["FirstName", "AlternateName", "Instagram"]);
+        var userMappings = new Dictionary<string, string?>
+        {
+            ["FirstName"] = "AlternateName",
+            ["Instagram"] = null,
+        };
+
+        // Act
+        var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, userMappings);
+        var headers = ImportCustomersCsvProcessor.ReadHeaders(result);
+
+        // Assert
+        headers.Where(header => header.Equals("FirstName", StringComparison.OrdinalIgnoreCase)).ShouldHaveSingleItem();
+        headers[1].ShouldBe("FirstName");
+        headers.ShouldNotContain("Instagram");
     }
 
     [Fact]
@@ -137,7 +159,7 @@ public sealed class CustomerImportHeaderMatcherTests
 
         var result = CustomerImportHeaderMatcher.ApplyMapping(bytes, mappings, new Dictionary<string, string?>());
 
-        var text = Encoding.UTF8.GetString(result);
+        var text = Encoding.UTF8.GetString(result.Span);
         text.ShouldStartWith("FirstName", StringComparison.Ordinal);
     }
 }

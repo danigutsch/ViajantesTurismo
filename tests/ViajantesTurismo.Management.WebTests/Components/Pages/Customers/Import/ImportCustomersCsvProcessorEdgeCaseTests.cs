@@ -104,10 +104,10 @@ public sealed class ImportCustomersCsvProcessorEdgeCaseTests
         var bytes = Encoding.UTF8.GetBytes("Email,FirstName");
 
         // Act
-        var result = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(bytes, []);
+        var (result, _) = new ImportCustomersCsvPayload(null).Prepare(bytes, []);
 
         // Assert
-        result.ShouldBeSameAs(bytes);
+        result.ShouldBe((ReadOnlyMemory<byte>)bytes);
     }
 
     [Fact]
@@ -117,10 +117,10 @@ public sealed class ImportCustomersCsvProcessorEdgeCaseTests
         var bytes = Encoding.UTF8.GetBytes("FirstName,LastName\nAda,Lovelace");
 
         // Act
-        var result = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(bytes, []);
+        var (result, _) = new ImportCustomersCsvPayload(null).Prepare(bytes, []);
 
         // Assert
-        result.ShouldBeSameAs(bytes);
+        result.ShouldBe((ReadOnlyMemory<byte>)bytes);
     }
 
     [Fact]
@@ -135,10 +135,10 @@ public sealed class ImportCustomersCsvProcessorEdgeCaseTests
         mixedWithoutSelections.SetDecision("mixed", Array.Empty<CustomerImportField>());
 
         // Act
-        var result = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(bytes, [keepState, mixedWithoutSelections]);
+        var (result, _) = new ImportCustomersCsvPayload(null).Prepare(bytes, [keepState, mixedWithoutSelections]);
 
         // Assert
-        Encoding.UTF8.GetString(result).ShouldBe(csv);
+        Encoding.UTF8.GetString(result.Span).ShouldBe(csv);
     }
 
     [Fact]
@@ -156,10 +156,10 @@ public sealed class ImportCustomersCsvProcessorEdgeCaseTests
         state.SetFieldSource("Email", ImportConflictFieldSource.Incoming);
 
         // Act
-        var result = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(bytes, [state]);
+        var (result, _) = new ImportCustomersCsvPayload(null).Prepare(bytes, [state]);
 
         // Assert
-        Encoding.UTF8.GetString(result).ShouldBe("Email,FirstName\nmixed@example.com,Incoming");
+        Encoding.UTF8.GetString(result.Span).ShouldBe("Email,FirstName\nmixed@example.com,Incoming");
     }
 
     [Fact]

@@ -133,12 +133,12 @@ public sealed class ImportCustomersCsvProcessorTests
         mixedState.SetFieldSource("LastName", ImportConflictFieldSource.Existing);
 
         // Act
-        var mergedBytes = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(
+        var (mergedBytes, _) = new ImportCustomersCsvPayload(null).Prepare(
             mappedCsv,
             [mixedState]);
 
         // Assert
-        var committedCsv = Encoding.UTF8.GetString(mergedBytes);
+        var committedCsv = Encoding.UTF8.GetString(mergedBytes.Span);
         var committedLines = committedCsv.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
         committedLines.Length.ShouldBe(2);
 

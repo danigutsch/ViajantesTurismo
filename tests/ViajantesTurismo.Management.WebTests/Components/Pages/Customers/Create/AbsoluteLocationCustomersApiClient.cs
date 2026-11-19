@@ -25,24 +25,24 @@ internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
     public Task<HttpOutcome> UpdateCustomer(Guid id, UpdateCustomerDto dto, CancellationToken ct) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct) => throw new NotImplementedException();
+    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(ReadOnlyMemory<byte> fileContent, string fileName, IProgress<long>? progress, CancellationToken ct) => throw new NotImplementedException();
 
     /// <inheritdoc />
     public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(
-        byte[] fileContent,
+        ReadOnlyMemory<byte> fileContent,
         string fileName,
         IReadOnlyDictionary<string, string> conflictResolutions,
         IProgress<long>? progress,
         CancellationToken ct) => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(ReadOnlyMemory<byte> fileContent, string fileName, CancellationToken ct)
     {
         return ImportCustomers(fileContent, fileName, null, ct);
     }
 
     /// <inheritdoc />
-    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(ReadOnlyMemory<byte> fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
     {
         return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
     }

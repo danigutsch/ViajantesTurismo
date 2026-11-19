@@ -4,9 +4,9 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import
 internal static class ImportCustomersDuplicateResolutionTestHelper
 {
     /// <summary>Parses a CSV with one header row and one data row into a header-to-value map; throws InvalidDataException otherwise.</summary>
-    public static IReadOnlyDictionary<string, string> ParseSingleDataRow(byte[] fileContent)
+    public static IReadOnlyDictionary<string, string> ParseSingleDataRow(ReadOnlyMemory<byte> fileContent)
     {
-        var csv = System.Text.Encoding.UTF8.GetString(fileContent);
+        var csv = System.Text.Encoding.UTF8.GetString(fileContent.Span);
         var lines = csv.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
         if (lines.Length != 2)
         {

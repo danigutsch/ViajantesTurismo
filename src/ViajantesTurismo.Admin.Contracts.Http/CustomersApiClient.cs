@@ -95,9 +95,8 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
+    public async Task<HttpOutcome<ImportResultDto>> ImportCustomers(ReadOnlyMemory<byte> fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(fileContent);
         ArgumentNullException.ThrowIfNull(fileName);
 
         return await SendImport(
@@ -111,13 +110,12 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
 
     /// <inheritdoc />
     public async Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(
-        byte[] fileContent,
+        ReadOnlyMemory<byte> fileContent,
         string fileName,
         IReadOnlyDictionary<string, string> conflictResolutions,
         IProgress<long>? progress,
         CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(fileContent);
         ArgumentNullException.ThrowIfNull(fileName);
         ArgumentNullException.ThrowIfNull(conflictResolutions);
 
@@ -132,15 +130,16 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
 
     private async Task<HttpOutcome<ImportResultDto>> SendImport(
         Uri requestUri,
-        byte[] fileContent,
+        ReadOnlyMemory<byte> fileContent,
         string fileName,
         IReadOnlyDictionary<string, string>? conflictResolutions,
         IProgress<long>? progress,
         CancellationToken ct)
     {
+        using var payload = new ReadOnlyMemoryContent(fileContent);
         HttpContent fileBytes = progress is null
-            ? new ByteArrayContent(fileContent)
-            : new ProgressStreamContent(new MemoryStream(fileContent, writable: false), fileContent.LongLength, progress);
+            ? payload
+            : new ProgressStreamContent(await payload.ReadAsStreamAsync(ct).ConfigureAwait(false), fileContent.Length, progress);
         fileBytes.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Csv);
         var content = new MultipartFormDataContent();
         content.Add(fileBytes, "file", fileName);
@@ -177,13 +176,13 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     private static partial void LogCustomerCreateOutcome(ILogger logger, HttpStatusCode? statusCode, HttpOutcomeKind outcomeKind);
 
     /// <inheritdoc />
-    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(ReadOnlyMemory<byte> fileContent, string fileName, CancellationToken ct)
     {
         return ImportCustomers(fileContent, fileName, null, ct);
     }
 
     /// <inheritdoc />
-    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(ReadOnlyMemory<byte> fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
     {
         return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
     }

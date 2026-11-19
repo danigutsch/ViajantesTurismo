@@ -22,7 +22,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -40,7 +40,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -79,7 +79,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
     {
         // Arrange — all canonical headers: all required fields matched → import enabled
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
 
@@ -96,7 +96,7 @@ public sealed class ImportCustomersInteractiveMappingTests : BunitContext
         // Arrange — all canonical headers present: all required matched, import enabled
         const string optionalFieldName = "Instagram";
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
 

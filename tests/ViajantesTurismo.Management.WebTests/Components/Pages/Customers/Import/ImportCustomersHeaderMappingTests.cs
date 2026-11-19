@@ -22,7 +22,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -37,7 +37,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -52,7 +52,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText("Col1,Col2,Col3\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText("Col1,Col2,Col3\na,b,c", "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -98,7 +98,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -113,7 +113,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         cut.WaitForAssertion(() => cut.FindAll(".card-header").ShouldNotBeEmpty());
 
@@ -129,7 +129,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "my-import.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "my-import.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -144,7 +144,7 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
     {
         // Arrange
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText("FirstName,LastName,Email\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText("FirstName,LastName,Email\nAlice,Silva,example@example.test", "customers.csv");
 
         // Act
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -160,12 +160,15 @@ public sealed class ImportCustomersHeaderMappingTests : BunitContext
         // Arrange — only provide required fields via a single unknown column to test one-field scenario
         // Use canonical headers minus one required field, plus a custom column for that field
         const string requiredFieldName = "FirstName";
-        var otherRequiredHeaders = CustomerImportHeaderMatcher.Fields
+        var sourceHeaders = CustomerImportHeaderMatcher.Fields
             .Where(f => f.IsRequired && f.Name != requiredFieldName)
-            .Select(f => f.Name);
-        var headers = string.Join(",", otherRequiredHeaders.Append("CustomCol"));
+            .Select(f => f.Name)
+            .Append("CustomCol")
+            .ToArray();
+        var headers = string.Join(",", sourceHeaders);
+        var values = string.Join(",", Enumerable.Repeat("v", sourceHeaders.Length));
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(headers + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(headers + "\n" + values, "customers.csv");
 
         cut.FindComponent<InputFile>().UploadFiles(file);
         cut.WaitForAssertion(() => cut.FindAll("select.form-select-sm").ShouldNotBeEmpty());

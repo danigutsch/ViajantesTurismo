@@ -44,12 +44,12 @@ public interface ICustomersApiClient
     /// <summary>
     /// Imports customers from a CSV file.
     /// </summary>
-    /// <param name="fileContent">The CSV file content as a byte array.</param>
+    /// <param name="fileContent">The CSV file content as read-only memory.</param>
     /// <param name="fileName">The original file name.</param>
     /// <param name="progress">Receives cumulative file bytes written to the HTTP transport.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized import outcome.</returns>
-    Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
+    Task<HttpOutcome<ImportResultDto>> ImportCustomers(ReadOnlyMemory<byte> fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
     {
         return ImportCustomers(fileContent, fileName, ct);
     }
@@ -57,20 +57,20 @@ public interface ICustomersApiClient
     /// <summary>
     /// Commits a customer import applying per-email conflict resolutions decided by the user.
     /// </summary>
-    /// <param name="fileContent">The CSV file content as a byte array.</param>
+    /// <param name="fileContent">The CSV file content as read-only memory.</param>
     /// <param name="fileName">The original file name.</param>
     /// <param name="conflictResolutions">Map of email address to resolution decision ("keep" or "overwrite").</param>
     /// <param name="progress">Receives cumulative file bytes written to the HTTP transport.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized import outcome.</returns>
-    Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, IProgress<long>? progress, CancellationToken ct)
+    Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(ReadOnlyMemory<byte> fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, IProgress<long>? progress, CancellationToken ct)
     {
         return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, ct);
     }
 
     /// <inheritdoc />
-    Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct);
+    Task<HttpOutcome<ImportResultDto>> ImportCustomers(ReadOnlyMemory<byte> fileContent, string fileName, CancellationToken ct);
 
     /// <inheritdoc />
-    Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct);
+    Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(ReadOnlyMemory<byte> fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct);
 }

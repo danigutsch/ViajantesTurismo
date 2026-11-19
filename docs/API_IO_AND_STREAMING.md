@@ -34,6 +34,40 @@ proxy endpoints that forward them.
 Any change to these flows must keep malware scanning, the size limit, authorization, audit, privacy, and
 `no-store` headers.
 
+### Customer import circuit retention
+
+The Management Web component holds the selected CSV as `ReadOnlyMemory<byte>` while the user
+reviews duplicates. It records the remapped header names and only the row fields changed by
+completed mixed decisions. Each upload reconstructs the effective CSV from that state. Canonical
+uploads share the selected buffer through the multipart client. When the mapping or mixed
+choices change the CSV, encoding produces one temporary upload payload.
+
+The column review reuses the selection-time CSV parse to show known header labels and suggestions
+based on the shape of at most the first five data rows. Management Web evaluates those samples
+locally and shows the reason without displaying individual values until the normal preview.
+Staff resolve ambiguous mappings and confirm the preview before the Admin
+endpoint receives the file. The Admin endpoint still scans the upload before it parses or stores data.
+
+The component test holds independent imports at their HTTP boundary until all are in flight.
+It then releases the responses, waits for duplicate resolution, and counts the distinct
+backing arrays retained by each component's workflow state. With 1 MiB files whose headers
+require remapping, the retained payload dropped from 2 MiB to 1 MiB per circuit.
+
+| Concurrent imports | Before | After |
+| ---: | ---: | ---: |
+| 1 | 2 MiB | 1 MiB |
+| 4 | 8 MiB | 4 MiB |
+| 8 | 16 MiB | 8 MiB |
+
+The canonical control retained one 1 MiB buffer in both runs. These figures cover retained CSV
+arrays at duplicate resolution. Transient parser, encoder and transport allocations have their
+own lifetimes.
+
+```bash
+dotnet test --project tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj \
+  -c Release --filter-class '*ImportCustomersBufferRetentionTests' --report-xunit-xml
+```
+
 ## Upload and import pass trace
 
 Measured for the upload and import performance epic with a counting, non-seekable source stream and recording scanner and object-store

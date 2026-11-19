@@ -25,11 +25,11 @@ public sealed class ImportCustomersWorkflowStateTests
         var fieldMappings = CustomerImportHeaderMatcher.AutoMatch(csvHeaders);
 
         // Act
-        state.SetPendingFile("customers.csv", [1, 2, 3], csvHeaders, fieldMappings);
+        state.SetPendingFile("customers.csv", new byte[] { 1, 2, 3 }, csvHeaders, fieldMappings);
 
         // Assert
         state.PendingFileName.ShouldBe("customers.csv");
-        state.PendingFileBytes.ShouldBe([1, 2, 3]);
+        state.PendingFileBytes.ToArray().ShouldBe([1, 2, 3]);
         state.CsvHeaders.ShouldBe(csvHeaders);
         state.FieldMappings.ShouldBe(fieldMappings);
         state.UserMappings.ShouldBeEmpty();
@@ -57,7 +57,7 @@ public sealed class ImportCustomersWorkflowStateTests
         };
         state.SetPendingFile(
             "customers.csv",
-            [1, 2, 3],
+            new byte[] { 1, 2, 3 },
             [CustomerImportFieldNames.Email],
             CustomerImportHeaderMatcher.AutoMatch([CustomerImportFieldNames.Email]));
         state.UserMappings[CustomerImportFieldNames.Email] = CustomerImportFieldNames.Email;
@@ -68,7 +68,7 @@ public sealed class ImportCustomersWorkflowStateTests
 
         // Assert
         state.PendingFileName.ShouldBe(string.Empty);
-        state.PendingFileBytes.ShouldBeEmpty();
+        state.PendingFileBytes.IsEmpty.ShouldBeTrue();
         state.CsvHeaders.ShouldBeEmpty();
         state.FieldMappings.ShouldBeEmpty();
         state.UserMappings.ShouldBeEmpty();
@@ -96,7 +96,7 @@ public sealed class ImportCustomersWorkflowStateTests
         };
         state.SetPendingFile(
             "customers.csv",
-            [1, 2, 3],
+            new byte[] { 1, 2, 3 },
             [CustomerImportFieldNames.Email],
             CustomerImportHeaderMatcher.AutoMatch([CustomerImportFieldNames.Email]));
         _ = state.Upload.Begin("customers.csv", 3, isRetry: false);
@@ -106,7 +106,7 @@ public sealed class ImportCustomersWorkflowStateTests
 
         // Assert
         state.PendingFileName.ShouldBe("customers.csv");
-        state.PendingFileBytes.ShouldNotBeEmpty();
+        state.PendingFileBytes.IsEmpty.ShouldBeFalse();
         state.PreviewRows.ShouldBeEmpty();
         state.ConflictStates.ShouldBeEmpty();
         state.Result.ShouldBeNull();

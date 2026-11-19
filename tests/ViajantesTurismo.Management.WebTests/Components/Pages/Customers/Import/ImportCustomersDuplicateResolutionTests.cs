@@ -103,7 +103,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         cut.Find("button[data-action='confirm-import']").Click();
 
         // Assert
-        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull());
+        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.IsEmpty.ShouldBeFalse());
         cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Import complete.", StringComparison.Ordinal);
     }
@@ -127,7 +127,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         cut.Find("button[data-action='confirm-import']").Click();
 
         // Assert
-        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull());
+        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.IsEmpty.ShouldBeFalse());
         cut.Markup.ShouldContain("Resolve Duplicates", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Complete: ", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain(" complete.", StringComparison.Ordinal);
@@ -269,11 +269,11 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         cut.WaitForAssertion(() => cut.Markup.ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
 
         // Assert
-        _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull();
+        _fakeCustomersApi.LastCommitFileContent.IsEmpty.ShouldBeFalse();
         _fakeCustomersApi.LastCommitFileName.ShouldBe("customers.csv");
 
         var committedValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
-            [.. _fakeCustomersApi.LastCommitFileContent]);
+            _fakeCustomersApi.LastCommitFileContent);
         committedValues["FirstName"].ShouldBe("IncomingFirst");
         committedValues["LastName"].ShouldBe("ExistingLast");
         committedValues["Email"].ShouldBe("a@example.com");
@@ -292,13 +292,13 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
             "ExistingLast");
         var requestStarted = new TaskCompletionSource<long>(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestCompletion = new TaskCompletionSource<ImportResultDto>(TaskCreationOptions.RunContinuationsAsynchronously);
-        byte[]? committedContent = null;
+        ReadOnlyMemory<byte> committedContent = default;
         IProgress<long>? reportedProgress = null;
         _fakeCustomersApi.SetCommitImportHandler((content, _, _, progress, _) =>
         {
             committedContent = content;
             reportedProgress = progress;
-            requestStarted.TrySetResult(content.LongLength);
+            requestStarted.TrySetResult(content.Length);
             return requestCompletion.Task;
         });
         var cut = ImportCustomersPreviewTestHelper.GoToPreview(
@@ -336,8 +336,8 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         _fakeCustomersApi.LastCommitCancellationToken.IsCancellationRequested.ShouldBeTrue();
         cut.Find("[data-upload-status]").TextContent.ShouldContain("Canceled", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain("Import complete", StringComparison.Ordinal);
-        var effectiveContent = committedContent.ShouldNotBeNull();
-        var committedValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(effectiveContent);
+        committedContent.IsEmpty.ShouldBeFalse();
+        var committedValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(committedContent);
         committedValues["FirstName"].ShouldBe("IncomingFirst");
         committedValues["LastName"].ShouldBe("ExistingLast");
     }
@@ -422,10 +422,10 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         var incomingButton = firstNameRow.QuerySelector("button[data-action='field-incoming']").ShouldNotBeNull();
         incomingButton.Click();
         cut.Find("button[data-action='confirm-import']").Click();
-        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull());
-        var firstCommitFileContent = _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull();
+        cut.WaitForAssertion(() => _fakeCustomersApi.LastCommitFileContent.IsEmpty.ShouldBeFalse());
+        var firstCommitFileContent = _fakeCustomersApi.LastCommitFileContent;
         var firstCommitValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
-            [.. firstCommitFileContent]);
+            firstCommitFileContent);
         _fakeCustomersApi.SetCommitImportResult(new ImportResultDto(1, 0));
 
         // Act
@@ -433,9 +433,9 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         cut.Find("button[data-action='confirm-import']").Click();
         cut.WaitForAssertion(() =>
             cut.Markup.ShouldContain("1 customer(s) imported successfully", StringComparison.Ordinal));
-        var retryFileContent = _fakeCustomersApi.LastCommitFileContent.ShouldNotBeNull();
+        var retryFileContent = _fakeCustomersApi.LastCommitFileContent;
         var retryValues = ImportCustomersDuplicateResolutionTestHelper.ParseSingleDataRow(
-            [.. retryFileContent]);
+            retryFileContent);
 
         // Assert
         firstCommitValues["FirstName"].ShouldBe("IncomingFirst");

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using PandaBear.Results;
 using PandaBear.Tabular;
 using ViajantesTurismo.Admin.Contracts.Application;
 
@@ -13,30 +14,55 @@ internal static class ImportCustomersCsvProcessor
     private static readonly CsvWriteOptions ImportFileOptions = new() { GuardFormulas = false, NewLine = "\n" };
     private static readonly string[] ErrorReportHeaders = ["LineNumber", "Field", "Message", "Email"];
 
-    private sealed record MixedConflictRow(
-        IReadOnlyList<string> Values,
-        IReadOnlyDictionary<string, ImportConflictFieldSource> FieldSelections,
-        IReadOnlyDictionary<string, string> ExistingValues);
+    /// <summary>Reads a selected CSV and checks whether its columns can be mapped by name.</summary>
+    internal static Result<CsvDocument> ReadForMapping(ReadOnlyMemory<byte> fileBytes)
+    {
+        var parsed = CsvDocument.ParseUtf8(fileBytes.Span);
+        if (!parsed.IsSuccess)
+        {
+            return parsed;
+        }
+
+        var document = parsed.Value;
+        if (document.Rows.Count == 0)
+        {
+            return Result.Invalid<CsvDocument>("The CSV needs at least one data row after the headers.", "rows", "No data rows.");
+        }
+
+        if (document.Headers.Any(string.IsNullOrWhiteSpace))
+        {
+            return Result.Invalid<CsvDocument>("Each column needs a name before it can be mapped.", "headers", "Unnamed column.");
+        }
+
+        if (document.Headers.Distinct(StringComparer.OrdinalIgnoreCase).Count() != document.Headers.Count)
+        {
+            return Result.Invalid<CsvDocument>(
+                "Column names must be unique. Rename repeated columns and choose the file again.",
+                "headers",
+                "Repeated column name.");
+        }
+
+        return parsed;
+    }
 
     /// <summary>Reads the header names of a CSV file; when its rows are malformed, the first record alone is read.</summary>
-    internal static IReadOnlyList<string> ReadHeaders(byte[] fileBytes)
+    internal static IReadOnlyList<string> ReadHeaders(ReadOnlyMemory<byte> fileBytes)
     {
-        ArgumentNullException.ThrowIfNull(fileBytes);
-
         if (TryParse(fileBytes, out var document))
         {
             return document.Headers;
         }
 
-        var headerEnd = Array.IndexOf(fileBytes, (byte)'\n');
-        ReadOnlySpan<byte> firstRecord = headerEnd < 0 ? fileBytes : fileBytes.AsSpan(0, headerEnd);
+        var bytes = fileBytes.Span;
+        var headerEnd = bytes.IndexOf((byte)'\n');
+        var firstRecord = headerEnd < 0 ? bytes : bytes[..headerEnd];
         var header = CsvDocument.ParseUtf8(firstRecord);
         return header.IsSuccess ? header.Value.Headers : [];
     }
 
     /// <summary>Builds up to the given number of preview rows from the pending CSV using the effective column mappings.</summary>
     internal static IReadOnlyList<IReadOnlyDictionary<string, string>> BuildPreviewRows(
-        byte[] pendingFileBytes,
+        ReadOnlyMemory<byte> pendingFileBytes,
         IReadOnlyList<string> csvHeaders,
         IReadOnlyList<CustomerImportFieldMapping> fieldMappings,
         IReadOnlyDictionary<string, string?> userMappings,
@@ -65,7 +91,7 @@ internal static class ImportCustomersCsvProcessor
     }
 
     /// <summary>Parses the mapped CSV into field values keyed by email address.</summary>
-    internal static Dictionary<string, Dictionary<string, string>> ParseMappedRowsByEmail(byte[] mappedFileBytes)
+    internal static Dictionary<string, Dictionary<string, string>> ParseMappedRowsByEmail(ReadOnlyMemory<byte> mappedFileBytes)
     {
         var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
         if (!TryParse(mappedFileBytes, out var document))
@@ -100,21 +126,24 @@ internal static class ImportCustomersCsvProcessor
         return result;
     }
 
-    /// <summary>Rewrites the mapped CSV so rows with a mixed decision hold the per-field merged values.</summary>
-    internal static byte[] ApplyMixedFieldSelections(
-        byte[] mappedFileBytes,
-        IReadOnlyList<ImportCustomerConflictState> conflictStates)
+    /// <summary>Applies header mappings and mixed decisions in one render, returning only new or changed field values.</summary>
+    internal static (ReadOnlyMemory<byte> FileContent, Dictionary<int, Dictionary<int, string>>? NewOverrides) RewriteImportFile(
+        ReadOnlyMemory<byte> fileBytes,
+        IReadOnlyList<string>? mappedHeaders,
+        Dictionary<int, Dictionary<int, string>> appliedOverrides,
+        IReadOnlyList<ImportCustomerConflictState> conflicts)
     {
-        if (!TryParse(mappedFileBytes, out var document) || document.Rows.Count == 0)
+        var mixed = conflicts.Where(conflict => conflict.HasMixedDecision).ToDictionary(conflict => conflict.Email, StringComparer.OrdinalIgnoreCase);
+        if ((mappedHeaders is null && appliedOverrides.Count == 0 && mixed.Count == 0) || !TryParse(fileBytes, out var document))
         {
-            return mappedFileBytes;
+            return (fileBytes, null);
         }
 
-        var headers = document.Headers;
+        var headers = mappedHeaders ?? document.Headers;
         var emailIndex = FindHeader(headers, CustomerImportFieldNames.Email);
-        if (emailIndex < 0)
+        if (emailIndex < 0 || (appliedOverrides.Count == 0 && mixed.Count == 0))
         {
-            return mappedFileBytes;
+            return (mappedHeaders is null ? fileBytes : WriteImportFile(headers, document.Rows), null);
         }
 
         var headerIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -123,37 +152,38 @@ internal static class ImportCustomersCsvProcessor
             headerIndexes.TryAdd(headers[i], i);
         }
 
-        var anyMerged = false;
+        Dictionary<int, Dictionary<int, string>>? newOverrides = null;
         var rows = new List<IReadOnlyList<string>>(document.Rows.Count);
-        foreach (var values in document.Rows)
+        for (var i = 0; i < document.Rows.Count; i++)
         {
-            if (!TryGetMixedConflictRow(values, emailIndex, conflictStates, out var conflictRow))
+            var values = document.Rows[i];
+            var previous = appliedOverrides.GetValueOrDefault(i);
+            var currentEmail = previous?.GetValueOrDefault(emailIndex) ?? values[emailIndex];
+            var added = GetNewOverrides(values, headerIndexes, previous, mixed.GetValueOrDefault(currentEmail));
+            if (added is not null)
             {
-                rows.Add(values);
-                continue;
+                newOverrides ??= new Dictionary<int, Dictionary<int, string>>(appliedOverrides);
+                newOverrides[i] = added;
             }
 
-            var merged = BuildMergedValues(headerIndexes, conflictRow);
-            rows.Add(merged);
-            anyMerged |= !merged.SequenceEqual(values, StringComparer.Ordinal);
+            rows.Add(ApplyOverrides(values, added ?? previous));
         }
 
-        return anyMerged ? WriteImportFile(headers, rows) : mappedFileBytes;
+        var changed = mappedHeaders is not null || appliedOverrides.Count > 0 || newOverrides is not null;
+        return (changed ? WriteImportFile(headers, rows) : fileBytes, newOverrides);
     }
 
     /// <summary>
     /// Writes a CSV file for the import API: values are kept exactly, without the spreadsheet formula guard, so the file reads back
     /// with the same headers and values.
     /// </summary>
-    internal static byte[] WriteImportFile(IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<string>> rows) =>
+    internal static ReadOnlyMemory<byte> WriteImportFile(IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<string>> rows) =>
         Encoding.UTF8.GetBytes(CsvWriter.Write(headers, rows, ImportFileOptions));
 
     /// <summary>Parses CSV bytes; a structurally invalid file yields no document.</summary>
-    internal static bool TryParse(byte[] fileBytes, out CsvDocument document)
+    internal static bool TryParse(ReadOnlyMemory<byte> fileBytes, out CsvDocument document)
     {
-        ArgumentNullException.ThrowIfNull(fileBytes);
-
-        var parsed = CsvDocument.ParseUtf8(fileBytes);
+        var parsed = CsvDocument.ParseUtf8(fileBytes.Span);
         document = parsed.IsSuccess ? parsed.Value : null!;
         return parsed.IsSuccess;
     }
@@ -251,57 +281,46 @@ internal static class ImportCustomersCsvProcessor
         return userMappings.GetValueOrDefault(fieldName, autoMatchedHeader);
     }
 
-    private static bool TryGetMixedConflictRow(
-        CsvRow values,
-        int emailIndex,
-        IReadOnlyList<ImportCustomerConflictState> conflictStates,
-        out MixedConflictRow conflictRow)
+    private static Dictionary<int, string>? GetNewOverrides(
+        CsvRow original,
+        Dictionary<string, int> headerIndexes,
+        Dictionary<int, string>? previous,
+        ImportCustomerConflictState? conflict)
     {
-        conflictRow = null!;
-
-        var email = values[emailIndex];
-        var state = conflictStates.FirstOrDefault(candidate =>
-            candidate.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
-        if (state is null || !state.HasMixedDecision)
+        if (conflict is null)
         {
-            return false;
+            return null;
         }
 
-        if (state.FieldSelections.Count == 0)
+        Dictionary<int, string>? replacements = null;
+        foreach (var (field, choice) in conflict.FieldSelections)
         {
-            return false;
+            if (choice == ImportConflictFieldSource.Existing
+                && headerIndexes.TryGetValue(field, out var index)
+                && conflict.ExistingValues.TryGetValue(field, out var existingValue)
+                && !string.Equals(previous?.GetValueOrDefault(index) ?? original[index], existingValue, StringComparison.Ordinal))
+            {
+                replacements ??= previous is null ? [] : new Dictionary<int, string>(previous);
+                replacements[index] = existingValue;
+            }
         }
 
-        conflictRow = new MixedConflictRow(values, state.FieldSelections, state.ExistingValues);
-        return true;
+        return replacements;
     }
 
-    private static string[] BuildMergedValues(
-        Dictionary<string, int> headerIndexes,
-        MixedConflictRow conflictRow)
+    private static IReadOnlyList<string> ApplyOverrides(CsvRow original, Dictionary<int, string>? replacements)
     {
-        var mergedValues = conflictRow.Values.ToArray();
-
-        foreach (var (fieldName, source) in conflictRow.FieldSelections)
+        if (replacements is null)
         {
-            if (source != ImportConflictFieldSource.Existing)
-            {
-                continue;
-            }
-
-            if (!headerIndexes.TryGetValue(fieldName, out var fieldIndex))
-            {
-                continue;
-            }
-
-            if (!conflictRow.ExistingValues.TryGetValue(fieldName, out var existingValue))
-            {
-                continue;
-            }
-
-            mergedValues[fieldIndex] = existingValue;
+            return original;
         }
 
-        return mergedValues;
+        var values = original.ToArray();
+        foreach (var (index, value) in replacements)
+        {
+            values[index] = value;
+        }
+
+        return values;
     }
 }

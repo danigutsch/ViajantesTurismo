@@ -26,7 +26,7 @@ public sealed class ImportCustomersFileReadTests : BunitContext
     {
         // Arrange
         var csv = CustomerImportCsvTestData.BuildCsvWithEmail("exact@example.com");
-        byte[]? uploaded = null;
+        ReadOnlyMemory<byte> uploaded = default;
         _fakeCustomersApi.SetImportCustomersHandler((bytes, _, _, _) =>
         {
             uploaded = bytes;
@@ -43,8 +43,8 @@ public sealed class ImportCustomersFileReadTests : BunitContext
         await ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
 
         // Assert
-        cut.WaitForAssertion(() => uploaded.ShouldNotBeNull());
-        Encoding.UTF8.GetString(uploaded!).ShouldBe(csv);
+        cut.WaitForAssertion(() => uploaded.IsEmpty.ShouldBeFalse());
+        Encoding.UTF8.GetString(uploaded.Span).ShouldBe(csv);
         file.MaximumAllowedSize.ShouldBe(AdminContractConstants.CustomerImportMaxFileBytes);
         _failures.Reports.ShouldBeEmpty();
     }
@@ -57,7 +57,7 @@ public sealed class ImportCustomersFileReadTests : BunitContext
         var padding = maxBytes - CustomerImportCsvTestData.BuildCsvWithEmail(string.Empty).Length;
         var csv = CustomerImportCsvTestData.BuildCsvWithEmail(new string('x', padding));
         var content = Encoding.UTF8.GetBytes(csv);
-        byte[]? uploaded = null;
+        ReadOnlyMemory<byte> uploaded = default;
         _fakeCustomersApi.SetImportCustomersHandler((bytes, _, _, _) =>
         {
             uploaded = bytes;
@@ -75,13 +75,13 @@ public sealed class ImportCustomersFileReadTests : BunitContext
 
         // Assert
         content.Length.ShouldBe(maxBytes);
-        cut.WaitForAssertion(() => uploaded.ShouldNotBeNull());
-        Encoding.UTF8.GetString(uploaded!).ShouldBe(csv);
+        cut.WaitForAssertion(() => uploaded.IsEmpty.ShouldBeFalse());
+        Encoding.UTF8.GetString(uploaded.Span).ShouldBe(csv);
         _failures.Reports.ShouldBeEmpty();
     }
 
     [Fact]
-    public async Task Opens_header_mapping_with_nothing_mapped_for_an_empty_file()
+    public async Task Explains_that_an_empty_file_has_no_headers()
     {
         // Arrange
         var cut = Render<ImportCustomers>();
@@ -92,7 +92,8 @@ public sealed class ImportCustomersFileReadTests : BunitContext
 
         // Assert
         file.MaximumAllowedSize.ShouldBe(AdminContractConstants.CustomerImportMaxFileBytes);
-        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled").ShouldBeTrue();
+        cut.Find(".alert-danger").TextContent.ShouldContain("Headers must contain at least one column", StringComparison.Ordinal);
+        cut.FindAll("select[data-field]").ShouldBeEmpty();
         _failures.Reports.ShouldBeEmpty();
     }
 

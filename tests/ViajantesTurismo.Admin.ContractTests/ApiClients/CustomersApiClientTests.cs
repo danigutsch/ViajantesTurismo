@@ -14,10 +14,10 @@ namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 public sealed class CustomersApiClientTests
 {
     [Fact]
-    public void Progress_overload_preserves_existing_client_implementations()
+    public void Progress_overload_has_a_default_read_only_memory_implementation()
     {
         // Arrange
-        var parameterTypes = new[] { typeof(byte[]), typeof(string), typeof(IProgress<long>), typeof(CancellationToken) };
+        var parameterTypes = new[] { typeof(ReadOnlyMemory<byte>), typeof(string), typeof(IProgress<long>), typeof(CancellationToken) };
 
         // Act
         var overload = typeof(ICustomersApiClient).GetMethod(nameof(ICustomersApiClient.ImportCustomers), parameterTypes);
@@ -370,7 +370,7 @@ public sealed class CustomersApiClientTests
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.ImportCustomers([1, 2, 3], "customers.csv", TestContext.Current.CancellationToken);
+        var outcome = await sut.ImportCustomers(new byte[] { 1, 2, 3 }, "customers.csv", TestContext.Current.CancellationToken);
 
         // Assert
         requestPath.ShouldBe("/api/v1/customers/import");
@@ -394,7 +394,7 @@ public sealed class CustomersApiClientTests
 
         // Act
         var outcome = await sut.CommitImportWithResolutions(
-            [1, 2, 3],
+            new byte[] { 1, 2, 3 },
             "customers.csv",
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["alice@example.test"] = "overwrite" },
             null,
@@ -404,6 +404,31 @@ public sealed class CustomersApiClientTests
         requestPath.ShouldBe("/api/v1/customers/import/commit");
         var result = outcome.Value.ShouldNotBeNull();
         result.SuccessCount.ShouldBe(2);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ImportCustomers_serializes_the_exact_memory_slice(bool reportProgress)
+    {
+        // Arrange
+        byte[] buffer = [0, 1, 2, 3, 4];
+        byte[] sent = [];
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (request, ct) =>
+        {
+            var multipart = (MultipartFormDataContent)request.Content.ShouldNotBeNull();
+            sent = await multipart.ShouldHaveSingleItem().ReadAsByteArrayAsync(ct);
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""{ "successCount": 1, "errorCount": 0 }""");
+        });
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+        IProgress<long>? progress = reportProgress ? new Progress<long>() : null;
+
+        // Act
+        var outcome = await sut.ImportCustomers(buffer.AsMemory(1, 3), "customers.csv", progress, TestContext.Current.CancellationToken);
+
+        // Assert
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        sent.ShouldBe([1, 2, 3]);
     }
 
     [Fact]
@@ -445,7 +470,7 @@ public sealed class CustomersApiClientTests
         using var requestCancellation = new CancellationTokenSource();
 
         // Act
-        var import = sut.ImportCustomers([1, 2, 3], "customers.csv", null, requestCancellation.Token);
+        var import = sut.ImportCustomers(new byte[] { 1, 2, 3 }, "customers.csv", null, requestCancellation.Token);
         await requestStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
         await requestCancellation.CancelAsync();
         Func<Task> action = async () => await import;
@@ -499,7 +524,7 @@ public sealed class CustomersApiClientTests
 
         // Act
         var commit = sut.CommitImportWithResolutions(
-            [1, 2, 3],
+            new byte[] { 1, 2, 3 },
             "customers.csv",
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["alice@example.test"] = "overwrite" },
             null,
