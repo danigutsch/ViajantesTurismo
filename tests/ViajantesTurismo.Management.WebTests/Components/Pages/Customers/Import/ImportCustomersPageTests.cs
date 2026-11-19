@@ -168,7 +168,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(3, 0));
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act — upload file → mapping step → preview step → confirm import
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -188,7 +188,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(2, 1));
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act — upload file → mapping step → preview step → confirm import
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -208,7 +208,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Arrange
         _fakeCustomersApi.SetImportCustomersException(new InvalidOperationException("Connection refused"));
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act — upload file → mapping step → preview step → confirm import
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -232,7 +232,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(1, 0));
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
 
         // Act — upload file → mapping step → preview step → confirm import
         cut.FindComponent<InputFile>().UploadFiles(file);
@@ -252,7 +252,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         // Arrange
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(1, 0));
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").Click();
@@ -280,7 +280,7 @@ public sealed class ImportCustomersPageTests : BunitContext
             return requestCompletion.Task;
         });
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
         await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
@@ -312,7 +312,7 @@ public sealed class ImportCustomersPageTests : BunitContext
             return requestCompletion.Task;
         });
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
         await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
@@ -344,11 +344,11 @@ public sealed class ImportCustomersPageTests : BunitContext
         _fakeCustomersApi.SetImportCustomersHandler((content, _, progress, _) =>
         {
             reportedProgress = progress;
-            requestStarted.TrySetResult(content.LongLength);
+            requestStarted.TrySetResult(content.Length);
             return requestCompletion.Task;
         });
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
         await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
@@ -397,11 +397,11 @@ public sealed class ImportCustomersPageTests : BunitContext
             }
 
             retryToken = ct;
-            progress?.Report(content.LongLength);
+            progress?.Report(content.Length);
             return Task.FromResult(new ImportResultDto(1, 0));
         });
         var cut = Render<ImportCustomers>();
-        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues, "customers.csv");
         cut.FindComponent<InputFile>().UploadFiles(file);
         ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
         await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
@@ -473,13 +473,13 @@ public sealed class ImportCustomersPageTests : BunitContext
         var sentFiles = new List<string>();
         _fakeCustomersApi.SetImportCustomersHandler((content, _, progress, _) =>
         {
-            sentFiles.Add(Encoding.UTF8.GetString(content));
+            sentFiles.Add(Encoding.UTF8.GetString(content.Span));
             if (sentFiles.Count == 1)
             {
                 throw new HttpRequestException("Transient failure.");
             }
 
-            progress?.Report(content.LongLength);
+            progress?.Report(content.Length);
             return Task.FromResult(new ImportResultDto(1, 0));
         });
         var cut = Render<ImportCustomers>();
@@ -532,7 +532,7 @@ public sealed class ImportCustomersPageTests : BunitContext
             Kind = HttpOutcomeKind.TransportFailure,
             Message = "Connection refused by 10.0.0.7"
         });
-        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata");
+        var cut = ImportCustomersPreviewTestHelper.GoToPreview(this, CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.AllCanonicalValues);
 
         // Act
         ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").Click();

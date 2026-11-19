@@ -9,8 +9,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private readonly List<CustomerDetailsDto> _customerDetails = [];
     private readonly List<GetCustomerDto> _customers = [];
     private Func<CancellationToken, int, Task<IReadOnlyList<GetCustomerDto>>>? _getCustomersHandler;
-    private Func<byte[], string, IReadOnlyDictionary<string, string>, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _commitImportHandler;
-    private Func<byte[], string, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _importCustomersHandler;
+    private Func<ReadOnlyMemory<byte>, string, IReadOnlyDictionary<string, string>, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _commitImportHandler;
+    private Func<ReadOnlyMemory<byte>, string, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _importCustomersHandler;
     public CancellationToken LastCommitCancellationToken
     {
         get; private set;
@@ -37,7 +37,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private Exception? _updateCustomerException;
     private HttpOutcome? _updateCustomerOutcome;
 
-    public IReadOnlyList<byte>? LastCommitFileContent
+    public ReadOnlyMemory<byte> LastCommitFileContent
     {
         get; private set;
     }
@@ -137,9 +137,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.NoContent, location: null));
     }
 
-    public async Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
+    public async Task<HttpOutcome<ImportResultDto>> ImportCustomers(ReadOnlyMemory<byte> fileContent, string fileName, IProgress<long>? progress, CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(fileContent);
         ArgumentNullException.ThrowIfNull(fileName);
         ct.ThrowIfCancellationRequested();
 
@@ -163,7 +162,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
         if (_importResult is not null)
         {
-            progress?.Report(fileContent.LongLength);
+            progress?.Report(fileContent.Length);
             return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _importResult);
         }
 
@@ -171,18 +170,17 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     }
 
     public async Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(
-        byte[] fileContent,
+        ReadOnlyMemory<byte> fileContent,
         string fileName,
         IReadOnlyDictionary<string, string> conflictResolutions,
         IProgress<long>? progress,
         CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(fileContent);
         ArgumentNullException.ThrowIfNull(fileName);
         ArgumentNullException.ThrowIfNull(conflictResolutions);
         ct.ThrowIfCancellationRequested();
 
-        LastCommitFileContent = [.. fileContent];
+        LastCommitFileContent = fileContent;
         LastCommitFileName = fileName;
         LastCommitConflictResolutions = new Dictionary<string, string>(conflictResolutions, StringComparer.OrdinalIgnoreCase);
         LastCommitCancellationToken = ct;
@@ -202,7 +200,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
         if (_commitImportResult is not null)
         {
-            progress?.Report(fileContent.LongLength);
+            progress?.Report(fileContent.Length);
             return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _commitImportResult);
         }
 
@@ -233,10 +231,10 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
     public void SetImportCustomersResult(ImportResultDto result) => _importResult = result;
 
-    public void SetImportCustomersHandler(Func<byte[], string, IProgress<long>?, CancellationToken, Task<ImportResultDto>> handler) => _importCustomersHandler = handler;
+    public void SetImportCustomersHandler(Func<ReadOnlyMemory<byte>, string, IProgress<long>?, CancellationToken, Task<ImportResultDto>> handler) => _importCustomersHandler = handler;
 
     public void SetCommitImportHandler(
-        Func<byte[], string, IReadOnlyDictionary<string, string>, IProgress<long>?, CancellationToken, Task<ImportResultDto>> handler) => _commitImportHandler = handler;
+        Func<ReadOnlyMemory<byte>, string, IReadOnlyDictionary<string, string>, IProgress<long>?, CancellationToken, Task<ImportResultDto>> handler) => _commitImportHandler = handler;
 
     public void SetCommitImportResult(ImportResultDto result) => _commitImportResult = result;
 
@@ -247,13 +245,13 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public void SetImportCustomersOutcome(HttpOutcome<ImportResultDto> outcome) => _importCustomersOutcome = outcome;
 
     /// <inheritdoc />
-    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(byte[] fileContent, string fileName, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> ImportCustomers(ReadOnlyMemory<byte> fileContent, string fileName, CancellationToken ct)
     {
         return ImportCustomers(fileContent, fileName, null, ct);
     }
 
     /// <inheritdoc />
-    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(byte[] fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
+    public Task<HttpOutcome<ImportResultDto>> CommitImportWithResolutions(ReadOnlyMemory<byte> fileContent, string fileName, IReadOnlyDictionary<string, string> conflictResolutions, CancellationToken ct)
     {
         return CommitImportWithResolutions(fileContent, fileName, conflictResolutions, null, ct);
     }

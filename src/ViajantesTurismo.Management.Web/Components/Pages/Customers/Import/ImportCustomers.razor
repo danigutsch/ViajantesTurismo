@@ -158,10 +158,9 @@
     }
     else if (_state.Step == ImportCustomersWorkflowStep.HeaderMapping)
     {
-        var unmatchedRequired = _state.FieldMappings
-            .Where(m => m.Field.IsRequired && !AllRequiredFieldsMapped(m.Field.Name))
-            .ToArray();
-        var allRequiredMatched = unmatchedRequired.Length == 0;
+        var unmatchedRequired = _state.FieldMappings.Count(IsMissingRequiredMapping);
+        var duplicateAssignment = HasDuplicateColumnAssignments();
+        var unresolvedChoices = HasUnresolvedColumnChoices();
 
         <div class="card">
             <div class="card-header d-flex align-items-center gap-2">
@@ -170,19 +169,24 @@
                 <span class="badge bg-secondary">@_state.CsvHeaders.Count column(s) detected</span>
             </div>
             <div class="card-body">
-                @if (allRequiredMatched)
+                @if (unmatchedRequired == 0 && !unresolvedChoices && !duplicateAssignment)
                 {
                     <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
                         <i class="bi bi-check-circle-fill fs-5"></i>
-                        <span>All required columns were automatically matched.</span>
+                        <span>@(_state.UserMappings.Count == 0 ? "All required columns were automatically matched." : "All required columns are mapped.")</span>
                     </div>
                 }
-                else
+                else if (unmatchedRequired > 0)
                 {
                     <div class="alert alert-warning d-flex align-items-center gap-2 mb-3">
                         <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-                        <span>@unmatchedRequired.Length required column(s) could not be matched. Please assign them below.</span>
+                        <span>@unmatchedRequired required column(s) could not be matched. Please assign them below.</span>
                     </div>
+                }
+
+                @if (duplicateAssignment)
+                {
+                    <div class="alert alert-warning" role="alert">Use each source column only once.</div>
                 }
 
                 <table class="table table-sm align-middle">
@@ -198,6 +202,8 @@
                         {
                             var fieldName = mapping.Field.Name;
                             var effective = GetEffectiveMappingValue(fieldName, mapping.MatchedCsvHeader);
+                            var suggestions = _state.HeaderSuggestions.GetValueOrDefault(fieldName);
+                            var helpId = $"{fieldName}-mapping-help";
                             <tr>
                                 <td>@mapping.Field.DisplayName</td>
                                 <td>
@@ -213,6 +219,8 @@
                                 <td>
                                     <select class="form-select form-select-sm"
                                             data-field="@fieldName"
+                                            aria-label="@mapping.Field.DisplayName"
+                                            aria-describedby="@(suggestions is not null || IsMissingRequiredMapping(mapping) ? helpId : null)"
                                             @onchange="@(e => OnFieldMapped(fieldName, e.Value?.ToString()))">
                                         <option value="">(none)</option>
                                         @foreach (var header in _state.CsvHeaders)
@@ -220,6 +228,32 @@
                                             <option value="@header" selected="@(header == effective)">@header</option>
                                         }
                                     </select>
+                                    @if (suggestions is { Count: 1 })
+                                    {
+                                        <p id="@helpId" class="small text-muted mb-0">Suggested column <strong>@suggestions[0].Header</strong>. @suggestions[0].Reason</p>
+                                    }
+                                    else if (suggestions is { Count: > 1 })
+                                    {
+                                        <div id="@helpId" class="small">
+                                            <p class="mb-1">Multiple possible columns. Choose one.</p>
+                                            <ul class="mb-1">
+                                                @foreach (var suggestion in suggestions)
+                                                {
+                                                    <li>@(suggestion.Header). @suggestion.Reason</li>
+                                                }
+                                            </ul>
+                                            @if (!mapping.Field.IsRequired && !_state.UserMappings.ContainsKey(fieldName))
+                                            {
+                                                <button type="button" class="btn btn-link btn-sm p-0" @onclick="@(() => OnFieldMapped(fieldName, null))">Leave unmapped</button>
+                                            }
+                                        </div>
+                                    }
+                                    else if (IsMissingRequiredMapping(mapping))
+                                    {
+                                        <p id="@helpId" class="small text-muted mb-0" data-missing-required-field="@fieldName">
+                                            No suggested source. Choose a column if this data is in the file.
+                                        </p>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -236,7 +270,7 @@
                 <div class="d-flex gap-2 mt-3">
                     <button class="btn btn-primary"
                             @onclick="ShowPreview"
-                            disabled="@(!AllRequiredFieldsMapped() || _state.Uploading)">
+                            disabled="@(unmatchedRequired > 0 || duplicateAssignment || unresolvedChoices || _state.Uploading)">
                         <i class="bi bi-eye"></i> Preview
                     </button>
                     <button class="btn btn-outline-secondary" @onclick="Reset" disabled="@_state.Uploading">
@@ -377,7 +411,7 @@
             return;
         }
 
-        byte[] fileBytes;
+        ReadOnlyMemory<byte> fileBytes;
         try
         {
             fileBytes = await ReadFileBytes(file);
@@ -393,24 +427,35 @@
     }
 
     private void OnFieldMapped(string fieldName, string? csvHeader) =>
-        _state.UserMappings[fieldName] = string.IsNullOrEmpty(csvHeader) ? null : csvHeader;
+        _state.UserMappings[fieldName] = _state.CsvHeaders.Contains(csvHeader, StringComparer.Ordinal) ? csvHeader : null;
 
     private string? GetEffectiveMappingValue(string fieldName, string? autoMatchedHeader)
     {
         return _state.UserMappings.GetValueOrDefault(fieldName, autoMatchedHeader);
     }
 
-    private bool AllRequiredFieldsMapped(string fieldName) =>
-        _state.FieldMappings.First(m => m.Field.Name == fieldName) is var mapping
-        && (GetEffectiveMappingValue(fieldName, mapping.MatchedCsvHeader) is not null);
+    private bool IsMissingRequiredMapping(CustomerImportFieldMapping mapping) =>
+        mapping.Field.IsRequired && GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader) is null;
 
-    private bool AllRequiredFieldsMapped() =>
-        _state.FieldMappings
-            .Where(m => m.Field.IsRequired)
-            .All(m => GetEffectiveMappingValue(m.Field.Name, m.MatchedCsvHeader) is not null);
+    private bool HasDuplicateColumnAssignments() =>
+        _state.FieldMappings.Select(mapping => GetEffectiveMappingValue(mapping.Field.Name, mapping.MatchedCsvHeader))
+            .OfType<string>()
+            .GroupBy(header => header, StringComparer.OrdinalIgnoreCase)
+            .Any(assignments => assignments.Skip(1).Any());
+
+    private bool HasUnresolvedColumnChoices() =>
+        _state.HeaderSuggestions.Any(suggestion => suggestion.Value.Count > 1 && !_state.UserMappings.ContainsKey(suggestion.Key));
+
+    private bool CanUseMappings() =>
+        !_state.FieldMappings.Any(IsMissingRequiredMapping) && !HasDuplicateColumnAssignments() && !HasUnresolvedColumnChoices();
 
     private void ShowPreview()
     {
+        if (!CanUseMappings())
+        {
+            return;
+        }
+
         _state.PreviewRows = ImportCustomersCsvProcessor.BuildPreviewRows(
             _state.PendingFileBytes,
             _state.CsvHeaders,
@@ -422,14 +467,15 @@
 
     private async Task HandleImport()
     {
-        if (!AllRequiredFieldsMapped())
+        if (!CanUseMappings())
         {
-            _state.ValidationError = "All required fields must be mapped before importing.";
+            _state.ValidationError = "Review the column mappings before importing.";
             return;
         }
 
-        var fileBytes = ApplyCurrentMapping();
-        var (operationId, uploadCancellation, progress) = BeginUpload(fileBytes.LongLength);
+        var payload = CreateImportPayload();
+        var (fileBytes, _) = payload.Prepare(_state.PendingFileBytes, []);
+        var (operationId, uploadCancellation, progress) = BeginUpload(fileBytes.Length);
 
         try
         {
@@ -453,7 +499,7 @@
                     return;
                 }
 
-                _state.ConflictSourceFileBytes = fileBytes;
+                _state.ConflictPayload = payload;
                 _state.ConflictStates = conflictStates;
                 _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
 
@@ -462,7 +508,8 @@
             }
 
             _state.Result = result;
-            _state.Upload.ReportBytes(operationId, fileBytes.LongLength);
+            _state.ConflictPayload = null;
+            _state.Upload.ReportBytes(operationId, fileBytes.Length);
             _state.Upload.Complete(operationId);
         }
         catch (OperationCanceledException) when (uploadCancellation.IsCancellationRequested)
@@ -482,19 +529,10 @@
 
     private async Task HandleCommitWithResolutions()
     {
-        var fileBytes = _state.ConflictSourceFileBytes.Length > 0
-            ? _state.ConflictSourceFileBytes
-            : ApplyCurrentMapping();
+        var (fileBytes, payload) = (_state.ConflictPayload ?? CreateImportPayload()).Prepare(
+            _state.PendingFileBytes, _state.ConflictStates);
 
-        var hasMixedDecision = _state.ConflictStates.Any(state => state.HasMixedDecision);
-        if (hasMixedDecision)
-        {
-            fileBytes = ImportCustomersCsvProcessor.ApplyMixedFieldSelections(
-                fileBytes,
-                _state.ConflictStates);
-        }
-
-        var (operationId, uploadCancellation, progress) = BeginUpload(fileBytes.LongLength);
+        var (operationId, uploadCancellation, progress) = BeginUpload(fileBytes.Length);
 
         try
         {
@@ -524,7 +562,7 @@
                     return;
                 }
 
-                _state.ConflictSourceFileBytes = fileBytes;
+                _state.ConflictPayload = payload;
                 _state.ConflictStates = conflictStates;
                 _state.Step = ImportCustomersWorkflowStep.DuplicateResolution;
 
@@ -533,7 +571,8 @@
             }
 
             _state.Result = result;
-            _state.Upload.ReportBytes(operationId, fileBytes.LongLength);
+            _state.ConflictPayload = null;
+            _state.Upload.ReportBytes(operationId, fileBytes.Length);
             _state.Upload.Complete(operationId);
         }
         catch (OperationCanceledException) when (uploadCancellation.IsCancellationRequested)
@@ -578,7 +617,7 @@
         return true;
     }
 
-    private static async Task<byte[]> ReadFileBytes(IBrowserFile file)
+    private static async Task<ReadOnlyMemory<byte>> ReadFileBytes(IBrowserFile file)
     {
         await using var stream = file.OpenReadStream(MaxFileSizeBytes);
         var fileBytes = new byte[file.Size];
@@ -597,18 +636,28 @@
         }
     }
 
-    private void SetPendingFile(string fileName, byte[] fileBytes)
+    private void SetPendingFile(string fileName, ReadOnlyMemory<byte> fileBytes)
     {
-        var csvHeaders = ImportCustomersCsvProcessor.ReadHeaders(fileBytes);
-        var fieldMappings = CustomerImportHeaderMatcher.AutoMatch(csvHeaders);
-        _state.SetPendingFile(fileName, fileBytes, csvHeaders, fieldMappings);
+        var parsed = ImportCustomersCsvProcessor.ReadForMapping(fileBytes);
+        if (!parsed.IsSuccess)
+        {
+            _state.ValidationError = parsed.ErrorDetails.Detail;
+            return;
+        }
+
+        var document = parsed.Value;
+        var suggestions = CustomerImportHeaderAdvisor.Suggest(document, MaxPreviewRows);
+        var fieldMappings = CustomerImportHeaderMatcher.AutoMatch(document.Headers)
+            .Select(mapping => suggestions.ContainsKey(mapping.Field.Name) ? mapping with { MatchedCsvHeader = null } : mapping)
+            .ToArray();
+        _state.SetPendingFile(fileName, fileBytes, document.Headers, fieldMappings, suggestions);
     }
 
-    private byte[] ApplyCurrentMapping() =>
-        CustomerImportHeaderMatcher.ApplyMapping(
-            _state.PendingFileBytes,
+    private ImportCustomersCsvPayload CreateImportPayload() =>
+        new(CustomerImportHeaderMatcher.GetMappedHeaders(
+            _state.CsvHeaders,
             _state.FieldMappings,
-            _state.UserMappings);
+            _state.UserMappings));
 
     private Dictionary<string, string> BuildConflictDecisions() => _state.BuildConflictDecisions();
 
@@ -729,7 +778,7 @@
 
     private Task<IReadOnlyList<ImportCustomerConflictState>> LoadConflictStates(
         IReadOnlyList<ImportConflictDto> conflicts,
-        byte[] mappedFileBytes,
+        ReadOnlyMemory<byte> mappedFileBytes,
         CancellationToken ct)
     {
         return ImportCustomersConflictLoader.LoadConflictStates(

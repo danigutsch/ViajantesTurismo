@@ -8,8 +8,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import
 [TestScope(TestScope.Component)]
 public sealed class ImportCustomersForgedEventTests : BunitContext
 {
-    private const string RequiredFieldsMessage = "All required fields must be mapped before importing.";
-
     private readonly FakeCustomersApiClient fakeCustomersApi = new();
 
     public ImportCustomersForgedEventTests()
@@ -20,7 +18,7 @@ public sealed class ImportCustomersForgedEventTests : BunitContext
     }
 
     [Fact]
-    public async Task Forced_preview_and_import_with_required_fields_unmapped_are_refused_in_the_preview_and_the_mapping()
+    public async Task Forced_preview_with_required_fields_unmapped_stays_on_the_mapping_step()
     {
         // Arrange
         var importCalls = 0;
@@ -32,21 +30,14 @@ public sealed class ImportCustomersForgedEventTests : BunitContext
         var cut = Render<ImportCustomers>();
         cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("Foo,Bar\n1,2", "customers.csv"));
         cut.WaitForAssertion(() => ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled").ShouldBeTrue());
+
+        // Act
         await ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").ClickAsync();
 
-        // Act
-        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
-
         // Assert
-        cut.Find(".alert.alert-danger").TextContent.Trim().ShouldBe(RequiredFieldsMessage);
-        importCalls.ShouldBe(0);
-
-        // Act
-        await ImportCustomersTestDomHelper.FindButtonByText(cut, "Back to Mapping").ClickAsync();
-
-        // Assert
-        cut.Find(".alert.alert-danger").TextContent.Trim().ShouldBe(RequiredFieldsMessage);
         cut.FindAll("select[data-field]").ShouldNotBeEmpty();
+        cut.Markup.ShouldNotContain("Confirm Import", StringComparison.Ordinal);
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled").ShouldBeTrue();
         importCalls.ShouldBe(0);
     }
 

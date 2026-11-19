@@ -8,6 +8,9 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
 /// </summary>
 internal sealed class ImportCustomersWorkflowState
 {
+    private static readonly IReadOnlyDictionary<string, List<CustomerImportColumnSuggestion>> NoHeaderSuggestions =
+        new Dictionary<string, List<CustomerImportColumnSuggestion>>(StringComparer.Ordinal);
+
     /// <summary>Counter of active drag-over events on the drop zone.</summary>
     internal int Dragging
     {
@@ -27,13 +30,22 @@ internal sealed class ImportCustomersWorkflowState
     internal string PendingFileName { get; private set; } = string.Empty;
 
     /// <summary>Content of the selected file.</summary>
-    internal byte[] PendingFileBytes { get; private set; } = [];
+    internal ReadOnlyMemory<byte> PendingFileBytes
+    {
+        get; private set;
+    }
 
     /// <summary>Headers found in the selected CSV.</summary>
     internal IReadOnlyList<string> CsvHeaders { get; private set; } = [];
 
     /// <summary>Importable fields with their default column mappings.</summary>
     internal IReadOnlyList<CustomerImportFieldMapping> FieldMappings { get; private set; } = [];
+
+    /// <summary>Suggested columns for fields that need a mapping choice.</summary>
+    internal IReadOnlyDictionary<string, List<CustomerImportColumnSuggestion>> HeaderSuggestions
+    {
+        get; private set;
+    } = NoHeaderSuggestions;
 
     /// <summary>Column mapping overrides chosen by the user, keyed by field name.</summary>
     internal Dictionary<string, string?> UserMappings { get; private set; } = [];
@@ -62,24 +74,29 @@ internal sealed class ImportCustomersWorkflowState
     /// <summary>Duplicate conflicts awaiting or holding a resolution.</summary>
     internal IReadOnlyList<ImportCustomerConflictState> ConflictStates { get; set; } = [];
 
-    /// <summary>Mapped file content kept to resolve conflicts.</summary>
-    internal byte[] ConflictSourceFileBytes { get; set; } = [];
+    /// <summary>Changes applied to the original file in the request that returned these conflicts.</summary>
+    internal ImportCustomersCsvPayload? ConflictPayload
+    {
+        get; set;
+    }
 
     /// <summary>Stores the selected file and its mappings, clears prior results and moves to header mapping.</summary>
     internal void SetPendingFile(
         string fileName,
-        byte[] fileBytes,
+        ReadOnlyMemory<byte> fileBytes,
         IReadOnlyList<string> csvHeaders,
-        IReadOnlyList<CustomerImportFieldMapping> fieldMappings)
+        IReadOnlyList<CustomerImportFieldMapping> fieldMappings,
+        IReadOnlyDictionary<string, List<CustomerImportColumnSuggestion>>? headerSuggestions = null)
     {
         PendingFileName = fileName;
         PendingFileBytes = fileBytes;
         CsvHeaders = csvHeaders;
         FieldMappings = fieldMappings;
+        HeaderSuggestions = headerSuggestions ?? NoHeaderSuggestions;
         UserMappings = [];
         PreviewRows = [];
         ConflictStates = [];
-        ConflictSourceFileBytes = [];
+        ConflictPayload = null;
         Result = null;
         Error = null;
         ValidationError = null;
@@ -93,7 +110,7 @@ internal sealed class ImportCustomersWorkflowState
         Error = null;
         ValidationError = null;
         ConflictStates = [];
-        ConflictSourceFileBytes = [];
+        ConflictPayload = null;
         PreviewRows = [];
         Upload.Reset();
     }
@@ -102,9 +119,10 @@ internal sealed class ImportCustomersWorkflowState
     internal void ClearPendingFile()
     {
         PendingFileName = string.Empty;
-        PendingFileBytes = [];
+        PendingFileBytes = ReadOnlyMemory<byte>.Empty;
         CsvHeaders = [];
         FieldMappings = [];
+        HeaderSuggestions = NoHeaderSuggestions;
         UserMappings = [];
     }
 

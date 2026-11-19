@@ -14,7 +14,7 @@ internal static class ImportCustomersConflictLoader
     internal static async Task<IReadOnlyList<ImportCustomerConflictState>> LoadConflictStates(
         ICustomersApiClient customersApi,
         IReadOnlyList<ImportConflictDto> conflicts,
-        byte[] mappedFileBytes,
+        ReadOnlyMemory<byte> mappedFileBytes,
         CancellationToken ct)
     {
         var incomingConflictValuesByEmail = ImportCustomersCsvProcessor.ParseMappedRowsByEmail(mappedFileBytes);
