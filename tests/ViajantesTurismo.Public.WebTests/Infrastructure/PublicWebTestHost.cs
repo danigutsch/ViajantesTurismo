@@ -3,26 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Diagnostics;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
-/// <summary>Helpers for building tours, test hosts and production startup runs in public web endpoint tests.</summary>
-internal static class PublicWebEndpointTestsHelpers
+/// <summary>Hosts the Public Web application with controlled dependencies for tests.</summary>
+internal static class PublicWebTestHost
 {
-    /// <summary>Builds tour details with generated summary, description and itinerary and no images.</summary>
-    public static TourDetailsDto CreateTour(string slug, string title)
-    {
-        return new TourDetailsDto
-        {
-            Title = title,
-            Slug = slug,
-            Summary = $"Discover {title} by bicycle.",
-            Description = $"A detailed description of {title}.",
-            Itinerary = $"Day one: explore {title}.",
-            Images = [],
-            UpdatedAt = TimeProvider.System.GetUtcNow()
-        };
-    }
-
     /// <summary>Creates a test host with the catalog and branding clients replaced by fakes unless supplied, optionally setting environment, canonical sitemap origin and extra configuration.</summary>
     public static WebApplicationFactory<IPublicWebAssemblyMarker> CreateFactory(
             IPublicCatalogApiClient? catalogApiClient = null,

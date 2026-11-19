@@ -1,7 +1,8 @@
+using ViajantesTurismo.Public.Web.Branding;
 using PandaBear.Blazor.Site.Theming;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Branding;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
@@ -15,7 +16,7 @@ public sealed class PublicWebThemeTests
         var brandingApi = new FakeBrandingApiClient();
         brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding(
             logoUri: "/api/v1/public/branding/logo/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -44,7 +45,7 @@ public sealed class PublicWebThemeTests
         // Arrange
         var brandingApi = new FakeBrandingApiClient();
         brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding());
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -77,7 +78,7 @@ public sealed class PublicWebThemeTests
         // Arrange
         var brandingApi = new FakeBrandingApiClient();
         brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding(logoUri: candidate));
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -96,7 +97,7 @@ public sealed class PublicWebThemeTests
         // Arrange
         var brandingApi = new FakeBrandingApiClient();
         brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding(headingFont: "georgia", bodyFont: "verdana"));
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -124,7 +125,7 @@ public sealed class PublicWebThemeTests
             ReturnMalformedResponse = string.Equals(failure, "malformed", StringComparison.Ordinal),
             ReturnUnsupportedResponse = string.Equals(failure, "unsupported", StringComparison.Ordinal)
         };
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -150,7 +151,7 @@ public sealed class PublicWebThemeTests
         brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding(
             primaryColor: "url(javascript:alert(1))",
             headingFont: "bad;font"));
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -171,7 +172,7 @@ public sealed class PublicWebThemeTests
         // Arrange
         var brandingApi = new FakeBrandingApiClient();
         brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding(primaryColor: "#EEEEEE"));
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
 
         // Act
@@ -189,7 +190,7 @@ public sealed class PublicWebThemeTests
         // Arrange
         var brandingApi = new FakeBrandingApiClient();
         brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding());
-        await using var factory = PublicWebEndpointTestsHelpers.CreateFactory(brandingApiClient: brandingApi);
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
         using var client = factory.CreateClient();
         var hash = SiteThemeStylesheet.Hash(PublicBranding.Theme(PublicWebThemeTestsHelpers.CreateBranding()));
 

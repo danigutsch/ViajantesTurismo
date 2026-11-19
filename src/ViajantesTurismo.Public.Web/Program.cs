@@ -1,11 +1,11 @@
 using System.Globalization;
-using PandaBear.Branding;
 using PandaBear.AspNetCore;
 using PandaBear.AspNetCore.Localization;
 using PandaBear.AspNetCore.Seo;
 using PandaBear.HttpCaching.AspNetCore;
 using ViajantesTurismo.Public.Web;
-using ViajantesTurismo.Resources;
+using ViajantesTurismo.Public.Web.Branding;
+using ViajantesTurismo.Public.Web.Catalog;
 using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
@@ -14,13 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddSharedKernelServiceDefaults(static options =>
 {
     ViajantesTurismoServiceDefaults.Configure(options);
-    options.ConfigureResilience = PublicWebSecurityBaseline.ConfigureCatalogResilience;
+    options.ConfigureResilience = PublicCatalogClientServiceCollectionExtensions.ConfigureResilience;
 }).AddViajantesTurismoTelemetry();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddPublicWebSecurityBaseline();
-builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
-    .AddForwardedClientIp();
-builder.Services.AddHttpClient<IBrandingApiClient, BrandingApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"));
+builder.Services.AddPublicCatalogClient();
+builder.Services.AddPublicBranding();
 builder.Services.AddRazorComponents();
 builder.Services.AddCanonicalOrigin(PublicSiteLinks.CanonicalOriginKey);
 

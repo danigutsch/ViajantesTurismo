@@ -4,7 +4,7 @@ using PandaBear.Branding;
 using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.Public.Web;
+namespace ViajantesTurismo.Public.Web.Branding;
 
 /// <summary>
 /// Loads the public Branding settings with safe fallbacks and turns them into the <c>PandaBear.SharedKernel.Blazor.Site</c> theme

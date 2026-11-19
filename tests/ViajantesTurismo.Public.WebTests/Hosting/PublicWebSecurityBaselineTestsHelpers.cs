@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Hosting;
 
 /// <summary>Resolves the options that the Public Web security baseline configures.</summary>
 internal static class PublicWebSecurityBaselineTestsHelpers

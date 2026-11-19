@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Branding;
 
 /// <summary>Builders for the Branding settings used by public theme tests.</summary>
 internal static class PublicWebThemeTestsHelpers

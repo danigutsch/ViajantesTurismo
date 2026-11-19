@@ -1,6 +1,6 @@
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
-namespace ViajantesTurismo.Public.WebTests;
+namespace ViajantesTurismo.Public.WebTests.Hosting;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(TestTraitNames.AreaName, TestTraits.PublicWebArea)]
@@ -14,7 +14,7 @@ public sealed class PublicWebStartupTests
         var canonicalOrigin = string.Empty;
 
         // Act
-        var (ExitCode, Output) = await PublicWebEndpointTestsHelpers.RunProductionStartup(canonicalOrigin, TestContext.Current.CancellationToken);
+        var (ExitCode, Output) = await PublicWebTestHost.RunProductionStartup(canonicalOrigin, TestContext.Current.CancellationToken);
 
         // Assert
         ExitCode.ShouldNotBe(0);
@@ -31,7 +31,7 @@ public sealed class PublicWebStartupTests
         var canonicalOrigin = "https://public.example.test/sitemap.xml";
 
         // Act
-        var (ExitCode, Output) = await PublicWebEndpointTestsHelpers.RunProductionStartup(
+        var (ExitCode, Output) = await PublicWebTestHost.RunProductionStartup(
             canonicalOrigin, TestContext.Current.CancellationToken);
 
         // Assert

@@ -43,7 +43,7 @@ These are curated observations from source, not an automatically evaluated depen
 | --- | --- | --- | --- | --- |
 | Admin | `ViajantesTurismo.Admin.Api/{Tours,Bookings,Customers,Documents}`; bookings already have operation-specific endpoint files | `Admin.Application/Bookings/*` and `Tours/*` use operation folders; `Customers/Import` and `Documents` group workflows; `Admin.Application/Mappings` is centralized; `Admin.Contracts.Application` mixes root DTOs with Bookings/Documents folders | `Admin.Infrastructure` owns read/write contexts, stores, configurations, and migrations; `Admin.UnitTests`, `Admin.ApiServiceTests`, `Admin.ContractTests`, `Admin.BehaviorTests`, and `HostedTests` cover different seams | Endpoint response reloads use broad `IQueryService`; aggregate capacity and booking mutations share transactional rules; import and document workflows cross multiple operations |
 | Catalog | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` combines management tours, publishing, upload, accessibility, public media, and content routes | `Catalog.Application/{Tours,Media,PublicContent,IntegrationEvents,Projections}` already has capability ownership; wire DTOs/clients live in `Catalog.Contracts.Application` and `Catalog.Contracts.Http`; domain validation remains in `Catalog.Domain` | `Catalog.Infrastructure` has root stores, storage adapters, projection/reconciliation services, and `ModelConfigurations`; `Catalog.UnitTests`, `Catalog.ApiServiceTests`, `Catalog.ContractTests`, `Catalog.InfrastructureTests`, `Catalog.IntegrationTests`, and `Catalog.BehaviorTests` | Event acceptance and projection visibility differ; media commits span object storage and metadata; public cache invalidation spans publishing/content/media |
-| Public Web | `ViajantesTurismo.Public.Web/Components/Pages/{Home,Gallery,Tours}` and `Components/Shared/{TourCard,TourGallery,ResponsiveTourImage}.razor` | Pages consume contract-owned Catalog clients; `PublicCultureQuery`, sitemap options, endpoint/cache/security classes, and host composition sit at project root; localized text/assets also use `ViajantesTurismo.Resources` | No application-owned database; `ViajantesTurismo.Public.WebTests` covers rendering and host behavior | Culture normalization, canonical URLs, sitemap, and cache variation must agree; anonymous pages must never acquire management credentials |
+| Public Web | `ViajantesTurismo.Public.Web/Components/Pages/{Home,Gallery,Tours}` and `Components/Shared` | Catalog and Branding compose their anonymous clients locally. The host owns culture normalization, sitemap, cache, and security. Localized resources also use `ViajantesTurismo.Resources` | No application-owned database. `ViajantesTurismo.Public.WebTests` covers feature rendering and host behavior | Culture normalization, canonical URLs, sitemap, and cache variation must agree. Anonymous pages use only public clients |
 | Management Web | `ViajantesTurismo.Management.Web/Components/Pages/{Tours,Bookings,Customers,Catalog,Branding,Documents,Payments}` owns operator workflows | Booking forms and document hold controls live with their pages. Customer form models, wizard state, and import preview and mapping code live under `Customers`. Contract projects own the HTTP clients | No business DbContext in web. Protected ticket/token stores are host infrastructure. `Management.WebTests` covers workflow components and host seams. `HostedTests/Management` exercises the browser seam | Preserve the scoped wizard lifetime, customer data handling, token exchange, antiforgery, and streaming downloads |
 
 The full project prefixes in this table are `ViajantesTurismo.`. Inventory evidence includes
@@ -169,19 +169,16 @@ worker redesign or storage-provider replacement with these moves.
 
 ## Public Web sequence
 
-1. Inventory existing route directives, injected Catalog/Branding clients, resources, and shared
-   image/card components. Keep anonymous service discovery and host security setup unchanged.
-2. Align tour list/detail pages and their exclusive presentation helpers; retain genuinely shared
-   image/gallery components. Preserve loading, empty, missing, and unavailable states.
-3. Align gallery and home/public-content ownership. Sequence localized resources and culture
-   handling with each page, preserving fallback behavior, alt text, headings, and keyboard access.
-4. Review sitemap/canonical/cache helpers after page moves, without changing their host ownership
-   unless an actual caller requires it. Preserve Production startup validation.
+The [Public Web ownership inventory](../src/ViajantesTurismo.Public.Web/README.md#feature-ownership)
+maps Home, Gallery, and Tours to their page and test folders. The pages keep their existing Razor
+component identities and route templates. Home and the tour list share the tour card. Gallery
+and tour detail share the image rendition mapping with the card.
 
-Prerequisites: public route/rendering and canonical URL baseline. Risks: Razor namespace imports,
-resource lookup, culture cache keys, SEO links, and image accessibility. Run Public.WebTests for
-component and host scenarios; add a cross-deployable check only when the changed behavior needs
-real Catalog interaction. No API/provider test should be replaced by a UI mock.
+Catalog and Branding each register their anonymous client in their owning module. Host
+composition continues to own canonical origin, sitemap, locale redirects, cache, and security
+boundaries. Run `Public.WebTests` for feature rendering, localized metadata, outbound client
+behavior, and routing. The architecture suite checks ownership for public pages, client
+registration, and feature tests.
 
 ## Management Web sequence
 
