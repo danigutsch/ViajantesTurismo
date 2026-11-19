@@ -1,5 +1,6 @@
 @page "/en/group-bike-tours/{Slug}"
 @page "/pt/group-bike-tours/{Slug}"
+@using System.Text.Json
 @using Microsoft.AspNetCore.Routing
 @using Microsoft.Extensions.Options
 @using PandaBear.AspNetCore.Seo
@@ -31,6 +32,7 @@ else
                     Description="@GetMetadataDescription()"
                     Path="@TourPath"
                     ImageUrl="@GetSocialImageUrl(coverImage)" />
+    <script type="application/ld+json">@DescribeTour(_tour)</script>
 
     <article>
         <Hero Title="@_tour.Title" Subtitle="@_tour.Summary"
@@ -83,6 +85,20 @@ else
     private string NotFoundTitle => Culture.IsPortuguese ? "Viagem não encontrada" : "Tour not found";
 
     private string TourPath => $"/group-bike-tours/{Uri.EscapeDataString(_tour?.Slug ?? Slug)}";
+
+    private MarkupString DescribeTour(TourDetailsDto tour)
+    {
+        var canonical = new PublicSiteLinks(SitemapOptions.Value).Canonical(Culture.UrlCulture, TourPath);
+        // The default JSON encoder escapes HTML-significant characters in the data block.
+        return (MarkupString)JsonSerializer.Serialize(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "TouristTrip",
+            ["name"] = tour.Title,
+            ["description"] = tour.Summary,
+            ["url"] = canonical.AbsoluteUri
+        });
+    }
 
     private string GetDocumentTitle()
     {
