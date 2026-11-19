@@ -302,11 +302,17 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
             auditContext);
 
     /// <summary>Finalizes one revision while preserving monotonic lineage history.</summary>
+    /// <param name="documentId">The revision to finalize.</param>
+    /// <param name="artifactContent">The sealed representation to retain.</param>
+    /// <param name="now">The finalization timestamp.</param>
+    /// <param name="auditContext">The authenticated context for the operation.</param>
+    /// <param name="rendererVersion">The build identities of the renderer that produced the artifact, when known.</param>
     public Result Finalize(
         Guid documentId,
         byte[] artifactContent,
         DateTime now,
-        DocumentAuditContext auditContext)
+        DocumentAuditContext auditContext,
+        string? rendererVersion = null)
     {
         if (auditContext is null)
         {
@@ -325,7 +331,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
             return historyResult;
         }
 
-        var result = target.Finalize(artifactContent, now);
+        var result = target.Finalize(artifactContent, now, rendererVersion);
         if (result.IsFailure)
         {
             return result;

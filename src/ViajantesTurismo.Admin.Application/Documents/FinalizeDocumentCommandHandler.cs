@@ -93,7 +93,8 @@ public sealed class FinalizeDocumentCommandHandler(
                 ct);
         }
 
-        var result = lineage.Finalize(document.Id, DocumentArtifactRenderer.Render(document), now, auditContext);
+        var result = lineage.Finalize(
+            document.Id, DocumentArtifactRenderer.Render(document), now, auditContext, DocumentArtifactRendererVersion.Current);
         if (result.IsFailure)
         {
             return await RecordAndReturn(

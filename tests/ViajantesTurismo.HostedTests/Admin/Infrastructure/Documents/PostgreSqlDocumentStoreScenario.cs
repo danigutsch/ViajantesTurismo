@@ -214,6 +214,32 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await new DocumentStore(dbContext).ReadFinalizedArtifactContent(id, ct);
     }
 
+    /// <summary>Runs the packaged operator check in a read-only transaction.</summary>
+    [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities",
+        Justification = "SQL comes from the packaged repository script. The cursor is a typed UUID query parameter.")]
+    internal async Task<(Guid RevisionId, string Integrity)[]> CheckArtifactIntegrityPage(
+        Guid afterRevisionId, CancellationToken ct)
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "check-finalized-document-artifacts.sql");
+        var script = await File.ReadAllTextAsync(path, ct);
+        var statement = script.Replace(":'after_revision_id'", "@cursor", StringComparison.Ordinal);
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync(ct);
+        await using var transaction = await connection.BeginTransactionAsync(ct);
+        await using var readOnly = new NpgsqlCommand("SET TRANSACTION READ ONLY", connection, transaction);
+        await readOnly.ExecuteNonQueryAsync(ct);
+        await using var query = new NpgsqlCommand(statement, connection, transaction);
+        query.Parameters.AddWithValue("cursor", afterRevisionId);
+        await using var reader = await query.ExecuteReaderAsync(ct);
+        var results = new List<(Guid RevisionId, string Integrity)>();
+        while (await reader.ReadAsync(ct))
+        {
+            results.Add((reader.GetGuid(0), reader.GetString(1)));
+        }
+
+        return [.. results];
+    }
+
     /// <summary>Migrates this scenario's isolated database to the named migration, or to the latest when null.</summary>
     public async ValueTask MigrateTo(string? migration, CancellationToken ct)
     {

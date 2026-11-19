@@ -81,6 +81,16 @@ internal sealed class PaymentTestSession : IAsyncDisposable
     }
     /// <summary>Resolves the payment instruction workflow.</summary>
     public PaymentInstructionWorkflow Instructions => _provider.GetRequiredService<PaymentInstructionWorkflow>();
+    /// <summary>Reads the metadata persisted on a finalized payment document revision.</summary>
+    internal async Task<StoredArtifactProvenance> ReadArtifactProvenance(Guid documentId, CancellationToken ct) =>
+        await Context.Database.SqlQuery<StoredArtifactProvenance>($"""
+            SELECT "FinalizedArtifactRendererVersion" AS "RendererVersion",
+                "FinalizedArtifactContentType" AS "ContentType",
+                "FinalizedArtifactRetentionPolicy" AS "RetentionPolicy",
+                "RetentionExpiresAt"
+            FROM "DocumentDrafts"
+            WHERE "Id" = {documentId}
+            """).SingleAsync(ct);
     /// <summary>Counts persisted payment account rows.</summary>
     public async Task<int> AccountCount(CancellationToken ct) => await Context.Set<PaymentAccountRow>().CountAsync(ct);
     /// <summary>Counts persisted payment audit rows.</summary>

@@ -41,10 +41,36 @@ Metadata-only audit records can contain linkable identifiers, which remain perso
 re-identification is possible. Callers must not place personal data or secrets in idempotency keys.
 
 The current HTML artifact body occupies a separate PostgreSQL row keyed by the opaque document
-revision ID. Finalization records its byte length and SHA-256 digest on the revision. Admin
-verifies both values before delivery, including before decrypting protected payment artifacts.
-The integrity migration establishes the baseline for previously stored bytes.
+revision ID. Finalization records its byte length, SHA-256 digest, media type, and the deployed
+Admin adapter and HTML renderer build versions. The media type describes the delivered HTML,
+including for payment artifacts whose stored bytes are encrypted. Admin verifies length and
+digest before delivery or decryption.
+
+The migration computes the integrity baseline from the existing bodies. It leaves historical
+renderer and media-type provenance unknown. Each finalized revision records `DOC-RET-1.0` and
+a null expiry, which together represent indefinite retention.
+
 A future PDF renderer or object store needs a new policy version before it holds finalized artifacts.
+
+### Artifact integrity reconciliation
+
+Use an authorized read-only connection to the Admin PostgreSQL database. Run the check from the
+repository root in `psql`. Each invocation checks at most 100 finalized revisions, including
+superseded and voided revisions.
+
+```sql
+BEGIN READ ONLY;
+SET LOCAL statement_timeout = '30s';
+\set after_revision_id '00000000-0000-0000-0000-000000000000'
+\i scripts/check-finalized-document-artifacts.sql
+ROLLBACK;
+```
+
+Set `after_revision_id` to the final revision ID in the previous page to continue. Each row
+contains the opaque revision ID and its outcome. The check reports missing bodies, missing
+integrity metadata, length mismatches and digest mismatches. Use the existing access controls for
+diagnostic results and keep revision IDs out of broad telemetry. Preserve any affected body and
+its revision for investigation. [Artifact integrity check](../../scripts/check-finalized-document-artifacts.sql)
 
 Branding is captured onto each revision (name, colors, fonts, version and source revision) and the
 finalized HTML is stored as bytes, so later branding changes and regeneration never alter a finalized
