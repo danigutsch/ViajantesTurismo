@@ -64,11 +64,6 @@
       ]
     },
     {
-      "path": "tests/ViajantesTurismo.Admin.UiIntegrationTests/ViajantesTurismo.Admin.UiIntegrationTests.csproj",
-      "register": "tests/ViajantesTurismo.Admin.UiIntegrationTests/README.md",
-      "seams": []
-    },
-    {
       "path": "tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Admin.UnitTests.csproj",
       "register": "tests/TEST_FIXTURE_SEAM.md",
       "migrationException": "One legacy executable owns unit seams across Admin and its shared persistence/security fixtures.",

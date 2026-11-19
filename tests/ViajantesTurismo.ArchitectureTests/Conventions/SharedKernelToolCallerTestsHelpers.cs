@@ -30,6 +30,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
     private static readonly Dictionary<string, string[]> VariableValues = new(StringComparer.Ordinal)
     {
         ["GITHUB_REPOSITORY"] = ["owner/name"],
+        ["PLAYWRIGHT_DEPENDENCIES"] = ["false", "true"],
         ["RELEASE_VERSION_KIND"] = ["prerelease", "stable"],
     };
 

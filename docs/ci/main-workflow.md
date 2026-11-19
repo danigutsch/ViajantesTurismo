@@ -52,7 +52,8 @@ test execution for every row:
 
 ```bash
 dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- \
-  run --slice "$SLICE" --coverage --install-playwright --playwright-dependencies --github-summary "$GITHUB_STEP_SUMMARY"
+  run --slice "$SLICE" --coverage --install-playwright \
+  --playwright-dependencies "$PLAYWRIGHT_DEPENDENCIES" --github-summary "$GITHUB_STEP_SUMMARY"
 ```
 
 `run` restores, builds, and tests the slice's selected test projects through one solution filter,
@@ -139,9 +140,13 @@ selected test projects. Keep the five slices; a slice that selects nothing for a
 
 Fast Validation is split into two fixed execution shards that share setup cost across two runners.
 The `fast-validation-1` slice holds all three HTTP contract projects and generates the Admin,
-Branding, and Catalog OpenAPI artifacts after its build. The `hosted-tests` slice installs Chromium
-with its system dependencies; on Ubuntu 26.04 the job sets `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` to the
-Ubuntu 24.04 platform because Playwright 1.60 has no Ubuntu 26.04 manifests yet.
+Branding, and Catalog OpenAPI artifacts after its build. The `hosted-tests` slice installs the
+Chromium headless shell. On the GitHub-hosted Ubuntu 26.04 image it uses the preinstalled browser
+libraries and sets `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` to the Ubuntu 24.04 platform. The
+system-dependency install stays enabled for other runner labels. The [timed hosted job] documented
+several minutes downloading extra font packages from the Ubuntu mirror.
+
+[timed hosted job]: https://github.com/danigutsch/ViajantesTurismo/actions/runs/44230316584/job/134553881791
 
 Lane placement follows [ADR-030: CI Test Lane Selection](../adr/20260629-ci-test-lane-selection.md).
 Measure locally with `dotnet tool run sharedkernel-ci -- run --slice <name>` and its phase timings before

@@ -30,6 +30,15 @@ in typed scenario helpers. Retain repository parallelism and create owned data i
 SharedKernel owns PostgreSQL database leasing and bounded cleanup; application-specific fixtures,
 configuration, authentication and business assertions stay in this project.
 
+Use `--filter-trait Scope=system` to run the cross-deployable workflows. Unit tests of the
+hosted test helpers live next to those helpers and use `Scope=unit`. All System cases use
+the `system` application stack owned by the assembly fixture.
+
+Local and CI runs use the same assembly-owned lifecycle. Every application stack leases fresh
+Admin, Catalog, and security databases and receives its own Keycloak realm and media bucket.
+The scanner, telemetry collector, and cache are owned by the test run. The concurrent AppHost
+test creates a customer through one Admin API and verifies that the sibling API cannot read it.
+
 ## Demand-driven infrastructure
 
 `HostedTestFixture.InitializeAsync` starts nothing, because xUnit creates an assembly fixture whenever one test is selected.

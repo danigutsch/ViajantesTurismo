@@ -16,7 +16,7 @@ Use this project when the thing being protected is the published contract itself
 
 - database-backed API behavior coverage
 - request lifecycle or persistence assertions that belong in the Admin API tests in `ViajantesTurismo.HostedTests`
-- browser or hosted UI flows that belong in the Admin system tests in `ViajantesTurismo.HostedTests` or `ViajantesTurismo.Admin.UiIntegrationTests`
+- browser or hosted UI flows in the Admin system tests in `ViajantesTurismo.HostedTests`
 - broad end-to-end coverage of every Admin endpoint family in one test
 
 ## Admin seam and entrypoints

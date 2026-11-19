@@ -1,9 +1,27 @@
+using System.Text.Json;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed partial class AdminTestArchitectureGuardTests
 {
+    [Fact]
+    public void Registered_test_suites_have_a_test_seam()
+    {
+        // Arrange
+        var path = Path.Combine(GetRepositoryRoot(), ".config", "test-taxonomy.json");
+        using var inventory = JsonDocument.Parse(File.ReadAllText(path));
+
+        // Act
+        var emptySuites = inventory.RootElement.GetProperty("suites").EnumerateArray()
+            .Where(suite => suite.GetProperty("seams").GetArrayLength() == 0)
+            .Select(suite => suite.GetProperty("path").GetString())
+            .ToArray();
+
+        // Assert
+        emptySuites.ShouldBeEmpty();
+    }
+
     [Fact]
     public void Admin_test_architecture_guide_should_declare_the_canonical_documentation_owner()
     {
@@ -12,17 +30,10 @@ public sealed partial class AdminTestArchitectureGuardTests
         var guideText = File.ReadAllText(guidePath);
         var architectureReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.ArchitectureTests", "README.md");
         var architectureReadmeText = File.ReadAllText(architectureReadmePath);
-        var uiIntegrationReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.UiIntegrationTests", "README.md");
-        var uiIntegrationReadmeText = File.ReadAllText(uiIntegrationReadmePath);
-        var uiIntegrationScaffoldTestPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.Admin.UiIntegrationTests", "ScaffoldTests.cs");
-        var uiIntegrationScaffoldTestText = File.ReadAllText(uiIntegrationScaffoldTestPath);
-
         guideText.ShouldContain("This file is the canonical quick-reference for the Admin test taxonomy.", StringComparison.Ordinal);
         guideText.ShouldContain("docs/TEST_GUIDELINES.md", StringComparison.Ordinal);
         architectureReadmeText.ShouldContain("AdminTestArchitectureGuardTests", StringComparison.Ordinal);
         architectureReadmeText.ShouldContain("tests/README.md", StringComparison.Ordinal);
-        uiIntegrationReadmeText.ShouldContain("Keep it scaffold-only until a concrete Admin route-composition scenario clearly belongs here", StringComparison.Ordinal);
-        uiIntegrationScaffoldTestText.ShouldContain("Project_remains_a_scaffold_until_a_real_admin_UI_integration_slice_exists", StringComparison.Ordinal);
     }
 
     [Fact]

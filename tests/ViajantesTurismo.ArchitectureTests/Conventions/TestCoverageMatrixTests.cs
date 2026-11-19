@@ -1,9 +1,25 @@
+using PandaBear.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.TestCoverageMatrixTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed class TestCoverageMatrixTests
 {
+    [Fact]
+    [Trait(TestTraitNames.CategoryName, TestTraits.DocumentationCategory)]
+    public void Every_source_project_has_one_test_layer_inventory_row()
+    {
+        // Arrange
+        var solutionProjects = ReadSourceProjectNames();
+
+        // Act
+        var documentedProjects = ReadDocumentedProjectNames();
+
+        // Assert
+        documentedProjects.ShouldBe(solutionProjects,
+            "Keep one row per source project in docs/testing/PROJECT_TEST_COVERAGE.md.");
+    }
+
     [Fact]
     public void Every_source_project_has_a_direct_test_project_of_its_category_or_a_named_baseline_exception()
     {

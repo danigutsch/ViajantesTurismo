@@ -214,11 +214,11 @@ Legacy values map as: `api-integration` and `database-integration` to `integrati
 | `*.UnitTests` | `unit` | assembly |
 | `*.BehaviorTests` | `behavior` | assembly |
 | `*.ContractTests` | `contract` | assembly |
-| `ArchitectureTests`, `Architecture.Analyzers.Tests` | `architecture` | assembly |
+| `ArchitectureTests` | `architecture` | assembly |
+| `Architecture.Analyzers.Tests` | `unit` | assembly |
 | `ServiceDefaults.Tests` | `integration` | assembly |
 | `*.ApiServiceTests` | `integration` | assembly |
 | `Branding.InfrastructureTests` | `integration` | assembly |
-| `Admin.UiIntegrationTests` | `ui-integration` | assembly |
 | `Management.WebTests` bUnit classes under `Components/` | `component` | class |
 | `Management.WebTests` non-bUnit classes under `Components/`, `Services/`, `Infrastructure/` and plain handler or store classes | `unit` | class |
 | `Management.WebTests` classes that start a `TestServer` or `ManagementWebEndpointTestHost` | `integration` | class |
