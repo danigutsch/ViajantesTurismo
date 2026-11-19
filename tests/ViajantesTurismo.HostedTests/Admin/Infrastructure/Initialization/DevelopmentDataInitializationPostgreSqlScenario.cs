@@ -1,7 +1,4 @@
-using PandaBear.Testing;
-using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,17 +6,17 @@ using PandaBear.AuditTrail;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency.EntityFrameworkCore;
-using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
-using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Admin.Infrastructure.Documents;
-using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Tours;
+using ViajantesTurismo.Resources;
+using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Initialization;
 
@@ -139,12 +136,9 @@ internal sealed class DevelopmentDataInitializationPostgreSqlScenario : IAsyncDi
     private ServiceProvider CreateProvider(IInterceptor? interceptor = null)
     {
         var services = new ServiceCollection();
-        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
-        services.AddIntegrationEventContract(
-            AdminTourCreatedIntegrationEvent.EventType,
-            adminTourCreatedJsonTypeInfo);
+        InfrastructureDependencyInjection.AddAdminTourIntegrationEventContracts(services);
         services.AddSingleton<IAuditTrailSink<DocumentAuditRecord>, DocumentAuditTrailSink>();
+        services.AddSingleton<IAuditTrailSink<TourRetirementAuditRecord>, TourRetirementAuditTrailSink>();
         services.AddDomainEventProcessing();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIdempotencyStore<AdminWriteDbContext>();

@@ -44,7 +44,7 @@ public sealed class DocumentationSourceOfTruthTests
             "docs/architecture/documentation-conformance.json");
 
         // Assert
-        checkCount.ShouldBe(5);
+        checkCount.ShouldBe(6);
     }
 
     [Fact]
