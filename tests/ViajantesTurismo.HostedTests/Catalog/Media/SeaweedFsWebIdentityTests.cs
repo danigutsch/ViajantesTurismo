@@ -7,6 +7,7 @@ using ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 namespace ViajantesTurismo.HostedTests.Catalog.Media;
 
 /// <summary>Exercises Media S3 transport and workload identity against the pinned provider images.</summary>
+[Collection(SeaweedFsWebIdentityGroup.Name)]
 [Trait(TestTraitNames.FocusName, TestTraitValues.SecurityCategory)]
 [Trait(TestTraitNames.AreaName, TestTraits.MediaInfrastructureArea)]
 [TestScope(TestScope.Integration)]
