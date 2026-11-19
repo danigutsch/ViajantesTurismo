@@ -9,9 +9,9 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 internal sealed class TourCommandStore(AdminWriteDbContext dbContext, ITourStore tours) : ITourCommandStore
 {
     /// <inheritdoc />
-    public Task<Option<Tour>> GetById(Guid id, CancellationToken ct)
+    public async Task<Option<Tour>> GetById(Guid id, CancellationToken ct)
     {
-        return GetLockedTour(
+        return await GetLockedTour(
             $"""
             SELECT "Id" AS "Value"
             FROM "Tours"
@@ -21,9 +21,9 @@ internal sealed class TourCommandStore(AdminWriteDbContext dbContext, ITourStore
     }
 
     /// <inheritdoc />
-    public Task<Option<Tour>> GetByBookingId(Guid bookingId, CancellationToken ct)
+    public async Task<Option<Tour>> GetByBookingId(Guid bookingId, CancellationToken ct)
     {
-        return GetLockedTour(
+        return await GetLockedTour(
             $"""
             SELECT "Id" AS "Value"
             FROM "Tours"
@@ -33,9 +33,9 @@ internal sealed class TourCommandStore(AdminWriteDbContext dbContext, ITourStore
     }
 
     /// <inheritdoc />
-    public Task<bool> IdentifierExistsExcluding(string identifier, Guid excludeTourId, CancellationToken ct)
+    public async Task<bool> IdentifierExistsExcluding(string identifier, Guid excludeTourId, CancellationToken ct)
     {
-        return tours.IdentifierExistsExcluding(identifier, excludeTourId, ct);
+        return await tours.IdentifierExistsExcluding(identifier, excludeTourId, ct);
     }
 
     private async Task<Option<Tour>> GetLockedTour(FormattableString query, CancellationToken ct)
