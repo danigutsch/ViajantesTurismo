@@ -27,7 +27,6 @@ public sealed class UploadImageFailureRaceTests : BunitContext
     {
         // Arrange
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
-        await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 
         // Act
         await cut.Find("form").SubmitAsync();
