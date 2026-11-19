@@ -1,10 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
 
 namespace ViajantesTurismo.Catalog.Application;
 
@@ -32,6 +35,9 @@ public static class ApplicationDependencyInjection
                 IntegrationEventOptionsValidator>());
         services.AddCatalogToursApplication();
         services.AddCatalogMediaApplication();
+        services.AddIntegrationEventContract(
+            CatalogTourRetirementAppliedIntegrationEvent.EventType,
+            CatalogIntegrationEventJsonContext.Default.CatalogTourRetirementAppliedIntegrationEvent);
         services.AddGeneratedIntegrationEvents();
         services.TryAddScoped<PublicContentUpsertService>();
 

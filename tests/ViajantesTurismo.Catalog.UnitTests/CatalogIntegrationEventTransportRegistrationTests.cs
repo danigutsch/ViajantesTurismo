@@ -1,9 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using PandaBear.Idempotency;
+using PandaBear.Messaging;
 using PandaBear.Testing;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
 using ViajantesTurismo.Catalog.Infrastructure.Tours;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -11,6 +16,29 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
 public sealed class CatalogIntegrationEventTransportRegistrationTests
 {
+    [Fact]
+    public async Task Catalog_relay_routes_retirement_completion_to_admin_and_keeps_media_local()
+    {
+        // Arrange
+        var localPublisher = new CapturingCatalogOutboxPublisher();
+        using var scenario = CatalogInfrastructureTestServices.CreateScenario(
+            services => services.AddSingleton<IEventEnvelopePublisher>(localPublisher));
+        var retirementId = Guid.CreateVersion7();
+        var now = TimeProvider.System.GetUtcNow();
+        var retirement = new CatalogTourRetirementAppliedIntegrationEvent(retirementId, now, Guid.CreateVersion7(), retirementId);
+        var media = new MediaImageOriginalStoredIntegrationEvent(Guid.CreateVersion7(), now, Guid.CreateVersion7(), "media/original", 1);
+        var ct = TestContext.Current.CancellationToken;
+
+        // Act
+        var retirementTargets = await scenario.RouteOutboxEvent(retirement, ct);
+        var mediaTargets = await scenario.RouteOutboxEvent(media, ct);
+
+        // Assert
+        retirementTargets.ShouldBe([IntegrationEventConsumerNames.Admin]);
+        mediaTargets.ShouldBeEmpty();
+        localPublisher.EventTypes.ShouldBe([MediaImageOriginalStoredIntegrationEvent.EventType]);
+    }
+
     [Fact]
     public void Catalog_API_infrastructure_does_not_start_the_admin_transport_consumer()
     {

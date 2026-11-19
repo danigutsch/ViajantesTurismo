@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PandaBear.Messaging;
 using PandaBear.Messaging.IntegrationEvents;
+using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -112,6 +114,34 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         var entityType = scope.ServiceProvider.GetRequiredService<TContext>().Model.GetEntityTypes()
             .ShouldHaveSingleItem(entity => entity.ClrType.Name == "IntegrationEventOutboxMessage");
         return (entityType.GetSchema(), entityType.GetTableName());
+    }
+
+    /// <summary>Publishes through the Catalog relay route and returns any durable transport targets.</summary>
+    public async Task<string[]> RouteOutboxEvent<TEvent>(TEvent integrationEvent, CancellationToken ct)
+        where TEvent : IIntegrationEvent
+    {
+        ArgumentNullException.ThrowIfNull(integrationEvent);
+
+        await using var scope = provider.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var serializer = services.GetRequiredService<IIntegrationEventSerializer>();
+        var payload = serializer.SerializePayload(integrationEvent);
+        var envelope = new EventEnvelope(
+            "cloudevents", "1.0", integrationEvent.EventId.ToString(), new Uri("urn:viajantes:catalog"),
+            TEvent.EventType, TEvent.EventVersion, integrationEvent.OccurredAt, null, payload.DataContentType, null,
+            payload.Payload, payload.Encoding, null);
+        var relayPublisher = services.GetKeyedService<IEventEnvelopePublisher>(typeof(CatalogDbContext))
+            ?? services.GetRequiredService<IEventEnvelopePublisher>();
+        await relayPublisher.Publish(envelope, ct);
+
+        var context = services.GetRequiredService<CatalogDbContext>();
+        return
+        [
+            .. context.ChangeTracker.Entries()
+                .Where(entry => entry.Metadata.GetTableName() == "transport_messages")
+                .Select(entry => entry.Property("ConsumerName").CurrentValue)
+                .OfType<string>()
+        ];
     }
 
     /// <summary>Disposes the underlying service provider.</summary>

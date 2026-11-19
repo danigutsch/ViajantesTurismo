@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using PandaBear.EntityFrameworkCore;
+using PandaBear.Messaging;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using PandaBear.Npgsql;
 using PandaBear.OpenApi;
@@ -160,11 +161,27 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddIntegrationEventTransportStorage<CatalogDbContext>();
         if (addOutboxRelay)
         {
+            AddCatalogOutboxRouting(builder.Services);
             builder.Services.AddIntegrationEventOutboxRelay<CatalogDbContext>();
             builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<CatalogDbContext>();
         }
 
         return builder;
+    }
+
+    private static void AddCatalogOutboxRouting(IServiceCollection services)
+    {
+        var contextKey = typeof(CatalogDbContext);
+        services.AddPostgreSqlIntegrationEventTransportProducer<CatalogDbContext>(IntegrationEventConsumerNames.Admin);
+        var transportRegistration = services.Last(descriptor =>
+            descriptor.ServiceType == typeof(IEventEnvelopePublisher) && Equals(descriptor.ServiceKey, contextKey));
+        var transportFactory = transportRegistration.KeyedImplementationFactory
+            ?? throw new InvalidOperationException("The Catalog transport publisher must be registered with a keyed factory.");
+
+        services.Remove(transportRegistration);
+        services.AddKeyedScoped<IEventEnvelopePublisher>(contextKey, (provider, _) => new CatalogOutboxEnvelopePublisher(
+            provider.GetRequiredService<IEventEnvelopePublisher>(),
+            (IEventEnvelopePublisher)transportFactory(provider, contextKey)));
     }
 
     private static TApplicationBuilder AddCatalogIntegrationEventTransportContext<TApplicationBuilder>(this TApplicationBuilder builder)
