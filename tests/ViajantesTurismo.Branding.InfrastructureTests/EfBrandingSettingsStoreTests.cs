@@ -153,6 +153,49 @@ public sealed class EfBrandingSettingsStoreTests
     }
 
     [Fact]
+    public async Task GetLogo_returns_verified_stored_bytes()
+    {
+        // Arrange
+        using var scenario = BrandingStoreScenario.Create();
+        var ct = TestContext.Current.CancellationToken;
+        var bytes = "encoded logo test bytes"u8.ToArray();
+        var logo = BrandingLogo.FromEncodedBytes(bytes);
+        await scenario.SeedStoredLogo(logo, bytes, logo.ContentType, ct);
+        var store = scenario.CreateStore();
+
+        // Act
+        var stored = await store.GetLogo(logo.Sha256, ct);
+
+        // Assert
+        stored.ShouldNotBeNull();
+        stored.Sha256.ShouldBe(logo.Sha256);
+        stored.ContentType.ShouldBe(logo.ContentType);
+        stored.Content.Span.SequenceEqual(bytes).ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetLogo_does_not_return_a_row_with_mismatched_bytes_or_media_type(bool corruptBytes)
+    {
+        // Arrange
+        using var scenario = BrandingStoreScenario.Create();
+        var ct = TestContext.Current.CancellationToken;
+        var bytes = "encoded logo test bytes"u8.ToArray();
+        var logo = BrandingLogo.FromEncodedBytes(bytes);
+        var storedBytes = corruptBytes ? "other test bytes"u8.ToArray() : bytes;
+        var storedContentType = corruptBytes ? logo.ContentType : "text/html";
+        await scenario.SeedStoredLogo(logo, storedBytes, storedContentType, ct);
+        var store = scenario.CreateStore();
+
+        // Act
+        var stored = await store.GetLogo(logo.Sha256, ct);
+
+        // Assert
+        stored.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task SaveSettings_replaces_existing_settings()
     {
         // Arrange

@@ -43,6 +43,6 @@ internal sealed class BrandingLogoRecord
         return new BrandingLogoRecord(logo.Sha256, logo.ContentType, logo.Content.ToArray(), storedAt);
     }
 
-    /// <summary>Converts the record to the logo value.</summary>
-    public BrandingLogo ToLogo() => new(Sha256, ContentType, Content);
+    /// <summary>Returns the verified logo, or null when the stored hash or media type is inconsistent.</summary>
+    public BrandingLogo? ToLogo() => BrandingLogo.FromStoredBytes(Sha256, ContentType, Content);
 }

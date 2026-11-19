@@ -74,6 +74,13 @@ public sealed class DocumentLifecycleTests(AspireSystemTestFixture fixture)
         using var artifactReader = new StreamReader(artifactStream);
         var artifactHtml = await artifactReader.ReadToEndAsync(TestContext.Current.CancellationToken);
         artifactHtml.ShouldContain(reviewedValue, StringComparison.Ordinal);
+
+        var artifactResponse = await Page.APIRequest.GetAsync(downloadUri.AbsoluteUri);
+        var artifactServed = artifactResponse.Ok;
+        var contentSecurityPolicy = artifactResponse.Headers.GetValueOrDefault("content-security-policy");
+        await artifactResponse.DisposeAsync();
+        artifactServed.ShouldBeTrue();
+        contentSecurityPolicy.ShouldBe("default-src 'none'; sandbox");
     }
 
     [Fact]

@@ -160,7 +160,11 @@ remove action; it has no logo address field.
   or the URL of the currently stored logo (keep); any other value is 400 on `LogoUri`.
 - `GET /api/v1/public/branding/logo/{sha256}` is anonymous and rate limited. It answers `200` with
   `Cache-Control: public, max-age=31536000, immutable`, a strong `ETag` equal to the hash,
-  `X-Content-Type-Options: nosniff` and `image/webp`; `If-None-Match` gives `304`; an unknown or malformed hash is `404`.
+  `X-Content-Type-Options: nosniff` and `image/webp`. `If-None-Match` gives `304`. Malformed or missing addresses
+  and rows with inconsistent hash or media type return `404`.
+- Catalog caches successful anonymous logo responses for one minute in its bounded output cache. The cache varies by
+  the exact content address and CORS origin. Logos are immutable, so there is no settings tag to evict. On a cache
+  miss, the store checks the media type and recomputes SHA-256 before constructing the logo.
 - `BrandingSettingsChangedIntegrationEvent` gains the optional `LogoSha256`, `LogoContentType` and `LogoContent`
   (bytes). Version stays 1: absent fields mean no logo, and null fields are omitted from the JSON. Reseed and epoch
   rotation republish them.

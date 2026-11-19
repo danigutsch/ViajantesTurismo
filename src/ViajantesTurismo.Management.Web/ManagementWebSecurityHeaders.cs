@@ -16,12 +16,18 @@ internal static class ManagementWebSecurityHeaders
     internal const string NonceCascadeName = "CspNonce";
 
     /// <summary>
-    /// Adds the security headers middleware with the Management Web content security policy. Inline scripts and styles, and the
+    /// Adds the security headers middleware with a sandbox policy for document artifacts and the Management Web
+    /// content security policy for other requests. Inline scripts and styles, and the
     /// third-party stylesheet, need the response's nonce
     /// (<see cref="ICspNonce" />, registered with <see cref="CspNonceServiceCollectionExtensions.AddCspNonce" />).
     /// </summary>
     public static IApplicationBuilder UseManagementWebSecurityHeaders(this IApplicationBuilder app)
     {
-        return app.UseSecurityHeaders(ContentSecurityPolicy);
+        return app
+            .UseWhen(IsDocumentArtifactDownload, branch => branch.UseSecurityHeaders(DocumentArtifactDelivery.ContentSecurityPolicy))
+            .UseWhen(context => !IsDocumentArtifactDownload(context), branch => branch.UseSecurityHeaders(ContentSecurityPolicy));
     }
+
+    private static bool IsDocumentArtifactDownload(HttpContext context) =>
+        context.GetEndpoint()?.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName == DocumentArtifactProxyEndpoints.DownloadEndpointName;
 }

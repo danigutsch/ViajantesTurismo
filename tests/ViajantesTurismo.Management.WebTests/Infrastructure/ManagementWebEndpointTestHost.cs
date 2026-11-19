@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
+using PandaBear.AspNetCore;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -35,6 +36,7 @@ internal static class ManagementWebEndpointTestHost
                         .AddScheme<AuthenticationSchemeOptions, RecordingAuthenticationHandler>(OpenIdConnectDefaults.AuthenticationScheme, null);
                     services.AddAuthorization();
                     services.AddAntiforgery();
+                    services.AddCspNonce();
                     services.AddRazorComponents()
                         .AddInteractiveServerComponents();
                     if (catalogToursApi is not null)
@@ -50,6 +52,7 @@ internal static class ManagementWebEndpointTestHost
                 .Configure(app =>
                 {
                     app.UseRouting();
+                    app.UseManagementWebSecurityHeaders();
                     app.UseAuthentication();
                     app.UseAuthorization();
                     app.UseAntiforgery();

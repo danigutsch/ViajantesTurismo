@@ -3,6 +3,7 @@ using PandaBear.MalwareScanning;
 using PandaBear.Testing.MalwareScanning;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Branding.Contracts.Http;
+using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
@@ -399,6 +400,47 @@ public sealed class BrandingLogoEndpointTests
         response.Headers.ETag.ShouldNotBeNull().Tag.ShouldBe($"\"{sha256}\"");
         response.Headers.GetValues("X-Content-Type-Options").ShouldHaveSingleItem().ShouldBe("nosniff");
         bytes.SequenceEqual(store.Logos[sha256].Content.Span).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task A_warm_logo_cache_preserves_if_match_preconditions()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        var logo = BrandingLogo.FromEncodedBytes(BrandingTestImages.Create(MagickFormat.WebP, 8, 8));
+        store.Logos.Add(logo.Sha256, logo);
+        await using var factory = BrandingApiTestHost.CreateAnonymous(store);
+        using var client = factory.CreateClient();
+        using var first = await BrandingLogoRequests.GetLogo(client, logo.Sha256);
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(BrandingLogoPath.For(logo.Sha256), UriKind.Relative));
+        request.Headers.IfMatch.ParseAdd("\"stale\"");
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        first.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.PreconditionFailed);
+    }
+
+    [Fact]
+    public async Task A_logo_address_missing_on_the_first_read_can_be_served_after_storage()
+    {
+        // Arrange
+        var store = TestBrandingSettingsStore.Seeded();
+        var logo = BrandingLogo.FromEncodedBytes(BrandingTestImages.Create(MagickFormat.WebP, 8, 8));
+        await using var factory = BrandingApiTestHost.CreateAnonymous(store);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var missing = await BrandingLogoRequests.GetLogo(client, logo.Sha256);
+        store.Logos.Add(logo.Sha256, logo);
+        using var available = await BrandingLogoRequests.GetLogo(client, logo.Sha256);
+
+        // Assert
+        missing.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        available.StatusCode.ShouldBe(HttpStatusCode.OK);
+        store.LogoReadCount.ShouldBe(2);
     }
 
     [Fact]

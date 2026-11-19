@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Api.Documents;
@@ -404,6 +405,7 @@ internal static class DocumentEndpoints
         httpContext.Response.Headers.Pragma = "no-cache";
         httpContext.Response.Headers.Expires = "0";
         httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        httpContext.Response.Headers.ContentSecurityPolicy = DocumentArtifactDelivery.ContentSecurityPolicy;
         return TypedResults.Bytes(artifact.Content, HtmlMediaType, artifact.FileName, enableRangeProcessing: false);
     }
 

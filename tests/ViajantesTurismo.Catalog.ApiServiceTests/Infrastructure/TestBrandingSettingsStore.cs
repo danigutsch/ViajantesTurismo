@@ -6,6 +6,7 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 internal sealed class TestBrandingSettingsStore : IBrandingSettingsStore, IBrandingSettingsRevisionStore
 {
     private BrandingSettings? settings;
+    private int logoReadCount;
 
     /// <summary>Gets the currently stored settings, or null when none were saved or seeded.</summary>
     public BrandingSettings? Settings => settings;
@@ -30,6 +31,9 @@ internal sealed class TestBrandingSettingsStore : IBrandingSettingsStore, IBrand
     {
         get; private set;
     }
+
+    /// <summary>Gets the number of reads of stored logo bytes.</summary>
+    public int LogoReadCount => Volatile.Read(ref logoReadCount);
 
     /// <summary>Gets or sets an exception thrown by the next saves; null lets saves succeed.</summary>
     public Exception? SaveException
@@ -107,9 +111,13 @@ internal sealed class TestBrandingSettingsStore : IBrandingSettingsStore, IBrand
         return Snapshot();
     }
 
-    /// <summary>Returns the stored logo with the address, or null.</summary>
-    public Task<BrandingLogo?> GetLogo(string sha256, CancellationToken ct) =>
-        Task.FromResult(Logos.TryGetValue(sha256, out var logo) ? logo : null);
+    /// <summary>Returns the stored logo with the address, or null, and counts the read.</summary>
+    public Task<BrandingLogo?> GetLogo(string sha256, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        _ = Interlocked.Increment(ref logoReadCount);
+        return Task.FromResult(Logos.TryGetValue(sha256, out var logo) ? logo : null);
+    }
 
     /// <summary>Creates a store already holding seeded settings at revision 1.</summary>
     public static TestBrandingSettingsStore Seeded()

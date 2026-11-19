@@ -183,9 +183,9 @@ The Branding intake bounds the body through the endpoint limit and the `Seekable
   ASP.NET Core's byte result. [RFC 9110 §13.1.2][if-none-match], [RFC 9110 §15.4.5][not-modified], [RFC 8246][immutable]
 - Validate the address (`BrandingLogoPath.IsContentAddress`) before touching the store, and answer `404` for malformed or unknown
   values. The pattern ends in `\z`.
-- Send an enforced `Content-Security-Policy` containing `sandbox` on HTML attachment responses. Use `default-src 'none'`
-  when the response can render with resource loads and inline code blocked. The two directives control different parts
-  of browser behavior.
+- Admin API and Management Web serve finalized HTML artifacts with `Content-Security-Policy: default-src 'none'; sandbox`,
+  an attachment disposition, `nosniff`, and `no-store`. The policy restricts the document and blocks resource loads if
+  the HTML renders.
   [CSP sandbox][csp-sandbox], [CSP default-src][csp-default-src]
 - Refuse uploaded SVG. SVG 2 restricts image subresources and allows a broader mode for direct navigation. The upload
   allow-lists keep stored user images raster-only. Treat any future SVG sanitizer or offline rasterizer as a separately

@@ -36,6 +36,13 @@ internal static class BrandingEndpoints
             .RequireRateLimiting(BrandingSecurityBaseline.PublicReadRateLimitPolicy);
         publicBranding.MapGet(BrandingLogoPath.Template, GetLogo)
             .WithName("GetPublicBrandingLogo")
+            .CacheOutput(policy => policy
+                .With(context => !context.HttpContext.Request.Headers.ContainsKey(HeaderNames.IfMatch))
+                .Expire(BrandingHttpCache.PublicFreshness)
+                .SetVaryByQuery([])
+                // Keep the exact address even when the output cache normalizes the request path.
+                .SetVaryByRouteValue(BrandingLogoPath.HashParameter)
+                .SetVaryByHeader(HeaderNames.Origin))
             .Produces(StatusCodes.Status200OK, contentType: BrandingLogo.EncodedContentType)
             .Produces(StatusCodes.Status304NotModified)
             .Produces(StatusCodes.Status404NotFound)

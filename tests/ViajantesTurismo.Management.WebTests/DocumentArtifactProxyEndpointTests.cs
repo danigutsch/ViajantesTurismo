@@ -39,6 +39,7 @@ public sealed class DocumentArtifactProxyEndpointTests
         response.Headers.Pragma.ShouldContain(header => string.Equals(header.Name, "no-cache", StringComparison.OrdinalIgnoreCase));
         response.Content.Headers.GetValues("Expires").ShouldBe(["Thu, 01 Jan 1970 00:00:00 GMT"]);
         response.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
+        response.Headers.GetValues("Content-Security-Policy").ShouldBe(["default-src 'none'; sandbox"]);
         response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         response.Content.Headers.ContentDisposition.ShouldNotBeNull().FileNameStar.ShouldBe($"{documentId:N}.html");
         html.ShouldBe("<html>contract</html>");

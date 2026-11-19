@@ -1044,6 +1044,8 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
         artifactResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         DocumentNoStoreHeaders.ArePresent(artifactResponse).ShouldBeTrue();
         artifactResponse.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
+        artifactResponse.Headers.TryGetValues("Content-Security-Policy", out var contentSecurityPolicies).ShouldBeTrue();
+        contentSecurityPolicies.ShouldNotBeNull().ShouldBe(["default-src 'none'; sandbox"]);
         artifactResponse.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("text/html");
         var contentDisposition = artifactResponse.Content.Headers.ContentDisposition.ShouldNotBeNull();
         var actualValue7 = contentDisposition.FileNameStar ?? contentDisposition.FileName?.Trim('"');
