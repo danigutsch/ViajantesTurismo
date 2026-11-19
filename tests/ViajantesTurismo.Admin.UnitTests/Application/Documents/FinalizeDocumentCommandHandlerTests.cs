@@ -223,6 +223,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             now).Value;
         foreach (var fieldId in new[] { "greeting", "trip-note", "support-contact" })
         {
@@ -346,6 +347,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             null,
+            brandingSourceRevision: 1,
             now);
         documentResult.IsSuccess.ShouldBeTrue();
         var document = documentResult.Value;
@@ -445,6 +447,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION-2",
             "Renamed Travel Brand",
             new Uri($"data:image/webp;base64,{Convert.ToBase64String(DocumentLogoTestData.OtherContent)}", UriKind.Absolute),
+            brandingSourceRevision: 2,
             now).Value;
         replacement.BeginReview(now).IsSuccess.ShouldBeTrue();
         replacement.Approve(now).IsSuccess.ShouldBeTrue();
@@ -523,6 +526,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             now);
         replacementResult.IsSuccess.ShouldBeTrue();
         var replacement = replacementResult.Value;
@@ -567,6 +571,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             now);
         secondResult.IsSuccess.ShouldBeTrue();
         var second = secondResult.Value;
@@ -578,6 +583,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             now);
         thirdResult.IsSuccess.ShouldBeTrue();
         var third = thirdResult.Value;
@@ -628,6 +634,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             now);
         replacementResult.IsSuccess.ShouldBeTrue();
         var replacement = replacementResult.Value;
@@ -667,6 +674,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             now);
         newerResult.IsSuccess.ShouldBeTrue();
         var newer = newerResult.Value;
@@ -719,6 +727,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
             "BRANDING-VERSION",
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             now);
         newerResult.IsSuccess.ShouldBeTrue();
         var newer = newerResult.Value;

@@ -492,7 +492,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
-                    b.Property<long?>("BrandingSourceRevision")
+                    b.Property<long>("BrandingSourceRevision")
                         .HasColumnType("bigint");
 
                     b.Property<string>("BrandingTextColor")

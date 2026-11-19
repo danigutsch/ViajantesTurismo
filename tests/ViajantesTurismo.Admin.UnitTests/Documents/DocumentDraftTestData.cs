@@ -41,6 +41,7 @@ internal static class DocumentDraftTestData
             "BRANDING-VERSION",
             "Viajantes Turismo",
             brandingLogoUri ?? DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             createdAt);
 
         result.IsSuccess.ShouldBeTrue();

@@ -25,7 +25,10 @@ internal static class DocumentDraftInfrastructureTestData
         "#000000",
         "system-ui, sans-serif",
         "system-ui, sans-serif",
-        "Viajantes Turismo");
+        "Viajantes Turismo")
+    {
+        BrandingSourceRevision = 1
+    };
 
     /// <summary>Creates a fixed audit context for document operations.</summary>
     public static DocumentAuditContext CreateAuditContext() => DocumentAuditContext.Create(
@@ -100,6 +103,7 @@ internal static class DocumentDraftInfrastructureTestData
             Guid.CreateVersion7().ToString("N"),
             "Viajantes Turismo",
             DocumentLogoTestData.DataUri,
+            brandingSourceRevision: 1,
             createdAt);
 
         result.IsSuccess.ShouldBeTrue();

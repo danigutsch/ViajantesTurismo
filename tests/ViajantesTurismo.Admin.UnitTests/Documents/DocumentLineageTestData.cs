@@ -34,7 +34,10 @@ internal static class DocumentLineageTestData
         "#111111",
         "Montserrat",
         "Inter",
-        "Viajantes Turismo");
+        "Viajantes Turismo")
+    {
+        BrandingSourceRevision = 1
+    };
 
     /// <summary>Creates a valid contract lineage with its creation domain events cleared.</summary>
     public static DocumentLineage Create(Guid? bookingId = null, DateTime? now = null)
