@@ -6,10 +6,10 @@ using PandaBear.EventSourcing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
-using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
+using ViajantesTurismo.Catalog.UnitTests.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

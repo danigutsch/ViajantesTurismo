@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using PandaBear.Idempotency;
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

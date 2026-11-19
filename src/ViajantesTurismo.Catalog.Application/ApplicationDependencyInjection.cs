@@ -1,12 +1,6 @@
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using PandaBear.EventSourcing;
-using PandaBear.Idempotency;
-using PandaBear.Messaging.IntegrationEvents;
-using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
-using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -36,24 +30,10 @@ public static class ApplicationDependencyInjection
             ServiceDescriptor.Singleton<
                 IValidateOptions<IntegrationEventOptions>,
                 IntegrationEventOptionsValidator>());
-        services.TryAddScoped<IIntegrationEventHandler<AdminTourCreatedIntegrationEvent>>(sp =>
-            new IdempotentIntegrationHandler<AdminTourCreatedIntegrationEvent>(
-                new AdminTourCreatedIntegrationHandler(
-                    sp.GetRequiredService<IEventStore>(),
-                    sp.GetRequiredService<ICatalogTourSlugLock>()),
-                sp.GetRequiredService<IIdempotencyStore>(),
-                sp.GetRequiredService<IOptions<IntegrationEventOptions>>(),
-                sp.GetRequiredService<TimeProvider>()));
-        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
-        services.AddIntegrationEventConsumer(
-            AdminTourCreatedIntegrationEvent.EventType,
-            adminTourCreatedJsonTypeInfo);
+        services.AddCatalogToursApplication();
         services.AddCatalogMediaApplication();
         services.AddGeneratedIntegrationEvents();
         services.TryAddScoped<PublicContentUpsertService>();
-        services.TryAddScoped<CatalogTourPresentationService>();
-        services.TryAddScoped<CatalogGalleryMutationGuard>();
 
         return services;
     }

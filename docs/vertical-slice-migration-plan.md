@@ -42,7 +42,7 @@ These are curated observations from source, not an automatically evaluated depen
 | Context | Endpoints and UI | Commands, DTOs, validation, and mapping | Persistence and tests | Coupling or blocker |
 | --- | --- | --- | --- | --- |
 | Admin | `ViajantesTurismo.Admin.Api/{Tours,Bookings,Customers,Documents}`; bookings already have operation-specific endpoint files | `Admin.Application/Bookings/*` and `Tours/*` use operation folders; `Customers/Import` and `Documents` group workflows; `Admin.Application/Mappings` is centralized; `Admin.Contracts.Application` mixes root DTOs with Bookings/Documents folders | `Admin.Infrastructure` owns read/write contexts, stores, configurations, and migrations; `Admin.UnitTests`, `Admin.ApiServiceTests`, `Admin.ContractTests`, `Admin.BehaviorTests`, and `HostedTests` cover different seams | Endpoint response reloads use broad `IQueryService`; aggregate capacity and booking mutations share transactional rules; import and document workflows cross multiple operations |
-| Catalog | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` combines management tours, publishing, upload, accessibility, public media, and content routes | `Catalog.Application/{Tours,Media,PublicContent,IntegrationEvents,Projections}` already has capability ownership; wire DTOs/clients live in `Catalog.Contracts.Application` and `Catalog.Contracts.Http`; domain validation remains in `Catalog.Domain` | `Catalog.Infrastructure` has root stores, storage adapters, projection/reconciliation services, and `ModelConfigurations`; `Catalog.UnitTests`, `Catalog.ApiServiceTests`, `Catalog.ContractTests`, `Catalog.InfrastructureTests`, `Catalog.IntegrationTests`, and `Catalog.BehaviorTests` | Event acceptance and projection visibility differ; media commits span object storage and metadata; public cache invalidation spans publishing/content/media |
+| Catalog | `Catalog.Api/{Tours,Media,PublicContent}` owns versioned routes by feature | `Catalog.Application/{Tours,Media,PublicContent}` owns feature services and event handlers. Wire DTOs and clients live in Catalog contract projects. Domain validation stays in `Catalog.Domain` | `Catalog.Infrastructure/{Tours,Media,PublicContent}` owns the feature stores and persistence configuration. Tests cover the owning feature and cross-host contracts | Tour responses distinguish event acceptance from projection visibility. Media commits span object storage and metadata |
 | Public Web | `ViajantesTurismo.Public.Web/Components/Pages/{Home,Gallery,Tours}` and `Components/Shared` | Catalog and Branding compose their anonymous clients locally. The host owns culture normalization, sitemap, cache, and security. Localized resources also use `ViajantesTurismo.Resources` | No application-owned database. `ViajantesTurismo.Public.WebTests` covers feature rendering and host behavior | Culture normalization, canonical URLs, sitemap, and cache variation must agree. Anonymous pages use only public clients |
 | Management Web | `ViajantesTurismo.Management.Web/Components/Pages/{Tours,Bookings,Customers,Catalog,Branding,Documents,Payments}` owns operator workflows | Booking forms and document hold controls live with their pages. Customer form models, wizard state, and import preview and mapping code live under `Customers`. Contract projects own the HTTP clients | No business DbContext in web. Protected ticket/token stores are host infrastructure. `Management.WebTests` covers workflow components and host seams. `HostedTests/Management` exercises the browser seam | Preserve the scoped wizard lifetime, customer data handling, token exchange, antiforgery, and streaming downloads |
 
@@ -124,7 +124,7 @@ approve a wire-contract change. Preserve [request semantics](API_REQUEST_SHAPES.
 | --- | --- | --- |
 | Customer import preview/commit in `Admin.Api/Customers/CustomerImportEndpoints.cs` | Both operations receive multipart files and pass through scanning; assess a server-held import session only if repeated processing is measured as costly | Session IDs would add retention, authorization, expiry, and replay semantics. Keep current contract during slice moves; propose a separate import-session issue with measurements |
 | Booking create/update responses in `Admin.Api/Bookings` | Mutations reload through `IQueryService`; assess whether narrower booking queries improve ownership without duplicating persistence | Preserve Created Location, response bodies, and not-found/conflict/validation outcomes. Recommend a booking-query seam follow-up only after callers are inventoried |
-| Tour presentation/publish/unpublish in `Catalog.Api/CatalogEndpoints.cs` | Extract route groups while preserving accepted-but-not-yet-projected behavior | Do not collapse 202 into 200/204. Retain Location headers, retry/client behavior, authorization, and cache invalidation; coordinate with the typed-results work |
+| Tour presentation, publish, and unpublish in `Catalog.Api/Tours/CatalogTourEndpoints.cs` | Keep accepted-but-not-yet-projected behavior distinct from completed writes | Preserve 202 Location headers, retry/client behavior, authorization, and cache invalidation |
 | Media upload and accessibility operations in the same Catalog file | Separate upload intake, review, and public delivery ownership | Multipart names, size/scanner controls, 201 body, permissions, and stream disposal are contracts. Coordinate with existing upload-queue work rather than creating duplicate upload issues |
 | Public content catch-all route and culture/language query modifiers in Catalog | Make content ownership clear while retaining normalization before cache lookup | Changing key escaping, aliases, invalid culture behavior, or cache variation can leak incorrect content. Add contract/cache characterization before any redesign |
 | Document mutation/download routes in `Admin.Api/Documents/DocumentEndpoints.cs` | Group lifecycle transitions and artifact delivery without hiding audit/idempotency rules | Preserve revision conflicts, Idempotency-Key, permissions, no-store, download headers, cancellation, and immutable artifacts. Keep lifecycle redesign separate from relocation |
@@ -152,20 +152,19 @@ database behavior and BehaviorTests/UI/HostedTests/Admin/System for the workflow
 
 ## Catalog sequence
 
-1. Extract public content routes/services first, preserving culture normalization and output-cache
-   invalidation. Keep public and management route metadata separate.
-2. Extract tour read/presentation operations, then publish/unpublish. Keep event acceptance,
-   projection-pending responses, slug locking, and public visibility as separate states.
-3. Extract upload intake and accessibility review by capability. Preserve stream ownership,
-   malware scanning, validation, object-store cleanup, and metadata commit behavior.
-4. Align infrastructure store/configuration folders without changing the EF model. Keep projection,
-   outbox/idempotency, reconciliation, and worker ownership explicit at their existing boundaries.
+`CatalogEndpoints` composes three modules on the versioned and management route groups.
+Tours owns presentation, publication, the Admin tour event handler, projection, and read-model
+persistence. Media owns upload, accessibility, delivery, original-stored processing, reconciliation,
+and object storage. Public content owns editable and public content routes, services, and persistence.
 
-Prerequisites: Catalog HTTP snapshots and projection/storage characterization. Risks: public cache
-freshness, eventual consistency, object/database compensation, and ongoing upload work. Gate with
-Catalog.UnitTests, Catalog.ApiServiceTests, and Catalog.ContractTests; run InfrastructureTests,
-IntegrationTests, and BehaviorTests for the provider/event/storage seam touched. Do not combine
-worker redesign or storage-provider replacement with these moves.
+The host and worker share the Catalog application and infrastructure registrations. Tours and
+Media expose their own registration methods. Catalog persistence owns the database contexts,
+outbox, and inbox, and the worker explicitly starts projection and reconciliation. Consumers can
+register a clock or tour read-model store before the defaults are applied.
+
+Run `Catalog.UnitTests`, `Catalog.ApiServiceTests`, and `Catalog.ContractTests` for changes to
+the Catalog surface. The API suite exercises upload and stream disposal over Kestrel. The hosted
+Catalog tests cover projections, reconciliation, and storage with provider-backed fixtures.
 
 ## Public Web sequence
 

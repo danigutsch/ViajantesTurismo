@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using PandaBear.MalwareScanning.ClamAv;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -29,7 +30,7 @@ internal static class CatalogInfrastructureTestServices
     }
 
     /// <summary>Creates a Development scenario with ClamAV configured.</summary>
-    public static CatalogInfrastructureScenario CreateScenario()
+    public static CatalogInfrastructureScenario CreateScenario(Action<IServiceCollection>? configureOverrides = null)
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
         {
@@ -43,6 +44,7 @@ internal static class CatalogInfrastructureTestServices
         });
         builder.Services.AddOpenTelemetry().WithTracing(static _ => { });
 
+        configureOverrides?.Invoke(builder.Services);
         builder.AddCatalogInfrastructure();
 
         return new CatalogInfrastructureScenario(builder.Services.BuildServiceProvider());

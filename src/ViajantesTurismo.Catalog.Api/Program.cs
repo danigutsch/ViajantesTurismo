@@ -6,6 +6,7 @@ using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.OpenApi;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.Api;
+using ViajantesTurismo.Catalog.Api.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
 using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;

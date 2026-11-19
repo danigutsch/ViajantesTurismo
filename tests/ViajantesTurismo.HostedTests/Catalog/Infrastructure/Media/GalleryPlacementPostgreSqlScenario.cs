@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 

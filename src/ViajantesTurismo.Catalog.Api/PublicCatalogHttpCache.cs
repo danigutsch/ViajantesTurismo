@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.OutputCaching;
+using PandaBear.BuildingBlocks;
 using PandaBear.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Catalog.Api;
@@ -18,5 +20,19 @@ internal static class PublicCatalogHttpCache
     public static void SetPublicHeaders(HttpContext httpContext)
     {
         HttpCacheHeaders.SetPublic(httpContext, Freshness);
+    }
+
+    /// <summary>Evicts cached public responses after a tour or media change.</summary>
+    internal static async Task Invalidate(IOutputCacheStore outputCacheStore, ILogger logger)
+    {
+        try
+        {
+            await outputCacheStore.EvictByTagAsync(Tag, CancellationToken.None);
+            logger.PublicCacheAreaInvalidated(Area);
+        }
+        catch (Exception exception) when (exception.ShouldHandleAsFailure(CancellationToken.None))
+        {
+            logger.PublicCacheAreaInvalidationFailed(Area, exception.GetType().Name);
+        }
     }
 }

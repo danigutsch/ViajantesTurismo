@@ -1,7 +1,7 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
-using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 

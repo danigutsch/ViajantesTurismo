@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.PublicContent;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure;
 

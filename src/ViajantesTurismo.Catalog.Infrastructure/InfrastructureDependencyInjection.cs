@@ -1,21 +1,18 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using PandaBear.EntityFrameworkCore;
-using PandaBear.EventSourcing;
-using PandaBear.EventSourcing.Npgsql;
-using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using PandaBear.Npgsql;
 using PandaBear.OpenApi;
 using ViajantesTurismo.Catalog.Application;
-using ViajantesTurismo.Catalog.Application.Media;
-using ViajantesTurismo.Catalog.Application.Projections;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Resources;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
+using ViajantesTurismo.Catalog.Infrastructure.PublicContent;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 
 namespace ViajantesTurismo.Catalog.Infrastructure;
 
@@ -62,15 +59,14 @@ public static class InfrastructureDependencyInjection
 
         builder.AddCatalogPersistence();
         builder.Services.AddCatalogApplication();
-        builder.AddCatalogAiTextGeneration();
-        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
 
         var shouldAddOutboxRelay = addOutboxRelay
             ?? !OpenApiGenerationMode.IsEnabled(builder.Environment);
 
         return builder
-            .AddCatalogStoreInfrastructure()
-            .AddCatalogEventStore()
+            .AddCatalogMediaInfrastructure()
+            .AddCatalogTourInfrastructure()
             .AddCatalogOutbox(shouldAddOutboxRelay);
     }
 
@@ -125,35 +121,6 @@ public static class InfrastructureDependencyInjection
         return builder;
     }
 
-    private static TApplicationBuilder AddCatalogStoreInfrastructure<TApplicationBuilder>(this TApplicationBuilder builder)
-        where TApplicationBuilder : IHostApplicationBuilder
-    {
-        if (builder.Configuration.GetSection(MediaObjectStorageConfiguration.S3SectionName).Exists())
-        {
-            builder.Services.AddMediaS3ObjectStorage(builder.Configuration, MediaObjectStorageConfiguration.S3SectionName);
-        }
-        else if (builder.Configuration.GetSection(MediaObjectStorageConfiguration.SectionName).Exists())
-        {
-            builder.Services.AddMediaS3ObjectStorage(builder.Configuration);
-        }
-        else if (builder.Environment.IsDevelopment() || OpenApiGenerationMode.IsEnabled(builder.Environment))
-        {
-            builder.Services.AddLocalMediaObjectStorage();
-        }
-        else
-        {
-            throw new InvalidOperationException(
-                $"Catalog durable media object storage requires configuration section '{MediaObjectStorageConfiguration.SectionName}'.");
-        }
-        builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
-        builder.Services.AddSingleton<IMediaUploadScanner, MalwareScannerMediaUploadScanner>();
-        builder.Services.AddScoped<IPublicContentStore, EfPublicContentStore>();
-        builder.Services.AddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
-        builder.Services.AddScoped<IPublicMediaImageStore, EfPublicMediaImageStore>();
-
-        return builder;
-    }
-
     private static TApplicationBuilder AddCatalogPersistence<TApplicationBuilder>(this TApplicationBuilder builder)
         where TApplicationBuilder : IHostApplicationBuilder
     {
@@ -180,19 +147,6 @@ public static class InfrastructureDependencyInjection
             options.UseNpgsql(serviceProvider.GetRequiredService<NpgsqlDataSource>());
             ConfigureDevelopmentDatabaseOptions<CatalogDbContext, TApplicationBuilder>(builder, options);
         });
-
-        return builder;
-    }
-
-    private static TApplicationBuilder AddCatalogEventStore<TApplicationBuilder>(this TApplicationBuilder builder)
-        where TApplicationBuilder : IHostApplicationBuilder
-    {
-        builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
-        builder.Services.AddSingleton<IEventStore, PostgreSqlEventStore>();
-        builder.Services.AddSingleton<IProjectionCheckpointStore, PostgreSqlProjectionCheckpointStore>();
-        builder.Services.AddScoped<CatalogTourReadModelProjection>();
-        builder.Services.AddScoped<IProjection>(services => services.GetRequiredService<CatalogTourReadModelProjection>());
-        builder.Services.AddScoped<CatalogProjectionRunner>();
 
         return builder;
     }

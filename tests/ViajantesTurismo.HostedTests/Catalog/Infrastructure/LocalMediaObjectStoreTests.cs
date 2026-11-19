@@ -1,7 +1,7 @@
 using PandaBear.ObjectStorage;
 using Microsoft.Extensions.Options;
 using PandaBear.Testing;
-using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure;
 

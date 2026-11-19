@@ -1,5 +1,6 @@
 using System.Net;
 using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Catalog.UnitTests.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
