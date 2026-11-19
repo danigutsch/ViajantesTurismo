@@ -50,6 +50,10 @@ internal sealed class DocumentFieldTestStore(DocumentLineage lineage) : IDocumen
         Task.FromResult(documentId == DocumentId ? lineage : null);
 
     /// <inheritdoc />
+    public Task<ReadOnlyMemory<byte>?> ReadFinalizedArtifactContent(Guid documentId, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct) =>
         throw new NotSupportedException();
 }
