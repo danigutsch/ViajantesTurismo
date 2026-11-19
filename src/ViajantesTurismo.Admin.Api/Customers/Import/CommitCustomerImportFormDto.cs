@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
-namespace ViajantesTurismo.Admin.Api.Customers;
+namespace ViajantesTurismo.Admin.Api.Customers.Import;
 
 /// <summary>
 /// Represents the multipart form fields used to commit a customer import with conflict resolutions.

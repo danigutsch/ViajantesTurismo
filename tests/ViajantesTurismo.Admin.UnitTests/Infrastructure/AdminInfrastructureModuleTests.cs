@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
@@ -208,6 +209,20 @@ public sealed class AdminInfrastructureModuleTests
         // Assert
         aggregateStore.ShouldBeSameAs(suppliedStore);
         commandStore.ShouldBeSameAs(suppliedStore);
+    }
+
+    [Fact]
+    public void AddInfrastructure_preserves_a_supplied_customer_store()
+    {
+        // Arrange
+        var suppliedStore = new FakeCustomerStore();
+        using var services = AdminInfrastructureModuleTestServices.CreateWithInfrastructureModule(customerStore: suppliedStore);
+
+        // Act
+        var customerStore = services.CustomerStore;
+
+        // Assert
+        customerStore.ShouldBeSameAs(suppliedStore);
     }
 
     [Fact]

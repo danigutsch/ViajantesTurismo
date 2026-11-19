@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
-namespace ViajantesTurismo.Admin.UnitTests.Application.Customers;
+namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.CreateCustomer;
 
 public sealed class CreateCustomerCommandHandlerTests
 {

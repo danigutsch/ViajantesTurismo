@@ -23,6 +23,7 @@ using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
+using ViajantesTurismo.Admin.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
@@ -104,7 +105,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<IDocumentQueryService, DocumentQueryService>();
         builder.Services.AddTourPersistence();
-        builder.Services.AddScoped<ICustomerStore, CustomerStore>();
+        builder.Services.TryAddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
         builder.Services.AddScoped<IDocumentPurgeEvidenceStore, DocumentPurgeEvidenceStore>();

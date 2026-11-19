@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.UnitTests.Mappings;

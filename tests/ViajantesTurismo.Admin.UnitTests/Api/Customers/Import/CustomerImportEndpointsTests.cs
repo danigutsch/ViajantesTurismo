@@ -7,12 +7,12 @@ using PandaBear.MalwareScanning;
 using PandaBear.Results;
 using PandaBear.Testing;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
-using ViajantesTurismo.Admin.Api.Customers;
+using ViajantesTurismo.Admin.Api.Customers.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
 using PandaBear.Testing.Logging;
 using PandaBear.Testing.MalwareScanning;
 
-namespace ViajantesTurismo.Admin.UnitTests.Api;
+namespace ViajantesTurismo.Admin.UnitTests.Api.Customers.Import;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 public sealed class CustomerImportEndpointsTests

@@ -6,7 +6,7 @@ using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Testing.Builders;
 
-namespace ViajantesTurismo.Admin.UnitTests.Application.Customers;
+namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.UpdateCustomer;
 
 public sealed class UpdateCustomerCommandHandlerTests
 {

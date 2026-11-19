@@ -13,7 +13,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.ServiceDefaults;
 
-namespace ViajantesTurismo.Admin.Api.Customers;
+namespace ViajantesTurismo.Admin.Api.Customers.Import;
 
 /// <summary>
 /// Defines endpoints for bulk customer import operations.

@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Application.Bookings;
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Tours;
 

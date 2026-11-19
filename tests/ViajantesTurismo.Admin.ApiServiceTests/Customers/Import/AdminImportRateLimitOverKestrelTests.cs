@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Api;
 
-namespace ViajantesTurismo.Admin.ApiServiceTests;
+namespace ViajantesTurismo.Admin.ApiServiceTests.Customers.Import;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 public sealed class AdminImportRateLimitOverKestrelTests

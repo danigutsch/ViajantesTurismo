@@ -8,7 +8,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.UploadWire.Testing;
 
-namespace ViajantesTurismo.Admin.ApiServiceTests;
+namespace ViajantesTurismo.Admin.ApiServiceTests.Customers.Import;
 
 /// <summary>
 /// Issue 706: the customer import endpoints exercised over real HTTP on a loopback Kestrel server (not TestServer),

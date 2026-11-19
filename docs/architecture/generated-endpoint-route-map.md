@@ -72,11 +72,11 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/catalog/tours/{id:guid}/publish` | PublishTour | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `POST` | `/api/v1/catalog/tours/{id:guid}/unpublish` | UnpublishTour | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `GET` | `/api/v1/customers` | GetCustomers | management API | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
-| `POST` | `/api/v1/customers` | CreateCustomer | management API | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
-| `POST` | `/api/v1/customers/import` | ImportCustomers | management API | not declared | `ViajantesTurismo.Admin.Api/Customers/CustomerImportEndpoints.cs` |
-| `POST` | `/api/v1/customers/import/commit` | CommitImportWithResolutions | management API | not declared | `ViajantesTurismo.Admin.Api/Customers/CustomerImportEndpoints.cs` |
+| `POST` | `/api/v1/customers` | CreateCustomer | management API | required | `ViajantesTurismo.Admin.Api/Customers/CreateCustomer/CreateCustomerEndpoint.cs` |
+| `POST` | `/api/v1/customers/import` | ImportCustomers | management API | not declared | `ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpoints.cs` |
+| `POST` | `/api/v1/customers/import/commit` | CommitImportWithResolutions | management API | not declared | `ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpoints.cs` |
 | `GET` | `/api/v1/customers/{id:guid}` | GetCustomerById | management API | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
-| `PUT` | `/api/v1/customers/{id:guid}` | UpdateCustomer | management API | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
+| `PUT` | `/api/v1/customers/{id:guid}` | UpdateCustomer | management API | required | `ViajantesTurismo.Admin.Api/Customers/UpdateCustomer/UpdateCustomerEndpoint.cs` |
 | `GET` | `/api/v1/docs/errors` | GetErrorDocumentation | management API | not declared | `ViajantesTurismo.Admin.Api/Errors/ErrorDocumentationEndpoints.cs` |
 | `GET` | `/api/v1/docs/errors/{identifier}` | GetErrorDocumentationByIdentifier | management API | not declared | `ViajantesTurismo.Admin.Api/Errors/ErrorDocumentationEndpoints.cs` |
 | `POST` | `/api/v1/documents/bookings/{bookingId:guid}/contract-drafts` | GenerateDocumentContractDraft | management API | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
