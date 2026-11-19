@@ -27,18 +27,6 @@ public interface ITourStore
     /// <returns>The tour that owns the booking if found; otherwise, null.</returns>
     Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct);
 
-    /// <summary>Gets a tour under an exclusive lock held until the current transaction ends.</summary>
-    /// <param name="id">The tour ID.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The tour if found; otherwise, null.</returns>
-    Task<Tour?> GetByIdForUpdate(Guid id, CancellationToken ct);
-
-    /// <summary>Gets the tour owning a booking under an exclusive lock held until the current transaction ends.</summary>
-    /// <param name="bookingId">The booking ID.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The booking's tour if found; otherwise, null.</returns>
-    Task<Tour?> GetByBookingIdForUpdate(Guid bookingId, CancellationToken ct);
-
     /// <summary>
     /// Checks if a tour with the specified identifier already exists.
     /// </summary>

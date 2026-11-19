@@ -1,5 +1,6 @@
 using PandaBear.Mediator;
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
@@ -8,7 +9,7 @@ namespace ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 /// Handles the confirmation of a booking.
 /// </summary>
 public sealed class ConfirmBookingCommandHandler(
-    ITourStore tourStore,
+    ITourCommandStore tourStore,
     IUnitOfWork unitOfWork) : ICommandHandler<ConfirmBookingCommand, Result>
 {
     /// <summary>
@@ -21,8 +22,8 @@ public sealed class ConfirmBookingCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var tour = await tourStore.GetByBookingIdForUpdate(command.BookingId, ct);
-        if (tour is null)
+        var storedTour = await tourStore.GetByBookingId(command.BookingId, ct);
+        if (!storedTour.TryGetValue(out var tour))
         {
             return BookingErrors.BookingNotFound();
         }

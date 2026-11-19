@@ -20,6 +20,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <summary>
     /// Initialises a new instance of the <see cref="Booking"/> class.
     /// </summary>
+    /// <param name="id">The identity assigned when the booking is created.</param>
     /// <param name="tourId">The ID of the tour that was booked.</param>
     /// <param name="basePrice">The base price for double occupancy (not per person).</param>
     /// <param name="room">The room selection and associated room cost for the booking.</param>
@@ -29,6 +30,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <param name="createdAt">The captured UTC booking creation instant.</param>
     private Booking(
+        Guid id,
         Guid tourId,
         decimal basePrice,
         BookingRoom room,
@@ -38,7 +40,7 @@ public sealed partial class Booking : IEntity<Guid>
         string? notes,
         DateTime createdAt)
     {
-        Id = Guid.CreateVersion7();
+        Id = id;
         TourId = tourId;
         BasePrice = basePrice;
         RoomType = room.RoomType;
@@ -247,6 +249,7 @@ public sealed partial class Booking : IEntity<Guid>
     /// <param name="discount">The discount applied to this booking.</param>
     /// <param name="notes">Optional notes about the booking.</param>
     /// <param name="createdAt">The captured UTC booking creation instant.</param>
+    /// <param name="bookingId">The identity assigned by the caller, or null to generate it here.</param>
     /// <returns>A Result containing the booking if successful, or validation errors.</returns>
     internal static Result<Booking> Create(
         Guid tourId,
@@ -256,7 +259,8 @@ public sealed partial class Booking : IEntity<Guid>
         BookingCustomer? companionCustomer,
         Discount discount,
         string? notes,
-        DateTime createdAt)
+        DateTime createdAt,
+        Guid? bookingId = null)
     {
         ArgumentNullException.ThrowIfNull(principalCustomer);
         ArgumentNullException.ThrowIfNull(discount);
@@ -267,6 +271,11 @@ public sealed partial class Booking : IEntity<Guid>
         notes = StringSanitizer.SanitizeNotes(notes);
 
         var errors = new ValidationErrors();
+
+        if (bookingId == Guid.Empty)
+        {
+            errors.Add(BookingErrors.InvalidIdentifier());
+        }
 
         if (!Enum.IsDefined(roomType))
         {
@@ -300,8 +309,8 @@ public sealed partial class Booking : IEntity<Guid>
             return pricing.ConvertError<BookingPriceBreakdown, Booking>();
         }
 
-        return Result.Ok(new Booking(tourId, basePrice, new BookingRoom(roomType, roomAdditionalCost), principalCustomer, companionCustomer,
-            discount, notes, createdAt));
+        return Result.Ok(new Booking(bookingId ?? Guid.CreateVersion7(), tourId, basePrice,
+            new BookingRoom(roomType, roomAdditionalCost), principalCustomer, companionCustomer, discount, notes, createdAt));
     }
 
 

@@ -17,4 +17,8 @@ public sealed record CreateBookingCommand(
     DiscountTypeDto DiscountType,
     decimal DiscountAmount,
     string? DiscountReason,
-    string? Notes) : ICommand<Result<Guid>>;
+    string? Notes) : ICommand<Result<Guid>>
+{
+    /// <summary>Gets the booking identifier retained across attempts of this command.</summary>
+    public Guid BookingId { get; } = Guid.CreateVersion7();
+}

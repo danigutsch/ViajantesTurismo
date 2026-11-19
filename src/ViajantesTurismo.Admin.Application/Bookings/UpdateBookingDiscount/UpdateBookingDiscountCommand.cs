@@ -11,4 +11,4 @@ public sealed record UpdateBookingDiscountCommand(
     Guid BookingId,
     DiscountTypeDto DiscountType,
     decimal DiscountAmount,
-    string? DiscountReason) : ICommand<Result>, IBookingScopedCommand;
+    string? DiscountReason) : ICommand<Result>;

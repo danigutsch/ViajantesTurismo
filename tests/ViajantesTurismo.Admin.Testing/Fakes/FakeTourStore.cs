@@ -1,8 +1,10 @@
+using PandaBear.Results;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes;
 
-public sealed class FakeTourStore : ITourStore
+public sealed class FakeTourStore : ITourStore, ITourCommandStore
 {
     private readonly List<Tour> _tours = [];
 
@@ -14,9 +16,11 @@ public sealed class FakeTourStore : ITourStore
     public Task<Tour?> GetByBookingId(Guid bookingId, CancellationToken ct) =>
         Task.FromResult(_tours.SingleOrDefault(t => t.Bookings.Any(b => b.Id == bookingId)));
 
-    public Task<Tour?> GetByIdForUpdate(Guid id, CancellationToken ct) => GetById(id, ct);
+    async Task<Option<Tour>> ITourCommandStore.GetById(Guid id, CancellationToken ct) =>
+        Option.FromNullable(await GetById(id, ct));
 
-    public Task<Tour?> GetByBookingIdForUpdate(Guid bookingId, CancellationToken ct) => GetByBookingId(bookingId, ct);
+    async Task<Option<Tour>> ITourCommandStore.GetByBookingId(Guid bookingId, CancellationToken ct) =>
+        Option.FromNullable(await GetByBookingId(bookingId, ct));
 
     public Task<bool> IdentifierExists(string identifier, CancellationToken ct) =>
         Task.FromResult(_tours.Any(t =>

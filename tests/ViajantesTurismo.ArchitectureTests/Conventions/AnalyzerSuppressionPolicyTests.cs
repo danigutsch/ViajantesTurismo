@@ -7,7 +7,6 @@ public sealed partial class AnalyzerSuppressionPolicyTests
 {
     private static readonly HashSet<string> ApprovedSuppressMessageFiles =
     [
-        // Preserve the epic's existing exact-site telemetry, Blazor and fixture-ownership exceptions.
         "tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs",
         "tests/ViajantesTurismo.HostedTests/Catalog/Infrastructure/Tours/CatalogTourSlugLockPostgreSqlTests.cs",
         "src/ViajantesTurismo.Management.Web/Components/Pages/Payments/Finances.razor.cs",
@@ -30,8 +29,6 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "tests/ViajantesTurismo.Admin.UnitTests/MigrationService/MigrationProcessTestHost.cs",
         "tests/ViajantesTurismo.HostedTests/Management/Security/PostgreSqlTestServerFixture.cs",
         "tests/ViajantesTurismo.HostedTests/Infrastructure/HostedTestFixture.cs",
-        // CA1040 permits a marker that the mediator generator uses as a compile-time constraint.
-        "src/ViajantesTurismo.Admin.Application/Pipeline/ITransactionalAdminCommand.cs",
     ];
 
     [Fact]

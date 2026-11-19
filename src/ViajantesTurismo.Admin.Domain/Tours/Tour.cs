@@ -23,6 +23,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     private string[] _includedServices = [];
 
     private Tour(
+        Guid id,
         string identifier,
         string name,
         TourSchedule schedule,
@@ -30,7 +31,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         TourCapacity capacity,
         IEnumerable<string> includedServices)
     {
-        Id = Guid.CreateVersion7();
+        Id = id;
         Identifier = identifier;
         Name = name;
         Schedule = schedule;
@@ -125,8 +126,9 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// Creates a new instance of the <see cref="Tour"/> class with validation.
     /// </summary>
     /// <param name="definition">The values used to create the tour.</param>
+    /// <param name="tourId">The identity assigned by the caller, or null to generate it here.</param>
     /// <returns>A Result containing the Tour if validation succeeds, or an error if validation fails.</returns>
-    public static Result<Tour> Create(TourDefinition definition)
+    public static Result<Tour> Create(TourDefinition definition, Guid? tourId = null)
     {
         ArgumentNullException.ThrowIfNull(definition);
 
@@ -135,6 +137,11 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         var sanitizedServices = StringSanitizer.SanitizeCollection(definition.IncludedServices);
 
         var errors = new ValidationErrors();
+        if (tourId == Guid.Empty)
+        {
+            errors.Add(TourErrors.InvalidTourId());
+        }
+
         AddDetailsErrors(errors, identifier, name);
 
         var scheduleResult = TourSchedule.Create(definition.Schedule.StartDate, definition.Schedule.EndDate);
@@ -171,6 +178,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         }
 
         return Result.Ok(new Tour(
+            tourId ?? Guid.CreateVersion7(),
             identifier,
             name,
             scheduleResult.Value,
@@ -436,16 +444,30 @@ public sealed partial class Tour : IAggregateRoot<Guid>
         return Result.Ok();
     }
 
+    /// <summary>Checks whether this tour owns a booking with the given identifier.</summary>
+    /// <param name="bookingId">The booking identifier to look up.</param>
+    /// <returns>Whether this tour contains the booking.</returns>
+    public bool HasBooking(Guid bookingId)
+    {
+        return FindBooking(bookingId).HasValue;
+    }
+
     /// <summary>
     /// Adds a new booking to this tour.
     /// Validates that BikeType.None is not used per US-11 requirement (None is a placeholder value, not a valid booking choice).
     /// </summary>
     /// <param name="request">The booking details to validate and add.</param>
     /// <param name="createdAt">The captured UTC booking creation instant.</param>
+    /// <param name="bookingId">The identity assigned by the caller, or null to generate it in the domain.</param>
     /// <returns>A Result containing the created booking if successful, or validation errors.</returns>
-    public Result<Booking> AddBooking(TourBookingRequest request, DateTime createdAt)
+    public Result<Booking> AddBooking(TourBookingRequest request, DateTime createdAt, Guid? bookingId = null)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        if (bookingId is { } existingId && HasBooking(existingId))
+        {
+            return BookingErrors.IdentifierAlreadyExists().ConvertError<Booking>();
+        }
 
         if (IsFullyBooked)
         {
@@ -505,7 +527,7 @@ public sealed partial class Tour : IAggregateRoot<Guid>
             principalCustomerResult.Value,
             companionCustomer,
             discountResult.Value,
-            request.Notes, createdAt);
+            request.Notes, createdAt, bookingId);
 
         if (result.IsFailure)
         {

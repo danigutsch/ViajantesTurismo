@@ -27,7 +27,7 @@ public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture
     }
 
     [Fact]
-    public async Task GetByBookingIdForUpdate_loads_the_owning_tour_for_an_existing_booking()
+    public async Task Finds_the_owning_tour_for_an_existing_booking_in_a_transaction()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -38,17 +38,17 @@ public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture
         await Scenario.Seed(tour, ct);
 
         // Act
-        var found = await Scenario.GetByBookingIdForUpdate(booking.Id, ct);
-        var missing = await Scenario.GetByBookingIdForUpdate(Guid.CreateVersion7(), ct);
+        var found = await Scenario.GetByBookingId(booking.Id, ct);
+        var missing = await Scenario.GetByBookingId(Guid.CreateVersion7(), ct);
 
         // Assert
-        found.ShouldNotBeNull();
-        found.Id.ShouldBe(tour.Id);
-        missing.ShouldBeNull();
+        found.HasValue.ShouldBeTrue();
+        found.Value.ShouldNotBeNull().Id.ShouldBe(tour.Id);
+        missing.HasValue.ShouldBeFalse();
     }
 
     [Fact]
-    public async Task GetByIdForUpdate_loads_the_tour_and_its_bookings()
+    public async Task Finds_the_tour_and_its_bookings_in_a_transaction()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -57,18 +57,19 @@ public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture
         await Scenario.Seed(tour, ct);
 
         // Act
-        var found = await Scenario.GetByIdForUpdate(tour.Id, ct);
-        var missing = await Scenario.GetByIdForUpdate(Guid.CreateVersion7(), ct);
+        var found = await Scenario.GetById(tour.Id, ct);
+        var missing = await Scenario.GetById(Guid.CreateVersion7(), ct);
 
         // Assert
-        found.ShouldNotBeNull();
-        found.Id.ShouldBe(tour.Id);
-        found.Bookings.ShouldHaveSingleItem().Id.ShouldBe(booking.Id);
-        missing.ShouldBeNull();
+        found.HasValue.ShouldBeTrue();
+        var loadedTour = found.Value.ShouldNotBeNull();
+        loadedTour.Id.ShouldBe(tour.Id);
+        loadedTour.Bookings.ShouldHaveSingleItem().Id.ShouldBe(booking.Id);
+        missing.HasValue.ShouldBeFalse();
     }
 
     [Fact]
-    public async Task GetByIdForUpdate_rejects_lookup_without_a_transaction()
+    public async Task Command_lookup_requires_an_active_transaction()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -95,12 +96,12 @@ public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture
 
         // Act
         var result = await Scenario.ConfirmWithOutcome(booking.Id, () => failure, ct);
-        var reloaded = await Scenario.GetByBookingIdForUpdate(booking.Id, ct);
+        var reloaded = await Scenario.GetByBookingId(booking.Id, ct);
 
         // Assert
         result.ShouldBe(failure);
-        reloaded.ShouldNotBeNull();
-        reloaded.Bookings.ShouldHaveSingleItem().IsPending.ShouldBeTrue();
+        reloaded.HasValue.ShouldBeTrue();
+        reloaded.Value.ShouldNotBeNull().Bookings.ShouldHaveSingleItem().IsPending.ShouldBeTrue();
     }
 
     [Fact]
@@ -116,11 +117,11 @@ public sealed class TourStorePostgreSqlTests(PostgreSqlTestServerFixture fixture
         // Act
         Func<Task> confirm = () => Scenario.ConfirmWithOutcome(booking.Id, () => throw failure, ct);
         var exception = await confirm.ShouldThrow<InvalidOperationException>();
-        var reloaded = await Scenario.GetByBookingIdForUpdate(booking.Id, ct);
+        var reloaded = await Scenario.GetByBookingId(booking.Id, ct);
 
         // Assert
         exception.ShouldBeSameAs(failure);
-        reloaded.ShouldNotBeNull();
-        reloaded.Bookings.ShouldHaveSingleItem().IsPending.ShouldBeTrue();
+        reloaded.HasValue.ShouldBeTrue();
+        reloaded.Value.ShouldNotBeNull().Bookings.ShouldHaveSingleItem().IsPending.ShouldBeTrue();
     }
 }

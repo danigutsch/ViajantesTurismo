@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.Application.Tours.UpdateTour;
 /// Handles the update of an existing tour with validation for uniqueness and business rules.
 /// </summary>
 public sealed class UpdateTourCommandHandler(
-    ITourStore tourStore,
+    ITourCommandStore tourStore,
     IUnitOfWork unitOfWork) : ICommandHandler<UpdateTourCommand, Result>
 {
     /// <summary>
@@ -22,8 +22,8 @@ public sealed class UpdateTourCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var tour = await tourStore.GetByIdForUpdate(command.TourId, ct);
-        if (tour is null)
+        var storedTour = await tourStore.GetById(command.TourId, ct);
+        if (!storedTour.TryGetValue(out var tour))
         {
             return TourErrors.TourNotFound();
         }

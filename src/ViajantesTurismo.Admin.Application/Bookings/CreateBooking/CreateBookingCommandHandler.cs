@@ -31,6 +31,11 @@ public sealed class CreateBookingCommandHandler(
             return TourErrors.TourNotFound().ConvertError<Guid>();
         }
 
+        if (tour.HasBooking(command.BookingId))
+        {
+            return Result.Ok(command.BookingId);
+        }
+
         var principalCustomer = await customerStore.GetById(command.PrincipalCustomerId, ct);
         if (principalCustomer is null)
         {
@@ -59,7 +64,7 @@ public sealed class CreateBookingCommandHandler(
                 BookingMapper.MapToDiscountType(command.DiscountType),
                 command.DiscountAmount,
                 command.DiscountReason),
-            command.Notes), timeProvider.GetUtcNow().UtcDateTime);
+            command.Notes), timeProvider.GetUtcNow().UtcDateTime, command.BookingId);
 
         if (!result.IsSuccess)
         {

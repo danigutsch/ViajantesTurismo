@@ -8,6 +8,42 @@ namespace ViajantesTurismo.Admin.UnitTests.Domain;
 public class TourAddBookingTests
 {
     [Fact]
+    public void AddBooking_preserves_the_supplied_identifier_and_refuses_to_register_it_twice()
+    {
+        // Arrange
+        var tour = EntityBuilders.BuildTour();
+        var request = BookingDomainTestDataFactory.CreateValidSingleRequest();
+        var createdAt = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var bookingId = Guid.CreateVersion7();
+
+        // Act
+        var first = tour.AddBooking(request, createdAt, bookingId);
+        var duplicate = tour.AddBooking(request, createdAt, bookingId);
+
+        // Assert
+        first.IsSuccess.ShouldBeTrue();
+        first.Value.Id.ShouldBe(bookingId);
+        duplicate.Status.ShouldBe(ResultStatus.Conflict);
+        tour.Bookings.ShouldHaveSingleItem().Id.ShouldBe(bookingId);
+    }
+
+    [Fact]
+    public void AddBooking_rejects_an_explicitly_empty_identifier()
+    {
+        // Arrange
+        var tour = EntityBuilders.BuildTour();
+        var request = BookingDomainTestDataFactory.CreateValidSingleRequest();
+        var createdAt = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        // Act
+        var result = tour.AddBooking(request, createdAt, Guid.Empty);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        tour.Bookings.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void AddBooking_when_tour_is_fully_booked_returns_conflict_and_does_not_add_another_booking()
     {
         // Arrange

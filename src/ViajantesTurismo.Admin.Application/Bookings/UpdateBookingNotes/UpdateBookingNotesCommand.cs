@@ -8,4 +8,4 @@ namespace ViajantesTurismo.Admin.Application.Bookings.UpdateBookingNotes;
 /// </summary>
 public sealed record UpdateBookingNotesCommand(
     Guid BookingId,
-    string? Notes) : ICommand<Result>, IBookingScopedCommand;
+    string? Notes) : ICommand<Result>;

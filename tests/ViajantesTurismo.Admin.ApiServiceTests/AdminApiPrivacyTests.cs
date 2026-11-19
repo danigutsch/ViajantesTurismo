@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -118,7 +119,7 @@ public sealed class AdminApiPrivacyTests
         tourStore.AddExistingTour(AdminApiPrivacyTestData.CreateTour(identifier));
         await using var factory = AdminApiTestHost.Create(services =>
         {
-            services.Replace(ServiceDescriptor.Scoped<ITourStore>(_ => tourStore));
+            services.Replace(ServiceDescriptor.Scoped<ITourCommandStore>(_ => tourStore));
             services.Replace(ServiceDescriptor.Scoped<IUnitOfWork, FakeUnitOfWork>());
         });
         using var client = factory.CreateClient();

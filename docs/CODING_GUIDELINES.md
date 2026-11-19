@@ -488,8 +488,10 @@ connection drops while the transaction commits, the outcome is unknown and the s
 rolled back
 ([connection resiliency](https://learn.microsoft.com/ef/core/miscellaneous/connection-resiliency#transaction-commit-failure-and-the-idempotency-issue)).
 
-- Commands that create rows must use client-generated keys: the domain assigns the key and the EF
-    configuration declares `ValueGeneratedNever()`. A replay then conflicts on the key instead of duplicating.
+- Commands that create rows must use client-generated keys. EF declares `ValueGeneratedNever()`.
+    If a command can replay after an uncertain commit, allocate the identity once before its transaction
+    attempts and pass it to the domain factory. Booking, tour and customer creation return the original
+    identifier when retrying a known committed creation.
 - Do not rely on store-generated keys (identity columns) or on EF generating a default `Guid` on add for
     rows a command creates.
 - `ClientGeneratedKeyConventionTests` fails when a non-owned entity of the Admin, Branding or Catalog model

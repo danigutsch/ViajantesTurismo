@@ -11,6 +11,7 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 public sealed partial class Customer : IEntity<Guid>
 {
     private Customer(
+        Guid id,
         PersonalInfo personalInfo,
         IdentificationInfo identificationInfo,
         ContactInfo contactInfo,
@@ -19,7 +20,7 @@ public sealed partial class Customer : IEntity<Guid>
         AccommodationPreferences accommodationPreferences,
         CustomerHealthInfo healthInfo)
     {
-        Id = Guid.CreateVersion7();
+        Id = id;
         PersonalInfo = personalInfo;
         IdentificationInfo = identificationInfo;
         ContactInfo = contactInfo;
@@ -73,8 +74,9 @@ public sealed partial class Customer : IEntity<Guid>
     /// </summary>
     /// <param name="definition">The requested profile values.</param>
     /// <param name="today">The current business date, used to validate the birth date.</param>
+    /// <param name="customerId">The identity assigned by the caller, or null to generate it here.</param>
     /// <returns>A Result containing the new customer, or every validation failure.</returns>
-    public static Result<Customer> Create(CustomerDefinition definition, DateOnly today)
+    public static Result<Customer> Create(CustomerDefinition definition, DateOnly today, Guid? customerId = null)
     {
         ArgumentNullException.ThrowIfNull(definition);
 
@@ -113,6 +115,11 @@ public sealed partial class Customer : IEntity<Guid>
             accommodation.CompanionId);
 
         var errors = new ValidationErrors();
+        if (customerId == Guid.Empty)
+        {
+            errors.Add(CustomerErrors.InvalidCustomerId());
+        }
+
         AddIfFailure(errors, personalInfoResult);
         AddIfFailure(errors, identificationInfoResult);
         AddIfFailure(errors, contactInfoResult);
@@ -128,6 +135,7 @@ public sealed partial class Customer : IEntity<Guid>
         }
 
         return Result.Ok(new Customer(
+            customerId ?? Guid.CreateVersion7(),
             personalInfoResult.Value,
             identificationInfoResult.Value,
             contactInfoResult.Value,

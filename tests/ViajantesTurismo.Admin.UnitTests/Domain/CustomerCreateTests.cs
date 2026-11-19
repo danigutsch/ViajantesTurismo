@@ -14,20 +14,36 @@ public sealed class CustomerCreateTests
         var definition = CustomerMapper.MapToDefinition(
             EntityBuilders.BuildCustomer(new CustomerOptions(FirstName: "Ana", City: "Lisbon")));
         var today = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime);
+        var customerId = Guid.CreateVersion7();
 
         // Act
-        var result = Customer.Create(definition, today);
+        var result = Customer.Create(definition, today, customerId);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
         var customer = result.Value;
-        customer.Id.ShouldNotBe(Guid.Empty);
+        customer.Id.ShouldBe(customerId);
         customer.PersonalInfo.FirstName.ShouldBe("Ana");
         customer.Address.City.ShouldBe("Lisbon");
         var accommodation = customer.AccommodationPreferences;
         accommodation.RoomType.ShouldBe(definition.AccommodationPreferences.RoomType);
         accommodation.BedType.ShouldBe(definition.AccommodationPreferences.BedType);
         accommodation.CompanionId.ShouldBe(definition.AccommodationPreferences.CompanionId);
+    }
+
+    [Fact]
+    public void Create_rejects_an_explicitly_empty_customer_identifier()
+    {
+        // Arrange
+        var definition = CustomerMapper.MapToDefinition(EntityBuilders.BuildCustomer(null));
+        var today = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime);
+
+        // Act
+        var result = Customer.Create(definition, today, Guid.Empty);
+
+        // Assert
+        var errors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        errors.ContainsKey("customerId").ShouldBeTrue();
     }
 
     [Fact]

@@ -22,6 +22,11 @@ public sealed class CreateTourCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
+        if (await tourStore.GetById(command.TourId, ct) is not null)
+        {
+            return Result.Ok(command.TourId);
+        }
+
         if (await tourStore.IdentifierExists(command.Identifier, ct))
         {
             return TourErrors.IdentifierAlreadyExists().ConvertError<Guid>();
@@ -46,7 +51,7 @@ public sealed class CreateTourCommandHandler(
                 command.EBikePrice,
                 currency),
             new TourCapacityDefinition(command.MinCustomers, command.MaxCustomers),
-            [.. command.IncludedServices]));
+            [.. command.IncludedServices]), command.TourId);
 
         if (!tourResult.IsSuccess)
         {
