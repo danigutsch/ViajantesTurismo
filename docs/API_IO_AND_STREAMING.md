@@ -212,10 +212,12 @@ change.
    checks the declared type against the allow-list (AVIF, JPEG, PNG, WebP), the file extension against that type, and the
    first 12 bytes against the type's signature. A signature that belongs to a different allowed type is refused with the fixed
    copy "File signature does not match the allowed content type." and nothing from the upload is echoed.
-2. Malware scan, then decode with pixel limits. The decode probe in `SharedKernel.ImageProcessing` does not report the decoded
-   format; ImageMagick selects the decoder from the content signature, which step 1 already matched to the declared type. The
-   stored `ContentType` is the canonical lower-case type (for example `image/jpeg`), never the client-supplied string.
-3. Hash, then `IObjectStore.Put`, then outbox and metadata in `Compensation.CompleteOrCompensate`. If a later step fails or the
+2. Pass the configured malware scan and check for a matching upload in the authorized gallery. A matching upload reuses the
+   existing image if it meets the current decode limits. See
+   [Duplicate Catalog uploads](media-image-processing.md#duplicate-catalog-uploads).
+3. Sanitize and decode a new image with pixel limits. The sanitizer identifies the actual image format and ImageMagick
+   decodes it for the size check. The stored `ContentType` is the canonical lower-case type, such as `image/jpeg`.
+4. Hash, then `IObjectStore.Put`, then outbox and metadata in `Compensation.CompleteOrCompensate`. If a later step fails or the
    request is cancelled, the object is deleted on a separate token that times out after 10 seconds
    (`MediaObjectCompensation`), so a cancelled request still removes the object it wrote. The original exception keeps flowing;
    a delete that fails is left to `MediaObjectReconciliationService`. The variant handler compensates its variant objects the

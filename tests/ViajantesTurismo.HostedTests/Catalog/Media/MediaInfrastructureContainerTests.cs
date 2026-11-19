@@ -11,6 +11,7 @@ using PandaBear.MalwareScanning.ClamAv.Testing;
 using PandaBear.Results;
 using PandaBear.Testing.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
@@ -69,7 +70,7 @@ public sealed class MediaInfrastructureContainerTests(MediaInfrastructureContain
             new MediaUploadValidator(validationOptions),
             new MalwareScannerMediaUploadScanner(scannerScope.Scanner),
             objectStore,
-            new UnexpectedPublicMediaImageStore(),
+            new DelegatingMediaImageUploadStore(new UnexpectedPublicMediaImageStore()),
             new UnexpectedIntegrationEventOutbox(),
             Options.Create(validationOptions),
             NullLogger<MediaImageUploadIntake>.Instance, TimeProvider.System);

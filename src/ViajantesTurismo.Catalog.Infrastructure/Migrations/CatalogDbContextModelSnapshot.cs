@@ -318,12 +318,19 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
 
+                    b.Property<string>("UploadFingerprint")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.PrimitiveCollection<List<string>>("_tags")
                         .IsRequired()
                         .HasColumnType("text[]")
                         .HasColumnName("Tags");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UploadFingerprint")
+                        .IsUnique();
 
                     b.ToTable("PublicMediaImages", (string)null);
                 });

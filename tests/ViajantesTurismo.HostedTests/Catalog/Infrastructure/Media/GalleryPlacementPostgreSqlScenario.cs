@@ -2,9 +2,17 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using ViajantesTurismo.Catalog.Application.Tours;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using PandaBear.EntityFrameworkCore;
+using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.ObjectStorage;
+using PandaBear.Results;
+using ViajantesTurismo.Catalog.Application;
+using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
 using ViajantesTurismo.Catalog.Infrastructure.Tours;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
@@ -31,6 +39,8 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
         var app = await shared.Databases.Create(ct);
         var connectionString = app.ConnectionString;
         var services = new ServiceCollection();
+        services.AddDbContext<CatalogDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddCatalogApplication();
         services.AddIntegrationEventOutbox<CatalogDbContext>();
         services.AddIntegrationEventInbox<CatalogDbContext>();
         services.AddIntegrationEventTransportStorage<CatalogDbContext>();
@@ -77,6 +87,36 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
 
         var configurations = serviceProvider.GetServices<IDbContextConfiguration<CatalogDbContext>>().ToArray();
         return new CatalogDbContext(options, configurations);
+    }
+
+    /// <summary>Runs the upload intake in a fresh Catalog context with the durable outbox.</summary>
+    public async ValueTask<Result<MediaImageUploadIntakeResult>> AcceptUpload(
+        MediaImageUploadIntakeRequest request, IMediaUploadScanner scanner, IObjectStore objects, CancellationToken ct,
+        MediaUploadValidationOptions? validationOptions = null)
+    {
+        await using var scope = serviceProvider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+        var options = validationOptions ?? new MediaUploadValidationOptions();
+        var intake = new MediaImageUploadIntake(
+            new MediaUploadValidator(options),
+            scanner,
+            objects,
+            new EfPublicMediaImageStore(context),
+            scope.ServiceProvider.GetRequiredService<IIntegrationEventOutbox>(),
+            Options.Create(options),
+            NullLogger<MediaImageUploadIntake>.Instance,
+            TimeProvider.System);
+
+        return await intake.Accept(request, ct);
+    }
+
+    /// <summary>Reads the number of durable image and integration outbox records.</summary>
+    public async ValueTask<(int Images, long Events)> ReadUploadCounts(CancellationToken ct)
+    {
+        await using var context = CreateDbContext();
+        return (
+            await context.PublicMediaImages.CountAsync(ct),
+            await context.Database.SqlQueryRaw<long>("SELECT COUNT(*) AS \"Value\" FROM messaging.outbox_messages").SingleAsync(ct));
     }
 
     /// <summary>Applies all pending Catalog migrations to the scenario database.</summary>

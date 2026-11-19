@@ -25,7 +25,7 @@ public sealed partial class MediaImageUploadIntake(
     IMediaUploadValidator validator,
     IMediaUploadScanner scanner,
     IObjectStore objectStore,
-    IPublicMediaImageStore imageStore,
+    IMediaImageUploadStore uploadStore,
     IIntegrationEventOutbox outbox,
     IOptions<MediaUploadValidationOptions> validationOptions,
     ILogger<MediaImageUploadIntake> logger,
@@ -52,6 +52,8 @@ public sealed partial class MediaImageUploadIntake(
 
     private const string SignatureMismatchMessage = "File signature does not match the allowed content type.";
 
+    private const string DecodedImageLimitMessage = "Image content could not be decoded or exceeds the configured decoded image limits.";
+
     private const int SignaturePrefixBytes = 12;
 
     private const int MinimumAvifFileTypeBytes = 16;
@@ -70,7 +72,7 @@ public sealed partial class MediaImageUploadIntake(
     /// </summary>
     /// <param name="request">The upload intake request.</param>
     /// <param name="ct">The cancellation token.</param>
-    /// <returns>The accepted metadata and processing event.</returns>
+    /// <returns>The accepted metadata and any new processing event.</returns>
     public async ValueTask<Result<MediaImageUploadIntakeResult>> Accept(MediaImageUploadIntakeRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -145,8 +147,24 @@ public sealed partial class MediaImageUploadIntake(
         var buffer = ArrayPool<byte>.Shared.Rent((int)actualLength);
         try
         {
-            await content.ReadExactlyAsync(buffer.AsMemory(0, (int)actualLength), ct).ConfigureAwait(false);
-            var sanitized = ImageSanitizer.SanitizeInPlace(buffer.AsMemory(0, (int)actualLength), SanitizerOptions);
+            var original = buffer.AsMemory(0, (int)actualLength);
+            await content.ReadExactlyAsync(original, ct).ConfigureAwait(false);
+            var fingerprint = MediaImageUploadFingerprint.Create(request, canonicalContentType, original.Span);
+            var upload = await uploadStore.Reserve(fingerprint, ct).ConfigureAwait(false);
+            await using var ownedUpload = upload.ConfigureAwait(false);
+            if (upload.ExistingImage is { } existing)
+            {
+                if (!WithinDecodedLimits(existing.Dimensions))
+                {
+                    MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
+                    return Result.Invalid<MediaImageUploadIntakeResult>(InvalidUploadMessage, ContentField, DecodedImageLimitMessage);
+                }
+
+                MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.Accepted);
+                return Result.Ok(new MediaImageUploadIntakeResult(existing, null, scanResult.Status));
+            }
+
+            var sanitized = ImageSanitizer.SanitizeInPlace(original, SanitizerOptions);
             if (IsWrongFormat(sanitized, canonicalContentType))
             {
                 MediaImageUploadMetrics.RecordAttempt(MediaImageUploadMetrics.Outcome.InvalidFile);
@@ -179,7 +197,7 @@ public sealed partial class MediaImageUploadIntake(
                 return Result.Invalid<MediaImageUploadIntakeResult>(
                     InvalidUploadMessage,
                     nameof(request.Content),
-                    "Image content could not be decoded or exceeds the configured decoded image limits.");
+                    DecodedImageLimitMessage);
             }
 
             content.Position = 0;
@@ -225,7 +243,7 @@ public sealed partial class MediaImageUploadIntake(
 
             try
             {
-                await StoreImageEventAndCompensateObject(image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
+                await StoreImageEventAndCompensateObject(upload, image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
             }
             catch (MediaGalleryPlacementConflictException)
             {
@@ -241,6 +259,11 @@ public sealed partial class MediaImageUploadIntake(
             ArrayPool<byte>.Shared.Return(buffer);
         }
     }
+
+    private bool WithinDecodedLimits(MediaImageDimensions dimensions) =>
+        dimensions.Width <= options.MaxDecodedWidth &&
+        dimensions.Height <= options.MaxDecodedHeight &&
+        (long)dimensions.Width * dimensions.Height <= options.MaxDecodedPixelCount;
 
     private static async ValueTask<bool> HasExpectedSignature(Stream content, string contentType, long length, CancellationToken ct)
     {
@@ -305,6 +328,7 @@ public sealed partial class MediaImageUploadIntake(
     }
 
     private async ValueTask StoreImageEventAndCompensateObject(
+        IMediaImageUploadLease upload,
         PublicMediaImage image,
         MediaImageOriginalStoredIntegrationEvent originalStoredEvent,
         ObjectStorageKey objectKey,
@@ -316,7 +340,7 @@ public sealed partial class MediaImageUploadIntake(
                 async ct =>
                 {
                     await outbox.Enqueue(originalStoredEvent, ct).ConfigureAwait(false);
-                    await imageStore.Upsert(image, ct).ConfigureAwait(false);
+                    await upload.Save(image, ct).ConfigureAwait(false);
                 },
                 _ => MediaObjectCompensation.Delete(objectStore, objectKey.Value),
                 ct).ConfigureAwait(false);

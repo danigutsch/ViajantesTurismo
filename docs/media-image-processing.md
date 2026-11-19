@@ -56,6 +56,26 @@ not expose the decoded format, so the signature class stands in for it. Compensa
 cancelled request still removes its stored original; see
 [Catalog media intake flow](API_IO_AND_STREAMING.md#catalog-media-intake-flow).
 
+### Duplicate Catalog uploads
+
+The upload endpoint returns the existing image with its current metadata when a request matches a prior upload. The
+response uses the usual `201 Created` status, image ID, and `Location`. It creates no additional gallery entry, original,
+or variant-processing event. The endpoint authorizes the target gallery before the lookup.
+
+The private, versioned fingerprint combines the SHA-256 digest of the original bytes, the original byte count, the canonical
+media type, the exact set of gallery IDs, and the normalized alt text, caption, attribution, copyright, and tags.
+Gallery order and cover status come from the server. Different original bytes or gallery and
+editorial inputs create separate images. An edit to the original's gallery ownership or editorial attributes invalidates its
+prior fingerprint. Uploads recorded before the fingerprint was introduced have no original-byte identity.
+
+Each upload that passes the size, type, and signature checks reaches the configured malware scanner. Its verdict allows a
+lookup before sanitizing, decoding, or writing a new original. The existing image must meet the current decoded-size limits.
+PostgreSQL serializes requests with the
+same advisory lock key and compares the full SHA-256 fingerprint. Two different fingerprints with the same numerical lock
+key wait on each other and remain separate uploads. Equal full fingerprints represent the same upload identity. Bump the
+fingerprint version when a change in intake policy requires existing bytes to run through sanitization or decoding again.
+The fingerprint and storage keys are private and omitted from upload response fields and duplicate lookup telemetry.
+
 ## Animated images
 
 Catalog gallery uploads may be animated WebP or animated PNG (APNG), and are accepted by policy; there is no animation check.
