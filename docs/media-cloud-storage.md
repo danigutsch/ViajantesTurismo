@@ -14,6 +14,19 @@ hosted tests were consolidated; SeaweedFS remains covered by real storage integr
 and [S3 policy/versioning gaps](https://garagehq.deuxfleurs.fr/documentation/reference-manual/s3-compatibility/)
 also require review before reconsideration.
 
+## Storage and scanning responsibilities
+
+| Flow | SharedKernel dependency | Application responsibility |
+| --- | --- | --- |
+| Upload body | `IO` supplies a bounded, seekable lease for streams that need several passes. | Catalog chooses upload bounds, accepted media types, scan ordering, and cleanup on failure. |
+| Scan and health | `MalwareScanning` supplies the scan contract. `MalwareScanning.ClamAv` implements the clamd protocol, options, and health probe. | Catalog maps scanner results to media decisions through `MalwareScannerMediaUploadScanner` and keeps the upload and publication policy. |
+| Object operations | `ObjectStorage` defines keys, metadata and stream operations. `ObjectStorage.S3` implements S3 authentication, transport and telemetry. | Catalog generates object keys, owns gallery metadata and associations, and controls variants, publication and reconciliation. |
+| Local service topology | `Aspire.Hosting.ClamAv` and `Aspire.Hosting.SeaweedFs` configure the local service resources. | AppHost selects local or external infrastructure and supplies endpoints and credentials through configuration. |
+
+The Catalog application consumes the stream and object contracts. Catalog infrastructure owns the concrete S3 and ClamAV
+registrations. The Aspire hosting packages are used by AppHost. The same Catalog workflow and compatibility checks apply
+when the deployment binds an external provider to those registrations.
+
 ## Configuration
 
 Configure `Catalog:MediaObjectStorage:S3` on every Catalog API and worker that accesses media:
@@ -71,6 +84,19 @@ request rejection. Existing adapter tests cover object operations, metadata, mis
 key validation and paging without a live cloud account. Deployment smoke testing remains
 required for IAM, CORS, CDN origin access and provider-specific behavior. Cloud credentials,
 service deployment and billable resources are outside the repository change.
+
+For an adapter or provider migration, restore the approved package pin and lock files using the
+[SharedKernel compatibility workflow](sharedkernel/development.md). Run the existing SeaweedFS and Catalog
+upload integration suites. Before changing the deployed endpoint, verify that the destination contains the
+expected objects under the application-owned keys and that type, checksums and publication URLs still match.
+Validate scan refusal, timeout, and cancellation before permitting uploads. Keep the previous provider available
+for rollback until the new configuration and its object inventory are verified. Compare private inventories in
+the deployment environment and use operation names and counts in routine telemetry.
+
+```bash
+dotnet test --project tests/ViajantesTurismo.HostedTests --filter-class '*MediaInfrastructureContainerTests'
+dotnet test --project tests/ViajantesTurismo.Catalog.ApiServiceTests --filter-class '*MediaUploadOverKestrelTests'
+```
 
 References:
 
