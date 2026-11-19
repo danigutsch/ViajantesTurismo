@@ -10,6 +10,9 @@ namespace ViajantesTurismo.Management.Web;
 /// <summary>Maps Admin-only mediated document artifact delivery endpoints.</summary>
 internal static class DocumentArtifactProxyEndpoints
 {
+    /// <summary>The endpoint name used to select the attachment response policy.</summary>
+    internal const string DownloadEndpointName = "DownloadFinalizedDocumentArtifact";
+
     private const string HtmlMediaType = "text/html; charset=utf-8";
 
     /// <summary>Maps the authenticated document artifact proxy endpoint.</summary>
@@ -18,6 +21,7 @@ internal static class DocumentArtifactProxyEndpoints
         ArgumentNullException.ThrowIfNull(app);
 
         app.MapGet("/documents/{id:guid}/download", Download)
+            .WithName(DownloadEndpointName)
             .RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" });
         return app;
     }

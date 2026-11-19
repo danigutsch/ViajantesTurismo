@@ -244,8 +244,9 @@ multipart. `BrandingLogoIntake.Process` runs these steps; each rewinds the lease
    one is at most 40 KiB; otherwise `400`.
 7. The result is a `BrandingLogo` (`ReadOnlyMemory<byte>`) addressed by its SHA-256 and stored once in
    `branding."BrandingLogos"` (`bytea`, written from an internal `byte[]`).
-8. `GET /api/v1/public/branding/logo/{sha256}` serves it with a long `immutable` cache, a strong `ETag`, and `nosniff`; the hash
-   is validated with an anchored pattern before the store is read.
+8. `GET /api/v1/public/branding/logo/{sha256}` serves it with a long `immutable` client cache, a strong `ETag`, and `nosniff`.
+   On an output-cache miss, an anchored pattern validates the address before the store is read. The store checks the WebP
+   media type and hashes the stored bytes before serving the logo.
 
 The endpoint requires `BrandingWrite`, `If-Match`, and the Branding mutation rate limit. The flow is documented in
 [Branding](branding.md#logo).

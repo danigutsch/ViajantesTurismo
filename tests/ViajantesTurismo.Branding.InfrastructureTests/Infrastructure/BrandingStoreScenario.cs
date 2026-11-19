@@ -47,6 +47,18 @@ internal sealed class BrandingStoreScenario : IDisposable
         return scope.ServiceProvider.GetRequiredService<EfBrandingSettingsStore>();
     }
 
+    /// <summary>Seeds a row with overridden stored values to exercise the verified read path.</summary>
+    public async Task SeedStoredLogo(BrandingLogo logo, byte[] storedBytes, string storedContentType, CancellationToken ct)
+    {
+        using var scope = provider.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<BrandingDbContext>();
+        var row = BrandingLogoRecord.Create(logo, DateTimeOffset.UnixEpoch);
+        var entry = dbContext.BrandingLogos.Add(row);
+        entry.Property(item => item.Content).CurrentValue = storedBytes;
+        entry.Property(item => item.ContentType).CurrentValue = storedContentType;
+        _ = await dbContext.SaveChangesAsync(ct);
+    }
+
     /// <summary>Reads the persisted settings row, revisions ordered by source revision, and outbox envelopes.</summary>
     public BrandingStoreSnapshot ReadSnapshot()
     {
