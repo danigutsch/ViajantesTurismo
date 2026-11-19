@@ -121,6 +121,7 @@ else
     /// </remarks>
     protected override async Task OnParametersSetAsync()
     {
+        PublicWebHttpCache.SetNoStore(HttpContext);
         _loadFailed = false;
         _tour = null;
 

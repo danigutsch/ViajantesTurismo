@@ -18,7 +18,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -357,7 +357,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.ToTable("PublicContent", (string)null);
                 });
 
-            modelBuilder.Entity("ViajantesTurismo.Catalog.Infrastructure.CatalogTourReadModelEntity", b =>
+            modelBuilder.Entity("ViajantesTurismo.Catalog.Infrastructure.Tours.CatalogTourReadModelEntity", b =>
                 {
                     b.Property<Guid>("CatalogTourId")
                         .HasColumnType("uuid");
@@ -438,6 +438,22 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                         .HasAnnotation("PandaBear:UniqueRule", "catalog.tour-slug");
 
                     b.ToTable("CatalogTourReadModels", (string)null);
+                });
+
+            modelBuilder.Entity("ViajantesTurismo.Catalog.Infrastructure.Tours.CatalogTourRetirementEntity", b =>
+                {
+                    b.Property<Guid>("AdminTourId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RetirementId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("WithdrawnAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("AdminTourId");
+
+                    b.ToTable("CatalogTourRetirements", (string)null);
                 });
 
             modelBuilder.Entity("ViajantesTurismo.Catalog.Domain.Media.PublicMediaImage", b =>

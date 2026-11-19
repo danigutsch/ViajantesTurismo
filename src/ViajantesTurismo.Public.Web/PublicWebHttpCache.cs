@@ -11,10 +11,13 @@ internal static class PublicWebHttpCache
     /// <summary>How long published content may be served from shared caches.</summary>
     public static readonly TimeSpan PublishedContentFreshness = TimeSpan.FromSeconds(60);
 
-    /// <summary>Marks the response as not cacheable.</summary>
-    public static void SetNoStore(HttpContext httpContext)
+    /// <summary>Marks a visibility-dependent response as not cacheable.</summary>
+    public static void SetNoStore(HttpContext? httpContext)
     {
-        HttpCacheHeaders.SetNoStore(httpContext);
+        if (httpContext is { Response.HasStarted: false })
+        {
+            HttpCacheHeaders.SetNoStore(httpContext);
+        }
     }
 
     /// <summary>Sets a 503 status with no-store caching when the response has not started.</summary>
@@ -27,11 +30,5 @@ internal static class PublicWebHttpCache
 
         httpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
         SetNoStore(httpContext);
-    }
-
-    /// <summary>Marks the response as publicly cacheable for the published content freshness window.</summary>
-    public static void SetPublishedContent(HttpContext httpContext)
-    {
-        HttpCacheHeaders.SetPublic(httpContext, PublishedContentFreshness);
     }
 }

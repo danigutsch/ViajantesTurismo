@@ -100,6 +100,11 @@ public sealed class AdminTourCreatedIntegrationHandler(
         catch (ExpectedStreamRevisionConflictException)
         {
             var existingEvents = await eventStore.Load(streamId, afterRevision: null, ct).ConfigureAwait(false);
+            if (existingEvents.Any(static envelope => envelope.Data is CatalogTourRetired))
+            {
+                return true;
+            }
+
             var initialEvent = existingEvents.FirstOrDefault(static envelope => envelope.Revision.Value == 1);
             if (initialEvent?.Data is not CatalogTourDraftCreated draftCreated
                 || draftCreated.SourceEventId != sourceEventId)

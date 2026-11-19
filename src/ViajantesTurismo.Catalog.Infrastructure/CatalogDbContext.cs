@@ -23,6 +23,9 @@ public sealed class CatalogDbContext(
     /// <summary>Gets the Catalog tour read model rows.</summary>
     internal DbSet<CatalogTourReadModelEntity> CatalogTourReadModels => Set<CatalogTourReadModelEntity>();
 
+    /// <summary>Gets durable Catalog tour retirement markers.</summary>
+    internal DbSet<CatalogTourRetirementEntity> CatalogTourRetirements => Set<CatalogTourRetirementEntity>();
+
     /// <summary>Gets the public media images with their variants, tour links and accessibility texts.</summary>
     internal DbSet<PublicMediaImage> PublicMediaImages => Set<PublicMediaImage>();
 
@@ -49,6 +52,12 @@ public sealed class CatalogDbContext(
 
         modelBuilder.ApplyConfiguration(new EditablePublicContentConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
+        modelBuilder.Entity<CatalogTourRetirementEntity>(retirement =>
+        {
+            retirement.ToTable(CatalogTourRetirementEntity.TableName);
+            retirement.HasKey(row => row.AdminTourId);
+            retirement.Property(row => row.AdminTourId).ValueGeneratedNever();
+        });
         modelBuilder.ApplyConfiguration(new PublicMediaImageConfiguration());
         if (configurations is not null)
         {

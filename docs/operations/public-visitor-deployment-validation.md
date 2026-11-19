@@ -112,3 +112,18 @@ To complete an environment-specific validation, retain a private sanitized recor
 
 No deployment-specific acceptance is claimed until those observations are available. Account access,
 deployment changes, and any infrastructure ownership decisions remain external operator actions.
+
+## Tour retirement and response caches
+
+Catalog commits a public withdrawal marker and queues confirmation in the same transaction.
+Retirement-sensitive Catalog tour list and detail responses use `no-store`. Public Web also
+returns `no-store` on its home page, tour list and detail pages, gallery, sitemap, and
+visibility-checked rendition proxy. These routes cannot repopulate caches with earlier tour
+visibility. Catalog media lookup still requires a visible linked tour. A rendition shared with
+another live tour remains available, and independently versioned assets keep their existing
+immutable caching policy.
+
+For a future upgrade from the earlier cache policy, drain old Catalog API and Public Web replicas
+and their in-flight responses. Purge the corresponding route entries at reverse proxies and CDNs
+before enabling the retirement workflow. Confirm that intermediaries honor `no-store` and do not
+serve previously cached tours. The application cannot purge entries stored outside its hosts.

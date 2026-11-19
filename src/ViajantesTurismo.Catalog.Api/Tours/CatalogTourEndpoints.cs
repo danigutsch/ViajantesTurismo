@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.OpenApi;
 using PandaBear.EventSourcing;
 using PandaBear.HttpCaching.AspNetCore;
@@ -70,14 +69,12 @@ internal static class CatalogTourEndpoints
 
         versionedApi.MapGet("/public/catalog/tours", GetPublishedTours)
             .WithName("GetPublishedTours")
-            .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
             .WithName("GetPublishedTour")
             .Produces<TourDetailsDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
-            .CacheOutput(policy => policy.Expire(PublicCatalogHttpCache.Freshness).Tag(PublicCatalogHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
     }
@@ -101,6 +98,7 @@ internal static class CatalogTourEndpoints
 
     private static async Task<IResult> GetPublishedTour(string slug, ICatalogTourReadModelStore store, IPublicMediaImageStore imageStore, HttpContext httpContext, CancellationToken ct)
     {
+        HttpCacheHeaders.SetNoStore(httpContext);
         if (string.IsNullOrWhiteSpace(slug))
         {
             return Results.BadRequest();
@@ -109,13 +107,11 @@ internal static class CatalogTourEndpoints
         var tour = await store.GetPublishedTourBySlug(slug, ct);
         if (tour is null)
         {
-            HttpCacheHeaders.SetNoStore(httpContext);
             return Results.NotFound();
         }
 
         var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
         var dto = MapPublicTourDetail(tour, GetReadyImages(images));
-        PublicCatalogHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(dto);
     }
 
@@ -139,6 +135,7 @@ internal static class CatalogTourEndpoints
         HttpContext httpContext,
         CancellationToken ct)
     {
+        HttpCacheHeaders.SetNoStore(httpContext);
         var tours = await store.ListTours(ct);
         var publishedTours = tours.Where(tour => tour.IsPubliclyVisible).ToArray();
         var imagesByTour = await imageStore.ListByTours([.. publishedTours.Select(tour => tour.CatalogTourId)], ct);
@@ -147,7 +144,6 @@ internal static class CatalogTourEndpoints
         [
             .. publishedTours.Select(tour => MapPublicTourSummary(tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId))))
         ];
-        PublicCatalogHttpCache.SetPublicHeaders(httpContext);
         return result;
     }
 
@@ -156,7 +152,6 @@ internal static class CatalogTourEndpoints
         UpsertCatalogTourPresentationRequest request,
         CatalogTourPresentationService presentationService,
         IPublicMediaImageStore imageStore,
-        IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
         CancellationToken ct)
     {
@@ -204,7 +199,7 @@ internal static class CatalogTourEndpoints
         catch (CatalogTourProjectionPendingException exception)
         {
             logger.TourProjectionPending(exception.GetType().Name);
-            return await AcceptPendingProjection(id, outputCacheStore, logger);
+            return AcceptPendingProjection(id);
         }
 
         switch (updated.Status)
@@ -221,7 +216,6 @@ internal static class CatalogTourEndpoints
                 throw new InvalidOperationException($"Unexpected Catalog tour presentation result status '{updated.Status}'.");
         }
 
-        await PublicCatalogHttpCache.Invalidate(outputCacheStore, logger);
         return TypedResults.Ok(MapManagementTour(updated.Value, (IReadOnlyList<PublicMediaImage>?)images));
     }
 
@@ -229,7 +223,6 @@ internal static class CatalogTourEndpoints
         Guid id,
         CatalogTourPublicationRequest request,
         CatalogTourPresentationService presentationService,
-        IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
         CancellationToken ct)
     {
@@ -250,6 +243,8 @@ internal static class CatalogTourEndpoints
             {
                 case ResultStatus.NotFound:
                     return TypedResults.NotFound();
+                case ResultStatus.Conflict:
+                    return TypedResults.Problem(published.ErrorDetails?.Detail, statusCode: StatusCodes.Status409Conflict);
                 case ResultStatus.Invalid:
                     return TypedResults.ValidationProblem(ToValidationProblemDictionary(published.ErrorDetails?.ValidationErrors));
                 case ResultStatus.Ok:
@@ -265,10 +260,9 @@ internal static class CatalogTourEndpoints
         catch (CatalogTourProjectionPendingException exception)
         {
             logger.TourProjectionPending(exception.GetType().Name);
-            return await AcceptPendingProjection(id, outputCacheStore, logger);
+            return AcceptPendingProjection(id);
         }
 
-        await PublicCatalogHttpCache.Invalidate(outputCacheStore, logger);
         return TypedResults.NoContent();
     }
 
@@ -276,7 +270,6 @@ internal static class CatalogTourEndpoints
         Guid id,
         CatalogTourPublicationRequest request,
         CatalogTourPresentationService presentationService,
-        IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
         CancellationToken ct)
     {
@@ -305,19 +298,14 @@ internal static class CatalogTourEndpoints
         catch (CatalogTourProjectionPendingException exception)
         {
             logger.TourProjectionPending(exception.GetType().Name);
-            return await AcceptPendingProjection(id, outputCacheStore, logger);
+            return AcceptPendingProjection(id);
         }
 
-        await PublicCatalogHttpCache.Invalidate(outputCacheStore, logger);
         return TypedResults.NoContent();
     }
 
-    private static async Task<Accepted> AcceptPendingProjection(
-        Guid id,
-        IOutputCacheStore outputCacheStore,
-        ILogger logger)
+    private static Accepted AcceptPendingProjection(Guid id)
     {
-        await PublicCatalogHttpCache.Invalidate(outputCacheStore, logger);
         return TypedResults.Accepted(new Uri($"/api/v1/catalog/tours/{id}", UriKind.Relative));
     }
 

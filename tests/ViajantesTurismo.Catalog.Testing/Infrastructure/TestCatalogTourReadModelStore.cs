@@ -5,9 +5,30 @@ using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore
+public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore, ICatalogTourRetirementStore
 {
     private readonly ConcurrentDictionary<Guid, CatalogTourDraftReadModel> toursById = new();
+    private readonly ConcurrentDictionary<Guid, Guid> retirements = new();
+
+    /// <inheritdoc />
+    public ValueTask Withdraw(CatalogTourRetired retirement, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(retirement);
+        ct.ThrowIfCancellationRequested();
+        retirements.TryAdd(retirement.AdminTourId, retirement.RetirementId);
+        foreach (var tour in toursById.Values.Where(tour => tour.AdminTourId == retirement.AdminTourId))
+        {
+            toursById[tour.CatalogTourId] = tour with
+            {
+                IsPublished = false
+            };
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
+    /// <summary>Gets the number of distinct retired source tours.</summary>
+    public int RetirementCount => retirements.Count;
 
     public bool FailNextPublicationProjection
     {

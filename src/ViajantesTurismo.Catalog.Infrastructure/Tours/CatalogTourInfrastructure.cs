@@ -15,6 +15,7 @@ internal static class CatalogTourInfrastructure
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.Services.TryAddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
+        builder.Services.TryAddScoped<ICatalogTourRetirementStore, EfCatalogTourRetirementStore>();
         builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
         builder.Services.AddSingleton<IEventStore, PostgreSqlEventStore>();
         builder.Services.AddSingleton<IProjectionCheckpointStore, PostgreSqlProjectionCheckpointStore>();

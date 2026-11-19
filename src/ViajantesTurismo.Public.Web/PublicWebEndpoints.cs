@@ -82,6 +82,7 @@ internal static class PublicWebEndpoints
         IPublicCatalogApiClient catalogApi,
         CancellationToken ct)
     {
+        PublicWebHttpCache.SetNoStore(httpContext);
         TourSummaryDto[] tours;
         try
         {
@@ -148,7 +149,7 @@ internal static class PublicWebEndpoints
             return Results.NotFound();
         }
 
-        PublicWebHttpCache.SetPublishedContent(httpContext);
+        PublicWebHttpCache.SetNoStore(httpContext);
         httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
         httpContext.Response.RegisterForDisposeAsync(media);
         return Results.Stream(media.Content, media.ContentType, enableRangeProcessing: false);

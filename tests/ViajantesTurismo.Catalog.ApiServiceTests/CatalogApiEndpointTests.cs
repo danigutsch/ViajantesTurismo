@@ -1422,6 +1422,50 @@ public sealed class CatalogApiEndpointTests
     }
 
     [Fact]
+    public async Task Public_media_remains_available_through_a_live_link_until_every_linked_tour_retires()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow();
+        var first = new CatalogTourDraftReadModel(Guid.CreateVersion7(), Guid.CreateVersion7(), "TOUR-FIRST", "First", "first", true, 1, now);
+        var second = new CatalogTourDraftReadModel(Guid.CreateVersion7(), Guid.CreateVersion7(), "TOUR-SECOND", "Second", "second", true, 1, now);
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(first, ct);
+        await tourStore.UpsertDraft(second, ct);
+        var image = PublicMediaImage.Create(new PublicMediaImageMetadata
+        {
+            Id = Guid.CreateVersion7(),
+            SourceObjectKey = "shared-source.jpg",
+            Checksum = "sha256:shared",
+            ContentType = "image/jpeg",
+            FileSizeBytes = 10,
+            Dimensions = new MediaImageDimensions(640, 427),
+            ProcessingStatus = MediaImageProcessingStatus.Ready,
+            AltText = "Shared image"
+        }, [new MediaImageResponsiveVariant("shared-640.jpg", 640, 427, "image/jpeg", 10)], [],
+            [new MediaImageTourLink(first.CatalogTourId, 0, true), new MediaImageTourLink(second.CatalogTourId, 0, true)]).Value;
+        var mediaStore = new TestPublicMediaImageStore();
+        await mediaStore.Upsert(image, ct);
+        var objects = MediaObjectStoreTestFactory.Create();
+        objects.Seed("shared-640.jpg", "test-image"u8.ToArray(), "image/jpeg", "sha256:shared");
+        await using var factory = CatalogApiTestHost.Create(tourStore, mediaStore, objects);
+        using var client = factory.CreateClient();
+        var uri = new Uri($"/api/v1/public/catalog/media/{image.Id}/640/jpg", UriKind.Relative);
+
+        // Act
+        await tourStore.Withdraw(new CatalogTourRetired(first.AdminTourId, Guid.CreateVersion7()), ct);
+        using var throughLiveLink = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, ct);
+        await tourStore.Withdraw(new CatalogTourRetired(second.AdminTourId, Guid.CreateVersion7()), ct);
+        using var afterWithdrawal = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, ct);
+
+        // Assert
+        throughLiveLink.StatusCode.ShouldBe(HttpStatusCode.OK);
+        throughLiveLink.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
+        afterWithdrawal.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        afterWithdrawal.Headers.CacheControl.ShouldNotBeNull().NoStore.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task Public_catalog_media_endpoint_rejects_a_stored_content_type_that_differs_from_the_rendition()
     {
         // Arrange
