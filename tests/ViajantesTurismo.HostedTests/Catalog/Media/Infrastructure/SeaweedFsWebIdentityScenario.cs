@@ -207,9 +207,10 @@ internal sealed class SeaweedFsWebIdentityScenario : IAsyncDisposable
                     }
                 }
                 catch (HttpRequestException exception) when (exception.HttpRequestError == HttpRequestError.ConnectionError
-                    || exception.GetBaseException() is SocketException { SocketErrorCode: SocketError.ConnectionReset })
+                    || exception.GetBaseException() is SocketException { SocketErrorCode: SocketError.ConnectionReset }
+                    || (exception.HttpRequestError == HttpRequestError.SecureConnectionError && exception.InnerException is IOException))
                 {
-                    // The container can be running while its HTTPS listener is still starting.
+                    // The container proxy can accept a connection and close it before the TLS listener starts.
                 }
             } while (await cadence.WaitForNextTickAsync(budget.Token));
         }

@@ -48,16 +48,14 @@ public class CustomerTests(AspireSystemTestFixture fixture) : AspireSystemTestBa
         await Page.ShouldHaveTitle("Create Customer - Identification");
         await Expect(Page.GetByText("Step 2 of 8")).ToBeVisibleAsync();
 
-        var nationalIdInput = Page.Locator("#nationalId");
-        await nationalIdInput.FillAndExpectValue(nationalId);
-        await Expect(nationalIdInput).ToHaveValueAsync(nationalId);
-
         await Page.Locator("#idNationality").ClickAsync();
         await Page.Locator(".country-dropdown-menu input").FillAsync("Brazil");
         await Page.Locator(".country-dropdown-item", new PageLocatorOptions { HasText = "Brazil" }).First.ClickAsync();
 
+        var nationalIdInput = Page.Locator("#nationalId");
         await nationalIdInput.FillAndExpectValue(nationalId);
-        await Expect(nationalIdInput).ToHaveValueAsync(nationalId);
+        await nationalIdInput.BlurAsync();
+        await Expect(Page.Locator("#nationalId.modified.valid")).ToBeVisibleAsync();
 
         await Page.GetButton("Next").ClickAsync();
 
