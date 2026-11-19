@@ -295,7 +295,7 @@ dotnet_diagnostic.CA1716.severity = none
 
 # Blazor component parameters are public and require public model types. Owner: Management.Web.
 # Remove when these components no longer expose the models through public [Parameter] surfaces.
-[src/ViajantesTurismo.Management.Web/Components/Shared/BookingFormModel.cs]
+[src/ViajantesTurismo.Management.Web/Components/Pages/Bookings/BookingFormModel.cs]
 dotnet_diagnostic.CA1515.severity = none
 
 [src/ViajantesTurismo.Management.Web/Models/PaymentFormModel.cs]
@@ -304,13 +304,13 @@ dotnet_diagnostic.CA1515.severity = none
 [src/ViajantesTurismo.Management.Web/Services/CountryInfo.cs]
 dotnet_diagnostic.CA1515.severity = none
 
-[src/ViajantesTurismo.Management.Web/Services/CustomerImportField.cs]
+[src/ViajantesTurismo.Management.Web/Components/Pages/Customers/Import/CustomerImportField.cs]
 dotnet_diagnostic.CA1515.severity = none
 
-[src/ViajantesTurismo.Management.Web/Services/CustomerImportFieldMapping.cs]
+[src/ViajantesTurismo.Management.Web/Components/Pages/Customers/Import/CustomerImportFieldMapping.cs]
 dotnet_diagnostic.CA1515.severity = none
 
-[src/ViajantesTurismo.Management.Web/Components/Pages/Customers/ImportCustomersDuplicateResolutionItem.cs]
+[src/ViajantesTurismo.Management.Web/Components/Pages/Customers/Import/ImportCustomersDuplicateResolutionItem.cs]
 dotnet_diagnostic.CA1515.severity = none
 
 # Test projects are not public API, and test names/namespaces intentionally use readable terms.

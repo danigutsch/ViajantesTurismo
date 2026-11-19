@@ -1,0 +1,109 @@
+using ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
+using PandaBear.Testing;
+using PandaBear.Blazor;
+using ViajantesTurismo.Management.Web.Components.Pages.Customers;
+
+namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;
+
+[TestScope(TestScope.Component)]
+public sealed class ImportCustomersInteractiveMappingTests : BunitContext
+{
+    private readonly FakeCustomersApiClient _fakeCustomersApi = new();
+
+    public ImportCustomersInteractiveMappingTests()
+    {
+        Services.AddUiFailureReporting();
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
+    }
+
+    [Fact]
+    public void Shows_dropdown_for_every_defined_field()
+    {
+        // Arrange
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(file);
+
+        // Assert — one select per field in the matcher
+        cut.WaitForAssertion(() =>
+        {
+            var selects = cut.FindAll("select.form-select-sm");
+            selects.Count.ShouldBe(CustomerImportHeaderMatcher.Fields.Count);
+        });
+    }
+
+    [Fact]
+    public void Optional_fields_are_labeled_as_optional()
+    {
+        // Arrange
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(file);
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Optional", StringComparison.Ordinal));
+        var optionalCount = CustomerImportHeaderMatcher.Fields.Count(f => !f.IsRequired);
+        var optionalBadges = cut.FindAll(".badge.bg-secondary")
+            .Where(b => b.TextContent.Trim() == "Optional")
+            .ToList();
+        optionalBadges.Count.ShouldBe(optionalCount);
+    }
+
+    [Fact]
+    public void Auto_matched_field_dropdown_has_CSV_header_preselected()
+    {
+        // Arrange
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText("Email,FirstName\ntest@test.com,John", "customers.csv");
+
+        // Act
+        cut.FindComponent<InputFile>().UploadFiles(file);
+
+        // Assert — the Email dropdown has the "Email" option selected
+        cut.WaitForAssertion(() =>
+        {
+            var emailSelect = cut.Find("select[data-field='Email']");
+            var selectedOption = emailSelect.QuerySelector("option[selected]");
+            _ = selectedOption.ShouldNotBeNull();
+            selectedOption.GetAttribute("value").ShouldBe("Email");
+        });
+    }
+
+    [Fact]
+    public void Clearing_required_auto_matched_field_via_dropdown_disables_import()
+    {
+        // Arrange — all canonical headers: all required fields matched → import enabled
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        cut.FindComponent<InputFile>().UploadFiles(file);
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+
+        // Act — explicitly clear a required field dropdown (overrides auto-match)
+        cut.Find("select[data-field='Email']").Change("");
+
+        // Assert — import disabled because required field is now unassigned
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Clearing_optional_field_does_not_disable_import()
+    {
+        // Arrange — all canonical headers present: all required matched, import enabled
+        const string optionalFieldName = "Instagram";
+        var cut = Render<ImportCustomers>();
+        var file = InputFileContent.CreateFromText(CustomerImportCsvTestData.AllCanonicalHeaders + "\ndata", "customers.csv");
+        cut.FindComponent<InputFile>().UploadFiles(file);
+        ImportCustomersTestDomHelper.WaitForEnabledButton(cut, "Preview");
+
+        // Act — clear an optional field
+        cut.Find($"select[data-field='{optionalFieldName}']").Change("");
+
+        // Assert — import still enabled (optional field not required)
+        ImportCustomersTestDomHelper.FindButtonByText(cut, "Preview").HasAttribute("disabled").ShouldBeFalse();
+    }
+}

@@ -44,7 +44,7 @@ These are curated observations from source, not an automatically evaluated depen
 | Admin | `ViajantesTurismo.Admin.Api/{Tours,Bookings,Customers,Documents}`; bookings already have operation-specific endpoint files | `Admin.Application/Bookings/*` and `Tours/*` use operation folders; `Customers/Import` and `Documents` group workflows; `Admin.Application/Mappings` is centralized; `Admin.Contracts.Application` mixes root DTOs with Bookings/Documents folders | `Admin.Infrastructure` owns read/write contexts, stores, configurations, and migrations; `Admin.UnitTests`, `Admin.ApiServiceTests`, `Admin.ContractTests`, `Admin.BehaviorTests`, and `HostedTests` cover different seams | Endpoint response reloads use broad `IQueryService`; aggregate capacity and booking mutations share transactional rules; import and document workflows cross multiple operations |
 | Catalog | `ViajantesTurismo.Catalog.Api/CatalogEndpoints.cs` combines management tours, publishing, upload, accessibility, public media, and content routes | `Catalog.Application/{Tours,Media,PublicContent,IntegrationEvents,Projections}` already has capability ownership; wire DTOs/clients live in `Catalog.Contracts.Application` and `Catalog.Contracts.Http`; domain validation remains in `Catalog.Domain` | `Catalog.Infrastructure` has root stores, storage adapters, projection/reconciliation services, and `ModelConfigurations`; `Catalog.UnitTests`, `Catalog.ApiServiceTests`, `Catalog.ContractTests`, `Catalog.InfrastructureTests`, `Catalog.IntegrationTests`, and `Catalog.BehaviorTests` | Event acceptance and projection visibility differ; media commits span object storage and metadata; public cache invalidation spans publishing/content/media |
 | Public Web | `ViajantesTurismo.Public.Web/Components/Pages/{Home,Gallery,Tours}` and `Components/Shared/{TourCard,TourGallery,ResponsiveTourImage}.razor` | Pages consume contract-owned Catalog clients; `PublicCultureQuery`, sitemap options, endpoint/cache/security classes, and host composition sit at project root; localized text/assets also use `ViajantesTurismo.Resources` | No application-owned database; `ViajantesTurismo.Public.WebTests` covers rendering and host behavior | Culture normalization, canonical URLs, sitemap, and cache variation must agree; anonymous pages must never acquire management credentials |
-| Management Web | `ViajantesTurismo.Management.Web/Components/Pages/{Tours,Bookings,Customers,Catalog,Branding,Documents}`; customer creation is a multi-page wizard; import already has page-local workflow helpers | `Components/Shared` includes booking/payment forms; `Models` groups form models; `Services` owns country/import-header services; root `CustomerCreationState` owns wizard state; HTTP clients remain in Admin/Catalog contract projects | No business DbContext in web; protected distributed ticket/token stores are host infrastructure; `Management.WebTests`, `Management.WebIntegrationTests`, and Admin UI/System suites cover UI and remote seams | Scoped wizard/import state, token exchange, antiforgery, streaming downloads, and accessible focus/error behavior must survive moves |
+| Management Web | `ViajantesTurismo.Management.Web/Components/Pages/{Tours,Bookings,Customers,Catalog,Branding,Documents,Payments}` owns operator workflows | Booking forms and document hold controls live with their pages. Customer form models, wizard state, and import preview and mapping code live under `Customers`. Contract projects own the HTTP clients | No business DbContext in web. Protected ticket/token stores are host infrastructure. `Management.WebTests` covers workflow components and host seams. `HostedTests/Management` exercises the browser seam | Preserve the scoped wizard lifetime, customer data handling, token exchange, antiforgery, and streaming downloads |
 
 The full project prefixes in this table are `ViajantesTurismo.`. Inventory evidence includes
 [Admin registration](../src/ViajantesTurismo.Admin.Application/ApplicationDependencyInjection.cs),
@@ -185,22 +185,22 @@ real Catalog interaction. No API/provider test should be replaced by a UI mock.
 
 ## Management Web sequence
 
-1. Inventory each page's state lifetime, contracts client, forms, and authorization. Start with a
-   read-only tour page before moving multi-step workflows.
-2. Move booking forms and exclusive state with their capability, then customer creation wizard
-   state and form models. Preserve state lifetime across navigation and validation messages.
-3. Move import page/helpers as one workflow, retaining conflict choices, bounded upload handling,
-   cancellation, summaries, focus management, and accessible status updates.
-4. Align Catalog presentation/upload/accessibility pages, then Branding and document review/download.
-   Preserve separate permissions and explicit HTTP outcomes, including projection-pending states.
-5. Remove old imports and empty folders only after every caller has moved. Keep contract clients,
-   token exchange, protected persistence, and download proxy composition in their existing owners.
+The [Management Web ownership inventory](../src/ViajantesTurismo.Management.Web/README.md#folder-ownership)
+maps pages, clients, state, validation, and tests to their workflows. Booking forms and list
+components remain usable from tour and customer details. Customer create and edit share the
+customer form models. The creation wizard owns its scoped state and progress UI, and the
+import operation owns its page, conflict selection, CSV mapping, workflow state, and tests.
 
-Prerequisites: component behavior baseline and inventory of form/state consumers. Risks: scoped
-wizard/import data, PII in errors, duplicate submissions, token audience boundaries, antiforgery,
-and streaming lifetime. Gate each step with `Management.WebTests` and run the relevant API and
-browser cases in `Admin.ApiServiceTests` and `HostedTests`. Coordinate with
-the separate authentication-ticket expiry work before touching host authentication files.
+Catalog, Branding, Payments, Tours, and document pages retain their existing routes and
+feature directories. Catalog, Customers, and Payments each group related startup registrations
+locally. The host composes the other individual client registrations and owns authentication,
+token exchange, antiforgery, protected persistence, and the document download proxy.
+
+Run `Management.WebTests` for workflow and host changes. For changes spanning API or browser
+seams, run the relevant `Admin.ApiServiceTests` and `HostedTests` cases, including Management
+browser and Admin system scenarios. The architecture suite checks the placement of the moved
+state and components. Coordinate changes to host authentication with the separate
+authentication-ticket expiry work.
 
 ## Validation and rollback
 

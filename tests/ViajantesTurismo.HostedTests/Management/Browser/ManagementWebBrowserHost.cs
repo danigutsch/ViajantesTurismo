@@ -9,6 +9,7 @@ using PandaBear.AspNetCore;
 using PandaBear.Blazor;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components;
+using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Services;
 
 namespace ViajantesTurismo.HostedTests.Management.Browser;
