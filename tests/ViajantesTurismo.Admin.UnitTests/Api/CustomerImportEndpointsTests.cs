@@ -482,7 +482,7 @@ public sealed class CustomerImportEndpointsTests
         Func<Task> action = async () => await read;
 
         // Assert
-        _ = await action.ShouldThrow<OperationCanceledException>();
+        _ = await action.ShouldThrowAssignableTo<OperationCanceledException>();
         scanner.CallCount.ShouldBe(0);
         stream.BytesRead.ShouldBe(8);
         stream.IsDisposed.ShouldBeTrue();
