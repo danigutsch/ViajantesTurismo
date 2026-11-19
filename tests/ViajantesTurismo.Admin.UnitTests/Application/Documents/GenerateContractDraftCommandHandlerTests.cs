@@ -1,4 +1,6 @@
 using ViajantesTurismo.Admin.Application.Idempotency;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using PandaBear.Branding;
 using PandaBear.Idempotency;
@@ -6,6 +8,7 @@ using PandaBear.Results;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Builders;
@@ -279,19 +282,26 @@ public sealed class GenerateContractDraftCommandHandlerTests
     }
 
     [Theory]
-    [InlineData(BookingStatus.Confirmed, BookingStatusDto.Confirmed)]
-    [InlineData(BookingStatus.Completed, BookingStatusDto.Completed)]
+    [InlineData(BookingStatus.Confirmed, BookingStatusDto.Confirmed, "Beatriz")]
+    [InlineData(BookingStatus.Completed, BookingStatusDto.Completed, null)]
     public async Task Handle_persists_a_classified_draft_when_booking_is_accepted(
         BookingStatus aggregateStatus,
-        BookingStatusDto bookingStatus)
+        BookingStatusDto bookingStatus,
+        string? companionName)
     {
         // Arrange
         var tourData = DocumentTourTestData.WithBooking(aggregateStatus);
         var bookingId = tourData.BookingId;
         var tourId = tourData.TourId;
-        var queryService = new FakeQueryService(
-            new GetBookingDto { Id = bookingId, TourId = tourId, TourIdentifier = "andes", TourName = "Andes", CustomerId = Guid.CreateVersion7(), CustomerName = "Ada", RoomType = RoomTypeDto.DoubleOccupancy, PrincipalBikeType = BikeTypeDto.Regular, BookingDate = TimeProvider.System.GetUtcNow().UtcDateTime, Status = bookingStatus, PaymentStatus = default, TotalPrice = 1200m, DiscountType = default, DiscountAmount = 0m, Currency = "BRL", AmountPaid = 0m, RemainingBalance = 1200m },
-            new GetTourDto { Id = tourId, Identifier = "andes", Name = "Andes", StartDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime), EndDate = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime.AddDays(7)), Price = 1200m, SingleRoomSupplementPrice = 0m, RegularBikePrice = 0m, EBikePrice = 0m, Currency = "BRL", IncludedServices = ["Guide"], MinCustomers = 1, MaxCustomers = 10, CurrentCustomerCount = 1 });
+        var booking = DtoBuilders.BuildBookingDto(
+            id: bookingId,
+            tourId: tourId,
+            customerName: "Ada",
+            companionId: companionName is null ? null : Guid.CreateVersion7(),
+            companionName: companionName,
+            status: bookingStatus);
+        var tour = DtoBuilders.BuildTourDto(id: tourId, name: "Andes", includedServices: ["Guide", "Breakfast"]);
+        var queryService = new FakeQueryService(booking, tour);
         var store = new FakeDocumentStore();
         var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
@@ -304,7 +314,23 @@ public sealed class GenerateContractDraftCommandHandlerTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         var draft = store.AddedDocuments.ShouldHaveSingleItem();
-        draft.Fields.ShouldContain(field => field.FieldId == "customer-name");
+        var customer = draft.Fields.ShouldHaveSingleItem(field => field.FieldId == "customer-name");
+        customer.Value.ShouldBe("Ada");
+        customer.PrivacyClassification.ShouldBe(DocumentPrivacyClassification.PersonalData);
+        customer.IsEditable.ShouldBeFalse();
+        var companion = draft.Fields.ShouldHaveSingleItem(field => field.FieldId == "companion-name");
+        companion.Value.ShouldBe(companionName ?? string.Empty);
+        companion.PrivacyClassification.ShouldBe(DocumentPrivacyClassification.PersonalData);
+        companion.IsEditable.ShouldBeFalse();
+        var tourName = draft.Fields.ShouldHaveSingleItem(field => field.FieldId == "tour-name");
+        tourName.Value.ShouldBe("Andes");
+        tourName.PrivacyClassification.ShouldBe(DocumentPrivacyClassification.Public);
+        tourName.IsEditable.ShouldBeFalse();
+        var services = draft.Fields.ShouldHaveSingleItem(field => field.FieldId == "included-services");
+        services.Value.ShouldBe("Guide, Breakfast");
+        var greeting = draft.Fields.ShouldHaveSingleItem(field => field.FieldId == "greeting");
+        greeting.PrivacyClassification.ShouldBe(DocumentPrivacyClassification.PersonalData);
+        greeting.IsEditable.ShouldBeTrue();
         draft.BrandingPrimaryColor.ShouldBe("#102030");
         draft.BrandingAccentColor.ShouldBe("#405060");
         draft.BrandingBackgroundColor.ShouldBe("#fdfdfd");
@@ -454,6 +480,50 @@ public sealed class GenerateContractDraftCommandHandlerTests
         store.AddedDocuments.ShouldBeEmpty();
         store.AddedLineages.ShouldBeEmpty();
         auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.BrandingUnavailable);
+    }
+
+    [Fact]
+    public async Task Handle_rejects_included_services_too_large_to_fit_in_a_finalized_artifact()
+    {
+        // Arrange
+        var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
+        var booking = DtoBuilders.BuildBookingDto(id: tourData.BookingId, tourId: tourData.TourId, status: BookingStatusDto.Confirmed);
+        var serviceText = new string('é', AdminDomainLimits.MaxServiceDescriptionLength - 4);
+        var serviceCount = DocumentLimits.MaxFinalizedArtifactBytes / Encoding.UTF8.GetByteCount(serviceText) + 1;
+        var includedServices = Enumerable.Range(0, serviceCount)
+            .Select(number => number.ToString("D4", CultureInfo.InvariantCulture) + serviceText)
+            .ToArray();
+        var tour = DtoBuilders.BuildTourDto(id: tourData.TourId, includedServices: includedServices);
+        var store = new FakeDocumentStore();
+        var auditStore = new FakeDocumentAuditStore();
+        var unitOfWork = new FakeUnitOfWork();
+        var handler = new GenerateContractDraftCommandHandler(
+            new FakeQueryService(booking, tour),
+            tourData.TourStore,
+            store,
+            DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
+            TimeProvider.System,
+            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            DocumentIdempotencyTestData.Create(unitOfWork));
+
+        // Act
+        var result = await handler.Handle(
+            new GenerateContractDraftCommand(
+                booking.Id,
+                DocumentTemplates.TourServiceContractId,
+                DocumentTemplates.TourServiceContractVersion,
+                DocumentAuditTestData.CreateContext(),
+                IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(DocumentErrors.ArtifactContentTooLarge().ErrorDetails?.Detail);
+        store.AddedLineages.ShouldBeEmpty();
+        var audit = auditStore.Records.ShouldHaveSingleItem();
+        audit.Operation.ShouldBe(DocumentAuditOperation.Generate);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.ValidationRejected);
     }
 
     [Fact]

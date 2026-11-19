@@ -57,6 +57,19 @@ internal static class ContractDocumentDraftFactory
 
     private static Result<IReadOnlyList<DocumentField>> CreateFields(GetBookingDto booking, GetTourDto tour)
     {
+        // The included services alone must fit in the finalized artifact before HTML encoding.
+        const string serviceSeparator = ", ";
+        var includedServices = tour.IncludedServices;
+        var serviceBytes = (long)Math.Max(0, includedServices.Count - 1) * serviceSeparator.Length;
+        foreach (var service in includedServices)
+        {
+            serviceBytes += Encoding.UTF8.GetByteCount(service.AsSpan());
+            if (serviceBytes > DocumentLimits.MaxFinalizedArtifactBytes)
+            {
+                return DocumentErrors.ArtifactContentTooLarge().ConvertError<IReadOnlyList<DocumentField>>();
+            }
+        }
+
         var definitions = new (string FieldId, string Label, string Value, DocumentPrivacyClassification Classification, bool IsEditable)[]
         {
             ("booking-reference", "Booking reference", booking.Id.ToString("N"), DocumentPrivacyClassification.Operational, false),
@@ -64,7 +77,7 @@ internal static class ContractDocumentDraftFactory
             ("companion-name", "Companion", booking.CompanionName ?? string.Empty, DocumentPrivacyClassification.PersonalData, false),
             ("tour-name", "Tour", tour.Name, DocumentPrivacyClassification.Public, false),
             ("tour-dates", "Travel dates", $"{tour.StartDate:yyyy-MM-dd} to {tour.EndDate:yyyy-MM-dd}", DocumentPrivacyClassification.Public, false),
-            ("included-services", "Included services", string.Join(", ", tour.IncludedServices), DocumentPrivacyClassification.Public, false),
+            ("included-services", "Included services", string.Join(serviceSeparator, includedServices), DocumentPrivacyClassification.Public, false),
             ("total-price", "Total price", $"{booking.Currency} {booking.TotalPrice.ToString("0.00", CultureInfo.InvariantCulture)}", DocumentPrivacyClassification.PersonalData, false),
             ("payment-status", "Payment status", booking.PaymentStatus.ToString(), DocumentPrivacyClassification.Operational, false),
             ("greeting", "Greeting", $"Dear {booking.CustomerName},", DocumentPrivacyClassification.PersonalData, true),
