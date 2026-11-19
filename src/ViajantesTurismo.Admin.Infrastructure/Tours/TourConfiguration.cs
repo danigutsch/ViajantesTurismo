@@ -17,6 +17,13 @@ internal sealed class TourConfiguration : IEntityTypeConfiguration<Tour>
 
         entity.HasIndex(tour => tour.Identifier).IsUnique();
         entity.HasIndex(tour => tour.Name).IsUnique();
+        entity.HasIndex(tour => tour.RetirementId).IsUnique();
+        entity.ToTable(table => table.HasCheckConstraint(
+            "CK_Tours_RetirementState",
+            $"""
+            ("{nameof(Tour.RetirementId)}" IS NULL) = ("{nameof(Tour.RetiredAt)}" IS NULL)
+            AND ("{nameof(Tour.CatalogRetirementAppliedAt)}" IS NULL OR "{nameof(Tour.RetirementId)}" IS NOT NULL)
+            """));
 
         entity.Property(tour => tour.Identifier).IsRequired().HasMaxLength(AdminDomainLimits.MaxDefaultLength);
         entity.Property(tour => tour.Name).IsRequired().HasMaxLength(AdminDomainLimits.MaxNameLength);

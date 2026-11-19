@@ -182,15 +182,18 @@ public static class TourErrors
     public static Result CannotRemoveNonPendingBooking(BookingStatus currentStatus) => Result.Conflict(
         $"Booking has status {currentStatus} and cannot be removed. Only pending bookings can be removed.");
 
-    /// <summary>
-    /// Indicates that a tour cannot be deleted because it has confirmed bookings.
-    /// </summary>
-    /// <param name="confirmedBookingsCount">The number of confirmed bookings.</param>
-    /// <returns>A Result representing the error.</returns>
-    public static Result CannotDeleteTourWithConfirmedBookings(int confirmedBookingsCount) => Result.Invalid(
-        detail: $"Cannot delete tour with confirmed bookings. Tour has {confirmedBookingsCount} confirmed booking(s).",
-        field: "tourId",
-        message: "Cannot delete tour with confirmed bookings.");
+    /// <summary>Indicates that active bookings must be resolved before retirement.</summary>
+    public static Result CannotRetireWithActiveBookings() => Result.Conflict(
+        detail: "Resolve pending and confirmed bookings before retiring the tour.");
+
+    /// <summary>Indicates that an active operation was attempted on a retired tour.</summary>
+    public static Result TourIsRetired() => Result.Conflict(detail: "The tour is retired.");
+
+    /// <summary>Indicates that retirement could not be attributed to an authenticated actor and operation.</summary>
+    public static Result InvalidRetirementIdentity() => Result.Invalid(
+        detail: "A valid retirement identifier and authenticated actor are required.",
+        field: "retirement",
+        message: "The retirement operation could not be attributed.");
 
     /// <summary>
     /// Indicates that maximum capacity cannot be reduced below the current number of confirmed bookings.

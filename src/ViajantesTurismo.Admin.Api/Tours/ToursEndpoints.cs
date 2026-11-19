@@ -1,4 +1,5 @@
 using ViajantesTurismo.Admin.Api.Tours.CreateTour;
+using ViajantesTurismo.Admin.Api.Tours.DeleteTour;
 using ViajantesTurismo.Admin.Api.Tours.UpdateTour;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +36,7 @@ internal static class ToursEndpoints
             .WithAdminMetadata("GetTourById", "Retrieves a tour by its ID.", "Retrieves a tour by its ID.");
 
         toursGroup.MapUpdateTourEndpoint();
+        toursGroup.MapDeleteTourEndpoint();
     }
 
     private static async Task<Ok<IReadOnlyList<GetTourDto>>> GetAllTours(
@@ -50,7 +52,7 @@ internal static class ToursEndpoints
         [FromServices] IQueryService queryService,
         CancellationToken ct)
     {
-        var tourDto = await queryService.GetTourById(id, ct);
+        var tourDto = await queryService.GetActiveTourById(id, ct);
 
         return tourDto is null
             ? TourErrors.TourNotFound().ToNotFound()

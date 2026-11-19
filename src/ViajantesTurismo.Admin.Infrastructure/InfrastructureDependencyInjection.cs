@@ -19,8 +19,10 @@ using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
@@ -150,8 +152,8 @@ public static class InfrastructureDependencyInjection
     }
 
     /// <summary>
-    /// Adds the Admin-owned integration-event worker composition: the Branding projection consumer that claims
-    /// Catalog-database transport rows for consumer <c>admin</c> and writes only the Branding projection and inbox.
+    /// Adds the Admin-owned worker that claims Catalog-database transport rows for consumer <c>admin</c>
+    /// and applies Branding revisions and Tour retirement completions in the Admin database.
     /// </summary>
     /// <remarks>
     /// The consumer attempt limit is unbounded on purpose: while the projection is recovering, fenced events must stay
@@ -172,6 +174,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         builder.Services.AddIntegrationEventTransportStorage<AdminWriteDbContext>();
         builder.Services.AddScoped<IBrandingProjectionStore, EfBrandingProjectionStore>();
+        builder.Services.AddScoped<ITourRetirementCompletion, TourRetirementCompletion>();
         builder.Services.AddAdminBrandingProjection();
 
         builder.AddNpgsqlDbContext<AdminBrandingTransportDbContext>(
@@ -189,7 +192,8 @@ public static class InfrastructureDependencyInjection
         return builder;
     }
 
-    private static void AddAdminTourIntegrationEventContracts(IServiceCollection services)
+    /// <summary>Registers the runtime wire contracts used by generated Admin Tour event dispatch.</summary>
+    internal static void AddAdminTourIntegrationEventContracts(IServiceCollection services)
     {
         services.AddIntegrationEventContract(
             AdminTourCreatedIntegrationEvent.EventType,
@@ -220,6 +224,7 @@ public static class InfrastructureDependencyInjection
         where TApplicationBuilder : IHostApplicationBuilder
     {
         builder.Services.TryAddSingleton<IAuditTrailSink<DocumentAuditRecord>, DocumentAuditTrailSink>();
+        builder.Services.TryAddSingleton<IAuditTrailSink<TourRetirementAuditRecord>, TourRetirementAuditTrailSink>();
         builder.Services.AddDomainEventDispatch<AdminWriteDbContext>();
         builder.Services.AddIdempotencyStore<AdminWriteDbContext>();
         builder.Services.AddAdminDispositionHolds();

@@ -12,7 +12,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 public sealed class AdminIntegrationEventWorkerTests
 {
     [Fact]
-    public void The_admin_worker_runs_only_the_branding_transport_consumer()
+    public void The_admin_worker_runs_one_catalog_transport_consumer()
     {
         // Arrange
         using var scenario = AdminIntegrationEventWorkerScenario.ComposeWorker();
@@ -28,7 +28,7 @@ public sealed class AdminIntegrationEventWorkerTests
     }
 
     [Fact]
-    public void The_admin_worker_reads_the_catalog_transport_table_and_writes_only_the_projection_schema()
+    public void The_admin_worker_maps_the_catalog_transport_and_admin_branding_tables()
     {
         // Arrange
         using var scenario = AdminIntegrationEventWorkerScenario.ComposeWorker();

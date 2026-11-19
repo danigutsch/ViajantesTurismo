@@ -27,6 +27,7 @@ internal static class AdminInfrastructureModuleTestServices
         var builder = Host.CreateApplicationBuilder();
         builder.AddApplication();
         builder.Services.AddSingleton<IAuditTrailSink<DocumentAuditRecord>, CapturingDocumentAuditTrailSink>();
+        builder.Services.AddSingleton<IAuditTrailSink<TourRetirementAuditRecord>, TourRetirementAuditTrailSink>();
 
         return CreateScope(builder.Services.BuildServiceProvider());
     }
@@ -129,6 +130,7 @@ internal static class AdminInfrastructureModuleTestServices
         var builder = Host.CreateApplicationBuilder();
         builder.AddApplication();
         builder.Services.AddSingleton<IAuditTrailSink<DocumentAuditRecord>, CapturingDocumentAuditTrailSink>();
+        builder.Services.AddSingleton<IAuditTrailSink<TourRetirementAuditRecord>, TourRetirementAuditTrailSink>();
         builder.Services.AddDbContext<AdminWriteDbContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString("N")));
 
         return builder;

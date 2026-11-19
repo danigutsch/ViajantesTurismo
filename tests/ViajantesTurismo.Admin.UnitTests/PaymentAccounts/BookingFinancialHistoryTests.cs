@@ -135,7 +135,8 @@ public sealed class BookingFinancialHistoryTests
             FinancialApproval.Create("owner", now, FinancialReason.CancellationAdjustment, true).Value).IsSuccess.ShouldBeTrue();
         scenario.Booking.RemainingBalance.ShouldBe(0);
         scenario.Booking.PaymentStatus.ShouldBe(PaymentStatus.Paid);
-        scenario.Tour.Delete().IsFailure.ShouldBeTrue();
+        scenario.Tour.Retire(Guid.CreateVersion7(), "admin-subject", now).IsSuccess.ShouldBeTrue();
+        scenario.Tour.Bookings.ShouldHaveSingleItem().ShouldBeSameAs(scenario.Booking);
     }
 
     [Fact]

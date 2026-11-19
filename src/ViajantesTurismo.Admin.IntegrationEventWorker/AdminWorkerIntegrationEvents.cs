@@ -4,6 +4,8 @@ using PandaBear.Messaging;
 using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
 
 namespace ViajantesTurismo.Admin.IntegrationEventWorker;
 
@@ -16,7 +18,7 @@ internal static class AdminWorkerIntegrationEvents
     /// <summary>Service key for the generated publisher behind the Branding payload guard.</summary>
     internal const string GeneratedPublisherKey = "admin-branding-generated-publisher";
 
-    /// <summary>Adds the generated envelope publisher for Branding settings revisions.</summary>
+    /// <summary>Adds the generated envelope publisher for Branding revisions and Catalog retirement completions.</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddAdminWorkerIntegrationEventDelivery(this IServiceCollection services)
@@ -35,6 +37,12 @@ internal static class AdminWorkerIntegrationEvents
         services.AddIntegrationEventConsumer(
             BrandingSettingsChangedIntegrationEvent.EventType,
             brandingSettingsChangedJsonTypeInfo);
+        JsonTypeInfo<CatalogTourRetirementAppliedIntegrationEvent> tourRetirementAppliedJsonTypeInfo =
+            CatalogIntegrationEventJsonContext.Default.CatalogTourRetirementAppliedIntegrationEvent;
+        services.AddScoped<IIntegrationEventHandler<CatalogTourRetirementAppliedIntegrationEvent>, CatalogTourRetirementAppliedIntegrationHandler>();
+        services.AddIntegrationEventConsumer(
+            CatalogTourRetirementAppliedIntegrationEvent.EventType,
+            tourRetirementAppliedJsonTypeInfo);
         services.AddGeneratedIntegrationEvents();
         var publisher = services.Single(static descriptor =>
             descriptor.ServiceType == typeof(IEventEnvelopePublisher) && !descriptor.IsKeyedService);

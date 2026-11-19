@@ -5,6 +5,8 @@ using PandaBear.Domain;
 using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Domain.Tours;
+using ViajantesTurismo.Admin.Infrastructure.Tours;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
 using ViajantesTurismo.Admin.UnitTests.Infrastructure;
@@ -39,6 +41,7 @@ internal sealed class TestDomainEventDispatchScope(
         builder.Services.AddSingleton<IIntegrationEventOutbox>(_ => outbox);
         builder.Services.AddSingleton<IDomainEventIntegrationEventOutbox>(_ => outbox);
         builder.Services.AddSingleton<IAuditTrailSink<DocumentAuditRecord>, CapturingDocumentAuditTrailSink>();
+        builder.Services.AddSingleton<IAuditTrailSink<TourRetirementAuditRecord>, TourRetirementAuditTrailSink>();
         builder.Services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
 
         var serviceProvider = builder.Services.BuildServiceProvider();

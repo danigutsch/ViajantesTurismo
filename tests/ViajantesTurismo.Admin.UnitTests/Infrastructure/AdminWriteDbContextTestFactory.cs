@@ -8,7 +8,9 @@ using PandaBear.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -67,6 +69,7 @@ internal static class AdminWriteDbContextTestFactory
 
         services.AddDomainEventProcessing();
         services.AddSingleton<IAuditTrailSink<DocumentAuditRecord>, CapturingDocumentAuditTrailSink>();
+        services.AddSingleton<IAuditTrailSink<TourRetirementAuditRecord>, TourRetirementAuditTrailSink>();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddDbContextPool<AdminWriteDbContext>(

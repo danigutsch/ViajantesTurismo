@@ -44,9 +44,4 @@ public interface ITourStore
     /// <returns>True if another tour with the identifier exists; otherwise, false.</returns>
     Task<bool> IdentifierExistsExcluding(string identifier, Guid excludeTourId, CancellationToken ct);
 
-    /// <summary>
-    /// Deletes a tour from the store.
-    /// </summary>
-    /// <param name="tour">The tour to delete.</param>
-    void Delete(Tour tour);
 }

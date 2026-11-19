@@ -19,19 +19,25 @@ namespace ViajantesTurismo.Admin.Application;
 public interface IQueryService
 {
     /// <summary>
-    /// Retrieves all tours sorted by name.
+    /// Retrieves the active tours.
     /// </summary>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>A read-only list of <see cref="GetTourDto"/> representing all tours.</returns>
     Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct);
 
     /// <summary>
-    /// Retrieves a tour by ID.
+    /// Retrieves a tour by ID, including retained historical tours.
     /// </summary>
     /// <param name="id">The tour ID.</param>
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The tour DTO or null if not found.</returns>
     Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct);
+
+    /// <summary>Retrieves an active tour by ID or null if the tour is missing or retired.</summary>
+    Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct);
+
+    /// <summary>Retrieves the accepted retirement for a tour or null if it has no retirement.</summary>
+    Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct);
 
     /// <summary>
     /// Retrieves all customers.

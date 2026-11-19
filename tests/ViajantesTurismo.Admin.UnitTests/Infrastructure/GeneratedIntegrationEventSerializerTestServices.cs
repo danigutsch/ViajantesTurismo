@@ -1,8 +1,6 @@
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using PandaBear.Messaging.IntegrationEvents;
-using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
-using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
+using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -24,15 +22,11 @@ internal static class GeneratedIntegrationEventSerializerTestServices
     }
 
     /// <summary>
-    /// Registers the admin tour-created contract and the generated integration events.
+    /// Registers the Admin Tour contracts and the generated integration events.
     /// </summary>
     public static IServiceCollection AddAdminIntegrationEventContract(this IServiceCollection services)
     {
-        JsonTypeInfo<AdminTourCreatedIntegrationEvent> adminTourCreatedJsonTypeInfo =
-            AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent;
-        services.AddIntegrationEventContract(
-            AdminTourCreatedIntegrationEvent.EventType,
-            adminTourCreatedJsonTypeInfo);
+        InfrastructureDependencyInjection.AddAdminTourIntegrationEventContracts(services);
         services.AddGeneratedIntegrationEvents();
 
         return services;

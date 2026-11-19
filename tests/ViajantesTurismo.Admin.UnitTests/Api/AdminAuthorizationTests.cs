@@ -42,6 +42,7 @@ public sealed class AdminAuthorizationTests
             AdminAuthorization.PaymentRead,
             AdminAuthorization.PaymentWrite,
             AdminAuthorization.TourRead,
+            AdminAuthorization.TourDelete,
             AdminAuthorization.TourWrite
         ];
 

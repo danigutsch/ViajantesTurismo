@@ -15,6 +15,12 @@ internal sealed class FakeQueryService(GetBookingDto? booking, GetTourDto? tour 
     /// <summary>Returns the configured tour when its id matches, otherwise null.</summary>
     public Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct) => Task.FromResult(tour?.Id == id ? tour : null);
 
+    /// <inheritdoc />
+    public async Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct) => await GetTourById(id, ct);
+
+    /// <inheritdoc />
+    public Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct) => throw new NotSupportedException();
+
     /// <summary>Not supported by this fake; throws.</summary>
     public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => throw new NotSupportedException();
 

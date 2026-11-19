@@ -2,9 +2,8 @@
 
 ## Status
 
-Proposed, 2026-11-19. The Admin API owner reviews the retirement semantics, role grant and
-Catalog completion contract before implementation. The existing retention and hold policy applies
-to retained records.
+Accepted, 2026-11-19. The Admin API owner approved the retirement semantics, role grant and
+Catalog completion contract. The existing retention and hold policy applies to retained records.
 
 ## Context
 
@@ -99,11 +98,16 @@ so a delayed create or replay cannot restore public visibility. Catalog withdraw
 view and retains the event history. A previously started publish can finish before Catalog applies
 the fence. The status endpoint reports pending during this interval.
 
-Complete the operation only after Catalog has applied the public projection change and its
-serving caches can no longer return the retired listing. Confirm cache invalidation or wait for
-the configured freshness window when there is a downstream cache. Send a durable, idempotent
-completion back to Admin. Failures leave the operation pending, with observable retries and an
-authorized recovery path through the existing worker infrastructure.
+The first deployment uses no-store for Catalog's active tour list and slug reads and for Public
+Web's home, tour list, detail, gallery, sitemap and visibility-checked renditions. A read started
+before the visibility fence can finish without populating a response cache. Catalog commits its
+idempotent completion with the visibility fence and sends it through the existing transport.
+Failures leave the operation pending, with observable retries and the existing authorized
+worker recovery path.
+
+When upgrading a deployment that served cacheable tour responses, drain the old replicas and
+purge cached responses for those routes before granting the retirement permission. This ensures
+Catalog can acknowledge completion as soon as the visibility transaction commits.
 
 ## Consequences
 

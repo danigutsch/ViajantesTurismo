@@ -30,6 +30,8 @@ internal sealed class AdminWriteDbContext(
 
     /// <summary>Tour aggregates.</summary>
     public DbSet<Tour> Tours => Set<Tour>();
+    /// <summary>Tour retirement audit evidence.</summary>
+    public DbSet<TourRetirementAuditRecord> TourRetirementAuditRecords => Set<TourRetirementAuditRecord>();
     /// <summary>Customer aggregates.</summary>
     public DbSet<Customer> Customers => Set<Customer>();
     /// <summary>Document lineages.</summary>
@@ -96,6 +98,7 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new PaymentInstructionConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentAuditConfiguration());
         modelBuilder.ApplyConfiguration(new TourConfiguration());
+        modelBuilder.ApplyConfiguration(new TourRetirementAuditConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentLineageConfiguration());

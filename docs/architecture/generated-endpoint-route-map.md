@@ -120,8 +120,10 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/api/v1/public/catalog/tours/{slug}` | GetPublishedTour | public API | anonymous | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `GET` | `/api/v1/tours` | GetTours | management API | required | `ViajantesTurismo.Admin.Api/Tours/ToursEndpoints.cs` |
 | `POST` | `/api/v1/tours` | CreateTour | management API | required | `ViajantesTurismo.Admin.Api/Tours/CreateTour/ToursCreateTourEndpoint.cs` |
+| `DELETE` | `/api/v1/tours/{id:guid}` | DeleteTour | management API | required | `ViajantesTurismo.Admin.Api/Tours/DeleteTour/ToursDeleteTourEndpoint.cs` |
 | `GET` | `/api/v1/tours/{id:guid}` | GetTourById | management API | required | `ViajantesTurismo.Admin.Api/Tours/ToursEndpoints.cs` |
 | `PUT` | `/api/v1/tours/{id:guid}` | UpdateTour | management API | required | `ViajantesTurismo.Admin.Api/Tours/UpdateTour/ToursUpdateTourEndpoint.cs` |
+| `GET` | `/api/v1/tours/{id:guid}/retirement` | GetTourRetirement | management API | required | `ViajantesTurismo.Admin.Api/Tours/DeleteTour/ToursDeleteTourEndpoint.cs` |
 | `GET` | `/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | inline | management web | required | `ViajantesTurismo.Management.Web/ManagementWebEndpoints.cs` |
 | `GET` | `/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public web | not declared | `ViajantesTurismo.Public.Web/PublicWebEndpoints.cs` |
 | `GET` | `/documents/{id:guid}/download` | Download | management web | required | `ViajantesTurismo.Management.Web/DocumentArtifactProxyEndpoints.cs` |
