@@ -14,6 +14,7 @@ namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 [TestScope(TestScope.System)]
 public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
+    private const string AscendingSortSelector = "th[aria-sort='ascending']";
     private const string DescendingSortSelector = "th[aria-sort='descending']";
 
     [Fact]
@@ -50,7 +51,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
 
         // Assert: tours sort by Name ascending / descending.
         await toursTable.GetLink("Name", exact: true).ClickAsync();
-        await Expect(toursTable.Locator("th[aria-sort='ascending']")).ToContainTextAsync("Name");
+        await Expect(toursTable.Locator(AscendingSortSelector)).ToContainTextAsync("Name");
         await Expect(toursTable.GetByText(
                 ascendingSentinelName,
                 new LocatorGetByTextOptions { Exact = true }))
@@ -94,6 +95,7 @@ public class ListInteractionTests(AspireSystemTestFixture fixture) : AspireSyste
         isValid.ShouldBeTrue($"Expected at least 2 pages, but found {TotalPages}.");
 
         await customersTable.GetLink("Name", exact: true).ClickAsync();
+        await Expect(customersTable.Locator(AscendingSortSelector)).ToContainTextAsync("Name");
         await customersTable.GetLink("Name", exact: true).ClickAsync();
         await Expect(customersTable.Locator(DescendingSortSelector)).ToContainTextAsync("Name");
 
