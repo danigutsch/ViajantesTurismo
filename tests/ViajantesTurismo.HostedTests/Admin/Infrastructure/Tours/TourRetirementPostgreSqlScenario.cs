@@ -1,25 +1,35 @@
 extern alias AdminWorker;
 
 using System.Text.Json;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PandaBear.BuildingBlocks;
 using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
+using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
+using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Domain.Payments;
+using ViajantesTurismo.Admin.Domain.Shared;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
+using ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
 using AdminRetirementHandler = AdminWorker::ViajantesTurismo.Admin.IntegrationEventWorker.CatalogTourRetirementAppliedIntegrationHandler;
 
@@ -37,6 +47,7 @@ internal sealed class TourRetirementPostgreSqlScenario(ServiceProvider provider)
         builder.Services.AddSingleton(TimeProvider.System);
         builder.AddApplication();
         builder.AddInfrastructure(addRuntimeBackgroundServices: false);
+        builder.Services.Replace(ServiceDescriptor.Singleton(_ => new PaymentProtection(new EphemeralDataProtectionProvider())));
         if (interceptor is not null)
         {
             builder.Services.ConfigureDbContext<AdminWriteDbContext>(options => options.AddInterceptors(interceptor));
@@ -48,7 +59,7 @@ internal sealed class TourRetirementPostgreSqlScenario(ServiceProvider provider)
             await using var scope = services.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
             await db.Database.MigrateAsync(ct);
-            var tour = EntityBuilders.BuildTour();
+            var tour = EntityBuilders.BuildTour(new TourOptions(Pricing: new TourPricingOptions(Currency: Currency.Eur)));
             var customer = EntityBuilders.BuildCustomer(null);
             db.Tours.Add(tour);
             db.Customers.Add(customer);
@@ -108,6 +119,52 @@ internal sealed class TourRetirementPostgreSqlScenario(ServiceProvider provider)
         var handler = new AdminRetirementHandler(new TourRetirementCompletion(db));
         await handler.Handle(new CatalogTourRetirementAppliedIntegrationEvent(
             Guid.CreateVersion7(), appliedAt, tourId, retirementId), ct);
+    }
+
+    /// <summary>Seeds a completed booking, its approved schedule, and one finalized contract and audit record.</summary>
+    internal async Task<(Guid BookingId, Guid DocumentId)> SeedHistoricalBooking(
+        Guid tourId, Guid customerId, DateTimeOffset now, CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var db = services.GetRequiredService<AdminWriteDbContext>();
+        var tour = await services.GetRequiredService<ITourStore>().GetById(tourId, ct);
+        tour.ShouldNotBeNull();
+        var request = TourBookingRequest.CreateSingle(customerId, BikeType.Regular, RoomType.DoubleOccupancy);
+        var booking = tour.AddBooking(request, now.UtcDateTime).Value;
+        tour.ConfirmBooking(booking.Id).IsSuccess.ShouldBeTrue();
+        tour.CompleteBooking(booking.Id).IsSuccess.ShouldBeTrue();
+        var installment = PaymentInstallment.Create(100m, DateOnly.FromDateTime(now.AddDays(10).UtcDateTime)).Value;
+        var schedule = tour.DraftBookingPaymentSchedule(booking.Id, 0, 100m, [installment], "payments-admin", now).Value;
+        var approval = FinancialApproval.Create("payments-admin", now, FinancialReason.InitialObligation, true).Value;
+        tour.ApproveBookingPaymentSchedule(booking.Id, booking.FinancialHistory?.Version ?? 0, schedule, approval).IsSuccess.ShouldBeTrue();
+        await services.GetRequiredService<IPaymentHistoryStore>().Save(tour, booking.Id, ct);
+        await db.SaveEntities(ct);
+
+        var document = DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now.UtcDateTime, booking.Id);
+        db.DocumentLineages.Add(DocumentLineage.Restore([document]));
+        db.DocumentAuditRecords.Add(DocumentAuditInfrastructureTestData.CreateRecord(now.UtcDateTime, document.Id, booking.Id));
+        await db.SaveEntities(ct);
+        return (booking.Id, document.Id);
+    }
+
+    /// <summary>Reads historical booking, protected payment and retained document records from fresh contexts.</summary>
+    internal async Task<(GetBookingDto? Booking, long FinancialVersion, int PaymentAudits, Guid LineageId, int Artifacts, Guid[] DocumentAudits)> ReadHistory(
+        Guid bookingId, Guid documentId, CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var db = services.GetRequiredService<AdminWriteDbContext>();
+        var booking = await services.GetRequiredService<IQueryService>().GetBookingById(bookingId, ct);
+        var financialVersion = await db.Set<PaymentHistoryRow>().Where(row => row.BookingId == bookingId)
+            .Select(row => row.Version).SingleAsync(ct);
+        var paymentAudits = await db.Set<PaymentAuditRow>().CountAsync(row => row.ResourceId == bookingId, ct);
+        var lineageId = await db.DocumentDrafts.Where(draft => draft.Id == documentId)
+            .Select(draft => draft.DocumentLineageId).SingleAsync(ct);
+        var artifacts = await db.Set<DocumentArtifactBody>().CountAsync(body => body.DocumentId == documentId, ct);
+        var documentAudits = await db.DocumentAuditRecords.Where(record => record.DocumentId == documentId)
+            .OrderBy(record => record.Id).Select(record => record.Id).ToArrayAsync(ct);
+        return (booking, financialVersion, paymentAudits, lineageId, artifacts, documentAudits);
     }
 
     /// <summary>Reads the active and historical views, committed audit evidence and retirement outbox events.</summary>

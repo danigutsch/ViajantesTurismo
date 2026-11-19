@@ -95,8 +95,10 @@ public sealed class GeneratedAsyncApiContractTests
         (string Schema, JsonTypeInfo Contract)[] contracts =
         [
             ("AdminTourCreatedIntegrationEventV1", AdminIntegrationEventJsonContext.Default.AdminTourCreatedIntegrationEvent),
+            ("AdminTourRetiredIntegrationEventV1", AdminIntegrationEventJsonContext.Default.AdminTourRetiredIntegrationEvent),
             ("BrandingSettingsChangedIntegrationEventV1", BrandingIntegrationEventJsonContext.Default.BrandingSettingsChangedIntegrationEvent),
             ("MediaImageOriginalStoredIntegrationEventV1", CatalogIntegrationEventJsonContext.Default.MediaImageOriginalStoredIntegrationEvent),
+            ("CatalogTourRetirementAppliedIntegrationEventV1", CatalogIntegrationEventJsonContext.Default.CatalogTourRetirementAppliedIntegrationEvent),
         ];
 
         // Act

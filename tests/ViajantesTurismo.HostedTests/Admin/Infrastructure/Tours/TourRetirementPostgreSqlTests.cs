@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using PandaBear.Results;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.HostedTests.Admin.Infrastructure.CommitAmbiguity;
+using ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 
@@ -102,6 +104,50 @@ public sealed class TourRetirementPostgreSqlTests(PostgreSqlTestServerFixture fi
         persisted.Status.ShouldBeNull();
         persisted.Audits.ShouldBeEmpty();
         persisted.Events.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Retirement_keeps_a_completed_booking_and_its_held_document_and_payment_history()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var database = await fixture.CreateDatabase(ct);
+        var (scenario, tourId, customerId) = await TourRetirementPostgreSqlScenario.Create(database.ConnectionString, ct);
+        await using var ownedScenario = scenario;
+        await using var holds = DocumentHoldPostgreSqlHarness.Create(database.ConnectionString);
+        var (bookingId, documentId) = await scenario.SeedHistoricalBooking(tourId, customerId, RequestedAt.AddDays(-1), ct);
+        var holdId = await holds.Place(documentId, ct);
+        var beforeHold = await holds.Get(documentId, holdId, ct);
+        var (beforeBooking, beforeFinancialVersion, beforePaymentAudits, beforeLineage, beforeArtifacts, beforeDocumentAudits) =
+            await scenario.ReadHistory(bookingId, documentId, ct);
+        var command = new DeleteTourCommand(tourId, "opaque-admin", TimeProvider.System.GetUtcNow());
+
+        // Act
+        var retired = await scenario.Retire(command, ct);
+        var (booking, financialVersion, paymentAudits, lineage, artifacts, documentAudits) =
+            await scenario.ReadHistory(bookingId, documentId, ct);
+        var hold = await holds.Get(documentId, holdId, ct);
+
+        // Assert
+        retired.IsSuccess.ShouldBeTrue();
+        beforeBooking.ShouldNotBeNull();
+        booking.ShouldNotBeNull();
+        booking.Id.ShouldBe(beforeBooking.Id);
+        booking.TourId.ShouldBe(tourId);
+        booking.Status.ShouldBe(BookingStatusDto.Completed);
+        beforeFinancialVersion.ShouldBeGreaterThan(0);
+        financialVersion.ShouldBe(beforeFinancialVersion);
+        beforePaymentAudits.ShouldBeGreaterThan(0);
+        paymentAudits.ShouldBe(beforePaymentAudits);
+        lineage.ShouldBe(beforeLineage);
+        beforeArtifacts.ShouldBe(1);
+        artifacts.ShouldBe(beforeArtifacts);
+        beforeDocumentAudits.ShouldNotBeEmpty();
+        documentAudits.ShouldBe(beforeDocumentAudits);
+        beforeHold.IsSuccess.ShouldBeTrue();
+        hold.IsSuccess.ShouldBeTrue();
+        hold.Value.ShouldBe(beforeHold.Value);
+        hold.Value.IsRestraining.ShouldBeTrue();
     }
 
     [Theory]

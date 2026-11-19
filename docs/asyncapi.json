@@ -15,6 +15,14 @@
         }
       }
     },
+    "admin.tour.retired": {
+      "address": "admin.tour.retired",
+      "messages": {
+        "adminTourRetiredV1": {
+          "$ref": "#/components/messages/AdminTourRetiredV1"
+        }
+      }
+    },
     "branding.settings.changed": {
       "address": "branding.settings.changed",
       "messages": {
@@ -28,6 +36,14 @@
       "messages": {
         "mediaImageOriginalStoredV1": {
           "$ref": "#/components/messages/MediaImageOriginalStoredV1"
+        }
+      }
+    },
+    "catalog.tour.retirement-applied": {
+      "address": "catalog.tour.retirement-applied",
+      "messages": {
+        "catalogTourRetirementAppliedV1": {
+          "$ref": "#/components/messages/CatalogTourRetirementAppliedV1"
         }
       }
     }
@@ -56,6 +72,30 @@
         }
       ],
       "summary": "Catalog consumes admin.tour.created from the catalog consumer stream."
+    },
+    "publishAdminTourRetiredV1": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/admin.tour.retired"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/admin.tour.retired/messages/adminTourRetiredV1"
+        }
+      ],
+      "summary": "Admin publishes admin.tour.retired for Catalog."
+    },
+    "consumeAdminTourRetiredV1": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/admin.tour.retired"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/admin.tour.retired/messages/adminTourRetiredV1"
+        }
+      ],
+      "summary": "Catalog consumes admin.tour.retired from the catalog consumer stream."
     },
     "publishBrandingSettingsChangedV1": {
       "action": "send",
@@ -104,6 +144,30 @@
         }
       ],
       "summary": "Catalog consumes catalog.media-image.original-stored from its in-process outbox relay."
+    },
+    "publishCatalogTourRetirementAppliedV1": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/catalog.tour.retirement-applied"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/catalog.tour.retirement-applied/messages/catalogTourRetirementAppliedV1"
+        }
+      ],
+      "summary": "Catalog publishes catalog.tour.retirement-applied for Admin."
+    },
+    "consumeCatalogTourRetirementAppliedV1": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/catalog.tour.retirement-applied"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/catalog.tour.retirement-applied/messages/catalogTourRetirementAppliedV1"
+        }
+      ],
+      "summary": "Admin consumes catalog.tour.retirement-applied from the admin consumer stream."
     }
   },
   "components": {
@@ -145,6 +209,46 @@
           "inboxOwner": "CatalogDbContext",
           "handler": "ViajantesTurismo.Catalog.Application.Tours.AdminTourCreatedIntegrationHandler",
           "domainEventMapping": "ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourCreated",
+          "transportConsumer": "CatalogIntegrationTransportDbContext"
+        }
+      },
+      "AdminTourRetiredV1": {
+        "name": "admin.tour.retired",
+        "title": "Admin tour retired v1",
+        "contentType": "application/json",
+        "headers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "eventType",
+            "eventVersion"
+          ],
+          "properties": {
+            "eventType": {
+              "const": "admin.tour.retired"
+            },
+            "eventVersion": {
+              "const": 1
+            }
+          }
+        },
+        "payload": {
+          "$ref": "#/components/schemas/AdminTourRetiredIntegrationEventV1"
+        },
+        "x-viajantes": {
+          "producerContext": "Admin",
+          "consumerContexts": [
+            "Catalog"
+          ],
+          "consumerNames": [
+            "catalog"
+          ],
+          "channel": "admin.tour.retired",
+          "sourceType": "ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours.AdminTourRetiredIntegrationEvent",
+          "outboxOwner": "AdminWriteDbContext",
+          "inboxOwner": "CatalogDbContext",
+          "handler": "ViajantesTurismo.Catalog.Application.Tours.AdminTourRetiredIntegrationHandler",
+          "domainEventMapping": "ViajantesTurismo.Admin.Application.Tours.TourIntegrationEventMappings.MapTourRetired",
           "transportConsumer": "CatalogIntegrationTransportDbContext"
         }
       },
@@ -224,6 +328,45 @@
           "inboxOwner": "CatalogDbContext",
           "handler": "ViajantesTurismo.Catalog.Application.Media.MediaImageOriginalStoredIntegrationHandler"
         }
+      },
+      "CatalogTourRetirementAppliedV1": {
+        "name": "catalog.tour.retirement-applied",
+        "title": "Catalog tour retirement applied v1",
+        "contentType": "application/json",
+        "headers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "eventType",
+            "eventVersion"
+          ],
+          "properties": {
+            "eventType": {
+              "const": "catalog.tour.retirement-applied"
+            },
+            "eventVersion": {
+              "const": 1
+            }
+          }
+        },
+        "payload": {
+          "$ref": "#/components/schemas/CatalogTourRetirementAppliedIntegrationEventV1"
+        },
+        "x-viajantes": {
+          "producerContext": "Catalog",
+          "consumerContexts": [
+            "Admin"
+          ],
+          "consumerNames": [
+            "admin"
+          ],
+          "channel": "catalog.tour.retirement-applied",
+          "sourceType": "ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours.CatalogTourRetirementAppliedIntegrationEvent",
+          "outboxOwner": "CatalogDbContext",
+          "inboxOwner": "AdminWriteDbContext",
+          "handler": "ViajantesTurismo.Admin.IntegrationEventWorker.CatalogTourRetirementAppliedIntegrationHandler",
+          "transportConsumer": "AdminBrandingTransportDbContext"
+        }
       }
     },
     "schemas": {
@@ -255,6 +398,34 @@
           "AdminTourId",
           "Identifier",
           "Name"
+        ],
+        "additionalProperties": false
+      },
+      "AdminTourRetiredIntegrationEventV1": {
+        "type": "object",
+        "properties": {
+          "EventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "OccurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "AdminTourId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "RetirementId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "EventId",
+          "OccurredAt",
+          "AdminTourId",
+          "RetirementId"
         ],
         "additionalProperties": false
       },
@@ -373,6 +544,34 @@
           "MediaImageId",
           "SourceObjectKey",
           "ProcessingVersion"
+        ],
+        "additionalProperties": false
+      },
+      "CatalogTourRetirementAppliedIntegrationEventV1": {
+        "type": "object",
+        "properties": {
+          "EventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "OccurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "AdminTourId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "RetirementId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "EventId",
+          "OccurredAt",
+          "AdminTourId",
+          "RetirementId"
         ],
         "additionalProperties": false
       }

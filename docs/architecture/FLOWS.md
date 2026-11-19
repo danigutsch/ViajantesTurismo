@@ -100,7 +100,7 @@ publisher resolves the Catalog handler, whose idempotency wrapper writes Catalog
 - current-runtime: `AddCatalogIntegrationEventTransportConsumer`
 - current-runtime: `AddCatalogIntegrationEventTransportContext`
 - current-runtime: `AddCatalogIntegrationEventWorkerInfrastructure`
-- current-runtime: `AddIntegrationEventContract`
+- current-runtime: `AddAdminTourIntegrationEventContracts`
 - current-runtime: `AddIntegrationEventOutbox`
 - current-runtime: `AddIntegrationEventOutboxRelay`
 - current-runtime: `AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims`

@@ -109,6 +109,10 @@ When upgrading a deployment that served cacheable tour responses, drain the old 
 purge cached responses for those routes before granting the retirement permission. This ensures
 Catalog can acknowledge completion as soon as the visibility transaction commits.
 
+After the first retirement commits, roll forward with repairs that retain Catalog markers and both durable
+contracts. Older Catalog binaries lack the retirement event contract. Dropping the marker table
+can expose retained published projection rows again.
+
 ## Consequences
 
 Implementation needs a backward-compatible migration, a historical query path and two durable
