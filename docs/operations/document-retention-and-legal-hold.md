@@ -54,23 +54,11 @@ A future PDF renderer or object store needs a new policy version before it holds
 
 ### Artifact integrity reconciliation
 
-Use an authorized read-only connection to the Admin PostgreSQL database. Run the check from the
-repository root in `psql`. Each invocation checks at most 100 finalized revisions, including
-superseded and voided revisions.
-
-```sql
-BEGIN READ ONLY;
-SET LOCAL statement_timeout = '30s';
-\set after_revision_id '00000000-0000-0000-0000-000000000000'
-\i scripts/check-finalized-document-artifacts.sql
-ROLLBACK;
-```
-
-Set `after_revision_id` to the final revision ID in the previous page to continue. Each row
-contains the opaque revision ID and its outcome. The check reports missing bodies, missing
-integrity metadata, length mismatches and digest mismatches. Use the existing access controls for
-diagnostic results and keep revision IDs out of broad telemetry. Preserve any affected body and
-its revision for investigation. [Artifact integrity check](../../scripts/check-finalized-document-artifacts.sql)
+SharedKernel owns the reusable PostgreSQL reconciliation check. The operator report depends on
+adopting a reader through the [pinned SharedKernel candidate workflow](../sharedkernel/development.md#stage-the-candidate).
+Admin supplies the revision and body mappings and includes all revisions with a finalization
+timestamp. This covers superseded and voided revisions as well as active versions. Delivery
+continues to validate each served artifact independently of the operator report.
 
 Branding is captured onto each revision (name, colors, fonts, version and source revision) and the
 finalized HTML is stored as bytes, so later branding changes and regeneration never alter a finalized

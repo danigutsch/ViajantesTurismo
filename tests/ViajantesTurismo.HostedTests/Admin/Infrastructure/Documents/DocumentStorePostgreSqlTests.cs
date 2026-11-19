@@ -609,11 +609,10 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Theory]
-    [InlineData("another payload", "digest_mismatch")]
-    [InlineData("short", "length_mismatch")]
-    [InlineData(null, "missing_body")]
-    public async Task A_finalized_artifact_is_unavailable_when_the_stored_bytes_are_missing_or_changed(
-        string? replacement, string expectedIntegrity)
+    [InlineData("another payload")]
+    [InlineData("short")]
+    [InlineData(null)]
+    public async Task A_finalized_artifact_is_unavailable_when_the_stored_bytes_are_missing_or_changed(string? replacement)
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -624,7 +623,6 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         lineage.Finalize(documentId, "sealed artifact"u8.ToArray(), now.AddMinutes(1), auditContext).IsSuccess.ShouldBeTrue();
         await Scenario.Seed(lineage);
         var original = await Scenario.ReadFinalizedArtifactContent(documentId, ct);
-        var intact = await Scenario.CheckArtifactIntegrityPage(Guid.Empty, ct);
         await using var connection = new NpgsqlConnection(Scenario.ConnectionString);
         await connection.OpenAsync(ct);
         var statement = replacement is null
@@ -640,36 +638,11 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Act
         var stored = await Scenario.ReadFinalizedArtifactContent(documentId, ct);
-        var reconciliation = await Scenario.CheckArtifactIntegrityPage(Guid.Empty, ct);
 
         // Assert
         affected.ShouldBe(1);
         original.ShouldNotBeNull().ToArray().ShouldBe("sealed artifact"u8.ToArray());
-        intact.ShouldHaveSingleItem().ShouldBe((documentId, "intact"));
-        reconciliation.ShouldHaveSingleItem().ShouldBe((documentId, expectedIntegrity));
         stored.ShouldBeNull();
-    }
-
-    [Fact]
-    public async Task Artifact_reconciliation_reads_a_bounded_page_and_resumes_after_the_last_revision()
-    {
-        // Arrange
-        var ct = TestContext.Current.CancellationToken;
-        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
-        var drafts = Enumerable.Range(0, 101).Select(_ => DocumentDraftInfrastructureTestData.CreateFinalizedDraft(now)).ToArray();
-        await Scenario.Seed(drafts);
-
-        // Act
-        var firstPage = await Scenario.CheckArtifactIntegrityPage(Guid.Empty, ct);
-        firstPage.ShouldNotBeEmpty();
-        var nextPage = await Scenario.CheckArtifactIntegrityPage(firstPage[^1].RevisionId, ct);
-
-        // Assert
-        firstPage.Length.ShouldBe(100);
-        nextPage.ShouldHaveSingleItem().Integrity.ShouldBe("intact");
-        var revisions = firstPage.Concat(nextPage).Select(result => result.RevisionId).Order().ToArray();
-        Guid[] seededRevisions = [.. drafts.Select(draft => draft.Id).Order()];
-        revisions.ShouldBe(seededRevisions);
     }
 
     [Fact]

@@ -14,11 +14,6 @@
         <Using Include="ViajantesTurismo.HostedTests.Infrastructure" />
     </ItemGroup>
     <ItemGroup>
-        <None Include="../../scripts/check-finalized-document-artifacts.sql"
-              Link="check-finalized-document-artifacts.sql"
-              CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-    <ItemGroup>
         <PackageReference Include="coverlet.MTP">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
