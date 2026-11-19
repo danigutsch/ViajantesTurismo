@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -15,6 +16,7 @@ internal static class AdminMediatorDispatchEndpointTestsHelpers
         AdminApiTestHost.Create(services =>
         {
             services.Replace(ServiceDescriptor.Singleton<ITourStore>(tourStore));
+            services.Replace(ServiceDescriptor.Singleton<ITourCommandStore>(tourStore));
             services.Replace(ServiceDescriptor.Singleton<IUnitOfWork>(unitOfWork));
         });
 

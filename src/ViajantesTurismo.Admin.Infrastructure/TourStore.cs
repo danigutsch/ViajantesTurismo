@@ -41,37 +41,6 @@ internal sealed class TourStore(AdminWriteDbContext dbContext, PaymentHistorySto
     }
 
     /// <inheritdoc />
-    public Task<Tour?> GetByIdForUpdate(Guid id, CancellationToken ct) =>
-        GetLockedTour(
-            $"""
-            SELECT "Id" AS "Value"
-            FROM "Tours"
-            WHERE "Id" = {id}
-            FOR UPDATE
-            """, ct);
-
-    /// <inheritdoc />
-    public Task<Tour?> GetByBookingIdForUpdate(Guid bookingId, CancellationToken ct) =>
-        GetLockedTour(
-            $"""
-            SELECT "Id" AS "Value"
-            FROM "Tours"
-            WHERE "Id" = (SELECT "TourId" FROM "Booking" WHERE "Id" = {bookingId})
-            FOR UPDATE
-            """, ct);
-
-    private async Task<Tour?> GetLockedTour(FormattableString query, CancellationToken ct)
-    {
-        if (dbContext.Database.CurrentTransaction is null)
-        {
-            throw new InvalidOperationException("Loading a tour for update requires an active transaction.");
-        }
-
-        var id = await dbContext.Database.SqlQuery<Guid>(query).SingleOrDefaultAsync(ct);
-        return id == Guid.Empty ? null : await GetById(id, ct);
-    }
-
-    /// <inheritdoc />
     public async Task<bool> IdentifierExists(string identifier, CancellationToken ct) =>
         await dbContext.Tours.AnyAsync(t => t.Identifier == identifier, ct);
 

@@ -8,6 +8,16 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// </summary>
 public static class BookingErrors
 {
+    /// <summary>Indicates that a supplied identifier cannot identify a booking.</summary>
+    public static Result InvalidIdentifier() => Result.Invalid(
+        detail: "The booking identifier must not be empty.",
+        field: "bookingId",
+        message: "A booking identifier is required.");
+
+    /// <summary>Indicates that the tour already contains this booking identifier.</summary>
+    public static Result IdentifierAlreadyExists() => Result.Conflict(
+        detail: "A booking with that identifier already belongs to this tour.");
+
     /// <summary>
     /// Indicates that a status transition is invalid for the current booking state.
     /// </summary>

@@ -157,6 +157,7 @@ public sealed class AdminInfrastructureModuleTests
         var unitOfWork = services.UnitOfWork;
         var queryService = services.QueryService;
         var tourStore = services.TourStore;
+        var tourCommandStore = services.TourCommandStore;
         var customerStore = services.CustomerStore;
         var documentStore = services.DocumentStore;
         var outbox = services.Outbox;
@@ -168,6 +169,7 @@ public sealed class AdminInfrastructureModuleTests
         unitOfWork.ShouldBeOfType<AdminWriteDbContext>();
         queryService.ShouldBeOfType<QueryService>();
         tourStore.ShouldBeOfType<TourStore>();
+        tourCommandStore.ShouldBeOfType<TourCommandStore>();
         customerStore.ShouldBeOfType<CustomerStore>();
         documentStore.ShouldBeOfType<DocumentStore>();
         outbox.ShouldNotBeNull();

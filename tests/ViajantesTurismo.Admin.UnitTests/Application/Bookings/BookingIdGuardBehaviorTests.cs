@@ -1,10 +1,14 @@
 using PandaBear.Results;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
+using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Application.Bookings.Pipeline;
+using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
 
+[Trait(SharedKernelTestTraitNames.CategoryName, Infrastructure.TestTraits.CoreBehaviorCategory)]
 public sealed class BookingIdGuardBehaviorTests
 {
     [Fact]
@@ -30,33 +34,15 @@ public sealed class BookingIdGuardBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_passes_a_value_result_through_to_next_for_a_real_booking_ID()
-    {
-        // Arrange
-        var behavior = new BookingIdGuardBehavior<StubBookingValueCommand, Result<Guid>>();
-        var expected = Guid.NewGuid();
-
-        // Act
-        var result = await behavior.Handle(
-            new StubBookingValueCommand(Guid.NewGuid()),
-            () => ValueTask.FromResult(Result.Ok(expected)),
-            TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(expected);
-    }
-
-    [Fact]
     public async Task Handle_short_circuits_with_booking_not_found_for_an_empty_booking_ID()
     {
         // Arrange
-        var behavior = new BookingIdGuardBehavior<CancelBookingCommand, Result>();
+        var behavior = new BookingIdGuardBehavior<ConfirmBookingCommand, Result>();
         var called = false;
 
         // Act
         var result = await behavior.Handle(
-            new CancelBookingCommand(Guid.Empty),
+            new ConfirmBookingCommand(Guid.Empty),
             () =>
             {
                 called = true;
@@ -71,25 +57,25 @@ public sealed class BookingIdGuardBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_short_circuits_a_value_result_with_booking_not_found_for_an_empty_booking_ID()
+    public async Task Handle_passes_an_unrelated_command_through_with_an_empty_ID()
     {
         // Arrange
-        var behavior = new BookingIdGuardBehavior<StubBookingValueCommand, Result<Guid>>();
+        var behavior = new BookingIdGuardBehavior<DeleteTourCommand, Result>();
+        var nextResult = Result.Ok();
         var called = false;
 
         // Act
         var result = await behavior.Handle(
-            new StubBookingValueCommand(Guid.Empty),
+            new DeleteTourCommand(Guid.Empty),
             () =>
             {
                 called = true;
-                return ValueTask.FromResult(Result.Ok(Guid.NewGuid()));
+                return ValueTask.FromResult(nextResult);
             },
             TestContext.Current.CancellationToken);
 
         // Assert
-        called.ShouldBeFalse();
-        result.Status.ShouldBe(ResultStatus.NotFound);
-        result.ErrorDetails.ShouldBe(BookingErrors.BookingNotFound().ErrorDetails);
+        called.ShouldBeTrue();
+        result.ShouldBe(nextResult);
     }
 }

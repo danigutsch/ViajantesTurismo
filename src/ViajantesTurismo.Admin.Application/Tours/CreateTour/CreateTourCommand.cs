@@ -18,4 +18,8 @@ public sealed record CreateTourCommand(
     string Currency,
     ICollection<string> IncludedServices,
     int MinCustomers,
-    int MaxCustomers) : ICommand<Result<Guid>>;
+    int MaxCustomers) : ICommand<Result<Guid>>
+{
+    /// <summary>Gets the tour identifier retained across attempts of this command.</summary>
+    public Guid TourId { get; } = Guid.CreateVersion7();
+}

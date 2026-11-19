@@ -41,13 +41,14 @@ Implemented workflow groups:
 
 Tour creation dispatches `CreateTourCommand` through the generated mediator. `SaveEntities(ct)` invokes
 the EF Core domain-event interceptor. The generated exhaustive mapper enqueues
-`AdminTourCreatedIntegrationEvent` in the transactional outbox before the same save commits.
+`AdminTourCreatedIntegrationEvent` in the outbox before the command transaction commits.
 
-Booking confirmation, booking deletion, booking detail updates, and tour updates use
-`SharedKernel.Mediator.EntityFrameworkCore` to run in a read committed transaction on the Admin write
-context. The store locks the tour row before loading bookings and holds that lock through commit or
-rollback. The execution strategy can replay the whole attempt after a transient database error.
-Handlers call `SaveEntities(ct)` inside the transaction to persist changes and dispatch domain events.
+One mediator pipeline behavior uses `SharedKernel.Mediator.EntityFrameworkCore` to start a read
+committed transaction on the Admin write context for commands that return a result. The execution
+strategy can replay the whole attempt after a transient database error. For capacity changes,
+`ITourCommandStore` locks the tour row before loading bookings and holds the lock through commit
+or rollback. Handlers call `SaveEntities(ct)` inside the transaction to persist changes and
+dispatch domain events. Tour queries use `IQueryService` to project DTOs from the Admin read context.
 
 Each module owns one DbContext registration method that applies all module options inside the actual
 provider registration callback. EF Core `ConfigureDbContext<TContext>()` can compose options for
@@ -69,6 +70,7 @@ sequenceDiagram
     participant Db as Admin PostgreSQL
 
     API->>Sender: CreateTourCommand
+    Sender->>Context: Begin command transaction
     Sender->>Handler: Handle command
     Handler->>Store: IdentifierExists(identifier)
     Handler->>Tour: Tour.Create(definition)
@@ -76,8 +78,9 @@ sequenceDiagram
     Handler->>Context: SaveEntities(ct)
     Context->>Interceptor: Dispatch TourCreatedDomainEvent
     Interceptor->>Outbox: Enqueue AdminTourCreatedIntegrationEvent
-    Context->>Db: Commit tour and outbox row atomically
+    Context->>Db: Save tour and outbox row
     Handler-->>Sender: Result<Guid>
+    Sender->>Context: Commit command transaction
     Sender-->>API: Result<Guid>
 ```
 

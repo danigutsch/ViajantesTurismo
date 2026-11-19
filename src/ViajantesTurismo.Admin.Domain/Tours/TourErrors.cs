@@ -7,6 +7,12 @@ namespace ViajantesTurismo.Admin.Domain.Tours;
 /// </summary>
 public static class TourErrors
 {
+    /// <summary>Indicates that a supplied key cannot identify a tour.</summary>
+    public static Result InvalidTourId() => Result.Invalid(
+        detail: "The tour identifier must not be empty.",
+        field: "tourId",
+        message: "A tour identifier is required.");
+
     /// <summary>
     /// Indicates that a booking was not found in the tour.
     /// </summary>

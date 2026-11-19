@@ -15,4 +15,8 @@ public sealed record CreateCustomerCommand(
     PhysicalInfoDto PhysicalInfo,
     AccommodationPreferencesDto AccommodationPreferences,
     EmergencyContactDto EmergencyContact,
-    MedicalInfoDto MedicalInfo) : ICommand<Result<Guid>>;
+    MedicalInfoDto MedicalInfo) : ICommand<Result<Guid>>
+{
+    /// <summary>Gets the customer identifier retained across attempts of this command.</summary>
+    public Guid CustomerId { get; } = Guid.CreateVersion7();
+}

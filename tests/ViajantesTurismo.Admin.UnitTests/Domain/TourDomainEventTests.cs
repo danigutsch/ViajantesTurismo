@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
@@ -25,5 +26,23 @@ public sealed class TourDomainEventTests
         tour.ClearDomainEvents();
 
         tour.GetDomainEvents().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Create_rejects_an_explicitly_empty_tour_identifier()
+    {
+        // Arrange
+        var definition = new TourDefinition(
+            "andes-2026", "Andes 2026",
+            new TourScheduleDefinition(new DateOnly(2028, 5, 8), new DateOnly(2028, 5, 18)),
+            new TourPricingDefinition(150m, 20m, 10m, 30m, Currency.Eur),
+            new TourCapacityDefinition(1, 8), ["Hotel"]);
+
+        // Act
+        var result = Tour.Create(definition, Guid.Empty);
+
+        // Assert
+        var errors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
+        errors.ContainsKey("tourId").ShouldBeTrue();
     }
 }

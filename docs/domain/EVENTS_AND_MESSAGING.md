@@ -174,7 +174,7 @@ not part of the generated path.
 
 | Boundary | Runtime entry | Generated responsibility | Runtime/business responsibility |
 | --- | --- | --- | --- |
-| Admin booking and tour commands | Endpoint to scoped `ISender` | Closed request and pipeline calls | Handler orchestration and `SaveEntities(ct)`. The transaction behavior owns retries, commit, and rollback for capacity mutations. |
+| Admin commands that return results | Endpoint to scoped `ISender` | Closed request and pipeline calls | Handler orchestration and `SaveEntities(ct)`. The shared transaction behavior owns retries, commit, and rollback. |
 | Regular mediator use case | Caller to scoped `AppMediator` | Closed request/stream/notification and pipeline calls | Handler business behavior and configured pipeline semantics. |
 | Admin persistence | `SaveChanges` interceptor to composite domain-event dispatcher | Exhaustive typed outbox and audit mappings plus typed serialization | EF transaction, aggregate state, outbox/audit atomicity, and post-save domain-event clearing. |
 | Durable delivery | Admin relay to PostgreSQL transport to worker batch to generated publisher | Closed envelope deserialization and typed handler selection | `FOR UPDATE SKIP LOCKED`, batch claim/publisher scope, per-envelope handler scope, sequential processing, lease/retry, Catalog idempotency, and handler side effects. |

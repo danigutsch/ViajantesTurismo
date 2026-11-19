@@ -30,6 +30,21 @@ Management Web code that calls them. This is a dated evidence record for the rul
 
 ## Findings
 
+### Creation identity follow-up, November 18, 2026
+
+Booking creation previously allocated a new identifier on each transaction attempt. A PostgreSQL
+test read the first committed booking on a separate connection, then raised a retryable timeout.
+The replay inserted a second booking. The booking command now supplies one identifier across its
+attempts and returns that identifier when the tour already contains the booking. The aggregate
+rejects a second child with the same identifier and the booking factory rejects an empty identifier.
+
+Tour and customer creation previously returned a business-key conflict on the retry of a committed
+request. PostgreSQL tests observed one durable row for each create followed by the conflict. Both
+commands now supply their own identity to the respective domain factory and return the original
+identifier on replay. A separate request still goes through the tour identifier or email checks.
+
+### Original audit
+
 | ID | Location | Finding | Rule | Status |
 | --- | --- | --- | --- | --- |
 | A1 | `src/ViajantesTurismo.Admin.Domain/Tours/Booking.cs:247-526` | Child entity `Booking` exposed `Create` and eight mutators publicly; `Confirm` bypassed the tour capacity check | DDD006 | Fixed: members are `internal`; `DddConventionsTests` guards it |

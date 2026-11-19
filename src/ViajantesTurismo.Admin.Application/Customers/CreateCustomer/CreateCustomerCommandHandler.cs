@@ -24,6 +24,11 @@ public sealed class CreateCustomerCommandHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
+        if (await customerStore.GetById(command.CustomerId, ct) is not null)
+        {
+            return Result.Ok(command.CustomerId);
+        }
+
         if (!StringSanitizer.TrySanitize(command.ContactInfo.Email, out var sanitizedEmail) || sanitizedEmail is null)
         {
             return CustomerErrors.InvalidEmailFormat().ConvertError<Guid>();
@@ -43,7 +48,8 @@ public sealed class CreateCustomerCommandHandler(
                 CustomerMapper.MapToPhysicalInfoDefinition(command.PhysicalInfo),
                 CustomerMapper.MapToAccommodationPreferencesDefinition(command.AccommodationPreferences),
                 CustomerMapper.MapToHealthDefinition(command.EmergencyContact, command.MedicalInfo)),
-            DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime));
+            DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime),
+            command.CustomerId);
         if (customerResult.IsFailure)
         {
             return customerResult.ConvertError<Customer, Guid>();

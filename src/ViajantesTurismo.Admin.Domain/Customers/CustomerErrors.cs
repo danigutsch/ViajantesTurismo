@@ -7,6 +7,12 @@ namespace ViajantesTurismo.Admin.Domain.Customers;
 /// </summary>
 public static class CustomerErrors
 {
+    /// <summary>Indicates that a supplied key cannot identify a customer.</summary>
+    public static Result InvalidCustomerId() => Result.Invalid(
+        detail: "The customer identifier must not be empty.",
+        field: "customerId",
+        message: "A customer identifier is required.");
+
     private const string Mobile = "Mobile";
 
     /// <summary>Indicates that the bicycle selection is undefined.</summary>

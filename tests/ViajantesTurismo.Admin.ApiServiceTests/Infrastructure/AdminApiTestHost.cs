@@ -6,14 +6,14 @@ using PandaBear.AspNetCore.Authentication;
 using PandaBear.MalwareScanning;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Mediator;
+using PandaBear.Results;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Documents;
-using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Infrastructure;
-using PandaBear.Results;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
