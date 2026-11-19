@@ -34,6 +34,7 @@ internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> op
         modelBuilder.ApplyConfiguration(new CustomerConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentArtifactBodyConfiguration());
     }
 
     public override int SaveChanges()

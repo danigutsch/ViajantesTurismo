@@ -16,6 +16,12 @@ public interface IDocumentStore
     /// <exception cref="OperationCanceledException">The operation was cancelled.</exception>
     Task<DocumentLineage?> GetByDocumentId(Guid documentId, CancellationToken ct);
 
+    /// <summary>Reads only the artifact bytes for the specified currently finalized revision.</summary>
+    /// <param name="documentId">The document revision identifier.</param>
+    /// <param name="ct">A cancellation token.</param>
+    /// <returns>The sealed bytes, or <see langword="null" /> if the revision has no available artifact.</returns>
+    Task<ReadOnlyMemory<byte>?> ReadFinalizedArtifactContent(Guid documentId, CancellationToken ct);
+
     /// <summary>Atomically removes unfinalized expired document revisions, except those of a held lineage.</summary>
     /// <param name="now">The expiration cutoff.</param>
     /// <param name="heldLineages">Reports, once for all candidate lineages, which lineages a disposition hold restrains.</param>

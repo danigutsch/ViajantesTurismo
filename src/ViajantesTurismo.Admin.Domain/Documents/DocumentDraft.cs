@@ -11,7 +11,8 @@ namespace ViajantesTurismo.Admin.Domain.Documents;
 public sealed class DocumentDraft : IEntity<Guid>
 {
     private readonly List<DocumentField> _fields = [];
-    private byte[]? _finalizedArtifactContent;
+    private bool _hasFinalizedArtifact;
+    private DocumentArtifactBody? _finalizedArtifact;
 
     private DocumentDraft(
         Guid bookingId,
@@ -227,7 +228,7 @@ public sealed class DocumentDraft : IEntity<Guid>
 
     /// <summary>Gets whether this revision has a finalized artifact that can be downloaded.</summary>
     public bool HasAvailableFinalizedArtifact => IsFinalized
-        && _finalizedArtifactContent is not null
+        && _hasFinalizedArtifact
         && !string.IsNullOrWhiteSpace(FinalizedArtifactName);
 
     /// <summary>
@@ -236,16 +237,8 @@ public sealed class DocumentDraft : IEntity<Guid>
     /// </summary>
     public bool RequiresPaymentInstructionWorkflow => Type == DocumentType.PaymentInstructions;
 
-    /// <summary>Gets a copy of the finalized artifact content.</summary>
-    public ReadOnlyMemory<byte>? CopyFinalizedArtifactContent()
-    {
-        if (_finalizedArtifactContent is null)
-        {
-            return null;
-        }
-
-        return new ReadOnlyMemory<byte>([.. _finalizedArtifactContent]);
-    }
+    /// <summary>Gets an independent copy of the artifact bytes when the revision holds them in memory.</summary>
+    public ReadOnlyMemory<byte>? CopyFinalizedArtifactContent() => _finalizedArtifact?.CopyContent();
 
     /// <summary>Creates the initial document draft revision.</summary>
     internal static Result<DocumentDraft> Create(
@@ -712,7 +705,13 @@ public sealed class DocumentDraft : IEntity<Guid>
             return DocumentErrors.ArtifactContentRequired();
         }
 
-        _finalizedArtifactContent = [.. artifactContent];
+        if (artifactContent.Length > DocumentLimits.MaxFinalizedArtifactBytes)
+        {
+            return DocumentErrors.ArtifactContentTooLarge();
+        }
+
+        _finalizedArtifact = new DocumentArtifactBody(Id, artifactContent);
+        _hasFinalizedArtifact = true;
         FinalizedArtifactName = $"document-{Id:N}-r{Revision}.html";
         FinalizedAt = now;
         RetentionExpiresAt = null;

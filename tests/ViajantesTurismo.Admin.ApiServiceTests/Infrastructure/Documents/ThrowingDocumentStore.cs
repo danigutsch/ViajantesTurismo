@@ -21,6 +21,10 @@ internal sealed class ThrowingDocumentStore(Exception exception) : IDocumentStor
         return Task.FromException<DocumentLineage?>(exception);
     }
 
+    /// <summary>Returns a task faulted with the configured exception.</summary>
+    public Task<ReadOnlyMemory<byte>?> ReadFinalizedArtifactContent(Guid documentId, CancellationToken ct) =>
+        Task.FromException<ReadOnlyMemory<byte>?>(exception);
+
     /// <summary>Purges nothing and returns zero.</summary>
     public Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
     {

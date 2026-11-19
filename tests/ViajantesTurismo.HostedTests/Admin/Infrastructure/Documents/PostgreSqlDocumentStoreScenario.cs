@@ -2,6 +2,8 @@ using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLe
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using PandaBear.Domain.EntityFrameworkCore;
@@ -182,12 +184,18 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return await dbContext.DocumentLineages.CountAsync(ct);
     }
 
-    /// <summary>Loads the draft revision with the given document id, or <see langword="null" /> when absent.</summary>
+    /// <summary>Loads one revision and its sealed artifact for persistence assertions.</summary>
     public async ValueTask<DocumentDraft?> GetDocumentById(Guid id, CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
         var lineage = await new DocumentStore(dbContext).GetByDocumentId(id, ct);
-        return lineage?.GetRevision(id);
+        var revision = lineage?.GetRevision(id);
+        if (revision is not null)
+        {
+            await dbContext.Entry(revision).Reference(DocumentDraftConfiguration.FinalizedArtifactNavigation).LoadAsync(ct);
+        }
+
+        return revision;
     }
 
     /// <summary>Loads the lineage that contains the given document id.</summary>
@@ -195,6 +203,20 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
     {
         await using var dbContext = CreateDbContext();
         return await new DocumentStore(dbContext).GetByDocumentId(id, ct);
+    }
+
+    /// <summary>Reads the bytes for one currently finalized revision.</summary>
+    public async ValueTask<ReadOnlyMemory<byte>?> ReadFinalizedArtifactContent(Guid id, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await new DocumentStore(dbContext).ReadFinalizedArtifactContent(id, ct);
+    }
+
+    /// <summary>Migrates this scenario's isolated database to the named migration, or to the latest when null.</summary>
+    public async ValueTask MigrateTo(string? migration, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await dbContext.GetService<IMigrator>().MigrateAsync(migration, ct);
     }
 
     /// <summary>Reads the audit metadata projection for a document id.</summary>

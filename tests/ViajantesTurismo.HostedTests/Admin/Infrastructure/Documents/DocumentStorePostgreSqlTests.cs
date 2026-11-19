@@ -493,6 +493,78 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task Lineage_reads_finalized_metadata_without_hydrating_artifact_bytes()
+    {
+        // Arrange
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentDraftInfrastructureTestData.CreateApprovedLineage(now);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
+        lineage.Finalize(documentId, "sealed artifact"u8.ToArray(), now.AddMinutes(1), auditContext).IsSuccess.ShouldBeTrue();
+        await Scenario.Seed(lineage);
+
+        // Act
+        var ct = TestContext.Current.CancellationToken;
+        var loaded = await Scenario.GetLineageByDocumentId(documentId, ct);
+        var sealedContent = await Scenario.ReadFinalizedArtifactContent(documentId, ct);
+
+        // Assert
+        var revision = loaded.ShouldNotBeNull().GetRevision(documentId).ShouldNotBeNull();
+        revision.HasAvailableFinalizedArtifact.ShouldBeTrue();
+        revision.CopyFinalizedArtifactContent().ShouldBeNull();
+        sealedContent.ShouldNotBeNull().ToArray().ShouldBe("sealed artifact"u8.ToArray());
+    }
+
+    [Fact]
+    public async Task Artifact_migration_preserves_existing_bytes_and_limits_new_writes()
+    {
+        // Arrange
+        const string initialMigration = "20261111091530_InitialAdmin";
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentDraftInfrastructureTestData.CreateApprovedLineage(now);
+        var originalRevision = lineage.Revisions.ShouldHaveSingleItem();
+        var documentId = originalRevision.Id;
+        var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
+        lineage.Finalize(documentId, "sealed artifact"u8.ToArray(), now.AddMinutes(1), auditContext).IsSuccess.ShouldBeTrue();
+        await Scenario.Seed(lineage);
+        var ct = TestContext.Current.CancellationToken;
+        var legacyBytes = new byte[DocumentLimits.MaxFinalizedArtifactBytes + 1];
+        legacyBytes[0] = 41;
+        legacyBytes[^1] = 43;
+        await Scenario.MigrateTo(initialMigration, ct);
+        await using var connection = new NpgsqlConnection(Scenario.ConnectionString);
+        await connection.OpenAsync(ct);
+        await using var legacyWrite = new NpgsqlCommand(
+            """UPDATE "DocumentDrafts" SET "FinalizedArtifactContent" = @bytes WHERE "Id" = @id""", connection);
+        legacyWrite.Parameters.AddWithValue("bytes", legacyBytes);
+        legacyWrite.Parameters.AddWithValue("id", documentId);
+        var legacyRowsUpdated = await legacyWrite.ExecuteNonQueryAsync(ct);
+        legacyRowsUpdated.ShouldBe(1);
+
+        // Act
+        await Scenario.MigrateTo(null, ct);
+        var migrated = await Scenario.ReadFinalizedArtifactContent(documentId, ct);
+        var migratedRevision = await Scenario.GetDocumentById(documentId, ct);
+        await using var newWrite = new NpgsqlCommand(
+            """UPDATE "DocumentArtifactBodies" SET "Content" = @bytes WHERE "DocumentId" = @id""", connection);
+        newWrite.Parameters.AddWithValue("bytes", legacyBytes);
+        newWrite.Parameters.AddWithValue("id", documentId);
+        Func<Task> update = () => newWrite.ExecuteNonQueryAsync(ct);
+        var failure = await update.ShouldThrow<PostgresException>();
+        await Scenario.MigrateTo(initialMigration, ct);
+        await using var legacyRead = new NpgsqlCommand(
+            """SELECT "FinalizedArtifactContent" FROM "DocumentDrafts" WHERE "Id" = @id""", connection);
+        legacyRead.Parameters.AddWithValue("id", documentId);
+        var rolledBack = await legacyRead.ExecuteScalarAsync(ct);
+
+        // Assert
+        migrated.ShouldNotBeNull().ToArray().ShouldBe(legacyBytes);
+        migratedRevision.ShouldNotBeNull().BrandingSourceRevision.ShouldBe(originalRevision.BrandingSourceRevision);
+        failure.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
+        rolledBack.ShouldBeOfType<byte[]>().ShouldBe(legacyBytes);
+    }
+
+    [Fact]
     public async Task Concurrent_finalization_of_one_revision_commits_exactly_once()
     {
         // Arrange

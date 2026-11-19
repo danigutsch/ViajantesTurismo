@@ -6,6 +6,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 /// <summary>Database constraint and index names for document drafts, with the conflicts EF Core cannot report by unique rule.</summary>
 internal static class DocumentDraftSchema
 {
+    private const string ArtifactPrimaryKey = "PK_DocumentArtifactBodies";
+
     /// <summary>Check constraint name enforcing booking eligibility.</summary>
     public const string BookingEligibilityConstraint = "CK_DocumentDrafts_BookingEligibility";
     /// <summary>Unique constraint name allowing one active finalized revision per lineage.</summary>
@@ -28,6 +30,18 @@ internal static class DocumentDraftSchema
         {
             SqlState: PostgresErrorCodes.CheckViolation,
             ConstraintName: BookingEligibilityConstraint,
+        };
+    }
+
+    /// <summary>Returns whether another writer already sealed the same revision's artifact body.</summary>
+    public static bool IsDuplicateArtifactConflict(DbUpdateException exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+
+        return exception.InnerException is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation,
+            ConstraintName: ArtifactPrimaryKey,
         };
     }
 

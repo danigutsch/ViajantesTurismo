@@ -11,6 +11,11 @@ namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 /// </summary>
 internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<DocumentDraft>
 {
+    private const string HasFinalizedArtifactColumn = "HasFinalizedArtifact";
+
+    /// <summary>The navigation used for loading one revision's artifact body.</summary>
+    internal const string FinalizedArtifactNavigation = "_finalizedArtifact";
+
     /// <summary>Maps document drafts, branding snapshot columns, revision indexes and owned fields.</summary>
     public void Configure(EntityTypeBuilder<DocumentDraft> entity)
     {
@@ -62,7 +67,12 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             .HasFilter("\"FinalizedAt\" IS NULL");
         entity.Property(document => document.FinalizedArtifactName).HasMaxLength(128);
         entity.Property(document => document.VoidReason).HasConversion<string>().HasMaxLength(DocumentLimits.MaxVoidReasonLength);
-        entity.Property<byte[]?>("_finalizedArtifactContent").HasColumnName("FinalizedArtifactContent");
+        entity.Property<bool>("_hasFinalizedArtifact").HasColumnName(HasFinalizedArtifactColumn);
+        entity.HasOne<DocumentArtifactBody>(FinalizedArtifactNavigation)
+            .WithOne()
+            .HasForeignKey<DocumentArtifactBody>(body => body.DocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
+        entity.Navigation(FinalizedArtifactNavigation).UsePropertyAccessMode(PropertyAccessMode.Field);
 
         entity.OwnsMany(document => document.Fields, field =>
         {

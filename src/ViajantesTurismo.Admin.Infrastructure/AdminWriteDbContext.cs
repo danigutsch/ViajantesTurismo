@@ -63,6 +63,10 @@ internal sealed class AdminWriteDbContext(
         {
             throw new DocumentBookingEligibilityConflictException(exception);
         }
+        catch (DbUpdateException exception) when (DocumentDraftSchema.IsDuplicateArtifactConflict(exception))
+        {
+            throw new DocumentRevisionConflictException(exception);
+        }
         catch (Npgsql.PostgresException exception) when (DocumentDraftSchema.IsActiveFinalizedLineageConflict(exception))
         {
             throw new DocumentRevisionConflictException(exception);
@@ -96,6 +100,7 @@ internal sealed class AdminWriteDbContext(
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentLineageConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentDraftConfiguration());
+        modelBuilder.ApplyConfiguration(new DocumentArtifactBodyConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentAuditConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentAuditPurgeConfiguration());
         modelBuilder.ApplyConfiguration(new DocumentRetentionPurgeConfiguration());

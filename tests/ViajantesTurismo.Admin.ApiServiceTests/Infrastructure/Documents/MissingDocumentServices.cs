@@ -17,6 +17,10 @@ internal sealed class MissingDocumentServices : IDocumentStore, IDocumentQuerySe
     public Task<DocumentLineage?> GetByDocumentId(Guid documentId, CancellationToken ct) =>
         Task.FromResult<DocumentLineage?>(null);
 
+    /// <summary>Returns no artifact.</summary>
+    public Task<ReadOnlyMemory<byte>?> ReadFinalizedArtifactContent(Guid documentId, CancellationToken ct) =>
+        Task.FromResult<ReadOnlyMemory<byte>?>(null);
+
     /// <summary>Purges nothing and returns zero.</summary>
     public Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct) =>
         Task.FromResult(new DocumentPurgeCounts(0, 0));
