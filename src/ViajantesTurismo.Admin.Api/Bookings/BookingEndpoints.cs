@@ -1,3 +1,11 @@
+using ViajantesTurismo.Admin.Api.Bookings.CancelBooking;
+using ViajantesTurismo.Admin.Api.Bookings.CompleteBooking;
+using ViajantesTurismo.Admin.Api.Bookings.ConfirmBooking;
+using ViajantesTurismo.Admin.Api.Bookings.CreateBooking;
+using ViajantesTurismo.Admin.Api.Bookings.DeleteBooking;
+using ViajantesTurismo.Admin.Api.Bookings.UpdateBookingDetails;
+using ViajantesTurismo.Admin.Api.Bookings.UpdateBookingDiscount;
+using ViajantesTurismo.Admin.Api.Bookings.UpdateBookingNotes;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;

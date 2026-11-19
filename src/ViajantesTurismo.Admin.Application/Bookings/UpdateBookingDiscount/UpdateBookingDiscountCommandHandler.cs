@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Application.Mappings;
 using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Tours;

@@ -4,7 +4,7 @@ using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Domain;
 
-namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
+namespace ViajantesTurismo.Admin.Infrastructure.Tours;
 
 /// <summary>Maps the tour aggregate, owned schedule, pricing and capacity, and cascading bookings.</summary>
 internal sealed class TourConfiguration : IEntityTypeConfiguration<Tour>

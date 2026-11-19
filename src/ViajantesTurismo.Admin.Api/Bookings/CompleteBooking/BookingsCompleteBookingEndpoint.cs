@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Application.Bookings.CompleteBooking;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Tours;
 
-namespace ViajantesTurismo.Admin.Api.Bookings;
+namespace ViajantesTurismo.Admin.Api.Bookings.CompleteBooking;
 
 /// <summary>Endpoint for completing a booking.</summary>
 internal static class BookingsCompleteBookingEndpoint

@@ -20,14 +20,13 @@ using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
-using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
+using ViajantesTurismo.Admin.Infrastructure.Tours;
 using ViajantesTurismo.Resources;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 
@@ -104,8 +103,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         builder.Services.AddScoped<IQueryService, QueryService>();
         builder.Services.AddScoped<IDocumentQueryService, DocumentQueryService>();
-        builder.Services.AddScoped<ITourStore, TourStore>();
-        builder.Services.AddScoped<ITourCommandStore, TourCommandStore>();
+        builder.Services.AddTourPersistence();
         builder.Services.AddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();

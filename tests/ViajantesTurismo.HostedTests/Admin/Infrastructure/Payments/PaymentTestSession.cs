@@ -15,6 +15,7 @@ using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.Tours;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;

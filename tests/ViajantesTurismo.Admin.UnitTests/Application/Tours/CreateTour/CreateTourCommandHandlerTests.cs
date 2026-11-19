@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
-namespace ViajantesTurismo.Admin.UnitTests.Application.Tours;
+namespace ViajantesTurismo.Admin.UnitTests.Application.Tours.CreateTour;
 
 public sealed class CreateTourCommandHandlerTests
 {

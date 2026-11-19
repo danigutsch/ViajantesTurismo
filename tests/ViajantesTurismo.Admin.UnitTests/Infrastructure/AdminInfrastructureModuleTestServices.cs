@@ -7,8 +7,12 @@ using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.Tours;
+using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
@@ -58,13 +62,30 @@ internal static class AdminInfrastructureModuleTestServices
     }
 
     /// <summary>Composes the application and the full infrastructure module for the given environment, validating the provider on build.</summary>
-    public static AdminInfrastructureModuleTestScope CreateWithInfrastructureModule(string environmentName = "Production")
+    public static AdminInfrastructureModuleTestScope CreateWithInfrastructureModule(
+        string environmentName = "Production",
+        FakeTourStore? tourStore = null)
     {
         var builder = CreateConfiguredApplicationBuilder(environmentName);
+        if (tourStore is not null)
+        {
+            builder.Services.AddScoped<ITourStore>(_ => tourStore);
+            builder.Services.AddScoped<ITourCommandStore>(_ => tourStore);
+        }
+
         builder.AddApplication();
         builder.AddInfrastructure();
 
         return CreateScope(BuildValidatedServiceProvider(builder.Services));
+    }
+
+    /// <summary>Composes the tour stores without the Admin write context.</summary>
+    public static AdminInfrastructureModuleTestScope CreateWithTourPersistenceOnly()
+    {
+        var services = new ServiceCollection();
+        services.AddTourPersistence();
+
+        return CreateScope(services.BuildServiceProvider());
     }
 
     /// <summary>Composes the application and infrastructure without runtime background services, as at OpenAPI build-time generation.</summary>

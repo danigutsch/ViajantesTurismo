@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Domain;
 
-namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
+namespace ViajantesTurismo.Admin.Infrastructure.Tours;
 
 /// <summary>EF Core mapping for the <see cref="Booking" /> entity and its owned customer and discount values.</summary>
 internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
