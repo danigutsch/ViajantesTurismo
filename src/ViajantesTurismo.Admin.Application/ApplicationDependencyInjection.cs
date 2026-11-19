@@ -54,9 +54,7 @@ public static class ApplicationDependencyInjection
         builder.Services.AddScoped<ReviewPaymentAccountCommandHandler>();
         builder.Services.AddScoped<RetirePaymentAccountCommandHandler>();
         builder.Services.AddScoped<WithdrawPaymentAccountVerificationCommandHandler>();
-        builder.Services.AddScoped<CustomerImportCommandHandler>();
-        builder.Services.AddScoped<CustomerImportConflictDetector>();
-        builder.Services.AddScoped<CustomerImportWorkflowService>();
+        builder.Services.AddCustomerImport();
         builder.Services.AddScoped<GenerateContractDraftCommandHandler>();
         builder.Services.AddScoped<DocumentBrandingSource>();
         builder.Services.AddScoped<IDocumentSourceVersionReader, DocumentSourceVersionReader>();

@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.Admin.Api.Customers;
+namespace ViajantesTurismo.Admin.Api.Customers.Import;
 
 /// <summary>Logs customer import outcomes that are handled without reaching the caller.</summary>
 internal static partial class CustomerImportLog

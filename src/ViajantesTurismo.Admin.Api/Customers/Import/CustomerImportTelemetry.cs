@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace ViajantesTurismo.Admin.Api.Customers;
+namespace ViajantesTurismo.Admin.Api.Customers.Import;
 
 /// <summary>Records the customer import workflow outcome and elapsed time.</summary>
 internal sealed class CustomerImportTelemetry

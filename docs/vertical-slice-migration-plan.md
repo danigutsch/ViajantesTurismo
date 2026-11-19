@@ -122,7 +122,7 @@ approve a wire-contract change. Preserve [request semantics](API_REQUEST_SHAPES.
 
 | Candidate and current source | Rationale and decision | Compatibility risk and follow-up recommendation |
 | --- | --- | --- |
-| Customer import preview/commit in `Admin.Api/Customers/CustomerImportEndpoints.cs` | Both operations receive multipart files and pass through scanning; assess a server-held import session only if repeated processing is measured as costly | Session IDs would add retention, authorization, expiry, and replay semantics. Keep current contract during slice moves; propose a separate import-session issue with measurements |
+| Customer import preview/commit in `Admin.Api/Customers/Import/CustomerImportEndpoints.cs` | Both operations receive multipart files and pass through scanning; assess a server-held import session only if repeated processing is measured as costly | Session IDs would add retention, authorization, expiry, and replay semantics. Keep current contract during slice moves; propose a separate import-session issue with measurements |
 | Booking create/update responses in `Admin.Api/Bookings` | Mutations reload through `IQueryService`; assess whether narrower booking queries improve ownership without duplicating persistence | Preserve Created Location, response bodies, and not-found/conflict/validation outcomes. Recommend a booking-query seam follow-up only after callers are inventoried |
 | Tour presentation, publish, and unpublish in `Catalog.Api/Tours/CatalogTourEndpoints.cs` | Keep accepted-but-not-yet-projected behavior distinct from completed writes | Preserve 202 Location headers, retry/client behavior, authorization, and cache invalidation |
 | Media upload and accessibility operations in the same Catalog file | Separate upload intake, review, and public delivery ownership | Multipart names, size/scanner controls, 201 body, permissions, and stream disposal are contracts. Coordinate with existing upload-queue work rather than creating duplicate upload issues |
@@ -138,12 +138,13 @@ application host composes the Booking and Tour route groups and registers the tw
 stores through infrastructure. Explicit store registrations can supply either store before that
 composition. The shared write context owns the transaction and the mapping model.
 
-1. Move customer create/update. Retain contract assemblies and serializer metadata. Coordinate
-   date-related files with the separate deterministic-time work.
-2. Move import as one workflow boundary: parsing, conflict detection/resolution, scan limits, commit,
-   and UI handoff. Avoid splitting its state machine between unrelated ownership folders.
-3. Continue with payment and document workflow ownership. Keep review/finalization, idempotency,
-   audit, retention, and artifact storage together. Regeneration is a separate workflow.
+Customer create and update have matching operation folders. The Customer route group composes
+the import endpoints, including their upload binding and telemetry. The customer mapper and
+persistence files live in their owning layers. The Application composition root registers the
+scoped import workflow through its feature registration.
+
+Continue with payment and document workflow ownership. Keep review/finalization, idempotency,
+audit, retention, and artifact storage together. Regeneration is a separate workflow.
 
 Prerequisites: inventory current consumers and test seams; record any intended contract change
 separately. Risks: aggregate-wide transaction rules, broad query contracts, generated metadata,

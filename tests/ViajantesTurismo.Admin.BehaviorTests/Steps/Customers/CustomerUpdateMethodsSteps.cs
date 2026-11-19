@@ -1,4 +1,4 @@
-using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Customers;

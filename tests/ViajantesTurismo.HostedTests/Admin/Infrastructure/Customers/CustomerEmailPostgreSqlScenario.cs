@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Infrastructure.Customers;
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;

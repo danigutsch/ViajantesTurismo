@@ -2,7 +2,7 @@ using ViajantesTurismo.ArchitectureTests.Repository;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
-/// <summary>Checks ownership of the Admin booking and tour operations.</summary>
+/// <summary>Checks ownership of the Admin booking, tour, and customer operations.</summary>
 public sealed class AdminFeatureOwnershipTests
 {
     [Theory]
@@ -27,6 +27,22 @@ public sealed class AdminFeatureOwnershipTests
     [InlineData("tests/ViajantesTurismo.Admin.UnitTests/Application/Bookings/UpdateBookingDetails/UpdateBookingDetailsCommandHandlerTests.cs")]
     [InlineData("tests/ViajantesTurismo.Admin.UnitTests/Application/Tours/CreateTour/CreateTourCommandHandlerTests.cs")]
     [InlineData("tests/ViajantesTurismo.Admin.ApiServiceTests/Tours/TourCurrencyEndpointTests.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Api/Customers/CreateCustomer/CreateCustomerEndpoint.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Api/Customers/UpdateCustomer/UpdateCustomerEndpoint.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpoints.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportLog.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportTelemetry.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpointsCategory.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Api/Customers/Import/CommitCustomerImportFormDto.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Application/Customers/CustomerMapper.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Infrastructure/Customers/CustomerStore.cs")]
+    [InlineData("src/ViajantesTurismo.Admin.Infrastructure/Customers/CustomerConfiguration.cs")]
+    [InlineData("tests/ViajantesTurismo.Admin.UnitTests/Application/Customers/CreateCustomer/CreateCustomerCommandHandlerTests.cs")]
+    [InlineData("tests/ViajantesTurismo.Admin.UnitTests/Application/Customers/UpdateCustomer/UpdateCustomerCommandHandlerTests.cs")]
+    [InlineData("tests/ViajantesTurismo.Admin.UnitTests/Api/Customers/Import/CustomerImportEndpointsTests.cs")]
+    [InlineData("tests/ViajantesTurismo.Admin.ApiServiceTests/Customers/Import/CustomerImportUploadOverKestrelTests.cs")]
+    [InlineData("tests/ViajantesTurismo.Admin.ApiServiceTests/Customers/Import/AdminImportRateLimitOverKestrelTests.cs")]
+    [InlineData("tests/ViajantesTurismo.Admin.ApiServiceTests/Customers/Import/CustomerImportKestrelScenario.cs")]
     public void Files_live_with_their_feature(string relativePath)
     {
         // Arrange

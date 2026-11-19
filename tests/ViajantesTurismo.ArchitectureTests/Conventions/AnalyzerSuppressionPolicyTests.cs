@@ -15,7 +15,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
         "src/ViajantesTurismo.Management.Web/Components/Pages/Payments/PaymentTargetChoice.cs",
         "tests/ViajantesTurismo.HostedTests/Admin/Infrastructure/Payments/PostgreSqlPaymentScenario.cs",
         "src/ViajantesTurismo.Admin.Domain/Customers/Customer.cs",
-        "src/ViajantesTurismo.Admin.Api/Customers/CustomerImportEndpoints.cs",
+        "src/ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpoints.cs",
         "src/ViajantesTurismo.MigrationService/MigrationProcess.cs",
         "src/ViajantesTurismo.Catalog.Contracts.Application/CatalogTourImageDto.cs",
         "tests/ViajantesTurismo.HostedTests/Admin/Infrastructure/Customers/CustomerEmailPostgreSqlScenario.cs",

@@ -9,6 +9,7 @@ using PandaBear.OpenApi;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Api.Bookings;
 using ViajantesTurismo.Admin.Api.Customers;
+using ViajantesTurismo.Admin.Api.Customers.Import;
 using ViajantesTurismo.Admin.Api.Documents;
 using ViajantesTurismo.Admin.Api.Payments;
 using ViajantesTurismo.Admin.Api.Errors;
@@ -89,8 +90,7 @@ app.UseRateLimiter();
 app.UseApiRequestTimeouts();
 
 app.MapToursEndpoints();
-app.MapCustomerEndpoints()
-    .MapCustomerImportEndpoints();
+app.MapCustomerEndpoints();
 app.MapBookingEndpoints();
 app.MapDocumentEndpoints();
 app.MapDocumentHoldEndpoints();

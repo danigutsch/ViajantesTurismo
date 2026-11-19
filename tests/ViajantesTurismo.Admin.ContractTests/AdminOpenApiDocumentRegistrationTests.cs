@@ -35,7 +35,6 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             "customers",
             TestContext.Current.CancellationToken,
             "MapCustomerEndpoints",
-            "MapCustomerImportEndpoints",
             "MapToursEndpoints");
 
         var importSchema = AdminOpenApiDocumentRegistrationTestHelpers.GetMultipartSchema(document, "/api/v1/customers/import/commit");
@@ -313,7 +312,6 @@ public sealed class AdminOpenApiDocumentRegistrationTests
             TestContext.Current.CancellationToken,
             "MapToursEndpoints",
             "MapCustomerEndpoints",
-            "MapCustomerImportEndpoints",
             "MapBookingEndpoints",
             "MapErrorDocumentationEndpoints");
 

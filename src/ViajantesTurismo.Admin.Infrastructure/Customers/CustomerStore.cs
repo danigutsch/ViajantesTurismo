@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Customers;
 
-namespace ViajantesTurismo.Admin.Infrastructure;
+namespace ViajantesTurismo.Admin.Infrastructure.Customers;
 
 /// <summary>
 /// EF Core implementation of <see cref="ICustomerStore" />.

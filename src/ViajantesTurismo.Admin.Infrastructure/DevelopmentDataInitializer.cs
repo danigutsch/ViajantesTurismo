@@ -3,7 +3,7 @@ using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Results;
-using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;

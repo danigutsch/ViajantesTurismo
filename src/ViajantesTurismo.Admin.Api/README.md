@@ -12,6 +12,9 @@ error handling.
 Booking mutations and Tour create and update live in operation directories under `Bookings` and
 `Tours`. Each feature's route group owns its reads and maps the operations at startup.
 
+`Customers` owns its create, update, and import operations. `MapCustomerEndpoints` composes the
+customer routes, including import upload binding and authorization.
+
 ### Tours
 
 - `GET /tours` - List all tours

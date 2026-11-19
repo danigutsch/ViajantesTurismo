@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.UploadWire.Testing;
 
-namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
+namespace ViajantesTurismo.Admin.ApiServiceTests.Customers.Import;
 
 /// <summary>
 /// The Admin customer import endpoints on a real loopback Kestrel server, with a recording scanner, a fake customer

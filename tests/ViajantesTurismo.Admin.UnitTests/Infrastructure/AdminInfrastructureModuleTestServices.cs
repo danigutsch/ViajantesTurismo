@@ -8,6 +8,7 @@ using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
@@ -64,13 +65,19 @@ internal static class AdminInfrastructureModuleTestServices
     /// <summary>Composes the application and the full infrastructure module for the given environment, validating the provider on build.</summary>
     public static AdminInfrastructureModuleTestScope CreateWithInfrastructureModule(
         string environmentName = "Production",
-        FakeTourStore? tourStore = null)
+        FakeTourStore? tourStore = null,
+        ICustomerStore? customerStore = null)
     {
         var builder = CreateConfiguredApplicationBuilder(environmentName);
         if (tourStore is not null)
         {
             builder.Services.AddScoped<ITourStore>(_ => tourStore);
             builder.Services.AddScoped<ITourCommandStore>(_ => tourStore);
+        }
+
+        if (customerStore is not null)
+        {
+            builder.Services.AddScoped(_ => customerStore);
         }
 
         builder.AddApplication();

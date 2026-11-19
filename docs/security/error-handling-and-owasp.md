@@ -76,7 +76,7 @@ Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exerci
 | Protect logs from tampering and unauthorized access | Partial | The observability stack under `observability/` is local-only |
 | Alert on errors and suspicious activity | Missing | The signals now exist (`unhandled_exceptions_total`, `authentication_events_total`, `rate_limit_rejections_total`), but `observability/` has no alert rules; `docs/operations/production-readiness.md` says thresholds are undecided |
 | Summarize repeated errors | Missing | No aggregation of repeated errors |
-| Never swallow exceptions silently | Partial | The malware-scanner catch in `src/ViajantesTurismo.Admin.Api/Customers/CustomerImportEndpoints.cs` now logs `EventId` 1 `CustomerImportScannerFailed` with the failure type and still fails closed; the Management.Web pages that catch `Exception` report through `IUiFailureReporter` (`EventId` 7001, exception type and trace id only) and still show fixed copy |
+| Never swallow exceptions silently | Partial | The malware-scanner catch in `src/ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpoints.cs` now logs `EventId` 1 `CustomerImportScannerFailed` with the failure type and still fails closed; the Management.Web pages that catch `Exception` report through `IUiFailureReporter` (`EventId` 7001, exception type and trace id only) and still show fixed copy |
 | Honeytokens | Missing | Not expected now |
 
 ## Triage flow for new and unknown errors

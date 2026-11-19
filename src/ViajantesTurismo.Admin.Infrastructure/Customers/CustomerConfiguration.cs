@@ -4,7 +4,7 @@ using PandaBear.EntityFrameworkCore;
 using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Customers;
 
-namespace ViajantesTurismo.Admin.Infrastructure.ModelConfigurations;
+namespace ViajantesTurismo.Admin.Infrastructure.Customers;
 
 /// <summary>Maps the customer aggregate and its owned value objects to separate tables.</summary>
 internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
