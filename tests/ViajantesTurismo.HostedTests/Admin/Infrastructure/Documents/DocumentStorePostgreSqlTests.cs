@@ -1,4 +1,6 @@
 using PandaBear.BuildingBlocks;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -564,6 +566,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         var legacyBytes = new byte[DocumentLimits.MaxFinalizedArtifactBytes + 1];
         legacyBytes[0] = 41;
         legacyBytes[^1] = 43;
+        var legacyDigest = Convert.ToHexStringLower(SHA256.HashData(legacyBytes));
         await Scenario.MigrateTo(initialMigration, ct);
         await using var connection = new NpgsqlConnection(Scenario.ConnectionString);
         await connection.OpenAsync(ct);
@@ -592,9 +595,49 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
 
         // Assert
         migrated.ShouldNotBeNull().ToArray().ShouldBe(legacyBytes);
-        migratedRevision.ShouldNotBeNull().BrandingSourceRevision.ShouldBe(originalRevision.BrandingSourceRevision);
+        migratedRevision.ShouldNotBeNull();
+        migratedRevision.BrandingSourceRevision.ShouldBe(originalRevision.BrandingSourceRevision);
+        migratedRevision.FinalizedArtifactLength.ShouldBe(legacyBytes.Length);
+        migratedRevision.FinalizedArtifactSha256.ShouldBe(legacyDigest);
         failure.SqlState.ShouldBe(PostgresErrorCodes.CheckViolation);
         rolledBack.ShouldBeOfType<byte[]>().ShouldBe(legacyBytes);
+    }
+
+    [Theory]
+    [InlineData("another payload")]
+    [InlineData("short")]
+    [InlineData(null)]
+    public async Task A_finalized_artifact_is_unavailable_when_the_stored_bytes_are_missing_or_changed(string? replacement)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = new DateTime(2026, 7, 24, 12, 0, 0, DateTimeKind.Utc);
+        var lineage = DocumentDraftInfrastructureTestData.CreateApprovedLineage(now);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
+        lineage.Finalize(documentId, "sealed artifact"u8.ToArray(), now.AddMinutes(1), auditContext).IsSuccess.ShouldBeTrue();
+        await Scenario.Seed(lineage);
+        var original = await Scenario.ReadFinalizedArtifactContent(documentId, ct);
+        await using var connection = new NpgsqlConnection(Scenario.ConnectionString);
+        await connection.OpenAsync(ct);
+        var statement = replacement is null
+            ? """DELETE FROM "DocumentArtifactBodies" WHERE "DocumentId" = @id"""
+            : """UPDATE "DocumentArtifactBodies" SET "Content" = @bytes WHERE "DocumentId" = @id""";
+        await using var change = new NpgsqlCommand(statement, connection);
+        if (replacement is not null)
+        {
+            change.Parameters.AddWithValue("bytes", Encoding.UTF8.GetBytes(replacement));
+        }
+        change.Parameters.AddWithValue("id", documentId);
+        var affected = await change.ExecuteNonQueryAsync(ct);
+
+        // Act
+        var stored = await Scenario.ReadFinalizedArtifactContent(documentId, ct);
+
+        // Assert
+        affected.ShouldBe(1);
+        original.ShouldNotBeNull().ToArray().ShouldBe("sealed artifact"u8.ToArray());
+        stored.ShouldBeNull();
     }
 
     [Fact]

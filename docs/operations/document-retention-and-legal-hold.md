@@ -40,8 +40,11 @@ bytes and metadata, document lineages, document audit records, and document idem
 Metadata-only audit records can contain linkable identifiers, which remain personal data where
 re-identification is possible. Callers must not place personal data or secrets in idempotency keys.
 
-The current artifact is an in-database HTML byte payload. A future PDF renderer or object store needs
-a new policy version before it holds finalized artifacts.
+The current HTML artifact body occupies a separate PostgreSQL row keyed by the opaque document
+revision ID. Finalization records its byte length and SHA-256 digest on the revision. Admin
+verifies both values before delivery, including before decrypting protected payment artifacts.
+The integrity migration establishes the baseline for previously stored bytes.
+A future PDF renderer or object store needs a new policy version before it holds finalized artifacts.
 
 Branding is captured onto each revision (name, colors, fonts, version and source revision) and the
 finalized HTML is stored as bytes, so later branding changes and regeneration never alter a finalized

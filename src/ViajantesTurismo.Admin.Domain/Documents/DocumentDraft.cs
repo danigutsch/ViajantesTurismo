@@ -193,6 +193,18 @@ public sealed class DocumentDraft : IEntity<Guid>
         get; private set;
     }
 
+    /// <summary>Gets the sealed artifact's byte length recorded at finalization.</summary>
+    internal int? FinalizedArtifactLength
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the sealed artifact's SHA-256 digest recorded at finalization.</summary>
+    internal string? FinalizedArtifactSha256
+    {
+        get; private set;
+    }
+
     /// <summary>Gets the preceding revision replaced by this revision, when applicable.</summary>
     public Guid? ReplacesDocumentId
     {
@@ -737,6 +749,8 @@ public sealed class DocumentDraft : IEntity<Guid>
 
         _finalizedArtifact = new DocumentArtifactBody(Id, artifactContent);
         _hasFinalizedArtifact = true;
+        FinalizedArtifactLength = _finalizedArtifact.Length;
+        FinalizedArtifactSha256 = _finalizedArtifact.GetSha256();
         FinalizedArtifactName = $"document-{Id:N}-r{Revision}.html";
         FinalizedAt = now;
         RetentionExpiresAt = null;
