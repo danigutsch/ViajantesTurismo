@@ -615,7 +615,7 @@ public sealed class DocumentDraft : IEntity<Guid>
         var field = _fields.FirstOrDefault(item => item.FieldId == fieldId);
         if (field is null)
         {
-            return DocumentErrors.FieldNotFound(fieldId);
+            return DocumentErrors.FieldNotFound();
         }
 
         var result = field.SetStaffOverride(value);
