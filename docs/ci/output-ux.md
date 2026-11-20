@@ -104,13 +104,29 @@ Implication for this repo:
 - per-slice test results artifacts, including `manifest.json` and `diagnostics.txt`
 - the `ci-selection` artifact with selection reasons
 - `quality-evidence`: merged coverage, diff, and threshold-result JSON
+- `ci-manifest-<run-attempt>` with the checked commit, selection decision and job results
+- `ci-hosted-test-attempts-<run-attempt>` with bounded hosted failure metadata
+
+Use `ci-manifest.json` as the workflow-level automation input. Its version 1 fields include the
+workflow, run ID as a string, attempt number, event, checked commit, optional PR head, selection
+decision, and a result map keyed by workflow job ID. A null build decision means selection produced
+no recognized decision. `test-slices` is the matrix result. Use the existing slice manifests
+and timing files for per-slice details.
+
+The manifest job observes completed validation attempts, including failures and documentation
+skips. A partial rerun can reuse job results from a preceding attempt. A workflow cancellation can
+stop artifact publication. Run attempts have distinct artifact names and seven-day retention.
+Download the artifact for the intended run and attempt.
+
+```bash
+gh run download "$RUN_ID" --name "ci-manifest-$RUN_ATTEMPT"
+jq '.jobResults' ci-manifest.json
+```
 
 ### Current gaps
 
 - timing schemas need consistent interpretation across slices
-- there is no single machine-readable CI manifest for the whole run
 - slice summaries remain sparse
-- diagnostics are useful but not yet normalized for machine consumption
 - console output still mixes progress output and diagnostic output in a mostly free-form way
 
 ## Recommendation for this repository
@@ -164,9 +180,8 @@ append-only timing data if the schema is kept consistent.
 
 ### Phase 2: Add a machine-readable manifest
 
-- emit a small per-job manifest file
-- upload it with diagnostics or test-results artifacts as appropriate
-- document the manifest as the preferred automation input
+The workflow manifest records job results. Each execution slice supplies its phase detail through
+the SharedKernel manifest. Hosted test attempts have their own bounded failed-attempt records.
 
 ### Phase 3: Tighten console verbosity
 

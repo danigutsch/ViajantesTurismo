@@ -28,7 +28,7 @@ current schedules and grouping rules.
 
 - [Dependency/license evidence](dependency-license-evidence.md) — complete snapshots, package evidence, and native audit
 
-- [Test diagnostics proposal](test-diagnostics.md) — bounded failure artifacts, privacy, and test/resource correlation
+- [Test diagnostics](test-diagnostics.md) — per-attempt failure metadata, privacy, and proposed resource correlation
 - [Warning policy](warning-policy.md) — diagnostic classification, enforcement owners, and exception lifecycle
 - [Pin update review](pin-update-review.md) — Action/container update coverage and review evidence
 

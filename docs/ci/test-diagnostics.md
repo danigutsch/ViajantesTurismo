@@ -1,14 +1,13 @@
-# Integration and system test diagnostics proposal
+# Integration and system test diagnostics
 
-Status: researched design; targeted resource/trace capture is not implemented by this document.
-Owner: application test and CI maintainers. Reviewed October 20, 2026.
-Scope: ViajantesTurismo suites; no SharedKernel API change or new diagnostic dependency is required
-by this proposal. Ordinary successful runs should remain quiet.
+The hosted runner produces bounded metadata for failed individual test attempts. Resource, trace
+and browser capture are follow-up designs. Application test and CI maintainers own this contract.
 
 ## Contents
 
 - [Current evidence](#current-evidence)
-- [Minimum failure bundle](#minimum-failure-bundle)
+- [Failed test attempts](#failed-test-attempts)
+- [Proposed minimum failure bundle](#proposed-minimum-failure-bundle)
 - [Correlation and privacy](#correlation-and-privacy)
 - [Local and CI retrieval](#local-and-ci-retrieval)
 - [Implementation sequence](#implementation-sequence)
@@ -21,7 +20,6 @@ slice with seven-day retention. `sharedkernel-ci run` writes `phase-timings.tsv`
 `diagnostics.txt` (phase status, escaped failure message, and file inventory), and one log per phase to
 `TestResults/selection/execution-<slice>/`, whether the run passes, fails, or is canceled, and a failed
 slice prints `dotnet --info`.
-These are current capabilities, not proof of test-to-resource trace correlation.
 
 The [hosted-test assembly fixture](../../tests/ViajantesTurismo.HostedTests/Infrastructure/HostedTestFixture.cs) starts each
 container on first demand. The
@@ -29,10 +27,28 @@ container on first demand. The
 borrows the `system` stack that the assembly fixture starts on demand, authenticates resource clients, and warms
 the web surfaces. Its
 [Playwright base](../../tests/ViajantesTurismo.HostedTests/Admin/System/Infrastructure/Bases/AspireSystemTestBase.cs)
-provides pages and navigation. The inspected fixture/base do not implement the per-test bounded
-resource-log/OTel bundle below. Do not claim an artifact exists until its producer is implemented.
+provides pages and navigation.
 
-## Minimum failure bundle
+## Failed test attempts
+
+The hosted test assembly observes the pinned xUnit runner's messages and forwards them unchanged.
+The CI test step enables the observer through `VT_TEST_ATTEMPT_DIAGNOSTICS_DIR`. If the hosted
+slice fails, GitHub uploads only the JSON files in its dedicated runner-temp directory to
+`ci-hosted-test-attempts-<run-attempt>` with seven-day retention.
+
+Each version 1 JSON file contains a generated attempt ID, suite, version-control commit when
+available, compiled class and method names, UTC start and finish times, result, failure category
+and an indicator for per-test cleanup failure. The filename uses the attempt ID. Separate theory
+rows get separate attempt IDs. Class and method names are each bounded to 256 characters.
+The observer reads only these fields from runner events. Test display names, arguments, attachments,
+test output and exception messages stay in their original runner channels.
+
+Up to ten failed attempts are written per hosted execution. If additional attempts fail,
+`truncation.json` marks the omission. A passed test produces no file. Runner-level setup or
+teardown failures and a terminated test process still require the original slice logs. An
+unwritable diagnostics directory leaves the original result intact.
+
+## Proposed minimum failure bundle
 
 Use a generated opaque attempt ID, never a customer name, route value, or test display name
 containing theory input, in artifact paths.
@@ -77,24 +93,25 @@ path; do not upload them by default or install dump extensions for ordinary fail
 
 ## Local and CI retrieval
 
-Today: reproduce with the existing focused MTP invocation, then inspect the suite's result directory
+Reproduce with the existing focused MTP invocation, then inspect the suite's result directory
 and slice phase log. Choose a known failing method without sensitive theory arguments:
 
 ```bash
-dotnet test --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj \
+DIAGNOSTICS_DIR="$(mktemp -d)"
+VT_TEST_ATTEMPT_DIAGNOSTICS_DIR="$DIAGNOSTICS_DIR" \
+    dotnet test --project tests/ViajantesTurismo.HostedTests -- \
     --filter-method '<fully-qualified-method>'
 ```
 
-Replace the placeholder with the actual method. Use pinned SDK/tools and the suite's existing
-startup prerequisites. For a manually launched AppHost, the dashboard's resource state, structured
-logs, console logs, then traces are the diagnostic order. A manual host is not automatically the
-fixture's host, and dashboard data may not survive fixture disposal.
+Replace the placeholder with the actual method and use a dedicated output directory. Use pinned
+SDK/tools and the suite's existing startup prerequisites. For a manually launched AppHost, start
+with the dashboard's resource state, then inspect structured logs, console logs and traces.
+The test fixture can run its own host. Fixture disposal can remove its dashboard data.
 
 In CI, open the failing slice's summary, download `ci-test-slice-<slice>-results`, inspect
-`diagnostics.txt` and the phase logs first, then locate the affected test. The
-proposed per-attempt manifests would link test failures to bounded excerpts; they are not yet
-present. Keep the existing seven-day retention for the proposed bundle and use repository access
-controls; do not attach raw artifacts to public issues or external viewers.
+`diagnostics.txt` and the phase logs first, then locate the affected test. Use
+`ci-hosted-test-attempts-<run-attempt>` for the individual failure and cleanup records. Keep those
+artifacts in the repository's access boundary.
 
 For an approved local Playwright trace, use the already generated `playwright.ps1 show-trace`
 entrypoint in that test project's build output. Do not use transient npm installation or upload
@@ -103,8 +120,8 @@ production telemetry access is outside this test workflow.
 
 ## Implementation sequence
 
-1. Add an app-owned manifest and attempt correlation in one failing synthetic System scenario.
-   Verify parallel isolation, cancellation, failure preservation, and sanitized output.
+1. Extend the implemented runner metadata with attempt-to-resource correlation in a failing
+   synthetic System scenario. Verify parallel isolation, cancellation, and failure preservation.
 2. Add bounded resource-event and trace summaries using supported diagnostics APIs for the pinned
    Aspire version; verify behavior against that version before extending the fixture. Avoid changes
    to reusable packages unless a separately reviewed consumer requirement proves necessity.

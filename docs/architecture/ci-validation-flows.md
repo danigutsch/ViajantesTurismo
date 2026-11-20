@@ -29,6 +29,7 @@ flowchart TB
     quality_gate[quality-gate]
     warning_summary[Warning Summary]
     lint[lint]
+    ci_manifest[CI Run Manifest]
     trigger --> detect_changes
     detect_changes --> calculate_version
     detect_changes --> test_slices
@@ -44,6 +45,15 @@ flowchart TB
     solution_build --> warning_summary
     lint --> warning_summary
     trigger --> lint
+    detect_changes --> ci_manifest
+    calculate_version --> ci_manifest
+    test_slices --> ci_manifest
+    build_and_test --> ci_manifest
+    solution_build --> ci_manifest
+    format --> ci_manifest
+    quality_gate --> ci_manifest
+    warning_summary --> ci_manifest
+    lint --> ci_manifest
 ```
 <!-- generated:ci-main-jobs:end -->
 
