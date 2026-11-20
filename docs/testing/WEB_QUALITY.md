@@ -28,11 +28,12 @@ affect its scores. [Chrome Lighthouse documentation](https://developer.chrome.co
 dotnet test --project tests/ViajantesTurismo.Public.WebTests/ViajantesTurismo.Public.WebTests.csproj
 ```
 
-Evaluate `TouristTrip` using the title, visible summary and canonical URL of a published tour.
-Keep the itinerary as visible text unless the public contract supplies ordered places. Evaluate
-`BreadcrumbList` when the page presents a breadcrumb trail that follows the site hierarchy. A
-synthetic tour should pass Schema.org validation in both languages. Verify that structured data
-disappears when the tour is unavailable. Search-result treatments depend on the search provider.
+Published tour detail pages emit one Schema.org `TouristTrip` JSON-LD data block with the visible
+title, summary and localized canonical URL. The HTTP tests parse the rendered document and verify
+those fields in English and Portuguese. They also verify that other public pages and missing or
+unavailable tours omit the tour data block. The itinerary stays visible as text until the public
+contract supplies ordered places. Evaluate `BreadcrumbList` when a visible breadcrumb trail
+follows the site hierarchy. Search-result treatments depend on the search provider.
 [Schema.org TouristTrip](https://schema.org/TouristTrip) and
 [Google breadcrumb markup](https://developers.google.com/search/docs/appearance/structured-data/breadcrumb).
 
