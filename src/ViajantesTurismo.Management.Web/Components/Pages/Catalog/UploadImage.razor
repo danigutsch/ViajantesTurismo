@@ -18,10 +18,21 @@
 }
 
 <EditForm Model="@_entries" OnSubmit="@HandleSubmit" FormName="uploadCatalogTourImage">
-    <div class="catalog-image-drop-zone mb-3 rounded p-3" data-catalog-image-drop-zone>
+    <div class="catalog-image-drop-zone mb-3 rounded p-3" data-catalog-image-drop-zone
+         data-maximum-files="@MaximumSelectionCount" data-maximum-file-bytes="@MaximumFileSize"
+         data-maximum-total-bytes="@MaximumSelectionSize"
+         data-file-count-message="@SelectionCountMessage" data-file-size-message="@FileSizeMessage"
+         data-total-size-message="@SelectionSizeMessage"
+         data-traversal-limit-message="This selection has too many entries. Choose a smaller folder or select images individually."
+         data-folder-read-message="This folder could not be read. Choose another folder or select images individually.">
         <label for="imageFile" class="form-label">Image files</label>
         <InputFile id="imageFile" class="form-control" OnChange="HandleFileSelection" multiple
                    accept="@AcceptedImageTypes" aria-describedby="imageFileHelp" disabled="@IsUploading" />
+        <div class="catalog-image-folder-picker mt-2">
+            <label for="imageFolder" class="form-label">Image folder</label>
+            <input id="imageFolder" type="file" class="form-control" webkitdirectory multiple
+                   accept="@AcceptedImageTypes" aria-describedby="imageFileHelp" disabled="@IsUploading" />
+        </div>
         <div id="imageFileHelp" class="form-text">
             Drop images here or use the file picker.
             JPEG, PNG, WebP, or AVIF. Maximum size: @MaximumFileSizeInMebibytes MiB.
@@ -29,6 +40,7 @@
         </div>
         <div class="catalog-image-drop-feedback" aria-live="polite" data-catalog-image-drop-feedback
              data-release-message="Release to select images"></div>
+        <div class="text-danger mt-2" hidden data-catalog-image-folder-error></div>
     </div>
 
     @if (_entries.Count > 0)
@@ -118,6 +130,7 @@
     private const int MaximumSelectionCount = 10;
     private const long BytesPerMebibyte = 1024 * 1024;
     private const long MaximumFileSize = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxMediaUploadBytes;
+    private const long MaximumSelectionSize = MaximumSelectionCount * MaximumFileSize;
     private const long MaximumFileSizeInMebibytes = MaximumFileSize / BytesPerMebibyte;
     private const int MaximumDescriptionLength = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxAltTextLength;
     private const int MaximumCaptionLength = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxCaptionLength;
@@ -129,6 +142,9 @@
     private CatalogImageUploadEntry? _activeEntry;
     private CancellationTokenSource? _activeBatch;
 
+    private static string SelectionCountMessage => $"Select up to {MaximumSelectionCount} images at a time.";
+    private static string FileSizeMessage => $"Select an image no larger than {MaximumFileSizeInMebibytes} MiB.";
+    private static string SelectionSizeMessage => $"Select images totaling no more than {MaximumSelectionSize / BytesPerMebibyte} MiB.";
     private bool IsUploading => _activeBatch is not null;
     private bool HasSingleRetry => _entries.Count == 1 && _entries[0].Operation.CanRetry;
     private bool CanSubmit => HasSingleRetry || _entries.Any(entry => entry.IsQueued);
@@ -145,7 +161,7 @@
         _entries.Clear();
         if (args.FileCount > MaximumSelectionCount)
         {
-            _selectionError = $"Select up to {MaximumSelectionCount} images at a time.";
+            _selectionError = SelectionCountMessage;
             return;
         }
 
@@ -169,7 +185,7 @@
 
         if (file.Size > MaximumFileSize)
         {
-            return $"Select an image no larger than {MaximumFileSizeInMebibytes} MiB.";
+            return FileSizeMessage;
         }
 
         return AcceptedImageTypeSet.Contains(file.ContentType) ? null : "Select a JPEG, PNG, WebP, or AVIF image.";

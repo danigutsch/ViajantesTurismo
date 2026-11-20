@@ -43,6 +43,33 @@ public sealed class UploadImageQueueTests : BunitContext
     }
 
     [Fact]
+    public async Task Native_selection_accepts_ten_images_and_rejects_an_eleventh_before_opening_any_streams()
+    {
+        // Arrange
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var picker = cut.FindComponent<InputFile>().Instance;
+        var filesAtLimit = Enumerable.Range(1, 10)
+            .Select(index => new FakeBrowserFile([0x01], $"image-{index}.png", "image/png"))
+            .ToArray();
+        var extraFile = new FakeBrowserFile([0x01], "extra.png", "image/png");
+        var filesOverLimit = filesAtLimit.Append(extraFile).ToArray();
+        var selectedRows = "ol[aria-label='Selected images'] li";
+
+        // Act
+        await cut.InvokeAsync(() => picker.OnChange.InvokeAsync(new InputFileChangeEventArgs(filesAtLimit)));
+        var countAtLimit = cut.FindAll(selectedRows).Count;
+        await cut.InvokeAsync(() => picker.OnChange.InvokeAsync(new InputFileChangeEventArgs(filesOverLimit)));
+
+        // Assert
+        countAtLimit.ShouldBe(10);
+        cut.FindAll(selectedRows).ShouldBeEmpty();
+        cut.Find("[role='alert']").TextContent.ShouldBe("Select up to 10 images at a time.");
+        filesAtLimit.ShouldAllSatisfy(file => file.MaximumAllowedSize.ShouldBeNull());
+        extraFile.MaximumAllowedSize.ShouldBeNull();
+        catalogApi.UploadTourImageCallCount.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Queue_sends_individual_descriptions_and_opens_only_one_file_at_a_time()
     {
         // Arrange
