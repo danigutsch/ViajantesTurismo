@@ -1,0 +1,165 @@
+using PandaBear.Blazor;
+using PandaBear.Testing;
+using CatalogContractConstants = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants;
+using UploadImage = ViajantesTurismo.Management.Web.Components.Pages.Catalog.UploadImage;
+
+namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
+
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[TestScope(TestScope.Component)]
+public sealed class UploadImageQueueTests : BunitContext
+{
+    private readonly FakeCatalogToursApiClient catalogApi = new();
+
+    public UploadImageQueueTests()
+    {
+        Services.AddUiFailureReporting();
+        Services.AddSingleton<ICatalogToursApiClient>(catalogApi);
+    }
+
+    [Fact]
+    public async Task Multiple_selected_images_are_inspectable_and_removable_before_upload()
+    {
+        // Arrange
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var first = new FakeBrowserFile([0x01], "mountains.jpg", "image/jpeg");
+        var second = new FakeBrowserFile([0x01, 0x02], "river.png", "image/png");
+
+        // Act
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([first, second])));
+
+        // Assert
+        cut.Find("input[type='file']").HasAttribute("multiple").ShouldBeTrue();
+        cut.Find("ol[aria-label='Selected images']").TextContent.ShouldContain("mountains.jpg", StringComparison.Ordinal);
+        cut.Find("ol[aria-label='Selected images']").TextContent.ShouldContain("river.png", StringComparison.Ordinal);
+        cut.Find("ol[aria-label='Selected images']").TextContent.ShouldContain("2 bytes", StringComparison.Ordinal);
+
+        // Act
+        await cut.Find("button[aria-label='Remove river.png']").ClickAsync();
+
+        // Assert
+        cut.Find("ol[aria-label='Selected images']").TextContent.ShouldNotContain("river.png", StringComparison.Ordinal);
+        catalogApi.UploadTourImageCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Queue_sends_individual_descriptions_and_opens_only_one_file_at_a_time()
+    {
+        // Arrange
+        var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstCompletion = new TaskCompletionSource<CatalogMediaImageDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var descriptions = new List<string>();
+        catalogApi.UploadTourImageHandler = (_, request, _, _) =>
+        {
+            descriptions.Add(request.AltText);
+            if (descriptions.Count == 1)
+            {
+                requestStarted.TrySetResult();
+                return firstCompletion.Task;
+            }
+
+            return Task.FromResult<CatalogMediaImageDto?>(new CatalogMediaImageDto
+            {
+                Id = Guid.CreateVersion7(),
+                AltText = request.AltText,
+                ResponsiveVariants = []
+            });
+        };
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var first = new FakeBrowserFile([0x01], "mountains.jpg", "image/jpeg");
+        var second = new FakeBrowserFile([0x01], "river.png", "image/png");
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([first, second])));
+
+        // Act
+        await cut.Find("#altText").ChangeAsync("Mountain pass");
+        await cut.Find("#altText-1").ChangeAsync("Quiet river");
+        var submit = cut.Find("form").SubmitAsync();
+        await requestStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        var secondStreamWasUnopened = second.MaximumAllowedSize is null;
+        firstCompletion.TrySetResult(new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(),
+            AltText = "Mountain pass",
+            ResponsiveVariants = []
+        });
+        await submit;
+
+        // Assert
+        secondStreamWasUnopened.ShouldBeTrue();
+        descriptions.ShouldBe(["Mountain pass", "Quiet river"]);
+        cut.FindAll("[role='status']").ShouldHaveCount(2);
+    }
+
+    [Fact]
+    public async Task Invalid_files_get_inline_guidance_and_only_the_valid_file_reaches_the_client()
+    {
+        // Arrange
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var tooLarge = new FakeBrowserFile([0x01], "large.jpg", "image/jpeg")
+        {
+            DeclaredSize = CatalogContractConstants.MaxMediaUploadBytes + 1
+        };
+        var wrongType = new FakeBrowserFile([0x01], "notes.txt", "text/plain");
+        var valid = new FakeBrowserFile([0x01], "river.webp", "image/webp");
+        catalogApi.UploadedImage = new CatalogMediaImageDto
+        {
+            Id = Guid.CreateVersion7(),
+            AltText = "Quiet river",
+            ResponsiveVariants = []
+        };
+
+        // Act
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([tooLarge, wrongType, valid])));
+        await cut.Find("input[name='imageDescription']").ChangeAsync("Quiet river");
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        var guidance = cut.FindAll("[role='alert']").Select(alert => alert.TextContent).ToArray();
+        guidance.ShouldHaveCount(2);
+        guidance[0].ShouldContain("no larger than", StringComparison.Ordinal);
+        guidance[1].ShouldContain("JPEG, PNG, WebP, or AVIF", StringComparison.Ordinal);
+        tooLarge.MaximumAllowedSize.ShouldBeNull();
+        wrongType.MaximumAllowedSize.ShouldBeNull();
+        catalogApi.UploadTourImageCallCount.ShouldBe(1);
+        catalogApi.LastUploadedFileName.ShouldBe(valid.Name);
+    }
+
+    [Fact]
+    public async Task Retrying_a_failed_image_does_not_upload_the_successful_sibling_again()
+    {
+        // Arrange
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var first = new FakeBrowserFile([0x01], "mountains.jpg", "image/jpeg");
+        var second = new FakeBrowserFile([0x01], "river.png", "image/png");
+        var sent = new List<string>();
+        catalogApi.UploadTourImageHandler = (_, request, _, _) =>
+        {
+            sent.Add(request.FileName);
+            if (sent.Count == 1)
+            {
+                throw new HttpRequestException("Catalog unavailable.");
+            }
+
+            return Task.FromResult<CatalogMediaImageDto?>(new CatalogMediaImageDto
+            {
+                Id = Guid.CreateVersion7(),
+                AltText = request.AltText,
+                ResponsiveVariants = []
+            });
+        };
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([first, second])));
+        await cut.Find("#altText").ChangeAsync("Mountain pass");
+        await cut.Find("#altText-1").ChangeAsync("Quiet river");
+
+        // Act
+        await cut.Find("form").SubmitAsync();
+        var shownError = cut.Find("[role='alert']").TextContent;
+        await cut.Find("button[aria-label='Retry upload of mountains.jpg']").ClickAsync();
+
+        // Assert
+        shownError.ShouldContain("Image could not be uploaded", StringComparison.Ordinal);
+        sent.ShouldBe([first.Name, second.Name, first.Name]);
+        cut.FindAll("[role='alert']").ShouldBeEmpty();
+        cut.FindAll("[role='status']").ShouldHaveCount(2);
+    }
+}

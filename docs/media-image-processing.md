@@ -2,6 +2,13 @@
 
 This page documents the Catalog media processing flow.
 
+Management Web queues up to ten images from one native selection. Each image has its own description,
+caption and upload status. The page opens one browser stream at a time and sends it through the existing
+authenticated multipart endpoint. The picker uses the shared 5 MiB file limit for early feedback, and
+Catalog revalidates each request. Selecting a new batch replaces the previous selection.
+Dropping files over the image picker uses the same queue, validation, and sequential uploads.
+Keyboard users can browse from the native picker.
+
 ## Current implemented flow
 
 ```mermaid

@@ -8,60 +8,104 @@
 @inject ICatalogToursApiClient CatalogToursApi
 @inject IUiFailureReporter Failures
 
-<PageTitle>Upload Catalog Tour Image</PageTitle>
+<PageTitle>Upload Catalog Tour Images</PageTitle>
 
-<h1>Upload Catalog Tour Image</h1>
+<h1>Upload Catalog Tour Images</h1>
 
-@if (!_success && _upload.Status is not UploadOperationStatus.None)
+@if (_selectionError is not null)
 {
-    <UploadStatus State="@_upload"
-                  Label="Catalog image upload status"
-                  class="alert alert-light border"
-                  OnCancel="CancelUpload"
-                  CancelClass="btn btn-sm btn-outline-danger mt-2"
-                  CancelLabelFormat="Cancel upload of {0}"
-                  ProgressClass="w-100 mt-2"
-                  ProgressLabelFormat="Upload progress for {0}"
-                  IndeterminateProgressLabelFormat="Indeterminate server progress for {0}"
-                  ProgressTextFormat="{0} of {1} bytes"
-                  StatusClass="visually-hidden"
-                  RenderFailureInStatus="false">
-        <Detail><div data-upload-status>@GetUploadStatusText()</div></Detail>
-    </UploadStatus>
+    <div class="alert alert-danger" role="alert">@_selectionError</div>
 }
 
-@if (_success)
-{
-    <div class="alert alert-success" role="status">Image uploaded and awaiting processing.</div>
-}
-
-@if (_errorMessage is not null)
-{
-    <div class="alert alert-danger" role="alert">@_errorMessage</div>
-}
-
-<EditForm Model="@_model" OnValidSubmit="@HandleSubmit" FormName="uploadCatalogTourImage">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label for="imageFile" class="form-label">Image file</label>
-        <InputFile id="imageFile" class="form-control" OnChange="HandleFileSelection" accept="image/jpeg,image/png,image/webp,image/avif" disabled="@_upload.IsActive" />
-        <div class="form-text">JPEG, PNG, WebP, or AVIF. Maximum size: @MaximumFileSizeInMebibytes MiB.</div>
+<EditForm Model="@_entries" OnSubmit="@HandleSubmit" FormName="uploadCatalogTourImage">
+    <div class="catalog-image-drop-zone mb-3 rounded p-3" data-catalog-image-drop-zone>
+        <label for="imageFile" class="form-label">Image files</label>
+        <InputFile id="imageFile" class="form-control" OnChange="HandleFileSelection" multiple
+                   accept="@AcceptedImageTypes" aria-describedby="imageFileHelp" disabled="@IsUploading" />
+        <div id="imageFileHelp" class="form-text">
+            Drop images here or use the file picker.
+            JPEG, PNG, WebP, or AVIF. Maximum size: @MaximumFileSizeInMebibytes MiB.
+            Select up to @MaximumSelectionCount images. A new selection replaces this list.
+        </div>
+        <div class="catalog-image-drop-feedback" aria-live="polite" data-catalog-image-drop-feedback
+             data-release-message="Release to select images"></div>
     </div>
 
-    <div class="mb-3">
-        <label for="altText" class="form-label">Image description</label>
-        <InputText id="altText" class="form-control" @bind-Value="_model.AltText" />
-        <div class="form-text">Describe the image for people who cannot see it.</div>
-    </div>
+    @if (_entries.Count > 0)
+    {
+        <ol class="list-unstyled" aria-label="Selected images">
+            @foreach (var entry in _entries)
+            {
+                <li @key="entry" class="border rounded p-3 mb-3">
+                    <fieldset>
+                        <legend class="h6 text-break">@entry.File.Name</legend>
+                        <div class="mb-2">@entry.File.Size.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) bytes</div>
 
-    <div class="mb-3">
-        <label for="caption" class="form-label">Caption (optional)</label>
-        <InputText id="caption" class="form-control" @bind-Value="_model.Caption" />
-    </div>
+                        @if (entry.FileError is not null || entry.Error is not null)
+                        {
+                            <div class="alert alert-danger" role="alert">@(entry.FileError ?? entry.Error)</div>
+                        }
 
-    <button type="submit" class="btn btn-primary" disabled="@(_upload.IsActive || _file is null)">
+                        @if (entry.Operation.Status == UploadOperationStatus.Complete)
+                        {
+                            <div class="alert alert-success" role="status">Image uploaded and awaiting processing.</div>
+                        }
+                        else if (entry.Operation.Status != UploadOperationStatus.None)
+                        {
+                            <UploadStatus State="@entry.Operation"
+                                          Label="Catalog image upload status"
+                                          class="alert alert-light border"
+                                          OnCancel="CancelUpload"
+                                          CancelClass="btn btn-sm btn-outline-danger mt-2"
+                                          CancelLabelFormat="Cancel upload of {0}"
+                                          ProgressClass="w-100 mt-2"
+                                          ProgressLabelFormat="Upload progress for {0}"
+                                          IndeterminateProgressLabelFormat="Indeterminate server progress for {0}"
+                                          ProgressTextFormat="{0} of {1} bytes"
+                                          StatusClass="visually-hidden"
+                                          RenderFailureInStatus="false">
+                                <Detail Context="upload"><div data-upload-status>@GetUploadStatusText(upload)</div></Detail>
+                            </UploadStatus>
+                        }
+                        else if (entry.FileError is null)
+                        {
+                            <div class="mb-2">Queued</div>
+                        }
+
+                        @if (entry.FileError is null)
+                        {
+                            <div class="mb-3">
+                                <label for="@entry.DescriptionId" class="form-label">Image description</label>
+                                <input id="@entry.DescriptionId" name="imageDescription" class="form-control"
+                                       @bind="entry.AltText" maxlength="@MaximumDescriptionLength"
+                                       aria-required="true" disabled="@(IsUploading || entry.Operation.Status == UploadOperationStatus.Complete)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="@entry.CaptionId" class="form-label">Caption (optional)</label>
+                                <input id="@entry.CaptionId" name="imageCaption" class="form-control"
+                                       @bind="entry.Caption" maxlength="@MaximumCaptionLength"
+                                       disabled="@(IsUploading || entry.Operation.Status == UploadOperationStatus.Complete)" />
+                            </div>
+                        }
+
+                        @if (entry.Operation.CanRetry && _entries.Count > 1)
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-primary me-2" disabled="@IsUploading"
+                                    aria-label="@($"Retry upload of {entry.File.Name}")" @onclick="() => UploadEntries([entry])">Retry upload</button>
+                        }
+                        @if (entry.Operation.Status != UploadOperationStatus.Complete)
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@IsUploading"
+                                    aria-label="@($"Remove {entry.File.Name}")" @onclick="() => _entries.Remove(entry)">Remove</button>
+                        }
+                    </fieldset>
+                </li>
+            }
+        </ol>
+    }
+
+    <button type="submit" class="btn btn-primary" disabled="@(IsUploading || !CanSubmit)">
         @GetSubmitButtonLabel()
     </button>
     <NavLink href="@($"/catalog/tours/{Id}/presentation")" class="btn btn-secondary ms-2">Cancel</NavLink>
@@ -71,46 +115,130 @@
     [Parameter]
     public Guid Id { get; set; }
 
-    private readonly UploadImageFormModel _model = new();
+    private const int MaximumSelectionCount = 10;
     private const long BytesPerMebibyte = 1024 * 1024;
-    private const long MaximumFileSizeInMebibytes = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxMediaUploadBytes / BytesPerMebibyte;
+    private const long MaximumFileSize = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxMediaUploadBytes;
+    private const long MaximumFileSizeInMebibytes = MaximumFileSize / BytesPerMebibyte;
+    private const int MaximumDescriptionLength = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxAltTextLength;
+    private const int MaximumCaptionLength = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxCaptionLength;
+    private const string AcceptedImageTypes = "image/jpeg,image/png,image/webp,image/avif";
     private const string ValidationFailureMessage = "Image could not be uploaded. Check the file and try again.";
-    private readonly UploadOperationState _upload = new();
-    private IBrowserFile? _file;
-    private bool _success;
-    private string? _errorMessage;
-    private CancellationTokenSource? _activeUploadCancellation;
+    private static readonly HashSet<string> AcceptedImageTypeSet = new(AcceptedImageTypes.Split(','), StringComparer.OrdinalIgnoreCase);
+    private readonly List<CatalogImageUploadEntry> _entries = [];
+    private string? _selectionError;
+    private CatalogImageUploadEntry? _activeEntry;
+    private CancellationTokenSource? _activeBatch;
+
+    private bool IsUploading => _activeBatch is not null;
+    private bool HasSingleRetry => _entries.Count == 1 && _entries[0].Operation.CanRetry;
+    private bool CanSubmit => HasSingleRetry || _entries.Any(entry => entry.IsQueued);
 
     private void HandleFileSelection(InputFileChangeEventArgs args)
     {
-        _success = false;
-        _errorMessage = null;
-        _upload.Reset();
-        _file = args.File;
+        if (IsUploading)
+        {
+            return;
+        }
+
+        _selectionError = null;
+        // Blazor invalidates old browser-file handles when the same picker changes again.
+        _entries.Clear();
+        if (args.FileCount > MaximumSelectionCount)
+        {
+            _selectionError = $"Select up to {MaximumSelectionCount} images at a time.";
+            return;
+        }
+
+        foreach (var file in args.GetMultipleFiles(MaximumSelectionCount))
+        {
+            _entries.Add(new CatalogImageUploadEntry(file, _entries.Count, GetFileError(file)));
+        }
+    }
+
+    private static string? GetFileError(IBrowserFile file)
+    {
+        if (string.IsNullOrWhiteSpace(file.Name))
+        {
+            return "Select an image file with a name.";
+        }
+
+        if (file.Size <= 0)
+        {
+            return "Select a non-empty image file before uploading.";
+        }
+
+        if (file.Size > MaximumFileSize)
+        {
+            return $"Select an image no larger than {MaximumFileSizeInMebibytes} MiB.";
+        }
+
+        return AcceptedImageTypeSet.Contains(file.ContentType) ? null : "Select a JPEG, PNG, WebP, or AVIF image.";
     }
 
     private async Task HandleSubmit()
     {
-        if (_file is null)
+        if (_entries.Count == 0)
         {
-            _errorMessage = "Select an image file before uploading.";
+            _selectionError = "Select an image file before uploading.";
             return;
         }
 
-        if (_file.Size <= 0)
+        var pending = HasSingleRetry ? _entries.ToArray() : _entries.Where(entry => entry.IsQueued).ToArray();
+        await UploadEntries(pending);
+    }
+
+    private async Task UploadEntries(IReadOnlyCollection<CatalogImageUploadEntry> entries)
+    {
+        if (IsUploading || entries.Count == 0)
         {
-            _errorMessage = "Select a non-empty image file before uploading.";
             return;
         }
 
-        _success = false;
-        _errorMessage = null;
-        var operationId = _upload.Begin(_file.Name, _file.Size, _upload.CanRetry);
-        var uploadCancellation = new CancellationTokenSource();
-        _activeUploadCancellation = uploadCancellation;
+        _selectionError = null;
+        using var batch = new CancellationTokenSource();
+        _activeBatch = batch;
+        try
+        {
+            foreach (var entry in entries)
+            {
+                if (batch.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                _activeEntry = entry;
+                await UploadEntry(entry, batch.Token);
+                if (!batch.IsCancellationRequested)
+                {
+                    StateHasChanged();
+                }
+            }
+        }
+        finally
+        {
+            if (ReferenceEquals(_activeBatch, batch))
+            {
+                _activeEntry = null;
+                _activeBatch = null;
+            }
+        }
+    }
+
+    private async Task UploadEntry(CatalogImageUploadEntry entry, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(entry.AltText) || entry.AltText.Length > MaximumDescriptionLength)
+        {
+            entry.Error = "Enter an image description before uploading.";
+            return;
+        }
+
+        entry.Error = null;
+        var file = entry.File;
+        var operation = entry.Operation;
+        var operationId = operation.Begin(file.Name, file.Size, operation.CanRetry);
         var progress = new Progress<long>(bytesTransferred =>
         {
-            if (_upload.ReportBytes(operationId, bytesTransferred))
+            if (operation.ReportBytes(operationId, bytesTransferred))
             {
                 StateHasChanged();
             }
@@ -118,129 +246,94 @@
 
         try
         {
-            await using var content = CatalogImageUploadFileReader.Open(_file);
+            await using var content = CatalogImageUploadFileReader.Open(file, ct);
             var outcome = await CatalogToursApi.UploadTourImage(
                 Id,
-                new CatalogTourImageUploadRequest(content, _file.Size, _file.Name, _file.ContentType, _model.AltText, _model.Caption),
+                new CatalogTourImageUploadRequest(content, file.Size, file.Name, file.ContentType, entry.AltText, entry.Caption),
                 progress,
-                uploadCancellation.Token);
-            if (!_upload.IsCurrentActive(operationId))
+                ct);
+            if (!operation.IsCurrentActive(operationId))
             {
                 return;
             }
 
             if (outcome.Kind != HttpOutcomeKind.Succeeded)
             {
-                _errorMessage = new HttpOutcomeMessages("Image could not be uploaded. Try again later.").With(HttpOutcomeKind.NotFound, "Catalog tour not found.").With(HttpOutcomeKind.ValidationProblem, ValidationFailureMessage).For(outcome.Kind);
-                _upload.Fail(operationId, _errorMessage);
+                SetError(entry, operationId, new HttpOutcomeMessages("Image could not be uploaded. Try again later.")
+                    .With(HttpOutcomeKind.NotFound, "Catalog tour not found.")
+                    .With(HttpOutcomeKind.ValidationProblem, ValidationFailureMessage)
+                    .For(outcome.Kind));
                 return;
             }
 
-            _success = true;
-            _file = null;
-            _upload.ReportBytes(operationId, _upload.TotalBytes);
-            _upload.Complete(operationId);
+            operation.ReportBytes(operationId, operation.TotalBytes);
+            operation.Complete(operationId);
         }
-        catch (OperationCanceledException) when (uploadCancellation.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            _upload.Cancel(operationId);
+            operation.Cancel(operationId);
         }
         catch (ContractValidationException)
         {
-            if (!_upload.IsCurrentActive(operationId))
-            {
-                return;
-            }
-
-            _errorMessage = ValidationFailureMessage;
-            _upload.Fail(operationId, _errorMessage);
+            SetError(entry, operationId, ValidationFailureMessage);
         }
         catch (HttpRequestException exception)
         {
             Failures.Report(exception, "catalog.upload-image.send");
-            if (!_upload.IsCurrentActive(operationId))
-            {
-                return;
-            }
-
-            _errorMessage = "Image could not be uploaded. Try again later.";
-            _upload.Fail(operationId, _errorMessage);
+            SetError(entry, operationId, "Image could not be uploaded. Try again later.");
         }
         catch (IOException exception)
         {
             Failures.Report(exception, "catalog.upload-image.read");
-            if (!_upload.IsCurrentActive(operationId))
-            {
-                return;
-            }
-
-            _errorMessage = $"Image could not be read. Check that it is no larger than {MaximumFileSizeInMebibytes} MiB and try again.";
-            _upload.Fail(operationId, _errorMessage);
+            SetError(entry, operationId, $"Image could not be read. Check that it is no larger than {MaximumFileSizeInMebibytes} MiB and try again.");
         }
-        finally
-        {
-            if (ReferenceEquals(_activeUploadCancellation, uploadCancellation))
-            {
-                _activeUploadCancellation = null;
-            }
+    }
 
-            uploadCancellation.Dispose();
+    private static void SetError(CatalogImageUploadEntry entry, long operationId, string message)
+    {
+        if (entry.Operation.Fail(operationId, message))
+        {
+            entry.Error = message;
         }
     }
 
     private async Task CancelUpload()
     {
-        var uploadCancellation = _activeUploadCancellation;
-        if (uploadCancellation is null || !_upload.Cancel(_upload.OperationId))
+        var batch = _activeBatch;
+        var operation = _activeEntry?.Operation;
+        if (batch is null || operation is null || !operation.Cancel(operation.OperationId))
         {
             return;
         }
 
-        await uploadCancellation.CancelAsync();
+        _activeBatch = null;
+        _activeEntry = null;
+        await batch.CancelAsync();
     }
 
     private string GetSubmitButtonLabel()
     {
-        if (_upload.IsActive)
+        if (IsUploading)
         {
             return "Uploading...";
         }
 
-        return _upload.CanRetry ? "Retry upload" : "Upload image";
+        return HasSingleRetry ? "Retry upload" : _entries.Count > 1 ? "Upload queued images" : "Upload image";
     }
 
-    private string GetUploadStatusText() => _upload.Status switch
+    private static string GetUploadStatusText(UploadOperationState operation) => operation.Status switch
     {
-        UploadOperationStatus.Queued => $"Queued: {_upload.FileName}",
-        UploadOperationStatus.Retrying => $"Retrying: {_upload.FileName}",
-        UploadOperationStatus.Uploading => $"Uploading {_upload.FileName}: {_upload.BytesTransferred} of {_upload.TotalBytes} bytes.",
-        UploadOperationStatus.Processing => $"Server processing {_upload.FileName}: scanning, validating, decoding, and storing the image. Progress is indeterminate.",
-        UploadOperationStatus.Canceled => $"Canceled: {_upload.FileName}. Retry when ready.",
-        UploadOperationStatus.Failed => $"Failed: {_upload.FailureMessage}",
+        UploadOperationStatus.Queued => $"Queued: {operation.FileName}",
+        UploadOperationStatus.Retrying => $"Retrying: {operation.FileName}",
+        UploadOperationStatus.Uploading => $"Uploading {operation.FileName}: {operation.BytesTransferred} of {operation.TotalBytes} bytes.",
+        UploadOperationStatus.Processing => $"Server processing {operation.FileName}: scanning, validating, decoding, and storing the image. Progress is indeterminate.",
+        UploadOperationStatus.Canceled => $"Canceled: {operation.FileName}. Retry when ready.",
+        UploadOperationStatus.Failed => $"Failed: {operation.FailureMessage}",
         _ => string.Empty,
     };
 
     public async ValueTask DisposeAsync()
     {
-        var uploadCancellation = _activeUploadCancellation;
-        if (uploadCancellation is null)
-        {
-            return;
-        }
-
-        _activeUploadCancellation = null;
-        _upload.Cancel(_upload.OperationId);
-        await uploadCancellation.CancelAsync();
-        uploadCancellation.Dispose();
-    }
-
-    private sealed class UploadImageFormModel
-    {
-        [System.ComponentModel.DataAnnotations.Required]
-        [System.ComponentModel.DataAnnotations.StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxAltTextLength, MinimumLength = 1)]
-        public string AltText { get; set; } = string.Empty;
-
-        [System.ComponentModel.DataAnnotations.StringLength(ViajantesTurismo.Catalog.Contracts.Application.ContractConstants.MaxCaptionLength)]
-        public string? Caption { get; set; }
+        await CancelUpload();
     }
 }

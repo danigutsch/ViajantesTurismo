@@ -84,11 +84,11 @@ public partial class CustomerImportTests(AspireSystemTestFixture fixture) : Aspi
         await Expect(Page.Locator(".alert-success", new PageLocatorOptions { HasText = "automatically matched" }))
             .ToBeVisibleAsync();
         await Page.GetButton("Preview").ClickAsync();
+        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
         await Page.GetButton("Confirm Import").ClickAsync();
 
         // Assert
-        await Expect(Page.Locator(".preview-table")).ToBeVisibleAsync();
-        await Expect(Page.GetByText("Resolve Duplicates")).ToBeVisibleAsync();
+        await Expect(Page.GetHeading("Resolve Duplicates")).ToBeVisibleAsync();
         var duplicateRow = Page.Locator(".duplicate-resolution-table tbody tr")
             .Filter(new LocatorFilterOptions { HasText = existingCustomer.Email });
         await Expect(duplicateRow).ToHaveCountAsync(1);

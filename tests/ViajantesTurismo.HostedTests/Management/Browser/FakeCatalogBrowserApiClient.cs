@@ -14,6 +14,7 @@ internal sealed class FakeCatalogBrowserApiClient(CatalogTourDto tour) : ICatalo
 {
     private readonly TaskCompletionSource uploadStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource<CancellationToken> uploadCanceled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly List<string> uploadedNames = [];
 
     /// <summary>Gets the tour the fake serves.</summary>
     public CatalogTourDto Tour { get; } = tour;
@@ -26,6 +27,15 @@ internal sealed class FakeCatalogBrowserApiClient(CatalogTourDto tour) : ICatalo
 
     /// <summary>Gets a task that completes with the upload's token once the held upload observed cancellation.</summary>
     public Task<CancellationToken> UploadCanceled => uploadCanceled.Task;
+
+    /// <summary>Reads each browser stream and acknowledges the upload instead of holding it for cancellation.</summary>
+    public bool CompleteUploads
+    {
+        get; set;
+    }
+
+    /// <summary>Gets the names of the browser streams that finished reading.</summary>
+    public IReadOnlyList<string> UploadedNames => uploadedNames.AsReadOnly();
 
     /// <inheritdoc />
     public Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct) =>
@@ -48,6 +58,18 @@ internal sealed class FakeCatalogBrowserApiClient(CatalogTourDto tour) : ICatalo
     public async Task<HttpOutcome<CatalogMediaImageDto>> UploadTourImage(Guid id, CatalogTourImageUploadRequest request, IProgress<long>? progress, CancellationToken ct)
     {
         uploadStarted.TrySetResult();
+        if (CompleteUploads)
+        {
+            await request.Content.CopyToAsync(Stream.Null, ct);
+            uploadedNames.Add(request.FileName);
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, new CatalogMediaImageDto
+            {
+                Id = Guid.CreateVersion7(),
+                AltText = request.AltText,
+                ResponsiveVariants = []
+            });
+        }
+
         try
         {
             await new TaskCompletionSource().Task.WaitAsync(ct);

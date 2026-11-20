@@ -43,7 +43,7 @@ public sealed class UploadImagePageTests : BunitContext
         var file = TestBrowserFiles.TourImage();
 
         // Act
-        using var stream = CatalogImageUploadFileReader.Open(file);
+        using var stream = CatalogImageUploadFileReader.Open(file, Xunit.TestContext.Current.CancellationToken);
 
         // Assert
         file.MaximumAllowedSize.ShouldBe(CatalogContractConstants.MaxMediaUploadBytes);
@@ -157,7 +157,6 @@ public sealed class UploadImagePageTests : BunitContext
         var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
         var file = TestBrowserFiles.TourImage([]);
         await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([file])));
-        await cut.Find("#altText").ChangeAsync("Cyclists on a mountain pass.");
 
         // Act
         await cut.Find("form").SubmitAsync();
