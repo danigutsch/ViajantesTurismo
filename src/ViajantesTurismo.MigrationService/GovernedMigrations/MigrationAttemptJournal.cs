@@ -16,33 +16,36 @@ internal sealed class MigrationAttemptJournal(
     internal async Task Prepare(CancellationToken ct)
     {
         await EnsureStorage(ct);
-        await using var check = MigrationPostgreSql.Command($"""
+        await using var check = new NpgsqlCommand($"""
             SELECT EXISTS (
                 SELECT 1 FROM {Attempts}
                 WHERE context = $1 AND migration_id = $2
                   AND (manifest_sha256 <> $3 OR source_release <> $4 OR target_release <> $5)
             );
-            """, owner, null, manifest.Context, manifest.MigrationId, manifestDigest, sourceRelease, manifest.TargetRelease);
+            """, owner);
+        MigrationPostgreSql.Bind(check, manifest.Context, manifest.MigrationId, manifestDigest, sourceRelease, manifest.TargetRelease);
         if (await check.ExecuteScalarAsync(ct) is true)
         {
             throw new InvalidDataException("Migration manifest drift or source release mismatch in the attempt journal.");
         }
 
-        await using var reconcile = MigrationPostgreSql.Command($"""
+        await using var reconcile = new NpgsqlCommand($"""
             UPDATE {Attempts}
             SET state = 'failed', finished_at = pg_catalog.clock_timestamp(), failure_code = 'interrupted'
             WHERE context = $1 AND migration_id = $2 AND state = 'started';
-            """, owner, null, manifest.Context, manifest.MigrationId);
+            """, owner);
+        MigrationPostgreSql.Bind(reconcile, manifest.Context, manifest.MigrationId);
         await reconcile.ExecuteNonQueryAsync(ct);
     }
 
     /// <summary>Returns whether the step completed with this exact script digest.</summary>
     internal async Task<bool> IsComplete(MigrationStep step, string phase, CancellationToken ct)
     {
-        await using var command = MigrationPostgreSql.Command($"""
+        await using var command = new NpgsqlCommand($"""
             SELECT script_sha256 FROM {Attempts}
             WHERE context = $1 AND migration_id = $2 AND phase = $3 AND step_order = $4 AND state = 'completed';
-            """, owner, null, manifest.Context, manifest.MigrationId, phase, step.Order);
+            """, owner);
+        MigrationPostgreSql.Bind(command, manifest.Context, manifest.MigrationId, phase, step.Order);
         var digest = await command.ExecuteScalarAsync(ct) as string;
         if (digest is not null && !string.Equals(digest, step.Sha256, StringComparison.OrdinalIgnoreCase))
         {
@@ -55,12 +58,13 @@ internal sealed class MigrationAttemptJournal(
     /// <summary>Commits a new attempt before dispatching the step.</summary>
     internal async Task<long> Start(MigrationStep step, string phase, CancellationToken ct)
     {
-        await using var command = MigrationPostgreSql.Command($"""
+        await using var command = new NpgsqlCommand($"""
             INSERT INTO {Attempts}
                 (context, migration_id, phase, step_order, manifest_sha256, script_sha256, source_release, target_release, tool_version)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING attempt_id;
-            """, owner, null, manifest.Context, manifest.MigrationId, phase, step.Order,
+            """, owner);
+        MigrationPostgreSql.Bind(command, manifest.Context, manifest.MigrationId, phase, step.Order,
             manifestDigest, step.Sha256.ToUpperInvariant(), sourceRelease, manifest.TargetRelease, ToolVersion);
         return (long)(await command.ExecuteScalarAsync(ct))!;
     }
@@ -68,10 +72,11 @@ internal sealed class MigrationAttemptJournal(
     /// <summary>Records completion, optionally within the transaction containing the expansion SQL.</summary>
     internal async Task Complete(long attempt, NpgsqlTransaction? transaction, CancellationToken ct)
     {
-        await using var command = MigrationPostgreSql.Command($"""
+        await using var command = new NpgsqlCommand($"""
             UPDATE {Attempts} SET state = 'completed', finished_at = pg_catalog.clock_timestamp()
             WHERE attempt_id = $1 AND state = 'started';
-            """, owner, transaction, attempt);
+            """, owner, transaction);
+        MigrationPostgreSql.Bind(command, attempt);
         if (await command.ExecuteNonQueryAsync(ct) != 1)
         {
             throw new InvalidDataException("Migration attempt is no longer open.");
@@ -81,11 +86,12 @@ internal sealed class MigrationAttemptJournal(
     /// <summary>Records a sanitized failure if the attempt is still open.</summary>
     internal async Task Fail(long attempt, string code, CancellationToken ct)
     {
-        await using var command = MigrationPostgreSql.Command($"""
+        await using var command = new NpgsqlCommand($"""
             UPDATE {Attempts}
             SET state = 'failed', finished_at = pg_catalog.clock_timestamp(), failure_code = $2
             WHERE attempt_id = $1 AND state = 'started';
-            """, owner, null, attempt, code);
+            """, owner);
+        MigrationPostgreSql.Bind(command, attempt, code);
         await command.ExecuteNonQueryAsync(ct);
     }
 
@@ -93,10 +99,10 @@ internal sealed class MigrationAttemptJournal(
     {
         await using var transaction = await owner.BeginTransactionAsync(ct);
         // Two-integer advisory keys use a different PostgreSQL namespace than the context keys.
-        await using var lockStorage = MigrationPostgreSql.Command(
+        await using var lockStorage = new NpgsqlCommand(
             "SELECT pg_catalog.pg_advisory_xact_lock(20261118, 46);", owner, transaction);
         await lockStorage.ExecuteNonQueryAsync(ct);
-        await using var create = MigrationPostgreSql.Command($"""
+        await using var create = new NpgsqlCommand($"""
             CREATE TABLE IF NOT EXISTS {Attempts} (
                 attempt_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                 context text NOT NULL,

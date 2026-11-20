@@ -1,5 +1,4 @@
 using System.Buffers.Binary;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -66,8 +65,10 @@ internal static class MigrationPostgreSql
               AND NOT pg_catalog.pg_is_in_recovery()
               AND (current_user = $2 OR NOT pg_catalog.pg_has_role($2, 'MEMBER'));
             """;
-        await using var ownerCheck = Command(query, owner, null, ownerLogin, ownerLogin);
-        await using var verifierCheck = Command(query, verifier, null, verifierLogin, ownerLogin);
+        await using var ownerCheck = new NpgsqlCommand(query, owner);
+        Bind(ownerCheck, ownerLogin, ownerLogin);
+        await using var verifierCheck = new NpgsqlCommand(query, verifier);
+        Bind(verifierCheck, verifierLogin, ownerLogin);
         var ownerTarget = await ownerCheck.ExecuteScalarAsync(ct);
         var verifierTarget = await verifierCheck.ExecuteScalarAsync(ct);
         if (ownerTarget is not string ownerIdentity || verifierTarget is not string verifierIdentity
@@ -82,7 +83,8 @@ internal static class MigrationPostgreSql
     {
         var digest = SHA256.HashData(Encoding.UTF8.GetBytes("viajantes:governed-migration:" + context));
         var key = BinaryPrimitives.ReadInt64BigEndian(digest);
-        await using var command = Command("SELECT pg_catalog.pg_try_advisory_lock($1);", owner, null, key);
+        await using var command = new NpgsqlCommand("SELECT pg_catalog.pg_try_advisory_lock($1);", owner);
+        Bind(command, key);
         if (await command.ExecuteScalarAsync(ct) is not true)
         {
             throw new InvalidDataException("The migration context is already locked.");
@@ -92,9 +94,9 @@ internal static class MigrationPostgreSql
     /// <summary>Installs session-local invoker functions that keep reviewed scripts inside PostgreSQL transactions.</summary>
     internal static async Task InstallScriptFunctions(NpgsqlConnection owner, NpgsqlConnection verifier, CancellationToken ct)
     {
-        await using var expansion = Command(ExpansionFunction, owner, null);
+        await using var expansion = new NpgsqlCommand(ExpansionFunction, owner);
         await expansion.ExecuteNonQueryAsync(ct);
-        await using var verification = Command(VerificationFunction, verifier, null);
+        await using var verification = new NpgsqlCommand(VerificationFunction, verifier);
         await verification.ExecuteNonQueryAsync(ct);
     }
 
@@ -102,7 +104,8 @@ internal static class MigrationPostgreSql
     internal static async Task Expand(NpgsqlConnection owner, NpgsqlTransaction transaction, MigrationStep step, string sql, CancellationToken ct)
     {
         await SetTimeouts(owner, transaction, step, ct);
-        await using var command = Command("SELECT pg_temp.execute_governed_migration($1);", owner, transaction, sql);
+        await using var command = new NpgsqlCommand("SELECT pg_temp.execute_governed_migration($1);", owner, transaction);
+        Bind(command, sql);
         command.CommandTimeout = step.TimeoutSeconds;
         await command.ExecuteNonQueryAsync(ct);
     }
@@ -111,31 +114,28 @@ internal static class MigrationPostgreSql
     internal static async Task<bool> Verify(NpgsqlConnection verifier, MigrationStep step, string sql, CancellationToken ct)
     {
         await using var transaction = await verifier.BeginTransactionAsync(ct);
-        await using var readOnly = Command("SET TRANSACTION READ ONLY;", verifier, transaction);
+        await using var readOnly = new NpgsqlCommand("SET TRANSACTION READ ONLY;", verifier, transaction);
         await readOnly.ExecuteNonQueryAsync(ct);
         await SetTimeouts(verifier, transaction, step, ct);
 
-        await using var command = Command("""
+        await using var command = new NpgsqlCommand("""
             SELECT count(*) = 1 AND pg_catalog.bool_and(result) IS TRUE
             FROM pg_temp.verify_governed_migration($1) AS result;
-            """, verifier, transaction, sql);
+            """, verifier, transaction);
+        Bind(command, sql);
         command.CommandTimeout = step.TimeoutSeconds;
         var passed = await command.ExecuteScalarAsync(ct) is true;
         await transaction.CommitAsync(ct);
         return passed;
     }
 
-    /// <summary>Binds data as parameters, including verified SQL passed to a fixed PostgreSQL function.</summary>
-    [SuppressMessage("Security", "CA2100", Justification = "Calls use fixed SQL templates and bind every value as a parameter.")]
-    internal static NpgsqlCommand Command(string query, NpgsqlConnection connection, NpgsqlTransaction? transaction, params object[] values)
+    /// <summary>Binds the positional values for a command with a fixed SQL template.</summary>
+    internal static void Bind(NpgsqlCommand command, params object[] values)
     {
-        var command = new NpgsqlCommand(query, connection, transaction);
         foreach (var value in values)
         {
             command.Parameters.AddWithValue(value);
         }
-
-        return command;
     }
 
     private static NpgsqlConnectionStringBuilder ParseSettings(string? connection)
@@ -168,10 +168,11 @@ internal static class MigrationPostgreSql
     private static async Task SetTimeouts(
         NpgsqlConnection connection, NpgsqlTransaction transaction, MigrationStep step, CancellationToken ct)
     {
-        await using var command = Command("""
+        await using var command = new NpgsqlCommand("""
             SELECT pg_catalog.set_config('statement_timeout', $1, true),
                    pg_catalog.set_config('lock_timeout', $2, true);
-            """, connection, transaction,
+            """, connection, transaction);
+        Bind(command,
             step.TimeoutSeconds.ToString(CultureInfo.InvariantCulture) + "s",
             step.LockTimeoutSeconds.ToString(CultureInfo.InvariantCulture) + "s");
         await command.ExecuteNonQueryAsync(ct);
