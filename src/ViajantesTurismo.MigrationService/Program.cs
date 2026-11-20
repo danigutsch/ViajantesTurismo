@@ -3,9 +3,21 @@ using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Management.Security;
 using ViajantesTurismo.MigrationService;
+using ViajantesTurismo.MigrationService.GovernedMigrations;
 using ViajantesTurismo.Resources;
 using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
+
+switch (args)
+{
+    case ["plan", ..]:
+        return await RunGovernedCommand(args, MigrationPlanCommand.Run);
+    case ["execute", ..]:
+        return await RunGovernedCommand(args, MigrationExecutionCommand.Run);
+    case ["recover", ..]:
+        await Console.Error.WriteLineAsync("The initial governed executor does not run recovery.");
+        return 1;
+}
 
 return await MigrationProcess.Run(() =>
 {
@@ -24,3 +36,28 @@ return await MigrationProcess.Run(() =>
 
     return builder.Build();
 });
+
+static async Task<int> RunGovernedCommand(
+    string[] args, Func<string[], TextWriter, TextWriter, CancellationToken, Task<int>> command)
+{
+    using var cancellation = new CancellationTokenSource();
+    Console.CancelKeyPress += Cancel;
+    try
+    {
+        return await command(args, Console.Out, Console.Error, cancellation.Token);
+    }
+    catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+    {
+        return 130;
+    }
+    finally
+    {
+        Console.CancelKeyPress -= Cancel;
+    }
+
+    void Cancel(object? sender, ConsoleCancelEventArgs eventArgs)
+    {
+        eventArgs.Cancel = true;
+        cancellation.Cancel();
+    }
+}

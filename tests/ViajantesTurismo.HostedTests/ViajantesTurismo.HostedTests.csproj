@@ -59,5 +59,6 @@
         <ProjectReference Include="../../src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="../../src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj" IsAspireProjectResource="false" />
         <ProjectReference Include="../../src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj" IsAspireProjectResource="false" />
+        <ProjectReference Include="../../src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj" IsAspireProjectResource="false" />
     </ItemGroup>
 </Project>

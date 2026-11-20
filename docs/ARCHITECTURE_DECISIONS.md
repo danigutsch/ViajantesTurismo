@@ -97,6 +97,7 @@ Decisions about package versions, release channels, and compatibility signals.
 
 - **[ADR-032](adr/20260704-versioning-and-release-governance.md)** — Versioning and Release
   Governance
+- **[ADR-046](adr/20261118-governed-postgresql-migrations.md)** — Governed PostgreSQL Migrations
 
 ### Document Generation
 
