@@ -1,3 +1,4 @@
+using Npgsql;
 using PandaBear.Testing;
 
 namespace ViajantesTurismo.HostedTests.Migrations;
@@ -34,15 +35,15 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         result.ExitCode.ShouldBe(0);
         retry.ExitCode.ShouldBe(0);
         result.Output.ShouldContain("completed", StringComparison.Ordinal);
-        var rows = await scenario.Read<int>("SELECT count(*)::integer FROM migration_fixture.entries;", ct);
+        var rows = await scenario.Read<int>(new NpgsqlCommand("SELECT count(*)::integer FROM migration_fixture.entries;"), ct);
         rows.ShouldBe(2);
-        var attempts = await scenario.Read<string>("""
+        var attempts = await scenario.Read<string>(new NpgsqlCommand("""
             SELECT string_agg(phase || ':' || step_order || ':' || state, ',' ORDER BY attempt_id)
             FROM governed_migration.attempts
             WHERE context = 'catalog' AND migration_id = 'ordered' AND source_release = '1.0' AND target_release = '1.1'
               AND length(tool_version) > 0 AND length(manifest_sha256) = 64 AND length(script_sha256) = 64
               AND started_at <= finished_at;
-            """, ct);
+            """), ct);
         attempts.ShouldBe("expand:1:completed,expand:2:completed,verify:3:completed");
     }
 
@@ -70,7 +71,7 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Act
         var failure = await scenario.Run(manifest, ct);
         failure.Error.ShouldContain("P0001", StringComparison.Ordinal);
-        var rowsAfterFailure = await scenario.Read<int>("SELECT count(*)::integer FROM migration_fixture.entries;", ct);
+        var rowsAfterFailure = await scenario.Read<int>(new NpgsqlCommand("SELECT count(*)::integer FROM migration_fixture.entries;"), ct);
         await scenario.ReleaseRetry(ct);
         var retry = await scenario.Run(manifest, ct);
 
@@ -79,10 +80,10 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         (failure.Output + failure.Error).ShouldNotContain("test-owned private payload", StringComparison.Ordinal);
         rowsAfterFailure.ShouldBe(0);
         retry.ExitCode.ShouldBe(0);
-        var attempts = await scenario.Read<string>("""
+        var attempts = await scenario.Read<string>(new NpgsqlCommand("""
             SELECT string_agg(phase || ':' || step_order || ':' || state || COALESCE(':' || failure_code, ''), ',' ORDER BY attempt_id)
             FROM governed_migration.attempts;
-            """, ct);
+            """), ct);
         attempts.ShouldBe("expand:1:completed,expand:2:failed:P0001,expand:2:completed,verify:3:completed");
     }
 
@@ -110,9 +111,9 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         failure.Error.ShouldContain("verify", StringComparison.Ordinal);
         failure.ExitCode.ShouldBe(1);
-        var gate = await scenario.Read<bool>("SELECT ready FROM migration_fixture.gate;", ct);
+        var gate = await scenario.Read<bool>(new NpgsqlCommand("SELECT ready FROM migration_fixture.gate;"), ct);
         gate.ShouldBeFalse();
-        var state = await scenario.Read<string>("SELECT state FROM governed_migration.attempts WHERE phase = 'verify';", ct);
+        var state = await scenario.Read<string>(new NpgsqlCommand("SELECT state FROM governed_migration.attempts WHERE phase = 'verify';"), ct);
         state.ShouldBe("failed");
     }
 
@@ -139,7 +140,7 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         changedArtifact.Error.ShouldContain("digest mismatch", StringComparison.Ordinal);
         changedManifest.ExitCode.ShouldBe(1);
         changedManifest.Error.ShouldContain("manifest drift", StringComparison.Ordinal);
-        var count = await scenario.Read<int>("SELECT count(*)::integer FROM governed_migration.attempts;", ct);
+        var count = await scenario.Read<int>(new NpgsqlCommand("SELECT count(*)::integer FROM governed_migration.attempts;"), ct);
         count.ShouldBe(1);
     }
 
@@ -169,9 +170,9 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         failure.ExitCode.ShouldBe(1);
         failure.Error.ShouldContain("digest mismatch", StringComparison.Ordinal);
-        var gate = await scenario.Read<bool>("SELECT ready FROM migration_fixture.gate;", ct);
+        var gate = await scenario.Read<bool>(new NpgsqlCommand("SELECT ready FROM migration_fixture.gate;"), ct);
         gate.ShouldBeFalse();
-        var count = await scenario.Read<int>("SELECT count(*)::integer FROM governed_migration.attempts WHERE state = 'completed';", ct);
+        var count = await scenario.Read<int>(new NpgsqlCommand("SELECT count(*)::integer FROM governed_migration.attempts WHERE state = 'completed';"), ct);
         count.ShouldBe(1);
     }
 
@@ -204,10 +205,10 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         refused.Error.ShouldContain("already locked", StringComparison.Ordinal);
         interrupted.ExitCode.ShouldBe(1);
         retried.ExitCode.ShouldBe(0);
-        var attempts = await scenario.Read<string>("""
+        var attempts = await scenario.Read<string>(new NpgsqlCommand("""
             SELECT string_agg(state || COALESCE(':' || failure_code, ''), ',' ORDER BY attempt_id)
             FROM governed_migration.attempts;
-            """, ct);
+            """), ct);
         attempts.ShouldBe("failed:interrupted,completed,completed");
     }
 
@@ -230,7 +231,7 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         refusal.ExitCode.ShouldBe(1);
         refusal.Error.ShouldContain("only atomic expansion and verification", StringComparison.Ordinal);
-        var journalExists = await scenario.Read<bool>("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;", ct);
+        var journalExists = await scenario.Read<bool>(new NpgsqlCommand("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;"), ct);
         journalExists.ShouldBeFalse();
     }
 
@@ -248,7 +249,7 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         refusal.ExitCode.ShouldBe(1);
         refusal.Error.ShouldContain("forward-only recovery", StringComparison.Ordinal);
-        var journalExists = await scenario.Read<bool>("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;", ct);
+        var journalExists = await scenario.Read<bool>(new NpgsqlCommand("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;"), ct);
         journalExists.ShouldBeFalse();
     }
 
@@ -273,9 +274,9 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         failure.ExitCode.ShouldBe(1);
         failure.Error.ShouldContain("55P03", StringComparison.Ordinal);
-        var gate = await scenario.Read<bool>("SELECT ready FROM migration_fixture.gate;", ct);
+        var gate = await scenario.Read<bool>(new NpgsqlCommand("SELECT ready FROM migration_fixture.gate;"), ct);
         gate.ShouldBeFalse();
-        var state = await scenario.Read<string>("SELECT state || ':' || failure_code FROM governed_migration.attempts;", ct);
+        var state = await scenario.Read<string>(new NpgsqlCommand("SELECT state || ':' || failure_code FROM governed_migration.attempts;"), ct);
         state.ShouldBe("failed:55P03");
     }
 
@@ -298,9 +299,9 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         failure.Error.ShouldContain("expand", StringComparison.Ordinal);
         failure.ExitCode.ShouldBe(1);
-        var tableExists = await scenario.Read<bool>("SELECT to_regclass('migration_fixture.must_roll_back') IS NOT NULL;", ct);
+        var tableExists = await scenario.Read<bool>(new NpgsqlCommand("SELECT to_regclass('migration_fixture.must_roll_back') IS NOT NULL;"), ct);
         tableExists.ShouldBeFalse();
-        var state = await scenario.Read<string>("SELECT state FROM governed_migration.attempts;", ct);
+        var state = await scenario.Read<string>(new NpgsqlCommand("SELECT state FROM governed_migration.attempts;"), ct);
         state.ShouldBe("failed");
     }
 
@@ -319,7 +320,7 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         refusal.ExitCode.ShouldBe(1);
         refusal.Error.ShouldContain("separate", StringComparison.Ordinal);
-        var journalExists = await scenario.Read<bool>("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;", ct);
+        var journalExists = await scenario.Read<bool>(new NpgsqlCommand("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;"), ct);
         journalExists.ShouldBeFalse();
     }
 
@@ -339,7 +340,7 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
         // Assert
         refusal.ExitCode.ShouldBe(1);
         refusal.Error.ShouldContain("scoped logins", StringComparison.Ordinal);
-        var journalExists = await scenario.Read<bool>("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;", ct);
+        var journalExists = await scenario.Read<bool>(new NpgsqlCommand("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;"), ct);
         journalExists.ShouldBeFalse();
     }
 }

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,18 +22,30 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     /// <summary>Provisions separate principals and the schemas used by the test.</summary>
     public async Task Provision(CancellationToken ct)
     {
-        await ExecuteControl($"""
-            CREATE ROLE {Owner} LOGIN PASSWORD '{password}';
-            CREATE ROLE {Verifier} LOGIN PASSWORD '{password}';
-            CREATE SCHEMA governed_migration AUTHORIZATION {Owner};
-            CREATE SCHEMA migration_fixture AUTHORIZATION {Owner};
-            GRANT USAGE ON SCHEMA migration_fixture TO {Verifier};
-            ALTER DEFAULT PRIVILEGES FOR ROLE {Owner} IN SCHEMA migration_fixture GRANT SELECT ON TABLES TO {Verifier};
-            CREATE TABLE migration_fixture.gate (ready boolean NOT NULL);
-            INSERT INTO migration_fixture.gate VALUES (false);
-            ALTER TABLE migration_fixture.gate OWNER TO {Owner};
-            GRANT SELECT ON migration_fixture.gate TO {Verifier};
-            """, ct);
+        var define = new NpgsqlBatchCommand("""
+            CREATE OR REPLACE FUNCTION pg_temp.provision_migration_fixture(owner_role text, verifier_role text, role_password text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', owner_role, role_password);
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', verifier_role, role_password);
+                EXECUTE pg_catalog.format('CREATE SCHEMA governed_migration AUTHORIZATION %I', owner_role);
+                EXECUTE pg_catalog.format('CREATE SCHEMA migration_fixture AUTHORIZATION %I', owner_role);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA migration_fixture TO %I', verifier_role);
+                EXECUTE pg_catalog.format(
+                    'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA migration_fixture GRANT SELECT ON TABLES TO %I',
+                    owner_role, verifier_role);
+                CREATE TABLE migration_fixture.gate (ready boolean NOT NULL);
+                INSERT INTO migration_fixture.gate VALUES (false);
+                EXECUTE pg_catalog.format('ALTER TABLE migration_fixture.gate OWNER TO %I', owner_role);
+                EXECUTE pg_catalog.format('GRANT SELECT ON migration_fixture.gate TO %I', verifier_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_migration_fixture($1, $2, $3);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = password });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
     }
 
     /// <summary>Writes a manifest and the exact SQL bytes for the supplied steps.</summary>
@@ -129,20 +140,34 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     }
 
     /// <summary>Releases a test-owned precondition used to prove atomic retry.</summary>
-    public async Task ReleaseRetry(CancellationToken ct) => await ExecuteControl("UPDATE migration_fixture.gate SET ready = true;", ct);
+    public async Task ReleaseRetry(CancellationToken ct) =>
+        await ExecuteControl(new NpgsqlCommand("UPDATE migration_fixture.gate SET ready = true;"), ct);
 
     /// <summary>Gives the verifier a role membership that the executor must refuse.</summary>
-    public async Task GrantOwnerMembershipToVerifier(CancellationToken ct) =>
-        await ExecuteControl($"GRANT {Owner} TO {Verifier};", ct);
-
-    /// <summary>Reads a test assertion from PostgreSQL as the fixture administrator.</summary>
-    [SuppressMessage("Security", "CA2100", Justification = "Only constant fixture assertions call this method.")]
-    public async Task<T> Read<T>(string sql, CancellationToken ct)
+    public async Task GrantOwnerMembershipToVerifier(CancellationToken ct)
     {
+        var define = new NpgsqlBatchCommand("""
+            CREATE OR REPLACE FUNCTION pg_temp.grant_migration_fixture_role(owner_role text, verifier_role text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('GRANT %I TO %I', owner_role, verifier_role);
+            END;
+            $fixture$;
+            """);
+        var grant = new NpgsqlBatchCommand("SELECT pg_temp.grant_migration_fixture_role($1, $2);");
+        grant.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        grant.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+        await ExecuteRoleStatement(database.ConnectionString, define, grant, ct);
+    }
+
+    /// <summary>Executes and disposes a PostgreSQL test assertion as the fixture administrator.</summary>
+    public async Task<T> Read<T>(NpgsqlCommand command, CancellationToken ct)
+    {
+        await using var assertion = command;
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync(ct);
-        await using var command = new NpgsqlCommand(sql, connection);
-        return await command.ExecuteScalarAsync(ct) is T result ? result : throw new InvalidOperationException("Unexpected test query result.");
+        assertion.Connection = connection;
+        return await assertion.ExecuteScalarAsync(ct) is T result ? result : throw new InvalidOperationException("Unexpected test query result.");
     }
 
     /// <summary>Returns a session that blocks the test migration at a known PostgreSQL advisory lock.</summary>
@@ -169,7 +194,9 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     public async Task InterruptBlockedExecutor(CancellationToken ct)
     {
         var pid = await AwaitBlockedExecutor(ct);
-        await ExecuteControl($"SELECT pg_catalog.pg_terminate_backend({pid.ToString(CultureInfo.InvariantCulture)});", ct);
+        var terminate = new NpgsqlCommand("SELECT pg_catalog.pg_terminate_backend($1);");
+        terminate.Parameters.Add(new NpgsqlParameter<int> { TypedValue = pid });
+        await ExecuteControl(terminate, ct);
     }
 
     /// <summary>Waits until the executor is blocked at the gate.</summary>
@@ -180,11 +207,11 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(50));
         do
         {
-            var pid = await Read<int>("""
+            var pid = await Read<int>(new NpgsqlCommand("""
                 SELECT COALESCE(max(pid), 0) FROM pg_catalog.pg_locks
                 WHERE locktype = 'advisory' AND NOT granted AND classid = 0 AND objid = 813043
                   AND database = (SELECT oid FROM pg_catalog.pg_database WHERE datname = current_database());
-                """, timeout.Token);
+                """), timeout.Token);
             if (pid != 0)
             {
                 return pid;
@@ -195,17 +222,25 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     }
 
     /// <inheritdoc />
-    [SuppressMessage("Security", "CA2100", Justification = "Role identifiers contain only a fixed prefix and generated hexadecimal digits.")]
     public async ValueTask DisposeAsync()
     {
         var control = new NpgsqlConnectionStringBuilder(database.ConnectionString) { Database = "postgres", Pooling = false };
         try
         {
             await database.DisposeAsync();
-            await using var connection = new NpgsqlConnection(control.ConnectionString);
-            await connection.OpenAsync(TestContext.Current.CancellationToken);
-            await using var drop = new NpgsqlCommand($"DROP ROLE IF EXISTS {Verifier}; DROP ROLE IF EXISTS {Owner};", connection);
-            await drop.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+            var define = new NpgsqlBatchCommand("""
+                CREATE FUNCTION pg_temp.drop_migration_fixture_roles(owner_role text, verifier_role text)
+                RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+                BEGIN
+                    EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', verifier_role);
+                    EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', owner_role);
+                END;
+                $fixture$;
+                """);
+            var drop = new NpgsqlBatchCommand("SELECT pg_temp.drop_migration_fixture_roles($1, $2);");
+            drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+            drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+            await ExecuteRoleStatement(control.ConnectionString, define, drop, TestContext.Current.CancellationToken);
         }
         finally
         {
@@ -220,13 +255,22 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         Pooling = false
     }.ConnectionString;
 
-    [SuppressMessage("Security", "CA2100", Justification = "SQL uses only constants, generated hexadecimal values, and a numeric PostgreSQL process ID.")]
-    private async Task ExecuteControl(string sql, CancellationToken ct)
+    private async Task ExecuteControl(NpgsqlCommand command, CancellationToken ct)
     {
+        await using var control = command;
         await using var connection = new NpgsqlConnection(database.ConnectionString);
         await connection.OpenAsync(ct);
-        await using var command = new NpgsqlCommand(sql, connection);
-        await command.ExecuteNonQueryAsync(ct);
+        control.Connection = connection;
+        await control.ExecuteNonQueryAsync(ct);
+    }
+
+    private static async Task ExecuteRoleStatement(
+        string connectionString, NpgsqlBatchCommand definition, NpgsqlBatchCommand invocation, CancellationToken ct)
+    {
+        await using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync(ct);
+        await using var batch = new NpgsqlBatch(connection) { BatchCommands = { definition, invocation } };
+        await batch.ExecuteNonQueryAsync(ct);
     }
 
     private static string Digest(string content) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content)));
