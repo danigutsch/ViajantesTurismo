@@ -65,4 +65,18 @@ public sealed class DocumentationSourceOfTruthTests
         policy.ShouldContain("<!-- api-request-shape-policy:start -->", StringComparison.Ordinal);
         policy.ShouldContain("<!-- api-request-shape-policy:end -->", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Artifact_reconciliation_runbook_links_to_the_sharedkernel_candidate_workflow()
+    {
+        // Arrange
+        var repositoryRoot = GetRepositoryRoot();
+        var policyPath = Path.Combine(repositoryRoot, "docs", "operations", "document-retention-and-legal-hold.md");
+
+        // Act
+        var policy = File.ReadAllText(policyPath);
+
+        // Assert
+        policy.ShouldContain("(../sharedkernel/development.md#stage-the-candidate)", StringComparison.Ordinal);
+    }
 }

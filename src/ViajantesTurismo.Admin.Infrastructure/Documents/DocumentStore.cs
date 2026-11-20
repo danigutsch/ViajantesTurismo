@@ -26,18 +26,46 @@ internal sealed class DocumentStore(AdminWriteDbContext dbContext) : IDocumentSt
     /// <inheritdoc />
     public async Task<ReadOnlyMemory<byte>?> ReadFinalizedArtifactContent(Guid documentId, CancellationToken ct)
     {
-        var content = await QueryBody(dbContext, documentId)
-            .Where(_ => dbContext.DocumentDrafts.Any(draft => draft.Id == documentId && draft.Status == DocumentStatus.Finalized))
-            .SingleOrDefaultAsync(ct);
-        return content is null ? null : new ReadOnlyMemory<byte>(content);
+        var content = await ReadVerifiedArtifactContent(
+            dbContext, documentId, dbContext.DocumentDrafts.Where(draft => draft.Status == DocumentStatus.Finalized), ct);
+        if (content is null)
+        {
+            return null;
+        }
+
+        return new ReadOnlyMemory<byte>(content);
     }
 
-    /// <summary>Projects the sealed bytes for one revision without tracking the artifact entity.</summary>
-    internal static IQueryable<byte[]> QueryBody(AdminWriteDbContext context, Guid documentId) =>
-        context.Set<DocumentArtifactBody>()
-            .AsNoTracking()
-            .Where(body => body.DocumentId == documentId)
-            .Select(body => EF.Property<byte[]>(body, DocumentArtifactBodyConfiguration.ContentField));
+    /// <summary>Reads sealed bytes only when they match the integrity metadata of an eligible revision.</summary>
+    internal static async Task<byte[]?> ReadVerifiedArtifactContent(
+        AdminWriteDbContext context,
+        Guid documentId,
+        IQueryable<DocumentDraft> eligibleRevisions,
+        CancellationToken ct)
+    {
+        var artifact = await (
+            from body in context.Set<DocumentArtifactBody>()
+            join revision in eligibleRevisions on body.DocumentId equals revision.Id
+            let content = EF.Property<byte[]>(body, DocumentArtifactBodyConfiguration.ContentField)
+            where body.DocumentId == documentId
+                && revision.FinalizedArtifactLength > 0
+                && revision.FinalizedArtifactLength == content.Length
+                && revision.FinalizedArtifactSha256 != null
+            select new
+            {
+                Content = content,
+                revision.FinalizedArtifactSha256
+            })
+            .SingleOrDefaultAsync(ct);
+
+        if (artifact is null)
+        {
+            return null;
+        }
+
+        var digest = DocumentArtifactBody.ComputeSha256(artifact.Content);
+        return string.Equals(digest, artifact.FinalizedArtifactSha256, StringComparison.Ordinal) ? artifact.Content : null;
+    }
 
     /// <summary>Deletes one batch of expired unfinalized drafts, bumps or removes affected lineages, and returns the removed draft count.</summary>
     public async Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)

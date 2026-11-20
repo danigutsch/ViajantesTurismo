@@ -34,6 +34,10 @@ public sealed class FinalizeDocumentCommandHandlerTests
         // Assert
         result.IsSuccess.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Finalized);
+        document.FinalizedArtifactRendererVersion.ShouldNotBeNull();
+        document.FinalizedArtifactContentType.ShouldBe("text/html; charset=utf-8");
+        document.FinalizedArtifactRetentionPolicy.ShouldBe("DOC-RET-1.0");
+        document.RetentionExpiresAt.ShouldBeNull();
         var finalizedArtifact = document.CopyFinalizedArtifactContent().ShouldNotBeNull();
         var html = Encoding.UTF8.GetString(finalizedArtifact.Span);
         html.ShouldBeWellFormedHtmlDocument();

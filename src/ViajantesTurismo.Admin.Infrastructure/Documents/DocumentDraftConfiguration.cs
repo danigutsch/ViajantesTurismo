@@ -66,6 +66,11 @@ internal sealed class DocumentDraftConfiguration : IEntityTypeConfiguration<Docu
             .HasDatabaseName("IX_DocumentDrafts_RetentionExpiresAt_Unfinalized")
             .HasFilter("\"FinalizedAt\" IS NULL");
         entity.Property(document => document.FinalizedArtifactName).HasMaxLength(128);
+        entity.Property(document => document.FinalizedArtifactLength);
+        entity.Property(document => document.FinalizedArtifactSha256).HasMaxLength(DocumentArtifactBody.Sha256HexLength);
+        entity.Property(document => document.FinalizedArtifactContentType);
+        entity.Property(document => document.FinalizedArtifactRendererVersion);
+        entity.Property(document => document.FinalizedArtifactRetentionPolicy);
         entity.Property(document => document.VoidReason).HasConversion<string>().HasMaxLength(DocumentLimits.MaxVoidReasonLength);
         entity.Property<bool>("_hasFinalizedArtifact").HasColumnName(HasFinalizedArtifactColumn);
         entity.HasOne<DocumentArtifactBody>(FinalizedArtifactNavigation)

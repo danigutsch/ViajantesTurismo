@@ -1,4 +1,6 @@
+using System.Reflection;
 using PandaBear.BuildingBlocks;
+using PandaBear.DocumentRendering;
 using PandaBear.Idempotency;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Payments;
@@ -101,6 +103,13 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
         finalized.IsSuccess.ShouldBeTrue();
         var downloaded = await restarted.Instructions.Download(documentId, "owner", ct);
         downloaded.IsSuccess.ShouldBeTrue();
+        var provenance = await restarted.ReadArtifactProvenance(documentId, ct);
+        var engineVersion = typeof(HtmlDocumentRenderer).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        provenance.RendererVersion.ShouldNotBeNull().ShouldContain(engineVersion.ShouldNotBeNull(), StringComparison.Ordinal);
+        provenance.ContentType.ShouldBe("text/html; charset=utf-8");
+        provenance.RetentionPolicy.ShouldBe("DOC-RET-1.0");
+        provenance.RetentionExpiresAt.ShouldBeNull();
         var html = global::System.Text.Encoding.UTF8.GetString(downloaded.Value.Content.Span);
         html.ShouldContain(brl ? "payment@example.test" : "DE89370400440532013000", StringComparison.Ordinal);
         html.ShouldContain("100", StringComparison.Ordinal);

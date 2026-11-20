@@ -526,9 +526,25 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.Property<Guid>("DocumentLineageId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("FinalizedArtifactContentType")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("FinalizedArtifactLength")
+                        .HasColumnType("integer");
+
                     b.Property<string>("FinalizedArtifactName")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
+
+                    b.Property<string>("FinalizedArtifactRendererVersion")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FinalizedArtifactRetentionPolicy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FinalizedArtifactSha256")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<DateTime?>("FinalizedAt")
                         .HasColumnType("timestamp with time zone");

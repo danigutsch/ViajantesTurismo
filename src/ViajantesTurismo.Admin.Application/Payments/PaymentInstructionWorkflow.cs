@@ -87,7 +87,12 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
                     var plaintext = PaymentInstructionArtifactRenderer.Render(current.Document, current.Snapshot);
                     try
                     {
-                        result = current.Lineage.Finalize(documentId, instructions.ProtectArtifact(documentId, plaintext), now.UtcDateTime, audit.Value);
+                        result = current.Lineage.Finalize(
+                            documentId,
+                            instructions.ProtectArtifact(documentId, plaintext),
+                            now.UtcDateTime,
+                            audit.Value,
+                            DocumentArtifactRendererVersion.Current);
                     }
                     finally { CryptographicOperations.ZeroMemory(plaintext); }
                     break;

@@ -10,6 +10,9 @@ namespace ViajantesTurismo.Admin.Domain.Documents;
 /// </summary>
 public sealed class DocumentDraft : IEntity<Guid>
 {
+    private const string HtmlArtifactContentType = "text/html; charset=utf-8";
+    private const string ArtifactRetentionPolicyId = "DOC-RET-1.0";
+
     private readonly List<DocumentField> _fields = [];
     private bool _hasFinalizedArtifact;
     private DocumentArtifactBody? _finalizedArtifact;
@@ -189,6 +192,36 @@ public sealed class DocumentDraft : IEntity<Guid>
 
     /// <summary>Gets the opaque finalized artifact name.</summary>
     public string? FinalizedArtifactName
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the sealed artifact's byte length recorded at finalization.</summary>
+    internal int? FinalizedArtifactLength
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the sealed artifact's SHA-256 digest recorded at finalization.</summary>
+    internal string? FinalizedArtifactSha256
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the delivered representation's media type recorded at finalization.</summary>
+    internal string? FinalizedArtifactContentType
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the recorded renderer build identities, or null when the stored revision predates recording.</summary>
+    internal string? FinalizedArtifactRendererVersion
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the policy covering retention of this sealed revision.</summary>
+    internal string? FinalizedArtifactRetentionPolicy
     {
         get; private set;
     }
@@ -715,7 +748,7 @@ public sealed class DocumentDraft : IEntity<Guid>
     }
 
     /// <summary>Seals the deterministic final artifact for an approved revision.</summary>
-    internal Result Finalize(byte[] artifactContent, DateTime now)
+    internal Result Finalize(byte[] artifactContent, DateTime now, string? rendererVersion = null)
     {
         ArgumentNullException.ThrowIfNull(artifactContent);
 
@@ -737,6 +770,11 @@ public sealed class DocumentDraft : IEntity<Guid>
 
         _finalizedArtifact = new DocumentArtifactBody(Id, artifactContent);
         _hasFinalizedArtifact = true;
+        FinalizedArtifactLength = _finalizedArtifact.Length;
+        FinalizedArtifactSha256 = _finalizedArtifact.GetSha256();
+        FinalizedArtifactContentType = HtmlArtifactContentType;
+        FinalizedArtifactRendererVersion = rendererVersion;
+        FinalizedArtifactRetentionPolicy = ArtifactRetentionPolicyId;
         FinalizedArtifactName = $"document-{Id:N}-r{Revision}.html";
         FinalizedAt = now;
         RetentionExpiresAt = null;

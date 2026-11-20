@@ -40,8 +40,25 @@ bytes and metadata, document lineages, document audit records, and document idem
 Metadata-only audit records can contain linkable identifiers, which remain personal data where
 re-identification is possible. Callers must not place personal data or secrets in idempotency keys.
 
-The current artifact is an in-database HTML byte payload. A future PDF renderer or object store needs
-a new policy version before it holds finalized artifacts.
+The current HTML artifact body occupies a separate PostgreSQL row keyed by the opaque document
+revision ID. Finalization records its byte length, SHA-256 digest, media type, and the deployed
+Admin adapter and HTML renderer build versions. The media type describes the delivered HTML,
+including for payment artifacts whose stored bytes are encrypted. Admin verifies length and
+digest before delivery or decryption.
+
+The migration computes the integrity baseline from the existing bodies. It leaves historical
+renderer and media-type provenance unknown. Each finalized revision records `DOC-RET-1.0` and
+a null expiry, which together represent indefinite retention.
+
+A future PDF renderer or object store needs a new policy version before it holds finalized artifacts.
+
+### Artifact integrity reconciliation
+
+SharedKernel owns the reusable PostgreSQL reconciliation check. The operator report depends on
+adopting a reader through the [pinned SharedKernel candidate workflow](../sharedkernel/development.md#stage-the-candidate).
+Admin supplies the revision and body mappings and includes all revisions with a finalization
+timestamp. This covers superseded and voided revisions as well as active versions. Delivery
+continues to validate each served artifact independently of the operator report.
 
 Branding is captured onto each revision (name, colors, fonts, version and source revision) and the
 finalized HTML is stored as bytes, so later branding changes and regeneration never alter a finalized
