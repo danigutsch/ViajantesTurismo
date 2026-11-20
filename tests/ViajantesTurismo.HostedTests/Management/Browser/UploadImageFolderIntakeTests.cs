@@ -12,6 +12,7 @@ namespace ViajantesTurismo.HostedTests.Management.Browser;
 [TestScope(TestScope.System)]
 public sealed class UploadImageFolderIntakeTests : ManagementWebBrowserTestBase
 {
+    private const string AnimationNotice = "The gallery shows only the first frame of animated images.";
     private readonly FakeCatalogBrowserApiClient catalog = new(CatalogTourBrowserData.DraftTour());
 
     /// <summary>Supplies a Catalog tour and an upload client that reads the browser streams.</summary>
@@ -38,6 +39,7 @@ public sealed class UploadImageFolderIntakeTests : ManagementWebBrowserTestBase
         // Act
         await Expect(folder).ToBeVisibleAsync();
         await Expect(folder).ToHaveAccessibleNameAsync("Image folder");
+        await Expect(Page.GetByText(AnimationNotice, new PageGetByTextOptions { Exact = true })).ToBeVisibleAsync();
         await folder.SetInputFilesAsync(album.FullName);
         await Expect(selected.GetByText("cover.png", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
         await Expect(selected.GetByText("trail.webp", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
@@ -88,6 +90,7 @@ public sealed class UploadImageFolderIntakeTests : ManagementWebBrowserTestBase
         await Expect(selected.GetByRole(AriaRole.Listitem)).ToHaveCountAsync(2);
         await Expect(selected.GetByText("first.png", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
         await Expect(selected.GetByText("second.png", new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
+        await Expect(zone.GetByText(AnimationNotice, new LocatorGetByTextOptions { Exact = true })).ToBeVisibleAsync();
         catalog.UploadStarted.IsCompleted.ShouldBeFalse();
     }
 
