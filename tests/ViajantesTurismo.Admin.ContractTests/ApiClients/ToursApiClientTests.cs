@@ -77,6 +77,7 @@ public sealed class ToursApiClientTests
         var tour = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/tours/11111111-1111-1111-1111-111111111111");
         tour.Name.ShouldBe("First tour");
+        tour.Links.ShouldBeNull();
     }
 
     [Fact]

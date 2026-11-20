@@ -405,7 +405,10 @@
         "contentHash": "lVqovhCt3HlZe7ONG5ydaj6BYwYI004gldVfMMkJl/lR5ueeCtWNpW4nejOX75sPmzm8vXCxB69GqwHaYCnyUQ=="
       },
       "viajantesturismo.admin.contracts.application": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.653.1, )"
+        }
       },
       "viajantesturismo.admin.contracts.http": {
         "type": "Project",

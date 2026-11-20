@@ -14,6 +14,9 @@ namespace ViajantesTurismo.Admin.Api.Tours;
 /// </summary>
 internal static class ToursEndpoints
 {
+    private const string ListEndpoint = nameof(GetTours);
+    private const string ItemEndpoint = nameof(GetTourById);
+
     /// <summary>
     /// Maps all tour-related endpoints to the application.
     /// </summary>
@@ -27,36 +30,48 @@ internal static class ToursEndpoints
 
         toursGroup.MapCreateTourEndpoint();
 
-        toursGroup.MapGet("/", GetAllTours)
+        toursGroup.MapGet("/", GetTours)
             .RequireAuthorization(AdminAuthorization.TourRead)
-            .WithAdminMetadata("GetTours", "Retrieves all available tours.", "Retrieves all available tours.");
+            .WithAdminMetadata(ListEndpoint, "Retrieves all available tours.", "Retrieves all available tours.");
 
         toursGroup.MapGet("/{id:guid}", GetTourById)
             .RequireAuthorization(AdminAuthorization.TourRead)
-            .WithAdminMetadata("GetTourById", "Retrieves a tour by its ID.", "Retrieves a tour by its ID.");
+            .WithAdminMetadata(ItemEndpoint, "Retrieves a tour by its ID.", "Retrieves a tour by its ID.");
 
         toursGroup.MapUpdateTourEndpoint();
         toursGroup.MapDeleteTourEndpoint();
     }
 
-    private static async Task<Ok<IReadOnlyList<GetTourDto>>> GetAllTours(
+    private static async Task<Ok<IReadOnlyList<GetTourDto>>> GetTours(
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var allTours = await queryService.GetAllTours(ct);
-        return TypedResults.Ok(allTours);
+        var links = GetResourceLinks(context, linkGenerator);
+        return TypedResults.Ok<IReadOnlyList<GetTourDto>>(
+            [.. allTours.Select(tour => tour with { Links = links.For(tour.Id).Links })]);
     }
 
     private static async Task<Results<Ok<GetTourDto>, NotFound<ProblemDetails>>> GetTourById(
         [FromRoute] Guid id,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var tourDto = await queryService.GetActiveTourById(id, ct);
 
         return tourDto is null
             ? TourErrors.TourNotFound().ToNotFound()
-            : TypedResults.Ok(tourDto);
+            : TypedResults.Ok(tourDto with
+            {
+                Links = GetResourceLinks(context, linkGenerator).For(id).Links
+            });
     }
 
+    /// <summary>Creates the link factory for tour representations.</summary>
+    internal static AdminResourceLinks GetResourceLinks(HttpContext context, LinkGenerator linkGenerator) =>
+        new(context, linkGenerator, ItemEndpoint, ListEndpoint);
 }

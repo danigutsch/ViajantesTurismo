@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using PandaBear.BuildingBlocks;
+
 namespace ViajantesTurismo.Admin.Contracts.Application;
 
 /// <summary>
@@ -6,6 +9,13 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 /// </summary>
 public sealed record GetCustomerDto
 {
+    /// <summary>Gets navigation links supplied by the Admin HTTP API.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<HypermediaLink>? Links
+    {
+        get; init;
+    }
+
     /// <summary>
     /// The unique identifier of the customer.
     /// </summary>

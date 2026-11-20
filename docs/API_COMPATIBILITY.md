@@ -28,6 +28,18 @@ Document significant consumer-visible breaks, caller impact, and any required da
 same change. A Conventional Commit breaking marker does not waive HTTP compatibility from beta onward.
 Library package breaking markers and release exceptions are governed in the standalone library.
 
+## Admin resource links
+
+Successful Admin customer, booking, and tour list, detail, and create responses include navigation
+in each resource's `links` array. Lists retain their array shape, including the booking lists filtered
+by tour or customer. Each link has `rel`, `href`, and `method` fields. The `self` relation identifies
+the detail route and `collection` identifies the resource's unfiltered list. Both use `GET` and their
+addresses are relative to the API origin. On creation, `Location` matches the `self` address exactly.
+
+Admin typed clients expose the optional `Links` property on existing response types. They still
+read older payloads where the property is absent. Clients can keep using their current resource
+methods or follow discovered links with the same authorization as a direct API call.
+
 ## OpenAPI snapshots
 
 The Admin, Catalog, and Branding contract tests read the committed OpenAPI artifacts and compare them

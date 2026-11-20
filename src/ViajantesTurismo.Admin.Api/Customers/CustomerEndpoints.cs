@@ -14,6 +14,9 @@ namespace ViajantesTurismo.Admin.Api.Customers;
 /// </summary>
 internal static class CustomerEndpoints
 {
+    private const string ListEndpoint = nameof(GetCustomers);
+    private const string ItemEndpoint = nameof(GetCustomerById);
+
     /// <summary>
     /// Maps all customer endpoints to the application.
     /// </summary>
@@ -25,15 +28,15 @@ internal static class CustomerEndpoints
 
         var customersGroup = app.MapCustomersGroup();
 
-        customersGroup.MapGet("/", GetAllCustomers)
+        customersGroup.MapGet("/", GetCustomers)
             .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
-            .WithName("GetCustomers")
+            .WithName(ListEndpoint)
             .WithDescription("Retrieves all customers.")
             .WithSummary("Retrieves all customers.");
 
         customersGroup.MapGet("/{id:guid}", GetCustomerById)
             .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
-            .WithName("GetCustomerById")
+            .WithName(ItemEndpoint)
             .WithDescription("Retrieves a customer by their ID.")
             .WithSummary("Retrieves a customer by their ID.");
 
@@ -44,23 +47,36 @@ internal static class CustomerEndpoints
         return app;
     }
 
-    private static async Task<Ok<IReadOnlyList<GetCustomerDto>>> GetAllCustomers(
+    private static async Task<Ok<IReadOnlyList<GetCustomerDto>>> GetCustomers(
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var customers = await queryService.GetAllCustomers(ct);
-        return TypedResults.Ok(customers);
+        var links = GetResourceLinks(context, linkGenerator);
+        return TypedResults.Ok<IReadOnlyList<GetCustomerDto>>(
+            [.. customers.Select(customer => customer with { Links = links.For(customer.Id).Links })]);
     }
 
     private static async Task<Results<Ok<CustomerDetailsDto>, NotFound<ProblemDetails>>> GetCustomerById(
         [FromRoute] Guid id,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var customerDto = await queryService.GetCustomerDetailsById(id, ct);
 
         return customerDto is null
             ? CustomerErrors.CustomerNotFound().ToNotFound()
-            : TypedResults.Ok(customerDto);
+            : TypedResults.Ok(customerDto with
+            {
+                Links = GetResourceLinks(context, linkGenerator).For(id).Links
+            });
     }
+
+    /// <summary>Creates the link factory for customer representations.</summary>
+    internal static AdminResourceLinks GetResourceLinks(HttpContext context, LinkGenerator linkGenerator) =>
+        new(context, linkGenerator, ItemEndpoint, ListEndpoint);
 }

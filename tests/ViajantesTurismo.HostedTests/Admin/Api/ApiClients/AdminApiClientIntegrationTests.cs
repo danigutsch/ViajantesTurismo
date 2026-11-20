@@ -37,6 +37,8 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture) : IClassF
         var customer = customerOutcome.Value.ShouldNotBeNull();
         customer.PersonalInfo.FirstName.ShouldBe("Contract");
         customer.PersonalInfo.LastName.ShouldBe("Client");
+        customer.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "collection")
+            .Href.ShouldBe("/api/v1/customers");
     }
 
     [Fact]
@@ -60,6 +62,8 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture) : IClassF
         createdOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var created = createdOutcome.Value.ShouldNotBeNull();
         created.Name.ShouldBe("Contract Client Tour");
+        created.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "self")
+            .Href.ShouldBe(outcome.Location.OriginalString);
 
         var updateRequest = DtoBuilders.BuildUpdateTourDto(identifier: created.Identifier, name: "Updated Contract Client Tour");
         var updateOutcome = await sut.UpdateTour(tourId, updateRequest, cancellationToken);
@@ -94,5 +98,7 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture) : IClassF
         readOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var updated = readOutcome.Value.ShouldNotBeNull();
         updated.Notes.ShouldBe("Updated through the typed client");
+        updated.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "self")
+            .Href.ShouldBe($"/api/v1/bookings/{booking.Id}");
     }
 }

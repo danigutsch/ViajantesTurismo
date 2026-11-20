@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
         <Compile Remove="bin/**/*;obj/**/*;bin\**\*;obj\**\*;$(MSBuildProjectDirectory)/bin/**/*.cs;$(MSBuildProjectDirectory)/obj/**/*.cs;$(MSBuildProjectDirectory)\bin\**\*.cs;$(MSBuildProjectDirectory)\obj\**\*.cs" />
     </ItemGroup>
 </Project>
