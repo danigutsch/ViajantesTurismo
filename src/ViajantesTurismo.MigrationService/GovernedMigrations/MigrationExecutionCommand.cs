@@ -76,7 +76,8 @@ internal static class MigrationExecutionCommand
             await MigrationPostgreSql.LockContext(owner, manifest.Context, ct);
             await MigrationPostgreSql.InstallScriptFunctions(owner, verifier, ct);
 
-            var journal = new MigrationAttemptJournal(owner, manifest, manifestDigest, input.Source);
+            var journalSchema = MigrationJournalSchema.Resolve(manifest);
+            var journal = new MigrationAttemptJournal(owner, manifest, journalSchema, manifestDigest, input.Source);
             await journal.Prepare(ct);
             await journal.RequireLifecycle(recoveryRun, ct);
             if (contractRun && !await AreComplete(journal, manifest.Steps.Where(static step => step.Phase != MigrationPhase.Contract), ct))
@@ -87,7 +88,7 @@ internal static class MigrationExecutionCommand
             MigrationBatchExecution? batchExecution = null;
             if (data is not null)
             {
-                var batchJournal = new MigrationBatchJournal(owner, manifest);
+                var batchJournal = new MigrationBatchJournal(owner, manifest, journalSchema);
                 await batchJournal.Prepare(data.UserName!, ct);
                 await MigrationBatchExecution.Install(data, ct);
                 batchExecution = new MigrationBatchExecution(data, verifier, batchJournal, manifest.Context, directory);

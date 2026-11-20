@@ -14,6 +14,7 @@ internal static class MigrationManifestValidator
             throw new InvalidDataException("Invalid migration identity or manifest version.");
         }
 
+        _ = MigrationJournalSchema.Resolve(manifest);
         if (manifest.SourceReleases.Length == 0
             || !manifest.SourceReleases.All(IsIdentifier)
             || manifest.SourceReleases.Distinct(StringComparer.Ordinal).Count() != manifest.SourceReleases.Length)

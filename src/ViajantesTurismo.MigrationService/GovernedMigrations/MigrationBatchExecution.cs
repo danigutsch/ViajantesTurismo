@@ -53,7 +53,7 @@ internal sealed class MigrationBatchExecution(
         await using var transaction = await data.BeginTransactionAsync(ct);
         await MigrationPostgreSql.LockBatch(data, transaction, context, ct);
         await MigrationPostgreSql.SetTimeouts(data, transaction, step, ct);
-        await MigrationBatchJournal.RequireActiveAttempt(data, transaction, attempt, proof, cursor, ct);
+        await journal.RequireActiveAttempt(data, transaction, attempt, proof, cursor, ct);
         var result = await ReadResult(transaction, step, sql, cursor, ct);
         if (result is not { } batch)
         {

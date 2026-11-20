@@ -89,14 +89,19 @@ dotnet run --project src/ViajantesTurismo.MigrationService -- \
   execute path/to/manifest.json --from 2026.11.1
 ```
 
-Provision the `governed_migration` schema in the target database with the deployment owner as its
-owner. The executor creates `governed_migration.attempts` and its indexes there. Scope the owner
-to the context's application schema and this journal. All deployment logins need `CONNECT`
+Provision the journal schema in the target database with the deployment owner as its owner.
+The executor creates the attempt table and any batch checkpoint storage in the selected schema.
+Leave `journalSchema` omitted to use the existing `governed_migration` journal. In a shared database,
+a context with its own journal declares `journalSchema` as `governed_migration_` followed by its
+context identifier. The identifier uses lowercase ASCII letters, digits and underscores, and the
+schema name has at most 63 characters. For example, provision `governed_migration_catalog` and
+`governed_migration_branding` for separately scoped owners in the same Catalog database. Keep a
+context's selected schema across its releases, including retries and recovery. The owner keeps
+access to its application schema and its journal. All deployment logins need `CONNECT`
 and `TEMPORARY` for the session-local functions. Give the verifier only the schema usage and
 SELECT permissions its gates need. Grant the data login only schema usage and the DML its
 backfills need. It uses the executor-installed checkpoint function without direct journal table
 privileges. Keep application runtime identities out of the deployment roles and the journal.
-Use a separately provisioned database per context for this journal model.
 
 Use reviewed PostgreSQL SQL in UTF-8 without a byte order mark, up to 16 MiB per script. The
 executor checks the original bytes before connecting and checks the exact bytes again immediately

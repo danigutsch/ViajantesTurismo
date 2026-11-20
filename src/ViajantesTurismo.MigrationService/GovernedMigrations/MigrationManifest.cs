@@ -9,6 +9,7 @@ namespace ViajantesTurismo.MigrationService.GovernedMigrations;
 /// <param name="Steps">The ordered script steps.</param>
 /// <param name="OmittedPhases">The reviewed phases with no work.</param>
 /// <param name="Recovery">The declared recovery strategy.</param>
+/// <param name="JournalSchema">The optional preprovisioned journal schema for this context.</param>
 internal sealed record MigrationManifest(
     int SchemaVersion,
     string MigrationId,
@@ -17,4 +18,5 @@ internal sealed record MigrationManifest(
     string TargetRelease,
     MigrationStep[] Steps,
     MigrationPhaseOmission[] OmittedPhases,
-    MigrationRecovery Recovery);
+    MigrationRecovery Recovery,
+    string? JournalSchema = null);

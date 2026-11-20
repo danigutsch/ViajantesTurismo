@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Npgsql;
 using PandaBear.Npgsql.Testing;
 
@@ -20,6 +21,9 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     private string Verifier => "mig_check_" + suffix;
     private string DataMigrator => "mig_data_" + suffix;
     private string Runtime => "mig_runtime_" + suffix;
+    private string BrandingOwner => "mig_branding_owner_" + suffix;
+    private string BrandingVerifier => "mig_branding_check_" + suffix;
+    private string BrandingDataMigrator => "mig_branding_data_" + suffix;
 
     /// <summary>Provisions separate principals and the schemas used by the test.</summary>
     public async Task Provision(CancellationToken ct)
@@ -52,6 +56,48 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = password });
         await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
     }
+
+    /// <summary>Creates a second context and separate principals inside the same leased database.</summary>
+    public async Task ProvisionSharedBranding(CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.provision_shared_branding(catalog_owner text, branding_owner text, branding_verifier text, branding_data text, role_password text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', branding_owner, role_password);
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', branding_verifier, role_password);
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', branding_data, role_password);
+                EXECUTE pg_catalog.format('CREATE SCHEMA branding_fixture AUTHORIZATION %I', branding_owner);
+                EXECUTE pg_catalog.format('CREATE SCHEMA governed_migration_catalog AUTHORIZATION %I', catalog_owner);
+                EXECUTE pg_catalog.format('CREATE SCHEMA governed_migration_branding AUTHORIZATION %I', branding_owner);
+                CREATE TABLE branding_fixture.backfill (id bigint PRIMARY KEY, updates integer NOT NULL DEFAULT 0);
+                INSERT INTO branding_fixture.backfill (id) VALUES (1), (2), (3);
+                EXECUTE pg_catalog.format('ALTER TABLE branding_fixture.backfill OWNER TO %I', branding_owner);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA branding_fixture TO %I, %I', branding_verifier, branding_data);
+                EXECUTE pg_catalog.format('GRANT SELECT ON branding_fixture.backfill TO %I', branding_verifier);
+                EXECUTE pg_catalog.format('GRANT SELECT, UPDATE (updates) ON branding_fixture.backfill TO %I', branding_data);
+                EXECUTE pg_catalog.format(
+                    'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA branding_fixture GRANT SELECT ON TABLES TO %I',
+                    branding_owner, branding_verifier);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_shared_branding($1, $2, $3, $4, $5);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = BrandingOwner });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = BrandingVerifier });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = BrandingDataMigrator });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = password });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
+    /// <summary>Opens a separately scoped schema owner session for the shared database proof.</summary>
+    public async Task<NpgsqlConnection> OpenMigrationOwner(bool asBranding, CancellationToken ct) =>
+        await Open(ConnectionString(asBranding ? BrandingOwner : Owner), ct);
+
+    /// <summary>Opens either context's independently granted data login.</summary>
+    public async Task<NpgsqlConnection> OpenMigrationData(bool asBranding, CancellationToken ct) =>
+        await Open(ConnectionString(asBranding ? BrandingDataMigrator : DataMigrator), ct);
 
     /// <summary>Provisions a synthetic backfill and grants the data principal scoped DML.</summary>
     public async Task ProvisionBatchData(CancellationToken ct)
@@ -141,7 +187,7 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     /// <summary>Writes a manifest and the exact SQL bytes for the supplied steps.</summary>
     public async Task<string> WriteManifest(
         string migrationId, IReadOnlyList<MigrationExecutionTestStep> steps, CancellationToken ct, string recoveryKind = "forwardOnly",
-        string recoverySql = "SELECT true;", string recoveryVerification = "", string extraSource = "")
+        string recoverySql = "SELECT true;", string recoveryVerification = "", string extraSource = "", string context = "catalog", string journalSchema = "")
     {
         var folder = directory.CreateSubdirectory(migrationId).FullName;
         var phaseNames = new[] { "expand", "data", "verify", "contract" };
@@ -194,7 +240,7 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         {
             schemaVersion = 1,
             migrationId,
-            context = "catalog",
+            context,
             sourceReleases = extraSource.Length == 0 ? new[] { "1.0" } : new[] { "1.0", extraSource },
             targetRelease = "1.1",
             steps = artifacts,
@@ -203,6 +249,13 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
             recovery = new { kind = recoveryKind, evidence = new { path = "recovery.md", sha256 = Digest(evidence) }, script = recoveryScript, verify = recoveryVerify }
         });
         var path = Path.Combine(folder, "manifest.json");
+        if (journalSchema.Length > 0)
+        {
+            var selectedManifest = JsonNode.Parse(manifest).ShouldNotBeNull().AsObject();
+            selectedManifest["journalSchema"] = journalSchema;
+            manifest = selectedManifest.ToJsonString();
+        }
+
         await File.WriteAllTextAsync(path, manifest, ct);
         return path;
     }
@@ -234,7 +287,7 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     /// <summary>Runs the real migration service command with the fixture's credentials.</summary>
     public async Task<(int ExitCode, string Output, string Error)> Run(
         string manifest, CancellationToken ct, bool sameRole = false, bool dataUsesOwner = false,
-        string action = "execute", (string Path, string Sha256)? retirement = null)
+        string action = "execute", (string Path, string Sha256)? retirement = null, bool asBranding = false)
     {
         var settings = new ProcessStartInfo("dotnet")
         {
@@ -257,9 +310,12 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         }
 
         settings.Environment["VT_MIGRATION_DEPLOYMENT_TARGET"] = "synthetic-test";
-        settings.Environment["VT_MIGRATION_OWNER_CONNECTION"] = ConnectionString(Owner);
-        settings.Environment["VT_MIGRATION_VERIFIER_CONNECTION"] = ConnectionString(sameRole ? Owner : Verifier);
-        settings.Environment["VT_MIGRATION_DATA_CONNECTION"] = ConnectionString(dataUsesOwner ? Owner : DataMigrator);
+        var owner = asBranding ? BrandingOwner : Owner;
+        var verifier = asBranding ? BrandingVerifier : Verifier;
+        settings.Environment["VT_MIGRATION_OWNER_CONNECTION"] = ConnectionString(owner);
+        settings.Environment["VT_MIGRATION_VERIFIER_CONNECTION"] = ConnectionString(sameRole ? owner : verifier);
+        var data = asBranding ? BrandingDataMigrator : DataMigrator;
+        settings.Environment["VT_MIGRATION_DATA_CONNECTION"] = ConnectionString(dataUsesOwner ? owner : data);
 
         using var process = Process.Start(settings) ?? throw new InvalidOperationException("Migration process did not start.");
         var output = process.StandardOutput.ReadToEndAsync(ct);
@@ -378,9 +434,12 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         {
             await database.DisposeAsync();
             var define = new NpgsqlBatchCommand("""
-                CREATE FUNCTION pg_temp.drop_migration_fixture_roles(owner_role text, verifier_role text, data_role text, runtime_role text)
+                CREATE FUNCTION pg_temp.drop_migration_fixture_roles(owner_role text, verifier_role text, data_role text, runtime_role text, branding_owner text, branding_verifier text, branding_data text)
                 RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
                 BEGIN
+                    EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', branding_data);
+                    EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', branding_verifier);
+                    EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', branding_owner);
                     EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', runtime_role);
                     EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', data_role);
                     EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', verifier_role);
@@ -388,11 +447,14 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
                 END;
                 $fixture$;
                 """);
-            var drop = new NpgsqlBatchCommand("SELECT pg_temp.drop_migration_fixture_roles($1, $2, $3, $4);");
+            var drop = new NpgsqlBatchCommand("SELECT pg_temp.drop_migration_fixture_roles($1, $2, $3, $4, $5, $6, $7);");
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = DataMigrator });
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Runtime });
+            drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = BrandingOwner });
+            drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = BrandingVerifier });
+            drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = BrandingDataMigrator });
             await ExecuteRoleStatement(control.ConnectionString, define, drop, TestContext.Current.CancellationToken);
         }
         finally

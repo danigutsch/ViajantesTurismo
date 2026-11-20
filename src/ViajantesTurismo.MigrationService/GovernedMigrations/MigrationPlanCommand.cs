@@ -64,6 +64,11 @@ internal static class MigrationPlanCommand
     private static async Task WritePlan(MigrationManifest manifest, string sourceRelease, TextWriter output, CancellationToken ct)
     {
         await output.WriteLineAsync($"{manifest.Context}/{manifest.MigrationId} {sourceRelease} -> {manifest.TargetRelease}".AsMemory(), ct);
+        if (manifest.JournalSchema is { } journalSchema)
+        {
+            await output.WriteLineAsync($"journal {journalSchema}".AsMemory(), ct);
+        }
+
         foreach (var step in manifest.Steps)
         {
             var phase = JsonNamingPolicy.CamelCase.ConvertName(step.Phase.ToString());

@@ -227,4 +227,42 @@ public sealed class MigrationPlanCommandTests
         output.ShouldContain($"recovery script {scriptDigest}", StringComparison.Ordinal);
         output.ShouldContain($"recovery verify {verificationDigest}", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task Plan_reports_the_explicit_canonical_journal_schema()
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        fixture.Manifest["journalSchema"] = "governed_migration_admin";
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        error.ShouldBeEmpty();
+        output.ShouldContain("journal governed_migration_admin", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("admin", "governed_migration_catalog")]
+    [InlineData("Admin", "governed_migration_Admin")]
+    [InlineData("admin.region", "governed_migration_admin.region")]
+    [InlineData("admin", "governed_migration")]
+    [InlineData("context_with_a_postgresql_name_that_is_too_long_for_the_prefix", "governed_migration_context_with_a_postgresql_name_that_is_too_long_for_the_prefix")]
+    public async Task Plan_rejects_a_journal_schema_outside_the_context_binding(string context, string schema)
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        fixture.Manifest["context"] = context;
+        fixture.Manifest["journalSchema"] = schema;
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        output.ShouldBeEmpty();
+        error.ShouldContain("journal schema must be governed_migration_ followed by the lowercase context identifier", StringComparison.Ordinal);
+    }
 }
