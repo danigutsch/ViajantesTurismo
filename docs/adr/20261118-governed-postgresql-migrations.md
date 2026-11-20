@@ -42,12 +42,17 @@ and exact contents of every listed script before contacting the database.
 | `steps[].onlineIndex` | Explicit index identity and ordered B-tree keys for concurrent index expansion |
 | `steps[].destructive` | Explicit review classification. Destructive steps belong to the contract phase. |
 | `recovery.kind`, `recovery.evidence`, `recovery.script` | Recovery method, content-addressed evidence, and required SQL for reversible or compensating recovery |
+| `recovery.verify`, `recovery.timeoutSeconds`, `recovery.lockTimeoutSeconds` | Read-only recovery gate and bounded waits for executable recovery |
 
 Expansion keeps the previous application release functional. Data steps can commit bounded batches.
 Verification checks the expected data and application behavior. Contract steps require evidence
 that the previous application version has been retired. A phase with no work is declared explicitly
 with its reason. Verification is required on every manifest. Irreversible changes carry an approved
-recovery procedure and a successful rehearsal before production execution.
+recovery procedure and a successful rehearsal before production execution. The protected deployment
+job authenticates a retirement receipt that identifies the exact manifest, all retired releases,
+the selected database target, and the successful rehearsal. The separate `contract` invocation
+requires this evidence and journaled completion of preparation. Each dispatched contract step
+records the accepted retirement receipt digest.
 
 The CLI provides a read-only plan before writes. Its journal records context, migration ID, step,
 script digest, release and tool versions, attempt state, and sanitized timing. A transaction
@@ -139,17 +144,19 @@ and recovery evidence. Runtime DDL removal depends on the baseline and rehearsal
 ## Status
 
 Proposed for review. The migration service provides the read-only planner and an executor
-for atomic expansion, concurrent index creation, resumable data, and read-only verification
-with forward-only recovery
-evidence. The data login executes bounded DML and records each batch in the same transaction
+for atomic expansion, concurrent index creation, resumable data, and read-only verification.
+The data login executes bounded DML and records each batch in the same transaction
 through an attempt-scoped journal function. The context fence rejects successor owners while
 a previous data transaction is active. The executor confirms the original owner session before
 recording the checkpoint. A disconnected session causes rollback.
 The online index step journals before dispatch, then checks the same index in PostgreSQL before
 requiring its reviewed verifier to pass. A retry reconciles a ready index with its prior attempt.
-Invalid and conflicting indexes require the reviewed recovery path. The contract gate, recovery
-execution and rehearsal, and verified baseline scripts and roles for each context remain
-prerequisites for production cutover.
+Invalid and conflicting indexes require the reviewed recovery path. The executor can apply
+reviewed reversible or compensating recovery SQL and run a separate read-only gate without
+repeating committed recovery after interruption. The protected job supplies authenticated
+retirement and recovery evidence before the executor runs contract.
+Production deployment wiring, old and new application rehearsal, and verified baseline scripts
+and roles for each context remain prerequisites for cutover.
 
 ## Links
 

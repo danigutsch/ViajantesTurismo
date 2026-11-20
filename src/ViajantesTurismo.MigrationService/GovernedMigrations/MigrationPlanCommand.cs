@@ -74,5 +74,10 @@ internal static class MigrationPlanCommand
 
         var recovery = JsonNamingPolicy.CamelCase.ConvertName(manifest.Recovery.Kind.ToString());
         await output.WriteLineAsync($"recovery {recovery} {manifest.Recovery.Evidence.Sha256}".AsMemory(), ct);
+        if (manifest.Recovery.Script is { } script && manifest.Recovery.Verify is { } verification)
+        {
+            await output.WriteLineAsync($"recovery script {script.Sha256}".AsMemory(), ct);
+            await output.WriteLineAsync($"recovery verify {verification.Sha256}".AsMemory(), ct);
+        }
     }
 }

@@ -204,4 +204,27 @@ public sealed class MigrationPlanCommandTests
         error.ShouldContain(expectedError, StringComparison.Ordinal);
         output.ShouldBeEmpty();
     }
+
+    [Fact]
+    public async Task Plan_reports_the_reviewed_recovery_script_and_verifier_digests()
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        var recovery = fixture.Manifest["recovery"].ShouldNotBeNull().AsObject();
+        var steps = fixture.Manifest["steps"].ShouldNotBeNull().AsArray();
+        var scriptDigest = steps[0].ShouldNotBeNull()["sha256"].ShouldNotBeNull().GetValue<string>();
+        var verificationDigest = steps[1].ShouldNotBeNull()["sha256"].ShouldNotBeNull().GetValue<string>();
+        recovery["kind"] = "reversible";
+        recovery["script"] = new JsonObject { ["path"] = "expand.sql", ["sha256"] = scriptDigest };
+        recovery["verify"] = new JsonObject { ["path"] = "verify.sql", ["sha256"] = verificationDigest };
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        error.ShouldBeEmpty();
+        output.ShouldContain($"recovery script {scriptDigest}", StringComparison.Ordinal);
+        output.ShouldContain($"recovery verify {verificationDigest}", StringComparison.Ordinal);
+    }
 }

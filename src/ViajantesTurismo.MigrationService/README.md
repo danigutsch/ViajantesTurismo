@@ -72,15 +72,15 @@ manifest or artifact and 2 for incorrect arguments.
 
 ## Governed migration execution
 
-The executor supports atomic expansion, concurrent index expansion, resumable data batches,
-and read-only verification with forward-only recovery evidence. It rejects contract and
-executable recovery operations before opening a connection. Keep production promotion gated
-on the complete lifecycle rehearsal in the
+The `execute` command prepares schema expansion, concurrent indexes, resumable data batches,
+and read-only verification. Two explicit commands handle later contract steps and the
+executable recovery declared by the migration. Keep production promotion gated on the
+complete lifecycle rehearsal in the
 [governed migration decision](../../docs/adr/20261118-governed-postgresql-migrations.md#adoption-and-rehearsal).
 
 The protected release job supplies `VT_MIGRATION_OWNER_CONNECTION` and
-`VT_MIGRATION_VERIFIER_CONNECTION` using the secret provider. Manifests with a `data` step
-also require `VT_MIGRATION_DATA_CONNECTION`. All connections name the same database on a
+`VT_MIGRATION_VERIFIER_CONNECTION` using the secret provider. Preparation with a `data` step
+also requires `VT_MIGRATION_DATA_CONNECTION`. All connections name the same database on a
 single direct PostgreSQL primary endpoint and use separate scoped logins. The advisory lock
 requires a dedicated PostgreSQL session across transactions.
 
@@ -107,8 +107,8 @@ without repeating completed expansion. The context lock rejects a concurrent exe
 
 A retry uses the same manifest bytes, selected source release, and script digests. A previous
 session's open attempt becomes failed with code `interrupted` after the retry acquires the context
-lock. The journal keeps the old attempts. Process status 0 means every step completed, 1 means
-validation or execution failed, 2 means incorrect usage, and 130 means the operator interrupted
+lock. The journal keeps the old attempts. Process status 0 means every step selected by the
+command completed, 1 means validation or execution failed, 2 means incorrect usage, and 130 means the operator interrupted
 the command. The source release is supplied by the protected deployment job.
 
 ### Online index expansion
@@ -147,10 +147,8 @@ A first attempt requires the index name to be vacant. A retry with the same mani
 rechecks an index previously attempted by that migration. It reruns the catalog check
 and verifier on a matching ready index, and can start another build if the name is vacant.
 An invalid or conflicting object stops the run and stays available for inspection.
-Use the reviewed recovery procedure before retrying after an invalid build. The executor
-currently requires forward-only recovery evidence and leaves recovery execution to the
-approved procedure. Read-only verification and the remaining ordered migration steps
-follow the completed online expansion.
+Use the reviewed recovery procedure before retrying after an invalid build. Read-only
+verification and the remaining ordered migration steps follow the completed online expansion.
 
 ### Resumable data scripts
 
@@ -174,6 +172,51 @@ batch still requires the step's verification script to return one true PostgreSQ
 A failed gate leaves the data attempt incomplete, so the retry rechecks that gate without
 repeating the batch writes. After that gate passes, the manifest continues to its ordered
 verification phase.
+
+### Contract after application retirement
+
+A manifest can include ordered atomic `contract` steps. The `execute` command leaves them
+pending while the previous application remains compatible. The protected deployment job
+runs `contract` after it verifies retirement of every declared source release and a
+successful recovery rehearsal for the target. The job authenticates its retirement receipt
+and supplies the digest through the same protected configuration that selects the database.
+The executor verifies the receipt's bytes, release and target bindings, and completion of
+the prior migration phases before dispatching any contract SQL.
+
+```bash
+dotnet run --project src/ViajantesTurismo.MigrationService -- \
+  contract path/to/manifest.json --from 2026.11.1 \
+  --retirement path/to/retirement.json --sha256 <receipt-sha256>
+```
+
+Use a UTF-8 JSON receipt no larger than 64 KiB. It contains `schemaVersion` with value `1`,
+`context`, `migrationId`, `manifestSha256`, `targetRelease`, all `retiredSourceReleases`,
+`deploymentTarget`, `database`, `recoveryEvidenceSha256`, and `recoveryRehearsalPassed`
+with value `true`. The protected job sets `VT_MIGRATION_DEPLOYMENT_TARGET` to the receipt's
+target identifier. The receipt's database name must match the configured owner connection.
+The journal stores the receipt SHA-256 with each dispatched contract step. The contract SQL
+and completed attempt commit together under the context lock.
+
+### Declared recovery
+
+For `reversible` or `compensating` recovery, the manifest names reviewed SQL in `recovery.script`,
+a separately hashed read-only gate in `recovery.verify`, and the reviewed rehearsal evidence
+in `recovery.evidence`. `recovery.timeoutSeconds` and `recovery.lockTimeoutSeconds` default to
+60 and 30 seconds. Restore-based and forward-only procedures run through the protected
+operator procedure with their own validation. They provide their recovery evidence by digest.
+
+```bash
+dotnet run --project src/ViajantesTurismo.MigrationService -- \
+  recover path/to/manifest.json --from 2026.11.1
+```
+
+`recover` checks the original exact manifest and source release and requires prior mutation
+history. It records the recovery script and its completion with the mutation in one
+transaction. The verifier then checks the recovery gate on its separate read-only session.
+A retry can finish the gate without repeating SQL that already committed. Once recovery
+starts, preparation and contract for the same manifest are fenced. Apply a separately
+reviewed forward migration to continue from the recovered state. Production rehearsal
+includes reads by the application versions and grants as well as the SQL gate.
 
 ## Dependencies
 

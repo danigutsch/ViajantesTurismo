@@ -8,15 +8,14 @@ using ViajantesTurismo.Resources;
 using PandaBear.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
-switch (args)
+if (args is ["plan", ..])
 {
-    case ["plan", ..]:
-        return await RunGovernedCommand(args, MigrationPlanCommand.Run);
-    case ["execute", ..]:
-        return await RunGovernedCommand(args, MigrationExecutionCommand.Run);
-    case ["recover", ..]:
-        await Console.Error.WriteLineAsync("The initial governed executor does not run recovery.");
-        return 1;
+    return await RunGovernedCommand(args, MigrationPlanCommand.Run);
+}
+
+if (args is ["execute" or "contract" or "recover", ..])
+{
+    return await RunGovernedCommand(args, MigrationExecutionCommand.Run);
 }
 
 return await MigrationProcess.Run(() =>

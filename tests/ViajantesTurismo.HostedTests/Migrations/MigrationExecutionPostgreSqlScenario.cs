@@ -140,7 +140,8 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
 
     /// <summary>Writes a manifest and the exact SQL bytes for the supplied steps.</summary>
     public async Task<string> WriteManifest(
-        string migrationId, IReadOnlyList<MigrationExecutionTestStep> steps, CancellationToken ct, string recoveryKind = "forwardOnly")
+        string migrationId, IReadOnlyList<MigrationExecutionTestStep> steps, CancellationToken ct, string recoveryKind = "forwardOnly",
+        string recoverySql = "SELECT true;", string recoveryVerification = "", string extraSource = "")
     {
         var folder = directory.CreateSubdirectory(migrationId).FullName;
         var phaseNames = new[] { "expand", "data", "verify", "contract" };
@@ -175,12 +176,18 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
 
         const string evidence = "Test-owned forward recovery rehearsal.";
         await File.WriteAllTextAsync(Path.Combine(folder, "recovery.md"), evidence, ct);
-        const string recoverySql = "SELECT true;";
         var recoveryScript = default(object);
-        if (recoveryKind == "reversible")
+        if (recoveryKind is "reversible" or "compensating")
         {
             await File.WriteAllTextAsync(Path.Combine(folder, "recovery.sql"), recoverySql, ct);
             recoveryScript = new { path = "recovery.sql", sha256 = Digest(recoverySql) };
+        }
+
+        var recoveryVerify = default(object);
+        if (recoveryVerification.Length > 0)
+        {
+            await File.WriteAllTextAsync(Path.Combine(folder, "recovery-verify.sql"), recoveryVerification, ct);
+            recoveryVerify = new { path = "recovery-verify.sql", sha256 = Digest(recoveryVerification) };
         }
 
         var manifest = JsonSerializer.Serialize(new
@@ -188,21 +195,46 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
             schemaVersion = 1,
             migrationId,
             context = "catalog",
-            sourceReleases = new[] { "1.0" },
+            sourceReleases = extraSource.Length == 0 ? new[] { "1.0" } : new[] { "1.0", extraSource },
             targetRelease = "1.1",
             steps = artifacts,
             omittedPhases = phaseNames.Where(phase => steps.All(step => step.Phase != phase))
                 .Select(phase => new { phase, reason = "No work in this phase." }).ToArray(),
-            recovery = new { kind = recoveryKind, evidence = new { path = "recovery.md", sha256 = Digest(evidence) }, script = recoveryScript }
+            recovery = new { kind = recoveryKind, evidence = new { path = "recovery.md", sha256 = Digest(evidence) }, script = recoveryScript, verify = recoveryVerify }
         });
         var path = Path.Combine(folder, "manifest.json");
         await File.WriteAllTextAsync(path, manifest, ct);
         return path;
     }
 
+    /// <summary>Writes the synthetic retirement receipt using this test's database identity.</summary>
+    public async Task<(string Path, string Sha256)> WriteRetirement(
+        string manifest, string migrationId, CancellationToken ct, string deploymentTarget = "synthetic-test", bool rehearsalPassed = true)
+    {
+        var content = await File.ReadAllTextAsync(manifest, ct);
+        var evidence = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(manifest).ShouldNotBeNull(), "recovery.md"), ct);
+        var retirement = JsonSerializer.Serialize(new
+        {
+            schemaVersion = 1,
+            context = "catalog",
+            migrationId,
+            manifestSha256 = Digest(content),
+            targetRelease = "1.1",
+            retiredSourceReleases = new[] { "1.0" },
+            deploymentTarget,
+            database = new NpgsqlConnectionStringBuilder(database.ConnectionString).Database,
+            recoveryEvidenceSha256 = Digest(evidence),
+            recoveryRehearsalPassed = rehearsalPassed
+        });
+        var file = Path.Combine(directory.FullName, "retirement.json");
+        await File.WriteAllTextAsync(file, retirement, ct);
+        return (file, Digest(retirement));
+    }
+
     /// <summary>Runs the real migration service command with the fixture's credentials.</summary>
     public async Task<(int ExitCode, string Output, string Error)> Run(
-        string manifest, CancellationToken ct, bool sameRole = false, bool dataUsesOwner = false)
+        string manifest, CancellationToken ct, bool sameRole = false, bool dataUsesOwner = false,
+        string action = "execute", (string Path, string Sha256)? retirement = null)
     {
         var settings = new ProcessStartInfo("dotnet")
         {
@@ -212,10 +244,19 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
             UseShellExecute = false
         };
         settings.ArgumentList.Add(Path.Combine(AppContext.BaseDirectory, "ViajantesTurismo.MigrationService.dll"));
-        settings.ArgumentList.Add("execute");
+        settings.ArgumentList.Add(action);
         settings.ArgumentList.Add(manifest);
         settings.ArgumentList.Add("--from");
         settings.ArgumentList.Add("1.0");
+        if (retirement is { } proof)
+        {
+            settings.ArgumentList.Add("--retirement");
+            settings.ArgumentList.Add(proof.Path);
+            settings.ArgumentList.Add("--sha256");
+            settings.ArgumentList.Add(proof.Sha256);
+        }
+
+        settings.Environment["VT_MIGRATION_DEPLOYMENT_TARGET"] = "synthetic-test";
         settings.Environment["VT_MIGRATION_OWNER_CONNECTION"] = ConnectionString(Owner);
         settings.Environment["VT_MIGRATION_VERIFIER_CONNECTION"] = ConnectionString(sameRole ? Owner : Verifier);
         settings.Environment["VT_MIGRATION_DATA_CONNECTION"] = ConnectionString(dataUsesOwner ? Owner : DataMigrator);

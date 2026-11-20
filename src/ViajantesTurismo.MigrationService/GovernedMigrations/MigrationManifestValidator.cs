@@ -27,10 +27,23 @@ internal static class MigrationManifestValidator
         }
 
         ValidateSteps(manifest);
-        if (manifest.Recovery.Kind is MigrationRecoveryKind.Reversible or MigrationRecoveryKind.Compensating
-            && manifest.Recovery.Script is null)
+        var recovery = manifest.Recovery;
+        if (recovery.Kind is MigrationRecoveryKind.Reversible or MigrationRecoveryKind.Compensating)
         {
-            throw new InvalidDataException("Script-based recovery requires a script.");
+            if (recovery.Script is null)
+            {
+                throw new InvalidDataException("Script-based recovery requires a script.");
+            }
+        }
+        else if (recovery.Script is not null || recovery.Verify is not null)
+        {
+            throw new InvalidDataException("External recovery declarations cannot include executable SQL.");
+        }
+
+        if (recovery.TimeoutSeconds is <= 0 or > int.MaxValue / 1000
+            || recovery.LockTimeoutSeconds <= 0 || recovery.LockTimeoutSeconds > recovery.TimeoutSeconds)
+        {
+            throw new InvalidDataException("Recovery requires bounded statement and lock waits.");
         }
     }
 

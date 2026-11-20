@@ -37,15 +37,12 @@ internal static class MigrationArtifactFiles
     internal static async Task<string> ReadVerifiedSql(string directory, MigrationArtifact artifact, CancellationToken ct)
     {
         RequireSqlExtension(artifact);
-        var path = ResolvePath(directory, artifact);
-        var content = await BoundedReader.ReadFile(path, ScriptLimit, ct)
-            ?? throw new InvalidDataException("Migration script exceeds the size limit.");
-        VerifyDigest(SHA256.HashData(content), artifact.Sha256);
+        var content = await ReadVerifiedBytes(directory, artifact, ScriptLimit, ct);
 
         string sql;
         try
         {
-            sql = Utf8.GetString(content);
+            sql = Utf8.GetString(content.Span);
         }
         catch (DecoderFallbackException)
         {
@@ -58,6 +55,16 @@ internal static class MigrationArtifactFiles
         }
 
         return sql;
+    }
+
+    /// <summary>Returns bounded file bytes after verifying that same content against its digest.</summary>
+    internal static async Task<ReadOnlyMemory<byte>> ReadVerifiedBytes(string directory, MigrationArtifact artifact, int limit, CancellationToken ct)
+    {
+        var path = ResolvePath(directory, artifact);
+        var content = await BoundedReader.ReadFile(path, limit, ct)
+            ?? throw new InvalidDataException("Migration artifact exceeds the size limit.");
+        VerifyDigest(SHA256.HashData(content), artifact.Sha256);
+        return content;
     }
 
     private static string ResolvePath(string directory, MigrationArtifact artifact)

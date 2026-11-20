@@ -75,17 +75,36 @@ internal sealed class MigrationAttemptJournal(
     }
 
     /// <summary>Commits a new attempt before dispatching the step.</summary>
-    internal async Task<long> Start(MigrationStep step, string phase, CancellationToken ct)
+    internal async Task<long> Start(MigrationStep step, string phase, string? retirementDigest, CancellationToken ct)
     {
         await using var command = new NpgsqlCommand($"""
             INSERT INTO {Attempts}
-                (context, migration_id, phase, step_order, manifest_sha256, script_sha256, source_release, target_release, tool_version)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                (context, migration_id, phase, step_order, manifest_sha256, script_sha256, source_release, target_release, tool_version, retirement_sha256)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING attempt_id;
             """, owner);
         MigrationPostgreSql.Bind(command, manifest.Context, manifest.MigrationId, phase, step.Order,
             manifestDigest, step.Sha256.ToUpperInvariant(), sourceRelease, manifest.TargetRelease, ToolVersion);
+        command.Parameters.Add(new NpgsqlParameter<string?> { TypedValue = retirementDigest });
         return (long)(await command.ExecuteScalarAsync(ct))!;
+    }
+
+    /// <summary>Prevents forward dispatch after recovery started, and recovery without prior mutation work.</summary>
+    internal async Task RequireLifecycle(bool recovery, CancellationToken ct)
+    {
+        await using var command = new NpgsqlCommand($"""
+            SELECT EXISTS (
+                SELECT 1 FROM {Attempts} WHERE context = $1 AND migration_id = $2
+                    AND (($3 AND phase IN ('expand', 'data', 'contract')) OR (NOT $3 AND phase = 'recover'))
+            );
+            """, owner);
+        MigrationPostgreSql.Bind(command, manifest.Context, manifest.MigrationId, recovery);
+        if ((await command.ExecuteScalarAsync(ct) is true) != recovery)
+        {
+            throw new InvalidDataException(recovery
+                ? "Recovery requires a previous mutation attempt for this migration."
+                : "Migration recovery has started. Use a new reviewed forward migration.");
+        }
     }
 
     /// <summary>Records completion, optionally within the transaction containing the expansion SQL.</summary>
@@ -125,10 +144,11 @@ internal sealed class MigrationAttemptJournal(
                 attempt_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                 context text NOT NULL,
                 migration_id text NOT NULL,
-                phase text NOT NULL CONSTRAINT migration_attempt_phase CHECK (phase IN ('expand', 'data', 'verify')),
+                phase text NOT NULL CONSTRAINT migration_attempt_phase_v2 CHECK (phase IN ('expand', 'data', 'verify', 'contract', 'recover')),
                 step_order integer NOT NULL CHECK (step_order > 0),
                 manifest_sha256 text NOT NULL CHECK (length(manifest_sha256) = 64),
                 script_sha256 text NOT NULL CHECK (length(script_sha256) = 64),
+                retirement_sha256 text CHECK (length(retirement_sha256) = 64),
                 source_release text NOT NULL,
                 target_release text NOT NULL,
                 tool_version text NOT NULL,
@@ -136,12 +156,28 @@ internal sealed class MigrationAttemptJournal(
                 started_at timestamptz NOT NULL DEFAULT pg_catalog.clock_timestamp(),
                 finished_at timestamptz,
                 failure_code text,
+                CONSTRAINT migration_attempt_retirement CHECK ((phase = 'contract') = (retirement_sha256 IS NOT NULL)),
                 CHECK (
                     (state = 'started' AND finished_at IS NULL AND failure_code IS NULL)
                     OR (state = 'completed' AND finished_at IS NOT NULL AND failure_code IS NULL)
                     OR (state = 'failed' AND finished_at IS NOT NULL AND failure_code IS NOT NULL)
                 )
             );
+            DO $journal$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT FROM pg_catalog.pg_constraint
+                    WHERE conrelid = '{Attempts}'::pg_catalog.regclass AND conname = 'migration_attempt_phase_v2'
+                ) THEN
+                    ALTER TABLE {Attempts} DROP CONSTRAINT migration_attempt_phase;
+                    ALTER TABLE {Attempts} ADD CONSTRAINT migration_attempt_phase_v2
+                        CHECK (phase IN ('expand', 'data', 'verify', 'contract', 'recover'));
+                    ALTER TABLE {Attempts} ADD COLUMN retirement_sha256 text CHECK (length(retirement_sha256) = 64);
+                    ALTER TABLE {Attempts} ADD CONSTRAINT migration_attempt_retirement
+                        CHECK ((phase = 'contract') = (retirement_sha256 IS NOT NULL));
+                END IF;
+            END;
+            $journal$;
             CREATE UNIQUE INDEX IF NOT EXISTS completed_migration_steps
                 ON {Attempts} (context, migration_id, phase, step_order) WHERE state = 'completed';
             """, owner, transaction);
