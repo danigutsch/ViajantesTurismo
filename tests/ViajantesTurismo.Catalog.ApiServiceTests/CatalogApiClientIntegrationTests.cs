@@ -45,6 +45,8 @@ public sealed class CatalogApiClientIntegrationTests
 
         // Act
         var savedOutcome = await managementClient.UpdatePresentation(tourId, request, cancellationToken);
+        var managementItem = await managementClient.GetTour(tourId, cancellationToken);
+        var managementList = await managementClient.GetTours(cancellationToken);
         var publishOutcome = await managementClient.Publish(
             tourId,
             new CatalogTourPublicationRequest { ExpectedVersion = 2 },
@@ -61,12 +63,17 @@ public sealed class CatalogApiClientIntegrationTests
         var saved = savedOutcome.Value.ShouldNotBeNull();
         saved.Title.ShouldBe("Contract Client Tour");
         saved.IsPublished.ShouldBeFalse();
+        saved.Links.ShouldContain(link => link.Rel == "self" && link.Href == $"/api/v1/catalog/tours/{tourId}" && link.Method == "GET");
+        saved.Links.ShouldContain(link => link.Rel == "images" && link.Href == $"/api/v1/catalog/tours/{tourId}/images" && link.Method == "GET");
+        managementItem.Value.ShouldNotBeNull().Links.ShouldBe(saved.Links);
+        managementList.Value.ShouldNotBeNull().ShouldHaveSingleItem().Links.ShouldBe(saved.Links);
         publishOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         publishedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var published = publishedOutcome.Value.ShouldNotBeNull();
         published.Title.ShouldBe("Contract Client Tour");
         published.Slug.ShouldBe("contract-client-tour");
         published.Summary.ShouldBe("A contract-tested tour.");
+        published.Links.ShouldContain(link => link.Rel == "self" && link.Href == "/api/v1/public/catalog/tours/contract-client-tour" && link.Method == "GET");
         unpublishOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         unpublishedOutcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
         unpublishedOutcome.Value.ShouldBeNull();
@@ -90,15 +97,22 @@ public sealed class CatalogApiClientIntegrationTests
         // Act
         var savedOutcome = await sut.SaveContent("home.hero", request, cancellationToken);
         var readOutcome = await sut.GetContent("home.hero", cancellationToken);
+        var listOutcome = await sut.GetContent(cancellationToken);
 
         // Assert
         savedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var saved = savedOutcome.Value.ShouldNotBeNull();
         saved.Key.ShouldBe("HOME.HERO");
+        var self = saved.Links.ShouldHaveSingleItem();
+        self.Rel.ShouldBe("self");
+        self.Href.ShouldBe("/api/v1/catalog/public-content/HOME.HERO");
+        self.Method.ShouldBe("GET");
         readOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         var read = readOutcome.Value.ShouldNotBeNull();
         read.Key.ShouldBe("HOME.HERO");
+        read.Links.ShouldBe(saved.Links);
         read.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil && variant.Title == "Bem-vindo");
+        listOutcome.Value.ShouldNotBeNull().ShouldHaveSingleItem().Links.ShouldBe(saved.Links);
     }
 
 }

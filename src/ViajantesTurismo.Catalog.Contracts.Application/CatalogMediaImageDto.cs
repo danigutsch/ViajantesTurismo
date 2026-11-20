@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Contracts.Application;
 
@@ -7,6 +9,10 @@ namespace ViajantesTurismo.Catalog.Contracts.Application;
 /// </summary>
 public sealed record CatalogMediaImageDto
 {
+    /// <summary>Gets management links for available image renditions and galleries.</summary>
+    [JsonPropertyName("links")]
+    public IReadOnlyList<HypermediaLink> Links { get; init; } = [];
+
     /// <summary>
     /// Gets the stable media image identifier.
     /// </summary>

@@ -80,6 +80,15 @@
           "xunit.v3.assert": "4.0.0"
         }
       },
+      "PandaBear.SharedKernel.Testing.Http": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.653.1, )",
+        "resolved": "0.1.0-alpha.653.1",
+        "contentHash": "zX3z814MVzMaBC3tpRNCzujJePdQhIrDFac4tE9xkXw4u3bWoA0CLrVqYIm+6Onq8grvIYLZ66GlHwWz5LwOTw==",
+        "dependencies": {
+          "PandaBear.SharedKernel.Testing.Assertions": "0.1.0-alpha.653.1"
+        }
+      },
       "PandaBear.SharedKernel.Testing.Logging": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.653.1, )",
@@ -739,7 +748,10 @@
         }
       },
       "viajantesturismo.catalog.contracts.application": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.653.1, )"
+        }
       },
       "viajantesturismo.catalog.contracts.http": {
         "type": "Project",

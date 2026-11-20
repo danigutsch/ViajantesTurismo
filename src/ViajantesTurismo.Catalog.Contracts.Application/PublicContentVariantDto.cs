@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using PandaBear.BuildingBlocks;
+
 namespace ViajantesTurismo.Catalog.Contracts.Application;
 
 /// <summary>
@@ -5,6 +8,14 @@ namespace ViajantesTurismo.Catalog.Contracts.Application;
 /// </summary>
 public sealed class PublicContentVariantDto
 {
+    /// <summary>Gets links when this localized variant is returned as a resource.</summary>
+    [JsonPropertyName("links")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<HypermediaLink>? Links
+    {
+        get; init;
+    }
+
     /// <summary>
     /// Gets or sets the content language tag, for example <c>pt-BR</c>.
     /// </summary>

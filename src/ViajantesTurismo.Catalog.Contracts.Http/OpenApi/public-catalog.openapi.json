@@ -160,7 +160,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicContentVariantDto"
+                }
+              }
+            }
           }
         }
       }
@@ -267,6 +274,69 @@
           }
         }
       },
+      "HypermediaLink": {
+        "required": [
+          "rel",
+          "href",
+          "method"
+        ],
+        "type": "object",
+        "properties": {
+          "rel": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicContentVariantDto": {
+        "type": "object",
+        "properties": {
+          "links": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
+          "language": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "seoTitle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "metaDescription": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "shareSummary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "requiresHumanReview": {
+            "type": "boolean"
+          }
+        }
+      },
       "Stream": {
         "type": "string",
         "format": "binary"
@@ -281,6 +351,12 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "title": {
             "maxLength": 128,
             "minLength": 1,
@@ -338,6 +414,12 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "title": {
             "maxLength": 128,
             "minLength": 1,

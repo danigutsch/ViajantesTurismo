@@ -58,7 +58,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogTourDto"
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication is required."
@@ -337,7 +344,17 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CatalogMediaImageDto"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication is required."
@@ -694,7 +711,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicContentDto"
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication is required."
@@ -924,7 +948,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicContentVariantDto"
+                }
+              }
+            }
           }
         }
       }
@@ -1380,6 +1411,12 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -1480,6 +1517,12 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -1671,6 +1714,25 @@
           }
         }
       },
+      "HypermediaLink": {
+        "required": [
+          "rel",
+          "href",
+          "method"
+        ],
+        "type": "object",
+        "properties": {
+          "rel": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          }
+        }
+      },
       "IFormFile": {
         "type": "string",
         "format": "binary"
@@ -1716,6 +1778,12 @@
       "PublicContentDto": {
         "type": "object",
         "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "key": {
             "type": "string"
           },
@@ -1736,6 +1804,15 @@
       "PublicContentVariantDto": {
         "type": "object",
         "properties": {
+          "links": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "language": {
             "type": "string"
           },
@@ -1893,6 +1970,12 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "title": {
             "maxLength": 128,
             "minLength": 1,
@@ -1950,6 +2033,12 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "title": {
             "maxLength": 128,
             "minLength": 1,

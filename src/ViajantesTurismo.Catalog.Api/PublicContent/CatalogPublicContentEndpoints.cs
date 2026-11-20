@@ -17,18 +17,20 @@ internal static class CatalogPublicContentEndpoints
     {
         versionedApi.MapGet("/public/catalog/content/{**key}", GetPublicContent)
             .WithName("GetPublicContent")
+            .Produces<PublicContentVariantDto>(StatusCodes.Status200OK)
             .CacheOutput(policy => policy.Expire(PublicContentHttpCache.Freshness).SetVaryByQuery(PublicContentHttpCache.CultureQueryKey).Tag(PublicContentHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
-        managementCatalog.MapGet("/public-content", async (IPublicContentStore store, CancellationToken ct) =>
+        managementCatalog.MapGet("/public-content", async (IPublicContentStore store, LinkGenerator routes, HttpContext context, CancellationToken ct) =>
         {
             var content = await store.ListContent(ct);
-            return content.Select(MapPublicContent);
+            return content.Select(entry => MapPublicContent(entry, routes, context));
         }).WithName("ListPublicContentForManagement")
             .WithTags("ViajantesTurismo.Catalog.Api")
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/public-content/{**key}", GetPublicContentForManagement)
             .WithName("GetPublicContentForManagement")
+            .Produces<PublicContentDto>(StatusCodes.Status200OK)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapPut("/public-content/{**key}", UpsertPublicContent)
             .WithName("UpsertPublicContent")
@@ -43,6 +45,7 @@ internal static class CatalogPublicContentEndpoints
         string? language,
         string? culture,
         IPublicContentStore store,
+        LinkGenerator routes,
         HttpContext httpContext,
         CancellationToken ct)
     {
@@ -72,12 +75,19 @@ internal static class CatalogPublicContentEndpoints
             return Results.NotFound();
         }
 
-        var dto = MapVariant(variant);
+        var parameters = new RouteValueDictionary
+        {
+            ["key"] = content.Key,
+            [PublicContentHttpCache.CultureQueryKey] = variant.Language.Value
+        };
+        var self = CatalogEndpointLinks.Get(routes, httpContext, "self", nameof(GetPublicContent), parameters);
+        var dto = MapVariant(variant, [self]);
         PublicContentHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(dto);
     }
 
-    private static async Task<IResult> GetPublicContentForManagement(string key, IPublicContentStore store, CancellationToken ct)
+    private static async Task<IResult> GetPublicContentForManagement(
+        string key, IPublicContentStore store, LinkGenerator routes, HttpContext context, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -85,7 +95,7 @@ internal static class CatalogPublicContentEndpoints
         }
 
         var content = await store.GetContent(key, ct);
-        return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content));
+        return content is null ? Results.NotFound() : Results.Ok(MapPublicContent(content, routes, context));
     }
 
     private static async Task<Results<Ok<PublicContentDto>, BadRequest, ValidationProblem>> UpsertPublicContent(
@@ -94,6 +104,8 @@ internal static class CatalogPublicContentEndpoints
         PublicContentUpsertService service,
         IOutputCacheStore outputCacheStore,
         ILogger<CatalogApiHostEntryPoint> logger,
+        LinkGenerator routes,
+        HttpContext context,
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(key))
@@ -109,7 +121,7 @@ internal static class CatalogPublicContentEndpoints
         }
 
         await InvalidatePublicContentCache(outputCacheStore, logger);
-        return TypedResults.Ok(MapPublicContent(content.Value));
+        return TypedResults.Ok(MapPublicContent(content.Value, routes, context));
     }
 
     private static async Task InvalidatePublicContentCache(IOutputCacheStore outputCacheStore, ILogger logger)
@@ -125,10 +137,14 @@ internal static class CatalogPublicContentEndpoints
         }
     }
 
-    private static PublicContentDto MapPublicContent(EditablePublicContent content)
+    private static PublicContentDto MapPublicContent(EditablePublicContent content, LinkGenerator routes, HttpContext context)
     {
         var dto = new PublicContentDto
         {
+            Links =
+            [
+                CatalogEndpointLinks.Get(routes, context, "self", nameof(GetPublicContentForManagement), new RouteValueDictionary { ["key"] = content.Key })
+            ],
             Key = content.Key,
             SourceLanguage = content.SourceLanguage.Value,
             PublicationState = content.PublicationState.ToString()
@@ -142,10 +158,11 @@ internal static class CatalogPublicContentEndpoints
         return dto;
     }
 
-    private static PublicContentVariantDto MapVariant(PublicContentVariant variant)
+    private static PublicContentVariantDto MapVariant(PublicContentVariant variant, IReadOnlyList<HypermediaLink>? links = null)
     {
         return new PublicContentVariantDto
         {
+            Links = links,
             Language = variant.Language.Value,
             Title = variant.Title,
             Body = variant.Body,

@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using PandaBear.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Contracts.Application;
 
@@ -7,6 +9,10 @@ namespace ViajantesTurismo.Catalog.Contracts.Application;
 /// </summary>
 public sealed record CatalogTourDto
 {
+    /// <summary>Gets the Catalog management navigation links.</summary>
+    [JsonPropertyName("links")]
+    public IReadOnlyList<HypermediaLink> Links { get; init; } = [];
+
     /// <summary>
     /// Gets the Catalog tour identifier.
     /// </summary>

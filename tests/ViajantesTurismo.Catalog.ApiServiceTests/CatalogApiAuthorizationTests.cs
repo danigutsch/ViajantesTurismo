@@ -1,4 +1,6 @@
+using System.Text.Json;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
+using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
@@ -99,17 +101,25 @@ public sealed class CatalogApiAuthorizationTests
     public async Task Management_catalog_read_endpoint_accepts_supported_roles(string role)
     {
         // Arrange
-        await using var factory = CatalogApiTestHost.CreateAnonymous();
+        var ct = TestContext.Current.CancellationToken;
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(new CatalogTourDraftReadModel(
+            tourId, Guid.CreateVersion7(), "ROLE-TOUR", "Role Test Tour", "role-test-tour",
+            false, 1, TimeProvider.System.GetUtcNow()), ct);
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore());
         using var client = factory.CreateClient();
         CatalogApiTestHost.ConfigureAuthenticatedClient(client, role);
 
         // Act
-        using var response = await client.GetAsync(
-            new Uri("/api/v1/catalog/tours", UriKind.Relative),
-            TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/catalog/tours", UriKind.Relative), ct);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var tour = payload.EnumerateArray().ShouldHaveSingleItem();
+        tour.ShouldHaveGetLink("self", $"/api/v1/catalog/tours/{tourId}");
+        tour.ShouldHaveGetLink("images", $"/api/v1/catalog/tours/{tourId}/images");
     }
 
     [Theory]
