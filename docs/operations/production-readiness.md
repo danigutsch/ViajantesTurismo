@@ -95,6 +95,8 @@ Persistent inventory:
 | --- | --- | --- |
 | Admin database | AppHost PostgreSQL `admin-database` | schema, data, migration history |
 | Catalog database | AppHost PostgreSQL `catalog-database` | schema, data, migration history |
+| Management security database | AppHost PostgreSQL `security-database` | `security` schema, protected tickets and token records, key ring, migration history |
+| Management key-encryption certificate | Deployment secret store | PKCS#12 and its password under separate access controls |
 | Redis cache | AppHost Redis `cache` | no durable backup expected unless promoted to durable session state |
 | Media assets | Catalog/media application paths | original files, variants, metadata, malware-scan state |
 | Release artifacts | release workflow output | immutable images, tags, digests, SBOM/provenance when available |
@@ -118,6 +120,14 @@ Restore validation:
 4. Run the smoke-test strategy.
 5. Record restore duration, restored artifact IDs, backup timestamp, and validation result.
 
+Treat the Management security database and its key-encryption certificate as a recovery set. Restoring
+the database alone cannot recover sessions protected by a missing certificate. Keep the matching
+certificate under the deployment secret store's version and access controls. Use an isolated
+environment and synthetic users to test that a fresh Management instance can read the restored key
+ring and protected state. Before reconnecting a restored production store, explicitly decide whether
+to invalidate restored sessions. Tokens revoked or rotated after the restore point cannot be assumed
+usable. Record the exercise outcome without recording any ticket, token, certificate, or password.
+
 Follow-up implementation issues are required after the hosting platform and recovery objectives are
 chosen. No hard RPO, RTO, frequency, retention period, or backup product is encoded here because those
 are product and operations decisions.
@@ -125,6 +135,29 @@ are product and operations decisions.
 The [document retention and legal-hold policy](document-retention-and-legal-hold.md) sets the
 retention periods for generated artifacts and audit records. Held data, backup expiry and
 restore-time suppression are tracked as follow-up work in that policy.
+
+## Management OIDC security store
+
+Configure the Management runtime with a dedicated credential in
+`ConnectionStrings__security-database`. It needs `CONNECT` on the security database and `USAGE` on
+the `security` schema. Restrict object privileges to the following operations.
+
+| Object | Runtime privileges |
+| --- | --- |
+| `security.management_cookie_tickets` | `SELECT`, `INSERT`, `UPDATE`, `DELETE` for protected ticket and token cache records |
+| `security.data_protection_keys` | `SELECT`, `INSERT` for reading and extending the key ring |
+| Identity sequence for `security.data_protection_keys.Id` | `USAGE` for new key rows |
+
+Use a separate migration identity that owns these objects and performs schema changes. Give the
+runtime role no ownership, migration membership, DDL privileges, or access to other application
+databases. Review inherited and `PUBLIC` privileges in the target database. Apply the same runtime
+configuration to each Management replica and use the deployment secret store for both the OIDC
+client secret and the Data Protection certificate password. The
+[configuration reference](../CONFIGURATION.md) lists the required application settings.
+
+Verify this grant set in the selected target by starting Management under the runtime identity,
+writing and retrieving protected session state, and checking that schema modification is denied.
+Record the rollback procedure for the matching database backup and certificate before promotion.
 
 ## Branding co-hosting readiness
 
