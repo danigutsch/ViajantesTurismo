@@ -137,11 +137,14 @@ and recovery evidence. Runtime DDL removal depends on the baseline and rehearsal
 
 ## Status
 
-Proposed for review. The migration service provides the read-only planner and an initial executor
-for atomic expansion and read-only verification with forward-only recovery evidence. The
-executor records each attempt in PostgreSQL and reconciles open attempts under the context lock.
-Data checkpoints, online DDL, the contract gate, recovery execution and rehearsal, and verified
-baseline scripts and roles for each context remain prerequisites for production cutover.
+Proposed for review. The migration service provides the read-only planner and an executor
+for atomic expansion, resumable data and read-only verification with forward-only recovery
+evidence. The data login executes bounded DML and records each batch in the same transaction
+through an attempt-scoped journal function. The context fence rejects successor owners while
+a previous data transaction is active. The executor confirms the original owner session before
+recording the checkpoint. A disconnected session causes rollback.
+Online DDL, the contract gate, recovery execution and rehearsal, and verified baseline scripts
+and roles for each context remain prerequisites for production cutover.
 
 ## Links
 

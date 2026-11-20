@@ -7,22 +7,27 @@ namespace ViajantesTurismo.MigrationService.GovernedMigrations;
 internal sealed class MigrationAttemptJournal(
     NpgsqlConnection owner, MigrationManifest manifest, string manifestDigest, string sourceRelease)
 {
-    private const string JournalSchema = "governed_migration";
-    private const string Attempts = JournalSchema + ".attempts";
+    /// <summary>The deployment-owned schema for the governed migration journal.</summary>
+    internal const string JournalSchema = "governed_migration";
+
+    /// <summary>The qualified attempt table used by both execution journals.</summary>
+    internal const string Attempts = JournalSchema + ".attempts";
     private static readonly string ToolVersion = typeof(MigrationAttemptJournal).Assembly
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
 
     /// <summary>Initializes journal storage, checks for drift, and closes attempts whose session ended.</summary>
     internal async Task Prepare(CancellationToken ct)
     {
-        await EnsureStorage(ct);
+        await using var transaction = await owner.BeginTransactionAsync(ct);
+        await MigrationPostgreSql.LockBatch(owner, transaction, manifest.Context, ct);
+        await EnsureStorage(transaction, ct);
         await using var check = new NpgsqlCommand($"""
             SELECT EXISTS (
                 SELECT 1 FROM {Attempts}
                 WHERE context = $1 AND migration_id = $2
                   AND (manifest_sha256 <> $3 OR source_release <> $4 OR target_release <> $5)
             );
-            """, owner);
+            """, owner, transaction);
         MigrationPostgreSql.Bind(check, manifest.Context, manifest.MigrationId, manifestDigest, sourceRelease, manifest.TargetRelease);
         if (await check.ExecuteScalarAsync(ct) is true)
         {
@@ -32,10 +37,11 @@ internal sealed class MigrationAttemptJournal(
         await using var reconcile = new NpgsqlCommand($"""
             UPDATE {Attempts}
             SET state = 'failed', finished_at = pg_catalog.clock_timestamp(), failure_code = 'interrupted'
-            WHERE context = $1 AND migration_id = $2 AND state = 'started';
-            """, owner);
-        MigrationPostgreSql.Bind(reconcile, manifest.Context, manifest.MigrationId);
+            WHERE context = $1 AND state = 'started';
+            """, owner, transaction);
+        MigrationPostgreSql.Bind(reconcile, manifest.Context);
         await reconcile.ExecuteNonQueryAsync(ct);
+        await transaction.CommitAsync(ct);
     }
 
     /// <summary>Returns whether the step completed with this exact script digest.</summary>
@@ -95,9 +101,8 @@ internal sealed class MigrationAttemptJournal(
         await command.ExecuteNonQueryAsync(ct);
     }
 
-    private async Task EnsureStorage(CancellationToken ct)
+    private async Task EnsureStorage(NpgsqlTransaction transaction, CancellationToken ct)
     {
-        await using var transaction = await owner.BeginTransactionAsync(ct);
         // Two-integer advisory keys use a different PostgreSQL namespace than the context keys.
         await using var lockStorage = new NpgsqlCommand(
             "SELECT pg_catalog.pg_advisory_xact_lock(20261118, 46);", owner, transaction);
@@ -107,7 +112,7 @@ internal sealed class MigrationAttemptJournal(
                 attempt_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                 context text NOT NULL,
                 migration_id text NOT NULL,
-                phase text NOT NULL CHECK (phase IN ('expand', 'verify')),
+                phase text NOT NULL CONSTRAINT migration_attempt_phase CHECK (phase IN ('expand', 'data', 'verify')),
                 step_order integer NOT NULL CHECK (step_order > 0),
                 manifest_sha256 text NOT NULL CHECK (length(manifest_sha256) = 64),
                 script_sha256 text NOT NULL CHECK (length(script_sha256) = 64),
@@ -128,6 +133,5 @@ internal sealed class MigrationAttemptJournal(
                 ON {Attempts} (context, migration_id, phase, step_order) WHERE state = 'completed';
             """, owner, transaction);
         await create.ExecuteNonQueryAsync(ct);
-        await transaction.CommitAsync(ct);
     }
 }

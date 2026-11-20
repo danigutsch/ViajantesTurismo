@@ -8,7 +8,7 @@ using PandaBear.Npgsql.Testing;
 
 namespace ViajantesTurismo.HostedTests.Migrations;
 
-/// <summary>Owns a PostgreSQL database, two limited principals, and synthetic migration files.</summary>
+/// <summary>Owns a PostgreSQL database, scoped principals, and synthetic migration files.</summary>
 internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabaseLease database) : IAsyncDisposable
 {
     private const int GateKey = 813043;
@@ -18,16 +18,19 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
 
     private string Owner => "mig_owner_" + suffix;
     private string Verifier => "mig_check_" + suffix;
+    private string DataMigrator => "mig_data_" + suffix;
 
     /// <summary>Provisions separate principals and the schemas used by the test.</summary>
     public async Task Provision(CancellationToken ct)
     {
         var define = new NpgsqlBatchCommand("""
-            CREATE OR REPLACE FUNCTION pg_temp.provision_migration_fixture(owner_role text, verifier_role text, role_password text)
+            CREATE OR REPLACE FUNCTION pg_temp.provision_migration_fixture(
+                owner_role text, verifier_role text, data_role text, role_password text)
             RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
             BEGIN
                 EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', owner_role, role_password);
                 EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', verifier_role, role_password);
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', data_role, role_password);
                 EXECUTE pg_catalog.format('CREATE SCHEMA governed_migration AUTHORIZATION %I', owner_role);
                 EXECUTE pg_catalog.format('CREATE SCHEMA migration_fixture AUTHORIZATION %I', owner_role);
                 EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA migration_fixture TO %I', verifier_role);
@@ -41,10 +44,34 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
             END;
             $fixture$;
             """);
-        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_migration_fixture($1, $2, $3);");
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_migration_fixture($1, $2, $3, $4);");
         provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
         provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = DataMigrator });
         provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = password });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
+    /// <summary>Provisions a synthetic backfill and grants the data principal scoped DML.</summary>
+    public async Task ProvisionBatchData(CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE OR REPLACE FUNCTION pg_temp.provision_migration_batch_data(owner_role text, verifier_role text, data_role text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                CREATE TABLE migration_fixture.backfill (id bigint PRIMARY KEY, updates integer NOT NULL DEFAULT 0);
+                INSERT INTO migration_fixture.backfill (id) VALUES (1), (2), (3);
+                EXECUTE pg_catalog.format('ALTER TABLE migration_fixture.backfill OWNER TO %I', owner_role);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA migration_fixture TO %I', data_role);
+                EXECUTE pg_catalog.format('GRANT SELECT, UPDATE (updates) ON migration_fixture.backfill TO %I', data_role);
+                EXECUTE pg_catalog.format('GRANT SELECT ON migration_fixture.backfill, migration_fixture.gate TO %I', verifier_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_migration_batch_data($1, $2, $3);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = DataMigrator });
         await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
     }
 
@@ -61,6 +88,12 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
             var order = index + 1;
             var name = $"step-{order.ToString(CultureInfo.InvariantCulture)}.sql";
             await File.WriteAllTextAsync(Path.Combine(folder, name), step.Sql, ct);
+            var verifyName = $"verify-{order.ToString(CultureInfo.InvariantCulture)}.sql";
+            if (step.Transaction != "atomic")
+            {
+                await File.WriteAllTextAsync(Path.Combine(folder, verifyName), step.VerifySql, ct);
+            }
+
             artifacts.Add(new
             {
                 phase = step.Phase,
@@ -72,7 +105,7 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
                 lockTimeoutSeconds = step.LockTimeoutSeconds,
                 destructive = step.Phase == "contract",
                 checkpoint = step.Transaction == "batched" ? "test-checkpoint" : null,
-                verify = step.Transaction == "atomic" ? null : new { path = name, sha256 = Digest(step.Sql) }
+                verify = step.Transaction == "atomic" ? null : new { path = verifyName, sha256 = Digest(step.VerifySql) }
             });
         }
 
@@ -104,7 +137,8 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     }
 
     /// <summary>Runs the real migration service command with the fixture's credentials.</summary>
-    public async Task<(int ExitCode, string Output, string Error)> Run(string manifest, CancellationToken ct, bool sameRole = false)
+    public async Task<(int ExitCode, string Output, string Error)> Run(
+        string manifest, CancellationToken ct, bool sameRole = false, bool dataUsesOwner = false)
     {
         var settings = new ProcessStartInfo("dotnet")
         {
@@ -120,6 +154,7 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         settings.ArgumentList.Add("1.0");
         settings.Environment["VT_MIGRATION_OWNER_CONNECTION"] = ConnectionString(Owner);
         settings.Environment["VT_MIGRATION_VERIFIER_CONNECTION"] = ConnectionString(sameRole ? Owner : Verifier);
+        settings.Environment["VT_MIGRATION_DATA_CONNECTION"] = ConnectionString(dataUsesOwner ? Owner : DataMigrator);
 
         using var process = Process.Start(settings) ?? throw new InvalidOperationException("Migration process did not start.");
         var output = process.StandardOutput.ReadToEndAsync(ct);
@@ -160,11 +195,11 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         await ExecuteRoleStatement(database.ConnectionString, define, grant, ct);
     }
 
-    /// <summary>Executes and disposes a PostgreSQL test assertion as the fixture administrator.</summary>
-    public async Task<T> Read<T>(NpgsqlCommand command, CancellationToken ct)
+    /// <summary>Executes and disposes a test assertion as the fixture administrator or data principal.</summary>
+    public async Task<T> Read<T>(NpgsqlCommand command, CancellationToken ct, bool asDataMigrator = false)
     {
         await using var assertion = command;
-        await using var connection = new NpgsqlConnection(database.ConnectionString);
+        await using var connection = new NpgsqlConnection(asDataMigrator ? ConnectionString(DataMigrator) : database.ConnectionString);
         await connection.OpenAsync(ct);
         assertion.Connection = connection;
         return await assertion.ExecuteScalarAsync(ct) is T result ? result : throw new InvalidOperationException("Unexpected test query result.");
@@ -199,6 +234,17 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         await ExecuteControl(terminate, ct);
     }
 
+    /// <summary>Ends the owner session while leaving the isolated data batch connection running.</summary>
+    public async Task InterruptOwner(CancellationToken ct)
+    {
+        var terminate = new NpgsqlCommand("""
+            SELECT pg_catalog.pg_terminate_backend(pid, 5000) FROM pg_catalog.pg_stat_activity
+            WHERE datname = current_database() AND usename = $1;
+            """);
+        terminate.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        await ExecuteControl(terminate, ct);
+    }
+
     /// <summary>Waits until the executor is blocked at the gate.</summary>
     public async Task<int> AwaitBlockedExecutor(CancellationToken ct)
     {
@@ -229,17 +275,19 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         {
             await database.DisposeAsync();
             var define = new NpgsqlBatchCommand("""
-                CREATE FUNCTION pg_temp.drop_migration_fixture_roles(owner_role text, verifier_role text)
+                CREATE FUNCTION pg_temp.drop_migration_fixture_roles(owner_role text, verifier_role text, data_role text)
                 RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
                 BEGIN
+                    EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', data_role);
                     EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', verifier_role);
                     EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', owner_role);
                 END;
                 $fixture$;
                 """);
-            var drop = new NpgsqlBatchCommand("SELECT pg_temp.drop_migration_fixture_roles($1, $2);");
+            var drop = new NpgsqlBatchCommand("SELECT pg_temp.drop_migration_fixture_roles($1, $2, $3);");
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+            drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = DataMigrator });
             await ExecuteRoleStatement(control.ConnectionString, define, drop, TestContext.Current.CancellationToken);
         }
         finally

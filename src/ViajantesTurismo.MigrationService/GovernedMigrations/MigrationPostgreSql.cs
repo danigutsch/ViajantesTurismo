@@ -38,18 +38,33 @@ internal static class MigrationPostgreSql
             throw new InvalidDataException("Migration owner and verifier require separate PostgreSQL logins.");
         }
 
-        if (!string.Equals(ownerSettings.Host, verifierSettings.Host, StringComparison.OrdinalIgnoreCase)
-            || ownerSettings.Port != verifierSettings.Port
-            || !string.Equals(ownerSettings.Database, verifierSettings.Database, StringComparison.Ordinal))
-        {
-            throw new InvalidDataException("Migration owner and verifier must connect to the same explicit PostgreSQL target.");
-        }
-
+        RequireSameTarget(ownerSettings, verifierSettings);
         return (ownerSettings, verifierSettings);
     }
 
+    /// <summary>Validates the data credential without requiring it for manifests that skip data.</summary>
+    internal static NpgsqlConnectionStringBuilder DataConnectionSettings(
+        string? data, NpgsqlConnectionStringBuilder owner, NpgsqlConnectionStringBuilder verifier)
+    {
+        if (string.IsNullOrWhiteSpace(data))
+        {
+            throw new InvalidDataException("A dedicated data migration PostgreSQL connection secret is required.");
+        }
+
+        var settings = ParseSettings(data);
+        if (string.Equals(settings.Username, owner.Username, StringComparison.Ordinal)
+            || string.Equals(settings.Username, verifier.Username, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("The data migrator requires a separate PostgreSQL login.");
+        }
+
+        RequireSameTarget(owner, settings);
+        return settings;
+    }
+
     /// <summary>Checks the connected principals and their live PostgreSQL target.</summary>
-    internal static async Task ValidateSessions(NpgsqlConnection owner, NpgsqlConnection verifier, CancellationToken ct)
+    internal static async Task ValidateSessions(
+        NpgsqlConnection owner, NpgsqlConnection verifier, NpgsqlConnection? data, CancellationToken ct)
     {
         const string invalidPrincipals = "Migration requires separate scoped logins on the same PostgreSQL primary.";
         if (owner.UserName is not { } ownerLogin || verifier.UserName is not { } verifierLogin)
@@ -57,37 +72,54 @@ internal static class MigrationPostgreSql
             throw new InvalidDataException(invalidPrincipals);
         }
 
+        var dataLogin = data?.UserName;
+        var ownerTarget = await ReadTarget(owner, [], ct);
+        var verifierTarget = await ReadTarget(verifier, dataLogin is null ? [ownerLogin] : [ownerLogin, dataLogin], ct);
+        var dataTarget = data is null ? ownerTarget : await ReadTarget(data, [ownerLogin, verifierLogin], ct);
+        if (ownerTarget is null || !string.Equals(ownerTarget, verifierTarget, StringComparison.Ordinal)
+            || !string.Equals(ownerTarget, dataTarget, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(invalidPrincipals);
+        }
+    }
+
+    private static async Task<string?> ReadTarget(NpgsqlConnection connection, string[] prohibitedRoles, CancellationToken ct)
+    {
         const string query = """
             SELECT pg_catalog.concat(current_database(), '/', pg_catalog.inet_server_addr(), '/', pg_catalog.inet_server_port())
             FROM pg_catalog.pg_roles
             WHERE rolname = current_user AND current_user = session_user AND current_user = $1
               AND NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls)
               AND NOT pg_catalog.pg_is_in_recovery()
-              AND (current_user = $2 OR NOT pg_catalog.pg_has_role($2, 'MEMBER'));
+              AND NOT EXISTS (
+                  SELECT 1 FROM pg_catalog.unnest($2) AS prohibited(role)
+                  WHERE pg_catalog.pg_has_role(prohibited.role, 'MEMBER')
+              );
             """;
-        await using var ownerCheck = new NpgsqlCommand(query, owner);
-        Bind(ownerCheck, ownerLogin, ownerLogin);
-        await using var verifierCheck = new NpgsqlCommand(query, verifier);
-        Bind(verifierCheck, verifierLogin, ownerLogin);
-        var ownerTarget = await ownerCheck.ExecuteScalarAsync(ct);
-        var verifierTarget = await verifierCheck.ExecuteScalarAsync(ct);
-        if (ownerTarget is not string ownerIdentity || verifierTarget is not string verifierIdentity
-            || !string.Equals(ownerIdentity, verifierIdentity, StringComparison.Ordinal))
-        {
-            throw new InvalidDataException(invalidPrincipals);
-        }
+        await using var command = new NpgsqlCommand(query, connection);
+        Bind(command, connection.UserName!, prohibitedRoles);
+        return (string?)await command.ExecuteScalarAsync(ct);
     }
 
     /// <summary>Acquires a database-scoped lock for the context through the end of the owner session.</summary>
     internal static async Task LockContext(NpgsqlConnection owner, string context, CancellationToken ct)
     {
-        var digest = SHA256.HashData(Encoding.UTF8.GetBytes("viajantes:governed-migration:" + context));
-        var key = BinaryPrimitives.ReadInt64BigEndian(digest);
         await using var command = new NpgsqlCommand("SELECT pg_catalog.pg_try_advisory_lock($1);", owner);
-        Bind(command, key);
+        Bind(command, LockKey("context", context));
         if (await command.ExecuteScalarAsync(ct) is not true)
         {
             throw new InvalidDataException("The migration context is already locked.");
+        }
+    }
+
+    /// <summary>Fences a data transaction against a successor owner after a lost owner session.</summary>
+    internal static async Task LockBatch(NpgsqlConnection connection, NpgsqlTransaction transaction, string context, CancellationToken ct)
+    {
+        await using var command = new NpgsqlCommand("SELECT pg_catalog.pg_try_advisory_xact_lock($1);", connection, transaction);
+        Bind(command, LockKey("batch", context));
+        if (await command.ExecuteScalarAsync(ct) is not true)
+        {
+            throw new InvalidDataException("The migration context is already locked by a data batch.");
         }
     }
 
@@ -129,7 +161,7 @@ internal static class MigrationPostgreSql
         return passed;
     }
 
-    /// <summary>Binds the positional values for a command with a fixed SQL template.</summary>
+    /// <summary>Binds positional values to a command with a fixed SQL template.</summary>
     internal static void Bind(NpgsqlCommand command, params object[] values)
     {
         foreach (var value in values)
@@ -165,7 +197,8 @@ internal static class MigrationPostgreSql
         return settings;
     }
 
-    private static async Task SetTimeouts(
+    /// <summary>Applies the reviewed server statement and lock budgets to this transaction.</summary>
+    internal static async Task SetTimeouts(
         NpgsqlConnection connection, NpgsqlTransaction transaction, MigrationStep step, CancellationToken ct)
     {
         await using var command = new NpgsqlCommand("""
@@ -176,5 +209,22 @@ internal static class MigrationPostgreSql
             step.TimeoutSeconds.ToString(CultureInfo.InvariantCulture) + "s",
             step.LockTimeoutSeconds.ToString(CultureInfo.InvariantCulture) + "s");
         await command.ExecuteNonQueryAsync(ct);
+    }
+
+    private static void RequireSameTarget(NpgsqlConnectionStringBuilder owner, NpgsqlConnectionStringBuilder other)
+    {
+        if (!string.Equals(owner.Host, other.Host, StringComparison.OrdinalIgnoreCase)
+            || owner.Port != other.Port
+            || !string.Equals(owner.Database, other.Database, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("Migration logins must connect to the same explicit PostgreSQL target.");
+        }
+    }
+
+    private static long LockKey(string purpose, string context)
+    {
+        // Keep the existing context key stable while domain-separating the transaction fence.
+        var label = purpose == "context" ? $"viajantes:governed-migration:{context}" : $"viajantes:governed-migration:batch:{context}";
+        return BinaryPrimitives.ReadInt64BigEndian(SHA256.HashData(Encoding.UTF8.GetBytes(label)));
     }
 }

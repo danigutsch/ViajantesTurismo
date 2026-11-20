@@ -24,23 +24,47 @@ internal static class MigrationExecutionCommand
             foreach (var step in manifest.Steps)
             {
                 _ = await MigrationArtifactFiles.ReadVerifiedSql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+                if (step.Verify is { } verification)
+                {
+                    _ = await MigrationArtifactFiles.ReadVerifiedSql(directory, verification, ct);
+                }
             }
 
             await MigrationManifestFiles.VerifyRecovery(manifest.Recovery, directory, ct);
             var (ownerSettings, verifierSettings) = MigrationPostgreSql.ConnectionSettings(
                 Environment.GetEnvironmentVariable("VT_MIGRATION_OWNER_CONNECTION"),
                 Environment.GetEnvironmentVariable("VT_MIGRATION_VERIFIER_CONNECTION"));
+            var dataSettings = manifest.Steps.Any(static step => step.Phase == MigrationPhase.Data)
+                ? MigrationPostgreSql.DataConnectionSettings(
+                    Environment.GetEnvironmentVariable("VT_MIGRATION_DATA_CONNECTION"), ownerSettings, verifierSettings)
+                : null;
             await using var owner = new NpgsqlConnection(ownerSettings.ConnectionString);
             await using var verifier = new NpgsqlConnection(verifierSettings.ConnectionString);
+            await using var data = dataSettings is null ? null : new NpgsqlConnection(dataSettings.ConnectionString);
             await owner.OpenAsync(ct);
             await verifier.OpenAsync(ct);
-            await MigrationPostgreSql.ValidateSessions(owner, verifier, ct);
+            if (data is not null)
+            {
+                await data.OpenAsync(ct);
+            }
+
+            await MigrationPostgreSql.ValidateSessions(owner, verifier, data, ct);
             await MigrationPostgreSql.LockContext(owner, manifest.Context, ct);
             await MigrationPostgreSql.InstallScriptFunctions(owner, verifier, ct);
 
             var journal = new MigrationAttemptJournal(owner, manifest, manifestDigest, sourceRelease);
             await journal.Prepare(ct);
-            var result = await ExecuteSteps(owner, verifier, journal, manifest, directory, output, error, ct);
+
+            MigrationBatchExecution? batchExecution = null;
+            if (data is not null)
+            {
+                var batchJournal = new MigrationBatchJournal(owner, manifest);
+                await batchJournal.Prepare(data.UserName!, ct);
+                await MigrationBatchExecution.Install(data, ct);
+                batchExecution = new MigrationBatchExecution(data, verifier, batchJournal, manifest.Context, directory);
+            }
+
+            var result = await ExecuteSteps(owner, verifier, journal, batchExecution, manifest, directory, output, error, ct);
             if (result != 0)
             {
                 return result;
@@ -73,10 +97,11 @@ internal static class MigrationExecutionCommand
 
     private static void RequireSupportedOperations(MigrationManifest manifest)
     {
-        if (manifest.Steps.Any(static step => step.Phase is not (MigrationPhase.Expand or MigrationPhase.Verify)
-            || step.Transaction != MigrationTransaction.Atomic || step.Destructive || step.Checkpoint is not null || step.Verify is not null))
+        if (!manifest.Steps.All(static step =>
+            step is { Phase: MigrationPhase.Data, Transaction: MigrationTransaction.Batched, Destructive: false, Checkpoint: not null, Verify: not null }
+                or { Phase: MigrationPhase.Expand or MigrationPhase.Verify, Transaction: MigrationTransaction.Atomic, Destructive: false, Checkpoint: null, Verify: null }))
         {
-            throw new InvalidDataException("The initial executor supports only atomic expansion and verification steps.");
+            throw new InvalidDataException("The executor supports only atomic expansion and verification, or batched data.");
         }
 
         if (manifest.Steps.Any(static step => step.TimeoutSeconds > int.MaxValue / 1000))
@@ -94,6 +119,7 @@ internal static class MigrationExecutionCommand
         NpgsqlConnection owner,
         NpgsqlConnection verifier,
         MigrationAttemptJournal journal,
+        MigrationBatchExecution? batchExecution,
         MigrationManifest manifest,
         string directory,
         TextWriter output,
@@ -102,7 +128,7 @@ internal static class MigrationExecutionCommand
     {
         foreach (var step in manifest.Steps)
         {
-            var phase = step.Phase == MigrationPhase.Expand ? "expand" : "verify";
+            var phase = JsonNamingPolicy.CamelCase.ConvertName(step.Phase.ToString());
             var order = step.Order.ToString(CultureInfo.InvariantCulture);
             var sql = await MigrationArtifactFiles.ReadVerifiedSql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
             if (await journal.IsComplete(step, phase, ct))
@@ -112,7 +138,7 @@ internal static class MigrationExecutionCommand
             }
 
             var attempt = await journal.Start(step, phase, ct);
-            var failure = await ExecuteAttempt(owner, verifier, journal, step, sql, attempt, ct);
+            var failure = await ExecuteAttempt(owner, verifier, journal, batchExecution, step, sql, attempt, ct);
             if (failure is not null)
             {
                 await error.WriteLineAsync($"{phase} {order} failed ({failure}).".AsMemory(), ct);
@@ -129,6 +155,7 @@ internal static class MigrationExecutionCommand
         NpgsqlConnection owner,
         NpgsqlConnection verifier,
         MigrationAttemptJournal journal,
+        MigrationBatchExecution? batchExecution,
         MigrationStep step,
         string sql,
         long attempt,
@@ -146,15 +173,19 @@ internal static class MigrationExecutionCommand
                 return null;
             }
 
-            if (await MigrationPostgreSql.Verify(verifier, step, sql, ct))
+            var result = step.Phase == MigrationPhase.Data
+                ? await batchExecution!.Run(step, attempt, ct)
+                : await MigrationPostgreSql.Verify(verifier, step, sql, ct) ? null : "verification_failed";
+            if (result is null)
             {
                 await journal.Complete(attempt, null, ct);
                 return null;
             }
 
-            failure = "verification_failed";
+            failure = result;
         }
-        catch (Exception exception) when (exception is NpgsqlException or TimeoutException or OperationCanceledException or InvalidDataException)
+        catch (Exception exception) when (exception is NpgsqlException or TimeoutException or OperationCanceledException
+            or InvalidDataException or IOException or UnauthorizedAccessException)
         {
             failure = FailureCode(exception);
         }
@@ -182,6 +213,7 @@ internal static class MigrationExecutionCommand
         TimeoutException => "timeout",
         OperationCanceledException => "cancelled",
         InvalidDataException => "journal_state",
+        IOException or UnauthorizedAccessException => "artifact_unavailable",
         _ => "database_error"
     };
 }

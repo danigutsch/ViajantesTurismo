@@ -6,4 +6,5 @@ internal sealed record MigrationExecutionTestStep(
     string Sql,
     string Transaction = "atomic",
     int TimeoutSeconds = 60,
-    int LockTimeoutSeconds = 30);
+    int LockTimeoutSeconds = 30,
+    string VerifySql = "SELECT true;");

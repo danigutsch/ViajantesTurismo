@@ -72,15 +72,16 @@ manifest or artifact and 2 for incorrect arguments.
 
 ## Governed migration execution
 
-The initial executor supports atomic expansion and read-only verification with forward-only
-recovery evidence. It rejects data, online, contract, and executable recovery operations before
-opening a connection. Keep production promotion gated on the complete lifecycle rehearsal
+The executor supports atomic expansion, resumable data batches, and read-only verification
+with forward-only recovery evidence. It rejects online, contract, and executable recovery
+operations before opening a connection. Keep production promotion gated on the complete lifecycle rehearsal
 in the [governed migration decision](../../docs/adr/20261118-governed-postgresql-migrations.md#adoption-and-rehearsal).
 
 The protected release job supplies `VT_MIGRATION_OWNER_CONNECTION` and
-`VT_MIGRATION_VERIFIER_CONNECTION` using the secret provider. Both connection strings must name
-the same database on a single direct PostgreSQL primary endpoint and use separate scoped
-logins. The advisory lock requires a dedicated PostgreSQL session across transactions.
+`VT_MIGRATION_VERIFIER_CONNECTION` using the secret provider. Manifests with a `data` step
+also require `VT_MIGRATION_DATA_CONNECTION`. All connections name the same database on a
+single direct PostgreSQL primary endpoint and use separate scoped logins. The advisory lock
+requires a dedicated PostgreSQL session across transactions.
 
 ```bash
 dotnet run --project src/ViajantesTurismo.MigrationService -- \
@@ -89,10 +90,12 @@ dotnet run --project src/ViajantesTurismo.MigrationService -- \
 
 Provision the `governed_migration` schema in the target database with the deployment owner as its
 owner. The executor creates `governed_migration.attempts` and its indexes there. Scope the owner
-to the context's application schema and this journal. Both deployment logins need `CONNECT`
+to the context's application schema and this journal. All deployment logins need `CONNECT`
 and `TEMPORARY` for the session-local functions. Give the verifier only the schema usage and
-SELECT permissions its gates need. Keep application runtime identities out of the deployment
-roles and the journal. Use a separately provisioned database per context for this journal model.
+SELECT permissions its gates need. Grant the data login only schema usage and the DML its
+backfills need. It uses the executor-installed checkpoint function without direct journal table
+privileges. Keep application runtime identities out of the deployment roles and the journal.
+Use a separately provisioned database per context for this journal model.
 
 Use reviewed PostgreSQL SQL in UTF-8 without a byte order mark, up to 16 MiB per script. The
 executor checks the original bytes before connecting and checks the exact bytes again immediately
@@ -106,6 +109,29 @@ session's open attempt becomes failed with code `interrupted` after the retry ac
 lock. The journal keeps the old attempts. Process status 0 means every step completed, 1 means
 validation or execution failed, 2 means incorrect usage, and 130 means the operator interrupted
 the command. The source release is supplied by the protected deployment job.
+
+### Resumable data scripts
+
+A `data` step declares transaction policy `batched`, a stable `checkpoint` key, and a
+separately hashed, read-only `verify` script. A batch script uses one reviewed SQL statement.
+Parameter `$1` is the last committed `bigint` cursor, initially zero. Parameter `$2` is
+the maximum batch size as an `integer`, currently 1,000. Use a stable ordering and an ordinal
+cursor that contains no personal data. Keep the selection within the supplied row limit and
+the declared timeout.
+
+The statement returns exactly one row with a `bigint` next cursor, an `integer` affected
+count, and a `boolean` that marks completion. An advancing cursor requires a positive
+affected count within the limit. An empty terminal batch returns the original cursor and
+zero affected rows. An invalid result or a nonterminal batch without progress rolls back.
+
+Each batch changes application data and appends its cursor, affected count, and completion
+state together in PostgreSQL. The executor revalidates the batch artifact before each
+dispatch and confirms the original owner connection before recording the checkpoint. A retry
+skips committed batches and starts from the journaled cursor. A terminal
+batch still requires the step's verification script to return one true PostgreSQL Boolean.
+A failed gate leaves the data attempt incomplete, so the retry rechecks that gate without
+repeating the batch writes. After that gate passes, the manifest continues to its ordered
+verification phase.
 
 ## Dependencies
 

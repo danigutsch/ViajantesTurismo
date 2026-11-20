@@ -214,7 +214,6 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
 
     [Theory]
     [InlineData("data", "atomic")]
-    [InlineData("data", "batched")]
     [InlineData("expand", "online")]
     [InlineData("contract", "atomic")]
     public async Task Rejects_unsupported_phases_without_starting_any_database_work(string phase, string policy)
