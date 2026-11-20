@@ -23,7 +23,7 @@ internal static class MigrationExecutionCommand
             RequireSupportedOperations(manifest);
             foreach (var step in manifest.Steps)
             {
-                _ = await MigrationArtifactFiles.ReadVerifiedSql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+                _ = await MigrationArtifactFiles.ReadStepSql(directory, step, ct);
                 if (step.Verify is { } verification)
                 {
                     _ = await MigrationArtifactFiles.ReadVerifiedSql(directory, verification, ct);
@@ -99,9 +99,10 @@ internal static class MigrationExecutionCommand
     {
         if (!manifest.Steps.All(static step =>
             step is { Phase: MigrationPhase.Data, Transaction: MigrationTransaction.Batched, Destructive: false, Checkpoint: not null, Verify: not null }
+                or { Phase: MigrationPhase.Expand, Transaction: MigrationTransaction.Online, Destructive: false, Checkpoint: null, Verify: not null, OnlineIndex: not null }
                 or { Phase: MigrationPhase.Expand or MigrationPhase.Verify, Transaction: MigrationTransaction.Atomic, Destructive: false, Checkpoint: null, Verify: null }))
         {
-            throw new InvalidDataException("The executor supports only atomic expansion and verification, or batched data.");
+            throw new InvalidDataException("The executor supports only atomic expansion and verification, online index expansion, or batched data.");
         }
 
         if (manifest.Steps.Any(static step => step.TimeoutSeconds > int.MaxValue / 1000))
@@ -130,15 +131,33 @@ internal static class MigrationExecutionCommand
         {
             var phase = JsonNamingPolicy.CamelCase.ConvertName(step.Phase.ToString());
             var order = step.Order.ToString(CultureInfo.InvariantCulture);
-            var sql = await MigrationArtifactFiles.ReadVerifiedSql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+            var sql = await MigrationArtifactFiles.ReadStepSql(directory, step, ct);
             if (await journal.IsComplete(step, phase, ct))
             {
                 await output.WriteLineAsync($"{phase} {order} already completed.".AsMemory(), ct);
                 continue;
             }
 
+            var onlineState = MigrationOnlineIndexState.Missing;
+            if (step.OnlineIndex is { } index)
+            {
+                onlineState = await MigrationOnlineExecution.Inspect(verifier, step, index, ct);
+                var precondition = onlineState switch
+                {
+                    MigrationOnlineIndexState.Invalid => "online_index_invalid",
+                    MigrationOnlineIndexState.Conflict => "online_index_conflict",
+                    MigrationOnlineIndexState.Ready when !await journal.WasDispatched(step, phase, ct) => "online_index_exists",
+                    _ => null
+                };
+                if (precondition is not null)
+                {
+                    await error.WriteLineAsync($"{phase} {order} failed ({precondition}).".AsMemory(), ct);
+                    return 1;
+                }
+            }
+
             var attempt = await journal.Start(step, phase, ct);
-            var failure = await ExecuteAttempt(owner, verifier, journal, batchExecution, step, sql, attempt, ct);
+            var failure = await ExecuteAttempt(owner, verifier, journal, batchExecution, step, sql, attempt, onlineState, directory, ct);
             if (failure is not null)
             {
                 await error.WriteLineAsync($"{phase} {order} failed ({failure}).".AsMemory(), ct);
@@ -159,12 +178,14 @@ internal static class MigrationExecutionCommand
         MigrationStep step,
         string sql,
         long attempt,
+        MigrationOnlineIndexState onlineState,
+        string directory,
         CancellationToken ct)
     {
         string failure;
         try
         {
-            if (step.Phase == MigrationPhase.Expand)
+            if (step.Phase == MigrationPhase.Expand && step.Transaction == MigrationTransaction.Atomic)
             {
                 await using var transaction = await owner.BeginTransactionAsync(ct);
                 await MigrationPostgreSql.Expand(owner, transaction, step, sql, ct);
@@ -173,9 +194,19 @@ internal static class MigrationExecutionCommand
                 return null;
             }
 
-            var result = step.Phase == MigrationPhase.Data
-                ? await batchExecution!.Run(step, attempt, ct)
-                : await MigrationPostgreSql.Verify(verifier, step, sql, ct) ? null : "verification_failed";
+            string? result;
+            if (step.OnlineIndex is { } index)
+            {
+                var verification = await MigrationArtifactFiles.ReadVerifiedSql(directory, step.Verify!, ct);
+                result = await MigrationOnlineExecution.Run(owner, verifier, step, index, onlineState, sql, verification, ct);
+            }
+            else
+            {
+                result = step.Phase == MigrationPhase.Data
+                    ? await batchExecution!.Run(step, attempt, ct)
+                    : await MigrationPostgreSql.Verify(verifier, step, sql, ct) ? null : "verification_failed";
+            }
+
             if (result is null)
             {
                 await journal.Complete(attempt, null, ct);

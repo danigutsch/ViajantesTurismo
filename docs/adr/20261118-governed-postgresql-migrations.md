@@ -39,6 +39,7 @@ and exact contents of every listed script before contacting the database.
 | `steps[].script`, `steps[].sha256` | Manifest-relative regular file inside the artifact and the digest of its exact bytes |
 | `steps[].transaction`, `steps[].timeoutSeconds`, `steps[].lockTimeoutSeconds` | Atomic, batched, or online execution with bounded statement and lock waits |
 | `steps[].checkpoint`, `steps[].verify` | Stable batch progress key for resumable data steps and a separately hashed verification script where needed |
+| `steps[].onlineIndex` | Explicit index identity and ordered B-tree keys for concurrent index expansion |
 | `steps[].destructive` | Explicit review classification. Destructive steps belong to the contract phase. |
 | `recovery.kind`, `recovery.evidence`, `recovery.script` | Recovery method, content-addressed evidence, and required SQL for reversible or compensating recovery |
 
@@ -138,13 +139,17 @@ and recovery evidence. Runtime DDL removal depends on the baseline and rehearsal
 ## Status
 
 Proposed for review. The migration service provides the read-only planner and an executor
-for atomic expansion, resumable data and read-only verification with forward-only recovery
+for atomic expansion, concurrent index creation, resumable data, and read-only verification
+with forward-only recovery
 evidence. The data login executes bounded DML and records each batch in the same transaction
 through an attempt-scoped journal function. The context fence rejects successor owners while
 a previous data transaction is active. The executor confirms the original owner session before
 recording the checkpoint. A disconnected session causes rollback.
-Online DDL, the contract gate, recovery execution and rehearsal, and verified baseline scripts
-and roles for each context remain prerequisites for production cutover.
+The online index step journals before dispatch, then checks the same index in PostgreSQL before
+requiring its reviewed verifier to pass. A retry reconciles a ready index with its prior attempt.
+Invalid and conflicting indexes require the reviewed recovery path. The contract gate, recovery
+execution and rehearsal, and verified baseline scripts and roles for each context remain
+prerequisites for production cutover.
 
 ## Links
 

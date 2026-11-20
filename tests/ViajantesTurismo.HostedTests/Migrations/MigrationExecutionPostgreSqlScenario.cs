@@ -19,6 +19,7 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     private string Owner => "mig_owner_" + suffix;
     private string Verifier => "mig_check_" + suffix;
     private string DataMigrator => "mig_data_" + suffix;
+    private string Runtime => "mig_runtime_" + suffix;
 
     /// <summary>Provisions separate principals and the schemas used by the test.</summary>
     public async Task Provision(CancellationToken ct)
@@ -75,6 +76,68 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
     }
 
+    /// <summary>Creates an ordinary table with a distinct application runtime principal.</summary>
+    public async Task ProvisionOnlineData(CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.provision_migration_online_data(owner_role text, runtime_role text, role_password text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', runtime_role, role_password);
+                CREATE TABLE migration_fixture.online_entries (id integer PRIMARY KEY, category integer NOT NULL);
+                INSERT INTO migration_fixture.online_entries VALUES (1, 10);
+                EXECUTE pg_catalog.format('ALTER TABLE migration_fixture.online_entries OWNER TO %I', owner_role);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA migration_fixture TO %I', runtime_role);
+                EXECUTE pg_catalog.format('GRANT SELECT, INSERT ON migration_fixture.online_entries TO %I', runtime_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_migration_online_data($1, $2, $3);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Runtime });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = password });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
+    /// <summary>Opens a dedicated fixture administrator session for transaction control.</summary>
+    public async Task<NpgsqlConnection> OpenControl(CancellationToken ct)
+    {
+        var settings = new NpgsqlConnectionStringBuilder(database.ConnectionString) { Pooling = false };
+        return await Open(settings.ConnectionString, ct);
+    }
+
+    /// <summary>Opens a database session with ordinary runtime grants.</summary>
+    public async Task<NpgsqlConnection> OpenRuntime(CancellationToken ct) => await Open(ConnectionString(Runtime), ct);
+
+    /// <summary>Waits for a concurrent index waiter owned by this migration fixture.</summary>
+    public async Task AwaitOnlineWait(bool relationLock, CancellationToken ct)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(20));
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(50));
+        do
+        {
+            var probe = new NpgsqlCommand("""
+                SELECT EXISTS (
+                    SELECT 1 FROM pg_catalog.pg_stat_activity AS activity
+                    LEFT JOIN pg_catalog.pg_stat_progress_create_index AS progress ON progress.pid = activity.pid
+                    WHERE activity.datname = current_database() AND activity.usename = $1
+                      AND activity.query LIKE 'CREATE%INDEX CONCURRENTLY%'
+                      AND (($2 AND activity.wait_event_type = 'Lock' AND activity.wait_event = 'relation')
+                          OR (NOT $2 AND progress.phase = 'waiting for writers before build'))
+                );
+                """);
+            probe.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+            probe.Parameters.Add(new NpgsqlParameter<bool> { TypedValue = relationLock });
+            if (await Read<bool>(probe, timeout.Token))
+            {
+                return;
+            }
+        } while (await timer.WaitForNextTickAsync(timeout.Token));
+
+        throw new InvalidOperationException("The online migration did not wait at the expected lock boundary.");
+    }
+
     /// <summary>Writes a manifest and the exact SQL bytes for the supplied steps.</summary>
     public async Task<string> WriteManifest(
         string migrationId, IReadOnlyList<MigrationExecutionTestStep> steps, CancellationToken ct, string recoveryKind = "forwardOnly")
@@ -105,7 +168,8 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
                 lockTimeoutSeconds = step.LockTimeoutSeconds,
                 destructive = step.Phase == "contract",
                 checkpoint = step.Transaction == "batched" ? "test-checkpoint" : null,
-                verify = step.Transaction == "atomic" ? null : new { path = verifyName, sha256 = Digest(step.VerifySql) }
+                verify = step.Transaction == "atomic" ? null : new { path = verifyName, sha256 = Digest(step.VerifySql) },
+                onlineIndex = step.OnlineIndex
             });
         }
 
@@ -208,11 +272,9 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     /// <summary>Returns a session that blocks the test migration at a known PostgreSQL advisory lock.</summary>
     public async Task<NpgsqlConnection> HoldGate(CancellationToken ct)
     {
-        var settings = new NpgsqlConnectionStringBuilder(database.ConnectionString) { Pooling = false };
-        var connection = new NpgsqlConnection(settings.ConnectionString);
+        var connection = await OpenControl(ct);
         try
         {
-            await connection.OpenAsync(ct);
             await using var command = new NpgsqlCommand("SELECT pg_catalog.pg_advisory_lock($1)", connection);
             command.Parameters.AddWithValue((long)GateKey);
             await command.ExecuteNonQueryAsync(ct);
@@ -275,19 +337,21 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         {
             await database.DisposeAsync();
             var define = new NpgsqlBatchCommand("""
-                CREATE FUNCTION pg_temp.drop_migration_fixture_roles(owner_role text, verifier_role text, data_role text)
+                CREATE FUNCTION pg_temp.drop_migration_fixture_roles(owner_role text, verifier_role text, data_role text, runtime_role text)
                 RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
                 BEGIN
+                    EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', runtime_role);
                     EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', data_role);
                     EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', verifier_role);
                     EXECUTE pg_catalog.format('DROP ROLE IF EXISTS %I', owner_role);
                 END;
                 $fixture$;
                 """);
-            var drop = new NpgsqlBatchCommand("SELECT pg_temp.drop_migration_fixture_roles($1, $2, $3);");
+            var drop = new NpgsqlBatchCommand("SELECT pg_temp.drop_migration_fixture_roles($1, $2, $3, $4);");
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
             drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = DataMigrator });
+            drop.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Runtime });
             await ExecuteRoleStatement(control.ConnectionString, define, drop, TestContext.Current.CancellationToken);
         }
         finally
@@ -302,6 +366,21 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         Password = password,
         Pooling = false
     }.ConnectionString;
+
+    private static async Task<NpgsqlConnection> Open(string connectionString, CancellationToken ct)
+    {
+        var connection = new NpgsqlConnection(connectionString);
+        try
+        {
+            await connection.OpenAsync(ct);
+            return connection;
+        }
+        catch
+        {
+            await connection.DisposeAsync();
+            throw;
+        }
+    }
 
     private async Task ExecuteControl(NpgsqlCommand command, CancellationToken ct)
     {

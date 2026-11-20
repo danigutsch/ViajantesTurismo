@@ -72,10 +72,11 @@ manifest or artifact and 2 for incorrect arguments.
 
 ## Governed migration execution
 
-The executor supports atomic expansion, resumable data batches, and read-only verification
-with forward-only recovery evidence. It rejects online, contract, and executable recovery
-operations before opening a connection. Keep production promotion gated on the complete lifecycle rehearsal
-in the [governed migration decision](../../docs/adr/20261118-governed-postgresql-migrations.md#adoption-and-rehearsal).
+The executor supports atomic expansion, concurrent index expansion, resumable data batches,
+and read-only verification with forward-only recovery evidence. It rejects contract and
+executable recovery operations before opening a connection. Keep production promotion gated
+on the complete lifecycle rehearsal in the
+[governed migration decision](../../docs/adr/20261118-governed-postgresql-migrations.md#adoption-and-rehearsal).
 
 The protected release job supplies `VT_MIGRATION_OWNER_CONNECTION` and
 `VT_MIGRATION_VERIFIER_CONNECTION` using the secret provider. Manifests with a `data` step
@@ -109,6 +110,47 @@ session's open attempt becomes failed with code `interrupted` after the retry ac
 lock. The journal keeps the old attempts. Process status 0 means every step completed, 1 means
 validation or execution failed, 2 means incorrect usage, and 130 means the operator interrupted
 the command. The source release is supplied by the protected deployment job.
+
+### Online index expansion
+
+An `expand` step with transaction policy `online` declares `onlineIndex` and a separately
+hashed `verify` script. The declaration specifies the target schema and table, the index
+name, one to 32 ordered and distinct B-tree key columns, and whether the index is unique.
+Each identifier uses lowercase ASCII letters, digits, and underscores, begins with a
+letter or underscore, and has at most 63 characters.
+
+```json
+{
+  "schema": "migration_fixture",
+  "table": "entries",
+  "name": "entries_lookup",
+  "columns": ["category", "position"],
+  "unique": false
+}
+```
+
+The SQL artifact is the one statement below for this declaration. Quote every identifier,
+use `CREATE UNIQUE INDEX` when `unique` is true, and include the final semicolon. The
+artifact may end with one LF newline. The planner and executor check the declaration
+against those exact bytes before the executor connects.
+
+```sql
+CREATE INDEX CONCURRENTLY "entries_lookup" ON "migration_fixture"."entries" USING btree ("category", "position");
+```
+
+The attempted operation is journaled before dispatch. The schema owner executes the
+statement outside a transaction block on the session that holds the context lock. The
+verifier checks the index definition and its PostgreSQL validity, then runs the reviewed
+read-only `verify` script. Both checks must pass before the owner completes the attempt.
+
+A first attempt requires the index name to be vacant. A retry with the same manifest
+rechecks an index previously attempted by that migration. It reruns the catalog check
+and verifier on a matching ready index, and can start another build if the name is vacant.
+An invalid or conflicting object stops the run and stays available for inspection.
+Use the reviewed recovery procedure before retrying after an invalid build. The executor
+currently requires forward-only recovery evidence and leaves recovery execution to the
+approved procedure. Read-only verification and the remaining ordered migration steps
+follow the completed online expansion.
 
 ### Resumable data scripts
 

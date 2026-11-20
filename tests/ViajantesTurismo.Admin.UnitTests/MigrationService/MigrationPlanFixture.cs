@@ -69,6 +69,20 @@ internal sealed class MigrationPlanFixture : IDisposable
         get;
     }
 
+    /// <summary>Supplies the declared online operation and exact artifact for the first step.</summary>
+    internal JsonObject SetOnlineIndex(string sql)
+    {
+        File.WriteAllText(Path.Combine(directory.Path, "expand.sql"), sql);
+        var step = Manifest["steps"].ShouldNotBeNull().AsArray()[0].ShouldNotBeNull().AsObject();
+        step["transaction"] = "online";
+        step["sha256"] = Digest(sql);
+        step["verify"] = new JsonObject { ["path"] = "verify.sql", ["sha256"] = Digest(Verify) };
+        step["onlineIndex"] = JsonNode.Parse("""
+            {"schema":"migration_fixture","table":"entries","name":"entry_lookup","columns":["key","version"],"unique":true}
+            """);
+        return step;
+    }
+
     /// <summary>Runs the plan command and captures its status and output.</summary>
     internal async Task<(int ExitCode, string Output, string Error)> Run(
         CancellationToken ct, string sourceRelease = "2026.11.1")

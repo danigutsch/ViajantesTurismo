@@ -61,6 +61,19 @@ internal sealed class MigrationAttemptJournal(
         return digest is not null;
     }
 
+    /// <summary>Returns whether this exact step previously reached durable dispatch.</summary>
+    internal async Task<bool> WasDispatched(MigrationStep step, string phase, CancellationToken ct)
+    {
+        await using var command = new NpgsqlCommand($"""
+            SELECT EXISTS (
+                SELECT 1 FROM {Attempts}
+                WHERE context = $1 AND migration_id = $2 AND phase = $3 AND step_order = $4 AND script_sha256 = $5
+            );
+            """, owner);
+        MigrationPostgreSql.Bind(command, manifest.Context, manifest.MigrationId, phase, step.Order, step.Sha256.ToUpperInvariant());
+        return await command.ExecuteScalarAsync(ct) is true;
+    }
+
     /// <summary>Commits a new attempt before dispatching the step.</summary>
     internal async Task<long> Start(MigrationStep step, string phase, CancellationToken ct)
     {

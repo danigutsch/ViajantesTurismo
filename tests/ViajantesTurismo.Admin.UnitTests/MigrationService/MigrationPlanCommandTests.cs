@@ -139,4 +139,69 @@ public sealed class MigrationPlanCommandTests
         output.ShouldBeEmpty();
         error.ShouldContain(expectedError, StringComparison.Ordinal);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("\n")]
+    public async Task Plan_accepts_the_single_concurrent_command_for_the_declared_index(string trailer)
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        const string sql = """CREATE UNIQUE INDEX CONCURRENTLY "entry_lookup" ON "migration_fixture"."entries" USING btree ("key", "version");""";
+        _ = fixture.SetOnlineIndex(sql + trailer);
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        error.ShouldBeEmpty();
+        output.ShouldContain("expand 1 online", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("missing", "Online execution requires a declared index")]
+    [InlineData("atomic", "An online index declaration requires online transaction mode")]
+    [InlineData("checkpoint", "Online execution requires a declared index")]
+    [InlineData("schema", "Invalid online index declaration")]
+    [InlineData("duplicate", "Invalid online index declaration")]
+    [InlineData("empty", "Invalid online index declaration")]
+    [InlineData("sql", "single concurrent index creation")]
+    public async Task Plan_rejects_an_incomplete_or_mismatched_index_declaration(string change, string expectedError)
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        const string sql = """CREATE UNIQUE INDEX CONCURRENTLY "entry_lookup" ON "migration_fixture"."entries" USING btree ("key", "version");""";
+        var step = fixture.SetOnlineIndex(change == "sql" ? sql + "\nSELECT true;" : sql);
+        var index = step["onlineIndex"].ShouldNotBeNull().AsObject();
+        switch (change)
+        {
+            case "missing":
+                _ = step.Remove("onlineIndex");
+                break;
+            case "atomic":
+                step["transaction"] = "atomic";
+                break;
+            case "checkpoint":
+                step["checkpoint"] = "progress";
+                break;
+            case "schema":
+                index["schema"] = "Two Words";
+                break;
+            case "duplicate":
+                index["columns"] = new JsonArray("key", "key");
+                break;
+            case "empty":
+                index["columns"] = new JsonArray();
+                break;
+        }
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        error.ShouldContain(expectedError, StringComparison.Ordinal);
+        output.ShouldBeEmpty();
+    }
 }

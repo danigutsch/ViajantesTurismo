@@ -25,6 +25,14 @@ internal static class MigrationArtifactFiles
         return Verify(directory, artifact, ct);
     }
 
+    /// <summary>Checks the exact script and any declared online operation before using it.</summary>
+    internal static async Task<string> ReadStepSql(string directory, MigrationStep step, CancellationToken ct)
+    {
+        var sql = await ReadVerifiedSql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+        step.OnlineIndex?.ValidateScript(sql);
+        return sql;
+    }
+
     /// <summary>Returns the SQL decoded from the same bytes whose digest is verified.</summary>
     internal static async Task<string> ReadVerifiedSql(string directory, MigrationArtifact artifact, CancellationToken ct)
     {

@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace ViajantesTurismo.HostedTests.Migrations;
 
 /// <summary>Describes one synthetic script in a test migration.</summary>
@@ -7,4 +9,5 @@ internal sealed record MigrationExecutionTestStep(
     string Transaction = "atomic",
     int TimeoutSeconds = 60,
     int LockTimeoutSeconds = 30,
-    string VerifySql = "SELECT true;");
+    string VerifySql = "SELECT true;",
+    object? OnlineIndex = null);

@@ -95,6 +95,22 @@ internal static class MigrationManifestValidator
         {
             throw new InvalidDataException("Batched and online steps require a verification script.");
         }
+
+        if (step.Transaction == MigrationTransaction.Online
+            && (step.Phase != MigrationPhase.Expand || step.Checkpoint is not null || step.OnlineIndex is null))
+        {
+            throw new InvalidDataException("Online execution requires a declared index on an expansion step.");
+        }
+
+        if (step.OnlineIndex is { } index)
+        {
+            if (step.Transaction != MigrationTransaction.Online)
+            {
+                throw new InvalidDataException("An online index declaration requires online transaction mode.");
+            }
+
+            index.Validate();
+        }
     }
 
     private static bool IsIdentifier(string? value) =>

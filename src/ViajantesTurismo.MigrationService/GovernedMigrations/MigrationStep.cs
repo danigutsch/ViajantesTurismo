@@ -11,6 +11,7 @@ namespace ViajantesTurismo.MigrationService.GovernedMigrations;
 /// <param name="Destructive">Whether the step requires the contract gate.</param>
 /// <param name="Checkpoint">The progress key for a batched data step.</param>
 /// <param name="Verify">A postcondition script for a batched or online step.</param>
+/// <param name="OnlineIndex">The checked index declaration for an online expansion.</param>
 internal sealed record MigrationStep(
     MigrationPhase Phase,
     int Order,
@@ -21,4 +22,5 @@ internal sealed record MigrationStep(
     int LockTimeoutSeconds,
     bool Destructive,
     string? Checkpoint = null,
-    MigrationArtifact? Verify = null);
+    MigrationArtifact? Verify = null,
+    MigrationOnlineIndex? OnlineIndex = null);

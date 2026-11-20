@@ -43,7 +43,15 @@ internal static class MigrationPlanCommand
     {
         foreach (var step in manifest.Steps)
         {
-            await MigrationArtifactFiles.VerifySql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+            if (step.OnlineIndex is null)
+            {
+                await MigrationArtifactFiles.VerifySql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+            }
+            else
+            {
+                _ = await MigrationArtifactFiles.ReadStepSql(directory, step, ct);
+            }
+
             if (step.Verify is { } postcondition)
             {
                 await MigrationArtifactFiles.VerifySql(directory, postcondition, ct);

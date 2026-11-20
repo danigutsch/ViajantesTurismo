@@ -213,10 +213,10 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
     }
 
     [Theory]
-    [InlineData("data", "atomic")]
-    [InlineData("expand", "online")]
-    [InlineData("contract", "atomic")]
-    public async Task Rejects_unsupported_phases_without_starting_any_database_work(string phase, string policy)
+    [InlineData("data", "atomic", "only atomic expansion and verification")]
+    [InlineData("expand", "online", "Online execution requires a declared index")]
+    [InlineData("contract", "atomic", "only atomic expansion and verification")]
+    public async Task Rejects_unsupported_phases_without_starting_any_database_work(string phase, string policy, string expectedError)
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -229,7 +229,7 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
 
         // Assert
         refusal.ExitCode.ShouldBe(1);
-        refusal.Error.ShouldContain("only atomic expansion and verification", StringComparison.Ordinal);
+        refusal.Error.ShouldContain(expectedError, StringComparison.Ordinal);
         var journalExists = await scenario.Read<bool>(new NpgsqlCommand("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;"), ct);
         journalExists.ShouldBeFalse();
     }
