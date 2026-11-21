@@ -45,6 +45,9 @@ provider initializes the event-store schema separately. The
 [governed migration decision](../../docs/adr/20261118-governed-postgresql-migrations.md)
 describes the production script adoption and rehearsal.
 
+The [PostgreSQL baseline rehearsal](Baselines/PostgreSql/README.md) records the fresh SQL inputs,
+checksums and verification against the owning contexts.
+
 The history was reset before launch: each context has one `Initial*` migration. A local database built from the old
 history must be recreated; see "Migration history reset before launch" in `docs/CODING_GUIDELINES.md`.
 

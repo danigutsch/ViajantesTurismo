@@ -99,6 +99,41 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     public async Task<NpgsqlConnection> OpenMigrationData(bool asBranding, CancellationToken ct) =>
         await Open(ConnectionString(asBranding ? BrandingDataMigrator : DataMigrator), ct);
 
+    /// <summary>Grants the selected fixture's migration owner the privileges needed to initialize a fresh database.</summary>
+    public async Task GrantBaselineCreation(bool asBranding, CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.grant_baseline_creation(owner_role text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('GRANT CREATE ON DATABASE %I TO %I', current_database(), owner_role);
+                EXECUTE pg_catalog.format('GRANT CREATE ON SCHEMA public TO %I', owner_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.grant_baseline_creation($1);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = asBranding ? BrandingOwner : Owner });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
+    /// <summary>Pre-provisions Catalog's provider schema and grants the verifier metadata visibility.</summary>
+    public async Task ProvisionCatalogEventStoreSchema(CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.provision_catalog_event_store(owner_role text, verifier_role text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('CREATE SCHEMA event_sourcing AUTHORIZATION %I', owner_role);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA event_sourcing TO %I', verifier_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_catalog_event_store($1, $2);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
     /// <summary>Provisions a synthetic backfill and grants the data principal scoped DML.</summary>
     public async Task ProvisionBatchData(CancellationToken ct)
     {
@@ -121,6 +156,46 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = DataMigrator });
         await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
     }
+
+    /// <summary>Restores the Catalog rehearsal snapshot and assigns test-owned permissions.</summary>
+    public async Task RestoreCatalogSnapshot(CancellationToken ct)
+    {
+        var restore = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.restore_catalog_snapshot(snapshot text, owner_role text, verifier_role text,
+                data_role text, runtime_role text, role_password text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE snapshot;
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN PASSWORD %L', runtime_role, role_password);
+                REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+                EXECUTE pg_catalog.format('REVOKE TEMPORARY ON DATABASE %I FROM PUBLIC', current_database());
+                EXECUTE pg_catalog.format('GRANT TEMPORARY ON DATABASE %I TO %I, %I, %I',
+                    current_database(), owner_role, verifier_role, data_role);
+                EXECUTE pg_catalog.format('ALTER TABLE public."PublicContent" OWNER TO %I', owner_role);
+                EXECUTE pg_catalog.format('ALTER TABLE public."PublicContentVariants" OWNER TO %I', owner_role);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA public TO %I, %I, %I, %I',
+                    owner_role, verifier_role, data_role, runtime_role);
+                EXECUTE pg_catalog.format('GRANT SELECT ON public."PublicContent", public."PublicContentVariants" TO %I, %I',
+                    verifier_role, runtime_role);
+                EXECUTE pg_catalog.format('GRANT SELECT, UPDATE ON public."PublicContent" TO %I', data_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.restore_catalog_snapshot($1, $2, $3, $4, $5, $6);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = CatalogMigrationRehearsalArtifacts.Snapshot });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = DataMigrator });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Runtime });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = password });
+        await ExecuteRoleStatement(database.ConnectionString, restore, provision, ct);
+    }
+
+    /// <summary>The connection used by the Catalog application reader during rehearsal.</summary>
+    internal string RuntimeConnectionString => ConnectionString(Runtime);
+
+    /// <summary>The digest of the synthetic snapshot bytes used in the Catalog rehearsal.</summary>
+    internal static string CatalogSnapshotDigest => Digest(CatalogMigrationRehearsalArtifacts.Snapshot);
 
     /// <summary>Creates an ordinary table with a distinct application runtime principal.</summary>
     public async Task ProvisionOnlineData(CancellationToken ct)
