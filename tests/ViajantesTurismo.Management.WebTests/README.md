@@ -13,6 +13,26 @@ In-memory rendering tests for Razor components — fast, no browser required.
 
 Business logic belongs in `Admin.UnitTests`; full-stack flows in `Admin.SystemTests`.
 
+## Reproduce the Management document download
+
+From the repository root, use the pinned SDK and [SharedKernel packages](../../docs/sharedkernel/development.md).
+The fixture creates a fresh in-memory endpoint host, synthetic role, and downstream client for each attempt.
+
+```sh
+dotnet test --project tests/ViajantesTurismo.Management.WebTests/ViajantesTurismo.Management.WebTests.csproj \
+  -c Release -- --filter-class '*DocumentProxyReproductionTests'
+```
+
+Each outcome runs twice. The test Admin gets the synthetic HTML attachment with private delivery headers.
+The signed-in test Operator gets `403` before any downstream download. Requests use the application route
+and authorization policy through TestServer with generated document IDs and an in-memory downstream response.
+
+Set `VIAJANTESTURISMO_REPRODUCTION_MANIFESTS=1` for the same command to keep four validated manifests under
+`TestResults/reproduction/` for `management.document-download`. The approved outcomes are
+`attachment-delivered` and `forbidden`. The manifests retain the observed server trace ID with the approved
+outcome and attempt metadata. Request and response headers, filenames, document IDs, and bodies stay out of
+the manifests. [Reproduction artifact contract](../../docs/testing/reproduction-contract.md)
+
 ## Project-Specific Notes
 
 ### QuickGrid JSInterop

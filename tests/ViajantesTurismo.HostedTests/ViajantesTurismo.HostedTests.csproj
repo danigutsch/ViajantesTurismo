@@ -2,6 +2,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.HostedTests</RootNamespace>
+        <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
         <!-- This test project uses the Aspire SDK for project metadata, not as an AppHost. With the CLI bundle,
              the SDK replaces its run command with `aspire run`, which breaks `dotnet test`. Keep the NuGet
              orchestration packages and suppress ASPIRE010 here only. -->
@@ -17,6 +18,13 @@
         <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/*.sql"
                  Link="Fixtures/MigrationBaselines/%(Filename)%(Extension)"
                  CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="../fixtures/reproduction/ReproductionManifest.cs" Link="Reproduction/ReproductionManifest.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestCodec.cs" Link="Reproduction/ReproductionManifestCodec.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestPayload.cs" Link="Reproduction/ReproductionManifestPayload.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionOutcome.cs" Link="Reproduction/ReproductionOutcome.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionSpecification.cs" Link="Reproduction/ReproductionSpecification.cs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="coverlet.MTP">

@@ -85,6 +85,30 @@ dotnet test --project tests/ViajantesTurismo.HostedTests \
 - For async upload or wizard flows, wait on the first stable user-visible state transition (for example
   success/warning text or an enabled primary action) before asserting secondary badges or decorative UI.
 
+## Reproduce Management Tour schedule validation
+
+From the repository root, install the pinned SDK, stage the package feed, and follow the [System browser
+setup](#setup) for Chromium and the [HostedTests prerequisites](../../README.md) for the Aspire containers.
+Run this fixture against the local test stack.
+
+```sh
+dotnet test --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj \
+  -c Release -- --filter-class '*TourEditReproductionTests'
+```
+
+Each outcome runs twice. Every attempt seeds a uniquely named synthetic tour through Admin API and opens a fresh browser
+context. The protected edit route challenges the anonymous browser. Signing in through the fixture's conformance
+realm exposes the labelled Tour form. A valid schedule change reaches Tour Details and persists the new name
+and end date. A short schedule shows the duration validation message and leaves the stored name and end date intact.
+
+Set `VIAJANTESTURISMO_REPRODUCTION_MANIFESTS=1` for the same command to keep four validated manifests under
+`TestResults/reproduction/` under the scenario `browser.tour-edit-duration`. Each records its source revision,
+an opaque attempt ID, timing, and an approved state for `management-web` and `admin-api`.
+The outcome codes are `edit-persisted` and `short-duration-rejected`.
+The fixture leaves `traceIds` empty because it has no server-side trace observation. The manifest excludes
+credentials, records, route parameters, screenshots, and browser state. The fixture exercises this named
+Tour workflow with the test realm only. [Reproduction artifact contract](../../../../docs/testing/reproduction-contract.md)
+
 ## Specialized helper classes
 
 The system-test project uses a small set of specialized helper classes to keep tests readable

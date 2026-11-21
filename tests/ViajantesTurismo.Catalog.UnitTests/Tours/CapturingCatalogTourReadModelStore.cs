@@ -13,8 +13,15 @@ public sealed class CapturingCatalogTourReadModelStore : ICatalogTourReadModelSt
 
     public IReadOnlyCollection<CatalogTourDraftReadModel> Drafts => drafts;
 
+    /// <summary>Runs before the write so a test can simulate a failed store operation.</summary>
+    internal Action<CancellationToken>? BeforeDraftUpsert
+    {
+        get; set;
+    }
+
     public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
+        BeforeDraftUpsert?.Invoke(ct);
         Draft = tour;
         drafts.Add(tour);
 

@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Catalog.ApiServiceTests</RootNamespace>
+        <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -50,6 +51,11 @@
 
     <ItemGroup>
         <Compile Include="..\ViajantesTurismo.Admin.Testing\Fakes\FakeTimeProvider.cs" Link="Infrastructure\FakeTimeProvider.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifest.cs" Link="Reproduction/Shared/ReproductionManifest.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestCodec.cs" Link="Reproduction/Shared/ReproductionManifestCodec.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestPayload.cs" Link="Reproduction/Shared/ReproductionManifestPayload.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionOutcome.cs" Link="Reproduction/Shared/ReproductionOutcome.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionSpecification.cs" Link="Reproduction/Shared/ReproductionSpecification.cs" />
     </ItemGroup>
 
 </Project>
