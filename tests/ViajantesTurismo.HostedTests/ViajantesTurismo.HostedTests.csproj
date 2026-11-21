@@ -14,6 +14,11 @@
         <Using Include="ViajantesTurismo.HostedTests.Infrastructure" />
     </ItemGroup>
     <ItemGroup>
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/*.sql"
+                 Link="Fixtures/MigrationBaselines/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="coverlet.MTP">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

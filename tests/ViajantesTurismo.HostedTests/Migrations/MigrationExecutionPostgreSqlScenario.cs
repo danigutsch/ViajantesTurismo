@@ -99,6 +99,41 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
     public async Task<NpgsqlConnection> OpenMigrationData(bool asBranding, CancellationToken ct) =>
         await Open(ConnectionString(asBranding ? BrandingDataMigrator : DataMigrator), ct);
 
+    /// <summary>Grants the selected fixture's migration owner the privileges needed to initialize a fresh database.</summary>
+    public async Task GrantBaselineCreation(bool asBranding, CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.grant_baseline_creation(owner_role text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('GRANT CREATE ON DATABASE %I TO %I', current_database(), owner_role);
+                EXECUTE pg_catalog.format('GRANT CREATE ON SCHEMA public TO %I', owner_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.grant_baseline_creation($1);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = asBranding ? BrandingOwner : Owner });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
+    /// <summary>Pre-provisions Catalog's provider schema and grants the verifier metadata visibility.</summary>
+    public async Task ProvisionCatalogEventStoreSchema(CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.provision_catalog_event_store(owner_role text, verifier_role text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('CREATE SCHEMA event_sourcing AUTHORIZATION %I', owner_role);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA event_sourcing TO %I', verifier_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_catalog_event_store($1, $2);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
     /// <summary>Provisions a synthetic backfill and grants the data principal scoped DML.</summary>
     public async Task ProvisionBatchData(CancellationToken ct)
     {
