@@ -7,6 +7,7 @@ write-capable service. Update this inventory when a new pin location is introduc
 ## Contents
 
 - [Coverage inventory](#coverage-inventory)
+- [Current action provenance](#current-action-provenance)
 - [Action update evidence](#action-update-evidence)
 - [Image update evidence](#image-update-evidence)
 - [SharedKernel pin bump](#sharedkernel-pin-bump)
@@ -21,8 +22,8 @@ configuration, and the AppHost/resource extensions.
 
 | Location | Existing update coverage | Manual review gap and owner |
 | --- | --- | --- |
-| `.github/workflows/*.yml` external `uses:` | Dependabot `github-actions`, monthly grouped minor/patch proposals and security updates; full SHA plus release comment is current policy | CI maintainers verify upstream SHA, release diff, permissions, and transitive action behavior; major updates need explicit migration review |
-| `.github/actions/*/action.yml` external `uses:` | `build-sharedkernel-tool` uses `actions/checkout`, SHA-pinned, and SharedKernel's `setup-dotnet-tool` by SHA. The Dependabot `github-actions` entry scans `/` and `/.github/actions/*`, so these refs get the same grouped proposals as the workflows | Review composite shell and tool changes as source, and move a composite SHA with the matching workflow SHA |
+| `.github/workflows/*.yml` external `uses:` | Dependabot scans workflow paths. Manifest actions are ignored and updated through the SharedKernel pin process | CI maintainers verify upstream SHA, release diff, permissions, and transitive action behavior; major updates need explicit migration review |
+| `.github/actions/*/action.yml` external `uses:` | `build-sharedkernel-tool` uses `actions/checkout`, SHA-pinned, and SharedKernel's `setup-dotnet-tool` by SHA. The same manifest exclusions apply to these paths | Review composite shell and tool changes as source, and move a composite SHA with the matching workflow SHA |
 | `.config/sharedkernel-candidate.json` and `danigutsch/PandaBear.SharedKernel` action refs | Dependabot ignores SharedKernel actions and `dotnet-sdk`; `SharedKernelConsumerWorkflowTests` requires the scanner action ref to equal `libraryRevision` and all shared workflow refs to use one SHA | Maintainers follow the [SharedKernel pin bump](#sharedkernel-pin-bump) steps |
 | `.devcontainer/devcontainer.json` base image | Tag-plus-digest pin; no Docker ecosystem entry is configured | Development-environment maintainers resolve and verify the base-image digest manually; do not assume feature-update coverage includes the base image |
 | `.devcontainer/devcontainer.json` Features | Dependabot `devcontainers` entry, quarterly; current feature references use digest-only keys | Development-environment maintainers verify whether each digest-only key is actually recognized and updated; treat coverage as unverified until a concrete proposal proves it |
@@ -39,6 +40,79 @@ NuGet/SDK/local-tool lock refresh is a different workflow in
 Unverified digest-only Feature coverage is a recorded gap, not an exception granting new mutable
 pins. A bot configuration entry alone is not proof every
 reference in its ecosystem is updated.
+
+## Current action provenance
+
+The November 21, 2026 review used application revision
+`6c0b3ad36ea3b36cbb44d9a39987f44550918afd` and SharedKernel revision
+`d1a0676a24a8c0fbe876cf0986bf9db378c6377d`. The scanner, shared workflows, build composite
+and caller-supplied tool source refs all resolve to that SharedKernel commit. Its
+[action pin manifest](https://github.com/danigutsch/PandaBear.SharedKernel/blob/d1a0676a24a8c0fbe876cf0986bf9db378c6377d/.github/action-pins.json)
+holds the exact third-party SHAs and release labels.
+
+The application's nine workflows and two composites contain 40 third-party action declarations.
+The six consumed SharedKernel files add ten. Nine third-party repositories appear across both
+sets. Their upstream release tags resolved to the approved SHAs, including the annotated
+CodeQL and Markdownlint tags. All 22 checkout declarations disable persisted credentials.
+
+| Application caller | SharedKernel entry point | Inherited actions and acquisition |
+| --- | --- | --- |
+| `actionlint.yml` | `actionlint-reusable.yml` | Checkout. Actionlint 1.7.9 uses the release's upstream checksum file. ShellCheck is installed with `apt-get` at the distribution version. |
+| `dependency-review.yml` snapshot job | `dependency-snapshot-reusable.yml` | Checkout of the dependency input and tool source, followed by SDK setup and artifact upload. |
+| `dependency-review.yml` review job | `dependency-review-reusable.yml` | Conditional checkout and SDK setup for license verification, followed by Dependency Review when requested. |
+| `pr-metadata.yml` | `pr-metadata-reusable.yml` | Checkout of the tool source, followed by SDK setup. |
+| `build-sharedkernel-tool` composite | `setup-dotnet-tool/action.yml` | SDK setup through `actions/setup-dotnet` in the cached or uncached branch, then locked tool restore and Release build. |
+| `secret-scan.yml` scan job | `setup-security-scanner/action.yml` | Gitleaks 8.30.1 archive verified against the committed checksum. |
+
+The metadata, snapshot and review workflows resolve `./tool-source/.github/actions/setup-dotnet-tool`
+from the checkout selected by the caller's `source-repository` and `source-ref`. Include that checkout
+in a pin review. The direct application-only actions cover artifact download, SARIF upload, changed
+files, Markdownlint and GitHub App token creation. Both the inherited Actionlint workflow and the
+application Lint job install ShellCheck from the runner distribution. Those packages are an
+acquisition gap under the [binary acquisition baseline](security-hardening.md#downloaded-binary-expectations).
+
+The snapshot caller permits `contents: write` on pushes, manual runs and same-repository
+non-Dependabot PRs that require dependency review. The reusable workflow consumes that scope for
+submission. Dependency review, PR metadata, Actionlint and the scanner start with read-only
+contents. The SARIF upload requests `security-events: write` for available reports on pushes,
+scheduled or manual runs, and same-repository PRs. Label sync has `issues: write` on pushes to main
+and manual runs. Manual Roadmap Maintenance requests a separate, short-lived GitHub App token
+after plan verification for its create-only PR step. The App token requests `contents: write`,
+`pull-requests: write`, and `issues: read`. The job's `GITHUB_TOKEN` has read permissions.
+[Trust boundary map](trust-boundaries.md) ·
+[GitHub reusable workflow permissions](https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations#access-and-permissions-for-nested-workflows)
+
+The repository settings returned `allowed_actions: all`, `sha_pinning_required: false`, a read-only
+workflow token default and disabled PR approval by the workflow token. The `main` rules require
+code-owner review, and the Lint job runs the checked-in pin validation. The review covers the
+workflow inputs and declared scopes. The binary acquisition policy applies when reviewing
+runner packages and bundled action code.
+
+### Reproduce the provenance review
+
+From the application root, set `sharedkernel_root` to the absolute path of the checkout at the
+reviewed shared-workflow SHA. It matches `libraryRevision` in this review. Use the SDK pinned in
+both repositories.
+
+```bash
+app_root="$PWD"
+kernel_revision=$(jq -r .libraryRevision "$app_root/.config/sharedkernel-candidate.json")
+test "$(git -C "$sharedkernel_root" rev-parse HEAD)" = "$kernel_revision"
+tool="$sharedkernel_root/tools/SharedKernel.RepoConfig.Tool"
+manifest="$sharedkernel_root/.github/action-pins.json"
+dotnet restore "$tool/SharedKernel.RepoConfig.Tool.csproj" --locked-mode
+dotnet build "$tool/SharedKernel.RepoConfig.Tool.csproj" -c Release --no-restore
+dotnet run --project "$tool" -c Release --no-build --no-restore -- \
+  verify-action-pins --root "$app_root" --manifest "$manifest"
+dotnet run --project "$tool" -c Release --no-build --no-restore -- \
+  verify-action-pins --root "$sharedkernel_root" --manifest "$manifest"
+```
+
+The verifier checks declarations within each supplied checkout. Review the call paths and
+caller inputs above to resolve the inherited references. Use `git ls-remote` on each upstream
+repository to compare the manifest SHA with its release tag. For annotated tags use
+the peeled ref ending in `^{}`. Record changed permissions and acquisition paths alongside
+the pin review.
 
 ## Action update evidence
 
