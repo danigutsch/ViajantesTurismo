@@ -47,7 +47,7 @@ state or a bounded synchronization signal when work spans hosts.
 | Scenario | Minimal input and reset | Existing test seam and expected outcome |
 | --- | --- | --- |
 | Admin Tour retirement | Synthetic staff with each relevant role, one tour with a chosen booking state, fresh API state per scenario | `TourRetirementEndpointTests` in Admin.ApiServiceTests exercises denied and accepted transitions through HTTP. |
-| Catalog management update and public read | One published synthetic record and a fixed locale. Seed a second revision for the stale-write case. | `CatalogApiEndpointTests` in Catalog.ApiServiceTests exercises the production HTTP boundary and controlled read/write state. |
+| Catalog management update and public read | Seed one synthetic tour for successive edits or one published content record with a fixed locale. Recreate the host and store for each attempt. | `CatalogReproductionTests` in Catalog.ApiServiceTests verifies the stale-write conflict and the approved localized response through HTTP. |
 | Public localized browsing and admission | One synthetic published tour, fixed locale and independent in-process hosts. Recreate hosts to reset quotas. | `PublicCatalogDeploymentTrustTests` in Catalog.ApiServiceTests proves visitor isolation with controlled addresses. |
 | Management document proxy | A synthetic Admin or unauthorized operator and an in-memory downstream outcome. Create a fresh host per test. | `DocumentArtifactProxyEndpointTests` in Management.WebTests checks access and the safe download envelope. |
 | Management browser form | A synthetic role and one owned booking or tour. Start the System stack with its conformance realm, use a fresh browser context and a unique scenario record. | Existing `Admin/System` tests provide accessible selectors and bounded UI waits. Verify the named validation or workflow status. |
@@ -77,6 +77,27 @@ test assembly and the trace ID observed on the server. Standard test runs use te
 The registered outcome codes are `accepted-pending`, `active-bookings-conflict`, and `forbidden`. The fixture
 registers `admin-api` as its only diagnostic resource. To repeat a report, check out its revision and run the
 fixture class again.
+
+## Run the Catalog fixtures
+
+Run the Catalog API fixture class from the repository root with the pinned packages staged.
+
+```sh
+dotnet test --project tests/ViajantesTurismo.Catalog.ApiServiceTests/ViajantesTurismo.Catalog.ApiServiceTests.csproj \
+  -c Release --filter-class '*CatalogReproductionTests'
+```
+
+Each outcome is verified against two fresh test hosts and stores. The management fixture checks a
+forbidden Guest edit and an invalid Admin edit, then saves a valid Admin edit. An edit using the old
+version returns `409` and the next management read returns the first saved edit at version two. The
+public fixture publishes synthetic English and Brazilian Portuguese content. An anonymous read
+requesting `pt-BR` returns the approved Portuguese title and body.
+
+With `VIAJANTESTURISMO_REPRODUCTION_MANIFESTS=1`, the four attempts are saved in
+`TestResults/reproduction/`. The outcomes are `stale-write-conflict` and `localized-content-returned`.
+The only diagnostic resource is `catalog-api`. The fixture records the server-observed trace ID and
+verifies that the manifest excludes the synthetic edit and response values, header marker and resource
+identifiers.
 
 ## Reproduction artifact contract
 
