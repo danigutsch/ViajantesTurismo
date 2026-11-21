@@ -33,20 +33,27 @@ and exact contents of every listed script before contacting the database.
 | Field | Contract |
 | --- | --- |
 | `schemaVersion`, `migrationId`, `context` | Versioned contract and stable migration identity within its owning context |
+| `journalSchema` | Optional provisioned schema bound to a context sharing a database. Omission selects the existing default journal. |
 | `sourceReleases`, `targetRelease` | Explicit supported predecessors and the release this migration prepares |
 | `steps[].phase`, `steps[].order` | Unique, ordered steps for expansion, data, verification, and contract |
 | `omittedPhases[].phase`, `omittedPhases[].reason` | Reviewed omissions for phases with no step |
 | `steps[].script`, `steps[].sha256` | Manifest-relative regular file inside the artifact and the digest of its exact bytes |
 | `steps[].transaction`, `steps[].timeoutSeconds`, `steps[].lockTimeoutSeconds` | Atomic, batched, or online execution with bounded statement and lock waits |
 | `steps[].checkpoint`, `steps[].verify` | Stable batch progress key for resumable data steps and a separately hashed verification script where needed |
+| `steps[].onlineIndex` | Explicit index identity and ordered B-tree keys for concurrent index expansion |
 | `steps[].destructive` | Explicit review classification. Destructive steps belong to the contract phase. |
 | `recovery.kind`, `recovery.evidence`, `recovery.script` | Recovery method, content-addressed evidence, and required SQL for reversible or compensating recovery |
+| `recovery.verify`, `recovery.timeoutSeconds`, `recovery.lockTimeoutSeconds` | Read-only recovery gate and bounded waits for executable recovery |
 
 Expansion keeps the previous application release functional. Data steps can commit bounded batches.
 Verification checks the expected data and application behavior. Contract steps require evidence
 that the previous application version has been retired. A phase with no work is declared explicitly
 with its reason. Verification is required on every manifest. Irreversible changes carry an approved
-recovery procedure and a successful rehearsal before production execution.
+recovery procedure and a successful rehearsal before production execution. The protected deployment
+job authenticates a retirement receipt that identifies the exact manifest, all retired releases,
+the selected database target, and the successful rehearsal. The separate `contract` invocation
+requires this evidence and journaled completion of preparation. Each dispatched contract step
+records the accepted retirement receipt digest.
 
 The CLI provides a read-only plan before writes. Its journal records context, migration ID, step,
 script digest, release and tool versions, attempt state, and sanitized timing. A transaction
@@ -58,7 +65,8 @@ checkpoint, and any digest drift stops the run.
 Take one PostgreSQL advisory lock for the context before reading or writing its journal. Use a
 dedicated direct session for execution across transactions. A disconnected executor loses its lock
 and must acquire it again and reconcile state before continuing. The deployment job owns the
-connection lifetime and refuses a second owner. Nontransactional DDL is an explicit exception with
+connection lifetime and refuses a second owner. Contexts sharing a database can declare separate
+journal schemas owned by their deployment principals. The journal binding stays fixed across releases. Nontransactional DDL is an explicit exception with
 a postcondition and recovery step. For example, concurrent index creation can leave an invalid
 index and requires inspection before retry. [PostgreSQL advisory locks](https://www.postgresql.org/docs/18/explicit-locking.html#ADVISORY-LOCKS) ·
 [Concurrent index creation](https://www.postgresql.org/docs/18/sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY)
@@ -137,11 +145,20 @@ and recovery evidence. Runtime DDL removal depends on the baseline and rehearsal
 
 ## Status
 
-Proposed for review. The migration service provides the read-only planner and an initial executor
-for atomic expansion and read-only verification with forward-only recovery evidence. The
-executor records each attempt in PostgreSQL and reconciles open attempts under the context lock.
-Data checkpoints, online DDL, the contract gate, recovery execution and rehearsal, and verified
-baseline scripts and roles for each context remain prerequisites for production cutover.
+Proposed for review. The migration service provides the read-only planner and an executor
+for atomic expansion, concurrent index creation, resumable data, and read-only verification.
+The data login executes bounded DML and records each batch in the same transaction
+through an attempt-scoped journal function. The context fence rejects successor owners while
+a previous data transaction is active. The executor confirms the original owner session before
+recording the checkpoint. A disconnected session causes rollback.
+The online index step journals before dispatch, then checks the same index in PostgreSQL before
+requiring its reviewed verifier to pass. A retry reconciles a ready index with its prior attempt.
+Invalid and conflicting indexes require the reviewed recovery path. The executor can apply
+reviewed reversible or compensating recovery SQL and run a separate read-only gate without
+repeating committed recovery after interruption. The protected job supplies authenticated
+retirement and recovery evidence before the executor runs contract.
+Production deployment wiring, old and new application rehearsal, and verified baseline scripts
+and roles for each context remain prerequisites for cutover.
 
 ## Links
 

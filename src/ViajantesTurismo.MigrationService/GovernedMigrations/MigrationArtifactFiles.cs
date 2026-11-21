@@ -25,19 +25,24 @@ internal static class MigrationArtifactFiles
         return Verify(directory, artifact, ct);
     }
 
+    /// <summary>Checks the exact script and any declared online operation before using it.</summary>
+    internal static async Task<string> ReadStepSql(string directory, MigrationStep step, CancellationToken ct)
+    {
+        var sql = await ReadVerifiedSql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+        step.OnlineIndex?.ValidateScript(sql);
+        return sql;
+    }
+
     /// <summary>Returns the SQL decoded from the same bytes whose digest is verified.</summary>
     internal static async Task<string> ReadVerifiedSql(string directory, MigrationArtifact artifact, CancellationToken ct)
     {
         RequireSqlExtension(artifact);
-        var path = ResolvePath(directory, artifact);
-        var content = await BoundedReader.ReadFile(path, ScriptLimit, ct)
-            ?? throw new InvalidDataException("Migration script exceeds the size limit.");
-        VerifyDigest(SHA256.HashData(content), artifact.Sha256);
+        var content = await ReadVerifiedBytes(directory, artifact, ScriptLimit, ct);
 
         string sql;
         try
         {
-            sql = Utf8.GetString(content);
+            sql = Utf8.GetString(content.Span);
         }
         catch (DecoderFallbackException)
         {
@@ -50,6 +55,16 @@ internal static class MigrationArtifactFiles
         }
 
         return sql;
+    }
+
+    /// <summary>Returns bounded file bytes after verifying that same content against its digest.</summary>
+    internal static async Task<ReadOnlyMemory<byte>> ReadVerifiedBytes(string directory, MigrationArtifact artifact, int limit, CancellationToken ct)
+    {
+        var path = ResolvePath(directory, artifact);
+        var content = await BoundedReader.ReadFile(path, limit, ct)
+            ?? throw new InvalidDataException("Migration artifact exceeds the size limit.");
+        VerifyDigest(SHA256.HashData(content), artifact.Sha256);
+        return content;
     }
 
     private static string ResolvePath(string directory, MigrationArtifact artifact)

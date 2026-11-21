@@ -43,7 +43,15 @@ internal static class MigrationPlanCommand
     {
         foreach (var step in manifest.Steps)
         {
-            await MigrationArtifactFiles.VerifySql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+            if (step.OnlineIndex is null)
+            {
+                await MigrationArtifactFiles.VerifySql(directory, new MigrationArtifact(step.Script, step.Sha256), ct);
+            }
+            else
+            {
+                _ = await MigrationArtifactFiles.ReadStepSql(directory, step, ct);
+            }
+
             if (step.Verify is { } postcondition)
             {
                 await MigrationArtifactFiles.VerifySql(directory, postcondition, ct);
@@ -56,6 +64,11 @@ internal static class MigrationPlanCommand
     private static async Task WritePlan(MigrationManifest manifest, string sourceRelease, TextWriter output, CancellationToken ct)
     {
         await output.WriteLineAsync($"{manifest.Context}/{manifest.MigrationId} {sourceRelease} -> {manifest.TargetRelease}".AsMemory(), ct);
+        if (manifest.JournalSchema is { } journalSchema)
+        {
+            await output.WriteLineAsync($"journal {journalSchema}".AsMemory(), ct);
+        }
+
         foreach (var step in manifest.Steps)
         {
             var phase = JsonNamingPolicy.CamelCase.ConvertName(step.Phase.ToString());
@@ -66,5 +79,10 @@ internal static class MigrationPlanCommand
 
         var recovery = JsonNamingPolicy.CamelCase.ConvertName(manifest.Recovery.Kind.ToString());
         await output.WriteLineAsync($"recovery {recovery} {manifest.Recovery.Evidence.Sha256}".AsMemory(), ct);
+        if (manifest.Recovery.Script is { } script && manifest.Recovery.Verify is { } verification)
+        {
+            await output.WriteLineAsync($"recovery script {script.Sha256}".AsMemory(), ct);
+            await output.WriteLineAsync($"recovery verify {verification.Sha256}".AsMemory(), ct);
+        }
     }
 }

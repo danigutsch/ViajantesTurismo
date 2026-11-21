@@ -213,11 +213,10 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
     }
 
     [Theory]
-    [InlineData("data", "atomic")]
-    [InlineData("data", "batched")]
-    [InlineData("expand", "online")]
-    [InlineData("contract", "atomic")]
-    public async Task Rejects_unsupported_phases_without_starting_any_database_work(string phase, string policy)
+    [InlineData("data", "atomic", "only atomic expansion and verification")]
+    [InlineData("expand", "online", "Online execution requires a declared index")]
+    [InlineData("contract", "batched", "A batched data step requires a checkpoint identifier")]
+    public async Task Rejects_unsupported_phases_without_starting_any_database_work(string phase, string policy, string expectedError)
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -230,13 +229,13 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
 
         // Assert
         refusal.ExitCode.ShouldBe(1);
-        refusal.Error.ShouldContain("only atomic expansion and verification", StringComparison.Ordinal);
+        refusal.Error.ShouldContain(expectedError, StringComparison.Ordinal);
         var journalExists = await scenario.Read<bool>(new NpgsqlCommand("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;"), ct);
         journalExists.ShouldBeFalse();
     }
 
     [Fact]
-    public async Task Refuses_an_executable_recovery_declaration_before_connecting()
+    public async Task Refuses_executable_recovery_without_a_verification_script_before_connecting()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -248,7 +247,7 @@ public sealed class MigrationExecutionPostgreSqlTests(PostgreSqlTestServerFixtur
 
         // Assert
         refusal.ExitCode.ShouldBe(1);
-        refusal.Error.ShouldContain("forward-only recovery", StringComparison.Ordinal);
+        refusal.Error.ShouldContain("Recovery SQL requires a reviewed verification script", StringComparison.Ordinal);
         var journalExists = await scenario.Read<bool>(new NpgsqlCommand("SELECT to_regclass('governed_migration.attempts') IS NOT NULL;"), ct);
         journalExists.ShouldBeFalse();
     }

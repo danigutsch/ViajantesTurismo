@@ -139,4 +139,130 @@ public sealed class MigrationPlanCommandTests
         output.ShouldBeEmpty();
         error.ShouldContain(expectedError, StringComparison.Ordinal);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("\n")]
+    public async Task Plan_accepts_the_single_concurrent_command_for_the_declared_index(string trailer)
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        const string sql = """CREATE UNIQUE INDEX CONCURRENTLY "entry_lookup" ON "migration_fixture"."entries" USING btree ("key", "version");""";
+        _ = fixture.SetOnlineIndex(sql + trailer);
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        error.ShouldBeEmpty();
+        output.ShouldContain("expand 1 online", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("missing", "Online execution requires a declared index")]
+    [InlineData("atomic", "An online index declaration requires online transaction mode")]
+    [InlineData("checkpoint", "Online execution requires a declared index")]
+    [InlineData("schema", "Invalid online index declaration")]
+    [InlineData("duplicate", "Invalid online index declaration")]
+    [InlineData("empty", "Invalid online index declaration")]
+    [InlineData("sql", "single concurrent index creation")]
+    public async Task Plan_rejects_an_incomplete_or_mismatched_index_declaration(string change, string expectedError)
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        const string sql = """CREATE UNIQUE INDEX CONCURRENTLY "entry_lookup" ON "migration_fixture"."entries" USING btree ("key", "version");""";
+        var step = fixture.SetOnlineIndex(change == "sql" ? sql + "\nSELECT true;" : sql);
+        var index = step["onlineIndex"].ShouldNotBeNull().AsObject();
+        switch (change)
+        {
+            case "missing":
+                _ = step.Remove("onlineIndex");
+                break;
+            case "atomic":
+                step["transaction"] = "atomic";
+                break;
+            case "checkpoint":
+                step["checkpoint"] = "progress";
+                break;
+            case "schema":
+                index["schema"] = "Two Words";
+                break;
+            case "duplicate":
+                index["columns"] = new JsonArray("key", "key");
+                break;
+            case "empty":
+                index["columns"] = new JsonArray();
+                break;
+        }
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        error.ShouldContain(expectedError, StringComparison.Ordinal);
+        output.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Plan_reports_the_reviewed_recovery_script_and_verifier_digests()
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        var recovery = fixture.Manifest["recovery"].ShouldNotBeNull().AsObject();
+        var steps = fixture.Manifest["steps"].ShouldNotBeNull().AsArray();
+        var scriptDigest = steps[0].ShouldNotBeNull()["sha256"].ShouldNotBeNull().GetValue<string>();
+        var verificationDigest = steps[1].ShouldNotBeNull()["sha256"].ShouldNotBeNull().GetValue<string>();
+        recovery["kind"] = "reversible";
+        recovery["script"] = new JsonObject { ["path"] = "expand.sql", ["sha256"] = scriptDigest };
+        recovery["verify"] = new JsonObject { ["path"] = "verify.sql", ["sha256"] = verificationDigest };
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        error.ShouldBeEmpty();
+        output.ShouldContain($"recovery script {scriptDigest}", StringComparison.Ordinal);
+        output.ShouldContain($"recovery verify {verificationDigest}", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Plan_reports_the_explicit_canonical_journal_schema()
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        fixture.Manifest["journalSchema"] = "governed_migration_admin";
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(0);
+        error.ShouldBeEmpty();
+        output.ShouldContain("journal governed_migration_admin", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("admin", "governed_migration_catalog")]
+    [InlineData("Admin", "governed_migration_Admin")]
+    [InlineData("admin.region", "governed_migration_admin.region")]
+    [InlineData("admin", "governed_migration")]
+    [InlineData("context_with_a_postgresql_name_that_is_too_long_for_the_prefix", "governed_migration_context_with_a_postgresql_name_that_is_too_long_for_the_prefix")]
+    public async Task Plan_rejects_a_journal_schema_outside_the_context_binding(string context, string schema)
+    {
+        // Arrange
+        using var fixture = new MigrationPlanFixture();
+        fixture.Manifest["context"] = context;
+        fixture.Manifest["journalSchema"] = schema;
+
+        // Act
+        var (exitCode, output, error) = await fixture.Run(TestContext.Current.CancellationToken);
+
+        // Assert
+        exitCode.ShouldBe(1);
+        output.ShouldBeEmpty();
+        error.ShouldContain("journal schema must be governed_migration_ followed by the lowercase context identifier", StringComparison.Ordinal);
+    }
 }

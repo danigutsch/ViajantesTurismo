@@ -14,6 +14,7 @@ internal static class MigrationManifestValidator
             throw new InvalidDataException("Invalid migration identity or manifest version.");
         }
 
+        _ = MigrationJournalSchema.Resolve(manifest);
         if (manifest.SourceReleases.Length == 0
             || !manifest.SourceReleases.All(IsIdentifier)
             || manifest.SourceReleases.Distinct(StringComparer.Ordinal).Count() != manifest.SourceReleases.Length)
@@ -27,10 +28,23 @@ internal static class MigrationManifestValidator
         }
 
         ValidateSteps(manifest);
-        if (manifest.Recovery.Kind is MigrationRecoveryKind.Reversible or MigrationRecoveryKind.Compensating
-            && manifest.Recovery.Script is null)
+        var recovery = manifest.Recovery;
+        if (recovery.Kind is MigrationRecoveryKind.Reversible or MigrationRecoveryKind.Compensating)
         {
-            throw new InvalidDataException("Script-based recovery requires a script.");
+            if (recovery.Script is null)
+            {
+                throw new InvalidDataException("Script-based recovery requires a script.");
+            }
+        }
+        else if (recovery.Script is not null || recovery.Verify is not null)
+        {
+            throw new InvalidDataException("External recovery declarations cannot include executable SQL.");
+        }
+
+        if (recovery.TimeoutSeconds is <= 0 or > int.MaxValue / 1000
+            || recovery.LockTimeoutSeconds <= 0 || recovery.LockTimeoutSeconds > recovery.TimeoutSeconds)
+        {
+            throw new InvalidDataException("Recovery requires bounded statement and lock waits.");
         }
     }
 
@@ -94,6 +108,22 @@ internal static class MigrationManifestValidator
         if (step.Transaction != MigrationTransaction.Atomic && step.Verify is null)
         {
             throw new InvalidDataException("Batched and online steps require a verification script.");
+        }
+
+        if (step.Transaction == MigrationTransaction.Online
+            && (step.Phase != MigrationPhase.Expand || step.Checkpoint is not null || step.OnlineIndex is null))
+        {
+            throw new InvalidDataException("Online execution requires a declared index on an expansion step.");
+        }
+
+        if (step.OnlineIndex is { } index)
+        {
+            if (step.Transaction != MigrationTransaction.Online)
+            {
+                throw new InvalidDataException("An online index declaration requires online transaction mode.");
+            }
+
+            index.Validate();
         }
     }
 

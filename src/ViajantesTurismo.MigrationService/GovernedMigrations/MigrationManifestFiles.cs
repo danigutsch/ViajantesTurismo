@@ -32,21 +32,30 @@ internal static class MigrationManifestFiles
         var path = Path.GetFullPath(manifestPath);
         var content = await BoundedReader.ReadFile(path, ManifestLimit, ct)
             ?? throw new InvalidDataException("Migration manifest exceeds the size limit.");
-        var manifest = JsonSerializer.Deserialize<MigrationManifest>(content, ManifestOptions)
-            ?? throw new InvalidDataException("A migration manifest must be an object.");
+        var manifest = Deserialize<MigrationManifest>(content);
         MigrationManifestValidator.Validate(manifest, sourceRelease);
 
         var directory = Path.GetDirectoryName(path) ?? throw new InvalidDataException("A manifest directory is required.");
         return (manifest, directory, Convert.ToHexString(SHA256.HashData(content)));
     }
 
-    /// <summary>Checks the evidence and any declared recovery script without executing them.</summary>
+    /// <summary>Deserializes the reviewed JSON artifacts using their strict manifest property rules.</summary>
+    internal static T Deserialize<T>(ReadOnlySpan<byte> content) where T : class =>
+        JsonSerializer.Deserialize<T>(content, ManifestOptions)
+        ?? throw new InvalidDataException("A governed migration JSON artifact must be an object.");
+
+    /// <summary>Checks the evidence and any declared recovery scripts without executing them.</summary>
     internal static async Task VerifyRecovery(MigrationRecovery recovery, string directory, CancellationToken ct)
     {
         await MigrationArtifactFiles.Verify(directory, recovery.Evidence, ct);
         if (recovery.Script is { } script)
         {
-            await MigrationArtifactFiles.VerifySql(directory, script, ct);
+            _ = await MigrationArtifactFiles.ReadVerifiedSql(directory, script, ct);
+        }
+
+        if (recovery.Verify is { } verification)
+        {
+            _ = await MigrationArtifactFiles.ReadVerifiedSql(directory, verification, ct);
         }
     }
 }
