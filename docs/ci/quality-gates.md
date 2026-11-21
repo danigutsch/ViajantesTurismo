@@ -50,11 +50,11 @@ directory. ReportGenerator 5.5.11 merges the reports into HTML for local inspect
 
 ## Changed-code policy
 
-Pull requests and merge groups require at least **80% combined coverage of changed executable
-lines and conditions**. This is not a whole-repository 80% threshold. Full runs publish coverage
+Pull requests and merge groups require at least **90% combined coverage of changed executable
+lines and conditions**. This is not a whole-repository 90% threshold. Full runs publish coverage
 trends; selected slices do not represent repository-wide trends.
 
-`sharedkernel-ci coverage verify` reads `.config/sharedkernel-ci.json`: `coverage.thresholdPercent` (80),
+`sharedkernel-ci coverage verify` reads `.config/sharedkernel-ci.json`: `coverage.thresholdPercent` (90),
 the `coverage.include` patterns (`src/*.cs`, `src/*.razor`), and the `coverage.exclude` patterns
 (migrations, `obj`, generated files, and AppHost). It runs its own zero-context `git diff <base>...HEAD`
 with repository Git configuration and attributes neutralized, reads every `*.cobertura*.xml` under each

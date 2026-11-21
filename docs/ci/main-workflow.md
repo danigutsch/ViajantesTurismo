@@ -188,7 +188,7 @@ dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Releas
   coverage verify --report artifacts --base "$BASE_SHA" --symbols TestResults/symbol-evidence.json
 ```
 
-`BASE_SHA` is the Detect Changes base. The check enforces `coverage.thresholdPercent` (80%) of the
+`BASE_SHA` is the Detect Changes base. The check enforces `coverage.thresholdPercent` (90%) of the
 changed executable lines and conditions of files that match `coverage.include` and no
 `coverage.exclude` in `.config/sharedkernel-ci.json`, and uploads `TestResults/coverage-gate.json` as
 `quality-evidence`. Missing or malformed evidence fails. Pushes, scheduled, and manual runs do not

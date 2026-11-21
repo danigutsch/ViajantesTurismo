@@ -15,7 +15,7 @@ remain stable.
 `Solution Build` runs alongside test slices and uploads revision-bound Release PDB hashes. The
 coverage job verifies the symbols rather than rebuilding the whole application.
 Missing, changed, stale, or undeclared symbols fail validation. Portable-PDB document checks and
-the 80% changed-code threshold remain unchanged.
+the 90% changed-code threshold remain unchanged.
 
 Library repository tooling selects and builds project graphs. Candidate tooling creates each
 hashed package set once; Linux and Windows independently consume those same bytes and validate
