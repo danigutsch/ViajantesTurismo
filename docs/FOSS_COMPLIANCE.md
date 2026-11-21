@@ -62,9 +62,28 @@ introduced dependency changes. NuGet audit remains at `high` in `Directory.Build
 for all projects during restore/build and may include advisory noise unrelated to the current change.
 The preview license corrections do not disable vulnerability checks.
 
-Treat the thresholds as intentionally different until the repository has reviewed full-solution NuGet
-audit volume. Lowering NuGet audit to `moderate` is a separate policy change because it can affect every
-developer build.
+### Full-solution audit comparison
+
+On November 21, 2026, locked restores at both thresholds passed for all 53 projects with SDK `11.0.100`.
+The run used the `nuget.org` audit source and the graph at
+[`6c0b3ad36`](https://github.com/danigutsch/ViajantesTurismo/commit/6c0b3ad36ea3b36cbb44d9a39987f44550918afd).
+
+| Minimum severity | Advisory diagnostics | Audit source diagnostics | Restore |
+| --- | ---: | ---: | --- |
+| `high` | 0 | 0 | Passed |
+| `moderate` | 0 | 0 | Passed |
+
+Use forced locked restores with fresh advisory data to compare thresholds on the same package graph.
+Both commands read `NuGetAuditMode=all` from `Directory.Build.props`.
+[NuGet audit documentation](https://learn.microsoft.com/en-us/nuget/concepts/auditing-packages)
+
+```sh
+dotnet restore ViajantesTurismo.slnx --locked-mode --force --no-http-cache -p:NuGetAuditLevel=high
+dotnet restore ViajantesTurismo.slnx --locked-mode --force --no-http-cache -p:NuGetAuditLevel=moderate
+```
+
+This comparison records the advisories available at the time of the run. Treat a change to the default
+restore threshold as a separate policy decision. [CI warning policy](ci/warning-policy.md)
 
 ## Third-party notices and provenance
 

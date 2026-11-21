@@ -1,13 +1,14 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Test transitive pin removal with a forced restore. Compare resolved graphs for
+         locked and lock-exempt projects. -->
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <MediatorRoslynAnalyzersVersion>5.12.0</MediatorRoslynAnalyzersVersion>
     <MediatorRoslynVersion>5.12.0</MediatorRoslynVersion>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Aspire packages -->
-    <PackageVersion Include="Aspire.Hosting" Version="13.6.5" />
+    <!-- Aspire hosting and service clients, plus S3 storage -->
     <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.Redis" Version="13.6.5" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.6.5" />
@@ -15,62 +16,88 @@
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.5" />
     <PackageVersion Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.6.5" />
     <PackageVersion Include="AWSSDK.S3" Version="4.0.104.12" />
-    <PackageVersion Include="CommunityToolkit.Aspire.Hosting.k6" Version="13.6.1" />
-    <PackageVersion Include="CommunityToolkit.Aspire.Hosting.OpenTelemetryCollector" Version="13.6.1" />
-    <!-- Code analysis packages -->
+    <!-- ASP.NET Core authentication and EF-backed Data Protection -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.15" />
+    <!--
+      The .NET 11 upgrade selected MSBuild 18.12.2. An unpinned MigrationService restore
+      resolves Framework 18.7.1 through Roslyn MSBuild Workspaces and EF Design.
+      Recheck after updating either dependency. Remove the pin when MigrationService
+      resolves the selected MSBuild version on its own.
+    -->
     <PackageVersion Include="Microsoft.Build.Framework" Version="18.12.2" />
+    <!--
+      SharedKernel Aspire packages request StringTools 18.9.6, which an unpinned restore
+      selects in AppHost, ArchitectureTests and HostedTests. Recheck after updating
+      SharedKernel. Remove the pin when those projects resolve the selected MSBuild
+      version on their own.
+    -->
     <PackageVersion Include="Microsoft.NET.StringTools" Version="18.12.2" />
+    <!-- Roslyn compiler, analyzers and EF design-time workspaces -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.12.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.12.0" />
+    <!--
+      EF Design 10.0.15 allows CSharp.Workspaces 5.0.0. Recheck after EF Design or Roslyn
+      updates. Remove the pin when an unpinned restore aligns Workspaces with the
+      compiler version and passes without package version conflicts.
+    -->
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.12.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.4" />
+    <!--
+      EF Design also allows MSBuild Workspaces 5.0.0. Recheck alongside CSharp.Workspaces.
+      Remove the pin when both workspaces resolve the selected Roslyn version without
+      package version conflicts.
+    -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.12.0" />
-    <PackageVersion Include="Microsoft.Playwright" Version="1.64.1" />
-    <!-- Playwright.TestAdapter requests ObjectModel >=17.3.0; use 17.14.1 (MIT) to satisfy license policy. -->
+    <!--
+      An unpinned HostedTests restore follows Playwright.TestAdapter's ObjectModel
+      17.3.0 minimum. That package declares Microsoft .NET Library terms.
+      Version 17.14.1 declares MIT.
+      Recheck after a TestAdapter upgrade. Remove the pin when the unpinned
+      HostedTests graph passes Dependency Review.
+    -->
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AWS" Version="1.21.0" />
+    <!-- PostgreSQL caching and EF Core provider -->
     <PackageVersion Include="Microsoft.Extensions.Caching.Postgres" Version="1.2.2" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
-    <!-- ASP.NET Core packages -->
+    <!-- Blazor components and OpenAPI generation -->
     <PackageVersion Include="Microsoft.AspNetCore.Components.QuickGrid" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="11.0.0" />
-    <!-- Transitive version alignment -->
-    <!-- Direct dependency of SharedKernel.OpenApi; aligned with Microsoft.AspNetCore.OpenApi's minimum version. -->
-    <PackageVersion Include="Microsoft.OpenApi" Version="3.11.0" />
-    <!-- Aspire.Npgsql requests older 10.x versions; pin the 11.0.0 that the locked projects resolve so lock-exempt projects match. -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="11.0.0" />
+    <!--
+      An unpinned restore selects Logging 6.0.0 in FileScanning.Benchmarks through
+      BenchmarkDotNet's diagnostics client and changes FileUpload.BenchmarkHost's
+      Aspire assets. Recheck when BenchmarkDotNet or Aspire changes. Remove the pin
+      when both benchmarks resolve the selected .NET Logging version.
+    -->
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="11.0.0" />
-    <!-- Extensions packages -->
+    <!-- EF tooling and runtime. Align their major version with the Npgsql EF provider. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.15" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.15" />
+    <!--
+      An unpinned Architecture.Analyzers.Tests restore follows Coverlet MTP's
+      DependencyInjection 10.0.12 minimum. Recheck after a Coverlet update.
+      Remove the pin when the analyzer tests resolve the selected DependencyInjection version.
+    -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Compliance.Abstractions" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Compliance.Redaction" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics" Version="11.0.0" />
+    <!--
+      An unpinned restore selects HealthChecks and HealthChecks.Abstractions 10.0.14
+      from Aspire in Admin.IntegrationEventWorker and Management.WebTests. Recheck
+      after an Aspire update. Remove the pin when both graphs resolve the selected
+      .NET HealthChecks version.
+    -->
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Telemetry" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="11.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="11.0.0" />
-    <!-- OpenTelemetry packages -->
-    <PackageVersion Include="OpenTelemetry" Version="1.21.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.21.0" />
+    <!-- OpenTelemetry hosting and instrumentation -->
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.21.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.21.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.21.0-beta.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.21.0-beta.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.21.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.21.0" />
-    <!-- Test packages -->
+    <!-- Test hosts, browser automation, assertions and coverage -->
     <PackageVersion Include="bunit" Version="2.15.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="11.0.0" />
@@ -79,7 +106,7 @@
     <PackageVersion Include="Reqnroll.xunit.v3" Version="3.3.4" />
     <PackageVersion Include="TngTech.ArchUnitNET.xUnitV3" Version="0.13.4" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.3" />
-    <!-- Other packages -->
+    <!-- Benchmarks, annotations, image processing and the PostgreSQL driver -->
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="JetBrains.Annotations" Version="2026.2.0" />
     <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="15.1.0" />
