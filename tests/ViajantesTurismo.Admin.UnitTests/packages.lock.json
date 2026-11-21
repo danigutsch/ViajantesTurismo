@@ -908,7 +908,10 @@
         }
       },
       "viajantesturismo.catalog.contracts.application": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.653.1, )"
+        }
       },
       "viajantesturismo.catalog.contracts.integrationevents": {
         "type": "Project",

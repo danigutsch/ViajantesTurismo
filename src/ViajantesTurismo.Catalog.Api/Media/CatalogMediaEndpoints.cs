@@ -21,15 +21,27 @@ namespace ViajantesTurismo.Catalog.Api.Media;
 /// <summary>Maps Catalog media intake, review, preview and public delivery.</summary>
 internal static class CatalogMediaEndpoints
 {
+    /// <summary>Gets the endpoint name of the management gallery read.</summary>
+    internal const string TourImagesEndpointName = nameof(ListTourImages);
+
     private const long MediaUploadMaxRequestBytes = MediaUploadValidationOptions.DefaultMaxLengthBytes + 16_384;
 
-    private static readonly string[] MediaImageContentTypes = ["image/avif", "image/jpeg", "image/png", "image/webp"];
+    private static readonly Dictionary<string, string> MediaContentTypesByFormat = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["avif"] = "image/avif",
+        ["jpg"] = "image/jpeg",
+        ["png"] = "image/png",
+        ["webp"] = "image/webp"
+    };
+
+    private static readonly string[] MediaImageContentTypes = [.. MediaContentTypesByFormat.Values];
 
     /// <summary>Registers media routes and preserves their binding and response metadata.</summary>
     internal static void MapCatalogMediaEndpoints(this IEndpointRouteBuilder versionedApi, IEndpointRouteBuilder managementCatalog)
     {
         managementCatalog.MapGet("/tours/{id:guid}/images", ListTourImages)
-            .WithName("ListTourImages")
+            .WithName(TourImagesEndpointName)
+            .Produces<CatalogMediaImageDto[]>(StatusCodes.Status200OK)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/media/images/{id:guid}/preview/{width:int}/{format}", GetManagementMediaPreview)
             .WithName("GetManagementMediaPreview")
@@ -207,6 +219,8 @@ internal static class CatalogMediaEndpoints
         Guid id,
         ICatalogTourReadModelStore store,
         IPublicMediaImageStore imageStore,
+        LinkGenerator routes,
+        HttpContext context,
         CancellationToken ct)
     {
         if (id == Guid.Empty)
@@ -221,7 +235,7 @@ internal static class CatalogMediaEndpoints
         }
 
         var images = await imageStore.ListByTour(id, ct);
-        return Results.Ok(images.Select(MapManagementMediaImage).ToArray());
+        return Results.Ok(images.Select(image => MapManagementMediaImage(image, routes, context)).ToArray());
     }
 
     private static async Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult, ForbidHttpResult>> UploadTourImage(
@@ -232,6 +246,7 @@ internal static class CatalogMediaEndpoints
         MediaImageUploadIntake intake,
         CatalogGalleryMutationGuard galleryGuard,
         IAuthorizationService authorization,
+        LinkGenerator routes,
         HttpContext context,
         CancellationToken ct)
     {
@@ -273,7 +288,7 @@ internal static class CatalogMediaEndpoints
 
         return result.Status switch
         {
-            ResultStatus.Ok => TypedResults.Created($"/catalog/media/images/{result.Value.Image.Id}", MapManagementMediaImage(result.Value.Image)),
+            ResultStatus.Ok => TypedResults.Created($"/catalog/media/images/{result.Value.Image.Id}", MapManagementMediaImage(result.Value.Image, routes, context)),
             ResultStatus.Invalid => ToValidationProblem(result.ErrorDetails ?? throw new InvalidOperationException("Invalid upload results must include validation details.")),
             ResultStatus.Conflict => TypedResults.Problem(result.ErrorDetails?.Detail ?? "The tour gallery changed while this upload was processing. Retry the upload.", statusCode: StatusCodes.Status409Conflict),
             ResultStatus.Unavailable => TypedResults.Problem("Media upload scanner is unavailable.", statusCode: StatusCodes.Status503ServiceUnavailable),
@@ -288,6 +303,7 @@ internal static class CatalogMediaEndpoints
         IPublicMediaImageStore imageStore,
         CatalogGalleryMutationGuard galleryGuard,
         IAuthorizationService authorization,
+        LinkGenerator routes,
         HttpContext context,
         CancellationToken ct)
     {
@@ -329,7 +345,7 @@ internal static class CatalogMediaEndpoints
 
         if (result.IsSuccess)
         {
-            return TypedResults.Ok(MapManagementMediaImage(result.Value));
+            return TypedResults.Ok(MapManagementMediaImage(result.Value, routes, context));
         }
 
         return result.Status switch
@@ -347,6 +363,7 @@ internal static class CatalogMediaEndpoints
         IPublicMediaImageStore imageStore,
         CatalogGalleryMutationGuard galleryGuard,
         IAuthorizationService authorization,
+        LinkGenerator routes,
         HttpContext context,
         TimeProvider timeProvider,
         CancellationToken ct)
@@ -391,7 +408,7 @@ internal static class CatalogMediaEndpoints
 
             await imageStore.Upsert(image, ct).ConfigureAwait(false);
             MediaAccessibilityTelemetry.RecordReview(edited ? "edited" : "approved", language, queueAge);
-            return TypedResults.Ok(MapManagementMediaImage(image));
+            return TypedResults.Ok(MapManagementMediaImage(image, routes, context));
         }
         catch (Exception exception) when (exception.ShouldHandleAsFailure(ct))
         {
@@ -453,11 +470,13 @@ internal static class CatalogMediaEndpoints
         return errors;
     }
 
-    private static CatalogMediaImageDto MapManagementMediaImage(PublicMediaImage image)
+    private static CatalogMediaImageDto MapManagementMediaImage(PublicMediaImage image, LinkGenerator routes, HttpContext context)
     {
+        var variants = image.ResponsiveVariants.OrderBy(variant => variant.Width).ToArray();
         return new CatalogMediaImageDto
         {
             Id = image.Id,
+            Links = MapManagementMediaLinks(image, variants, routes, context),
             AccessibilityTexts = [.. image.AccessibilityTexts.Select(text => new PublicMediaAccessibilityTextDto
             {
                 Language = text.Language.Value,
@@ -467,15 +486,38 @@ internal static class CatalogMediaEndpoints
                 RequiresHumanReview = text.RequiresHumanReview,
                 IsAiGenerated = text.IsAiGenerated
             })],
-            ResponsiveVariants = [.. image.ResponsiveVariants
-                .OrderBy(variant => variant.Width)
-                .Select(MapManagementResponsiveVariant)],
+            ResponsiveVariants = [.. variants.Select(MapManagementResponsiveVariant)],
             AltText = image.AltText,
             Caption = image.Caption,
             IsDecorative = image.IsDecorative,
             RequiresHumanReview = image.RequiresHumanReview,
             IsAiGenerated = image.IsAiGenerated
         };
+    }
+
+    private static List<HypermediaLink> MapManagementMediaLinks(
+        PublicMediaImage image, IReadOnlyList<MediaImageResponsiveVariant> variants, LinkGenerator routes, HttpContext context)
+    {
+        List<HypermediaLink> links = [.. image.TourLinks.OrderBy(link => link.CatalogTourId).Select(link =>
+            CatalogEndpointLinks.Get(routes, context, "collection", TourImagesEndpointName,
+                new RouteValueDictionary { ["id"] = link.CatalogTourId }))];
+
+        foreach (var variant in variants)
+        {
+            var format = MediaContentTypesByFormat.FirstOrDefault(pair =>
+                string.Equals(pair.Value, variant.ContentType, StringComparison.OrdinalIgnoreCase)).Key;
+            if (format is not null)
+            {
+                links.Add(CatalogEndpointLinks.Get(routes, context, "preview", nameof(GetManagementMediaPreview), new RouteValueDictionary
+                {
+                    ["id"] = image.Id,
+                    ["width"] = variant.Width,
+                    ["format"] = format
+                }));
+            }
+        }
+
+        return links;
     }
 
     private static CatalogMediaImageVariantDto MapManagementResponsiveVariant(MediaImageResponsiveVariant variant)
@@ -489,14 +531,7 @@ internal static class CatalogMediaEndpoints
         };
     }
 
-    private static string? GetMediaContentType(string format) => format.Trim().ToUpperInvariant() switch
-    {
-        "AVIF" => "image/avif",
-        "JPG" => "image/jpeg",
-        "PNG" => "image/png",
-        "WEBP" => "image/webp",
-        _ => null
-    };
+    private static string? GetMediaContentType(string format) => MediaContentTypesByFormat.GetValueOrDefault(format.Trim());
 
     private static async Task<ObjectReadResult?> TryOpenMediaObject(
         IObjectStore objectStore,

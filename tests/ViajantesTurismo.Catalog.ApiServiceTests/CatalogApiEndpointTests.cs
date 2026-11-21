@@ -8,6 +8,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
 using PandaBear.AI;
 using PandaBear.EventSourcing;
+using PandaBear.Testing.Http;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Api.Media;
@@ -155,10 +156,16 @@ public sealed class CatalogApiEndpointTests
             new Uri("/api/v1/catalog/public-content/home.hero", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var saved = await response.Content.ReadFromJsonAsync<PublicContentDto>(TestContext.Current.CancellationToken);
+        payload.ShouldHaveGetLink("self", "/api/v1/catalog/public-content/HOME.HERO");
+        foreach (var nestedVariant in payload.GetProperty("variants").EnumerateArray())
+        {
+            nestedVariant.TryGetProperty("links", out _).ShouldBeFalse();
+        }
+        var saved = payload.Deserialize<PublicContentDto>(JsonSerializerOptions.Web);
         _ = saved.ShouldNotBeNull();
         saved.Key.ShouldBe("HOME.HERO");
         saved.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil && variant.RequiresHumanReview);
@@ -439,10 +446,12 @@ public sealed class CatalogApiEndpointTests
         using var response = await client.GetAsync(
             new Uri("/api/v1/public/catalog/content/home/hero?culture=en-US", UriKind.Relative),
             TestContext.Current.CancellationToken);
-        var variant = await response.Content.ReadFromJsonAsync<PublicContentVariantDto>(TestContext.Current.CancellationToken);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
+        var variant = payload.Deserialize<PublicContentVariantDto>(JsonSerializerOptions.Web);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        payload.ShouldHaveGetLink("self", "/api/v1/public/catalog/content/HOME/HERO?culture=en-US");
         _ = variant.ShouldNotBeNull();
         variant.Title.ShouldBe("Welcome");
     }
@@ -583,11 +592,14 @@ public sealed class CatalogApiEndpointTests
             new Uri($"/api/v1/catalog/tours/{tourId}/images", UriKind.Relative),
             content,
             TestContext.Current.CancellationToken);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
-        var image = await response.Content.ReadFromJsonAsync<CatalogMediaImageDto>(TestContext.Current.CancellationToken);
+        payload.ShouldHaveGetLink("collection", $"/api/v1/catalog/tours/{tourId}/images");
+        var image = payload.Deserialize<CatalogMediaImageDto>(JsonSerializerOptions.Web);
         image.ShouldNotBeNull();
+        response.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe($"/catalog/media/images/{image.Id}");
         image.AltText.ShouldBe("Sunset over the mountains");
         image.Caption.ShouldBe("Evening arrival");
         var storedImage = await mediaStore.GetImage(image.Id, TestContext.Current.CancellationToken);
@@ -677,6 +689,9 @@ public sealed class CatalogApiEndpointTests
 
             // Assert
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            document.RootElement.ShouldAllHaveLink("collection");
+            returnedImage.ShouldHaveGetLink("collection", $"/api/v1/catalog/tours/{tourId}/images");
+            returnedImage.ShouldHaveGetLink("preview", $"/api/v1/catalog/media/images/{image.Id}/preview/640/jpg");
             returnedImage.GetProperty("id").GetGuid().ShouldBe(image.Id);
             returnedImage.TryGetProperty("sourceObjectKey", out _).ShouldBeFalse();
             variant.TryGetProperty("objectKey", out _).ShouldBeFalse();
@@ -925,9 +940,20 @@ public sealed class CatalogApiEndpointTests
             await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
             cancellationToken: TestContext.Current.CancellationToken);
         var tour = document.RootElement.EnumerateArray().ShouldHaveSingleItem();
+        using var details = await client.GetAsync(
+            new Uri("/api/v1/public/catalog/tours/public-tour", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+        var detailPayload = await details.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        document.RootElement.ShouldAllHaveLink("self");
+        tour.ShouldHaveGetLink("self", "/api/v1/public/catalog/tours/public-tour");
+        tour.GetProperty("links").GetArrayLength().ShouldBe(1);
+        details.StatusCode.ShouldBe(HttpStatusCode.OK);
+        detailPayload.ShouldHaveGetLink("self", "/api/v1/public/catalog/tours/public-tour");
+        detailPayload.ShouldHaveGetLink("collection", "/api/v1/public/catalog/tours");
+        detailPayload.GetProperty("links").GetArrayLength().ShouldBe(2);
         tour.GetProperty("title").GetString().ShouldBe("Public Tour");
         tour.TryGetProperty("summary", out _).ShouldBeTrue();
         tour.TryGetProperty("id", out _).ShouldBeFalse();
@@ -1107,10 +1133,13 @@ public sealed class CatalogApiEndpointTests
             new Uri($"/api/v1/catalog/tours/{tourId}/presentation", UriKind.Relative),
             request,
             TestContext.Current.CancellationToken);
+        var payload = await response.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var tour = await response.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
+        payload.ShouldHaveGetLink("self", $"/api/v1/catalog/tours/{tourId}");
+        payload.ShouldHaveGetLink("images", $"/api/v1/catalog/tours/{tourId}/images");
+        var tour = payload.Deserialize<CatalogTourDto>(JsonSerializerOptions.Web);
         tour.ShouldNotBeNull();
         tour.Slug.ShouldBe("sao-paulo-tour");
     }

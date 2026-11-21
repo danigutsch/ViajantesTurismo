@@ -48,6 +48,7 @@ public sealed class PublicCatalogApiClientTests
         tours.Length.ShouldBe(2);
         tours[0].Slug.ShouldBe("first-tour");
         tours[1].Slug.ShouldBe("second-tour");
+        tours[0].Links.ShouldBeEmpty();
     }
 
     [Fact]
@@ -60,6 +61,7 @@ public sealed class PublicCatalogApiClientTests
                 "title":"First tour",
                 "slug":"first-tour",
                 "summary":"First tour summary",
+                "links":[{"rel":"self","href":"/api/v1/public/catalog/tours/first-tour","method":"GET"}],
                 "images":[
                   {
                     "id":"55555555-5555-5555-5555-555555555555",
@@ -85,6 +87,10 @@ public sealed class PublicCatalogApiClientTests
         // Assert
         var tours = outcome.Value.ShouldNotBeNull();
         var tour = tours.ShouldHaveSingleItem();
+        var self = tour.Links.ShouldHaveSingleItem();
+        self.Rel.ShouldBe("self");
+        self.Href.ShouldBe("/api/v1/public/catalog/tours/first-tour");
+        self.Method.ShouldBe("GET");
         var image = tour.Images.ShouldHaveSingleItem();
         image.IsCover.ShouldBeTrue();
         image.Id.ShouldBe(Guid.Parse("55555555-5555-5555-5555-555555555555"));
@@ -284,7 +290,8 @@ public sealed class PublicCatalogApiClientTests
                   "seoTitle":"Cicloturismo no Brasil",
                   "metaDescription":null,
                   "shareSummary":null,
-                  "requiresHumanReview":false
+                  "requiresHumanReview":false,
+                  "links":[{"rel":"self","href":"/api/v1/public/catalog/content/HOME.HERO?culture=pt-BR","method":"GET"}]
                 }
                 """);
         });
@@ -297,6 +304,10 @@ public sealed class PublicCatalogApiClientTests
         var content = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe(expectedPath);
         content.Title.ShouldBe("Bem-vindo");
+        var self = content.Links.ShouldNotBeNull().ShouldHaveSingleItem();
+        self.Rel.ShouldBe("self");
+        self.Href.ShouldBe("/api/v1/public/catalog/content/HOME.HERO?culture=pt-BR");
+        self.Method.ShouldBe("GET");
     }
 
     [Fact]

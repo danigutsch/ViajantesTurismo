@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using PandaBear.BuildingBlocks;
+
 namespace ViajantesTurismo.Catalog.Contracts.Application;
 
 /// <summary>
@@ -5,6 +8,10 @@ namespace ViajantesTurismo.Catalog.Contracts.Application;
 /// </summary>
 public sealed class PublicContentDto
 {
+    /// <summary>Gets links for this managed content entry.</summary>
+    [JsonPropertyName("links")]
+    public IReadOnlyList<HypermediaLink> Links { get; init; } = [];
+
     /// <summary>
     /// Gets or sets the stable content key.
     /// </summary>

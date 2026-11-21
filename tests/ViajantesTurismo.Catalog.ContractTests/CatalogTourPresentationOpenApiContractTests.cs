@@ -40,6 +40,8 @@ public sealed class CatalogTourPresentationOpenApiContractTests
         // Assert
         summaryReference.ShouldBe("#/components/schemas/TourSummaryDto");
         detailsReference.ShouldBe("#/components/schemas/TourDetailsDto");
+        summaryProperties.ContainsKey("links").ShouldBeTrue();
+        detailsProperties.ContainsKey("links").ShouldBeTrue();
         summaryProperties.ContainsKey("summary").ShouldBeTrue();
         detailsProperties.ContainsKey("description").ShouldBeTrue();
         detailsProperties.ContainsKey("itinerary").ShouldBeTrue();
