@@ -54,6 +54,30 @@ state or a bounded synchronization signal when work spans hosts.
 | Catalog projection retry | One synthetic tour event, the known projection checkpoint and a controlled retry outcome. Recreate the runner fixture each time. | `CatalogProjectionRunnerTests` in Catalog.UnitTests inspects projection progress against the known state. |
 | Branding duplicate delivery | One synthetic, versioned Branding event, an owned PostgreSQL database and a repeat delivery with the same synthetic identity. | `BrandingProjectionPostgreSqlTests` in HostedTests verifies the stored projection outcome. |
 
+## Run the Admin Tour retirement fixture
+
+Use a source checkout with the repository SDK and [pinned packages](../sharedkernel/development.md) staged.
+Run the fixture from the repository root. It uses the in-process Admin test server and the repository's test
+bearer issuer. Each attempt creates a new host, tour store, unit of work and client. The application clock is fixed
+and the scenario seeds at most one synthetic booking.
+
+```sh
+dotnet test --project tests/ViajantesTurismo.Admin.ApiServiceTests/ViajantesTurismo.Admin.ApiServiceTests.csproj \
+  -c Release --filter-class '*TourRetirementReproductionTests'
+```
+
+Each case runs twice. An Admin with no active booking gets `202` and can query the pending retirement with `200`.
+An Admin with a pending booking gets `409`. A Reader with a valid test token gets `403`. Both rejections leave the
+tour and booking state intact and perform no save. The test checks the real routing, permission, mediator and
+domain boundaries. Browser paths and identity-provider conformance have separate fixtures in the inventory.
+
+Set `VIAJANTESTURISMO_REPRODUCTION_MANIFESTS=1` for the same command to keep the six approved attempts in
+`TestResults/reproduction/`. The filename is the attempt ID. The manifest uses the Git revision stamped in the
+test assembly and the trace ID observed on the server. Standard test runs use temporary files and dispose them.
+The registered outcome codes are `accepted-pending`, `active-bookings-conflict`, and `forbidden`. The fixture
+registers `admin-api` as its only diagnostic resource. To repeat a report, check out its revision and run the
+fixture class again.
+
 ## Reproduction artifact contract
 
 The reproducible input is source-controlled fixture code plus a stable scenario identifier, schema
@@ -67,7 +91,7 @@ following fields in a reproduction manifest.
 | `seed` | Optional fixture generator seed for synthetic state |
 | `attemptId`, `traceIds` | Fresh opaque run ID and trace IDs observed for this test, when available |
 | `result`, `outcomeCode`, `resourceStates` | Controlled values from the fixture, with allowlisted diagnostic resource names |
-| `startedUtc`, `durationMs` | Bounded run timing |
+| `startedUtc`, `durationMs` | UTC start time and elapsed time up to ten minutes |
 
 Write the manifest as UTF-8 JSON with a 64 KiB size limit using the allowlisted fields. Reject
 unknown fields and values outside the documented format in any reader. Keep existing safe MTP

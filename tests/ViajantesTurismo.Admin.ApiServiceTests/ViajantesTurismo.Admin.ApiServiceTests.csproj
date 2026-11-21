@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Admin.ApiServiceTests</RootNamespace>
+        <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -38,6 +39,14 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.UploadWire.Testing\ViajantesTurismo.UploadWire.Testing.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="../fixtures/reproduction/ReproductionManifest.cs" Link="Reproduction/Shared/ReproductionManifest.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestCodec.cs" Link="Reproduction/Shared/ReproductionManifestCodec.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestPayload.cs" Link="Reproduction/Shared/ReproductionManifestPayload.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionOutcome.cs" Link="Reproduction/Shared/ReproductionOutcome.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionSpecification.cs" Link="Reproduction/Shared/ReproductionSpecification.cs" />
     </ItemGroup>
 
 </Project>
