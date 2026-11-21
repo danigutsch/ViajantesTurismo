@@ -76,6 +76,14 @@ dotnet test --project tests/ViajantesTurismo.HostedTests \
 - Default to `AspireSystemTestBase<TFixture>` when a test owns its own data and does not require DB resets.
 - No serial system-test base or serial browser tests currently exist. Keep scenarios parallel-safe through owned data
   instead of destructive shared-state resets.
+- Prefer API-assisted setup (`ApiTestExtensions`) and navigate by known IDs (`/tours/{id}`, `/bookings/{id}`).
+- Make assertions deterministic: prefer known routes, hrefs, unique identifiers,
+  explicit search/filter state, or other stable semantic locators.
+- For grid assertions, avoid assuming page 1 and avoid scanning pages until a row is found.
+  If the behavior under test is not pagination, constrain the dataset or navigate directly by known ID.
+- Prefer asserting semantic state (status text, details page values) over fragile CSS-class-only checks.
+- For async upload or wizard flows, wait on the first stable user-visible state transition (for example
+  success/warning text or an enabled primary action) before asserting secondary badges or decorative UI.
 
 ## Reproduce Management Tour schedule validation
 
@@ -95,19 +103,11 @@ and end date. A short schedule shows the duration validation message and leaves 
 
 Set `VIAJANTESTURISMO_REPRODUCTION_MANIFESTS=1` for the same command to keep four validated manifests under
 `TestResults/reproduction/` under the scenario `browser.tour-edit-duration`. Each records its source revision,
-an opaque attempt ID, timing, and an approved state
-for `management-web` and `admin-api`. The outcome codes are `edit-persisted` and `short-duration-rejected`.
+an opaque attempt ID, timing, and an approved state for `management-web` and `admin-api`.
+The outcome codes are `edit-persisted` and `short-duration-rejected`.
 The fixture leaves `traceIds` empty because it has no server-side trace observation. The manifest excludes
 credentials, records, route parameters, screenshots, and browser state. The fixture exercises this named
 Tour workflow with the test realm only. [Reproduction artifact contract](../../../../docs/testing/reproduction-contract.md)
-- Prefer API-assisted setup (`ApiTestExtensions`) and navigate by known IDs (`/tours/{id}`, `/bookings/{id}`).
-- Make assertions deterministic: prefer known routes, hrefs, unique identifiers,
-  explicit search/filter state, or other stable semantic locators.
-- For grid assertions, avoid assuming page 1 and avoid scanning pages until a row is found.
-  If the behavior under test is not pagination, constrain the dataset or navigate directly by known ID.
-- Prefer asserting semantic state (status text, details page values) over fragile CSS-class-only checks.
-- For async upload or wizard flows, wait on the first stable user-visible state transition (for example
-  success/warning text or an enabled primary action) before asserting secondary badges or decorative UI.
 
 ## Specialized helper classes
 
