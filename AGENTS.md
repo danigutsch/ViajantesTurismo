@@ -58,7 +58,7 @@ Use nested `AGENTS.md` files for scoped rules.
     and wrap every body line to 100 characters or less.
 - Put test-host arguments after `--` when required.
 - .NET formatting: `dotnet format`. CI gates `dotnet format ViajantesTurismo.slnx --no-restore --verify-no-changes` in the
-    `Format` job and requires 80% coverage of changed lines in `Quality Gate`; run the format check before pushing and
+    `Format` job and requires 90% coverage of changed lines in `Quality Gate`; run the format check before pushing and
     give every new branch a test. See `docs/ci/quality-gates.md`.
 - Docs/scripts/spec quality checks run in the CI Lint job: shellcheck, markdownlint,
     `sharedkernel-repo verify-text-encoding|verify-line-endings|verify-json|verify-links|verify-gherkin|verify-dependabot|verify`,

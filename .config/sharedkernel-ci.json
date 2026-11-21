@@ -179,7 +179,7 @@
     }
   ],
   "coverage": {
-    "thresholdPercent": 80,
+    "thresholdPercent": 90,
     "include": [
       "src/*.cs",
       "src/*.razor"

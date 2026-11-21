@@ -728,7 +728,7 @@ declarative and domain-focused; do not turn them into UI or infrastructure tests
 
 ### Coverage Goals
 
-- **Changed executable code:** CI enforces 80% combined line and condition coverage
+- **Changed executable code:** CI enforces 90% combined line and condition coverage
 - **Whole-repository coverage:** trend reporting on full runs
 - **Integration Tests:** All API endpoints
 - **Behaviour Tests:** Business-critical scenarios
