@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Catalog.UnitTests</RootNamespace>
+        <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -49,6 +50,14 @@
 
     <ItemGroup>
         <Content Include="../fixtures/media-accessibility/*" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="../fixtures/reproduction/ReproductionManifest.cs" Link="Reproduction/ReproductionManifest.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestCodec.cs" Link="Reproduction/ReproductionManifestCodec.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestPayload.cs" Link="Reproduction/ReproductionManifestPayload.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionOutcome.cs" Link="Reproduction/ReproductionOutcome.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionSpecification.cs" Link="Reproduction/ReproductionSpecification.cs" />
     </ItemGroup>
 
     <ItemGroup>
