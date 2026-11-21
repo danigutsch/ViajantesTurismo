@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.Management.WebTests</RootNamespace>
+        <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -28,6 +29,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Compile Include="../fixtures/reproduction/ReproductionManifest.cs" Link="Reproduction/Shared/ReproductionManifest.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestCodec.cs" Link="Reproduction/Shared/ReproductionManifestCodec.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionManifestPayload.cs" Link="Reproduction/Shared/ReproductionManifestPayload.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionOutcome.cs" Link="Reproduction/Shared/ReproductionOutcome.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionSpecification.cs" Link="Reproduction/Shared/ReproductionSpecification.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="bunit"/>
         <PackageReference Include="Microsoft.AspNetCore.TestHost"/>
         <PackageReference Include="coverlet.MTP">
@@ -38,6 +47,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
+        <PackageReference Include="PandaBear.SharedKernel.IO" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Http" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Logging" />
