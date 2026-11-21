@@ -25,6 +25,7 @@ internal static class ToursCreateTourEndpoint
         toursGroup.MapPost("/", CreateTour)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.TourWrite)
+            .WithCreatedResourceLocation()
             .WithAdminMetadata("CreateTour", "Creates a new tour.", "Creates a new tour.");
     }
 
@@ -32,6 +33,8 @@ internal static class ToursCreateTourEndpoint
         [FromBody] CreateTourDto tourDto,
         [FromServices] ISender sender,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(tourDto);
@@ -69,6 +72,10 @@ internal static class ToursCreateTourEndpoint
             return TourErrors.TourNotFound().ToNotFound();
         }
 
-        return TypedResults.Created($"/api/v1/tours/{tourId}", createdTour);
+        var (location, links) = ToursEndpoints.GetResourceLinks(context, linkGenerator).For(tourId);
+        return TypedResults.Created(location, createdTour with
+        {
+            Links = links
+        });
     }
 }

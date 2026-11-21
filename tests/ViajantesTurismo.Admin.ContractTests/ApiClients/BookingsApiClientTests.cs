@@ -47,6 +47,7 @@ public sealed class BookingsApiClientTests
         var booking = outcome.Value.ShouldNotBeNull();
         requestPath.ShouldBe("/api/v1/bookings/11111111-1111-1111-1111-111111111111");
         booking.CustomerName.ShouldBe("Ada Lovelace");
+        booking.Links.ShouldBeNull();
         booking.RoomType.ShouldBe(RoomTypeDto.DoubleOccupancy);
         booking.PrincipalBikeType.ShouldBe(BikeTypeDto.Regular);
         booking.CompanionBikeType.ShouldBeNull();

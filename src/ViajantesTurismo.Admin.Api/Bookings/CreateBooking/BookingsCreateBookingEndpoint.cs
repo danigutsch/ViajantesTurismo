@@ -25,6 +25,7 @@ internal static class BookingsCreateBookingEndpoint
         bookingsGroup.MapPost("/", CreateBooking)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.BookingWrite)
+            .WithCreatedResourceLocation()
             .WithAdminMetadata("CreateBooking", "Creates a new booking for a tour.", "Creates a new booking.");
     }
 
@@ -32,6 +33,8 @@ internal static class BookingsCreateBookingEndpoint
         [FromBody] CreateBookingDto dto,
         [FromServices] ISender sender,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
@@ -63,7 +66,14 @@ internal static class BookingsCreateBookingEndpoint
         return await AdminEndpointResults.GetBookingResponse<Results<Created<GetBookingDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem>>(
             result.Value,
             queryService,
-            booking => TypedResults.Created($"/api/v1/bookings/{result.Value}", booking),
+            booking =>
+            {
+                var (location, links) = BookingEndpoints.GetResourceLinks(context, linkGenerator).For(booking.Id);
+                return TypedResults.Created(location, booking with
+                {
+                    Links = links
+                });
+            },
             bookingId => BookingErrors.BookingNotFound().ToNotFound(),
             ct);
     }

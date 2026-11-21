@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using PandaBear.BuildingBlocks;
+
 namespace ViajantesTurismo.Admin.Contracts.Application;
 
 /// <summary>
@@ -5,6 +8,13 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 /// </summary>
 public sealed record GetBookingDto
 {
+    /// <summary>Gets navigation links supplied by the Admin HTTP API.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<HypermediaLink>? Links
+    {
+        get; init;
+    }
+
     /// <summary>Gets the protected financial concurrency version once the EUR workflow has been adopted.</summary>
     public long? FinancialVersion
     {

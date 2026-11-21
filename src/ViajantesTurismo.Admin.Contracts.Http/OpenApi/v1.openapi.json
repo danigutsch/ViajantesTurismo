@@ -26,6 +26,16 @@
         "responses": {
           "201": {
             "description": "Created",
+            "headers": {
+              "Location": {
+                "description": "URI reference for the created resource, also returned as its self link.",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uri-reference"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -421,6 +431,16 @@
         "responses": {
           "201": {
             "description": "Created",
+            "headers": {
+              "Location": {
+                "description": "URI reference for the created resource, also returned as its self link.",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uri-reference"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -788,6 +808,16 @@
         "responses": {
           "201": {
             "description": "Created",
+            "headers": {
+              "Location": {
+                "description": "URI reference for the created resource, also returned as its self link.",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uri-reference"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -6382,6 +6412,15 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -6569,6 +6608,15 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "financialVersion": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
@@ -6972,6 +7020,15 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -7954,6 +8011,15 @@
         ],
         "type": "object",
         "properties": {
+          "links": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -8122,6 +8188,25 @@
                 "type": "string"
               }
             }
+          }
+        }
+      },
+      "HypermediaLink": {
+        "required": [
+          "rel",
+          "href",
+          "method"
+        ],
+        "type": "object",
+        "properties": {
+          "rel": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
           }
         }
       },

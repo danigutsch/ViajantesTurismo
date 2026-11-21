@@ -19,6 +19,9 @@ namespace ViajantesTurismo.Admin.Api.Bookings;
 /// </summary>
 internal static class BookingEndpoints
 {
+    private const string ListEndpoint = nameof(GetBookings);
+    private const string ItemEndpoint = nameof(GetBookingById);
+
     /// <summary>
     /// Maps all booking-related endpoints to the application.
     /// </summary>
@@ -30,13 +33,13 @@ internal static class BookingEndpoints
 
         var bookingsGroup = app.MapBookingsGroup();
 
-        bookingsGroup.MapGet("/", GetAllBookings)
+        bookingsGroup.MapGet("/", GetBookings)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
-            .WithAdminMetadata("GetBookings", "Retrieves all bookings.", "Retrieves all bookings.");
+            .WithAdminMetadata(ListEndpoint, "Retrieves all bookings.", "Retrieves all bookings.");
 
         bookingsGroup.MapGet("/{id:guid}", GetBookingById)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
-            .WithAdminMetadata("GetBookingById", "Retrieves a booking by its ID.", "Retrieves a booking by its ID.");
+            .WithAdminMetadata(ItemEndpoint, "Retrieves a booking by its ID.", "Retrieves a booking by its ID.");
 
         bookingsGroup.MapGet("/tour/{tourId:guid}", GetBookingsByTourId)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
@@ -57,17 +60,21 @@ internal static class BookingEndpoints
         bookingsGroup.MapCompleteBookingEndpoint();
     }
 
-    private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetAllBookings(
+    private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetBookings(
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var bookings = await queryService.GetAllBookings(ct);
-        return TypedResults.Ok(bookings);
+        return TypedResults.Ok(WithResourceLinks(bookings, context, linkGenerator));
     }
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>>> GetBookingById(
         [FromRoute] Guid id,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var booking = await queryService.GetBookingById(id, ct);
@@ -76,25 +83,42 @@ internal static class BookingEndpoints
             return BookingErrors.BookingNotFound().ToNotFound();
         }
 
-        return TypedResults.Ok(booking);
+        return TypedResults.Ok(booking with
+        {
+            Links = GetResourceLinks(context, linkGenerator).For(id).Links
+        });
     }
 
     private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetBookingsByTourId(
         [FromRoute] Guid tourId,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var bookings = await queryService.GetBookingsByTourId(tourId, ct);
-        return TypedResults.Ok(bookings);
+        return TypedResults.Ok(WithResourceLinks(bookings, context, linkGenerator));
     }
 
     private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetBookingsByCustomerId(
         [FromRoute] Guid customerId,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var bookings = await queryService.GetBookingsByCustomerId(customerId, ct);
-        return TypedResults.Ok(bookings);
+        return TypedResults.Ok(WithResourceLinks(bookings, context, linkGenerator));
     }
 
+    private static IReadOnlyList<GetBookingDto> WithResourceLinks(
+        IReadOnlyList<GetBookingDto> bookings, HttpContext context, LinkGenerator linkGenerator)
+    {
+        var links = GetResourceLinks(context, linkGenerator);
+        return [.. bookings.Select(booking => booking with { Links = links.For(booking.Id).Links })];
+    }
+
+    /// <summary>Creates the link factory for booking representations.</summary>
+    internal static AdminResourceLinks GetResourceLinks(HttpContext context, LinkGenerator linkGenerator) =>
+        new(context, linkGenerator, ItemEndpoint, ListEndpoint);
 }

@@ -68,6 +68,7 @@ public sealed class CustomersApiClientTests
         var customers = outcome.Value.ShouldNotBeNull();
         var customer = customers.ShouldHaveSingleItem();
         customer.FirstName.ShouldBe("Alice");
+        customer.Links.ShouldBeNull();
     }
 
     [Fact]

@@ -21,6 +21,7 @@ internal static class CreateCustomerEndpoint
         customersGroup.MapPost("/", CreateCustomer)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.CustomerWrite)
+            .WithCreatedResourceLocation()
             .WithName("CreateCustomer")
             .WithDescription("Creates a new customer with all required information.")
             .WithSummary("Creates a new customer.");
@@ -31,6 +32,8 @@ internal static class CreateCustomerEndpoint
             [FromBody] CreateCustomerDto dto,
             [FromServices] ISender sender,
             [FromServices] IQueryService queryService,
+            LinkGenerator linkGenerator,
+            HttpContext context,
             CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
@@ -63,6 +66,7 @@ internal static class CreateCustomerEndpoint
             return CustomerErrors.CustomerNotFound().ToNotFound();
         }
 
+        var (location, links) = CustomerEndpoints.GetResourceLinks(context, linkGenerator).For(customerDto.Id);
         var getCustomerDto = new GetCustomerDto
         {
             Id = customerDto.Id,
@@ -71,9 +75,10 @@ internal static class CreateCustomerEndpoint
             Email = customerDto.ContactInfo.Email,
             Mobile = customerDto.ContactInfo.Mobile,
             Nationality = customerDto.PersonalInfo.Nationality,
-            BikeType = customerDto.PhysicalInfo.BikeType
+            BikeType = customerDto.PhysicalInfo.BikeType,
+            Links = links
         };
 
-        return TypedResults.Created($"/api/v1/customers/{result.Value}", getCustomerDto);
+        return TypedResults.Created(location, getCustomerDto);
     }
 }
