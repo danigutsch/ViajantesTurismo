@@ -91,7 +91,7 @@ settings aligned with this policy by enabling **Require signed commits** for `ma
 ## Action versioning policy
 
 All external GitHub Actions used in repository workflows are pinned to immutable commit
-SHAs with the upstream release noted in an inline comment, for example
+SHAs. Third-party references include the upstream release as an inline comment, for example
 `actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2`.
 
 ### Rationale
@@ -107,17 +107,10 @@ Immutable SHA pinning is the repository baseline for workflow supply-chain harde
 
 ### Trusted actions
 
-The workflow uses a small reviewed action set.
-
-| Action | Purpose |
-| --- | --- |
-| `actions/checkout` | Repository checkout |
-| `actions/setup-dotnet` | .NET SDK provisioning |
-| `actions/cache` | Reviewed dependency caching where configured |
-| `actions/download-artifact` | Retrieve SARIF artifact for the dedicated code-scanning upload job |
-| `actions/upload-artifact` | Test result artifact upload |
-| `actions/dependency-review-action` | PR dependency and license review |
-| `github/codeql-action/upload-sarif` | Upload SARIF results from secret scanning |
+The [action provenance review](pin-update-review.md#current-action-provenance) records the direct
+and inherited action paths, the upstream release revisions, and where each workflow receives its
+declared permissions. The SharedKernel pin manifest is authoritative for third-party Action SHAs
+and release comments.
 
 Coverage collection uses `coverlet.MTP` 10.1.0 and the pinned local
 `dotnet-reportgenerator-globaltool` 5.5.11 for HTML and merged Cobertura. The C# repository tool

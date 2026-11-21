@@ -9,12 +9,12 @@ which ones remain deferred for a later implementation or tooling decision.
 ## Current posture
 
 - External GitHub Actions are SHA-pinned in `.github/workflows/**`.
-- Workflow jobs use least-privilege `permissions`, with elevated scopes isolated to the
-  dedicated SARIF upload job in `.github/workflows/secret-scan.yml`.
+- Workflow jobs use least-privilege `permissions`. The declared write scopes and the separate
+  Roadmap App token are listed in the [action provenance review](pin-update-review.md#current-action-provenance).
 - The shared CI setup path restores NuGet packages in locked mode and restores repo-pinned
   `.NET` local tools through `.config/dotnet-tools.json`.
-- `actionlint` and `gitleaks` are downloaded as pinned release artifacts and verified with
-  upstream SHA-256 checksum files before installation.
+- `actionlint` uses its release checksum file. `gitleaks` uses the checksum recorded in the
+  pinned SharedKernel scanner action. Both are verified before extraction.
 - The shared devcontainer smoke path now uses a repo-owned installer that pins both Node.js
   and `@devcontainers/cli`, verifies the Node archive against the published `SHASUMS256.txt`
   manifest, and verifies the CLI tarball against npm registry integrity metadata before use.
@@ -95,10 +95,11 @@ When CI downloads a binary directly, the baseline is:
 
 Current state:
 
-- `.github/workflows/actionlint.yml` meets the checksum baseline but does not yet verify
-  publisher provenance beyond upstream checksums.
-- `.github/workflows/secret-scan.yml` meets the checksum baseline but does not yet verify
-  publisher provenance beyond upstream checksums.
+- `.github/workflows/actionlint.yml` uses the pinned SharedKernel installer with upstream
+  same-release checksum verification. Both the inherited workflow and the application Lint job
+  install ShellCheck at the runner distribution's package version.
+- `.github/workflows/secret-scan.yml` verifies the Gitleaks archive against the checksum
+  committed with the pinned SharedKernel scanner action.
 - `.github/workflows/devcontainer-smoke.yml` runs `sharedkernel-repo verify-devcontainer`, which
   installs its Dev Container CLI and Node.js from archives whose hashes are pinned in the tool and
   pipes no remote installer script into `sh`.
