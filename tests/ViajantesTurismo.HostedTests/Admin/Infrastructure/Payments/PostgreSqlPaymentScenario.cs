@@ -1,6 +1,7 @@
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection;
+using Npgsql;
 using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -23,6 +24,26 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
     public string ConnectionString => _database.ConnectionString;
     /// <summary>Opens a payment test session against the scenario database.</summary>
     public PaymentTestSession Open() => PaymentTestSession.Create(_database.ConnectionString, _protection, Clock);
+
+    /// <summary>Waits until PostgreSQL reports a payment contender queued on the owning booking's advisory lock.</summary>
+    public async Task WaitForPaymentContention(CancellationToken ct)
+    {
+        await using var dataSource = NpgsqlDataSource.Create(ConnectionString);
+        await using var command = dataSource.CreateCommand("""
+            SELECT EXISTS (
+                SELECT 1 FROM pg_locks
+                WHERE locktype = 'advisory' AND NOT granted
+                  AND database = (SELECT oid FROM pg_database WHERE datname = current_database())
+            )
+            """);
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        budget.CancelAfter(TimeSpan.FromSeconds(10));
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(25));
+        while (await command.ExecuteScalarAsync(budget.Token) is not true)
+        {
+            _ = await timer.WaitForNextTickAsync(budget.Token);
+        }
+    }
     /// <summary>Seeds a tour with an approved schedule and a 120 euro receipt against a 100 euro installment, leaving 20 euro of customer credit, and returns the booking, receipt and installment ids.</summary>
     public async Task<(Guid BookingId, Guid ReceiptId, Guid InstallmentId)> SeedCustomerCredit(CancellationToken ct)
     {

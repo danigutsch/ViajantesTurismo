@@ -5,6 +5,13 @@ namespace ViajantesTurismo.Admin.Domain.Documents;
 /// <summary>Creates expected document-lineage failures.</summary>
 public static class DocumentLineageErrors
 {
+    /// <summary>Returns a failure when a caller supplied an empty lineage identifier.</summary>
+    public static Result<DocumentLineage> LineageIdRequired() =>
+        Result.Invalid(
+            detail: "lineageId is required.",
+            field: "lineageId",
+            message: "lineageId is required.").ConvertError<DocumentLineage>();
+
     /// <summary>Returns a failure when the booking identifier is missing.</summary>
     public static Result<DocumentLineage> BookingIdRequired() =>
         Result.Invalid(

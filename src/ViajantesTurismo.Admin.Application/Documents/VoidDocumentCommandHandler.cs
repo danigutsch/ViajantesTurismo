@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
@@ -7,13 +8,14 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 public sealed class VoidDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
-    TimeProvider timeProvider,
-    DocumentAuditWriter documentAuditWriter)
+    TimeProvider timeProvider)
+    : ICommandHandler<VoidDocumentCommand, Result>
 {
     /// <summary>Records a bounded staff reason and persists the voided status.</summary>
-    public async Task<Result> Handle(VoidDocumentCommand command, CancellationToken ct)
+    public async ValueTask<Result> Handle(VoidDocumentCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        command.ClearRejectionAudit();
         if (command.AuditContext is null)
         {
             return DocumentAuditErrors.AuditContextRequired();
@@ -24,14 +26,8 @@ public sealed class VoidDocumentCommandHandler(
         var document = lineage?.GetRevision(command.DocumentId);
         if (lineage is null || document is null)
         {
-            return await RecordAndReturn(
-                DocumentErrors.DocumentNotFound(),
-                command.AuditContext,
-                command.DocumentId,
-                null,
-                null,
-                DocumentAuditReasonCode.DocumentNotFound,
-                ct);
+            command.DeferRejectionAudit(DocumentAuditReasonCode.DocumentNotFound);
+            return DocumentErrors.DocumentNotFound();
         }
 
         if (document.RequiresPaymentInstructionWorkflow)
@@ -42,45 +38,15 @@ public sealed class VoidDocumentCommandHandler(
         var result = lineage.Void(document.Id, command.Reason, now, command.AuditContext);
         if (result.IsFailure)
         {
-            return await RecordAndReturn(
-                result,
-                command.AuditContext,
-                document.Id,
-                document.BookingId,
-                document.Revision,
+            command.DeferRejectionAudit(
                 result.Status == ResultStatus.Invalid
                     ? DocumentAuditReasonCode.ValidationRejected
                     : DocumentAuditReasonCode.StateConflict,
-                ct);
+                document);
+            return result;
         }
 
         await unitOfWork.SaveEntities(ct);
         return Result.Ok();
-    }
-
-    private async Task<Result> RecordAndReturn(
-        Result operationResult,
-        DocumentAuditContext auditContext,
-        Guid? documentId,
-        Guid? bookingId,
-        int? documentRevision,
-        DocumentAuditReasonCode reasonCode,
-        CancellationToken ct)
-    {
-        var auditResult = await documentAuditWriter.Add(
-            auditContext,
-            DocumentAuditOperation.Void,
-            documentId,
-            bookingId,
-            documentRevision,
-            DocumentAuditOutcome.Rejected,
-            reasonCode,
-            ct);
-        if (auditResult.IsFailure)
-        {
-            return auditResult;
-        }
-
-        return operationResult;
     }
 }

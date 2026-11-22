@@ -1,6 +1,7 @@
 using PandaBear.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -60,7 +61,7 @@ internal static class PaymentAccountEndpoints
         return details is null ? TypedResults.NotFound() : TypedResults.Ok(details);
     }
 
-    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> CreatePaymentAccount([FromBody] CreatePaymentAccountDto input, [FromServices] CreatePaymentAccountCommandHandler handler, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> CreatePaymentAccount([FromBody] CreatePaymentAccountDto input, [FromServices] ISender sender, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -72,11 +73,11 @@ internal static class PaymentAccountEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new CreatePaymentAccountCommand(input, actorId, key.Value), ct);
+        var result = await sender.Send(new CreatePaymentAccountCommand(input, actorId, key.Value), ct);
         return await Respond(result, queries, true, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> UpdatePaymentAccount(Guid id, [FromBody] UpdatePaymentAccountDto input, [FromServices] UpdatePaymentAccountCommandHandler handler, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> UpdatePaymentAccount(Guid id, [FromBody] UpdatePaymentAccountDto input, [FromServices] ISender sender, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -88,11 +89,11 @@ internal static class PaymentAccountEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new UpdatePaymentAccountCommand(id, input, actorId, key.Value), ct);
+        var result = await sender.Send(new UpdatePaymentAccountCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> VerifyPaymentAccount(Guid id, [FromBody] VerifyPaymentAccountDto input, [FromServices] VerifyPaymentAccountCommandHandler handler, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> VerifyPaymentAccount(Guid id, [FromBody] VerifyPaymentAccountDto input, [FromServices] ISender sender, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -104,11 +105,11 @@ internal static class PaymentAccountEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new VerifyPaymentAccountCommand(id, input, actorId, key.Value), ct);
+        var result = await sender.Send(new VerifyPaymentAccountCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewPaymentAccount(Guid id, [FromBody] ReviewPaymentAccountDto input, [FromServices] ReviewPaymentAccountCommandHandler handler, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewPaymentAccount(Guid id, [FromBody] ReviewPaymentAccountDto input, [FromServices] ISender sender, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -120,11 +121,11 @@ internal static class PaymentAccountEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ReviewPaymentAccountCommand(id, input, actorId, key.Value), ct);
+        var result = await sender.Send(new ReviewPaymentAccountCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> RetirePaymentAccount(Guid id, [FromBody] RetirePaymentAccountDto input, [FromServices] RetirePaymentAccountCommandHandler handler, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> RetirePaymentAccount(Guid id, [FromBody] RetirePaymentAccountDto input, [FromServices] ISender sender, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -136,11 +137,11 @@ internal static class PaymentAccountEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new RetirePaymentAccountCommand(id, input, actorId, key.Value), ct);
+        var result = await sender.Send(new RetirePaymentAccountCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawPaymentAccountVerification(Guid id, [FromBody] WithdrawPaymentAccountVerificationDto input, [FromServices] WithdrawPaymentAccountVerificationCommandHandler handler, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentAccountDto>, Created<GetPaymentAccountDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawPaymentAccountVerification(Guid id, [FromBody] WithdrawPaymentAccountVerificationDto input, [FromServices] ISender sender, [FromServices] IPaymentAccountQueryService queries, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -152,7 +153,7 @@ internal static class PaymentAccountEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new WithdrawPaymentAccountVerificationCommand(id, input, actorId, key.Value), ct);
+        var result = await sender.Send(new WithdrawPaymentAccountVerificationCommand(id, input, actorId, key.Value), ct);
         return await Respond(result, queries, false, ct);
     }
 

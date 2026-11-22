@@ -31,7 +31,30 @@ public sealed class DocumentAuditWriter(
             reasonCode,
             null,
             null,
+            null,
             ct);
+
+    /// <summary>Persists rejection evidence with the lineage captured by the command.</summary>
+    public Task<Result> AddRejected(
+        DocumentAuditContext auditContext,
+        DocumentAuditOperation operation,
+        DocumentRejectionAudit rejection,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(rejection);
+        return Persist(
+            auditContext,
+            operation,
+            rejection.DocumentId,
+            rejection.BookingId,
+            rejection.DocumentRevision,
+            DocumentAuditOutcome.Rejected,
+            rejection.ReasonCode,
+            rejection.HoldId,
+            rejection.HoldBasis,
+            rejection.DocumentLineageId,
+            ct);
+    }
 
     /// <summary>
     /// Adds and persists a hold audit record naming the hold and its basis, so the record commits with whatever the
@@ -55,6 +78,7 @@ public sealed class DocumentAuditWriter(
             reasonCode,
             holdId,
             holdBasis,
+            null,
             ct);
 
     private async Task<Result> Persist(
@@ -67,6 +91,7 @@ public sealed class DocumentAuditWriter(
         DocumentAuditReasonCode reasonCode,
         Guid? holdId,
         string? holdBasis,
+        Guid? documentLineageId,
         CancellationToken ct)
     {
         if (auditContext is null)
@@ -92,7 +117,7 @@ public sealed class DocumentAuditWriter(
             return recordResult.ConvertError();
         }
 
-        auditStore.Add(recordResult.Value);
+        auditStore.Add(recordResult.Value, unresolvedDocument ? null : documentLineageId);
         await unitOfWork.SaveEntities(ct);
         return Result.Ok();
     }

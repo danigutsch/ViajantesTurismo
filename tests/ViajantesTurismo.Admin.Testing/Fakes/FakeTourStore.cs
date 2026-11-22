@@ -22,6 +22,8 @@ public sealed class FakeTourStore : ITourStore, ITourCommandStore
     async Task<Option<Tour>> ITourCommandStore.GetByBookingId(Guid bookingId, CancellationToken ct) =>
         Option.FromNullable(await GetByBookingId(bookingId, ct));
 
+    Task<Tour?> ITourCommandStore.GetByBookingIdForPaymentUpdate(Guid bookingId, CancellationToken ct) => GetByBookingId(bookingId, ct);
+
     public Task<bool> IdentifierExists(string identifier, CancellationToken ct) =>
         Task.FromResult(_tours.Any(t =>
             string.Equals(t.Identifier, identifier, StringComparison.OrdinalIgnoreCase)));

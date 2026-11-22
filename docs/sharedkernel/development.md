@@ -6,15 +6,20 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is [`0.1.0-alpha.719.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.719.1)
+The published candidate is [`0.1.0-alpha.727.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.727.1)
 at clean library revision
-[`0567a3ce1101ba19758082a597cd60b26ee6502f`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/0567a3ce1101ba19758082a597cd60b26ee6502f).
-Management Web uses its optional BFF cache concurrency contract to replace or delete an unchanged protected token entry in
-PostgreSQL. Local and in-memory deployments keep their existing cache path. The SDK stays at 11.0.100.
-The pin records passing Linux and Windows package consumption and NativeAOT from
-[validation of the published artifacts](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45029597240).
+[`3f3122727c6c4e9627e3e34b9e3c433e4b316932`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/3f3122727c6c4e9627e3e34b9e3c433e4b316932).
+Admin commands can declare transaction locks without an Entity Framework dependency. The consumer verifier validates
+the committed lock exemptions in the selected solution. The SDK stays at 11.0.100.
+The [published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45034665982)
+records Linux and Windows package consumption and NativeAOT for this candidate.
 
 ## Earlier candidates
+
+Candidate [`0.1.0-alpha.719.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.719.1)
+introduced the optional BFF cache concurrency contract. Management Web uses it for conditional replacement and deletion
+of protected PostgreSQL token entries. The [published validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45029597240)
+verified Linux and Windows consumption and NativeAOT.
 
 Candidate [`0.1.0-alpha.716.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.716.1)
 introduced shared sitemap and theme CSS endpoints, filesystem object storage and media helpers, upload deadlines,
@@ -183,9 +188,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/0567a3ce1101ba19758082a597cd60b26ee6502f/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/3f3122727c6c4e9627e3e34b9e3c433e4b316932/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`0567a3ce1101ba19758082a597cd60b26ee6502f`, which equals the `libraryRevision` in
+`3f3122727c6c4e9627e3e34b9e3c433e4b316932`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

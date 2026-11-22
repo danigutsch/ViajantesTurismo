@@ -47,7 +47,7 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
         var services = new ServiceCollection();
         services.AddSingleton<IDocumentStore>(store);
         services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
-        services.AddSingleton<IDocumentDispositionTransaction>(new FakeDocumentDispositionTransaction());
+        services.AddSingleton<IReadCommittedTransaction>(new FakeReadCommittedTransaction());
         services.AddSingleton<IDispositionHoldGuard>(new FakeDispositionHoldGuard());
         services.AddSingleton<IDispositionHoldStore>(new InMemoryDispositionHoldStore());
         services.AddScoped<DocumentHoldGate>();

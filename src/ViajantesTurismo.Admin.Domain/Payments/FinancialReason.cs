@@ -52,5 +52,7 @@ public enum FinancialReason
     /// <summary>Issued an authenticated, freshly revalidated download.</summary>
     InstructionDownloaded = 23,
     /// <summary>Explicitly voided an instruction revision.</summary>
-    InstructionVoided = 24
+    InstructionVoided = 24,
+    /// <summary>Refused an authenticated instruction download.</summary>
+    InstructionDownloadRejected = 25
 }

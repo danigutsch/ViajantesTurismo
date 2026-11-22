@@ -12,5 +12,5 @@ internal static class DocumentPurgeTestData
         FakeDocumentPurgeEvidenceStore evidence,
         TimeProvider clock,
         IUnitOfWork? unitOfWork = null) =>
-        new(new FakeDocumentDispositionTransaction(), evidence, unitOfWork ?? new FakeUnitOfWork(), clock);
+        new(new FakeReadCommittedTransaction(), evidence, unitOfWork ?? new FakeUnitOfWork(), clock);
 }

@@ -6,22 +6,29 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency;
 using PandaBear.Idempotency.EntityFrameworkCore;
 using PandaBear.IntegrationTesting;
+using PandaBear.Mediator;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -33,6 +40,9 @@ namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 /// <summary>Runs document store behavior against a real PostgreSQL database.</summary>
 internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
 {
+    /// <summary>The synthetic replacement value used by the staff mutation scenario.</summary>
+    public const string StaffOverride = "SYNTHETIC_STAFF_OVERRIDE_19AC";
+
     private readonly PostgreSqlTestDatabase database;
     private readonly string connectionString;
 
@@ -81,6 +91,154 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             TestContext.Current.CancellationToken);
         dbContext.DocumentLineages.AddRange(lineages);
         _ = await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>Runs the review command through the Admin transaction behavior and registered audit hook.</summary>
+    public ValueTask<Result> BeginReview(
+        BeginDocumentReviewCommand command,
+        CancellationToken ct) =>
+        BeginReview(command, NullLogger<AdminTransactionBehavior<BeginDocumentReviewCommand, Result>>.Instance, ct);
+
+    /// <summary>Runs the review command and captures the transaction behavior's diagnostic logs.</summary>
+    public ValueTask<Result> BeginReview(
+        BeginDocumentReviewCommand command,
+        ILogger<AdminTransactionBehavior<BeginDocumentReviewCommand, Result>> logger,
+        CancellationToken ct) =>
+        RunDocumentDecision<BeginDocumentReviewCommand, BeginDocumentReviewCommandHandler>(command, logger, ct);
+
+    /// <summary>Runs the change decision through the Admin transaction behavior and registered audit hook.</summary>
+    public ValueTask<Result> DecideDocumentChanges(
+        DocumentAuditOperation operation,
+        Guid documentId,
+        DocumentAuditContext auditContext,
+        CancellationToken ct) => operation switch
+        {
+            DocumentAuditOperation.RequestChanges => RunDocumentDecision<RequestDocumentChangesCommand, RequestDocumentChangesCommandHandler>(
+                new RequestDocumentChangesCommand(documentId, auditContext),
+                null,
+                ct),
+            DocumentAuditOperation.AcknowledgeChanges => RunDocumentDecision<AcknowledgeDocumentChangesCommand, AcknowledgeDocumentChangesCommandHandler>(
+                new AcknowledgeDocumentChangesCommand(documentId, auditContext),
+                null,
+                ct),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+        };
+
+    private ValueTask<Result> RunDocumentDecision<TCommand, THandler>(
+        TCommand command,
+        ILogger<AdminTransactionBehavior<TCommand, Result>>? logger,
+        CancellationToken ct)
+        where TCommand : DocumentRejectionAuditedCommand
+        where THandler : class, ICommandHandler<TCommand, Result> =>
+        RunDocumentCommand<TCommand, THandler, Result>(command, logger, ct);
+
+    private async ValueTask<TResponse> RunDocumentCommand<TCommand, THandler, TResponse>(
+        TCommand command,
+        ILogger<AdminTransactionBehavior<TCommand, TResponse>>? logger,
+        CancellationToken ct)
+        where TCommand : DocumentRejectionAuditedCommand<TResponse>
+        where THandler : class, ICommandHandler<TCommand, TResponse>
+        where TResponse : struct, IResultLike<TResponse>
+    {
+        using var host = CreateDocumentCommandHost(static services => services.AddScoped<THandler>());
+        await using var scope = host.Services.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var handler = services.GetRequiredService<THandler>();
+        var behavior = new AdminTransactionBehavior<TCommand, TResponse>(
+            services.GetRequiredService<DbContext>(),
+            services.GetRequiredService<IServiceScopeFactory>(),
+            logger ?? NullLogger<AdminTransactionBehavior<TCommand, TResponse>>.Instance);
+        return await behavior.Handle(command, () => handler.Handle(command, ct), ct);
+    }
+
+    /// <summary>Runs a staff mutation through the Admin transaction behavior and registered audit hook.</summary>
+    public ValueTask<Result> MutateDocument(
+        DocumentAuditOperation operation,
+        Guid documentId,
+        DocumentAuditContext auditContext,
+        DocumentVoidReason voidReason,
+        CancellationToken ct) => operation switch
+        {
+            DocumentAuditOperation.UpdateField => UpdateField(new UpdateDocumentFieldCommand(documentId, "greeting", StaffOverride, auditContext), ct),
+            DocumentAuditOperation.Approve => RunDocumentDecision<ApproveDocumentCommand, ApproveDocumentCommandHandler>(
+                new ApproveDocumentCommand(documentId, auditContext), null, ct),
+            DocumentAuditOperation.Void => RunDocumentDecision<VoidDocumentCommand, VoidDocumentCommandHandler>(
+                new VoidDocumentCommand(documentId, voidReason, auditContext), null, ct),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+        };
+
+    /// <summary>Runs a field update through the transaction and rejection audit.</summary>
+    public ValueTask<Result> UpdateField(UpdateDocumentFieldCommand command, CancellationToken ct) =>
+        RunDocumentDecision<UpdateDocumentFieldCommand, UpdateDocumentFieldCommandHandler>(command, null, ct);
+
+    /// <summary>Seeds a confirmed booking with its customer and tour.</summary>
+    public async ValueTask<Guid> SeedConfirmedBooking(DateTime createdAt, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        await dbContext.Database.MigrateAsync(ct);
+        var customer = EntityBuilders.BuildCustomer(options: null);
+        var tour = EntityBuilders.BuildTour();
+        var booking = tour.AddBooking(
+            TourBookingRequest.CreateSingle(customer.Id, BikeType.Regular, RoomType.DoubleOccupancy, BookingDiscountDefinition.None),
+            createdAt).Value;
+        tour.ConfirmBooking(booking.Id).IsSuccess.ShouldBeTrue();
+        dbContext.Customers.Add(customer);
+        dbContext.Tours.Add(tour);
+        _ = await dbContext.SaveChangesAsync(ct);
+        return booking.Id;
+    }
+
+    /// <summary>Seeds a reviewed draft using the current version computed from its PostgreSQL booking and tour.</summary>
+    public async ValueTask<DocumentDraft> SeedReviewedDraft(DateTime createdAt, CancellationToken ct)
+    {
+        var bookingId = await SeedConfirmedBooking(createdAt, ct);
+        await using var dbContext = CreateDbContext();
+        using var host = CreateDocumentCommandHost();
+        await using var scope = host.Services.CreateAsyncScope();
+        var reader = scope.ServiceProvider.GetRequiredService<IDocumentSourceVersionReader>();
+        var source = await reader.Read(bookingId, ct);
+        var document = DocumentDraftInfrastructureTestData.CreateDraft(createdAt, bookingId, source.Result.Value);
+        document.BeginReview(createdAt).IsSuccess.ShouldBeTrue();
+        dbContext.DocumentLineages.AddRange(CreateLineages([document]));
+        _ = await dbContext.SaveChangesAsync(ct);
+        return document;
+    }
+
+    /// <summary>Runs document generation through the Admin transaction and rollback hook.</summary>
+    public ValueTask<Result<Guid>> GenerateDocument(
+        DocumentAuditOperation operation,
+        Guid resourceId,
+        DocumentAuditContext auditContext,
+        IdempotencyKey key,
+        CancellationToken ct) => operation switch
+        {
+            DocumentAuditOperation.Generate =>
+                RunDocumentCommand<GenerateContractDraftCommand, GenerateContractDraftCommandHandler, Result<Guid>>(
+                    new GenerateContractDraftCommand(resourceId, auditContext, key), null, ct),
+            DocumentAuditOperation.Regenerate =>
+                RunDocumentCommand<RegenerateDocumentDraftCommand, RegenerateDocumentDraftCommandHandler, Result<Guid>>(
+                    new RegenerateDocumentDraftCommand(resourceId, auditContext, key), null, ct),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+        };
+
+    /// <summary>Seeds a ready branding projection for generation against this scenario database.</summary>
+    public async Task SeedDocumentBranding(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var store = new EfBrandingProjectionStore(dbContext);
+        store.Replace(new BrandingProjectionState(
+            Guid.CreateVersion7(), 1, "Viajantes", "#102030", "#405060", "#fdfdfd", "#111111", "Montserrat", "Inter", null));
+        await store.Save(ct);
+    }
+
+    private IHost CreateDocumentCommandHost(Action<IServiceCollection>? configure = null)
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration[$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = connectionString;
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.AddInfrastructure(addRuntimeBackgroundServices: false).AddApplication();
+        configure?.Invoke(builder.Services);
+        return builder.Build();
     }
 
     /// <summary>Migrates the database and stores the audit records.</summary>
@@ -132,6 +290,40 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             CREATE TRIGGER "TR_DocumentLineages_FailDelete"
             BEFORE DELETE ON "DocumentLineages"
             FOR EACH ROW EXECUTE FUNCTION "FailDocumentLineageDelete"();
+            """,
+            ct);
+    }
+
+    /// <summary>Installs a trigger that rejects audit inserts in the scenario database.</summary>
+    public async Task InstallAuditInsertFailure(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        _ = await dbContext.Database.ExecuteSqlRawAsync(
+            """
+            CREATE FUNCTION "FailDocumentAuditInsert"()
+            RETURNS trigger
+            LANGUAGE plpgsql
+            AS $$
+            BEGIN
+                RAISE EXCEPTION 'Injected audit write failure.';
+            END;
+            $$;
+
+            CREATE TRIGGER "TR_DocumentAuditRecords_FailInsert"
+            BEFORE INSERT ON "DocumentAuditRecords"
+            FOR EACH ROW EXECUTE FUNCTION "FailDocumentAuditInsert"();
+            """,
+            ct);
+    }
+
+    /// <summary>Restores normal audit writes after the scenario injected an insert failure.</summary>
+    public async Task RestoreAuditInserts(CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        _ = await dbContext.Database.ExecuteSqlRawAsync(
+            """
+            DROP TRIGGER "TR_DocumentAuditRecords_FailInsert" ON "DocumentAuditRecords";
+            DROP FUNCTION "FailDocumentAuditInsert"();
             """,
             ct);
     }
@@ -485,14 +677,29 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
             .ToArrayAsync(ct);
     }
 
+    /// <summary>Reads the audit records for a request, including records that do not name a document.</summary>
+    public async Task<DocumentAuditRecord[]> GetDocumentAuditsForCorrelation(string correlationId, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        return await dbContext.DocumentAuditRecords
+            .Where(record => record.CorrelationId == correlationId)
+            .ToArrayAsync(ct);
+    }
+
     /// <summary>Reads the stored idempotency state for the document generation scope of a booking and key, or <see langword="null" /> when absent.</summary>
-    public async Task<string?> GetIdempotencyState(
+    public Task<string?> GetIdempotencyState(
         Guid bookingId,
+        IdempotencyKey key,
+        CancellationToken ct) =>
+        GetIdempotencyState(IdempotencyScope.From($"admin.documents.generate-contract-draft:{bookingId:N}"), key, ct);
+
+    /// <summary>Reads the stored idempotency state for the supplied operation scope and key.</summary>
+    public async Task<string?> GetIdempotencyState(
+        IdempotencyScope scope,
         IdempotencyKey key,
         CancellationToken ct)
     {
         await using var dbContext = CreateDbContext();
-        var scope = $"admin.documents.generate-contract-draft:{bookingId:N}";
         return await dbContext.Database.SqlQueryRaw<string>(
                 """
                 SELECT "State" AS "Value"
@@ -500,7 +707,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
                 WHERE "Scope" = {0}
                   AND "Key" = {1}
                 """,
-                scope,
+                scope.Value,
                 DocumentCommandIdempotency.DigestKey(key).Value)
             .SingleOrDefaultAsync(ct);
     }
@@ -984,7 +1191,7 @@ internal sealed class PostgreSqlDocumentStoreScenario : IAsyncDisposable
         return new PurgeExpiredDocumentAuditsCommandHandler(
             new DocumentAuditStore(dbContext),
             unitOfWork,
-            new DocumentDispositionTransaction(dbContext),
+            dbContext,
             gate,
             clock);
     }

@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -13,15 +14,14 @@ public sealed class GenerateContractDraftCommandHandler(
     IDocumentStore documentStore,
     DocumentBrandingSource documentBrandingSource,
     TimeProvider timeProvider,
-    DocumentAuditWriter documentAuditWriter,
     DocumentCommandIdempotency documentCommandIdempotency)
+    : ICommandHandler<GenerateContractDraftCommand, Result<Guid>>
 {
     /// <summary>Generates and persists a new draft revision.</summary>
-    public Task<Result<Guid>> Handle(GenerateContractDraftCommand command, CancellationToken ct)
+    public ValueTask<Result<Guid>> Handle(GenerateContractDraftCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
-        return documentCommandIdempotency.Execute(
-            command, documentAuditWriter, commit => Prepare(command, commit, ct), ct);
+        return new(documentCommandIdempotency.Execute(command, commit => Prepare(command, commit, ct), ct));
     }
 
     private async Task<Result<Guid>> Prepare(
@@ -33,66 +33,36 @@ public sealed class GenerateContractDraftCommandHandler(
         var booking = await queryService.GetBookingById(command.BookingId, ct);
         if (booking is null)
         {
-            return await RecordAndReturn(
-                BookingErrors.BookingNotFound().ConvertError<Guid>(),
-                command.AuditContext,
-                null,
-                command.BookingId,
-                null,
-                DocumentAuditReasonCode.BookingNotFound,
-                ct);
+            command.DeferRejectionAudit(new DocumentRejectionAudit(DocumentAuditReasonCode.BookingNotFound, BookingId: command.BookingId));
+            return BookingErrors.BookingNotFound().ConvertError<Guid>();
         }
 
         var tourAggregate = await tourStore.GetByBookingId(booking.Id, ct);
         if (tourAggregate is null)
         {
-            return await RecordAndReturn(
-                BookingErrors.BookingNotFound().ConvertError<Guid>(),
-                command.AuditContext,
-                null,
-                booking.Id,
-                null,
-                DocumentAuditReasonCode.BookingNotFound,
-                ct);
+            command.DeferRejectionAudit(new DocumentRejectionAudit(DocumentAuditReasonCode.BookingNotFound, BookingId: booking.Id));
+            return BookingErrors.BookingNotFound().ConvertError<Guid>();
         }
 
         var eligibility = tourAggregate.CanReceiveCustomerDocuments(booking.Id);
         if (eligibility.IsFailure)
         {
-            return await RecordAndReturn(
-                eligibility.ConvertError<Guid>(),
-                command.AuditContext,
-                null,
-                booking.Id,
-                null,
-                DocumentAuditReasonCode.StateConflict,
-                ct);
+            command.DeferRejectionAudit(new DocumentRejectionAudit(DocumentAuditReasonCode.StateConflict, BookingId: booking.Id));
+            return eligibility.ConvertError<Guid>();
         }
 
         var tour = await queryService.GetTourById(booking.TourId, ct);
         if (tour is null)
         {
-            return await RecordAndReturn(
-                TourErrors.TourNotFound().ConvertError<Guid>(),
-                command.AuditContext,
-                null,
-                booking.Id,
-                null,
-                DocumentAuditReasonCode.TourNotFound,
-                ct);
+            command.DeferRejectionAudit(new DocumentRejectionAudit(DocumentAuditReasonCode.TourNotFound, BookingId: booking.Id));
+            return TourErrors.TourNotFound().ConvertError<Guid>();
         }
 
         var brandingResult = await documentBrandingSource.Capture(ct);
         if (brandingResult.IsFailure)
         {
-            return await RecordAndReturn(
-                brandingResult.ConvertError<DocumentBrandingSnapshotValues, Guid>(),
-                command.AuditContext,
-                null,
-                booking.Id,
-                null,
-                DocumentAuditReasonCode.BrandingUnavailable,
-                ct);
+            command.DeferRejectionAudit(new DocumentRejectionAudit(DocumentAuditReasonCode.BrandingUnavailable, BookingId: booking.Id));
+            return brandingResult.ConvertError<DocumentBrandingSnapshotValues, Guid>();
         }
 
         var branding = brandingResult.Value;
@@ -104,14 +74,8 @@ public sealed class GenerateContractDraftCommandHandler(
             branding);
         if (contentResult.IsFailure)
         {
-            return await RecordAndReturn(
-                contentResult.ConvertError<DocumentDraftContent, Guid>(),
-                command.AuditContext,
-                null,
-                booking.Id,
-                null,
-                DocumentAuditReasonCode.ValidationRejected,
-                ct);
+            command.DeferRejectionAudit(new DocumentRejectionAudit(DocumentAuditReasonCode.ValidationRejected, BookingId: booking.Id));
+            return contentResult.ConvertError<DocumentDraftContent, Guid>();
         }
 
         var lineageResult = DocumentLineage.Create(
@@ -120,17 +84,12 @@ public sealed class GenerateContractDraftCommandHandler(
             DocumentAudience.Customer,
             contentResult.Value,
             now,
-            command.AuditContext);
+            command.AuditContext,
+            command.LineageId);
         if (lineageResult.IsFailure)
         {
-            return await RecordAndReturn(
-                lineageResult.ConvertError<DocumentLineage, Guid>(),
-                command.AuditContext,
-                null,
-                booking.Id,
-                null,
-                DocumentAuditReasonCode.ValidationRejected,
-                ct);
+            command.DeferRejectionAudit(new DocumentRejectionAudit(DocumentAuditReasonCode.ValidationRejected, BookingId: booking.Id));
+            return lineageResult.ConvertError<DocumentLineage, Guid>();
         }
 
         var lineage = lineageResult.Value;
@@ -145,31 +104,5 @@ public sealed class GenerateContractDraftCommandHandler(
             null,
             command.BookingId,
             null);
-    }
-
-    private async Task<Result<Guid>> RecordAndReturn(
-        Result<Guid> operationResult,
-        DocumentAuditContext auditContext,
-        Guid? documentId,
-        Guid? bookingId,
-        int? documentRevision,
-        DocumentAuditReasonCode reasonCode,
-        CancellationToken ct)
-    {
-        var auditResult = await documentAuditWriter.Add(
-            auditContext,
-            DocumentAuditOperation.Generate,
-            documentId,
-            bookingId,
-            documentRevision,
-            DocumentAuditOutcome.Rejected,
-            reasonCode,
-            ct);
-        if (auditResult.IsFailure)
-        {
-            return auditResult.ConvertError<Guid>();
-        }
-
-        return operationResult;
     }
 }

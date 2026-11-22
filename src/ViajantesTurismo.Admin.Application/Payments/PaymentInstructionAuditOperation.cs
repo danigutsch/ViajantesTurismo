@@ -18,5 +18,7 @@ public enum PaymentInstructionAuditOperation
     /// <summary>Explicitly withdrew approval.</summary>
     ApprovalWithdrawn,
     /// <summary>Explicitly voided the instruction.</summary>
-    Voided
+    Voided,
+    /// <summary>Refused to release the protected artifact.</summary>
+    DownloadRejected
 }

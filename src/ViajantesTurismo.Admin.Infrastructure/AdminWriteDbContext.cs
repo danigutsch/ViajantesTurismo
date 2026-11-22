@@ -1,3 +1,4 @@
+using System.Data;
 using ViajantesTurismo.Admin.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 internal sealed class AdminWriteDbContext(
     DbContextOptions<AdminWriteDbContext> options,
     IEnumerable<IDbContextConfiguration<AdminWriteDbContext>>? configurations = null)
-    : DbContext(options), IUnitOfWork
+    : DbContext(options), IUnitOfWork, IReadCommittedTransaction
 {
     private static readonly NpgsqlUniqueViolationParser UniqueViolationParser = new();
 
@@ -44,6 +45,23 @@ internal sealed class AdminWriteDbContext(
     public DbSet<DocumentAuditPurgeRecord> DocumentAuditPurgeRecords => Set<DocumentAuditPurgeRecord>();
     /// <summary>Draft and idempotency purge evidence.</summary>
     public DbSet<DocumentRetentionPurgeRecord> DocumentRetentionPurgeRecords => Set<DocumentRetentionPurgeRecord>();
+
+    Task<T> IReadCommittedTransaction.Execute<T>(Func<Task<T>> unit, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(unit);
+
+        return Database.CreateExecutionStrategy().ExecuteAsync((Context: this, Unit: unit), ExecuteInReadCommitted, ct);
+    }
+
+    private static async Task<T> ExecuteInReadCommitted<T>(
+        (AdminWriteDbContext Context, Func<Task<T>> Unit) state, CancellationToken ct)
+    {
+        state.Context.ChangeTracker.Clear();
+        await using var transaction = await state.Context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        var result = await state.Unit();
+        await transaction.CommitAsync(ct);
+        return result;
+    }
 
     /// <summary>Saves tracked changes, translating unique-constraint and revision conflicts into domain conflict exceptions.</summary>
     public async Task SaveEntities(CancellationToken ct)

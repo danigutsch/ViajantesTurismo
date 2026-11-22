@@ -25,8 +25,8 @@ public sealed class PaymentIdempotencyEndpointTests
     public async Task Invalid_keys_are_rejected_before_instruction_state_is_loaded(string operation, string? key)
     {
         // Arrange
-        var transaction = new PaymentEndpointTransaction();
-        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, transaction, new PaymentAccountQueryProbe()),
+        var sender = new PaymentEndpointSender();
+        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, sender, new PaymentAccountQueryProbe()),
             configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
@@ -46,7 +46,7 @@ public sealed class PaymentIdempotencyEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         body.RootElement.GetProperty("errors").TryGetProperty("Idempotency-Key", out _).ShouldBeTrue();
-        transaction.Calls.ShouldBe(0);
+        sender.Calls.ShouldBe(0);
     }
 
     [Theory]
@@ -55,7 +55,7 @@ public sealed class PaymentIdempotencyEndpointTests
     public async Task Valid_padded_keys_reach_the_instruction_workflow(bool maximumLength)
     {
         // Arrange
-        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, new PaymentEndpointTransaction(), new PaymentAccountQueryProbe()),
+        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, new PaymentEndpointSender(), new PaymentAccountQueryProbe()),
             configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");

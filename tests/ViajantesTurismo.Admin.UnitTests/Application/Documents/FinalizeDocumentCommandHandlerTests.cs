@@ -24,9 +24,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -45,7 +44,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_rejects_a_stale_source_and_records_audit_without_sealing()
+    public async Task Handle_rejects_a_stale_source_and_defers_rejection_evidence_without_sealing()
     {
         // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
@@ -54,28 +53,26 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader("CHANGED-SOURCE-VERSION"));
 
+        var command = new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext());
+
         // Act
-        var result = await handler.Handle(
-            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         document.Status.ShouldBe(DocumentStatus.Approved);
-        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
     }
 
     [Fact]
-    public async Task Handle_rejects_a_stale_template_and_records_audit_without_sealing()
+    public async Task Handle_rejects_a_stale_template_and_defers_rejection_evidence_without_sealing()
     {
         // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
@@ -84,25 +81,23 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader());
 
+        var command = new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext());
+
         // Act
-        var result = await handler.Handle(
-            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(DocumentErrors.TemplateChangedSinceDraft().ErrorDetails!.Detail);
         document.Status.ShouldBe(DocumentStatus.Approved);
-        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
     }
 
     [Theory]
@@ -124,26 +119,24 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var status = document.Status;
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader("CHANGED-SOURCE-VERSION"));
 
+        var command = new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext());
+
         // Act
-        var result = await handler.Handle(
-            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(
             DocumentErrors.InvalidStatusTransition(status, DocumentStatus.Finalized).ErrorDetails!.Detail);
         document.Status.ShouldBe(status);
-        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
     }
 
     [Fact]
@@ -156,28 +149,26 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader { MissingSource = DocumentSourceKind.Tour });
 
+        var command = new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext());
+
         // Act
-        var result = await handler.Handle(
-            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         document.Status.ShouldBe(DocumentStatus.Approved);
-        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.TourNotFound);
+        command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.TourNotFound);
     }
 
     [Fact]
-    public async Task Handle_reports_a_missing_source_and_records_audit_without_sealing()
+    public async Task Handle_reports_a_missing_source_and_defers_rejection_evidence_without_sealing()
     {
         // Arrange
         var now = TimeProvider.System.GetUtcNow().UtcDateTime;
@@ -186,24 +177,22 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader { MissingSource = DocumentSourceKind.Booking });
 
+        var command = new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext());
+
         // Act
-        var result = await handler.Handle(
-            new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
         document.Status.ShouldBe(DocumentStatus.Approved);
-        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
+        command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
     }
 
     [Fact]
@@ -238,7 +227,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -258,9 +247,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -283,17 +271,18 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
         var auditContext = DocumentAuditTestData.CreateContext();
 
+        var command = new FinalizeDocumentCommand(document.Id, auditContext);
+
         // Act
-        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, auditContext), CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        auditStore.Records.ShouldBeEmpty();
+        command.TakeRejectionAudit().ShouldBeNull();
         var auditEvent = store.LastLoadedLineage.ShouldNotBeNull().GetDomainEvents()
             .ShouldHaveSingleItem().ShouldBeOfType<DocumentLifecycleAuditDomainEvent>();
         auditEvent.ActorId.ShouldBe(auditContext.ActorId);
@@ -315,18 +304,19 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
+        var command = new FinalizeDocumentCommand(document.Id, null!);
+
         // Act
-        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, null!), CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.Approved);
         document.CopyFinalizedArtifactContent().ShouldBeNull();
         store.LastLoadedLineage.ShouldBeNull();
-        auditStore.Records.ShouldBeEmpty();
+        command.TakeRejectionAudit().ShouldBeNull();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
@@ -359,9 +349,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
         document.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -383,28 +372,25 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var auditContext = DocumentAuditTestData.CreateContext();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
+
+        var command = new FinalizeDocumentCommand(document.Id, auditContext);
 
         // Act
-        var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, auditContext), CancellationToken.None);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
+        var audit = command.TakeRejectionAudit().ShouldNotBeNull();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         document.Status.ShouldBe(DocumentStatus.DraftGenerated);
         store.LastLoadedLineage.ShouldNotBeNull().GetDomainEvents().ShouldBeEmpty();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Finalize);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
         audit.DocumentId.ShouldBe(document.Id);
         audit.BookingId.ShouldBe(document.BookingId);
         audit.DocumentRevision.ShouldBe(document.Revision);
-        audit.ActorId.ShouldBe(auditContext.ActorId);
-        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -414,25 +400,22 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var documentId = Guid.CreateVersion7();
         var auditContext = DocumentAuditTestData.CreateContext();
         var store = new FakeDocumentStore();
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
+
+        var command = new FinalizeDocumentCommand(documentId, auditContext);
 
         // Act
-        var result = await handler.Handle(new FinalizeDocumentCommand(documentId, auditContext), CancellationToken.None);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
+        var audit = command.TakeRejectionAudit().ShouldNotBeNull();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Finalize);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
         audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
-        audit.ActorId.ShouldBe(auditContext.ActorId);
-        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -460,7 +443,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(replacement.Id, replacement);
         var unitOfWork = new FakeUnitOfWork();
         var sourceVersions = new FakeDocumentSourceVersionReader();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork), sourceVersions);
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, sourceVersions);
         var context = DocumentAuditTestData.CreateContext();
         var firstFinalization = await handler.Handle(new FinalizeDocumentCommand(previous.Id, context), CancellationToken.None);
         firstFinalization.IsSuccess.ShouldBeTrue();
@@ -493,7 +476,7 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork), new FakeDocumentSourceVersionReader());
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader());
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(document.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -539,9 +522,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(previous.Id, previous);
         store.Documents.Add(replacement.Id, replacement);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -597,13 +579,11 @@ public sealed class FinalizeDocumentCommandHandlerTests
         store.Documents.Add(first.Id, first);
         store.Documents.Add(second.Id, second);
         store.Documents.Add(third.Id, third);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader("SOURCE-VERSION-3"));
 
         // Act
@@ -646,9 +626,8 @@ public sealed class FinalizeDocumentCommandHandlerTests
         replacement.Approve(now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(replacement.Id, replacement);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
+        var handler = new FinalizeDocumentCommandHandler(store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
 
         // Act
         var result = await handler.Handle(new FinalizeDocumentCommand(replacement.Id, DocumentAuditTestData.CreateContext()), CancellationToken.None);
@@ -690,26 +669,24 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(older.Id, older);
         store.Documents.Add(newer.Id, newer);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader());
 
+        var command = new FinalizeDocumentCommand(older.Id, DocumentAuditTestData.CreateContext());
+
         // Act
-        var result = await handler.Handle(
-            new FinalizeDocumentCommand(older.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         older.Status.ShouldBe(DocumentStatus.Approved);
         newer.Status.ShouldBe(DocumentStatus.Finalized);
-        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -744,26 +721,24 @@ public sealed class FinalizeDocumentCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(older.Id, older);
         store.Documents.Add(newer.Id, newer);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new FinalizeDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader());
 
+        var command = new FinalizeDocumentCommand(older.Id, DocumentAuditTestData.CreateContext());
+
         // Act
-        var result = await handler.Handle(
-            new FinalizeDocumentCommand(older.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         older.Status.ShouldBe(DocumentStatus.Approved);
         newer.Status.ShouldBe(DocumentStatus.Voided);
-        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
 }

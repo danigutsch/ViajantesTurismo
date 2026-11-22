@@ -87,7 +87,7 @@ internal static class DocumentDraftInfrastructureTestData
     }
 
     /// <summary>Creates an unfinalized contract draft with a booking reference and a personal-data greeting field.</summary>
-    public static DocumentDraft CreateDraft(DateTime createdAt, Guid? bookingId = null)
+    public static DocumentDraft CreateDraft(DateTime createdAt, Guid? bookingId = null, string? sourceVersion = null)
     {
         var result = DocumentDraft.Create(
             bookingId ?? Guid.CreateVersion7(),
@@ -95,7 +95,7 @@ internal static class DocumentDraftInfrastructureTestData
             DocumentAudience.Customer,
             "tour-service-contract",
             "1",
-            Guid.CreateVersion7().ToString("N"),
+            sourceVersion ?? Guid.CreateVersion7().ToString("N"),
             [
                 DocumentField.Create("booking-reference", "Booking reference", "ABC123", DocumentPrivacyClassification.Operational, false).Value,
                 DocumentField.Create("greeting", "Greeting", "Dear customer", DocumentPrivacyClassification.PersonalData, true).Value,

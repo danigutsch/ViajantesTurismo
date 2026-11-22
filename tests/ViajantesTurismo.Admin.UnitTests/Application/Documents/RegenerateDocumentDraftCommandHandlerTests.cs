@@ -21,24 +21,22 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
     {
         // Arrange
         var store = new FakeDocumentStore();
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new RegenerateDocumentDraftCommandHandler(
             store, new FakeQueryService(null), new FakeTourStore(),
             DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(new UnusedIdempotencyStore(), unitOfWork, TimeProvider.System));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(Guid.CreateVersion7(), string.Empty, string.Empty, DocumentAuditTestData.CreateContext(), default);
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(Guid.CreateVersion7(), string.Empty, string.Empty, DocumentAuditTestData.CreateContext(), default),
-            CancellationToken.None);
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Invalid);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe("Idempotency-Key is required.");
-        auditStore.Records.ShouldBeEmpty();
+        auditCommand.TakeRejectionAudit().ShouldBeNull();
         store.AddedDocuments.ShouldBeEmpty();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
@@ -51,7 +49,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var idempotencyKey = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
         var idempotencyScope = IdempotencyScope.From($"admin.documents.regenerate-draft:{sourceDocumentId:N}");
         var store = new FakeDocumentStore();
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
@@ -59,32 +56,29 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             new FakeTourStore(),
             DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.CreateStarted(idempotencyScope, DocumentCommandIdempotency.DigestKey(idempotencyKey), unitOfWork));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(
+            sourceDocumentId,
+            "booking-confirmation",
+            "2",
+            DocumentAuditTestData.CreateContext(),
+            idempotencyKey);
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(
-                sourceDocumentId,
-                "booking-confirmation",
-                "2",
-                DocumentAuditTestData.CreateContext(),
-                idempotencyKey),
-            CancellationToken.None);
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Conflict);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(
             "A document revision already exists for this booking. Reload and retry.");
         store.AddedDocuments.ShouldBeEmpty();
-        var audit = auditStore.Records.ShouldHaveSingleItem();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        var audit = auditCommand.TakeRejectionAudit().ShouldNotBeNull();
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
         audit.DocumentId.ShouldBe(sourceDocumentId);
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -96,7 +90,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var idempotencyKey = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
         var idempotencyScope = IdempotencyScope.From($"admin.documents.regenerate-draft:{sourceDocumentId:N}");
         var store = new FakeDocumentStore();
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
@@ -104,7 +97,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             new FakeTourStore(),
             DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.CreateCompleted(
                 idempotencyScope,
                 DocumentCommandIdempotency.DigestKey(idempotencyKey),
@@ -112,21 +104,21 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
                 DocumentCommandIdempotency.CreateRequestFingerprint("booking-confirmation", "2"),
                 unitOfWork));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(
+            sourceDocumentId,
+            "booking-confirmation",
+            "2",
+            DocumentAuditTestData.CreateContext(),
+            idempotencyKey);
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(
-                sourceDocumentId,
-                "booking-confirmation",
-                "2",
-                DocumentAuditTestData.CreateContext(),
-                idempotencyKey),
-            CancellationToken.None);
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(replacementDocumentId);
         store.AddedDocuments.ShouldBeEmpty();
-        auditStore.Records.ShouldBeEmpty();
+        auditCommand.TakeRejectionAudit().ShouldBeNull();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
@@ -148,7 +140,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             name: "Synthetic regeneration input");
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var idempotencyStore = new CapturingNewIdempotencyStore(unitOfWork);
         var handler = new RegenerateDocumentDraftCommandHandler(
@@ -157,10 +148,11 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             tourData.TourStore,
             DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(idempotencyStore, unitOfWork, TimeProvider.System));
         var key = IdempotencyKey.From(Guid.CreateVersion7().ToString("N"));
         var auditContext = DocumentAuditTestData.CreateContext();
+
+        var auditCommand = new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "3", auditContext, key);
 
         // Act
         var first = await handler.Handle(
@@ -169,9 +161,7 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var replay = await handler.Handle(
             new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, key),
             CancellationToken.None);
-        var conflicting = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "3", auditContext, key),
-            CancellationToken.None);
+        var conflicting = await handler.Handle(auditCommand, CancellationToken.None);
 
         // Assert
         first.IsSuccess.ShouldBeTrue();
@@ -179,20 +169,18 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         replay.Value.ShouldBe(first.Value);
         conflicting.Status.ShouldBe(ResultStatus.Conflict);
         store.LastLoadedLineage.ShouldNotBeNull().Revisions.Count.ShouldBe(2);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        var audit = auditCommand.TakeRejectionAudit().ShouldNotBeNull();
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
         audit.DocumentId.ShouldBe(document.Id);
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
         idempotencyStore.StartedRetentionOwner.ShouldBe(store.LastLoadedLineage.ShouldNotBeNull().Id.ToString("N"));
         idempotencyStore.StageCompletionCallCount.ShouldBe(1);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(2);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
     [Fact]
-    public async Task Handle_persists_one_conflict_audit_when_regeneration_idempotency_ownership_is_lost()
+    public async Task Handle_defers_one_conflict_audit_when_regeneration_idempotency_ownership_is_lost()
     {
         // Arrange
         var tourData = DocumentTourTestData.WithBooking(BookingStatus.Confirmed);
@@ -213,7 +201,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             null);
         var documentStore = new FakeDocumentStore();
         documentStore.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var idempotencyStore = new CapturingNewIdempotencyStore(unitOfWork, competingEntry);
         var handler = new RegenerateDocumentDraftCommandHandler(
@@ -222,31 +209,28 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             tourData.TourStore,
             DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new DocumentCommandIdempotency(idempotencyStore, unitOfWork, TimeProvider.System));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(
+            document.Id,
+            "booking-confirmation",
+            "2",
+            DocumentAuditTestData.CreateContext(),
+            key);
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(
-                document.Id,
-                "booking-confirmation",
-                "2",
-                DocumentAuditTestData.CreateContext(),
-                key),
-            CancellationToken.None);
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Conflict);
         documentStore.LastLoadedLineage.ShouldNotBeNull().Revisions.ShouldHaveSingleItem();
-        var audit = auditStore.Records.ShouldHaveSingleItem();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        var audit = auditCommand.TakeRejectionAudit().ShouldNotBeNull();
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
         audit.DocumentId.ShouldBe(document.Id);
         audit.BookingId.ShouldBe(document.BookingId);
         audit.DocumentRevision.ShouldBe(document.Revision);
         idempotencyStore.TryStartCallCount.ShouldBe(1);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -262,7 +246,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             status: BookingStatusDto.Confirmed);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
@@ -270,18 +253,17 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             tourData.TourStore,
             DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", null!, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", null!, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
-            CancellationToken.None);
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         store.AddedDocuments.ShouldBeEmpty();
-        auditStore.Records.ShouldBeEmpty();
+        auditCommand.TakeRejectionAudit().ShouldBeNull();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
@@ -292,7 +274,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var documentId = Guid.CreateVersion7();
         var auditContext = DocumentAuditTestData.CreateContext();
         var store = new FakeDocumentStore();
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
@@ -300,27 +281,22 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             new FakeTourStore(),
             DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(documentId, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(documentId, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
-            CancellationToken.None);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
+        var audit = auditCommand.TakeRejectionAudit().ShouldNotBeNull();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         store.AddedDocuments.ShouldBeEmpty();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
         audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
-        audit.ActorId.ShouldBe(auditContext.ActorId);
-        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Theory]
@@ -338,7 +314,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var tour = DtoBuilders.BuildTourDto(id: tourId);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var auditContext = DocumentAuditTestData.CreateContext();
         var handler = new RegenerateDocumentDraftCommandHandler(
@@ -347,7 +322,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             tourData.TourStore,
             DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
@@ -392,7 +366,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             tourData.TourStore,
             DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
 
         // Act
@@ -430,7 +403,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var tour = DtoBuilders.BuildTourDto(id: tourId);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var auditContext = DocumentAuditTestData.CreateContext();
         var handler = new RegenerateDocumentDraftCommandHandler(
@@ -439,27 +411,22 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             tourData.TourStore,
             DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
-            CancellationToken.None);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
+        var audit = auditCommand.TakeRejectionAudit().ShouldNotBeNull();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         store.AddedDocuments.ShouldBeEmpty();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
         audit.DocumentId.ShouldBe(document.Id);
         audit.BookingId.ShouldBe(document.BookingId);
         audit.DocumentRevision.ShouldBe(document.Revision);
-        audit.ActorId.ShouldBe(auditContext.ActorId);
-        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -469,7 +436,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var document = DocumentDraftTestData.Create(TimeProvider.System.GetUtcNow().UtcDateTime);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var auditContext = DocumentAuditTestData.CreateContext();
         var handler = new RegenerateDocumentDraftCommandHandler(
@@ -478,27 +444,22 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             new FakeTourStore(),
             DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
-            CancellationToken.None);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
+        var audit = auditCommand.TakeRejectionAudit().ShouldNotBeNull();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         store.AddedDocuments.ShouldBeEmpty();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
         audit.DocumentId.ShouldBe(document.Id);
         audit.BookingId.ShouldBe(document.BookingId);
         audit.DocumentRevision.ShouldBe(document.Revision);
-        audit.ActorId.ShouldBe(auditContext.ActorId);
-        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -510,7 +471,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, tourId: tourId, status: BookingStatusDto.Confirmed);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var handler = new RegenerateDocumentDraftCommandHandler(
             store,
@@ -518,23 +478,22 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             new FakeTourStore(),
             DocumentBrandingTestData.From(DocumentDraftTestData.CreateBrandingSettings()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", DocumentAuditTestData.CreateContext(), IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
-            CancellationToken.None);
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.NotFound);
         store.AddedDocuments.ShouldBeEmpty();
-        var audit = auditStore.Records.ShouldHaveSingleItem();
+        var audit = auditCommand.TakeRejectionAudit().ShouldNotBeNull();
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
         audit.DocumentId.ShouldBe(document.Id);
         audit.BookingId.ShouldBe(document.BookingId);
         audit.DocumentRevision.ShouldBe(document.Revision);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -546,7 +505,6 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
         var booking = DtoBuilders.BuildBookingDto(id: document.BookingId, status: BookingStatusDto.Confirmed);
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var auditContext = DocumentAuditTestData.CreateContext();
         var handler = new RegenerateDocumentDraftCommandHandler(
@@ -555,26 +513,21 @@ public sealed class RegenerateDocumentDraftCommandHandlerTests
             tourData.TourStore,
             DocumentBrandingTestData.From(new BrandingSettingsDto()),
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             DocumentIdempotencyTestData.Create(unitOfWork));
 
+        var auditCommand = new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
+
         // Act
-        var result = await handler.Handle(
-            new RegenerateDocumentDraftCommand(document.Id, "booking-confirmation", "2", auditContext, IdempotencyKey.From(Guid.CreateVersion7().ToString("N"))),
-            CancellationToken.None);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
+        var result = await handler.Handle(auditCommand, CancellationToken.None);
+        var audit = auditCommand.TakeRejectionAudit().ShouldNotBeNull();
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         store.AddedDocuments.ShouldBeEmpty();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Regenerate);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.TourNotFound);
         audit.DocumentId.ShouldBe(document.Id);
         audit.BookingId.ShouldBe(document.BookingId);
         audit.DocumentRevision.ShouldBe(document.Revision);
-        audit.ActorId.ShouldBe(auditContext.ActorId);
-        audit.CorrelationId.ShouldBe(auditContext.CorrelationId);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 }

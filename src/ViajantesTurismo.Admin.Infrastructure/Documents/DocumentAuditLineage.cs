@@ -23,7 +23,9 @@ internal static class DocumentAuditLineage
     public static async Task StampAddedRecords(AdminWriteDbContext dbContext, CancellationToken ct)
     {
         var added = dbContext.ChangeTracker.Entries<DocumentAuditRecord>()
-            .Where(entry => entry.State == EntityState.Added && entry.Entity.DocumentId is not null)
+            .Where(entry => entry.State == EntityState.Added
+                && entry.Entity.DocumentId is not null
+                && entry.Property<Guid?>(PropertyName).CurrentValue is null)
             .ToArray();
         if (added.Length == 0)
         {

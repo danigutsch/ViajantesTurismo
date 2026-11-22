@@ -22,11 +22,10 @@ internal sealed class DocumentHoldHarness
         Query = new FakeDocumentHoldQuery(Store);
         Query.LineageByDocument[DocumentId] = LineageId;
         UnitOfWork = new FakeUnitOfWork();
-        Transaction = new FakeDocumentDispositionTransaction();
         AuditStore = new FakeDocumentAuditStore();
         var auditWriter = new DocumentAuditWriter(AuditStore, UnitOfWork, Clock);
-        Place = new PlaceDocumentHoldCommandHandler(Query, Store, Transaction, Clock, auditWriter);
-        Release = new ReleaseDocumentHoldCommandHandler(Query, Store, Transaction, Clock, auditWriter);
+        Place = new PlaceDocumentHoldCommandHandler(Query, Store, Clock, auditWriter);
+        Release = new ReleaseDocumentHoldCommandHandler(Query, Store, Clock, auditWriter);
         List = new ListDocumentHoldsQueryHandler(Query, Clock);
         Get = new GetDocumentHoldQueryHandler(Query, Clock);
         Overview = new ListDocumentHoldOverviewQueryHandler(Query, Clock);
@@ -70,12 +69,6 @@ internal sealed class DocumentHoldHarness
 
     /// <summary>Gets the unit of work fake.</summary>
     public FakeUnitOfWork UnitOfWork
-    {
-        get;
-    }
-
-    /// <summary>Gets the transaction fake.</summary>
-    public FakeDocumentDispositionTransaction Transaction
     {
         get;
     }

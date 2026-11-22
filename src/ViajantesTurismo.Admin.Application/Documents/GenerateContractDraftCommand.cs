@@ -11,8 +11,14 @@ public sealed record GenerateContractDraftCommand(
     string TemplateId,
     string TemplateVersion,
     DocumentAuditContext AuditContext,
-    IdempotencyKey IdempotencyKey)
+    IdempotencyKey IdempotencyKey) : IdempotentDocumentCommand(AuditContext)
 {
+    /// <summary>Gets the lineage identifier shared by every execution attempt.</summary>
+    internal Guid LineageId { get; } = Guid.CreateVersion7();
+
+    /// <inheritdoc />
+    public override DocumentAuditOperation AuditOperation => DocumentAuditOperation.Generate;
+
     /// <summary>Creates a command using the current server-owned contract template.</summary>
     /// <param name="bookingId">The resource whose document is generated.</param>
     /// <param name="auditContext">Trusted metadata identifying the caller and request.</param>

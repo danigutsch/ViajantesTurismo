@@ -1,6 +1,7 @@
 using PandaBear.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -82,7 +83,7 @@ internal static class BookingFinancialEndpoints
         return history is null ? TypedResults.NotFound() : TypedResults.Ok(history);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingPaymentSchedule(Guid bookingId, [FromBody] CreatePaymentScheduleDto input, [FromServices] DraftBookingPaymentScheduleCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingPaymentSchedule(Guid bookingId, [FromBody] CreatePaymentScheduleDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -94,11 +95,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new DraftBookingPaymentScheduleCommand(bookingId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new DraftBookingPaymentScheduleCommand(bookingId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApproveBookingPaymentSchedule(Guid bookingId, Guid scheduleId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ApproveBookingPaymentScheduleCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApproveBookingPaymentSchedule(Guid bookingId, Guid scheduleId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -110,11 +111,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ApproveBookingPaymentScheduleCommand(bookingId, scheduleId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new ApproveBookingPaymentScheduleCommand(bookingId, scheduleId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingPaymentQuote(Guid bookingId, [FromBody] CreatePaymentQuoteDto input, [FromServices] DraftBookingPaymentQuoteCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingPaymentQuote(Guid bookingId, [FromBody] CreatePaymentQuoteDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -126,11 +127,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new DraftBookingPaymentQuoteCommand(bookingId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new DraftBookingPaymentQuoteCommand(bookingId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApproveBookingPaymentQuote(Guid bookingId, Guid quoteId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ApproveBookingPaymentQuoteCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApproveBookingPaymentQuote(Guid bookingId, Guid quoteId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -142,11 +143,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ApproveBookingPaymentQuoteCommand(bookingId, quoteId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new ApproveBookingPaymentQuoteCommand(bookingId, quoteId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> RecordBookingReceipt(Guid bookingId, [FromBody] CreateBookingReceiptDto input, [FromServices] RecordBookingReceiptCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> RecordBookingReceipt(Guid bookingId, [FromBody] CreateBookingReceiptDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -158,11 +159,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new RecordBookingReceiptCommand(bookingId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new RecordBookingReceiptCommand(bookingId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingReceiptReconciliation(Guid bookingId, Guid receiptId, [FromBody] CreateReceiptReconciliationDto input, [FromServices] DraftBookingReceiptReconciliationCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingReceiptReconciliation(Guid bookingId, Guid receiptId, [FromBody] CreateReceiptReconciliationDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -174,11 +175,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new DraftBookingReceiptReconciliationCommand(bookingId, receiptId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new DraftBookingReceiptReconciliationCommand(bookingId, receiptId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApproveBookingReceiptReconciliation(Guid bookingId, Guid reconciliationId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ApproveBookingReceiptReconciliationCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApproveBookingReceiptReconciliation(Guid bookingId, Guid reconciliationId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -190,11 +191,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ApproveBookingReceiptReconciliationCommand(bookingId, reconciliationId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new ApproveBookingReceiptReconciliationCommand(bookingId, reconciliationId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> AllocateBookingPayment(Guid bookingId, Guid receiptId, [FromBody] AllocatePaymentCreditDto input, [FromServices] AllocateBookingPaymentCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> AllocateBookingPayment(Guid bookingId, Guid receiptId, [FromBody] AllocatePaymentCreditDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -206,11 +207,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new AllocateBookingPaymentCommand(bookingId, receiptId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new AllocateBookingPaymentCommand(bookingId, receiptId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReleaseBookingPaymentAllocations(Guid bookingId, [FromBody] AllocatePaymentCreditDto input, [FromServices] ReleaseBookingPaymentAllocationsCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReleaseBookingPaymentAllocations(Guid bookingId, [FromBody] AllocatePaymentCreditDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -222,11 +223,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ReleaseBookingPaymentAllocationsCommand(bookingId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new ReleaseBookingPaymentAllocationsCommand(bookingId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReverseBookingReceipt(Guid bookingId, Guid receiptId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ReverseBookingReceiptCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReverseBookingReceipt(Guid bookingId, Guid receiptId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -238,11 +239,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ReverseBookingReceiptCommand(bookingId, receiptId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new ReverseBookingReceiptCommand(bookingId, receiptId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingPaymentRefund(Guid bookingId, Guid receiptId, [FromBody] CreatePaymentRefundDto input, [FromServices] DraftBookingPaymentRefundCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingPaymentRefund(Guid bookingId, Guid receiptId, [FromBody] CreatePaymentRefundDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -254,11 +255,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new DraftBookingPaymentRefundCommand(bookingId, receiptId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new DraftBookingPaymentRefundCommand(bookingId, receiptId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApproveBookingPaymentRefund(Guid bookingId, Guid refundId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ApproveBookingPaymentRefundCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApproveBookingPaymentRefund(Guid bookingId, Guid refundId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -270,11 +271,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ApproveBookingPaymentRefundCommand(bookingId, refundId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new ApproveBookingPaymentRefundCommand(bookingId, refundId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> CorrectBookingPaymentRefund(Guid bookingId, Guid refundId, [FromBody] ApproveFinancialRecordDto input, [FromServices] CorrectBookingPaymentRefundCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> CorrectBookingPaymentRefund(Guid bookingId, Guid refundId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -286,11 +287,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new CorrectBookingPaymentRefundCommand(bookingId, refundId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new CorrectBookingPaymentRefundCommand(bookingId, refundId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewBookingFinancialRecord(Guid bookingId, Guid targetId, [FromBody] ReviewFinancialRecordDto input, [FromServices] ReviewBookingFinancialRecordCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewBookingFinancialRecord(Guid bookingId, Guid targetId, [FromBody] ReviewFinancialRecordDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -302,11 +303,11 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ReviewBookingFinancialRecordCommand(bookingId, targetId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new ReviewBookingFinancialRecordCommand(bookingId, targetId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 
-    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawBookingFinancialApproval(Guid bookingId, Guid targetId, [FromBody] ApproveFinancialRecordDto input, [FromServices] WithdrawBookingFinancialApprovalCommandHandler handler, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawBookingFinancialApproval(Guid bookingId, Guid targetId, [FromBody] ApproveFinancialRecordDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -318,7 +319,7 @@ internal static class BookingFinancialEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new WithdrawBookingFinancialApprovalCommand(bookingId, targetId, input, actorId, key.Value), ct);
+        var result = await sender.Send(new WithdrawBookingFinancialApprovalCommand(bookingId, targetId, input, actorId, key.Value), ct);
         return Respond(bookingId, result);
     }
 

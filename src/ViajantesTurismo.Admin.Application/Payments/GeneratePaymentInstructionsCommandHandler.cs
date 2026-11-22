@@ -1,33 +1,33 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Payments;
-using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Payments;
 
 /// <summary>Generates protected financial snapshots through existing document lineage, branding and draft retention.</summary>
-public sealed class GeneratePaymentInstructionsCommandHandler(PaymentCommandExecutor executor, ITourStore tours, IPaymentAccountStore accounts,
-    IDocumentStore documents, IPaymentInstructionStore instructions, DocumentBrandingSource branding, TimeProvider clock)
+public sealed class GeneratePaymentInstructionsCommandHandler(PaymentCommandIdempotency executor, ITourCommandStore tours, IPaymentAccountStore accounts,
+    IDocumentStore documents, IPaymentInstructionStore instructions, DocumentBrandingSource branding, TimeProvider clock) : ICommandHandler<GeneratePaymentInstructionsCommand, Result<Guid>>
 {
     /// <summary>Creates an immutable draft; no generated financial field is staff-editable.</summary>
-    public Task<Result<Guid>> Handle(GeneratePaymentInstructionsCommand command, CancellationToken ct)
+    public ValueTask<Result<Guid>> Handle(GeneratePaymentInstructionsCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         if (command.Input.InstallmentIds is null)
         {
-            return Task.FromResult(FinancialErrors.Invalid("installments").ConvertError<Guid>());
+            return ValueTask.FromResult(FinancialErrors.Invalid("installments").ConvertError<Guid>());
         }
         var input = command.Input with
         {
             InstallmentIds = [.. command.Input.InstallmentIds.Order()]
         };
         var fingerprint = PaymentCommandFingerprint.Create(command.BookingId, command.ReplacesDocumentId, command.ActorId, input, PaymentFinancialContractJsonContext.Default.GeneratePaymentInstructionsDto);
-        return executor.Execute("payment-instructions:generate:" + command.BookingId.ToString("N"), command.IdempotencyKey, fingerprint,
-            ["admin:booking-finance:" + command.BookingId.ToString("N"), "admin:payment-account:" + input.AccountId.ToString("N")], async () =>
+        return executor.Execute(command.OperationScope, command.IdempotencyKey, fingerprint, async () =>
         {
-            var tour = await tours.GetByBookingId(command.BookingId, ct);
+            var tour = await tours.GetByBookingIdForPaymentUpdate(command.BookingId, ct);
             var booking = tour?.Bookings.SingleOrDefault(item => item.Id == command.BookingId);
             var account = await accounts.GetById(input.AccountId, ct);
             if (tour is null || booking is null || account is null)

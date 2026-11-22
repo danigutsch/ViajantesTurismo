@@ -23,13 +23,26 @@ internal sealed class TourCommandStore(AdminWriteDbContext dbContext, ITourStore
     /// <inheritdoc />
     public async Task<Option<Tour>> GetByBookingId(Guid bookingId, CancellationToken ct)
     {
-        return await GetLockedTour(
+        return await GetLockedTour(BookingTourLockQuery(bookingId), ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<Tour?> GetByBookingIdForPaymentUpdate(Guid bookingId, CancellationToken ct)
+    {
+        var tourId = await GetLockedTourId(BookingTourLockQuery(bookingId), ct);
+        if (tourId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var lockedBookingId = await dbContext.Database.SqlQuery<Guid>(
             $"""
             SELECT "Id" AS "Value"
-            FROM "Tours"
-            WHERE "Id" = (SELECT "TourId" FROM "Booking" WHERE "Id" = {bookingId})
+            FROM "Booking"
+            WHERE "Id" = {bookingId}
             FOR UPDATE
-            """, ct);
+            """).SingleOrDefaultAsync(ct);
+        return lockedBookingId == Guid.Empty ? null : await tours.GetById(tourId, ct);
     }
 
     /// <inheritdoc />
@@ -40,12 +53,25 @@ internal sealed class TourCommandStore(AdminWriteDbContext dbContext, ITourStore
 
     private async Task<Option<Tour>> GetLockedTour(FormattableString query, CancellationToken ct)
     {
+        var id = await GetLockedTourId(query, ct);
+        return id == Guid.Empty ? Option.None<Tour>() : Option.FromNullable(await tours.GetById(id, ct));
+    }
+
+    private Task<Guid> GetLockedTourId(FormattableString query, CancellationToken ct)
+    {
         if (dbContext.Database.CurrentTransaction is null)
         {
             throw new InvalidOperationException("Loading a Tour for a command requires an active transaction.");
         }
 
-        var id = await dbContext.Database.SqlQuery<Guid>(query).SingleOrDefaultAsync(ct);
-        return id == Guid.Empty ? Option.None<Tour>() : Option.FromNullable(await tours.GetById(id, ct));
+        return dbContext.Database.SqlQuery<Guid>(query).SingleOrDefaultAsync(ct);
     }
+
+    private static FormattableString BookingTourLockQuery(Guid bookingId) =>
+        $"""
+        SELECT "Id" AS "Value"
+        FROM "Tours"
+        WHERE "Id" = (SELECT "TourId" FROM "Booking" WHERE "Id" = {bookingId})
+        FOR UPDATE
+        """;
 }

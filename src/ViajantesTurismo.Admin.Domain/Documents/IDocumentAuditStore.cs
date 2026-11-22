@@ -3,8 +3,8 @@ namespace ViajantesTurismo.Admin.Domain.Documents;
 /// <summary>Persists immutable document audit records.</summary>
 public interface IDocumentAuditStore
 {
-    /// <summary>Adds an immutable document audit record.</summary>
-    void Add(DocumentAuditRecord record);
+    /// <summary>Adds an immutable document audit record, using the observed lineage when supplied.</summary>
+    void Add(DocumentAuditRecord record, Guid? documentLineageId = null);
 
     /// <summary>Adds immutable evidence that an audit-retention purge ran.</summary>
     void Add(DocumentAuditPurgeRecord record);

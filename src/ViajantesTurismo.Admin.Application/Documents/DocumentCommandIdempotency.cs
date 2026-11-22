@@ -11,7 +11,8 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 public sealed class DocumentCommandIdempotency(
     IIdempotencyStore idempotencyStore,
     IUnitOfWork unitOfWork,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IDocumentIdempotencyClaimStore? claimStore = null)
 {
     private const char FingerprintSeparator = ':';
     private const int GuidNLength = 32;
@@ -53,70 +54,65 @@ public sealed class DocumentCommandIdempotency(
 
     /// <summary>Runs generation preparation and its deferred durable mutation.</summary>
     /// <param name="command">The command defining resource scope and meaningful template inputs.</param>
-    /// <param name="auditWriter">The writer for rejected ownership audits.</param>
     /// <param name="prepare">Prepares source data before invoking the commit continuation.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The command result, replay, or audited conflict.</returns>
     public Task<Result<Guid>> Execute(
         GenerateContractDraftCommand command,
-        DocumentAuditWriter auditWriter,
         DocumentCommandPreparation prepare,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         return ExecutePrepared(
-            command.Scope, command.IdempotencyKey, command.TemplateId, command.TemplateVersion,
-            command.AuditContext, DocumentAuditOperation.Generate, null, command.BookingId,
-            auditWriter, prepare, ct);
+            command, command.Scope, command.IdempotencyKey, command.TemplateId, command.TemplateVersion,
+            null, command.BookingId, prepare, ct);
     }
 
     /// <summary>Runs regeneration preparation and its deferred durable mutation.</summary>
     /// <param name="command">The command defining resource scope and meaningful template inputs.</param>
-    /// <param name="auditWriter">The writer for rejected ownership audits.</param>
     /// <param name="prepare">Prepares source data before invoking the commit continuation.</param>
     /// <param name="ct">A cancellation token.</param>
     /// <returns>The command result, replay, or audited conflict.</returns>
     public Task<Result<Guid>> Execute(
         RegenerateDocumentDraftCommand command,
-        DocumentAuditWriter auditWriter,
         DocumentCommandPreparation prepare,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         return ExecutePrepared(
-            command.Scope, command.IdempotencyKey, command.TemplateId, command.TemplateVersion,
-            command.AuditContext, DocumentAuditOperation.Regenerate, command.DocumentId, null,
-            auditWriter, prepare, ct);
+            command, command.Scope, command.IdempotencyKey, command.TemplateId, command.TemplateVersion,
+            command.DocumentId, null, prepare, ct);
     }
 
     private async Task<Result<Guid>> ExecutePrepared(
+        IdempotentDocumentCommand command,
         IdempotencyScope scope,
         IdempotencyKey key,
         string templateId,
         string templateVersion,
-        DocumentAuditContext auditContext,
-        DocumentAuditOperation auditOperation,
         Guid? documentId,
         Guid? bookingId,
-        DocumentAuditWriter auditWriter,
         DocumentCommandPreparation prepare,
         CancellationToken ct)
     {
-        ArgumentNullException.ThrowIfNull(auditWriter);
+        command.ClearRejectionAudit();
         ArgumentNullException.ThrowIfNull(prepare);
         if (key == default)
         {
             return RequiredKeyError().ConvertError<Guid>();
         }
 
-        if (auditContext is null)
+        if (command.AuditContext is null)
         {
             return DocumentAuditErrors.AuditContextRequired().ConvertError<Guid>();
         }
 
         var requestFingerprint = CreateRequestFingerprint(templateId, templateVersion);
         var storedKey = DigestKey(key);
-        var existingResult = await GetExistingResult(scope, storedKey, requestFingerprint, ct);
+        var operationKey = new IdempotencyOperation(scope, storedKey);
+        var entry = await idempotencyStore.Get(operationKey, ct);
+        var ownsStartedClaim = entry is { State: IdempotencyEntryState.Started } && command.ClaimedAt == entry.StartedAt;
+        var existingResult = ownsStartedClaim ? null : ResolveExistingResult(entry, requestFingerprint);
         if (existingResult is { IsSuccess: true } replayedResult)
         {
             return replayedResult;
@@ -124,40 +120,36 @@ public sealed class DocumentCommandIdempotency(
 
         if (existingResult is { } conflictResult)
         {
-            return await RecordConflict(
-                conflictResult, auditWriter, auditContext, auditOperation, documentId, bookingId, null, ct);
+            return DeferConflict(conflictResult, command, documentId, bookingId, null, null);
         }
 
         return await prepare(async (operation, lineageId, preparedDocumentId, preparedBookingId, preparedRevision) =>
         {
             var operationWasInvoked = false;
-            var result = await Execute(scope, storedKey, requestFingerprint, lineageId, () =>
+            var result = await ExecuteMutation(operationKey, requestFingerprint, lineageId, command, ownsStartedClaim, () =>
             {
                 operationWasInvoked = true;
                 return operation();
             }, ct);
             return result.IsFailure && !operationWasInvoked
-                ? await RecordConflict(
-                    result, auditWriter, auditContext, auditOperation,
-                    preparedDocumentId, preparedBookingId, preparedRevision, ct)
+                ? DeferConflict(
+                    result, command, preparedDocumentId, preparedBookingId, preparedRevision,
+                    preparedDocumentId is null ? null : lineageId)
                 : result;
         });
     }
 
-    private static async Task<Result<Guid>> RecordConflict(
+    private static Result<Guid> DeferConflict(
         Result<Guid> result,
-        DocumentAuditWriter auditWriter,
-        DocumentAuditContext auditContext,
-        DocumentAuditOperation operation,
+        DocumentRejectionAuditedCommand<Result<Guid>> command,
         Guid? documentId,
         Guid? bookingId,
         int? revision,
-        CancellationToken ct)
+        Guid? lineageId)
     {
-        var auditResult = await auditWriter.Add(
-            auditContext, operation, documentId, bookingId, revision,
-            DocumentAuditOutcome.Rejected, DocumentAuditReasonCode.StateConflict, ct);
-        return auditResult.IsFailure ? auditResult.ConvertError<Guid>() : result;
+        command.DeferRejectionAudit(new DocumentRejectionAudit(
+            DocumentAuditReasonCode.StateConflict, documentId, bookingId, revision, lineageId));
+        return result;
     }
 
     /// <summary>Gets the replay or conflict for an existing operation.</summary>
@@ -180,6 +172,11 @@ public sealed class DocumentCommandIdempotency(
         ArgumentException.ThrowIfNullOrWhiteSpace(requestFingerprint);
 
         var entry = await idempotencyStore.Get(new IdempotencyOperation(scope, key), ct);
+        return ResolveExistingResult(entry, requestFingerprint);
+    }
+
+    private Result<Guid>? ResolveExistingResult(IdempotencyEntry? entry, string requestFingerprint)
+    {
         if (entry is null)
         {
             return null;
@@ -226,21 +223,34 @@ public sealed class DocumentCommandIdempotency(
         ArgumentException.ThrowIfNullOrWhiteSpace(requestFingerprint);
         ArgumentNullException.ThrowIfNull(operation);
 
-        var idempotencyOperation = new IdempotencyOperation(scope, key);
-        var startResult = await idempotencyStore.TryStart(
-            idempotencyOperation,
-            timeProvider.GetUtcNow(),
-            ProcessingLockDuration,
-            lineageId.ToString("N"),
-            ct);
-        if (!startResult.Started)
+        return await ExecuteMutation(new IdempotencyOperation(scope, key), requestFingerprint, lineageId, null, false, operation, ct);
+    }
+
+    private async Task<Result<Guid>> ExecuteMutation(
+        IdempotencyOperation idempotencyOperation,
+        string requestFingerprint,
+        Guid lineageId,
+        IdempotentDocumentCommand? command,
+        bool ownsStartedClaim,
+        Func<Task<Result<Guid>>> operation,
+        CancellationToken ct)
+    {
+        if (!ownsStartedClaim)
         {
-            if (TryGetCompletedDocumentId(startResult.ExistingEntry, requestFingerprint, out var replayedDocumentId))
+            var retentionOwner = lineageId.ToString("N");
+            // Align the timestamp with stored precision so the same dispatch can identify its committed claim after rollback.
+            var startedAt = DateTimeOffset.FromUnixTimeMilliseconds(timeProvider.GetUtcNow().ToUnixTimeMilliseconds());
+            var startResult = command is not null && claimStore is not null
+                ? await claimStore.TryStart(idempotencyOperation, startedAt, ProcessingLockDuration, retentionOwner, ct)
+                : await idempotencyStore.TryStart(idempotencyOperation, startedAt, ProcessingLockDuration, retentionOwner, ct);
+            if (!startResult.Started)
             {
-                return Result.Ok(replayedDocumentId);
+                return TryGetCompletedDocumentId(startResult.ExistingEntry, requestFingerprint, out var replayedDocumentId)
+                    ? Result.Ok(replayedDocumentId)
+                    : DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<Guid>();
             }
 
-            return DocumentErrors.DocumentRevisionAlreadyExists().ConvertError<Guid>();
+            command?.ClaimedAt = startedAt;
         }
 
         var ownedResult = await operation();

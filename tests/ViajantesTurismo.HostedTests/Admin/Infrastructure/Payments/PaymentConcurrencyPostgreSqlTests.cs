@@ -38,11 +38,21 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         };
         var one = new RecordBookingReceiptCommand(BookingId, input, "first", IdempotencyKey.From("record-first"));
         var two = new RecordBookingReceiptCommand(BookingId, input, "second", IdempotencyKey.From("record-second"));
+        await using var blocker = scenario.Open();
+        await using var heldBooking = await blocker.HoldBooking(BookingId, ct);
 
         // Act
-        var results = await Task.WhenAll(first.RecordBookingReceipt.Handle(one, ct), second.RecordBookingReceipt.Handle(two, ct));
+        var firstReceipt = first.Send(one, ct).AsTask();
+        var secondReceipt = second.Send(two, ct).AsTask();
+        await scenario.WaitForPaymentContention(ct);
+        var firstQueued = !firstReceipt.IsCompleted;
+        var secondQueued = !secondReceipt.IsCompleted;
+        await heldBooking.RollbackAsync(ct);
+        var results = await Task.WhenAll(firstReceipt, secondReceipt);
 
         // Assert
+        firstQueued.ShouldBeTrue();
+        secondQueued.ShouldBeTrue();
         results.Count(result => result.IsSuccess).ShouldBe(1);
         results.Count(result => result.IsFailure).ShouldBe(1);
         var current = await first.Financials.GetByBookingId(BookingId, ct);
@@ -50,6 +60,22 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         current.Version.ShouldBe(history.Version + 1);
         current.Receipts.Count.ShouldBe(history.Receipts.Count + 1);
         current.OutstandingEuro.ShouldBe(history.OutstandingEuro);
+        var rejected = results[0].IsFailure ? one : two;
+
+        // Act
+        var resubmitted = await second.Send(rejected with
+        {
+            Input = input with
+            {
+                ExpectedVersion = current.Version
+            }
+        }, ct);
+
+        // Assert
+        resubmitted.IsSuccess.ShouldBeTrue();
+        var afterResubmission = await first.Financials.GetByBookingId(BookingId, ct);
+        afterResubmission.ShouldNotBeNull();
+        afterResubmission.Receipts.Count.ShouldBe(history.Receipts.Count + 2);
     }
 
     [Fact]
@@ -75,7 +101,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         }, "owner", IdempotencyKey.From("same-command"));
 
         // Act
-        var results = await Task.WhenAll(first.CreatePaymentAccount.Handle(command, ct), second.CreatePaymentAccount.Handle(command, ct));
+        var results = await Task.WhenAll(first.Send(command, ct).AsTask(), second.Send(command, ct).AsTask());
 
         // Assert
         results.All(result => result.IsSuccess).ShouldBeTrue();
@@ -93,7 +119,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
                 Label = "changed input"
             }
         };
-        var rejected = await second.CreatePaymentAccount.Handle(mismatch, ct);
+        var rejected = await second.Send(mismatch, ct);
         rejected.IsFailure.ShouldBeTrue();
         var assertionTarget3 = await first.AccountCount(ct);
         assertionTarget3.ShouldBe(1);
@@ -127,7 +153,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         }, "first", IdempotencyKey.From("retire"));
 
         // Act
-        var results = await Task.WhenAll(first.VerifyPaymentAccount.Handle(verify, ct), second.RetirePaymentAccount.Handle(retire, ct));
+        var results = await Task.WhenAll(first.Send(verify, ct).AsTask(), second.Send(retire, ct).AsTask());
 
         // Assert
         results.Count(result => result.IsSuccess).ShouldBe(1);
@@ -160,7 +186,7 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         var two = new AllocateBookingPaymentCommand(BookingId, ReceiptId, input, "second", IdempotencyKey.From("allocate-second"));
 
         // Act
-        var results = await Task.WhenAll(first.AllocateBookingPayment.Handle(one, ct), second.AllocateBookingPayment.Handle(two, ct));
+        var results = await Task.WhenAll(first.Send(one, ct).AsTask(), second.Send(two, ct).AsTask());
 
         // Assert
         results.Count(result => result.IsSuccess).ShouldBe(1);
@@ -194,11 +220,11 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             PerformedAt = scenario.Clock.GetUtcNow(),
             ReversedAllocations = []
         };
-        var draftOne = await first.DraftBookingPaymentRefund.Handle(new DraftBookingPaymentRefundCommand(BookingId, ReceiptId, input, "first", IdempotencyKey.From("refund-draft-one")), ct);
+        var draftOne = await first.Send(new DraftBookingPaymentRefundCommand(BookingId, ReceiptId, input, "first", IdempotencyKey.From("refund-draft-one")), ct);
         draftOne.IsSuccess.ShouldBeTrue();
         var refreshed = await first.Financials.GetByBookingId(BookingId, ct);
         refreshed.ShouldNotBeNull();
-        var draftTwo = await second.DraftBookingPaymentRefund.Handle(new DraftBookingPaymentRefundCommand(BookingId, ReceiptId,
+        var draftTwo = await second.Send(new DraftBookingPaymentRefundCommand(BookingId, ReceiptId,
             input with
             {
                 ExpectedVersion = refreshed.Version,
@@ -210,8 +236,8 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         var approval = new ApproveFinancialRecordDto { ExpectedVersion = latest.Version, Confirmed = true, Reason = FinancialReasonDto.RefundPerformed };
 
         // Act
-        var results = await Task.WhenAll(first.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(BookingId, draftOne.Value, approval, "first", IdempotencyKey.From("refund-approve-one")), ct),
-            second.ApproveBookingPaymentRefund.Handle(new ApproveBookingPaymentRefundCommand(BookingId, draftTwo.Value, approval, "second", IdempotencyKey.From("refund-approve-two")), ct));
+        var results = await Task.WhenAll(first.Send(new ApproveBookingPaymentRefundCommand(BookingId, draftOne.Value, approval, "first", IdempotencyKey.From("refund-approve-one")), ct).AsTask(),
+            second.Send(new ApproveBookingPaymentRefundCommand(BookingId, draftTwo.Value, approval, "second", IdempotencyKey.From("refund-approve-two")), ct).AsTask());
 
         // Assert
         results.Count(result => result.IsSuccess).ShouldBe(1);
@@ -243,8 +269,8 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         };
 
         // Act
-        var rejected = await session.VerifyPaymentAccount.Handle(new VerifyPaymentAccountCommand(account.Id, input, "owner", IdempotencyKey.From("rollback-proof")), ct);
-        var accepted = await session.VerifyPaymentAccount.Handle(new VerifyPaymentAccountCommand(account.Id, input with
+        var rejected = await session.Send(new VerifyPaymentAccountCommand(account.Id, input, "owner", IdempotencyKey.From("rollback-proof")), ct);
+        var accepted = await session.Send(new VerifyPaymentAccountCommand(account.Id, input with
         {
             Confirmed = true
         }, "owner", IdempotencyKey.From("rollback-proof")), ct);
@@ -284,9 +310,9 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
         };
 
         // Act
-        var generation = first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(BookingId, null, input, "first", IdempotencyKey.From("generation-race")), ct);
-        var retirement = second.RetirePaymentAccount.Handle(new RetirePaymentAccountCommand(account.Id,
-            new RetirePaymentAccountDto { ExpectedVersion = account.Version, Confirmed = true, Reason = PaymentAccountReasonDto.NoLongerUsed }, "second", IdempotencyKey.From("retirement-race")), ct);
+        var generation = first.Send(new GeneratePaymentInstructionsCommand(BookingId, null, input, "first", IdempotencyKey.From("generation-race")), ct).AsTask();
+        var retirement = second.Send(new RetirePaymentAccountCommand(account.Id,
+            new RetirePaymentAccountDto { ExpectedVersion = account.Version, Confirmed = true, Reason = PaymentAccountReasonDto.NoLongerUsed }, "second", IdempotencyKey.From("retirement-race")), ct).AsTask();
         await Task.WhenAll(generation, retirement);
 
         // Assert
@@ -301,11 +327,11 @@ public sealed class PaymentConcurrencyPostgreSqlTests(PostgreSqlTestServerFixtur
             var instruction = await first.Instructions.GetById(generationResult.Value, ct);
             instruction.ShouldNotBeNull();
             instruction.Eligible.ShouldBeFalse();
-            var approval = await first.ApprovePaymentInstructions.Handle(new ApprovePaymentInstructionsCommand(instruction.Document.Id,
-                new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = instruction.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionApproved }, "first", IdempotencyKey.From("approve-retired-source")), ct);
+            var approval = await first.Instructions.Change(instruction.Document.Id,
+                new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = instruction.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionApproved }, "first", IdempotencyKey.From("approve-retired-source"), PaymentInstructionAuditOperation.Approved, ct);
             approval.IsFailure.ShouldBeTrue();
         }
-        var blocked = await first.GeneratePaymentInstructions.Handle(new GeneratePaymentInstructionsCommand(BookingId, null,
+        var blocked = await first.Send(new GeneratePaymentInstructionsCommand(BookingId, null,
             input with
             {
                 ExpectedAccountVersion = retired.Version

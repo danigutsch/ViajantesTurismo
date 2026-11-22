@@ -1,6 +1,7 @@
 using PandaBear.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -51,7 +52,7 @@ internal static class PaymentInstructionEndpoints
         return instruction is null ? TypedResults.NotFound() : TypedResults.Ok(instruction);
     }
 
-    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Generate(Guid bookingId, [FromBody] GeneratePaymentInstructionsDto input, [FromServices] GeneratePaymentInstructionsCommandHandler handler, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Generate(Guid bookingId, [FromBody] GeneratePaymentInstructionsDto input, [FromServices] ISender sender, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -63,11 +64,11 @@ internal static class PaymentInstructionEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new GeneratePaymentInstructionsCommand(bookingId, null, input, actorId, key.Value), ct);
+        var result = await sender.Send(new GeneratePaymentInstructionsCommand(bookingId, null, input, actorId, key.Value), ct);
         return await RespondCreated(result, workflow, ct);
     }
 
-    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Regenerate(Guid bookingId, Guid id, [FromBody] GeneratePaymentInstructionsDto input, [FromServices] GeneratePaymentInstructionsCommandHandler handler, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Regenerate(Guid bookingId, Guid id, [FromBody] GeneratePaymentInstructionsDto input, [FromServices] ISender sender, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -79,11 +80,11 @@ internal static class PaymentInstructionEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new GeneratePaymentInstructionsCommand(bookingId, id, input, actorId, key.Value), ct);
+        var result = await sender.Send(new GeneratePaymentInstructionsCommand(bookingId, id, input, actorId, key.Value), ct);
         return await RespondCreated(result, workflow, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApprovePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] ApprovePaymentInstructionsCommandHandler handler, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApprovePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -95,11 +96,11 @@ internal static class PaymentInstructionEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ApprovePaymentInstructionsCommand(id, input, actorId, key.Value), ct);
+        var result = await workflow.Change(id, input, actorId, key.Value, PaymentInstructionAuditOperation.Approved, ct);
         return await Respond(result, workflow, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> FinalizePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] FinalizePaymentInstructionsCommandHandler handler, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> FinalizePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -111,11 +112,11 @@ internal static class PaymentInstructionEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new FinalizePaymentInstructionsCommand(id, input, actorId, key.Value), ct);
+        var result = await workflow.Change(id, input, actorId, key.Value, PaymentInstructionAuditOperation.Finalized, ct);
         return await Respond(result, workflow, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawPaymentInstructionApproval(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] WithdrawPaymentInstructionApprovalCommandHandler handler, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawPaymentInstructionApproval(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -127,11 +128,11 @@ internal static class PaymentInstructionEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new WithdrawPaymentInstructionApprovalCommand(id, input, actorId, key.Value), ct);
+        var result = await workflow.Change(id, input, actorId, key.Value, PaymentInstructionAuditOperation.ApprovalWithdrawn, ct);
         return await Respond(result, workflow, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> VoidPaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] VoidPaymentInstructionsCommandHandler handler, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> VoidPaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -143,11 +144,11 @@ internal static class PaymentInstructionEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new VoidPaymentInstructionsCommand(id, input, actorId, key.Value), ct);
+        var result = await workflow.Change(id, input, actorId, key.Value, PaymentInstructionAuditOperation.Voided, ct);
         return await Respond(result, workflow, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewPaymentInstructions(Guid id, [FromBody] ReviewPaymentInstructionsDto input, [FromServices] ReviewPaymentInstructionsCommandHandler handler, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewPaymentInstructions(Guid id, [FromBody] ReviewPaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -159,7 +160,7 @@ internal static class PaymentInstructionEndpoints
         {
             return key.ToValidationProblem();
         }
-        var result = await handler.Handle(new ReviewPaymentInstructionsCommand(id, input, actorId, key.Value), ct);
+        var result = await workflow.Review(id, input, actorId, key.Value, ct);
         return await Respond(result, workflow, ct);
     }
 

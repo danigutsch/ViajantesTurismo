@@ -3,4 +3,9 @@ using ViajantesTurismo.Admin.Domain.Documents;
 namespace ViajantesTurismo.Admin.Application.Documents;
 
 /// <summary>Requests staff review for a generated document draft.</summary>
-public sealed record BeginDocumentReviewCommand(Guid DocumentId, DocumentAuditContext AuditContext);
+public sealed record BeginDocumentReviewCommand(Guid DocumentId, DocumentAuditContext AuditContext)
+    : DocumentRejectionAuditedCommand(DocumentId, AuditContext)
+{
+    /// <inheritdoc />
+    public override DocumentAuditOperation AuditOperation => DocumentAuditOperation.BeginReview;
+}

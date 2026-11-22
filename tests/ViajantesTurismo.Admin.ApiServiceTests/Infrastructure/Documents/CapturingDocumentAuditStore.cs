@@ -11,7 +11,7 @@ internal sealed class CapturingDocumentAuditStore : IDocumentAuditStore
     public IReadOnlyList<DocumentAuditRecord> Records => records;
 
     /// <summary>Records the audit entry in memory.</summary>
-    public void Add(DocumentAuditRecord record)
+    public void Add(DocumentAuditRecord record, Guid? documentLineageId = null)
     {
         ArgumentNullException.ThrowIfNull(record);
         records.Add(record);

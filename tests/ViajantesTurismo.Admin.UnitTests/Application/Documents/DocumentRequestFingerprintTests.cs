@@ -30,13 +30,12 @@ public sealed class DocumentRequestFingerprintTests
     {
         // Arrange
         var unitOfWork = new FakeUnitOfWork();
-        var auditStore = new FakeDocumentAuditStore();
         var coordinator = new DocumentCommandIdempotency(new UnusedIdempotencyStore(), unitOfWork, TimeProvider.System);
         var command = new GenerateContractDraftCommand(
             Guid.CreateVersion7(), templateId, version, DocumentAuditTestData.CreateContext(),
             IdempotencyKey.From(Guid.CreateVersion7().ToString("N")));
         Func<Task> action = async () => await coordinator.Execute(
-            command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
+            command,
             _ => throw new InvalidOperationException("Template validation must precede source preparation."),
             CancellationToken.None);
 
@@ -46,6 +45,6 @@ public sealed class DocumentRequestFingerprintTests
         // Assert
         exception.ParamName.ShouldBe(expectedParameter);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
-        auditStore.Records.ShouldBeEmpty();
+        command.TakeRejectionAudit().ShouldBeNull();
     }
 }

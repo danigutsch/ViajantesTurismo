@@ -17,12 +17,10 @@ public sealed class AcknowledgeDocumentChangesCommandHandlerTests
     {
         // Arrange
         var (store, revision) = DocumentManualReviewTestData.CreateStoreWithChangedRevision();
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var writer = DocumentAuditTestData.CreateWriter(auditStore, unitOfWork);
-        var acknowledge = new AcknowledgeDocumentChangesCommandHandler(store, unitOfWork, TimeProvider.System, writer);
+        var acknowledge = new AcknowledgeDocumentChangesCommandHandler(store, unitOfWork, TimeProvider.System);
         var approve = new ApproveDocumentCommandHandler(
-            store, unitOfWork, TimeProvider.System, writer, new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
+            store, unitOfWork, TimeProvider.System, new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
 
         // Act
         var acknowledged = await acknowledge.Handle(
@@ -37,7 +35,6 @@ public sealed class AcknowledgeDocumentChangesCommandHandlerTests
         approved.IsSuccess.ShouldBeTrue();
         revision.Status.ShouldBe(DocumentStatus.Approved);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(2);
-        auditStore.Records.ShouldBeEmpty();
         var operations = store.LastLoadedLineage.ShouldNotBeNull().GetDomainEvents()
             .OfType<DocumentLifecycleAuditDomainEvent>()
             .Select(domainEvent => domainEvent.Operation)
@@ -46,80 +43,71 @@ public sealed class AcknowledgeDocumentChangesCommandHandlerTests
     }
 
     [Fact]
-    public async Task Approve_returns_a_conflict_and_audits_a_rejection_while_changes_are_unacknowledged()
+    public async Task Approve_returns_a_conflict_and_defers_rejection_evidence_while_changes_are_unacknowledged()
     {
         // Arrange
         var (store, revision) = DocumentManualReviewTestData.CreateStoreWithChangedRevision();
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         var approve = new ApproveDocumentCommandHandler(
             store,
             unitOfWork,
             TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork),
             new FakeDocumentSourceVersionReader("SOURCE-VERSION-2"));
+        var command = new ApproveDocumentCommand(revision.Id, DocumentAuditTestData.CreateContext());
 
         // Act
-        var result = await approve.Handle(
-            new ApproveDocumentCommand(revision.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await approve.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Conflict);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(
             DocumentErrors.ManualReviewRequired().ErrorDetails.ShouldNotBeNull().Detail);
         revision.Status.ShouldBe(DocumentStatus.InReview);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
-        audit.Operation.ShouldBe(DocumentAuditOperation.Approve);
+        var audit = command.TakeRejectionAudit().ShouldNotBeNull();
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
-    public async Task Acknowledge_audits_a_rejection_when_no_changes_await_acknowledgement()
+    public async Task Acknowledge_defers_rejection_evidence_when_no_changes_await_acknowledgement()
     {
         // Arrange
         var document = DocumentDraftTestData.Create(Now);
         document.BeginReview(Now).IsSuccess.ShouldBeTrue();
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new AcknowledgeDocumentChangesCommandHandler(
-            store, unitOfWork, TimeProvider.System, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new AcknowledgeDocumentChangesCommandHandler(store, unitOfWork, TimeProvider.System);
+        var command = new AcknowledgeDocumentChangesCommand(document.Id, DocumentAuditTestData.CreateContext());
 
         // Act
-        var result = await handler.Handle(
-            new AcknowledgeDocumentChangesCommand(document.Id, DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Conflict);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
-        audit.Operation.ShouldBe(DocumentAuditOperation.AcknowledgeChanges);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        var audit = command.TakeRejectionAudit().ShouldNotBeNull();
         audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
+        audit.DocumentId.ShouldBe(document.Id);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
-    public async Task Acknowledge_audits_a_rejection_for_a_missing_document()
+    public async Task Acknowledge_defers_redacted_rejection_evidence_for_a_missing_document()
     {
         // Arrange
-        var auditStore = new FakeDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new AcknowledgeDocumentChangesCommandHandler(
-            new FakeDocumentStore(),
-            unitOfWork,
-            TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(auditStore, unitOfWork));
+        var handler = new AcknowledgeDocumentChangesCommandHandler(new FakeDocumentStore(), unitOfWork, TimeProvider.System);
+        var command = new AcknowledgeDocumentChangesCommand(Guid.CreateVersion7(), DocumentAuditTestData.CreateContext());
 
         // Act
-        var result = await handler.Handle(
-            new AcknowledgeDocumentChangesCommand(Guid.CreateVersion7(), DocumentAuditTestData.CreateContext()),
-            CancellationToken.None);
+        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.NotFound);
-        auditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
+        var audit = command.TakeRejectionAudit().ShouldNotBeNull();
+        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
+        audit.DocumentId.ShouldBeNull();
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -128,11 +116,7 @@ public sealed class AcknowledgeDocumentChangesCommandHandlerTests
         // Arrange
         var (store, revision) = DocumentManualReviewTestData.CreateStoreWithChangedRevision();
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new AcknowledgeDocumentChangesCommandHandler(
-            store,
-            unitOfWork,
-            TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+        var handler = new AcknowledgeDocumentChangesCommandHandler(store, unitOfWork, TimeProvider.System);
 
         // Act
         var result = await handler.Handle(new AcknowledgeDocumentChangesCommand(revision.Id, null!), CancellationToken.None);
@@ -151,11 +135,7 @@ public sealed class AcknowledgeDocumentChangesCommandHandlerTests
         var store = new FakeDocumentStore();
         store.Documents.Add(document.Id, document);
         var unitOfWork = new FakeUnitOfWork();
-        var handler = new AcknowledgeDocumentChangesCommandHandler(
-            store,
-            unitOfWork,
-            TimeProvider.System,
-            DocumentAuditTestData.CreateWriter(new FakeDocumentAuditStore(), unitOfWork));
+        var handler = new AcknowledgeDocumentChangesCommandHandler(store, unitOfWork, TimeProvider.System);
 
         // Act
         var result = await handler.Handle(

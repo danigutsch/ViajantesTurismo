@@ -1,4 +1,5 @@
 using PandaBear.DispositionHold;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
@@ -11,49 +12,47 @@ namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 public sealed class ReleaseDocumentHoldCommandHandler(
     IDocumentHoldQuery holdQuery,
     IDispositionHoldStore holdStore,
-    IDocumentDispositionTransaction transaction,
     TimeProvider timeProvider,
-    DocumentAuditWriter auditWriter)
+    DocumentAuditWriter auditWriter) : ICommandHandler<ReleaseDocumentHoldCommand, Result<Hold>>
 {
     private const string ReleasingActorParameter = "releasedBy";
-    private const string ReleaseLockPrefix = "admin:document-hold-release:";
 
     /// <summary>Releases the hold and returns it; a second release is a conflict and a foreign hold is not found.</summary>
-    public async Task<Result<Hold>> Handle(ReleaseDocumentHoldCommand command, CancellationToken ct)
+    public async ValueTask<Result<Hold>> Handle(ReleaseDocumentHoldCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        command.ClearRejectionAudit();
         if (command.AuditContext is null)
         {
             return DocumentAuditErrors.AuditContextRequired().ConvertError<Hold>();
         }
 
+        if (command.HoldId == Guid.Empty)
+        {
+            return DocumentAuditErrors.InvalidResourceId().ConvertError<Hold>();
+        }
+
         var lineageId = await holdQuery.FindLineageId(command.DocumentId, ct);
         if (lineageId is null)
         {
-            return await Reject(DocumentErrors.DocumentNotFound().ConvertError<Hold>(), command, null, DocumentAuditReasonCode.DocumentNotFound, ct);
+            return DeferRejection(DocumentErrors.DocumentNotFound().ConvertError<Hold>(), command, null, DocumentAuditReasonCode.DocumentNotFound);
         }
 
-        var lockName = string.Concat(ReleaseLockPrefix, command.HoldId.ToString("N"));
-        return await transaction.Execute([lockName], () => Release(command, DocumentHoldScopes.ForLineage(lineageId.Value), ct), ct);
-    }
-
-    private async Task<Result<Hold>> Release(ReleaseDocumentHoldCommand command, DispositionScope scope, CancellationToken ct)
-    {
         var hold = await holdStore.Find(command.HoldId, ct);
-        if (hold is null || hold.Scope != scope)
+        if (hold is null || hold.Scope != DocumentHoldScopes.ForLineage(lineageId.Value))
         {
-            return await Reject(DocumentHoldErrors.HoldNotFound().ConvertError<Hold>(), command, null, DocumentAuditReasonCode.HoldNotFound, ct);
+            return DeferRejection(DocumentHoldErrors.HoldNotFound().ConvertError<Hold>(), command, lineageId, DocumentAuditReasonCode.HoldNotFound);
         }
 
         if (hold.IsReleased)
         {
-            return await Reject(DocumentHoldErrors.HoldAlreadyReleased().ConvertError<Hold>(), command, hold, DocumentAuditReasonCode.StateConflict, ct);
+            return DeferRejection(DocumentHoldErrors.HoldAlreadyReleased().ConvertError<Hold>(), command, lineageId, DocumentAuditReasonCode.StateConflict, hold);
         }
 
         var released = TryRelease(hold, command);
         if (released.IsFailure)
         {
-            return await Reject(released, command, hold, DocumentAuditReasonCode.ValidationRejected, ct);
+            return DeferRejection(released, command, lineageId, DocumentAuditReasonCode.ValidationRejected, hold);
         }
 
         var audit = await auditWriter.AddHold(
@@ -68,23 +67,20 @@ public sealed class ReleaseDocumentHoldCommandHandler(
         return audit.IsFailure ? audit.ConvertError<Hold>() : released;
     }
 
-    private async Task<Result<Hold>> Reject(
+    private static Result<Hold> DeferRejection(
         Result<Hold> rejection,
         ReleaseDocumentHoldCommand command,
-        Hold? hold,
+        Guid? lineageId,
         DocumentAuditReasonCode reasonCode,
-        CancellationToken ct)
+        Hold? hold = null)
     {
-        var audit = await auditWriter.AddHold(
-            command.AuditContext,
-            DocumentAuditOperation.ReleaseHold,
-            command.DocumentId,
-            command.HoldId,
-            hold?.Basis.ToString(),
-            DocumentAuditOutcome.Rejected,
+        command.DeferRejectionAudit(new DocumentRejectionAudit(
             reasonCode,
-            ct);
-        return audit.IsFailure ? audit.ConvertError<Hold>() : rejection;
+            DocumentId: lineageId is null ? null : command.DocumentId,
+            DocumentLineageId: lineageId,
+            HoldBasis: hold?.Basis.ToString(),
+            HoldId: command.HoldId));
+        return rejection;
     }
 
     private Result<Hold> TryRelease(Hold hold, ReleaseDocumentHoldCommand command)

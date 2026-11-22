@@ -21,8 +21,8 @@ public sealed class PaymentInstructionCommandEndpointTests
     public async Task Instruction_lifecycle_rejects_missing_snapshots_and_invalid_confirmation(string operation, int reason, bool valid)
     {
         // Arrange
-        var transaction = new PaymentEndpointTransaction();
-        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, transaction, new PaymentAccountQueryProbe()),
+        var sender = new PaymentEndpointSender();
+        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, sender, new PaymentAccountQueryProbe()),
             configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
@@ -42,7 +42,7 @@ public sealed class PaymentInstructionCommandEndpointTests
         response.StatusCode.ShouldBe(valid || operation == "review" ? HttpStatusCode.NotFound : HttpStatusCode.BadRequest);
         var assertionTarget = response.Headers.CacheControl?.NoStore;
         assertionTarget.ShouldNotBeNull().ShouldBeTrue();
-        transaction.Calls.ShouldBe(0);
+        sender.Calls.ShouldBe(0);
     }
 
     [Theory]
@@ -55,8 +55,8 @@ public sealed class PaymentInstructionCommandEndpointTests
     public async Task Instruction_generation_preserves_rejected_source_and_revision_outcomes(bool regenerate, int status)
     {
         // Arrange
-        var transaction = new PaymentEndpointTransaction { Status = status };
-        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, transaction, new PaymentAccountQueryProbe()),
+        var sender = new PaymentEndpointSender { Status = status };
+        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, sender, new PaymentAccountQueryProbe()),
             configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
@@ -69,7 +69,7 @@ public sealed class PaymentInstructionCommandEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe((HttpStatusCode)status);
-        transaction.Calls.ShouldBe(1);
+        sender.Calls.ShouldBe(1);
         var assertionTarget = response.Headers.CacheControl?.NoStore;
         assertionTarget.ShouldNotBeNull().ShouldBeTrue();
     }
@@ -78,7 +78,7 @@ public sealed class PaymentInstructionCommandEndpointTests
     public async Task Booking_without_retained_instructions_returns_an_empty_list()
     {
         // Arrange
-        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, new PaymentEndpointTransaction(), new PaymentAccountQueryProbe()),
+        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, new PaymentEndpointSender(), new PaymentAccountQueryProbe()),
             configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");

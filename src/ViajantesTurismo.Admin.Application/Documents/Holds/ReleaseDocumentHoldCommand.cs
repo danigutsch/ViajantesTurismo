@@ -1,3 +1,6 @@
+using PandaBear.DispositionHold;
+using PandaBear.Mediator.Transactions;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents.Holds;
@@ -7,4 +10,13 @@ namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 /// <param name="HoldId">The hold to release.</param>
 /// <param name="ReasonCode">The opaque reason code recorded with the release.</param>
 /// <param name="AuditContext">The trusted opaque actor and correlation ids; never taken from a request body.</param>
-public sealed record ReleaseDocumentHoldCommand(Guid DocumentId, Guid HoldId, string ReasonCode, DocumentAuditContext AuditContext);
+public sealed record ReleaseDocumentHoldCommand(Guid DocumentId, Guid HoldId, string ReasonCode, DocumentAuditContext AuditContext)
+    : DocumentRejectionAuditedCommand<Result<Hold>>(AuditContext), ITransactionLockDeclaration
+{
+    private const string ReleaseLockPrefix = "admin:document-hold-release:";
+
+    /// <inheritdoc />
+    public override DocumentAuditOperation AuditOperation => DocumentAuditOperation.ReleaseHold;
+
+    IReadOnlyList<string> ITransactionLockDeclaration.TransactionLocks => [string.Concat(ReleaseLockPrefix, HoldId.ToString("N"))];
+}

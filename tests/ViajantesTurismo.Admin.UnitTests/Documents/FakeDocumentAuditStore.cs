@@ -39,7 +39,7 @@ internal sealed class FakeDocumentAuditStore : IDocumentAuditStore
     }
 
     /// <summary>Adds the record to <see cref="Records" />.</summary>
-    public void Add(DocumentAuditRecord record) => Records.Add(record);
+    public void Add(DocumentAuditRecord record, Guid? documentLineageId = null) => Records.Add(record);
 
     /// <summary>Adds the evidence to <see cref="PurgeRecords" />.</summary>
     public void Add(DocumentAuditPurgeRecord record) => PurgeRecords.Add(record);

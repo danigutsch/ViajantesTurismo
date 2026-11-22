@@ -95,6 +95,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
     /// <param name="content">The initial revision content.</param>
     /// <param name="createdAt">The creation time.</param>
     /// <param name="auditContext">The actor and correlation metadata.</param>
+    /// <param name="lineageId">An identifier supplied by the caller, or null to allocate a new identifier.</param>
     /// <returns>The created lineage or a validation failure.</returns>
     public static Result<DocumentLineage> Create(
         Guid bookingId,
@@ -102,7 +103,8 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         DocumentAudience audience,
         DocumentDraftContent content,
         DateTime createdAt,
-        DocumentAuditContext auditContext)
+        DocumentAuditContext auditContext,
+        Guid? lineageId = null)
     {
         ArgumentNullException.ThrowIfNull(content);
 
@@ -116,14 +118,19 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
             return DocumentLineageErrors.BookingIdRequired();
         }
 
+        if (lineageId == Guid.Empty)
+        {
+            return DocumentLineageErrors.LineageIdRequired();
+        }
+
         if (!Enum.IsDefined(type))
         {
             return DocumentLineageErrors.InvalidDocumentType();
         }
 
-        var lineageId = Guid.CreateVersion7();
+        var id = lineageId ?? Guid.CreateVersion7();
         var revisionResult = DocumentDraft.CreateForLineage(
-            lineageId,
+            id,
             bookingId,
             type,
             audience,
@@ -135,7 +142,7 @@ public sealed class DocumentLineage : IAggregateRoot<Guid>
         }
 
         var lineage = new DocumentLineage(
-            lineageId,
+            id,
             bookingId,
             type,
             audience,

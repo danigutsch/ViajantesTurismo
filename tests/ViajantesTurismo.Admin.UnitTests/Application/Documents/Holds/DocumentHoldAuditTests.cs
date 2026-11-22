@@ -57,7 +57,7 @@ public sealed class DocumentHoldAuditTests
     }
 
     [Fact]
-    public async Task Place_of_an_unknown_document_records_a_rejection_and_stores_no_hold()
+    public async Task Place_of_an_unknown_document_defers_a_rejection_and_stores_no_hold()
     {
         // Arrange
         var harness = DocumentHoldHarness.Create();
@@ -73,29 +73,51 @@ public sealed class DocumentHoldAuditTests
         // Assert
         result.Status.ShouldBe(ResultStatus.NotFound);
         harness.Store.Holds.ShouldBeEmpty();
-        var record = harness.AuditStore.Records.ShouldHaveSingleItem();
-        record.Operation.ShouldBe(DocumentAuditOperation.PlaceHold);
-        record.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        var record = command.TakeRejectionAudit().ShouldNotBeNull();
         record.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
         record.DocumentId.ShouldBeNull();
-        record.HoldId.ShouldBeNull();
+        record.DocumentLineageId.ShouldBeNull();
+        harness.AuditStore.Records.ShouldBeEmpty();
     }
 
     [Fact]
-    public async Task Place_with_an_invalid_field_records_a_validation_rejection_and_stores_no_hold()
+    public async Task Place_with_an_invalid_field_defers_validation_evidence_and_stores_no_hold()
     {
         // Arrange
         var harness = DocumentHoldHarness.Create();
+        var command = harness.CreatePlaceCommand("jane doe@example.invalid");
 
         // Act
-        var result = await harness.Place.Handle(harness.CreatePlaceCommand("jane doe@example.invalid"), TestContext.Current.CancellationToken);
+        var result = await harness.Place.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Invalid);
         harness.Store.Holds.ShouldBeEmpty();
-        var record = harness.AuditStore.Records.ShouldHaveSingleItem();
-        record.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        var record = command.TakeRejectionAudit().ShouldNotBeNull();
         record.ReasonCode.ShouldBe(DocumentAuditReasonCode.ValidationRejected);
+        record.DocumentId.ShouldBe(command.DocumentId);
+        harness.AuditStore.Records.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Place_with_an_unknown_basis_defers_a_rejection_without_the_invalid_basis()
+    {
+        // Arrange
+        var harness = DocumentHoldHarness.Create();
+        var command = harness.CreatePlaceCommand() with
+        {
+            Basis = (HoldBasis)99
+        };
+
+        // Act
+        var result = await harness.Place.Handle(command, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        harness.Store.Holds.ShouldBeEmpty();
+        var rejection = command.TakeRejectionAudit().ShouldNotBeNull();
+        rejection.ReasonCode.ShouldBe(DocumentAuditReasonCode.ValidationRejected);
+        rejection.HoldBasis.ShouldBeNull();
     }
 
     [Fact]
@@ -106,19 +128,20 @@ public sealed class DocumentHoldAuditTests
         var placed = await harness.Place.Handle(harness.CreatePlaceCommand(), TestContext.Current.CancellationToken);
         _ = await harness.Release.Handle(harness.CreateReleaseCommand(placed.Value.Id, "actor-0002"), TestContext.Current.CancellationToken);
         harness.AuditStore.Records.Clear();
+        var command = harness.CreateReleaseCommand(placed.Value.Id, "actor-0003");
 
         // Act
-        var result = await harness.Release.Handle(harness.CreateReleaseCommand(placed.Value.Id, "actor-0003"), TestContext.Current.CancellationToken);
+        var result = await harness.Release.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.Conflict);
         harness.Store.Holds.ShouldHaveSingleItem().ReleasedBy.ShouldBe("actor-0002");
-        var record = harness.AuditStore.Records.ShouldHaveSingleItem();
-        record.Operation.ShouldBe(DocumentAuditOperation.ReleaseHold);
-        record.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        var record = command.TakeRejectionAudit().ShouldNotBeNull();
         record.ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
-        record.ActorId.ShouldBe("actor-0003");
+        record.DocumentId.ShouldBe(harness.DocumentId);
+        record.DocumentLineageId.ShouldBe(harness.LineageId);
         record.HoldId.ShouldBe(placed.Value.Id);
+        harness.AuditStore.Records.ShouldBeEmpty();
     }
 
     [Fact]
@@ -127,16 +150,18 @@ public sealed class DocumentHoldAuditTests
         // Arrange
         var harness = DocumentHoldHarness.Create();
         var unknownHold = Guid.CreateVersion7();
+        var command = harness.CreateReleaseCommand(unknownHold);
 
         // Act
-        var result = await harness.Release.Handle(harness.CreateReleaseCommand(unknownHold), TestContext.Current.CancellationToken);
+        var result = await harness.Release.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.Status.ShouldBe(ResultStatus.NotFound);
-        var record = harness.AuditStore.Records.ShouldHaveSingleItem();
-        record.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        var record = command.TakeRejectionAudit().ShouldNotBeNull();
         record.ReasonCode.ShouldBe(DocumentAuditReasonCode.HoldNotFound);
         record.HoldId.ShouldBe(unknownHold);
+        record.HoldBasis.ShouldBeNull();
+        harness.AuditStore.Records.ShouldBeEmpty();
     }
 
     [Fact]
@@ -154,7 +179,12 @@ public sealed class DocumentHoldAuditTests
 
         // Assert
         result.Status.ShouldBe(ResultStatus.NotFound);
-        harness.AuditStore.Records.ShouldHaveSingleItem().ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
+        var record = command.TakeRejectionAudit().ShouldNotBeNull();
+        record.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
+        record.DocumentId.ShouldBeNull();
+        record.DocumentLineageId.ShouldBeNull();
+        record.HoldId.ShouldBe(command.HoldId);
+        harness.AuditStore.Records.ShouldBeEmpty();
     }
 
     [Fact]

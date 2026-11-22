@@ -46,7 +46,7 @@ internal sealed class DocumentAuditRetentionHostedServiceFixture : IAsyncDisposa
         services.AddSingleton<IDocumentAuditStore>(auditStore);
         services.AddSingleton<IUnitOfWork>(new FakeUnitOfWork());
         services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
-        services.AddSingleton<IDocumentDispositionTransaction>(new FakeDocumentDispositionTransaction());
+        services.AddSingleton<IReadCommittedTransaction>(new FakeReadCommittedTransaction());
         services.AddSingleton<IDispositionHoldGuard>(new FakeDispositionHoldGuard());
         services.AddSingleton<IDispositionHoldStore>(new InMemoryDispositionHoldStore());
         services.AddScoped<DocumentHoldGate>();

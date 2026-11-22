@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -330,15 +329,13 @@ public sealed class DocumentPrivacySafeguardTests
     }
 
     [Fact]
-    public async Task Rejected_document_audit_logs_and_telemetry_exclude_content_and_request_markers()
+    public async Task Rejected_document_mutation_logs_and_telemetry_exclude_content_and_request_markers()
     {
         // Arrange
         const string contentMarker = "SYNTHETIC_DOCUMENT_CONTENT_9B53";
         const string requestMarker = "SYNTHETIC_RAW_REQUEST_BODY_A164";
         const string tokenMarker = "SYNTHETIC_AUTHORIZATION_TOKEN_B275";
         var missingDocuments = new MissingDocumentServices();
-        var auditStore = new CapturingDocumentAuditStore();
-        var unitOfWork = new FakeUnitOfWork();
         using var loggerProvider = new RecordingLoggerProvider();
         using var telemetryCapture = new DocumentPrivacyTelemetryCapture();
         await using var factory = AdminApiTestHost.Create(services =>
@@ -347,10 +344,6 @@ public sealed class DocumentPrivacySafeguardTests
             services.AddSingleton<IDocumentStore>(missingDocuments);
             services.RemoveAll<IDocumentQueryService>();
             services.AddSingleton<IDocumentQueryService>(missingDocuments);
-            services.RemoveAll<IDocumentAuditStore>();
-            services.AddSingleton<IDocumentAuditStore>(auditStore);
-            services.RemoveAll<IUnitOfWork>();
-            services.AddSingleton<IUnitOfWork>(unitOfWork);
             services.AddLogging(logging => logging.AddProvider(loggerProvider));
         });
         using var client = factory.CreateClient();
@@ -374,18 +367,11 @@ public sealed class DocumentPrivacySafeguardTests
         // Act
         using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var responseBody = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
-        var auditJson = JsonSerializer.Serialize(auditStore.Records);
-
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        var audit = auditStore.Records.ShouldHaveSingleItem();
-        audit.Operation.ShouldBe(DocumentAuditOperation.UpdateField);
-        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
-        audit.ReasonCode.ShouldBe(DocumentAuditReasonCode.DocumentNotFound);
         foreach (var marker in new[] { contentMarker, requestMarker, tokenMarker })
         {
             responseBody.ShouldNotContain(marker, StringComparison.Ordinal);
-            auditJson.ShouldNotContain(marker, StringComparison.Ordinal);
             DocumentPrivacyLogText.From(loggerProvider).ShouldNotContain(marker, StringComparison.Ordinal);
             telemetryCapture.GetCapturedText(parentActivity.TraceId).ShouldNotContain(marker, StringComparison.Ordinal);
         }

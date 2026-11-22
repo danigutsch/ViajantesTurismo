@@ -50,6 +50,6 @@ internal static class DocumentAuditTestData
     {
         var clock = new FakeTimeProvider(now);
         var gate = new DocumentHoldGate(guard ?? new FakeDispositionHoldGuard(), holds ?? new InMemoryDispositionHoldStore(), clock);
-        return new(auditStore, unitOfWork, new FakeDocumentDispositionTransaction(), gate, clock);
+        return new(auditStore, unitOfWork, new FakeReadCommittedTransaction(), gate, clock);
     }
 }

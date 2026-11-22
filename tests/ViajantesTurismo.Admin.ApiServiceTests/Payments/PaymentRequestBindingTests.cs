@@ -13,10 +13,10 @@ public sealed class PaymentRequestBindingTests
     {
         // Arrange
         ArgumentException.ThrowIfNullOrWhiteSpace(environment);
-        var transaction = new PaymentEndpointTransaction { ResultId = Guid.CreateVersion7() };
+        var sender = new PaymentEndpointSender { ResultId = Guid.CreateVersion7() };
         await using var factory = AdminApiTestHost.Create(services =>
         {
-            PaymentEndpointServices.Configure(services, transaction, new PaymentAccountQueryProbe());
+            PaymentEndpointServices.Configure(services, sender, new PaymentAccountQueryProbe());
         }, environment: environment, configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
@@ -29,6 +29,6 @@ public sealed class PaymentRequestBindingTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        transaction.Calls.ShouldBe(0);
+        sender.Calls.ShouldBe(0);
     }
 }

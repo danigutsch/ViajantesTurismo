@@ -7,4 +7,9 @@ public sealed record UpdateDocumentFieldCommand(
     Guid DocumentId,
     string FieldId,
     string? Value,
-    DocumentAuditContext AuditContext);
+    DocumentAuditContext AuditContext)
+    : DocumentRejectionAuditedCommand(DocumentId, AuditContext)
+{
+    /// <inheritdoc />
+    public override DocumentAuditOperation AuditOperation => DocumentAuditOperation.UpdateField;
+}

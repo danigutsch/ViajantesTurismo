@@ -35,6 +35,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Snapshots" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Http" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Logging" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.ObjectStorage" />
         <PackageReference Include="Aspire.Hosting.Redis" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
