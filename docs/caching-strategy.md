@@ -64,6 +64,34 @@ Anonymous public content and public Branding settings are output-cached for 60 s
 with tag eviction from the mutating endpoints. Tour visibility reads bypass output caches so a
 retirement acknowledgement can follow the durable withdrawal.
 
+### FusionCache evaluation
+
+Keep ASP.NET Core output caching for anonymous Catalog content and Branding. It coalesces
+concurrent cold reads, supports tag eviction after writes, and keeps HTTP cache policy with
+the route. The accepted freshness window covers the existing cross-instance delay.
+
+| Option | Fit for this application |
+| --- | --- |
+| In-process data cache | Suits static reference data such as the country list. Each process owns its loaded copy. |
+| Output caching and HTTP metadata | Fits the existing anonymous public reads and content-hashed assets. Endpoint tests check freshness, hit and miss outcomes, and invalidation. |
+| `IDistributedCache` with Redis | Provides a shared key-value store when an application flow requires one. The AppHost already supports the Redis resource. Management authentication uses its dedicated protected PostgreSQL security store. |
+| FusionCache with Redis | Combines local and distributed levels, coordinated invalidation through a backplane, and optional stale fail-safe reads. Evaluate it for a measured cross-instance data-cache need with explicit expiration and staleness budgets. |
+
+Keep stale responses within their declared policy window. If the cache becomes unavailable,
+recompute eligible reads from the owning store. The existing output-cache locking handles
+concurrent recomputation for one key. Retain `no-store` for tour visibility and private or
+authenticated responses.
+[ASP.NET Core output caching](https://learn.microsoft.com/en-us/aspnet/core/performance/caching/output) ·
+[Redis integration](https://aspire.dev/integrations/caching/redis/redis-get-started/) ·
+[FusionCache cache levels](https://github.com/ZiggyCreatures/FusionCache/blob/main/docs/CacheLevels.md)
+
+Revisit distributed invalidation after measurements show that the current multi-instance
+freshness window or load coalescing cannot meet a named public-read target. Reuse the Aspire
+Redis integration for that trial. Measure hit, miss, stale and invalidation outcomes without
+resource identifiers. Existing Branding cache metrics and tests provide the comparison baseline.
+[Branding cache telemetry](OBSERVABILITY_CATALOG.md) ·
+[Platform integration strategy](architecture/platform-integrations.md)
+
 ## Eventual consistency
 
 Public content and Branding mutations evict same-process output-cache entries before returning success.
