@@ -73,14 +73,14 @@ public sealed class BookingFinancialCommandEndpointTests
         // Arrange
         ArgumentNullException.ThrowIfNull(route);
         var bookingId = Guid.CreateVersion7();
-        var transaction = new PaymentEndpointTransaction { ResultId = Guid.CreateVersion7(), Status = status };
+        var sender = new PaymentEndpointSender { ResultId = Guid.CreateVersion7(), Status = status };
         await using var factory = AdminApiTestHost.Create(services =>
         {
-            PaymentEndpointServices.Configure(services, transaction, new PaymentAccountQueryProbe());
+            PaymentEndpointServices.Configure(services, sender, new PaymentAccountQueryProbe());
         }, configureConfiguration: configuration => { configuration["Payments:Enabled"] = "true"; configuration["Payments:BusinessTimeZone"] = "UTC"; });
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
-        var path = "/api/v1/bookings/" + bookingId + "/finances/" + route.Replace("{id}", transaction.ResultId.ToString(), StringComparison.Ordinal);
+        var path = "/api/v1/bookings/" + bookingId + "/finances/" + route.Replace("{id}", sender.ResultId.ToString(), StringComparison.Ordinal);
         var payload = PaymentEndpointInputs.ForRoute(route);
         using var first = new StringContent(payload, Encoding.UTF8, "application/json");
 
@@ -96,11 +96,11 @@ public sealed class BookingFinancialCommandEndpointTests
         response.StatusCode.ShouldBe((HttpStatusCode)status);
         var assertionTarget = response.Headers.CacheControl?.NoStore;
         assertionTarget.ShouldNotBeNull().ShouldBeTrue();
-        transaction.Calls.ShouldBe(1);
+        sender.Calls.ShouldBe(1);
         if (status == 200)
         {
             using var json = JsonDocument.Parse(body);
-            json.RootElement.GetProperty("resourceId").GetGuid().ShouldBe(transaction.ResultId);
+            json.RootElement.GetProperty("resourceId").GetGuid().ShouldBe(sender.ResultId);
         }
         else
         {

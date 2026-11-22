@@ -87,7 +87,7 @@ public static class InfrastructureDependencyInjection
 
         builder.Services.AddSingleton<PaymentProtection>();
         builder.Services.AddHostedService<PaymentProtectionStartupCheck>();
-        builder.Services.AddScoped<IPaymentTransaction, PaymentTransaction>();
+        builder.Services.AddScoped<IAfterRollback<DownloadPaymentInstructionsCommand, Result<FinalizedDocumentArtifact>>, PaymentInstructionDownloadRollbackAudit>();
         builder.Services.AddSingleton(sp =>
         {
             var enabled = bool.TryParse(builder.Configuration["Payments:Enabled"], out var configured) && configured;

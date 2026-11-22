@@ -1,8 +1,10 @@
-using PandaBear.Idempotency;
 using System.Security.Cryptography;
+using PandaBear.Idempotency;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Mappings;
+using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Payments;
@@ -11,23 +13,15 @@ using ViajantesTurismo.Admin.Domain.Tours;
 namespace ViajantesTurismo.Admin.Application.Payments;
 
 /// <summary>Coordinates revision-preconditioned instruction approval, protected finalization and revalidated authenticated delivery.</summary>
-public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, IPaymentTransaction transaction, IPaymentInstructionStore instructions,
-    IPaymentAccountStore accounts, IDocumentStore documents, IDocumentQueryService queries, ITourStore tours, IUnitOfWork unitOfWork, TimeProvider clock)
+public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIdempotency commands, IPaymentInstructionStore instructions,
+    IPaymentAccountStore accounts, IDocumentStore documents, IDocumentQueryService queries, ITourStore tours, ITourCommandStore commandTours, IUnitOfWork unitOfWork, TimeProvider clock)
 {
     /// <summary>Applies an explicit confirmed lifecycle action; independent review uses a separate operation.</summary>
     /// <remarks>Finalization rechecks eligibility after all preparation, so no expired quote or retired recipient may be finalized.</remarks>
-    public async Task<Result<Guid>> Change(Guid documentId, UpdatePaymentInstructionsDto input, string actorId, IdempotencyKey key, PaymentInstructionAuditOperation operation, CancellationToken ct)
+    public async ValueTask<Result<Guid>> Change(Guid documentId, UpdatePaymentInstructionsDto input, string actorId, IdempotencyKey key, PaymentInstructionAuditOperation operation, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(input);
-        var expectedReason = operation switch
-        {
-            PaymentInstructionAuditOperation.Approved => FinancialReasonDto.InstructionApproved,
-            PaymentInstructionAuditOperation.Finalized => FinancialReasonDto.InstructionFinalized,
-            PaymentInstructionAuditOperation.ApprovalWithdrawn => FinancialReasonDto.ApprovalWithdrawn,
-            PaymentInstructionAuditOperation.Voided => FinancialReasonDto.InstructionVoided,
-            _ => FinancialReasonDto.None
-        };
-        if (!input.Confirmed || input.Reason != expectedReason || expectedReason == FinancialReasonDto.None)
+        if (!Confirmed(input, operation))
         {
             return FinancialErrors.Invalid("confirmation").ConvertError<Guid>();
         }
@@ -36,10 +30,33 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
         {
             return Result.NotFound(detail: "Payment instruction not found.").ConvertError<Guid>();
         }
-        var fingerprint = PaymentCommandFingerprint.Create(initial.Terms.BookingId, documentId, actorId, input, PaymentFinancialContractJsonContext.Default.UpdatePaymentInstructionsDto);
-        return await commands.Execute("payment-instruction:" + operation + ":" + documentId.ToString("N"), key, fingerprint, Resources(initial), async () =>
+        var target = TargetOf(initial);
+        ICommand<Result<Guid>> command = operation switch
         {
-            var loaded = await Load(documentId, ct);
+            PaymentInstructionAuditOperation.Approved => new ApprovePaymentInstructionsCommand(target, input, actorId, key),
+            PaymentInstructionAuditOperation.Finalized => new FinalizePaymentInstructionsCommand(target, input, actorId, key),
+            PaymentInstructionAuditOperation.ApprovalWithdrawn => new WithdrawPaymentInstructionApprovalCommand(target, input, actorId, key),
+            PaymentInstructionAuditOperation.Voided => new VoidPaymentInstructionsCommand(target, input, actorId, key),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation))
+        };
+        return await sender.Send(command, ct);
+    }
+
+    /// <summary>Applies the validated lifecycle operation after the transaction acquires its advisory locks.</summary>
+    internal ValueTask<Result<Guid>> ApplyChange(PaymentInstructionTarget target, string scope, UpdatePaymentInstructionsDto input,
+        string actorId, IdempotencyKey key, PaymentInstructionAuditOperation operation, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        if (!Confirmed(input, operation))
+        {
+            return ValueTask.FromResult(FinancialErrors.Invalid("confirmation").ConvertError<Guid>());
+        }
+        var documentId = target.DocumentId;
+        var fingerprint = PaymentCommandFingerprint.Create(target.BookingId, documentId, actorId, input, PaymentFinancialContractJsonContext.Default.UpdatePaymentInstructionsDto);
+        return commands.Execute(scope, key, fingerprint, async () =>
+        {
+            var tour = await commandTours.GetByBookingIdForPaymentUpdate(target.BookingId, ct);
+            var loaded = await Load(target, ct);
             if (loaded.IsFailure)
             {
                 return loaded.ConvertError<PaymentInstructionSources, Guid>();
@@ -49,7 +66,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
             {
                 return FinancialErrors.Changed().ConvertError<Guid>();
             }
-            if (operation is PaymentInstructionAuditOperation.Approved or PaymentInstructionAuditOperation.Finalized && !await Eligible(current, ct))
+            if (operation is PaymentInstructionAuditOperation.Approved or PaymentInstructionAuditOperation.Finalized && !await Eligible(current, tour, ct))
             {
                 return FinancialErrors.Changed().ConvertError<Guid>();
             }
@@ -79,7 +96,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
                     {
                         return FinancialErrors.Unavailable().ConvertError<Guid>();
                     }
-                    if (!await Eligible(current, ct))
+                    if (!await Eligible(current, tour, ct))
                     {
                         return FinancialErrors.Changed().ConvertError<Guid>();
                     }
@@ -109,7 +126,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
             {
                 return result.ConvertError<Guid>();
             }
-            if (operation == PaymentInstructionAuditOperation.Finalized && !await Eligible(current, ct))
+            if (operation == PaymentInstructionAuditOperation.Finalized && !await Eligible(current, tour, ct))
             {
                 return FinancialErrors.Changed().ConvertError<Guid>();
             }
@@ -120,7 +137,7 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
     }
 
     /// <summary>Records optional independent review without invoking document approval withdrawal.</summary>
-    public async Task<Result<Guid>> Review(Guid documentId, ReviewPaymentInstructionsDto input, string actorId, IdempotencyKey key, CancellationToken ct)
+    public async ValueTask<Result<Guid>> Review(Guid documentId, ReviewPaymentInstructionsDto input, string actorId, IdempotencyKey key, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(input);
         var initial = await instructions.GetSnapshot(documentId, ct);
@@ -128,10 +145,20 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
         {
             return Result.NotFound(detail: "Payment instruction not found.").ConvertError<Guid>();
         }
-        var fingerprint = PaymentCommandFingerprint.Create(initial.Terms.BookingId, documentId, actorId, input, PaymentFinancialContractJsonContext.Default.ReviewPaymentInstructionsDto);
-        return await commands.Execute("payment-instruction:review:" + documentId.ToString("N"), key, fingerprint, Resources(initial), async () =>
+        return await sender.Send(new ReviewPaymentInstructionsCommand(TargetOf(initial), input, actorId, key), ct);
+    }
+
+    /// <summary>Applies an independent review after the transaction acquires its advisory locks.</summary>
+    internal ValueTask<Result<Guid>> ApplyReview(PaymentInstructionTarget target, string scope, ReviewPaymentInstructionsDto input,
+        string actorId, IdempotencyKey key, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        var documentId = target.DocumentId;
+        var fingerprint = PaymentCommandFingerprint.Create(target.BookingId, documentId, actorId, input, PaymentFinancialContractJsonContext.Default.ReviewPaymentInstructionsDto);
+        return commands.Execute(scope, key, fingerprint, async () =>
         {
-            var loaded = await Load(documentId, ct);
+            _ = await commandTours.GetByBookingIdForPaymentUpdate(target.BookingId, ct);
+            var loaded = await Load(target, ct);
             if (loaded.IsFailure)
             {
                 return loaded.ConvertError<PaymentInstructionSources, Guid>();
@@ -165,41 +192,57 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
         {
             return Result.NotFound(detail: "Payment instruction not found.").ConvertError<FinalizedDocumentArtifact>();
         }
-        FinalizedDocumentArtifact? artifact = null;
-        var result = await transaction.Execute(Resources(initial), async () =>
+        return await sender.Send(new DownloadPaymentInstructionsCommand(TargetOf(initial), actorId), ct);
+    }
+
+    /// <summary>Stages the authenticated download audit and revalidates artifact release.</summary>
+    internal async ValueTask<Result<FinalizedDocumentArtifact>> ReadArtifact(PaymentInstructionTarget target, string actorId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(actorId))
         {
-            var loaded = await Load(documentId, ct);
-            if (loaded.IsFailure)
-            {
-                return loaded.ConvertError<PaymentInstructionSources, Guid>();
-            }
-            var current = loaded.Value;
-            if (!current.Document.IsFinalized || !await Eligible(current, ct))
-            {
-                return FinancialErrors.Changed().ConvertError<Guid>();
-            }
-            var bytes = await instructions.GetArtifact(documentId, ct);
-            if (bytes is null || string.IsNullOrWhiteSpace(current.Document.FinalizedArtifactName))
-            {
-                return FinancialErrors.Unavailable().ConvertError<Guid>();
-            }
-            artifact = new FinalizedDocumentArtifact(documentId, current.Document.BookingId, current.Document.Revision, bytes, current.Document.FinalizedArtifactName);
-            instructions.AddAudit(current.Document.BookingId, new PaymentInstructionAuditMetadata(documentId, current.Document.Revision, actorId, clock.GetUtcNow(),
+            return FinancialErrors.Invalid("actor").ConvertError<FinalizedDocumentArtifact>();
+        }
+        var tour = await commandTours.GetByBookingIdForPaymentUpdate(target.BookingId, ct);
+        var loaded = await Load(target, ct);
+        if (loaded.IsFailure)
+        {
+            return loaded.ConvertError<PaymentInstructionSources, FinalizedDocumentArtifact>();
+        }
+        var current = loaded.Value;
+        if (!current.Document.IsFinalized || !await Eligible(current, tour, ct))
+        {
+            return FinancialErrors.Changed().ConvertError<FinalizedDocumentArtifact>();
+        }
+        var fileName = current.Document.FinalizedArtifactName;
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return FinancialErrors.Unavailable().ConvertError<FinalizedDocumentArtifact>();
+        }
+        var bytes = await instructions.GetArtifact(target.DocumentId, ct);
+        if (bytes is null)
+        {
+            return FinancialErrors.Unavailable().ConvertError<FinalizedDocumentArtifact>();
+        }
+        var release = false;
+        try
+        {
+            instructions.AddAudit(target.BookingId, new PaymentInstructionAuditMetadata(target.DocumentId, target.Revision, actorId, clock.GetUtcNow(),
                 PaymentInstructionAuditOperation.Downloaded, FinancialReason.InstructionDownloaded, false));
             await unitOfWork.SaveEntities(ct);
-            if (!await Eligible(current, ct))
+            if (!await Eligible(current, tour, ct))
+            {
+                return FinancialErrors.Changed().ConvertError<FinalizedDocumentArtifact>();
+            }
+            release = true;
+            return Result.Ok(new FinalizedDocumentArtifact(target.DocumentId, target.BookingId, target.Revision, bytes, fileName));
+        }
+        finally
+        {
+            if (!release)
             {
                 CryptographicOperations.ZeroMemory(bytes);
-                artifact = null;
-                return FinancialErrors.Changed().ConvertError<Guid>();
             }
-            return Result.Ok(documentId);
-        }, ct);
-        if (result.IsFailure)
-        {
-            return result.ConvertError<Guid, FinalizedDocumentArtifact>();
         }
-        return artifact is not null ? Result.Ok(artifact) : FinancialErrors.Unavailable().ConvertError<FinalizedDocumentArtifact>();
     }
 
     /// <summary>Lists retained booking instruction revisions without exposing recipient details.</summary>
@@ -275,12 +318,36 @@ public sealed class PaymentInstructionWorkflow(PaymentCommandExecutor commands, 
         return lineage is not null && document is not null && snapshot is not null && document.RequiresPaymentInstructionWorkflow
             ? Result.Ok(new PaymentInstructionSources(lineage, document, snapshot)) : Result.NotFound(detail: "Payment instruction not found.").ConvertError<PaymentInstructionSources>();
     }
-    private async Task<bool> Eligible(PaymentInstructionSources current, CancellationToken ct)
+    private async Task<Result<PaymentInstructionSources>> Load(PaymentInstructionTarget target, CancellationToken ct)
     {
-        var tour = await tours.GetByBookingId(current.Document.BookingId, ct);
+        var loaded = await Load(target.DocumentId, ct);
+        return loaded.IsSuccess && TargetOf(loaded.Value.Snapshot) != target
+            ? FinancialErrors.Changed().ConvertError<PaymentInstructionSources>()
+            : loaded;
+    }
+
+    private async Task<bool> Eligible(PaymentInstructionSources current, CancellationToken ct) =>
+        await Eligible(current, await tours.GetByBookingId(current.Document.BookingId, ct), ct);
+
+    private async Task<bool> Eligible(PaymentInstructionSources current, Tour? tour, CancellationToken ct)
+    {
         var account = await accounts.GetById(current.Snapshot.Terms.AccountId, ct);
         return tour is not null && account is not null && tour.CanDeliverBookingPaymentInstruction(current.Snapshot.Terms, account, clock.GetUtcNow());
     }
-    private static string[] Resources(PaymentInstructionSnapshot snapshot) =>
-        ["admin:booking-finance:" + snapshot.Terms.BookingId.ToString("N"), "admin:payment-account:" + snapshot.Terms.AccountId.ToString("N")];
+
+    private static PaymentInstructionTarget TargetOf(PaymentInstructionSnapshot snapshot) =>
+        new(snapshot.DocumentId, snapshot.Terms.BookingId, snapshot.Terms.AccountId, snapshot.Revision);
+
+    private static bool Confirmed(UpdatePaymentInstructionsDto input, PaymentInstructionAuditOperation operation)
+    {
+        var expectedReason = operation switch
+        {
+            PaymentInstructionAuditOperation.Approved => FinancialReasonDto.InstructionApproved,
+            PaymentInstructionAuditOperation.Finalized => FinancialReasonDto.InstructionFinalized,
+            PaymentInstructionAuditOperation.ApprovalWithdrawn => FinancialReasonDto.ApprovalWithdrawn,
+            PaymentInstructionAuditOperation.Voided => FinancialReasonDto.InstructionVoided,
+            _ => FinancialReasonDto.None
+        };
+        return input.Confirmed && input.Reason == expectedReason && expectedReason != FinancialReasonDto.None;
+    }
 }

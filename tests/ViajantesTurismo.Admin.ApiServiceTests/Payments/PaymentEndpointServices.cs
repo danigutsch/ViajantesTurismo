@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -10,12 +11,10 @@ namespace ViajantesTurismo.Admin.ApiServiceTests.Payments;
 internal static class PaymentEndpointServices
 {
     /// <summary>Replaces payment stores and prevents payment tests from reading booking contract sources.</summary>
-    public static void Configure(IServiceCollection services, PaymentEndpointTransaction transaction, PaymentAccountQueryProbe queries)
+    public static void Configure(IServiceCollection services, PaymentEndpointSender sender, PaymentAccountQueryProbe queries)
     {
-        services.RemoveAll<IPaymentTransaction>();
-        services.AddSingleton<IPaymentTransaction>(transaction);
-        services.RemoveAll<IPaymentHistoryStore>();
-        services.AddSingleton<IPaymentHistoryStore>(transaction);
+        services.RemoveAll<ISender>();
+        services.AddSingleton<ISender>(sender);
         services.RemoveAll<IPaymentInstructionStore>();
         services.AddSingleton<IPaymentInstructionStore, EmptyPaymentInstructionStore>();
         services.RemoveAll<IPaymentAccountStore>();

@@ -36,8 +36,8 @@ public sealed class PaymentAccountCommandEndpointTests
     {
         // Arrange
         var queries = new PaymentAccountQueryProbe();
-        var transaction = new PaymentEndpointTransaction { ResultId = queries.Account.Id, Status = status };
-        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, transaction, queries),
+        var sender = new PaymentEndpointSender { ResultId = queries.Account.Id, Status = status };
+        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, sender, queries),
             configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
@@ -56,7 +56,7 @@ public sealed class PaymentAccountCommandEndpointTests
         response.StatusCode.ShouldBe(status == 200 && operation == "create" ? HttpStatusCode.Created : (HttpStatusCode)status);
         var assertionTarget = response.Headers.CacheControl?.NoStore;
         assertionTarget.ShouldNotBeNull().ShouldBeTrue();
-        transaction.Calls.ShouldBe(1);
+        sender.Calls.ShouldBe(1);
         queries.SensitiveReads.ShouldBe(0);
         body.ShouldNotContain("DE89370400440532013000", StringComparison.Ordinal);
         if (status == 200)
@@ -74,8 +74,8 @@ public sealed class PaymentAccountCommandEndpointTests
     {
         // Arrange
         var queries = new PaymentAccountQueryProbe();
-        var transaction = new PaymentEndpointTransaction();
-        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, transaction, queries),
+        var sender = new PaymentEndpointSender();
+        await using var factory = AdminApiTestHost.Create(services => PaymentEndpointServices.Configure(services, sender, queries),
             configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");

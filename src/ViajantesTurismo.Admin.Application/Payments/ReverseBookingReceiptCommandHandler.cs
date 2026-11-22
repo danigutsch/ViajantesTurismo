@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Payments;
@@ -6,19 +7,19 @@ using ViajantesTurismo.Admin.Application.Mappings;
 namespace ViajantesTurismo.Admin.Application.Payments;
 
 /// <summary>Executes ReverseBookingReceipt through the owning Tour and an atomic financial transaction.</summary>
-public sealed class ReverseBookingReceiptCommandHandler(BookingPaymentCommandExecutor executor, TimeProvider clock)
+public sealed class ReverseBookingReceiptCommandHandler(BookingPaymentOperations executor, TimeProvider clock) : ICommandHandler<ReverseBookingReceiptCommand, Result<Guid>>
 {
     /// <summary>Validates and applies the explicit financial operation.</summary>
-    public Task<Result<Guid>> Handle(ReverseBookingReceiptCommand command, CancellationToken ct)
+    public ValueTask<Result<Guid>> Handle(ReverseBookingReceiptCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         var input = command.Input;
         if (!Enum.IsDefined(input.Reason))
         {
-            return Task.FromResult(FinancialErrors.Invalid("reason").ConvertError<Guid>());
+            return ValueTask.FromResult(FinancialErrors.Invalid("reason").ConvertError<Guid>());
         }
         var fingerprint = PaymentCommandFingerprint.Create(command.BookingId, command.ReceiptId, command.ActorId, input, PaymentFinancialContractJsonContext.Default.ApproveFinancialRecordDto);
-        return executor.Execute(command.BookingId, "ReverseBookingReceipt", command.IdempotencyKey, fingerprint, tour =>
+        return executor.Execute(command.BookingId, command.OperationScope, command.IdempotencyKey, fingerprint, tour =>
         {
             var now = clock.GetUtcNow();
             var approval = FinancialApproval.Create(command.ActorId, now, FinancialMappings.Map(input.Reason), input.Confirmed);

@@ -1,14 +1,15 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 
 namespace ViajantesTurismo.Admin.Application.Payments;
 
 /// <summary>Executes the explicit ReviewPaymentInstructions instruction action with concurrency preconditions and durable idempotency.</summary>
-public sealed class ReviewPaymentInstructionsCommandHandler(PaymentInstructionWorkflow workflow)
+public sealed class ReviewPaymentInstructionsCommandHandler(PaymentInstructionWorkflow workflow) : ICommandHandler<ReviewPaymentInstructionsCommand, Result<Guid>>
 {
     /// <summary>Applies the requested instruction lifecycle action.</summary>
-    public Task<Result<Guid>> Handle(ReviewPaymentInstructionsCommand command, CancellationToken ct)
+    public ValueTask<Result<Guid>> Handle(ReviewPaymentInstructionsCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
-        return workflow.Review(command.DocumentId, command.Input, command.ActorId, command.IdempotencyKey, ct);
+        return workflow.ApplyReview(command.Target, command.OperationScope, command.Input, command.ActorId, command.IdempotencyKey, ct);
     }
 }

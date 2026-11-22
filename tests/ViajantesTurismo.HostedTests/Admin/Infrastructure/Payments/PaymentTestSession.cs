@@ -1,12 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.Idempotency.EntityFrameworkCore;
+using PandaBear.Mediator;
+using PandaBear.Mediator.EntityFrameworkCore;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Payments;
@@ -35,6 +39,7 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { DisableDefaults = true });
         builder.AddApplication();
         var services = builder.Services;
+        services.AddSharedKernelMediator();
         services.AddSingleton<ViajantesTurismo.Admin.Application.Branding.IBrandingProjectionStore, PaymentTestBrandingProjection>();
         services.AddSingleton(clock);
         services.AddSingleton(protection);
@@ -45,14 +50,15 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         services.AddIntegrationEventOutbox<AdminWriteDbContext>();
         services.AddPostgreSqlIntegrationEventTransportProducer<AdminWriteDbContext>(IntegrationEventConsumerNames.Catalog);
         services.AddDbContext<AdminWriteDbContext>((provider, options) => options.UseNpgsql(connectionString));
+        services.AddScoped<DbContext>(provider => provider.GetRequiredService<AdminWriteDbContext>());
         services.AddDbContext<AdminReadDbContext>(options => options.UseNpgsql(connectionString).UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AdminWriteDbContext>());
-        services.AddScoped<IPaymentTransaction, PaymentTransaction>();
+        services.AddScoped<IAfterRollback<DownloadPaymentInstructionsCommand, Result<FinalizedDocumentArtifact>>, PaymentInstructionDownloadRollbackAudit>();
         services.AddScoped<IPaymentAccountStore, PaymentAccountStore>();
         services.AddScoped<IPaymentAccountQueryService, PaymentAccountQueryService>();
         services.AddScoped<PaymentHistoryStore>();
         services.AddScoped<IPaymentHistoryStore>(provider => provider.GetRequiredService<PaymentHistoryStore>());
-        services.AddScoped<ITourStore, TourStore>();
+        services.AddTourPersistence();
         services.AddScoped<IDocumentStore, DocumentStore>();
         services.AddScoped<IDocumentQueryService, DocumentQueryService>();
         services.Replace(ServiceDescriptor.Singleton<IDocumentSourceVersionReader, UnexpectedContractSourceVersionReader>());
@@ -81,6 +87,33 @@ internal sealed class PaymentTestSession : IAsyncDisposable
     }
     /// <summary>Resolves the payment instruction workflow.</summary>
     public PaymentInstructionWorkflow Instructions => _provider.GetRequiredService<PaymentInstructionWorkflow>();
+
+    /// <summary>Reads persisted metadata-only audit evidence for an instruction.</summary>
+    public Task<IReadOnlyList<PaymentInstructionAuditMetadata>> ReadInstructionAudits(Guid documentId, CancellationToken ct) =>
+        _provider.GetRequiredService<IPaymentInstructionStore>().GetAudits(documentId, ct);
+
+    /// <summary>Dispatches a payment command through the production mediator pipeline.</summary>
+    public ValueTask<Result<Guid>> Send(ICommand<Result<Guid>> command, CancellationToken ct) =>
+        _provider.GetRequiredService<ISender>().Send(command, ct);
+
+    /// <summary>Holds the booking row lock until the returned transaction is rolled back or disposed.</summary>
+    public async Task<IDbContextTransaction> HoldBooking(Guid bookingId, CancellationToken ct)
+    {
+        var transaction = await Context.Database.BeginTransactionAsync(ct);
+        try
+        {
+            _ = await Context.Database.ExecuteSqlInterpolatedAsync($"""
+                SELECT 1 FROM "Booking" WHERE "Id" = {bookingId} FOR UPDATE
+                """, ct);
+            return transaction;
+        }
+        catch
+        {
+            await transaction.DisposeAsync();
+            throw;
+        }
+    }
+
     /// <summary>Reads the metadata persisted on a finalized payment document revision.</summary>
     internal async Task<StoredArtifactProvenance> ReadArtifactProvenance(Guid documentId, CancellationToken ct) =>
         await Context.Database.SqlQuery<StoredArtifactProvenance>($"""
@@ -103,62 +136,6 @@ internal sealed class PaymentTestSession : IAsyncDisposable
     public IPaymentAccountQueryService Accounts => _provider.GetRequiredService<IPaymentAccountQueryService>();
     /// <summary>Resolves the payment financial query service.</summary>
     public IPaymentFinancialQueryService Financials => _provider.GetRequiredService<IPaymentFinancialQueryService>();
-    /// <summary>Resolves the payment transaction.</summary>
-    public IPaymentTransaction Transaction => _provider.GetRequiredService<IPaymentTransaction>();
-    /// <summary>Resolves the handler that runs the allocate booking payment command.</summary>
-    public AllocateBookingPaymentCommandHandler AllocateBookingPayment => _provider.GetRequiredService<AllocateBookingPaymentCommandHandler>();
-    /// <summary>Resolves the handler that runs the approve booking payment quote command.</summary>
-    public ApproveBookingPaymentQuoteCommandHandler ApproveBookingPaymentQuote => _provider.GetRequiredService<ApproveBookingPaymentQuoteCommandHandler>();
-    /// <summary>Resolves the handler that runs the approve booking payment refund command.</summary>
-    public ApproveBookingPaymentRefundCommandHandler ApproveBookingPaymentRefund => _provider.GetRequiredService<ApproveBookingPaymentRefundCommandHandler>();
-    /// <summary>Resolves the handler that runs the approve booking payment schedule command.</summary>
-    public ApproveBookingPaymentScheduleCommandHandler ApproveBookingPaymentSchedule => _provider.GetRequiredService<ApproveBookingPaymentScheduleCommandHandler>();
-    /// <summary>Resolves the handler that runs the approve booking receipt reconciliation command.</summary>
-    public ApproveBookingReceiptReconciliationCommandHandler ApproveBookingReceiptReconciliation => _provider.GetRequiredService<ApproveBookingReceiptReconciliationCommandHandler>();
-    /// <summary>Resolves the handler that runs the approve payment instructions command.</summary>
-    public ApprovePaymentInstructionsCommandHandler ApprovePaymentInstructions => _provider.GetRequiredService<ApprovePaymentInstructionsCommandHandler>();
-    /// <summary>Resolves the handler that runs the correct booking payment refund command.</summary>
-    public CorrectBookingPaymentRefundCommandHandler CorrectBookingPaymentRefund => _provider.GetRequiredService<CorrectBookingPaymentRefundCommandHandler>();
-    /// <summary>Resolves the handler that runs the create payment account command.</summary>
-    public CreatePaymentAccountCommandHandler CreatePaymentAccount => _provider.GetRequiredService<CreatePaymentAccountCommandHandler>();
-    /// <summary>Resolves the handler that runs the draft booking payment quote command.</summary>
-    public DraftBookingPaymentQuoteCommandHandler DraftBookingPaymentQuote => _provider.GetRequiredService<DraftBookingPaymentQuoteCommandHandler>();
-    /// <summary>Resolves the handler that runs the draft booking payment refund command.</summary>
-    public DraftBookingPaymentRefundCommandHandler DraftBookingPaymentRefund => _provider.GetRequiredService<DraftBookingPaymentRefundCommandHandler>();
-    /// <summary>Resolves the handler that runs the draft booking payment schedule command.</summary>
-    public DraftBookingPaymentScheduleCommandHandler DraftBookingPaymentSchedule => _provider.GetRequiredService<DraftBookingPaymentScheduleCommandHandler>();
-    /// <summary>Resolves the handler that runs the draft booking receipt reconciliation command.</summary>
-    public DraftBookingReceiptReconciliationCommandHandler DraftBookingReceiptReconciliation => _provider.GetRequiredService<DraftBookingReceiptReconciliationCommandHandler>();
-    /// <summary>Resolves the handler that runs the finalize payment instructions command.</summary>
-    public FinalizePaymentInstructionsCommandHandler FinalizePaymentInstructions => _provider.GetRequiredService<FinalizePaymentInstructionsCommandHandler>();
-    /// <summary>Resolves the handler that runs the generate payment instructions command.</summary>
-    public GeneratePaymentInstructionsCommandHandler GeneratePaymentInstructions => _provider.GetRequiredService<GeneratePaymentInstructionsCommandHandler>();
-    /// <summary>Resolves the handler that runs the record booking receipt command.</summary>
-    public RecordBookingReceiptCommandHandler RecordBookingReceipt => _provider.GetRequiredService<RecordBookingReceiptCommandHandler>();
-    /// <summary>Resolves the handler that runs the release booking payment allocations command.</summary>
-    public ReleaseBookingPaymentAllocationsCommandHandler ReleaseBookingPaymentAllocations => _provider.GetRequiredService<ReleaseBookingPaymentAllocationsCommandHandler>();
-    /// <summary>Resolves the handler that runs the retire payment account command.</summary>
-    public RetirePaymentAccountCommandHandler RetirePaymentAccount => _provider.GetRequiredService<RetirePaymentAccountCommandHandler>();
-    /// <summary>Resolves the handler that runs the reverse booking receipt command.</summary>
-    public ReverseBookingReceiptCommandHandler ReverseBookingReceipt => _provider.GetRequiredService<ReverseBookingReceiptCommandHandler>();
-    /// <summary>Resolves the handler that runs the review booking financial record command.</summary>
-    public ReviewBookingFinancialRecordCommandHandler ReviewBookingFinancialRecord => _provider.GetRequiredService<ReviewBookingFinancialRecordCommandHandler>();
-    /// <summary>Resolves the handler that runs the review payment account command.</summary>
-    public ReviewPaymentAccountCommandHandler ReviewPaymentAccount => _provider.GetRequiredService<ReviewPaymentAccountCommandHandler>();
-    /// <summary>Resolves the handler that runs the review payment instructions command.</summary>
-    public ReviewPaymentInstructionsCommandHandler ReviewPaymentInstructions => _provider.GetRequiredService<ReviewPaymentInstructionsCommandHandler>();
-    /// <summary>Resolves the handler that runs the update payment account command.</summary>
-    public UpdatePaymentAccountCommandHandler UpdatePaymentAccount => _provider.GetRequiredService<UpdatePaymentAccountCommandHandler>();
-    /// <summary>Resolves the handler that runs the verify payment account command.</summary>
-    public VerifyPaymentAccountCommandHandler VerifyPaymentAccount => _provider.GetRequiredService<VerifyPaymentAccountCommandHandler>();
-    /// <summary>Resolves the handler that runs the void payment instructions command.</summary>
-    public VoidPaymentInstructionsCommandHandler VoidPaymentInstructions => _provider.GetRequiredService<VoidPaymentInstructionsCommandHandler>();
-    /// <summary>Resolves the handler that runs the withdraw booking financial approval command.</summary>
-    public WithdrawBookingFinancialApprovalCommandHandler WithdrawBookingFinancialApproval => _provider.GetRequiredService<WithdrawBookingFinancialApprovalCommandHandler>();
-    /// <summary>Resolves the handler that runs the withdraw payment account verification command.</summary>
-    public WithdrawPaymentAccountVerificationCommandHandler WithdrawPaymentAccountVerification => _provider.GetRequiredService<WithdrawPaymentAccountVerificationCommandHandler>();
-    /// <summary>Resolves the handler that runs the withdraw payment instruction approval command.</summary>
-    public WithdrawPaymentInstructionApprovalCommandHandler WithdrawPaymentInstructionApproval => _provider.GetRequiredService<WithdrawPaymentInstructionApprovalCommandHandler>();
     /// <summary>Disposes the underlying service provider.</summary>
     public ValueTask DisposeAsync() => _provider.DisposeAsync();
 }
