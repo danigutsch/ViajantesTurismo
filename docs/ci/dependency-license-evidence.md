@@ -614,3 +614,11 @@ declares the MIT expression), which the shared framework supplied before. They r
 contains or that no resolved package requires: the `Microsoft.Extensions` abstractions and `Primitives` packages,
 `System.ComponentModel.Annotations`, `System.Diagnostics.DiagnosticSource`, `System.Reflection.TypeExtensions` and
 `System.ValueTuple`. Lock files now hold the `net11.0` section.
+
+## Shared website capabilities candidate
+
+For candidate `0.1.0-alpha.716.1` at clean revision `4f1b0325c9073a36103b21301dd80f55cbeaf314`,
+the repository owner approved carrying forward the license-metadata exceptions for StreamJsonRpc
+`2.25.29` (MIT) and Magick.NET-Q8-AnyCPU `15.1.0` (Apache-2.0). Every resolved lock entry for
+each package has the same content hash as the previous candidate. The approval applies to these
+two versions and this candidate only. The native redistribution review remains open.

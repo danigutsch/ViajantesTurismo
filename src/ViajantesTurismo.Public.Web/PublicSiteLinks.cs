@@ -31,14 +31,9 @@ internal sealed class PublicSiteLinks(CanonicalOriginOptions options)
     /// <summary>Gets the sitemap entries of a page: one per culture, each listing every language version and <c>x-default</c>.</summary>
     public IEnumerable<SitemapEntry> SitemapEntries(string escapedPath, DateTimeOffset? lastModified = null)
     {
-        SitemapAlternate[] alternates =
-        [
-            .. Alternates(escapedPath).Select(alternate => new SitemapAlternate(alternate.Culture.Value, alternate.Href)),
-            SitemapAlternate.ForDefault(Default(escapedPath))
-        ];
-
-        return PublicSiteCultures.Supported.Cultures
-            .Select(culture => new SitemapEntry(Canonical(culture, escapedPath), lastModified, alternates));
+        var translations = Alternates(escapedPath)
+            .Select(alternate => (new SitemapAlternate(alternate.Culture.Value, alternate.Href), lastModified));
+        return LocalizedSitemap.Build(translations, Default(escapedPath));
     }
 
     /// <summary>Gets an absolute address of a local path under the canonical origin.</summary>

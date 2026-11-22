@@ -42,28 +42,16 @@ public sealed partial class MediaObjectReconciliationService(
         }
 
         var referencedKeys = await imageStore.ListReferencedObjectKeys(ct).ConfigureAwait(false);
-        var referencedKeySet = referencedKeys
-            .Where(static key => !string.IsNullOrWhiteSpace(key))
-            .ToHashSet(StringComparer.Ordinal);
         var storedObjects = await objectStore.ListObjects(DefaultPrefix, ct).ConfigureAwait(false);
-        var storedByKey = storedObjects
-            .Where(static item => !string.IsNullOrWhiteSpace(item.ObjectKey))
-            .GroupBy(static item => item.ObjectKey, StringComparer.Ordinal)
-            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.Ordinal);
-        var storedKeySet = storedByKey.Keys.ToHashSet(StringComparer.Ordinal);
-
-        var missing = referencedKeySet
-            .Where(referencedKey => !storedKeySet.Contains(referencedKey))
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-
-        var orphans = storedKeySet.Except(referencedKeySet).Order(StringComparer.Ordinal).ToArray();
+        var report = ObjectInventoryReport.Compare(storedObjects, referencedKeys);
+        var missing = report.MissingObjectKeys;
+        var orphans = report.OrphanObjects.Select(item => item.ObjectKey).ToArray();
         var deleted = new List<string>();
         var failed = new List<string>();
         if (deleteOrphans)
         {
             var deleteBefore = timeProvider.GetUtcNow() - orphanGracePeriod;
-            foreach (var orphan in orphans.Where(orphan => storedByKey[orphan].LastModifiedAt <= deleteBefore))
+            foreach (var orphan in report.OrphanObjects.Where(item => item.LastModifiedAt <= deleteBefore).Select(item => item.ObjectKey))
             {
                 try
                 {
@@ -83,7 +71,7 @@ public sealed partial class MediaObjectReconciliationService(
 
         CatalogTelemetry.MediaObjectReconciliationObjects.Add(orphans.Length, CreateTags(CatalogTelemetry.OutcomeSuccess, "orphan"));
         CatalogTelemetry.MediaObjectReconciliationObjects.Add(deleted.Count, CreateTags(CatalogTelemetry.OutcomeSuccess, "delete"));
-        CatalogTelemetry.MediaObjectReconciliationObjects.Add(missing.Length, CreateTags(CatalogTelemetry.OutcomeSuccess, "missing"));
+        CatalogTelemetry.MediaObjectReconciliationObjects.Add(missing.Count, CreateTags(CatalogTelemetry.OutcomeSuccess, "missing"));
 
         return new MediaObjectReconciliationReport(missing, orphans, deleted, failed);
     }

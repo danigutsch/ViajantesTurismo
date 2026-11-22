@@ -1,8 +1,9 @@
 using System.Diagnostics;
 using System.Net;
-using System.Text;
 using System.Text.Json.Nodes;
+using System.Text;
 using Microsoft.AspNetCore.TestHost;
+using PandaBear.Testing.Snapshots;
 using PandaBear.Testing;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -29,7 +30,7 @@ public sealed class DocumentProxyReproductionTests
         var html = $"<html>synthetic-document-marker-{repetition}</html>";
         var ct = Xunit.TestContext.Current.CancellationToken;
         using var scratch = new TemporaryDirectory();
-        var resultsDirectory = ReproductionManifestCodec.GetLocalResultsDirectory() ?? scratch.Path;
+        var resultsDirectory = ReproductionFixtureEnvironment.GetLocalResultsDirectory() ?? scratch.Path;
         var specification = DocumentProxyReproductionScenario.Specification;
         var outcome = specification.AllowedOutcomes.ShouldHaveSingleItem(candidate => candidate.OutcomeCode == outcomeCode);
         var documentId = Guid.NewGuid();

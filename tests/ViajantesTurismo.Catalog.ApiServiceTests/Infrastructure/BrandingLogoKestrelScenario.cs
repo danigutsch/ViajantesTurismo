@@ -15,23 +15,22 @@ internal sealed class BrandingLogoKestrelScenario : IAsyncDisposable
     private const string PngType = "image/png";
     private const string IfMatch = "*";
     private readonly WebApplicationFactory<CatalogApiHostEntryPoint> root;
-    private readonly WebApplicationFactory<CatalogApiHostEntryPoint> factory;
+    private readonly KestrelTestHost<CatalogApiHostEntryPoint> host;
     private readonly Uri baseUri;
     private readonly HttpClient client;
 
     private BrandingLogoKestrelScenario(
         WebApplicationFactory<CatalogApiHostEntryPoint> root,
-        WebApplicationFactory<CatalogApiHostEntryPoint> factory,
-        Uri baseUri,
+        KestrelTestHost<CatalogApiHostEntryPoint> host,
         RequestLifetimeProbe probe,
         TestBrandingSettingsStore store)
     {
         this.root = root;
-        this.factory = factory;
-        this.baseUri = baseUri;
+        this.host = host;
+        baseUri = host.BaseAddress;
         Probe = probe;
         Store = store;
-        client = new HttpClient { BaseAddress = baseUri, Timeout = WireTimeout.Default };
+        client = new HttpClient { BaseAddress = host.BaseAddress, Timeout = WireTimeout.Default };
         BrandingApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
     }
 
@@ -56,9 +55,9 @@ internal sealed class BrandingLogoKestrelScenario : IAsyncDisposable
         var store = TestBrandingSettingsStore.Seeded();
         var probe = new RequestLifetimeProbe(BrandingLogoRequests.ManagementLogoPath);
         var root = BrandingApiTestHost.Create(store);
-        var factory = root.WithWebHostBuilder(host =>
+        var factory = root.WithWebHostBuilder(builder =>
         {
-            host.ConfigureTestServices(services =>
+            builder.ConfigureTestServices(services =>
             {
                 RequestProbeStartupFilter.Register(services, probe);
                 services.Replace(ServiceDescriptor.Singleton(scanner));
@@ -69,14 +68,13 @@ internal sealed class BrandingLogoKestrelScenario : IAsyncDisposable
             });
             if (minimumRate is not null)
             {
-                host.ConfigureServices(services =>
+                builder.ConfigureServices(services =>
                     services.Configure<KestrelServerOptions>(options => options.Limits.MinRequestBodyDataRate = minimumRate));
             }
-
-            host.UseRandomLoopbackPort();
         });
 
-        return new BrandingLogoKestrelScenario(root, factory, factory.Start(), probe, store);
+        var host = KestrelTestHost.StartFromFactory(factory);
+        return new BrandingLogoKestrelScenario(root, host, probe, store);
     }
 
     /// <summary>Sends the raw logo headers with a declared body length and writes the requested prefix.</summary>
@@ -126,7 +124,7 @@ internal sealed class BrandingLogoKestrelScenario : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         client.Dispose();
-        await factory.DisposeAsync();
+        await host.DisposeAsync();
         await root.DisposeAsync();
     }
 }

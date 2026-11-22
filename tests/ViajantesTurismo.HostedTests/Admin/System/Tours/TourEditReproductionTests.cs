@@ -1,13 +1,14 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json.Nodes;
-using Microsoft.Playwright;
 using Microsoft.Playwright.Xunit.v3;
-using PandaBear.Testing;
+using Microsoft.Playwright;
 using PandaBear.Testing.Playwright;
+using PandaBear.Testing.Snapshots;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.Http;
-using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
+using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 using ViajantesTurismo.Testing.Reproduction;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Tours;
@@ -32,7 +33,7 @@ public sealed class TourEditReproductionTests(AspireSystemTestFixture fixture)
         var specification = TourEditReproductionScenario.Specification;
         var outcome = specification.AllowedOutcomes.ShouldHaveSingleItem(candidate => candidate.OutcomeCode == outcomeCode);
         using var scratch = new TemporaryDirectory();
-        var destination = ReproductionManifestCodec.GetLocalResultsDirectory() ?? scratch.Path;
+        var destination = ReproductionFixtureEnvironment.GetLocalResultsDirectory() ?? scratch.Path;
         var selectedEnd = validDuration ? TourEditReproductionScenario.ValidEnd : TourEditReproductionScenario.ShortEnd;
         Assertions.SetDefaultExpectTimeout(30000);
 

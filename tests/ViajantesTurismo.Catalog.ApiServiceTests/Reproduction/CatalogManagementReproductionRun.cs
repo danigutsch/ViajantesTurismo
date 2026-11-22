@@ -1,5 +1,5 @@
+using PandaBear.Testing.Snapshots;
 using ViajantesTurismo.Catalog.Contracts.Application;
-using ViajantesTurismo.Testing.Reproduction;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Reproduction;
 

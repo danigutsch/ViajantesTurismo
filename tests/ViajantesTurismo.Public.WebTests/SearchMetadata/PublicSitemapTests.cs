@@ -83,7 +83,8 @@ public sealed class PublicSitemapTests
         await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
         using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
-            BaseAddress = new Uri("https://testserver")
+            BaseAddress = new Uri("https://testserver"),
+            AllowAutoRedirect = false
         });
         using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/sitemap.xml", UriKind.Relative));
         request.Headers.Host = "evil.example.test";
@@ -95,9 +96,16 @@ public sealed class PublicSitemapTests
         var sitemapNamespace = XNamespace.Get("http://www.sitemaps.org/schemas/sitemap/0.9");
         var locations = document.Descendants(sitemapNamespace + "loc").Select(element => element.Value).ToArray();
         var lastModified = document.Descendants(sitemapNamespace + "lastmod").Select(element => element.Value).ToArray();
-        var tourAlternates = document.Descendants(sitemapNamespace + "url")
+        var tourLinks = document.Descendants(sitemapNamespace + "url")
             .Where(url => url.Element(sitemapNamespace + "loc")?.Value == "https://localhost:7003/pt/group-bike-tours/camino-norte")
             .Elements(XNamespace.Get("http://www.w3.org/1999/xhtml") + "link")
+            .ToArray();
+        var fallback = tourLinks.Where(link => link.Attribute("hreflang")?.Value == "x-default").ShouldHaveSingleItem();
+        var fallbackAddress = new Uri(fallback.Attribute("href").ShouldNotBeNull().Value);
+        using var fallbackRequest = new HttpRequestMessage(HttpMethod.Get, new Uri(fallbackAddress.PathAndQuery, UriKind.Relative));
+        fallbackRequest.Headers.AcceptLanguage.ParseAdd("pt-BR");
+        using var fallbackResponse = await client.SendAsync(fallbackRequest, TestContext.Current.CancellationToken);
+        var tourAlternates = tourLinks
             .Select(link => $"{link.Attribute("hreflang")?.Value} {link.Attribute("href")?.Value}")
             .ToArray();
 
@@ -122,6 +130,8 @@ public sealed class PublicSitemapTests
             "pt-BR https://localhost:7003/pt/group-bike-tours/camino-norte",
             "x-default https://localhost:7003/group-bike-tours/camino-norte"
         ]);
+        fallbackResponse.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        fallbackResponse.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe("/pt/group-bike-tours/camino-norte");
     }
 
     [Fact]

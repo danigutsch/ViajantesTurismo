@@ -1,7 +1,3 @@
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-
 namespace ViajantesTurismo.UploadWire.Testing;
 
 /// <summary>
@@ -10,7 +6,7 @@ namespace ViajantesTurismo.UploadWire.Testing;
 /// </summary>
 public sealed class RawHttpUpload : IDisposable
 {
-    private readonly TcpClient connection = new();
+    private readonly LoopbackHttpBodyRequest connection = new();
 
     /// <summary>Connects, sends the headers and the first <paramref name="bytesToSend"/> body bytes.</summary>
     public Task Send(Uri baseUri, string path, string authorization, MultipartPayload payload, int bytesToSend, CancellationToken ct)
@@ -36,28 +32,22 @@ public sealed class RawHttpUpload : IDisposable
         ArgumentOutOfRangeException.ThrowIfNegative(bytesToSend);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(bytesToSend, body.Length);
 
-        await connection.ConnectAsync(IPAddress.Loopback, baseUri.Port, ct).ConfigureAwait(false);
-        var precondition = ifMatch is null ? string.Empty : $"If-Match: {ifMatch}\r\n";
-        var head = $"{method} {path} HTTP/1.1\r\nHost: {baseUri.Authority}\r\nAuthorization: {authorization}\r\nContent-Type: {contentType}\r\nContent-Length: {body.Length}\r\n{precondition}\r\n";
-        var stream = connection.GetStream();
-        await stream.WriteAsync(Encoding.ASCII.GetBytes(head), ct).ConfigureAwait(false);
-        await stream.WriteAsync(body[..bytesToSend], ct).ConfigureAwait(false);
-        await stream.FlushAsync(ct).ConfigureAwait(false);
+        using var request = new HttpRequestMessage(method, new Uri(baseUri, path)) { Content = new ByteArrayContent([]) };
+        request.Headers.TryAddWithoutValidation("Authorization", authorization);
+        request.Content.Headers.TryAddWithoutValidation("Content-Type", contentType);
+        if (ifMatch is not null)
+        {
+            request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
+        }
+
+        await connection.Send(request, body[..bytesToSend], body.Length, ct).ConfigureAwait(false);
     }
 
     /// <summary>Reads the response status line the server sent on this connection.</summary>
-    public async Task<string> ReadStatusLine(CancellationToken ct)
-    {
-        using var reader = new StreamReader(connection.GetStream(), Encoding.ASCII, leaveOpen: true);
-        return await reader.ReadLineAsync(ct).ConfigureAwait(false) ?? string.Empty;
-    }
+    public Task<string> ReadStatusLine(CancellationToken ct) => connection.ReadStatusLine(ct);
 
     /// <summary>Aborts the connection with a reset instead of a graceful close.</summary>
-    public void Abort()
-    {
-        connection.LingerState = new LingerOption(true, 0);
-        connection.Close();
-    }
+    public void Abort() => connection.Abort();
 
     /// <inheritdoc />
     public void Dispose() => connection.Dispose();

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using PandaBear.Testing.Snapshots;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
@@ -124,6 +125,6 @@ internal static class CatalogReproductionScenario
     }
 
     private static ReproductionSpecification Specify(string scenario, string code) => new(
-        scenario, ReproductionManifestCodec.GetSourceRevision(typeof(CatalogReproductionScenario).Assembly),
+        scenario, ReproductionFixtureEnvironment.GetSourceRevision(typeof(CatalogReproductionScenario).Assembly),
         [new ReproductionOutcome("reproduced", code, new Dictionary<string, string>(StringComparer.Ordinal) { ["catalog-api"] = "ready" })]);
 }

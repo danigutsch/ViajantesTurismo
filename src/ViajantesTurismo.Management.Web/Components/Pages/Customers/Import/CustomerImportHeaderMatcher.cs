@@ -1,3 +1,5 @@
+using PandaBear.Tabular;
+
 namespace ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
 
 /// <summary>Matches CSV headers to customer import fields and rewrites the header row to canonical field names.</summary>
@@ -40,20 +42,14 @@ internal static class CustomerImportHeaderMatcher
         new(CustomerImportFieldNames.AdditionalInfo, "Additional Info", false),
     ];
 
-    private static readonly HashSet<string> FieldNames = Fields.Select(field => field.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+    private static readonly string[] CanonicalHeaders = [.. Fields.Select(field => field.Name)];
+    private static readonly HashSet<string> FieldNames = CanonicalHeaders.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Matches each import field to a CSV header by case-insensitive name, leaving unmatched fields without a header.</summary>
     public static IReadOnlyList<CustomerImportFieldMapping> AutoMatch(IReadOnlyList<string> csvHeaders)
     {
-        return Fields
-            .Select(field =>
-            {
-                var matched = csvHeaders.FirstOrDefault(h =>
-                    h.Equals(field.Name, StringComparison.OrdinalIgnoreCase));
-                return new CustomerImportFieldMapping(field, matched);
-            })
-            .ToList()
-            .AsReadOnly();
+        var matches = CsvHeaderMapping.Match(csvHeaders, CanonicalHeaders);
+        return matches.Select((match, index) => new CustomerImportFieldMapping(Fields[index], match.SourceHeader)).ToList().AsReadOnly();
     }
 
     /// <summary>Rewrites the CSV header row using automatic and user mappings, with user mappings taking precedence.</summary>

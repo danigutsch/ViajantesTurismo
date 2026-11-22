@@ -193,23 +193,9 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             HttpMethod.Get,
             new Uri($"{RoutePrefix}/media/images/{id}/preview/{width}/{Uri.EscapeDataString(format)}", UriKind.Relative));
         var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            response.Dispose();
-            return null;
-        }
-
-        try
-        {
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
-            return new PublicMediaObjectResponse(response, content, response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream");
-        }
-        catch
-        {
-            response.Dispose();
-            throw;
-        }
+        return await HttpResponseBody.ReadOrNotFound(response,
+            static (message, content, mediaType) => new PublicMediaObjectResponse(message, content, mediaType),
+            ct).ConfigureAwait(false);
     }
 
     private async Task<HttpOutcome> ChangePublication(

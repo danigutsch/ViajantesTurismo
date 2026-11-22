@@ -1,4 +1,5 @@
 #:package Microsoft.Playwright
+#:package PandaBear.SharedKernel.Documentation
 #:property TreatWarningsAsErrors=false
 #:property PublishAot=false
 #:property JsonSerializerIsReflectionEnabledByDefault=true
@@ -11,6 +12,7 @@
 
 using System.Text.Json;
 using Microsoft.Playwright;
+using PandaBear.Documentation;
 
 var grafana = args[0].TrimEnd('/');
 var output = Directory.CreateDirectory(args[1]).FullName;
@@ -61,26 +63,26 @@ foreach (var file in Directory.EnumerateFiles(dashboardDirectory, "*.json").Orde
         })
         """);
 
-    var seen = new HashSet<string>(StringComparer.Ordinal);
-    foreach (var state in states.EnumerateArray())
+    var observations = states.EnumerateArray().Select(state => new GrafanaPanelObservation(
+        state.GetProperty("title").GetString()!,
+        state.GetProperty("drawn").GetBoolean(),
+        state.GetProperty("noData").GetBoolean(),
+        state.GetProperty("error").GetBoolean()));
+    foreach (var result in GrafanaVerification.CheckPanels(mustHaveData, observations))
     {
-        var title = state.GetProperty("title").GetString()!;
-        seen.Add(title);
-        var noData = state.GetProperty("noData").GetBoolean();
-        var error = state.GetProperty("error").GetBoolean();
-        var drawn = state.GetProperty("drawn").GetBoolean();
-        var bad = error || !drawn || (noData && mustHaveData.Contains(title));
-        Console.WriteLine($"{(bad ? "FAIL" : "ok  ")} {uid}/{title} drawn={drawn} noData={noData} error={error}");
-        if (bad)
+        if (result.Observation is { } observation)
         {
-            failures.Add($"{uid}/{title}");
+            Console.WriteLine($"{(result.Passed ? "ok  " : "FAIL")} {uid}/{result.Title} drawn={observation.Drawn} noData={observation.NoData} error={observation.QueryError}");
         }
-    }
+        else
+        {
+            Console.WriteLine($"FAIL {uid}/{result.Title} panel not rendered");
+        }
 
-    foreach (var missing in mustHaveData.Except(seen))
-    {
-        Console.WriteLine($"FAIL {uid}/{missing} panel not rendered");
-        failures.Add($"{uid}/{missing}");
+        if (!result.Passed)
+        {
+            failures.Add($"{uid}/{result.Title}");
+        }
     }
 }
 

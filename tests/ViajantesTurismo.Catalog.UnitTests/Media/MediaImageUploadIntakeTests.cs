@@ -888,7 +888,7 @@ public sealed class MediaImageUploadIntakeTests
         Func<Task> action = async () => await accept;
 
         // Assert
-        _ = await action.ShouldThrow<OperationCanceledException>();
+        _ = await action.ShouldThrowAssignableTo<OperationCanceledException>();
         scanner.ScanCount.ShouldBe(0);
         stream.BytesRead.ShouldBe(300);
         objectStore.ObjectKeys.ShouldBeEmpty();

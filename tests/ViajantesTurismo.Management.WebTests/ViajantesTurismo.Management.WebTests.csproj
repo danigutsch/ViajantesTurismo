@@ -29,11 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="../fixtures/reproduction/ReproductionManifest.cs" Link="Reproduction/Shared/ReproductionManifest.cs" />
-        <Compile Include="../fixtures/reproduction/ReproductionManifestCodec.cs" Link="Reproduction/Shared/ReproductionManifestCodec.cs" />
-        <Compile Include="../fixtures/reproduction/ReproductionManifestPayload.cs" Link="Reproduction/Shared/ReproductionManifestPayload.cs" />
-        <Compile Include="../fixtures/reproduction/ReproductionOutcome.cs" Link="Reproduction/Shared/ReproductionOutcome.cs" />
-        <Compile Include="../fixtures/reproduction/ReproductionSpecification.cs" Link="Reproduction/Shared/ReproductionSpecification.cs" />
+        <Compile Include="../fixtures/reproduction/ReproductionFixtureEnvironment.cs" Link="Reproduction/Shared/ReproductionFixtureEnvironment.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -52,6 +48,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Testing.Http" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Logging" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Snapshots" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.AspNetCore" />
         <ProjectReference Include="..\ViajantesTurismo.Admin.Testing\ViajantesTurismo.Admin.Testing.csproj"/>
     </ItemGroup>

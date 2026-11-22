@@ -1,3 +1,4 @@
+#:package PandaBear.SharedKernel.Documentation
 #:property PublishAot=false
 
 // Checks the file-provisioned dashboard queries and runs them through the Grafana datasource proxy.
@@ -10,7 +11,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using QueryTarget = (int PanelId, string Title, string RefId, string DatasourceType, string DatasourceUid, string Query, string Mode);
+using PandaBear.Documentation;
 
 var dashboardUid = args is [_, "--dashboard", var requestedUid] ? requestedUid : null;
 if ((args.Length != 1 && string.IsNullOrWhiteSpace(dashboardUid))
@@ -66,18 +67,21 @@ foreach (var file in files)
     var uid = document.RootElement.GetProperty("uid").GetString()!;
     using var response = await Get($"{grafana}/api/dashboards/uid/{Uri.EscapeDataString(uid)}").ConfigureAwait(false);
     var live = response.RootElement;
-    if (!live.TryGetProperty("dashboard", out var provisioned)
-        || !live.TryGetProperty("meta", out var meta)
-        || !meta.TryGetProperty("provisioned", out var fromFile)
-        || fromFile.ValueKind != JsonValueKind.True)
+    var provisionedFromFile = live.TryGetProperty("dashboard", out var provisioned)
+        && live.TryGetProperty("meta", out var meta)
+        && meta.TryGetProperty("provisioned", out var fromFile)
+        && fromFile.ValueKind == JsonValueKind.True;
+    GrafanaQueryTarget[] targets = provisionedFromFile ? [.. ReadTargets(document.RootElement)] : [];
+    var status = GrafanaVerification.CheckProvisioning(provisionedFromFile, targets,
+        provisionedFromFile ? ReadTargets(provisioned) : []);
+    if (status == GrafanaProvisioningStatus.NotProvisioned)
     {
         await Console.Error.WriteLineAsync($"FAIL {uid} requires a file-provisioned dashboard.").ConfigureAwait(false);
         failures.Add(uid);
         continue;
     }
 
-    var targets = ReadTargets(document.RootElement).ToArray();
-    if (!targets.SequenceEqual(ReadTargets(provisioned)))
+    if (status == GrafanaProvisioningStatus.TargetsDiffer)
     {
         await Console.Error.WriteLineAsync($"FAIL {uid} has panel targets that differ from the checked-in dashboard.").ConfigureAwait(false);
         failures.Add(uid);
@@ -86,9 +90,9 @@ foreach (var file in files)
 
     foreach (var target in targets)
     {
-        var (ok, series) = await RunTarget(target).ConfigureAwait(false);
-        var passed = ok && (series > 0 || target.Mode == "idle-ok");
-        await Console.Out.WriteLineAsync($"{(passed ? "ok  " : "FAIL")} {uid}/{target.Title} [{target.RefId}] series={series} mode={target.Mode}")
+        var observation = await RunTarget(target).ConfigureAwait(false);
+        var passed = observation.Passes(requireData: target.VerificationMode != "idle-ok");
+        await Console.Out.WriteLineAsync($"{(passed ? "ok  " : "FAIL")} {uid}/{target.Title} [{target.RefId}] series={observation.SeriesCount} mode={target.VerificationMode}")
             .ConfigureAwait(false);
         if (!passed)
         {
@@ -101,7 +105,7 @@ await Console.Out.WriteLineAsync(failures.Count == 0 ? "All panel queries verifi
     .ConfigureAwait(false);
 return failures.Count == 0 ? 0 : 1;
 
-static IEnumerable<QueryTarget> ReadTargets(JsonElement dashboard)
+static IEnumerable<GrafanaQueryTarget> ReadTargets(JsonElement dashboard)
 {
     foreach (var panel in dashboard.GetProperty("panels").EnumerateArray())
     {
@@ -117,7 +121,7 @@ static IEnumerable<QueryTarget> ReadTargets(JsonElement dashboard)
         {
             var datasource = target.TryGetProperty("datasource", out var own) ? own : panel.GetProperty("datasource");
             var query = target.TryGetProperty("expr", out var expr) ? expr : target.GetProperty("query");
-            yield return (
+            yield return new GrafanaQueryTarget(
                 panelId,
                 title,
                 target.GetProperty("refId").GetString()!,
@@ -129,7 +133,7 @@ static IEnumerable<QueryTarget> ReadTargets(JsonElement dashboard)
     }
 }
 
-async Task<(bool Ok, int Series)> RunTarget(QueryTarget target)
+async Task<GrafanaQueryObservation> RunTarget(GrafanaQueryTarget target)
 {
     var proxy = $"{grafana}/api/datasources/proxy/uid/{Uri.EscapeDataString(target.DatasourceUid)}";
     switch (target.DatasourceType)
@@ -140,7 +144,7 @@ async Task<(bool Ok, int Series)> RunTarget(QueryTarget target)
                 .Replace("$__interval", "1m", StringComparison.Ordinal);
             using (var response = await Get($"{proxy}/api/v1/query?query={Uri.EscapeDataString(promQuery)}").ConfigureAwait(false))
             {
-                return (response.RootElement.GetProperty("status").GetString() == "success",
+                return new GrafanaQueryObservation(response.RootElement.GetProperty("status").GetString() == "success",
                     response.RootElement.GetProperty("data").GetProperty("result").GetArrayLength());
             }
 
@@ -151,7 +155,7 @@ async Task<(bool Ok, int Series)> RunTarget(QueryTarget target)
                 + $"&start={(now - 3600) * 1_000_000_000}&end={now * 1_000_000_000}&limit=1";
             using (var response = await Get(lokiUrl).ConfigureAwait(false))
             {
-                return (response.RootElement.GetProperty("status").GetString() == "success",
+                return new GrafanaQueryObservation(response.RootElement.GetProperty("status").GetString() == "success",
                     response.RootElement.GetProperty("data").GetProperty("result").GetArrayLength());
             }
 
@@ -160,7 +164,7 @@ async Task<(bool Ok, int Series)> RunTarget(QueryTarget target)
             using (var response = await Get(tempoUrl).ConfigureAwait(false))
             {
                 var failed = response.RootElement.TryGetProperty("status", out var status) && status.GetString() == "error";
-                return (!failed, response.RootElement.TryGetProperty("traces", out var traces) ? traces.GetArrayLength() : 0);
+                return new GrafanaQueryObservation(!failed, response.RootElement.TryGetProperty("traces", out var traces) ? traces.GetArrayLength() : 0);
             }
 
         default:

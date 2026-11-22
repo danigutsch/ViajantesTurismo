@@ -1,3 +1,4 @@
+using PandaBear.Testing.Snapshots;
 using ViajantesTurismo.Testing.Reproduction;
 
 namespace ViajantesTurismo.Management.WebTests.Reproduction;
@@ -17,7 +18,7 @@ internal static class DocumentProxyReproductionScenario
         get;
     } = new(
         "management.document-download",
-        ReproductionManifestCodec.GetSourceRevision(typeof(DocumentProxyReproductionScenario).Assembly),
+        ReproductionFixtureEnvironment.GetSourceRevision(typeof(DocumentProxyReproductionScenario).Assembly),
         [
             new("reproduced", AttachmentDelivered, new Dictionary<string, string>(StringComparer.Ordinal)
             {

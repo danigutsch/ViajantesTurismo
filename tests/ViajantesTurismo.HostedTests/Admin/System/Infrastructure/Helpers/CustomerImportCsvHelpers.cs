@@ -1,5 +1,6 @@
-using Microsoft.Playwright;
 using System.Text;
+using Microsoft.Playwright;
+using PandaBear.Testing.Playwright;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
@@ -42,16 +43,11 @@ internal static class CustomerImportCsvHelpers
             Buffer = Encoding.UTF8.GetBytes(csvContent)
         };
 
-    /// <summary>
-    /// Uploads a CSV through the import page's <c>InputFile</c>. ASP.NET Core installs the input's change listener in an
-    /// awaited first-render callback, after the layout's interactive marker, and sets <c>_blazorInputFileNextFileId</c>
-    /// on the element when it does. A file chosen earlier is dropped silently, so the upload waits for that property.
-    /// </summary>
+    /// <summary>Uploads a CSV through the native chooser after Blazor connects the file input.</summary>
     public static async Task UploadCsv(IPage page, string csvContent)
     {
         var input = page.Locator("input[type='file']");
-        await input.EvaluateAsync(
-            "element => new Promise(resolve => { const check = () => element._blazorInputFileNextFileId !== undefined ? resolve() : setTimeout(check, 20); check(); })");
+        await input.WaitForBlazorInputFile();
         var chooser = await page.RunAndWaitForFileChooserAsync(
             () => input.ClickAsync());
         await chooser.SetFilesAsync(ToCsvPayload(csvContent));

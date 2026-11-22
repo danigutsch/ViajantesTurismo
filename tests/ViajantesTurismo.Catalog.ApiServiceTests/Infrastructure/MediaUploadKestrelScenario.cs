@@ -17,12 +17,11 @@ internal sealed class MediaUploadKestrelScenario : IAsyncDisposable
     public static readonly byte[] Png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNgSDsDRXAWAEMEBy263W6BAAAAAElFTkSuQmCC");
 
     private readonly WebApplicationFactory<CatalogApiHostEntryPoint> root;
-    private readonly WebApplicationFactory<CatalogApiHostEntryPoint> factory;
+    private readonly KestrelTestHost<CatalogApiHostEntryPoint> host;
 
     private MediaUploadKestrelScenario(
         WebApplicationFactory<CatalogApiHostEntryPoint> root,
-        WebApplicationFactory<CatalogApiHostEntryPoint> factory,
-        Uri baseUri,
+        KestrelTestHost<CatalogApiHostEntryPoint> host,
         Guid tourId,
         RequestLifetimeProbe probe,
         ScanRecorder scans,
@@ -30,14 +29,14 @@ internal sealed class MediaUploadKestrelScenario : IAsyncDisposable
         InMemoryObjectStore objectStore)
     {
         this.root = root;
-        this.factory = factory;
-        BaseUri = baseUri;
+        this.host = host;
+        BaseUri = host.BaseAddress;
         TourId = tourId;
         Probe = probe;
         Scans = scans;
         MediaStore = mediaStore;
         ObjectStore = objectStore;
-        Client = new HttpClient { BaseAddress = baseUri, Timeout = TimeSpan.FromSeconds(60) };
+        Client = new HttpClient { BaseAddress = host.BaseAddress, Timeout = TimeSpan.FromSeconds(60) };
         CatalogApiTestHost.ConfigureAuthenticatedClient(Client);
     }
 
@@ -102,19 +101,18 @@ internal sealed class MediaUploadKestrelScenario : IAsyncDisposable
         var probe = new RequestLifetimeProbe($"/tours/{tourId}/images");
         var scans = new ScanRecorder();
         var root = CatalogApiTestHost.Create(tourStore, mediaStore, objectStore);
-        var factory = root.WithWebHostBuilder(host =>
+        var factory = root.WithWebHostBuilder(builder =>
         {
-            host.ConfigureTestServices(services =>
+            builder.ConfigureTestServices(services =>
             {
                 RequestProbeStartupFilter.Register(services, probe);
                 services.Replace(ServiceDescriptor.Singleton<IMediaUploadScanner>(new RecordingMediaUploadScanner(scans)));
             });
-            host.UseRandomLoopbackPort();
-            configureHost?.Invoke(host);
+            configureHost?.Invoke(builder);
         });
 
-        var baseUri = factory.Start();
-        return new MediaUploadKestrelScenario(root, factory, baseUri, tourId, probe, scans, mediaStore, objectStore);
+        var host = KestrelTestHost.StartFromFactory(factory);
+        return new MediaUploadKestrelScenario(root, host, tourId, probe, scans, mediaStore, objectStore);
     }
 
     /// <summary>Builds the multipart form for an image file with alt text.</summary>
@@ -138,7 +136,7 @@ internal sealed class MediaUploadKestrelScenario : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         Client.Dispose();
-        await factory.DisposeAsync();
+        await host.DisposeAsync();
         await root.DisposeAsync();
     }
 }

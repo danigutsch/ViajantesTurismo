@@ -44,7 +44,7 @@ internal static class PublicWebEndpoints
             .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy)
             .ExcludeFromDescription();
 
-        app.MapGet(ThemeStylesheetPath, GetThemeStylesheet)
+        app.MapVersionedStylesheet(ThemeStylesheetPath, LoadThemeStylesheet)
             .RequireRateLimiting(PublicWebSecurityBaseline.PublicReadRateLimitPolicy)
             .ExcludeFromDescription();
 
@@ -61,19 +61,11 @@ internal static class PublicWebEndpoints
         return app;
     }
 
-    /// <summary>
-    /// Renders the current theme. A request for its content hash (<c>?v=</c>, as the pages link it) is cached as immutable; any
-    /// other request keeps the default freshness, so a stale link never pins old colours.
-    /// </summary>
-    private static async Task<IResult> GetThemeStylesheet(IBrandingApiClient brandingApi, HttpContext httpContext, string? v, CancellationToken ct)
+    private static async ValueTask<(string Css, string Version)> LoadThemeStylesheet(HttpContext context)
     {
-        var theme = PublicBranding.Theme(await PublicBranding.Load(brandingApi, ct));
-        if (string.Equals(v, SiteThemeStylesheet.Hash(theme), StringComparison.Ordinal))
-        {
-            HttpCacheHeaders.SetImmutable(httpContext);
-        }
-
-        return Results.Text(SiteThemeStylesheet.Render(theme), "text/css; charset=utf-8");
+        var brandingApi = context.RequestServices.GetRequiredService<IBrandingApiClient>();
+        var theme = PublicBranding.Theme(await PublicBranding.Load(brandingApi, context.RequestAborted));
+        return SiteThemeStylesheet.RenderVersioned(theme);
     }
 
     private static async Task<IResult> GetSitemap(

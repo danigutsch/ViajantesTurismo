@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using PandaBear.IO;
 
@@ -11,12 +10,8 @@ internal static class MigrationArtifactFiles
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
     /// <summary>Verifies one manifest entry against its file.</summary>
-    internal static async Task Verify(string directory, MigrationArtifact artifact, CancellationToken ct)
-    {
-        var path = ResolvePath(directory, artifact);
-        await using var stream = File.OpenRead(path);
-        VerifyDigest(await SHA256.HashDataAsync(stream, ct), artifact.Sha256);
-    }
+    internal static Task Verify(string directory, MigrationArtifact artifact, CancellationToken ct) =>
+        VerifiedArtifact.Verify(directory, artifact.Path, artifact.Sha256, ct);
 
     /// <summary>Verifies the path and bytes of a PostgreSQL script.</summary>
     internal static Task VerifySql(string directory, MigrationArtifact artifact, CancellationToken ct)
@@ -58,54 +53,8 @@ internal static class MigrationArtifactFiles
     }
 
     /// <summary>Returns bounded file bytes after verifying that same content against its digest.</summary>
-    internal static async Task<ReadOnlyMemory<byte>> ReadVerifiedBytes(string directory, MigrationArtifact artifact, int limit, CancellationToken ct)
-    {
-        var path = ResolvePath(directory, artifact);
-        var content = await BoundedReader.ReadFile(path, limit, ct)
-            ?? throw new InvalidDataException("Migration artifact exceeds the size limit.");
-        VerifyDigest(SHA256.HashData(content), artifact.Sha256);
-        return content;
-    }
-
-    private static string ResolvePath(string directory, MigrationArtifact artifact)
-    {
-        if (artifact.Sha256.Length != 64 || !artifact.Sha256.All(char.IsAsciiHexDigit))
-        {
-            throw new InvalidDataException("Artifact digest must be a SHA-256 value.");
-        }
-
-        var segments = artifact.Path.Split('/');
-        if (segments.Any(static segment => segment.Length == 0 || segment is "." or ".."
-            || segment.Any(static character => character is '\\' or ':' || char.IsControl(character))))
-        {
-            throw new InvalidDataException("Artifact path must stay inside the manifest directory.");
-        }
-
-        var path = directory;
-        foreach (var segment in segments)
-        {
-            path = Path.Combine(path, segment);
-            if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
-            {
-                throw new InvalidDataException("Artifact paths cannot contain symbolic links.");
-            }
-        }
-
-        if ((File.GetAttributes(path) & FileAttributes.Directory) != 0)
-        {
-            throw new InvalidDataException("An artifact must be a file.");
-        }
-
-        return path;
-    }
-
-    private static void VerifyDigest(byte[] digest, string expected)
-    {
-        if (!string.Equals(Convert.ToHexString(digest), expected, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidDataException("Artifact digest mismatch.");
-        }
-    }
+    internal static Task<ReadOnlyMemory<byte>> ReadVerifiedBytes(string directory, MigrationArtifact artifact, int limit, CancellationToken ct) =>
+        VerifiedArtifact.Read(directory, artifact.Path, artifact.Sha256, limit, ct);
 
     private static void RequireSqlExtension(MigrationArtifact artifact)
     {

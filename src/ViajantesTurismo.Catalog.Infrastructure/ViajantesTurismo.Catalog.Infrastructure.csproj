@@ -35,6 +35,7 @@
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning" />
         <PackageReference Include="PandaBear.SharedKernel.MalwareScanning.ClamAv" />
         <PackageReference Include="PandaBear.SharedKernel.Npgsql" />
+        <PackageReference Include="PandaBear.SharedKernel.ObjectStorage.FileSystem" />
         <PackageReference Include="PandaBear.SharedKernel.ObjectStorage.S3" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Application\ViajantesTurismo.Catalog.Application.csproj" />
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Domain\ViajantesTurismo.Catalog.Domain.csproj" />

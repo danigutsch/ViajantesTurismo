@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using PandaBear.Testing;
+using PandaBear.Testing.Playwright;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Testing.Builders;
@@ -58,7 +59,7 @@ public sealed class InlineStyleCspTests : ManagementWebBrowserTestBase
     public async Task About_page_sizes_its_label_column_without_a_style_violation()
     {
         // Arrange
-        var recorder = await CspViolationRecorder.Start(Page);
+        using var recorder = await CspViolationRecorder.Start(Page);
 
         // Act
         await NavigateTo("/about");
@@ -73,7 +74,7 @@ public sealed class InlineStyleCspTests : ManagementWebBrowserTestBase
     public async Task Booking_details_keep_the_line_breaks_of_the_notes_without_a_style_violation()
     {
         // Arrange
-        var recorder = await CspViolationRecorder.Start(Page);
+        using var recorder = await CspViolationRecorder.Start(Page);
 
         // Act
         await NavigateTo($"/bookings/{bookingId}");
@@ -89,7 +90,7 @@ public sealed class InlineStyleCspTests : ManagementWebBrowserTestBase
     public async Task Customer_import_draws_a_dashed_drop_zone_without_a_style_violation()
     {
         // Arrange
-        var recorder = await CspViolationRecorder.Start(Page);
+        using var recorder = await CspViolationRecorder.Start(Page);
 
         // Act
         await NavigateTo("/customers/import");

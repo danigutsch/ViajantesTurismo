@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
+using PandaBear.AspNetCore;
 
 namespace ViajantesTurismo.ServiceDefaults;
 
@@ -45,28 +43,6 @@ public static class ApiRequestLimits
         ArgumentNullException.ThrowIfNull(app);
 
         app.UseRequestTimeouts();
-        return app.Use(async (context, next) =>
-        {
-            if (context.Features.Get<IHttpRequestTimeoutFeature>() is null
-                || context.GetEndpoint()?.Metadata.GetMetadata<IFormOptionsMetadata>() is null)
-            {
-                await next(context).ConfigureAwait(false);
-                return;
-            }
-
-            // Minimal API form binding reads without a token. Supplying a timeout token to FormFeature
-            // itself would abort the connection before the request timeout middleware can send a 504.
-            var body = context.Request.Body;
-            using var deadlineBody = new DeadlineRequestBody(body, context.RequestAborted);
-            context.Request.Body = deadlineBody;
-            try
-            {
-                await next(context).ConfigureAwait(false);
-            }
-            finally
-            {
-                context.Request.Body = body;
-            }
-        });
+        return app.UseFormBindingDeadline();
     }
 }

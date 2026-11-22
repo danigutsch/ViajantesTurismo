@@ -1,3 +1,4 @@
+using System.Text;
 using ViajantesTurismo.Public.Web.Branding;
 using PandaBear.Blazor.Site.Theming;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
@@ -188,17 +189,32 @@ public sealed class PublicWebThemeTests
     public async Task The_versioned_theme_stylesheet_is_immutable_and_a_stale_version_is_not()
     {
         // Arrange
-        var brandingApi = new FakeBrandingApiClient();
-        brandingApi.SetBranding(PublicWebThemeTestsHelpers.CreateBranding());
-        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: brandingApi);
+        var branding = PublicWebThemeTestsHelpers.CreateBranding();
+        using var handler = new DelegateHttpMessageHandler(request =>
+        {
+            request.RequestUri.ShouldNotBeNull().AbsolutePath.ShouldBe("/api/v1/public/branding");
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(branding) };
+        });
+        using var upstream = new HttpClient(handler, disposeHandler: false) { BaseAddress = new Uri("https://branding.example.test") };
+        await using var factory = PublicWebTestHost.CreateFactory(brandingApiClient: new BrandingApiClient(upstream));
         using var client = factory.CreateClient();
-        var hash = SiteThemeStylesheet.Hash(PublicBranding.Theme(PublicWebThemeTestsHelpers.CreateBranding()));
+        var theme = PublicBranding.Theme(branding);
+        var hash = SiteThemeStylesheet.Hash(theme);
+        var css = SiteThemeStylesheet.Render(theme);
 
         // Act
         using var current = await client.GetAsync(new Uri($"/theme.css?v={hash}", UriKind.Relative), TestContext.Current.CancellationToken);
         using var stale = await client.GetAsync(new Uri("/theme.css?v=0000000000000000", UriKind.Relative), TestContext.Current.CancellationToken);
 
+        var currentCss = await current.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var staleCss = await stale.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
         // Assert
+        current.StatusCode.ShouldBe(HttpStatusCode.OK);
+        stale.StatusCode.ShouldBe(HttpStatusCode.OK);
+        current.Content.Headers.ContentLength.ShouldBe(Encoding.UTF8.GetByteCount(css));
+        currentCss.ShouldBe(css);
+        staleCss.ShouldBe(css);
         current.Headers.CacheControl.ShouldNotBeNull().ToString().ShouldBe("public, max-age=31536000, immutable");
         stale.Headers.CacheControl.ShouldNotBeNull().MaxAge.ShouldBe(TimeSpan.FromSeconds(60));
     }

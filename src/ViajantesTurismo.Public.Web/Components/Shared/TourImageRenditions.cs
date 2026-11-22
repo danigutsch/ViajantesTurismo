@@ -1,4 +1,5 @@
 using PandaBear.Blazor.Site;
+using PandaBear.InputNormalization;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Public.Web.Components.Shared;
@@ -13,14 +14,7 @@ internal static class TourImageRenditions
     public const string HalfWidthSizes = "(min-width: 48rem) 50vw, 100vw";
 
     /// <summary>Gets the media route segment of a rendition content type, or <see langword="null" /> when the type is not served.</summary>
-    public static string? FormatSegment(string contentType) => contentType.Trim().ToUpperInvariant() switch
-    {
-        "IMAGE/AVIF" => "avif",
-        "IMAGE/JPEG" => "jpg",
-        "IMAGE/PNG" => "png",
-        "IMAGE/WEBP" => "webp",
-        _ => null
-    };
+    public static string? FormatSegment(string contentType) => RasterImageMediaType.Find(contentType)?.FileExtension;
 
     /// <summary>Gets the rendition every browser can show: the largest JPEG or PNG, else the largest served rendition.</summary>
     public static CatalogMediaImageVariantDto? Fallback(CatalogTourImageDto image)
@@ -92,9 +86,9 @@ internal static class TourImageRenditions
         var fallback = Fallback(image)
             ?? throw new InvalidOperationException("A responsive tour image requires a supported media variant.");
         var sources = Served(image)
-            .GroupBy(variant => variant.ContentType.Trim(), StringComparer.OrdinalIgnoreCase)
-            .OrderBy(group => ContentTypeSortOrder(group.Key))
-            .Select(group => ImageSource.Create(group.Key, group
+            .GroupBy(variant => RasterImageMediaType.Find(variant.ContentType)!)
+            .OrderBy(group => FormatSortOrder(group.Key.FileExtension))
+            .Select(group => ImageSource.Create(group.Key.MediaType, group
                 .DistinctBy(variant => variant.Width)
                 .OrderBy(variant => variant.Width)
                 .Select(variant => ImageCandidate.AtWidth(Target(linkGenerator, image.Id, variant), variant.Width))))
@@ -124,7 +118,7 @@ internal static class TourImageRenditions
     private static LinkTarget Target(LinkGenerator linkGenerator, Guid imageId, CatalogMediaImageVariantDto variant) =>
         LinkTarget.FromString(Path(linkGenerator, imageId, variant));
 
-    private static int ContentTypeSortOrder(string contentType) => FormatSegment(contentType) switch
+    private static int FormatSortOrder(string format) => format switch
     {
         "avif" => 0,
         "webp" => 1,
