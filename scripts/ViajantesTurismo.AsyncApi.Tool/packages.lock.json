@@ -4,9 +4,9 @@
     "net11.0": {
       "PandaBear.SharedKernel.Documentation": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.719.1, )",
-        "resolved": "0.1.0-alpha.719.1",
-        "contentHash": "lbIRO9K5ajJUfzGr8t+sToyoov2gwu5l+IKo3JZjv1E3uvehXb4o1wINdh0AW9Hvgih31OSA5PQ3IAW/5rKIKA==",
+        "requested": "[0.1.0-alpha.727.1, )",
+        "resolved": "0.1.0-alpha.727.1",
+        "contentHash": "sPv05A/QYQTUmQ0o6D1hsVJZuba6prx2oRFByFzBuRmnUA0yG+Ak6tMxZULqcHckd846Me8mqdGSV6Irwzku6Q==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "5.12.0",
           "Microsoft.CodeAnalysis.CSharp": "5.12.0"
@@ -14,15 +14,15 @@
       },
       "PandaBear.SharedKernel.Style.Analyzers": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.719.1, )",
-        "resolved": "0.1.0-alpha.719.1",
-        "contentHash": "HDdllSdUlW6Qly471hl/rYTrsH79eS+7+hWl5TWJOjtZEt81A9bzFu2nNkF7RKnhnkAniZvGn52MxWJEc/NVnA=="
+        "requested": "[0.1.0-alpha.727.1, )",
+        "resolved": "0.1.0-alpha.727.1",
+        "contentHash": "CnYP/CpQ3TnnSyQ9cW66RVWOzw/bN72WfdQlFPMDyc2l0BKo/2PS+azTXA9pqC1F3tAqvir93d+0ecN3LsaYYw=="
       },
       "PandaBear.SharedKernel.Style.CodeFixes": {
         "type": "Direct",
-        "requested": "[0.1.0-alpha.719.1, )",
-        "resolved": "0.1.0-alpha.719.1",
-        "contentHash": "Spj3lmPuWldeeOJsSfC3SD3J+ys6PAwPFDDwOVF2XGPKtvyLYqeK5FY/Q2HFXCfky7KSAilHZm9zzNjU7gNqgA=="
+        "requested": "[0.1.0-alpha.727.1, )",
+        "resolved": "0.1.0-alpha.727.1",
+        "contentHash": "bCtLv1mkUYpHV+8xawzMaPb07Gam9YZ9S8QDGMft450UFiUfrVstsh3R4op2y20brPw55lOqizhqa/3LHEnZpQ=="
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
@@ -35,19 +35,19 @@
       "viajantesturismo.admin.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.719.1, )"
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.727.1, )"
         }
       },
       "viajantesturismo.branding.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.719.1, )"
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.727.1, )"
         }
       },
       "viajantesturismo.catalog.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.719.1, )"
+          "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.727.1, )"
         }
       },
       "viajantesturismo.resources": {
@@ -71,17 +71,17 @@
       },
       "PandaBear.SharedKernel.Messaging": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.719.1, )",
-        "resolved": "0.1.0-alpha.719.1",
-        "contentHash": "8X6+fucIJVgdKDYEBIJA4hm8xm60YHIemVJLlN8auEsvv4eTkvQoVFnZBdIRRVyML2sRcLTvjK18pNxOVPRwdQ=="
+        "requested": "[0.1.0-alpha.727.1, )",
+        "resolved": "0.1.0-alpha.727.1",
+        "contentHash": "bwuc/1iTbfjBKhHaop+d7VpPwAzFDMb7rn9v1a4ZokhKSJe/cmZyr/7C5YrYiy/+JWfO75kq7/IOG/xuIotmqg=="
       },
       "PandaBear.SharedKernel.Messaging.IntegrationEvents": {
         "type": "CentralTransitive",
-        "requested": "[0.1.0-alpha.719.1, )",
-        "resolved": "0.1.0-alpha.719.1",
-        "contentHash": "xtInxwdN+mYPPtPf2ejWAW8wv/FCD0sPqOU0uNVREio2PZqGpk4q1czt1zvgo7fBzjGECh801pYPrQLTc6Kwtw==",
+        "requested": "[0.1.0-alpha.727.1, )",
+        "resolved": "0.1.0-alpha.727.1",
+        "contentHash": "EtNiR0O7dDfSZ4Oo2rcdsUY566p0W6Nj53aQOBfvLm2N2QVi//T29M7NVRBl/Wq22deAT04G9SNeCENpWgTcWg==",
         "dependencies": {
-          "PandaBear.SharedKernel.Messaging": "0.1.0-alpha.719.1"
+          "PandaBear.SharedKernel.Messaging": "0.1.0-alpha.727.1"
         }
       }
     }

@@ -634,3 +634,11 @@ Compared with the previous pin, every tracked lock entry for StreamJsonRpc `2.25
 Magick.NET-Q8-AnyCPU `15.1.0` (11 entries) has the same NuGet content hash in the same project and framework.
 The exceptions retain the reviewed MIT and Apache-2.0 metadata, respectively. The native redistribution review remains open.
 Record the same package version and hash comparison against the last approved pin for each later backlog preview.
+
+## Portable Admin transaction locks candidate
+
+Candidate `0.1.0-alpha.727.1` uses clean library revision `3f3122727c6c4e9627e3e34b9e3c433e4b316932`.
+Compared with `0.1.0-alpha.719.1`, all three StreamJsonRpc `2.25.29` lock entries and all eleven
+Magick.NET-Q8-AnyCPU `15.1.0` lock entries retain their versions and NuGet content hashes in the same projects
+and frameworks. The owner-approved metadata exceptions therefore apply to this exact candidate. The native redistribution
+review remains open.
