@@ -32,6 +32,35 @@ endpoints and credentials and applies the approved network and data topology.
 | Mailpit | Use `CommunityToolkit.Aspire.Hosting.MailPit` for local and fixture-owned SMTP capture if a mail workflow is approved. Test settings send only to the capture resource. [Aspire gallery](https://aspire.dev/integrations/gallery/) |
 | flagd | Evaluate `CommunityToolkit.Aspire.Hosting.Flagd` for local evaluation and the OpenFeature .NET provider in the consuming application. The feature owner defines fallback values and evaluates flags at the use site. [Aspire gallery](https://aspire.dev/integrations/gallery/), [.NET flagd provider](https://flagd.dev/providers/dotnet/) |
 
+## Feature flag decision
+
+Keep ASP.NET Core configuration for the current deployment and rollout needs. Revisit flagd when deployed
+services need the same change without a redeploy and operators need a controlled, audited way to make it.
+
+| Use case | Configuration and fallback | When flagd would help |
+| --- | --- | --- |
+| Planned maintenance | The deployment owner would control a validated environment setting. Use normal service mode as the default when the switch is introduced, with the deployment traffic and readiness model governing service recovery. | Consider centralized evaluation only if a later topology requires coordinated changes and defines safe behavior during a provider outage. |
+| Preview a new optional Management workflow | The feature owner adds one `FeatureFlags:Enable<Workflow>` option at the owning edge. A missing setting or unavailable provider keeps the current workflow in use. | Target cohorts only when the rollout has a named audience, metric, and removal date. |
+
+Authorization, audit, retention, and data-integrity rules stay in their owning code. Operators follow
+the [configuration policy](../CONFIGURATION.md#feature-flag-governance) for ownership, the initial value, and the
+retirement trigger. The introducing PR documents the value and affected service, verifies both paths,
+and records how to roll back. Operators change the value through the approved environment configuration,
+check the resulting service behavior, and remove the setting and old path after the rollout ends.
+
+If a later feature qualifies, `CommunityToolkit.Aspire.Hosting.Flagd` supplies a local AppHost resource,
+health checks, and client connection properties. The .NET consumer owns key mapping, timeout, and a
+safe explicit default. An environment that cannot run the Aspire resource can point the same provider
+at its approved external endpoint. The owner must check TLS, health, change history, and outage behavior
+before using that endpoint. [Aspire flagd setup](https://aspire.dev/integrations/devtools/flagd/flagd-get-started/),
+[OpenFeature evaluation behavior](https://openfeature.dev/specification/sections/flag-evaluation/)
+
+A disposable .NET 11 probe exercised flagd `0.19.0`, OpenFeature `2.14.1`, and
+`OpenFeature.Providers.Flagd` `0.8.0`. The server returned `true` and `false` for configured variants,
+and the client returned its `false` default for both a missing key and an unreachable provider. Its
+initial restore exposed a moderate `System.Formats.Cbor` advisory. The probe restored and built after
+pinning `8.0.2`, the patched version in that line. [Advisory](https://github.com/advisories/GHSA-vmv3-wvjp-wqpj)
+
 ## Composition and validation
 
 - Use resource references to supply discovery and connection configuration, and keep service
