@@ -22,4 +22,7 @@ public static class ArchitectureDiagnosticIds
 
     /// <summary>Diagnostic emitted for a direct HTTP request in a tool wrapper.</summary>
     public const string ToolWrapperHttp = "VTARCH004";
+
+    /// <summary>Advisory placement evidence for an explicitly selected helper class.</summary>
+    public const string SharedKernelHelperPlacement = "VTARCH005";
 }
