@@ -28,6 +28,32 @@ Document significant consumer-visible breaks, caller impact, and any required da
 same change. A Conventional Commit breaking marker does not waive HTTP compatibility from beta onward.
 Library package breaking markers and release exceptions are governed in the standalone library.
 
+## C# union response evaluation
+
+Keep PandaBear `Result<T>` for application outcomes and preserve the current HTTP status,
+`ProblemDetails`, and typed-result contracts. A C# union is useful when one response body
+intentionally supports a closed set of shapes under the same status. The language provides
+case conversions and exhaustive matching. Route policy, HTTP status, media type, and the
+problem response still belong to the endpoint.
+[C# unions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/union) ·
+[Minimal API responses](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/responses?view=aspnetcore-11.0)
+
+A disposable ASP.NET Core app using SDK 11.0.100 and OpenAPI 11.0.0 returned a two-case
+union with HTTP 200 and an OpenAPI component using `anyOf`. Its source-generated JSON context
+read the pending case using a structural classifier and distinct property names. The typed
+HTTP result comparison returned HTTP 404 and described separate 200 and 404 responses.
+Omitting the pending case from the union switch failed compilation with `CS8509` under
+warnings-as-errors. Case-based assertions can make internal consumers easier to read.
+[System.Text.Json union serialization](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/union-types) ·
+[ASP.NET Core union support](https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-11?view=aspnetcore-11.0)
+
+A route that replaces separate status responses with an `anyOf` body changes both its OpenAPI
+shape and its clients' error handling. For an intentional same-status union, prove each case's
+wire representation, ambiguous input behavior, generated client mappings, and any applicable
+trimming or NativeAOT behavior. Refresh the affected artifacts and run the existing consumer
+contract tests before adopting it in a public response. The current outcomes stay on their
+established contracts.
+
 ## Admin resource links
 
 Successful Admin customer, booking, and tour list, detail, and create responses include navigation
