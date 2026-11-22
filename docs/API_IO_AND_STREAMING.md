@@ -343,6 +343,30 @@ HTTP/3 mandate exists or is planned. Each needs a named consumer, direction, med
 cancellation, disconnect, resume, and error semantics, and HTTP/2 or HTTP/3 needs evidence through the
 complete proxy and load-balancer path with fallback retained.
 
+### Media delivery protocol
+
+Keep the current protocol configuration for Public Web media and the Management Web document proxy.
+The first delivery case to reconsider is a visitor opening a tour with several Catalog image renditions
+through Public Web's `/catalog/media/{id}/{width}/{format}` endpoint.
+
+A local .NET 11.0.100 probe ran the real Public Web route on loopback Kestrel with a synthetic Catalog
+stream. One reused client requested exact HTTP/1.1. After five warm-up requests per size, 30 sequential
+requests per size returned `200`, negotiated HTTP/1.1, and delivered the complete body. The measurements
+span sending the request through reading the final byte.
+
+| Rendition body | Median | 95th percentile |
+| --- | ---: | ---: |
+| 64 KiB | 0.243 ms | 0.389 ms |
+| 512 KiB | 0.562 ms | 1.291 ms |
+
+This baseline covers the route and its downstream client connection on one machine. A production
+comparison needs the selected edge and load balancer, an actual Catalog store, and parallel image
+requests under representative bandwidth and latency. Run each configuration through the complete route,
+record negotiated protocols at each hop, and confirm the existing fallback on clients without newer
+protocol support. Repeat authorization, cache, range, and disconnect checks before changing either delivery
+path. The [production readiness record](operations/production-readiness.md) tracks the deployment target.
+[Kestrel HTTP/3 deployment guidance](https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/http3)
+
 ## Related
 
 - [API request shape policy](API_REQUEST_SHAPES.md)
