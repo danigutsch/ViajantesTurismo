@@ -8,7 +8,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 
-public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime
+public class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admin.Testing.Integration.IAdminTestHost, IAsyncLifetime
 {
     private static readonly TimeSpan BrandingProjectionTimeout = TimeSpan.FromMinutes(2);
 
@@ -16,6 +16,12 @@ public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admi
     private HttpClient? _client;
     private string? _databaseConnectionString;
     private string? _operatorConformanceUserPassword;
+
+    /// <summary>Gets the hosted Admin stack used by this fixture.</summary>
+    protected virtual string Stack => "api";
+
+    /// <summary>Gets the conformance user's identifier in the fixture's realm.</summary>
+    internal string ConformanceUserId => shared.ConformanceUserId(Stack);
 
     public HttpClient Client => _client ?? throw new InvalidOperationException("Fixture is not initialized.");
 
@@ -32,7 +38,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admi
     public async ValueTask InitializeAsync()
     {
         var testConfiguration = shared.Configuration;
-        _app = await shared.GetApplication(HostedProfile.Admin, "api", TestContext.Current.CancellationToken);
+        _app = await shared.GetApplication(HostedProfile.Admin, Stack, TestContext.Current.CancellationToken);
         _client = _app.CreateHttpClient(ResourceNames.Api);
         _databaseConnectionString = await _app.GetConnectionString(ResourceNames.AdminDatabase, TestContext.Current.CancellationToken);
         await WaitForBrandingProjection(_databaseConnectionString, TestContext.Current.CancellationToken);
@@ -42,7 +48,7 @@ public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admi
             identityProviderEndpoint,
             testConfiguration.ConformanceUserPassword,
             [ApiAudienceNames.Admin],
-            TestContext.Current.CancellationToken, realm: shared.Realm("api"));
+            TestContext.Current.CancellationToken, realm: shared.Realm(Stack));
         _client.DefaultRequestHeaders.Authorization = new global::System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
     }
 
@@ -152,28 +158,36 @@ public sealed class ApiFixture(HostedTestFixture shared) : ViajantesTurismo.Admi
             _operatorConformanceUserPassword,
             [ApiAudienceNames.Admin],
             ct,
-            KeycloakConformanceClient.OperatorUsername, shared.Realm("api"));
+            KeycloakConformanceClient.OperatorUsername, shared.Realm(Stack));
         var client = _app.CreateHttpClient(ResourceNames.Api);
         client.DefaultRequestHeaders.Authorization = new global::System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         return client;
     }
 
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        var client = _client;
-        _client = null;
-        _app = null;
-        _databaseConnectionString = null;
-        _operatorConformanceUserPassword = null;
-
-        client?.Dispose();
-
-        await ValueTask.CompletedTask;
+        Dispose(true);
+        GC.SuppressFinalize(this);
+        return ValueTask.CompletedTask;
     }
 
     public void Dispose()
     {
-        DisposeAsync().AsTask().GetAwaiter().GetResult();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>Disposes the fixture's owned client and clears its references to the hosted stack.</summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _client?.Dispose();
+            _client = null;
+            _app = null;
+            _databaseConnectionString = null;
+            _operatorConformanceUserPassword = null;
+        }
     }
 
     // Documents read Branding from the Admin projection, which the Admin worker fills from Catalog-hosted Branding.

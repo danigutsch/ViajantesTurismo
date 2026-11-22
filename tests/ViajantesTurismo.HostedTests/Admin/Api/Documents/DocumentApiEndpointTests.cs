@@ -2,6 +2,7 @@ using System.Net;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
+using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using System.Text.Json;
@@ -13,7 +14,7 @@ namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
-public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture<ApiFixture>
+public sealed class DocumentApiEndpointTests(DocumentApiFixture fixture) : IClassFixture<DocumentApiFixture>
 {
     [Fact]
     public void Authenticated_admin_token_contains_an_opaque_subject()
@@ -35,7 +36,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
         hasSubject.ShouldBeTrue();
         subject.ValueKind.ShouldBe(JsonValueKind.String);
         string.IsNullOrWhiteSpace(actorId).ShouldBeFalse();
-        actorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+        actorId.ShouldBe(fixture.ConformanceUserId);
     }
 
     [Fact]
@@ -62,7 +63,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
         audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBeNull();
         audit.DocumentRevision.ShouldBeNull();
-        audit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+        audit.ActorId.ShouldBe(fixture.ConformanceUserId);
         string.IsNullOrWhiteSpace(audit.CorrelationId).ShouldBeFalse();
         audit.RetentionExpiresAt.ShouldBe(audit.OccurredAtUtc.AddMonths(24));
     }
@@ -462,7 +463,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
         audit.DocumentId.ShouldBeNull();
         audit.BookingId.ShouldBe(booking.Id);
         audit.DocumentRevision.ShouldBeNull();
-        audit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+        audit.ActorId.ShouldBe(fixture.ConformanceUserId);
         string.IsNullOrWhiteSpace(audit.CorrelationId).ShouldBeFalse();
     }
 
@@ -532,7 +533,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
         reviewAudit.Outcome.ShouldBe("Rejected");
         reviewAudit.ReasonCode.ShouldBe("StateConflict");
         reviewAudit.DocumentId.ShouldBe(document.Id);
-        reviewAudit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+        reviewAudit.ActorId.ShouldBe(fixture.ConformanceUserId);
         string.IsNullOrWhiteSpace(reviewAudit.CorrelationId).ShouldBeFalse();
         reviewAudit.BookingId.ShouldBe(document.BookingId);
         reviewAudit.DocumentRevision.ShouldBe(document.Revision);
@@ -571,7 +572,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
             audit.DocumentId.ShouldBe(document.Id);
             audit.BookingId.ShouldBe(booking.Id);
             audit.DocumentRevision.ShouldBe(1);
-            audit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+            audit.ActorId.ShouldBe(fixture.ConformanceUserId);
             string.IsNullOrWhiteSpace(audit.CorrelationId).ShouldBeFalse();
             audit.RetentionExpiresAt.ShouldBe(audit.OccurredAtUtc.AddMonths(24));
         }
@@ -1088,7 +1089,7 @@ public sealed class DocumentApiEndpointTests(ApiFixture fixture) : IClassFixture
             audit.DocumentId.ShouldBe(generated.Id);
             audit.BookingId.ShouldBe(booking.Id);
             audit.DocumentRevision.ShouldBe(1);
-            audit.ActorId.ShouldBe(KeycloakConformanceClient.ConformanceUserId);
+            audit.ActorId.ShouldBe(fixture.ConformanceUserId);
             string.IsNullOrWhiteSpace(audit.CorrelationId).ShouldBeFalse();
             audit.RetentionExpiresAt.ShouldBe(audit.OccurredAtUtc.AddMonths(24));
         }

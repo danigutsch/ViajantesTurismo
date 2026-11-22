@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using OpenTelemetry;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -79,6 +80,9 @@ public sealed class CatalogTourSlugLockPostgreSqlTests(HostedTestFixture shared)
         parent.Start();
         var parentSpanId = parent.SpanId;
         var traceId = parent.TraceId;
+
+        // Keep the raw driver span available to the test listener before export redaction.
+        using var suppression = SuppressInstrumentationScope.Begin();
 
         // Act
         var result = await Scenario.ExecuteParameterizedTracingProbe(

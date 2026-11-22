@@ -22,10 +22,13 @@ namespace ViajantesTurismo.HostedTests.Infrastructure;
 [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "DisposeAsync passes every owned resource to the ordered TestCleanup.")]
 public sealed class HostedTestFixture : IAsyncLifetime
 {
+    /// <summary>Identifies the isolated Admin stack for document endpoint tests.</summary>
+    internal const string DocumentApiStack = "document-api";
+
     private const string CollectorName = "opentelemetry-collector";
     private const string FixtureDatabaseName = "fixture";
     private static readonly TimeSpan StartBudget = TimeSpan.FromMinutes(3);
-    private static readonly string[] Stacks = ["api", "system", "concurrent-a", "concurrent-b"];
+    private static readonly string[] Stacks = ["api", DocumentApiStack, "system", "concurrent-a", "concurrent-b"];
 
     private readonly ConcurrentDictionary<string, string> conformanceUserIds = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, HostedProfile> profiles = new(StringComparer.Ordinal);
