@@ -1,20 +1,28 @@
 using PandaBear.MalwareScanning;
+using PandaBear.Testing;
 using PandaBear.Testing.MalwareScanning;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
 
 /// <summary>
-/// Malware scanner for the Kestrel scenario: notes how many client chunks had started when each scan began, then hands the
-/// scan to a <see cref="TestMalwareScanner" /> that captures the bytes and reports them clean.
+/// Observes client chunk progress when each scan starts. The shared scanner captures the scanned bytes.
 /// </summary>
-/// <remarks>
-/// The shared test double has no hook that runs when a scan starts, so the chunk figure is read here, before the content is
-/// touched, to prove that a slow upload is scanned only after its last chunk started.
-/// </remarks>
-internal sealed class ChunkObservingMalwareScanner : IMalwareScanner
+internal sealed class ChunkObservingScanProbe
 {
     private readonly Lock gate = new();
     private readonly List<int> chunksStartedAtScan = [];
+
+    /// <summary>Creates a shared scanner with an observation hook before it touches the content.</summary>
+    public ChunkObservingScanProbe()
+    {
+        Scanner = CallProxy.Create<IMalwareScanner>(Recorder, hooks => hooks.Scan.Before(_ => ObserveChunks()));
+    }
+
+    /// <summary>Gets the instrumented scanner for the Kestrel host.</summary>
+    public IMalwareScanner Scanner
+    {
+        get;
+    }
 
     /// <summary>Gets the scanner that counts the calls and captures the scanned bytes.</summary>
     public TestMalwareScanner Recorder
@@ -43,15 +51,12 @@ internal sealed class ChunkObservingMalwareScanner : IMalwareScanner
         }
     }
 
-    /// <inheritdoc />
-    public ValueTask<MalwareScanResult> Scan(Stream content, long length, CancellationToken ct)
+    private void ObserveChunks()
     {
         var chunksStarted = ChunksStarted();
         lock (gate)
         {
             chunksStartedAtScan.Add(chunksStarted);
         }
-
-        return Recorder.Scan(content, length, ct);
     }
 }

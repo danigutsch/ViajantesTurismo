@@ -1,6 +1,5 @@
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using PandaBear.MalwareScanning;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application.Customers.Import;
@@ -38,7 +37,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         WebApplicationFactory<AdminApiHostEntryPoint> root,
         KestrelTestHost<AdminApiHostEntryPoint> host,
         RequestLifetimeProbe probe,
-        ChunkObservingMalwareScanner scanner,
+        ChunkObservingScanProbe scanProbe,
         FakeCustomerStore store,
         FakeUnitOfWork unitOfWork)
     {
@@ -46,7 +45,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         this.host = host;
         BaseUri = host.BaseAddress;
         Probe = probe;
-        Scanner = scanner;
+        ScanProbe = scanProbe;
         Store = store;
         UnitOfWork = unitOfWork;
         Client = new HttpClient { BaseAddress = host.BaseAddress, Timeout = TimeSpan.FromSeconds(60) };
@@ -71,8 +70,8 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         get;
     }
 
-    /// <summary>The malware scanner, which records each scan and the client chunks started when it began.</summary>
-    public ChunkObservingMalwareScanner Scanner
+    /// <summary>Observes when each scan starts and records the bytes the scanner receives.</summary>
+    public ChunkObservingScanProbe ScanProbe
     {
         get;
     }
@@ -99,13 +98,13 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
     public static CustomerImportKestrelScenario Start(string routeSuffix, Action<IWebHostBuilder>? configureHost = null)
     {
         var probe = new RequestLifetimeProbe(routeSuffix);
-        var scanner = new ChunkObservingMalwareScanner();
+        var scanProbe = new ChunkObservingScanProbe();
         var store = new FakeCustomerStore();
         var unitOfWork = new FakeUnitOfWork();
         var root = AdminApiTestHost.Create(services =>
         {
             RequestProbeStartupFilter.Register(services, probe);
-            services.Replace(ServiceDescriptor.Singleton<IMalwareScanner>(scanner));
+            services.Replace(ServiceDescriptor.Singleton(scanProbe.Scanner));
             var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
             services.Replace(ServiceDescriptor.Singleton(new CustomerImportWorkflowService(
                 store,
@@ -116,7 +115,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         var factory = root.WithWebHostBuilder(builder => configureHost?.Invoke(builder));
 
         var host = KestrelTestHost.StartFromFactory(factory);
-        return new CustomerImportKestrelScenario(root, host, probe, scanner, store, unitOfWork);
+        return new CustomerImportKestrelScenario(root, host, probe, scanProbe, store, unitOfWork);
     }
 
     /// <summary>Builds the multipart form for a CSV file, with the empty resolutions field the commit route accepts.</summary>
