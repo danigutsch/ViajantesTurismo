@@ -109,10 +109,34 @@ purges that do exist: unfinalized drafts, document audit records and document id
 
 - Permission `document.hold` covers placing, releasing and listing. By default only the `Admin` role holds it; `Operator` and
   `Reader` do not, and `document.manage` does not imply it.
-- **Product decision pending:** this default awaits Product confirmation. Changing it means editing the role mapping in
-  `AdminAuthorization.PermissionsByRole`.
 - The placing and releasing actor is the opaque subject identifier of the authenticated principal. It is never read from the
   request body.
+
+#### Role design for the next policy version
+
+Adopt separate permissions for placement, release approval, and evidence review after Product and counsel
+confirm the operating authority. A hold protects records immediately. Keep it effective while a release
+decision is pending. Release can enable the next scheduled purge, so require two distinct authenticated
+actors for the request and approval. Record each result in the existing hold audit even when release is denied.
+
+| Proposed role | Permissions and responsibilities |
+| --- | --- |
+| Hold operator | View holds within its authorized scope, place a hold against an approved authority reference, and request release. |
+| Release reviewer | Inspect the hold and authority evidence and decide a pending request from a different actor. Release occurs only after the approved audit record is persisted. |
+| Audit reviewer | Read approved hold, retention and purge evidence within an assigned scope, using opaque identifiers. |
+| Privacy case handler | Manage verified subject requests under the applicable retention decision. Route a hold change to the authorized hold roles. |
+
+The identity-provider owner assigns groups to named staff with approval and a review date. The Admin API
+maps the validated claims to application permissions in `AdminAuthorization.PermissionsByRole`. Record role
+assignments and removals at the identity provider. Test the API denial for self-approval, missing release
+authority, and cross-lineage access. Require audited confirmation in Management Web. Preserve existing hold
+records and recalculate purge eligibility only after the release and its audit succeed.
+
+The controller owns operational decisions. Consult the data protection officer or other appointed adviser
+on applicable authority, independence and conflicting duties. Counsel confirms hold bases, evidence the
+reviewer needs, expiry or release restrictions, and any travel-specific obligations before rollout.
+[European Data Protection Board guidance on DPO duties](https://www.edpb.europa.eu/sme/be-compliant/data-protection-officer_en),
+[Brazil LGPD](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm)
 
 ### Management UI
 

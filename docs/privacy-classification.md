@@ -40,6 +40,68 @@ retention periods.
 | Admin to Catalog and Public Web | `AdminTourCreatedIntegrationEvent` contains the event ID and timestamp plus the Admin tour ID, business identifier and name. Customer and booking fields remain in Admin. Catalog public projections and public DTOs expose published tour and media content. Review new event and projection schemas before adding fields. |
 | Errors, logs, traces and metrics | Error responses expose bounded error codes or field names. Staff import results have a separate data boundary. Application providers and the trusted Collector apply the controls below. Keep raw exception payloads, SQL values, URLs with identifiers and uploaded content out of exported signals. |
 
+## Customer and booking retention and requests
+
+The controller must establish the applicable jurisdictions, purposes, legal bases, retention triggers, and
+responsible owners for each record class. Review travel, accounting, tax and claims obligations with counsel.
+Review the handling of sensitive health data and the relationship between travelers, companions, and emergency
+contacts separately. The approved document schedule applies to the record classes in its stated scope.
+[GDPR storage limitation](https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/principles-gdpr_en),
+[Brazil LGPD, Articles 15 and 16](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm),
+[Document policy](operations/document-retention-and-legal-hold.md)
+
+| Record class | Question to resolve with counsel and Product | Technical handling |
+| --- | --- | --- |
+| Customer identity and contact details | When does each booking, service, or customer-support purpose end? Can an active booking retain a narrower contact record? | Resolve the subject through an approved identifier and distinguish erasable profile fields from records covered by an approved exception. |
+| Health, accommodations and emergency contacts | Which fields are needed for the trip and for how long? Who owns third-party contact information? | Separate the review of sensitive or third-party fields from the ordinary customer profile. Redact them from unrelated exports. |
+| Booking, payment, and finalized documents | What transaction, accounting or claims evidence must be retained, with which trigger, jurisdiction and authority? | Evaluate each class at its owning boundary. Record an active hold or legal exception where approved and review it on its own schedule. |
+| Staff and derived copies | Which processors, replicas, exports and backups hold a copy, and who can verify disposition? | Inventory owners and propagation targets. Keep a durable suppression receipt and verify it before restored data serves traffic. |
+
+Handle requests through a restricted case with a verified subject or representative, authorized case owner,
+scope, applicable dates and disposition. Locate records and downstream copies through approved subject links.
+Distinguish access from portability and assess third-party information before delivering a scoped export.
+Use an authenticated delivery channel with a recorded expiry. Evaluate correction, erasure, irreversible
+anonymization or restriction per record and record the reason and review date for retained material. Verify
+the resulting state and downstream notifications with the responsible owners. The application records a
+bounded case reference and outcome. The restricted case retains the detailed decision and evidence.
+[EU request guidance](https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/dealing-requests-individuals_en),
+[Brazil LGPD, Articles 18 and 19](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm)
+
+Counsel and Product confirm applicable deadlines, scope, exceptions and authorized authority before any
+automatic disposition. An active deletion hold protects the affected scope. A data-subject restriction can
+also require limiting how it is accessed or processed. Review those controls separately in the case.
+[EU individual rights guidance](https://commission.europa.eu/law/law-topic/data-protection/information-individuals_en)
+
+## Auditing sensitive actions
+
+An audit trail records an accountable operation and its outcome for later review. The application chooses
+the operation and actors near the use case; infrastructure protects the persisted entries. Ordinary logs,
+metrics and traces describe system behavior and support diagnosis. Apply the logging controls below to those
+signals, and use only an opaque correlation reference to join them to an audit record.
+[.NET logging guidance](https://learn.microsoft.com/dotnet/core/extensions/logging/overview)
+
+| Boundary and entry point | Candidate audited action |
+| --- | --- |
+| Admin document endpoints and retention workers | Protected document reads, generation and finalization, changes to holds, guarded exports and purge results. The current document audit stores these decisions under its bounded operation model. |
+| Admin payment and booking commands | Access to payment instructions, recording or correcting a financial action, and approvals that alter a booking's obligations. Use bounded reason and outcome codes. |
+| Admin customer commands and privacy cases | Approval, restricted access, export and disposition. Capture an authorized case reference for each successful or rejected determination. |
+| Catalog and Branding management mutations | Approval or withdrawal of public content and sensitive provenance changes when their owners need a durable record. |
+| Management Web and Public Web | The Management BFF passes the authenticated actor to the owning API. The owning API records the operation once. Public traffic uses operational metrics and bounded security signals. |
+| SharedKernel | The typed `AuditTrail` contract and append sink provide infrastructure reuse. The application owns action codes, subject linkage, and retention policy. |
+
+Store the acting principal's opaque identifier, time, operation, opaque subject reference, outcome,
+correlation and a bounded reason when needed. Keep raw document bodies, CSV values, tokens, credentials,
+account details, and free text in their approved record stores. Audit records with linked identifiers get
+the same access review as other restricted personal data. Authorize and audit evidence access and export.
+Separate the normal append role from the retention purge and migration roles. Persist evidence for allowed
+state changes atomically. Use an explicit durable path for rejected attempts that must survive rollback.
+Approve retention and deletion by record class, including how holds restrain a purge. Backups and restores
+follow the same rules. [Document audit fields and retention](operations/document-retention-and-legal-hold.md#hold-audit-evidence)
+
+The first implementation slice is the existing Admin document audit. Its storage guards, denial tests,
+and hold and purge evidence establish the pattern. Extend it for concrete payment and data-subject cases
+through the owning use cases after their authorization, retention and required evidence are defined.
+
 ## Logging and telemetry
 
 - Do not log request or response bodies that may contain personal data.
