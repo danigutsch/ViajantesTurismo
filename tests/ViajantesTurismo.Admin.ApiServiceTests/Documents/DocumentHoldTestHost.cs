@@ -22,8 +22,6 @@ internal static class DocumentHoldTestHost
             services.AddSingleton<IDocumentHoldQuery>(query);
             services.RemoveAll<IDispositionHoldStore>();
             services.AddSingleton<IDispositionHoldStore>(holds);
-            services.RemoveAll<IDocumentDispositionTransaction>();
-            services.AddSingleton<IDocumentDispositionTransaction>(new FakeDocumentDispositionTransaction());
             if (auditStore is not null)
             {
                 services.RemoveAll<IDocumentAuditStore>();

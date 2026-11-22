@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PandaBear.DispositionHold;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Application.Mappings;
@@ -56,7 +57,7 @@ internal static class DocumentHoldEndpoints
     private static async Task<IResult> PlaceHold(
         [FromRoute] Guid id,
         [FromBody] CreateDocumentHoldDto dto,
-        [FromServices] PlaceDocumentHoldCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] TimeProvider timeProvider,
         HttpContext httpContext,
         CancellationToken ct)
@@ -68,7 +69,7 @@ internal static class DocumentHoldEndpoints
             return ToError(DocumentHoldErrors.InvalidField("basis"));
         }
 
-        var result = await handler.Handle(
+        var result = await sender.Send(
             new PlaceDocumentHoldCommand(id, basis, dto.PurposeCode, dto.AuthorityReference, dto.ReviewDueAt, dto.ExpiresAt, DocumentEndpoints.CreateAuditContext(httpContext)),
             ct);
         return result.IsFailure
@@ -120,14 +121,14 @@ internal static class DocumentHoldEndpoints
         [FromRoute] Guid id,
         [FromRoute] Guid holdId,
         [FromBody] ReleaseDocumentHoldDto dto,
-        [FromServices] ReleaseDocumentHoldCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] TimeProvider timeProvider,
         HttpContext httpContext,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
-        var result = await handler.Handle(new ReleaseDocumentHoldCommand(id, holdId, dto.ReasonCode, DocumentEndpoints.CreateAuditContext(httpContext)), ct);
+        var result = await sender.Send(new ReleaseDocumentHoldCommand(id, holdId, dto.ReasonCode, DocumentEndpoints.CreateAuditContext(httpContext)), ct);
         return result.IsFailure
             ? ToError(result.ConvertError())
             : TypedResults.Ok(DocumentHoldMapper.MapToGetDocumentHoldDto(result.Value, timeProvider.GetUtcNow()));

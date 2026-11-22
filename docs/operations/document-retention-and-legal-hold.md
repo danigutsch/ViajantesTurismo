@@ -100,6 +100,8 @@ purges that do exist: unfinalized drafts, document audit records and document id
 - A rejected request (unknown document, unknown or foreign hold, double release, invalid field) changes no hold and adds one
   `Rejected` row with `DocumentNotFound`, `HoldNotFound`, `StateConflict` or `ValidationRejected`. A request refused by
   authorization never reaches the handler and adds nothing, like every other document route.
+- Hold placement and release run at read committed. Their rejection audits are written in a fresh scope after rollback.
+  Placement and purge use the same scope lock when they operate on the lineage.
 - The rows are stamped with the document lineage and follow the 24-month audit retention; a hold on the lineage restrains
   their purge like any other audit row.
 
@@ -137,6 +139,11 @@ purges that do exist: unfinalized drafts, document audit records and document id
 The purge handlers return `DocumentPurgeCounts`. Their explicit disposition scopes own the read
 committed transaction, hold check, deletion and successful purge evidence. The generated mediator
 applies the automatic transaction behavior to commands with compatible Result responses.
+
+Draft generation and regeneration commit their five-minute idempotency claim in a fresh scope.
+Completion of the claim, the document changes, and success audit commit together. A retry within the
+same dispatch reuses its claim. If the mutation ultimately fails, the claim keeps other dispatches from
+taking ownership until the processing window expires.
 
 ### Purge behavior and lock order
 

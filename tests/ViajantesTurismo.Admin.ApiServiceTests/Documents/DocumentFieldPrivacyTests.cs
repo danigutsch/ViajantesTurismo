@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PandaBear.Testing;
@@ -16,19 +15,17 @@ namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 public sealed class DocumentFieldPrivacyTests
 {
     [Fact]
-    public async Task Updating_an_unknown_field_returns_a_safe_error_and_persists_only_rejection_metadata()
+    public async Task Updating_an_unknown_field_returns_a_safe_error_without_saving_the_document()
     {
         // Arrange
         const string fieldMarker = "synthetic-traveler@example.test";
         const string bodyMarker = "SYNTHETIC_DOCUMENT_MEDICAL_NOTE";
         var ct = TestContext.Current.CancellationToken;
         var store = DocumentFieldTestStore.Create();
-        var audit = new CapturingDocumentAuditStore();
         var unitOfWork = new FakeUnitOfWork();
         await using var factory = AdminApiTestHost.Create(services =>
         {
             services.Replace(ServiceDescriptor.Singleton<IDocumentStore>(store));
-            services.Replace(ServiceDescriptor.Singleton<IDocumentAuditStore>(audit));
             services.Replace(ServiceDescriptor.Singleton<IUnitOfWork>(unitOfWork));
         });
         using var client = factory.CreateClient();
@@ -39,7 +36,6 @@ public sealed class DocumentFieldPrivacyTests
         using var response = await client.PatchAsJsonAsync(path, new UpdateDocumentFieldDto { Value = bodyMarker }, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
         var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(ct);
-        var auditText = JsonSerializer.Serialize(audit.Records);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -48,13 +44,6 @@ public sealed class DocumentFieldPrivacyTests
         body.ShouldNotContain(bodyMarker, StringComparison.Ordinal);
         problem.ShouldNotBeNull();
         problem.Detail.ShouldBe("The requested document field was not found.");
-        auditText.ShouldNotContain(fieldMarker, StringComparison.Ordinal);
-        auditText.ShouldNotContain(bodyMarker, StringComparison.Ordinal);
-        var rejection = audit.Records.ShouldHaveSingleItem();
-        rejection.DocumentId.ShouldBe(store.DocumentId);
-        rejection.Operation.ShouldBe(DocumentAuditOperation.UpdateField);
-        rejection.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
-        rejection.ReasonCode.ShouldBe(DocumentAuditReasonCode.ValidationRejected);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+        unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
 }

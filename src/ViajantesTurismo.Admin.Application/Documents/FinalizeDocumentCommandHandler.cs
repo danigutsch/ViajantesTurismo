@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
@@ -8,13 +9,14 @@ public sealed class FinalizeDocumentCommandHandler(
     IDocumentStore documentStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider,
-    DocumentAuditWriter documentAuditWriter,
     IDocumentSourceVersionReader sourceVersionReader)
+    : ICommandHandler<FinalizeDocumentCommand, Result>
 {
     /// <summary>Finalizes the artifact and supersedes older finalized revisions only after success.</summary>
-    public async Task<Result> Handle(FinalizeDocumentCommand command, CancellationToken ct)
+    public async ValueTask<Result> Handle(FinalizeDocumentCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        command.ClearRejectionAudit();
         var auditContext = command.AuditContext;
         if (auditContext is null)
         {
@@ -26,14 +28,8 @@ public sealed class FinalizeDocumentCommandHandler(
         var document = lineage?.GetRevision(command.DocumentId);
         if (lineage is null || document is null)
         {
-            return await RecordAndReturn(
-                DocumentErrors.DocumentNotFound(),
-                auditContext,
-                command.DocumentId,
-                null,
-                null,
-                DocumentAuditReasonCode.DocumentNotFound,
-                ct);
+            command.DeferRejectionAudit(DocumentAuditReasonCode.DocumentNotFound);
+            return DocumentErrors.DocumentNotFound();
         }
 
         if (document.RequiresPaymentInstructionWorkflow)
@@ -44,96 +40,40 @@ public sealed class FinalizeDocumentCommandHandler(
         var stateResult = lineage.EnsureCanFinalize(document.Id);
         if (stateResult.IsFailure)
         {
-            return await RecordAndReturn(
-                stateResult,
-                auditContext,
-                document.Id,
-                document.BookingId,
-                document.Revision,
-                DocumentAuditReasonCode.StateConflict,
-                ct);
+            command.DeferRejectionAudit(DocumentAuditReasonCode.StateConflict, document);
+            return stateResult;
         }
 
         var sourceVersionRead = await sourceVersionReader.Read(document.BookingId, ct);
         if (sourceVersionRead.Result.IsFailure)
         {
-            return await RecordAndReturn(
-                sourceVersionRead.Result.ConvertError(),
-                auditContext,
-                document.Id,
-                document.BookingId,
-                document.Revision,
-                sourceVersionRead.AuditReasonCode,
-                ct);
+            command.DeferRejectionAudit(sourceVersionRead.AuditReasonCode, document);
+            return sourceVersionRead.Result.ConvertError();
         }
 
         var freshnessResult = lineage.EnsureSourceIsCurrent(document.Id, sourceVersionRead.Result.Value);
         if (freshnessResult.IsFailure)
         {
-            return await RecordAndReturn(
-                freshnessResult,
-                auditContext,
-                document.Id,
-                document.BookingId,
-                document.Revision,
-                DocumentAuditReasonCode.StateConflict,
-                ct);
+            command.DeferRejectionAudit(DocumentAuditReasonCode.StateConflict, document);
+            return freshnessResult;
         }
 
         var templateResult = lineage.EnsureTemplateIsCurrent(document.Id);
         if (templateResult.IsFailure)
         {
-            return await RecordAndReturn(
-                templateResult,
-                auditContext,
-                document.Id,
-                document.BookingId,
-                document.Revision,
-                DocumentAuditReasonCode.StateConflict,
-                ct);
+            command.DeferRejectionAudit(DocumentAuditReasonCode.StateConflict, document);
+            return templateResult;
         }
 
         var result = lineage.Finalize(
             document.Id, DocumentArtifactRenderer.Render(document), now, auditContext, DocumentArtifactRendererVersion.Current);
         if (result.IsFailure)
         {
-            return await RecordAndReturn(
-                result,
-                auditContext,
-                document.Id,
-                document.BookingId,
-                document.Revision,
-                DocumentAuditReasonCode.StateConflict,
-                ct);
+            command.DeferRejectionAudit(DocumentAuditReasonCode.StateConflict, document);
+            return result;
         }
 
         await unitOfWork.SaveEntities(ct);
         return Result.Ok();
-    }
-
-    private async Task<Result> RecordAndReturn(
-        Result operationResult,
-        DocumentAuditContext auditContext,
-        Guid? documentId,
-        Guid? bookingId,
-        int? documentRevision,
-        DocumentAuditReasonCode reasonCode,
-        CancellationToken ct)
-    {
-        var auditResult = await documentAuditWriter.Add(
-            auditContext,
-            DocumentAuditOperation.Finalize,
-            documentId,
-            bookingId,
-            documentRevision,
-            DocumentAuditOutcome.Rejected,
-            reasonCode,
-            ct);
-        if (auditResult.IsFailure)
-        {
-            return auditResult;
-        }
-
-        return operationResult;
     }
 }

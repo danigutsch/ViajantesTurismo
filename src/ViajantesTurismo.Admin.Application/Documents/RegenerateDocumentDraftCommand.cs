@@ -9,8 +9,11 @@ public sealed record RegenerateDocumentDraftCommand(
     string TemplateId,
     string TemplateVersion,
     DocumentAuditContext AuditContext,
-    IdempotencyKey IdempotencyKey)
+    IdempotencyKey IdempotencyKey) : IdempotentDocumentCommand(AuditContext)
 {
+    /// <inheritdoc />
+    public override DocumentAuditOperation AuditOperation => DocumentAuditOperation.Regenerate;
+
     /// <summary>Creates a command using the current server-owned contract template.</summary>
     /// <param name="documentId">The resource whose document is generated.</param>
     /// <param name="auditContext">Trusted metadata identifying the caller and request.</param>

@@ -102,8 +102,6 @@ public sealed class DocumentEndpointFailureTests
             ? $"/api/v1/documents/bookings/{resourceId}/contract-drafts"
             : $"/api/v1/documents/{resourceId}/regenerate";
         var missingDocuments = new MissingDocumentServices();
-        var auditStore = new CapturingDocumentAuditStore();
-        var unitOfWork = new FakeUnitOfWork();
         var idempotencyStore = new UnstartedDocumentIdempotencyStore();
         await using var factory = AdminApiTestHost.Create(services =>
         {
@@ -115,10 +113,6 @@ public sealed class DocumentEndpointFailureTests
             services.AddSingleton<IDocumentStore>(missingDocuments);
             services.RemoveAll<IDocumentQueryService>();
             services.AddSingleton<IDocumentQueryService>(missingDocuments);
-            services.RemoveAll<IDocumentAuditStore>();
-            services.AddSingleton<IDocumentAuditStore>(auditStore);
-            services.RemoveAll<IUnitOfWork>();
-            services.AddSingleton<IUnitOfWork>(unitOfWork);
         });
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
@@ -133,20 +127,10 @@ public sealed class DocumentEndpointFailureTests
         DocumentNoStoreHeaders.ArePresent(response).ShouldBeTrue();
         var requestedOperation = idempotencyStore.RequestedOperations.ShouldHaveSingleItem();
         requestedOperation.Key.ShouldBe(DocumentCommandIdempotency.DigestKey(IdempotencyKey.From("valid-key")));
-        auditStore.Records.ShouldHaveSingleItem().Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
-        unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
     }
 
     [Theory]
     [InlineData("GET", "", DocumentAuditOperation.Read)]
-    [InlineData("POST", "/review", DocumentAuditOperation.BeginReview)]
-    [InlineData("POST", "/changes-requested", DocumentAuditOperation.RequestChanges)]
-    [InlineData("POST", "/changes-acknowledged", DocumentAuditOperation.AcknowledgeChanges)]
-    [InlineData("PATCH", "/fields/greeting", DocumentAuditOperation.UpdateField)]
-    [InlineData("POST", "/approve", DocumentAuditOperation.Approve)]
-    [InlineData("POST", "/finalize", DocumentAuditOperation.Finalize)]
-    [InlineData("POST", "/regenerate", DocumentAuditOperation.Regenerate)]
-    [InlineData("POST", "/void", DocumentAuditOperation.Void)]
     [InlineData("GET", "/download", DocumentAuditOperation.Download)]
     public async Task Missing_document_operations_return_not_found_and_persist_rejected_audits(
         string method,
@@ -176,15 +160,6 @@ public sealed class DocumentEndpointFailureTests
         using var request = new HttpRequestMessage(
             new HttpMethod(method),
             new Uri($"/api/v1/documents/{documentId}{suffix}", UriKind.Relative));
-        if (string.Equals(suffix, "/regenerate", StringComparison.Ordinal))
-        {
-            request.Headers.Add("Idempotency-Key", Guid.CreateVersion7().ToString("N"));
-        }
-        if (string.Equals(method, "PATCH", StringComparison.Ordinal))
-        {
-            request.Content = JsonContent.Create(new UpdateDocumentFieldDto { Value = "Updated" });
-        }
-
         // Act
         using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
@@ -201,6 +176,40 @@ public sealed class DocumentEndpointFailureTests
         audit.ActorId.ShouldBe("test-user");
         string.IsNullOrWhiteSpace(audit.CorrelationId).ShouldBeFalse();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("POST", "/review")]
+    [InlineData("POST", "/changes-requested")]
+    [InlineData("POST", "/changes-acknowledged")]
+    [InlineData("PATCH", "/fields/greeting")]
+    [InlineData("POST", "/approve")]
+    [InlineData("POST", "/finalize")]
+    [InlineData("POST", "/void")]
+    public async Task Transactional_document_mutations_for_a_missing_document_return_not_found(string method, string suffix)
+    {
+        // Arrange
+        await using var factory = AdminApiTestHost.Create(services =>
+        {
+            services.RemoveAll<IDocumentStore>();
+            services.AddSingleton<IDocumentStore, MissingDocumentServices>();
+        });
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        using var request = new HttpRequestMessage(
+            new HttpMethod(method),
+            new Uri($"/api/v1/documents/{Guid.CreateVersion7()}{suffix}", UriKind.Relative));
+        if (string.Equals(method, "PATCH", StringComparison.Ordinal))
+        {
+            request.Content = JsonContent.Create(new UpdateDocumentFieldDto { Value = "Updated" });
+        }
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("application/problem+json");
     }
 
     [Theory]

@@ -14,7 +14,7 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 public sealed class PurgeExpiredDocumentAuditsCommandHandler(
     IDocumentAuditStore auditStore,
     IUnitOfWork unitOfWork,
-    IDocumentDispositionTransaction transaction,
+    IReadCommittedTransaction transaction,
     DocumentHoldGate holdGate,
     TimeProvider timeProvider) : ICommandHandler<PurgeExpiredDocumentAuditsCommand, DocumentPurgeCounts>
 {
@@ -31,7 +31,7 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
         var cutoff = timeProvider.GetUtcNow().UtcDateTime;
         try
         {
-            return await transaction.Execute([], () => PurgeAndRecordEvidence(command.AuditContext, cutoff, ct), ct);
+            return await transaction.Execute(() => PurgeAndRecordEvidence(command.AuditContext, cutoff, ct), ct);
         }
         catch (DispositionHoldStateUnknownException unknown)
         {

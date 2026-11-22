@@ -451,6 +451,12 @@
           "PandaBear.SharedKernel.Testing.Assertions": "0.1.0-alpha.727.1"
         }
       },
+      "PandaBear.SharedKernel.Testing.Logging": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.727.1, )",
+        "resolved": "0.1.0-alpha.727.1",
+        "contentHash": "k/8jZ3WUDn/rW9pkGuQxRAnOx2ijWnRT+V+0SMM7Ev8kqkFyxaOaLebr6KGLtDj7o7YzalFy5yIIsHYrteAk6g=="
+      },
       "PandaBear.SharedKernel.Testing.ObjectStorage": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.727.1, )",

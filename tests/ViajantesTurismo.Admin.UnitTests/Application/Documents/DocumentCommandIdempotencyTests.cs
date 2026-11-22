@@ -20,7 +20,6 @@ public sealed class DocumentCommandIdempotencyTests
         // Arrange
         using var cancellation = new CancellationTokenSource();
         var unitOfWork = new FakeUnitOfWork();
-        var auditStore = new FakeDocumentAuditStore();
         var store = new CapturingNewIdempotencyStore(unitOfWork);
         var coordinator = new DocumentCommandIdempotency(store, unitOfWork, TimeProvider.System);
         var command = new GenerateContractDraftCommand(
@@ -31,7 +30,7 @@ public sealed class DocumentCommandIdempotencyTests
 
         // Act
         Func<Task> action = async () => await coordinator.Execute(
-            command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), _ =>
+            command, _ =>
             {
                 preparationWasInvoked = true;
                 return Task.FromResult(Result.Ok(Guid.CreateVersion7()));
@@ -45,7 +44,7 @@ public sealed class DocumentCommandIdempotencyTests
         store.TryStartCallCount.ShouldBe(0);
         store.StageCompletionCallCount.ShouldBe(0);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
-        auditStore.Records.ShouldBeEmpty();
+        command.TakeRejectionAudit().ShouldBeNull();
     }
 
     [Fact]
@@ -54,7 +53,6 @@ public sealed class DocumentCommandIdempotencyTests
         // Arrange
         using var cancellation = new CancellationTokenSource();
         var unitOfWork = new FakeUnitOfWork();
-        var auditStore = new FakeDocumentAuditStore();
         var store = new CapturingNewIdempotencyStore(unitOfWork);
         var coordinator = new DocumentCommandIdempotency(store, unitOfWork, TimeProvider.System);
         var command = new GenerateContractDraftCommand(
@@ -65,7 +63,7 @@ public sealed class DocumentCommandIdempotencyTests
 
         // Act
         Func<Task> action = async () => await coordinator.Execute(
-            command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), commit => commit(async () =>
+            command, commit => commit(async () =>
             {
                 mutationWasInvoked = true;
                 await cancellation.CancelAsync();
@@ -80,7 +78,7 @@ public sealed class DocumentCommandIdempotencyTests
         store.TryStartCallCount.ShouldBe(1);
         store.StageCompletionCallCount.ShouldBe(0);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
-        auditStore.Records.ShouldBeEmpty();
+        command.TakeRejectionAudit().ShouldBeNull();
     }
 
     [Fact]
@@ -88,7 +86,6 @@ public sealed class DocumentCommandIdempotencyTests
     {
         // Arrange
         var unitOfWork = new FakeUnitOfWork();
-        var auditStore = new FakeDocumentAuditStore();
         var store = new CapturingNewIdempotencyStore(unitOfWork);
         var coordinator = new DocumentCommandIdempotency(store, unitOfWork, TimeProvider.System);
         var command = new GenerateContractDraftCommand(
@@ -97,7 +94,7 @@ public sealed class DocumentCommandIdempotencyTests
         var preparationWasInvoked = false;
 
         // Act
-        var result = await coordinator.Execute(command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), _ =>
+        var result = await coordinator.Execute(command, _ =>
         {
             preparationWasInvoked = true;
             return Task.FromResult(Result.Invalid<Guid>(detail: "Source validation failed.", field: "TemplateId", message: "Template is invalid."));
@@ -110,7 +107,7 @@ public sealed class DocumentCommandIdempotencyTests
         store.TryStartCallCount.ShouldBe(0);
         store.StageCompletionCallCount.ShouldBe(0);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
-        auditStore.Records.ShouldBeEmpty();
+        command.TakeRejectionAudit().ShouldBeNull();
     }
 
     [Fact]
@@ -118,7 +115,6 @@ public sealed class DocumentCommandIdempotencyTests
     {
         // Arrange
         var unitOfWork = new FakeUnitOfWork();
-        var auditStore = new FakeDocumentAuditStore();
         var store = new CapturingNewIdempotencyStore(unitOfWork);
         var coordinator = new DocumentCommandIdempotency(store, unitOfWork, TimeProvider.System);
         var command = new GenerateContractDraftCommand(
@@ -130,7 +126,7 @@ public sealed class DocumentCommandIdempotencyTests
         var ownershipCountAtMutation = -1;
 
         // Act
-        var result = await coordinator.Execute(command, DocumentAuditTestData.CreateWriter(auditStore, unitOfWork), commit =>
+        var result = await coordinator.Execute(command, commit =>
         {
             ownershipCountBeforePreparation = store.TryStartCallCount;
             return commit(() =>
@@ -151,7 +147,7 @@ public sealed class DocumentCommandIdempotencyTests
         store.StagedResultFingerprint.ShouldBe($"{RequestFingerprint}:{documentId:N}");
         store.WasCompletionStagedBeforeSave.ShouldBeTrue();
         unitOfWork.SaveEntitiesCallCount.ShouldBe(1);
-        auditStore.Records.ShouldBeEmpty();
+        command.TakeRejectionAudit().ShouldBeNull();
     }
 
     [Fact]

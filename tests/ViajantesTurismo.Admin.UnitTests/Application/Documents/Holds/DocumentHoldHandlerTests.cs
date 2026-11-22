@@ -1,3 +1,4 @@
+using PandaBear.Mediator.Transactions;
 using PandaBear.Results;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
@@ -74,7 +75,7 @@ public sealed class DocumentHoldHandlerTests
         };
 
         // Act
-        Func<Task> place = () => harness.Place.Handle(command, TestContext.Current.CancellationToken);
+        Func<Task> place = () => harness.Place.Handle(command, TestContext.Current.CancellationToken).AsTask();
 
         // Assert
         await place.ShouldThrow<InvalidOperationException>();
@@ -118,7 +119,24 @@ public sealed class DocumentHoldHandlerTests
         hold.ReleasedBy.ShouldBe("actor-0002");
         hold.ReleaseReasonCode.ShouldBe("reason.case-closed");
         hold.RestrainsAt(harness.Now).ShouldBeFalse();
-        harness.Transaction.ExecutedLockNames.Last().ShouldHaveSingleItem().ShouldContain(placed.Value.Id.ToString("N"), StringComparison.Ordinal);
+        var declared = ((ITransactionLockDeclaration)command).TransactionLocks;
+        declared.ShouldHaveSingleItem().ShouldBe($"admin:document-hold-release:{placed.Value.Id:N}");
+    }
+
+    [Fact]
+    public async Task Release_rejects_an_empty_hold_ID_without_staging_audit_evidence()
+    {
+        // Arrange
+        var harness = DocumentHoldHarness.Create();
+        var command = harness.CreateReleaseCommand(Guid.Empty);
+
+        // Act
+        var result = await harness.Release.Handle(command, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+        command.TakeRejectionAudit().ShouldBeNull();
+        harness.AuditStore.Records.ShouldBeEmpty();
     }
 
     [Fact]

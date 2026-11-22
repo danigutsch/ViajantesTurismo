@@ -54,6 +54,38 @@ public sealed class DocumentLineageTests
     }
 
     [Fact]
+    public void Create_uses_the_supplied_identity_for_the_lineage_and_its_revision()
+    {
+        // Arrange
+        var lineageId = Guid.CreateVersion7();
+        var now = new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc);
+
+        // Act
+        var result = DocumentLineage.Create(Guid.CreateVersion7(), DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
+            DocumentLineageTestData.CreateContent(), now, DocumentAuditTestData.CreateContext(), lineageId);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Id.ShouldBe(lineageId);
+        result.Value.Revisions.ShouldHaveSingleItem().DocumentLineageId.ShouldBe(lineageId);
+    }
+
+    [Fact]
+    public void Create_rejects_an_explicit_empty_lineage_identity()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var now = new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Utc);
+
+        // Act
+        var result = DocumentLineage.Create(bookingId, DocumentType.BookingConfirmationContract, DocumentAudience.Customer,
+            DocumentLineageTestData.CreateContent(), now, DocumentAuditTestData.CreateContext(), Guid.Empty);
+
+        // Assert
+        result.Status.ShouldBe(ResultStatus.Invalid);
+    }
+
+    [Fact]
     public void Create_copies_fields_instead_of_attaching_caller_instances()
     {
         // Arrange

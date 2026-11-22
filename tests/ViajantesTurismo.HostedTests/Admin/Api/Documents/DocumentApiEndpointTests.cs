@@ -605,6 +605,44 @@ public sealed class DocumentApiEndpointTests(DocumentApiFixture fixture) : IClas
         audits.ShouldBeEmpty();
     }
 
+    [Theory]
+    [InlineData("approve", "Approve")]
+    [InlineData("finalize", "Finalize")]
+    public async Task A_failing_rejection_audit_does_not_change_the_document_mutation_response(string route, string operation)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var tour = await fixture.Client.CreateTestTour("document-rejection-audit", "Document rejection audit", ct);
+        var customer = await fixture.Client.CreateTestCustomer("Document", "Rejection audit", ct);
+        var booking = await fixture.Client.CreateTestBooking(tour.Id, customer.Id, null, ct);
+        using var confirmResponse = await fixture.Client.ConfirmBooking(booking.Id, ct);
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var documents = new DocumentsApiClient(fixture.Client);
+        var draft = await documents.GenerateContractDraft(booking.Id, Guid.CreateVersion7().ToString("N"), ct).RequireSucceededValue();
+        var mutationUri = new Uri($"/api/v1/documents/{draft.Id}/{route}", UriKind.Relative);
+        HttpStatusCode failedAuditStatus;
+
+        // Act
+        await using (var scenario = await fixture.CreateDocumentAuditInsertFailureScenario(booking.Id, ct))
+        {
+            using var failedAuditResponse = await fixture.Client.PostAsync(mutationUri, null, ct);
+            failedAuditStatus = failedAuditResponse.StatusCode;
+        }
+
+        var auditsAfterFailedInsert = await fixture.GetDocumentAuditMetadataForBooking(booking.Id, ct);
+        using var rejectionResponse = await fixture.Client.PostAsync(mutationUri, null, ct);
+        var auditsAfterRejection = await fixture.GetDocumentAuditMetadataForBooking(booking.Id, ct);
+        var currentDraft = await documents.GetDocumentById(draft.Id, ct).RequireSucceededValue();
+
+        // Assert
+        failedAuditStatus.ShouldBe(HttpStatusCode.Conflict);
+        auditsAfterFailedInsert.ShouldNotContain(audit => string.Equals(audit.Operation, operation, StringComparison.Ordinal));
+        rejectionResponse.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        var rejectionAudit = auditsAfterRejection.ShouldHaveSingleItem(audit => string.Equals(audit.Operation, operation, StringComparison.Ordinal));
+        rejectionAudit.Outcome.ShouldBe("Rejected");
+        currentDraft.Status.ShouldBe(draft.Status);
+    }
+
     [Fact]
     public async Task Contract_draft_generation_completion_failure_rolls_back_state_and_audit_but_keeps_started_key()
     {

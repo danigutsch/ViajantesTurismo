@@ -1,4 +1,5 @@
 using PandaBear.DispositionHold;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
@@ -11,16 +12,17 @@ namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 public sealed class PlaceDocumentHoldCommandHandler(
     IDocumentHoldQuery holdQuery,
     IDispositionHoldStore holdStore,
-    IDocumentDispositionTransaction transaction,
     TimeProvider timeProvider,
     DocumentAuditWriter auditWriter)
+    : ICommandHandler<PlaceDocumentHoldCommand, Result<Hold>>
 {
     private const string PlacingActorParameter = "placedBy";
 
     /// <summary>Places the hold and returns it, or a not-found or validation failure that stores nothing.</summary>
-    public async Task<Result<Hold>> Handle(PlaceDocumentHoldCommand command, CancellationToken ct)
+    public async ValueTask<Result<Hold>> Handle(PlaceDocumentHoldCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
+        command.ClearRejectionAudit();
         if (command.AuditContext is null)
         {
             return DocumentAuditErrors.AuditContextRequired().ConvertError<Hold>();
@@ -29,31 +31,28 @@ public sealed class PlaceDocumentHoldCommandHandler(
         var lineageId = await holdQuery.FindLineageId(command.DocumentId, ct);
         if (lineageId is null)
         {
-            return await Reject(DocumentErrors.DocumentNotFound().ConvertError<Hold>(), command, DocumentAuditReasonCode.DocumentNotFound, ct);
+            return DeferRejection(DocumentErrors.DocumentNotFound().ConvertError<Hold>(), command, DocumentAuditReasonCode.DocumentNotFound);
         }
 
         var placed = TryPlace(command, lineageId.Value);
         return placed.IsFailure
-            ? await Reject(placed, command, DocumentAuditReasonCode.ValidationRejected, ct)
-            : await transaction.Execute([], () => Store(command, placed.Value, ct), ct);
+            ? DeferRejection(placed, command, DocumentAuditReasonCode.ValidationRejected, lineageId)
+            : await Store(command, placed.Value, ct);
     }
 
-    private async Task<Result<Hold>> Reject(
+    private static Result<Hold> DeferRejection(
         Result<Hold> rejection,
         PlaceDocumentHoldCommand command,
         DocumentAuditReasonCode reasonCode,
-        CancellationToken ct)
+        Guid? lineageId = null)
     {
-        var audit = await auditWriter.AddHold(
-            command.AuditContext,
-            DocumentAuditOperation.PlaceHold,
-            command.DocumentId,
-            null,
-            command.Basis.ToString(),
-            DocumentAuditOutcome.Rejected,
+        var basis = Enum.IsDefined(command.Basis) ? command.Basis.ToString() : null;
+        command.DeferRejectionAudit(new DocumentRejectionAudit(
             reasonCode,
-            ct);
-        return audit.IsFailure ? audit.ConvertError<Hold>() : rejection;
+            DocumentId: lineageId is null ? null : command.DocumentId,
+            DocumentLineageId: lineageId,
+            HoldBasis: basis));
+        return rejection;
     }
 
     private async Task<Result<Hold>> Store(PlaceDocumentHoldCommand command, Hold hold, CancellationToken ct)
@@ -61,7 +60,7 @@ public sealed class PlaceDocumentHoldCommandHandler(
         await holdStore.Add(hold, ct);
         if (await holdQuery.FindLineageId(command.DocumentId, ct) is null)
         {
-            return DocumentErrors.DocumentNotFound().ConvertError<Hold>();
+            return DeferRejection(DocumentErrors.DocumentNotFound().ConvertError<Hold>(), command, DocumentAuditReasonCode.DocumentNotFound);
         }
 
         var audit = await auditWriter.AddHold(

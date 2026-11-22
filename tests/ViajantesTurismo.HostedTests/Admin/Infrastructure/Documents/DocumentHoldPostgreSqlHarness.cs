@@ -1,10 +1,14 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.DispositionHold;
 using PandaBear.Idempotency.EntityFrameworkCore;
+using PandaBear.Mediator.EntityFrameworkCore;
 using PandaBear.Results;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.Testing.Logging;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
@@ -22,6 +26,7 @@ namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
 {
     private readonly ServiceProvider provider;
+    private readonly RecordingLogger<AdminTransactionBehavior<ReleaseDocumentHoldCommand, Result<Hold>>> releaseLogger = new();
 
     private DocumentHoldPostgreSqlHarness(ServiceProvider provider)
     {
@@ -55,11 +60,13 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
         services.AddScoped<IDocumentIdempotencyRetentionStore, DocumentIdempotencyRetentionStore>();
         services.AddScoped<IDocumentHoldQuery, DocumentHoldQuery>();
-        services.AddScoped<IDocumentDispositionTransaction, DocumentDispositionTransaction>();
+        services.AddScoped<IReadCommittedTransaction>(sp => sp.GetRequiredService<AdminWriteDbContext>());
         services.AddScoped<DocumentHoldGate>();
         services.AddScoped<DocumentAuditWriter>();
         services.AddScoped<PlaceDocumentHoldCommandHandler>();
+        services.AddScoped<IAfterRollback<PlaceDocumentHoldCommand, Result<Hold>>, DocumentRejectionRollbackAudit<PlaceDocumentHoldCommand, Result<Hold>>>();
         services.AddScoped<ReleaseDocumentHoldCommandHandler>();
+        services.AddScoped<IAfterRollback<ReleaseDocumentHoldCommand, Result<Hold>>, DocumentRejectionRollbackAudit<ReleaseDocumentHoldCommand, Result<Hold>>>();
         services.AddScoped<ListDocumentHoldsQueryHandler>();
         services.AddScoped<GetDocumentHoldQueryHandler>();
         services.AddScoped<ListDocumentHoldOverviewQueryHandler>();
@@ -73,32 +80,68 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
 
     private static DocumentAuditContext AuditContext(string actorId) => DocumentAuditContext.Create(actorId, Guid.CreateVersion7().ToString("N")).Value;
 
+    /// <summary>Gets the log entries written by hold release transaction hooks.</summary>
+    public IReadOnlyList<RecordedLog> ReleaseLogs => releaseLogger.Records;
+
     /// <summary>Places a hold on the lineage of the document as a synthetic actor and returns its identifier.</summary>
     public async Task<Guid> Place(Guid documentId, CancellationToken ct)
     {
-        await using var scope = provider.CreateAsyncScope();
         var now = TimeProvider.System.GetUtcNow();
         var command = new PlaceDocumentHoldCommand(documentId, HoldBasis.LegalClaim, "purpose.claim-001", "authority:case-0001", now.AddDays(90), null, AuditContext("actor-0001"));
-        var result = await scope.ServiceProvider.GetRequiredService<PlaceDocumentHoldCommandHandler>().Handle(command, ct);
+        var result = await TryPlace(command, ct);
         result.IsSuccess.ShouldBeTrue();
         return result.Value.Id;
+    }
+
+    /// <summary>Runs placement through the Admin transaction and rollback hook.</summary>
+    public async Task<Result<Hold>> TryPlace(PlaceDocumentHoldCommand command, CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        var services = scope.ServiceProvider;
+        var dbContext = services.GetRequiredService<AdminWriteDbContext>();
+        var handler = services.GetRequiredService<PlaceDocumentHoldCommandHandler>();
+        var behavior = new AdminTransactionBehavior<PlaceDocumentHoldCommand, Result<Hold>>(
+            dbContext,
+            services.GetRequiredService<IServiceScopeFactory>(),
+            NullLogger<AdminTransactionBehavior<PlaceDocumentHoldCommand, Result<Hold>>>.Instance);
+        return await behavior.Handle(command, () => handler.Handle(command, ct), ct);
     }
 
     /// <summary>Releases a hold as a synthetic actor.</summary>
     public async Task Release(Guid documentId, Guid holdId, CancellationToken ct)
     {
-        await using var scope = provider.CreateAsyncScope();
         var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", AuditContext("actor-0002"));
-        var result = await scope.ServiceProvider.GetRequiredService<ReleaseDocumentHoldCommandHandler>().Handle(command, ct);
+        var result = await TryRelease(command, ct);
         result.IsSuccess.ShouldBeTrue();
     }
 
     /// <summary>Releases a hold as a synthetic actor and returns the outcome without asserting success.</summary>
-    public async Task<Result<Hold>> TryRelease(Guid documentId, Guid holdId, CancellationToken ct)
+    public Task<Result<Hold>> TryRelease(Guid documentId, Guid holdId, CancellationToken ct) =>
+        TryRelease(new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", AuditContext("actor-0003")), ct);
+
+    /// <summary>Attempts release through the transaction behavior while a transaction is already open.</summary>
+    public async Task<Result<Hold>> TryReleaseInsideTransaction(Guid documentId, Guid holdId, CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<AdminWriteDbContext>();
+        await using var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var command = new ReleaseDocumentHoldCommand(documentId, holdId, "reason.case-closed", AuditContext("actor-0003"));
-        return await scope.ServiceProvider.GetRequiredService<ReleaseDocumentHoldCommandHandler>().Handle(command, ct);
+        return await RunRelease(scope.ServiceProvider, command, ct);
+    }
+
+    private async Task<Result<Hold>> TryRelease(ReleaseDocumentHoldCommand command, CancellationToken ct)
+    {
+        await using var scope = provider.CreateAsyncScope();
+        return await RunRelease(scope.ServiceProvider, command, ct);
+    }
+
+    private ValueTask<Result<Hold>> RunRelease(IServiceProvider services, ReleaseDocumentHoldCommand command, CancellationToken ct)
+    {
+        var context = services.GetRequiredService<AdminWriteDbContext>();
+        var handler = services.GetRequiredService<ReleaseDocumentHoldCommandHandler>();
+        var behavior = new AdminTransactionBehavior<ReleaseDocumentHoldCommand, Result<Hold>>(
+            context, services.GetRequiredService<IServiceScopeFactory>(), releaseLogger);
+        return behavior.Handle(command, () => handler.Handle(command, ct), ct);
     }
 
     /// <summary>Reads one hold of the lineage of the document through the single-hold handler.</summary>
@@ -152,8 +195,8 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
         await using var scope = provider.CreateAsyncScope();
         var gate = scope.ServiceProvider.GetRequiredService<DocumentHoldGate>();
         var store = scope.ServiceProvider.GetRequiredService<IDocumentIdempotencyRetentionStore>();
-        return await scope.ServiceProvider.GetRequiredService<IDocumentDispositionTransaction>()
-            .Execute([], () => store.PurgeExpiredEntries(cutoff, gate.FindHeldLineages, ct), ct);
+        return await scope.ServiceProvider.GetRequiredService<IReadCommittedTransaction>()
+            .Execute(() => store.PurgeExpiredEntries(cutoff, gate.FindHeldLineages, ct), ct);
     }
 
     /// <summary>Asks the gate about a lineage outside any transaction.</summary>
@@ -186,8 +229,8 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
     {
         await using var scope = provider.CreateAsyncScope();
         var gate = scope.ServiceProvider.GetRequiredService<DocumentHoldGate>();
-        return await scope.ServiceProvider.GetRequiredService<IDocumentDispositionTransaction>()
-            .Execute([], () => gate.FindHeldLineages([lineageId], ct), ct);
+        return await scope.ServiceProvider.GetRequiredService<IReadCommittedTransaction>()
+            .Execute(() => gate.FindHeldLineages([lineageId], ct), ct);
     }
 
     /// <inheritdoc />

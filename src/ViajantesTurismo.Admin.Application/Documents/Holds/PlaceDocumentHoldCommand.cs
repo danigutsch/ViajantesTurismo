@@ -1,4 +1,5 @@
 using PandaBear.DispositionHold;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents.Holds;
@@ -18,4 +19,8 @@ public sealed record PlaceDocumentHoldCommand(
     string AuthorityReference,
     DateTimeOffset ReviewDueAt,
     DateTimeOffset? ExpiresAt,
-    DocumentAuditContext AuditContext);
+    DocumentAuditContext AuditContext) : DocumentRejectionAuditedCommand<Result<Hold>>(AuditContext)
+{
+    /// <inheritdoc />
+    public override DocumentAuditOperation AuditOperation => DocumentAuditOperation.PlaceHold;
+}

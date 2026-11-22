@@ -1,5 +1,4 @@
 using PandaBear.DispositionHold;
-using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
@@ -9,7 +8,7 @@ namespace ViajantesTurismo.Admin.Application.Documents;
 /// nothing and records refused evidence in a fresh save before the failure is rethrown.
 /// </summary>
 public sealed class DocumentPurgeRunner(
-    IDocumentDispositionTransaction transaction,
+    IReadCommittedTransaction transaction,
     IDocumentPurgeEvidenceStore evidenceStore,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
@@ -27,7 +26,7 @@ public sealed class DocumentPurgeRunner(
 
         try
         {
-            return await transaction.Execute([], () => PurgeAndRecordEvidence(kind, purge, ct), ct);
+            return await transaction.Execute(() => PurgeAndRecordEvidence(kind, purge, ct), ct);
         }
         catch (DispositionHoldStateUnknownException unknown)
         {

@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PandaBear.DispositionHold;
 using PandaBear.Results;
 using PandaBear.Testing;
@@ -37,6 +39,85 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         {
             await scenario.DisposeAsync();
         }
+    }
+
+    [Theory]
+    [InlineData(false, ResultStatus.Invalid, DocumentAuditReasonCode.ValidationRejected)]
+    [InlineData(true, ResultStatus.NotFound, DocumentAuditReasonCode.DocumentNotFound)]
+    public async Task Rejected_placement_keeps_the_lineage_unheld_and_persists_one_bounded_audit(
+        bool missingDocument,
+        ResultStatus expectedStatus,
+        DocumentAuditReasonCode expectedReason)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow();
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(now.UtcDateTime);
+        var existingId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        var context = DocumentDraftInfrastructureTestData.CreateAuditContext();
+        var command = new PlaceDocumentHoldCommand(
+            missingDocument ? Guid.CreateVersion7() : existingId,
+            HoldBasis.LegalClaim,
+            "unsafe purpose code",
+            "authority:case-0001",
+            now.AddDays(30),
+            null,
+            context);
+        await Scenario.Seed(lineage);
+
+        // Act
+        var result = await Harness.TryPlace(command, ct);
+
+        // Assert
+        result.Status.ShouldBe(expectedStatus);
+        var held = await Harness.CheckInTransaction(lineage.Id, ct);
+        held.ShouldBeEmpty();
+        var audits = await Scenario.GetDocumentAuditsForCorrelation(context.CorrelationId, ct);
+        var audit = audits.ShouldHaveSingleItem();
+        audit.Operation.ShouldBe(DocumentAuditOperation.PlaceHold);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Rejected);
+        audit.ReasonCode.ShouldBe(expectedReason);
+        audit.HoldBasis.ShouldBe(nameof(HoldBasis.LegalClaim));
+        audit.HoldId.ShouldBeNull();
+        Guid? expectedDocumentId = missingDocument ? null : existingId;
+        audit.DocumentId.ShouldBe(expectedDocumentId);
+        audit.BookingId.ShouldBeNull();
+        audit.DocumentRevision.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Placement_rolls_back_the_hold_if_its_success_audit_cannot_be_saved()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow();
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(now.UtcDateTime);
+        var document = lineage.Revisions.ShouldHaveSingleItem();
+        var auditContext = DocumentDraftInfrastructureTestData.CreateAuditContext();
+        var command = new PlaceDocumentHoldCommand(
+            document.Id, HoldBasis.LegalClaim, "purpose.claim-001", "authority:case-0001", now.AddDays(30), null, auditContext);
+        await Scenario.Seed(lineage);
+        await Scenario.InstallAuditInsertFailure(ct);
+
+        // Act
+        Func<Task> fail = () => Harness.TryPlace(command, ct);
+        _ = await fail.ShouldThrow<DbUpdateException>();
+        var heldAfterFailure = await Harness.CheckInTransaction(lineage.Id, ct);
+        var auditsAfterFailure = await Scenario.GetDocumentAuditsForCorrelation(auditContext.CorrelationId, ct);
+        await Scenario.RestoreAuditInserts(ct);
+        var retry = await Harness.TryPlace(command, ct);
+
+        // Assert
+        heldAfterFailure.ShouldBeEmpty();
+        auditsAfterFailure.ShouldBeEmpty();
+        retry.IsSuccess.ShouldBeTrue();
+        var held = await Harness.CheckInTransaction(lineage.Id, ct);
+        held.ShouldContain(lineage.Id);
+        var audits = await Scenario.GetDocumentAuditsForCorrelation(auditContext.CorrelationId, ct);
+        var audit = audits.ShouldHaveSingleItem();
+        audit.Operation.ShouldBe(DocumentAuditOperation.PlaceHold);
+        audit.Outcome.ShouldBe(DocumentAuditOutcome.Succeeded);
+        audit.HoldId.ShouldBe(retry.Value.Id);
     }
 
     [Fact]
@@ -410,6 +491,51 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         // Assert
         finishedWhileBlocked.ShouldBeFalse();
         held.ShouldContain(lineage.Id);
+    }
+
+    [Fact]
+    public async Task A_failing_rejection_audit_preserves_the_second_release_conflict()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(lineage);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        var holdId = await Harness.Place(documentId, ct);
+        await Harness.Release(documentId, holdId, ct);
+        await Scenario.InstallAuditInsertFailure(ct);
+
+        // Act
+        var rejected = await Harness.TryRelease(documentId, holdId, ct);
+        var audits = await Scenario.GetDocumentAuditsForDocument(documentId, ct);
+
+        // Assert
+        rejected.Status.ShouldBe(ResultStatus.Conflict);
+        var successfulAudit = audits.ShouldHaveSingleItem(record => record.Operation == DocumentAuditOperation.ReleaseHold);
+        successfulAudit.Outcome.ShouldBe(DocumentAuditOutcome.Succeeded);
+        var hookFailure = Harness.ReleaseLogs.ShouldHaveSingleItem(record => record.Level == LogLevel.Error);
+        hookFailure.EventId.Name.ShouldBe("LogHookFailure");
+    }
+
+    [Fact]
+    public async Task Release_requires_a_transaction_that_acquires_its_declared_lock()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineage(TimeProvider.System.GetUtcNow().UtcDateTime);
+        await Scenario.Seed(lineage);
+        var documentId = lineage.Revisions.ShouldHaveSingleItem().Id;
+        await using var harness = DocumentHoldPostgreSqlHarness.Create(Scenario.ConnectionString, enableRetryOnFailure: false);
+        var holdId = await harness.Place(documentId, ct);
+
+        // Act
+        Func<Task> release = () => harness.TryReleaseInsideTransaction(documentId, holdId, ct);
+        var failure = await release.ShouldThrow<InvalidOperationException>();
+        var result = await harness.TryRelease(documentId, holdId, ct);
+
+        // Assert
+        failure.Message.ShouldBe("A command with declared transaction locks requires a new transaction.");
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [Fact]

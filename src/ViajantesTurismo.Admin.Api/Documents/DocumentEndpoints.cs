@@ -3,6 +3,7 @@ using PandaBear.Idempotency.AspNetCore;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PandaBear.Mediator;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -117,7 +118,7 @@ internal static class DocumentEndpoints
     private static async Task<IResult> GenerateContractDraft(
         [FromRoute] Guid bookingId,
         [Required, FromHeader(Name = IdempotencyKeyHeader.Name)] string? idempotencyKeyHeader,
-        [FromServices] GenerateContractDraftCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -130,12 +131,12 @@ internal static class DocumentEndpoints
         }
 
         var auditContext = CreateAuditContext(httpContext);
-        var result = await ExecuteDocumentCommand(() => handler.Handle(
+        var result = await ExecuteDocumentCommand(() => sender.Send(
             new GenerateContractDraftCommand(
                 bookingId,
                 auditContext,
                 keyResult.Value),
-            ct),
+            ct).AsTask(),
             new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Generate, null, bookingId),
             scopeFactory,
             ct);
@@ -187,7 +188,7 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> BeginReview(
         [FromRoute] Guid id,
-        [FromServices] BeginDocumentReviewCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -196,7 +197,7 @@ internal static class DocumentEndpoints
         var auditContext = CreateAuditContext(httpContext);
         return await GetDocumentAfterCommand(
             await ExecuteDocumentCommand(
-                () => handler.Handle(new BeginDocumentReviewCommand(id, auditContext), ct),
+                () => sender.Send(new BeginDocumentReviewCommand(id, auditContext), ct).AsTask(),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.BeginReview, id, null),
                 scopeFactory,
                 ct),
@@ -207,7 +208,7 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> RequestChanges(
         [FromRoute] Guid id,
-        [FromServices] RequestDocumentChangesCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -216,7 +217,7 @@ internal static class DocumentEndpoints
         var auditContext = CreateAuditContext(httpContext);
         return await GetDocumentAfterCommand(
             await ExecuteDocumentCommand(
-                () => handler.Handle(new RequestDocumentChangesCommand(id, auditContext), ct),
+                () => sender.Send(new RequestDocumentChangesCommand(id, auditContext), ct).AsTask(),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.RequestChanges, id, null),
                 scopeFactory,
                 ct),
@@ -227,7 +228,7 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> AcknowledgeChanges(
         [FromRoute] Guid id,
-        [FromServices] AcknowledgeDocumentChangesCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -236,7 +237,7 @@ internal static class DocumentEndpoints
         var auditContext = CreateAuditContext(httpContext);
         return await GetDocumentAfterCommand(
             await ExecuteDocumentCommand(
-                () => handler.Handle(new AcknowledgeDocumentChangesCommand(id, auditContext), ct),
+                () => sender.Send(new AcknowledgeDocumentChangesCommand(id, auditContext), ct).AsTask(),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.AcknowledgeChanges, id, null),
                 scopeFactory,
                 ct),
@@ -249,7 +250,7 @@ internal static class DocumentEndpoints
         [FromRoute] Guid id,
         [FromRoute] string fieldId,
         [FromBody] UpdateDocumentFieldDto dto,
-        [FromServices] UpdateDocumentFieldCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -260,7 +261,7 @@ internal static class DocumentEndpoints
 
         return await GetDocumentAfterCommand(
             await ExecuteDocumentCommand(
-                () => handler.Handle(new UpdateDocumentFieldCommand(id, fieldId, dto.Value, auditContext), ct),
+                () => sender.Send(new UpdateDocumentFieldCommand(id, fieldId, dto.Value, auditContext), ct).AsTask(),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.UpdateField, id, null),
                 scopeFactory,
                 ct),
@@ -271,7 +272,7 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> Approve(
         [FromRoute] Guid id,
-        [FromServices] ApproveDocumentCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -280,7 +281,7 @@ internal static class DocumentEndpoints
         var auditContext = CreateAuditContext(httpContext);
         return await GetDocumentAfterCommand(
             await ExecuteDocumentCommand(
-                () => handler.Handle(new ApproveDocumentCommand(id, auditContext), ct),
+                () => sender.Send(new ApproveDocumentCommand(id, auditContext), ct).AsTask(),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Approve, id, null),
                 scopeFactory,
                 ct),
@@ -291,7 +292,7 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> FinalizeDocument(
         [FromRoute] Guid id,
-        [FromServices] FinalizeDocumentCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -300,7 +301,7 @@ internal static class DocumentEndpoints
         var auditContext = CreateAuditContext(httpContext);
         return await GetDocumentAfterCommand(
             await ExecuteDocumentCommand(
-                () => handler.Handle(new FinalizeDocumentCommand(id, auditContext), ct),
+                () => sender.Send(new FinalizeDocumentCommand(id, auditContext), ct).AsTask(),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Finalize, id, null),
                 scopeFactory,
                 ct),
@@ -312,7 +313,7 @@ internal static class DocumentEndpoints
     private static async Task<IResult> Regenerate(
         [FromRoute] Guid id,
         [Required, FromHeader(Name = IdempotencyKeyHeader.Name)] string? idempotencyKeyHeader,
-        [FromServices] RegenerateDocumentDraftCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -325,9 +326,9 @@ internal static class DocumentEndpoints
         }
 
         var auditContext = CreateAuditContext(httpContext);
-        var result = await ExecuteDocumentCommand(() => handler.Handle(
+        var result = await ExecuteDocumentCommand(() => sender.Send(
             new RegenerateDocumentDraftCommand(id, auditContext, keyResult.Value),
-            ct),
+            ct).AsTask(),
             new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Regenerate, id, null),
             scopeFactory,
             ct);
@@ -342,7 +343,7 @@ internal static class DocumentEndpoints
 
     private static async Task<IResult> Void(
         [FromRoute] Guid id,
-        [FromServices] VoidDocumentCommandHandler handler,
+        [FromServices] ISender sender,
         [FromServices] IDocumentQueryService queryService,
         [FromServices] IServiceScopeFactory scopeFactory,
         HttpContext httpContext,
@@ -351,7 +352,7 @@ internal static class DocumentEndpoints
         var auditContext = CreateAuditContext(httpContext);
         return await GetDocumentAfterCommand(
             await ExecuteDocumentCommand(
-                () => handler.Handle(new VoidDocumentCommand(id, DocumentVoidReason.AdministrativeVoid, auditContext), ct),
+                () => sender.Send(new VoidDocumentCommand(id, DocumentVoidReason.AdministrativeVoid, auditContext), ct).AsTask(),
                 new DocumentCommandAuditMetadata(auditContext, DocumentAuditOperation.Void, id, null),
                 scopeFactory,
                 ct),
