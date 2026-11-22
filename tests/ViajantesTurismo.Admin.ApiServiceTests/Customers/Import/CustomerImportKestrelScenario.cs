@@ -2,8 +2,9 @@ using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Api;
-using ViajantesTurismo.Admin.Application.Customers.Import;
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.UploadWire.Testing;
 
@@ -105,12 +106,8 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         {
             RequestProbeStartupFilter.Register(services, probe);
             services.Replace(ServiceDescriptor.Singleton(scanProbe.Scanner));
-            var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-            services.Replace(ServiceDescriptor.Singleton(new CustomerImportWorkflowService(
-                store,
-                new CustomerImportConflictDetector(store),
-                handler,
-                TimeProvider.System)));
+            services.Replace(ServiceDescriptor.Singleton<ICustomerStore>(store));
+            services.Replace(ServiceDescriptor.Singleton<IUnitOfWork>(unitOfWork));
         });
         var factory = root.WithWebHostBuilder(builder => configureHost?.Invoke(builder));
 

@@ -1,3 +1,4 @@
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
@@ -11,7 +12,7 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 public sealed class CustomerImportWorkflowService(
     ICustomerStore customerStore,
     CustomerImportConflictDetector conflictDetector,
-    CustomerImportCommandHandler commandHandler,
+    ISender sender,
     TimeProvider timeProvider
 )
 {
@@ -46,26 +47,7 @@ public sealed class CustomerImportWorkflowService(
             return new ImportResultDto(0, 0, conflicts);
         }
 
-        var summary = await AnalyzeRowsForSummary(parsed, conflictResolutions: null, today, ct);
-
-        ImportResult result;
-        try
-        {
-            result = await Execute(parsed, today, conflictResolutions: null, ct);
-        }
-        catch (CustomerEmailConflictException)
-        {
-            return await CreatePersistenceConflictResult(parsed, summary.SuccessCandidates, ct);
-        }
-
-        var successRows = await BuildSuccessRows(summary.SuccessCandidates, ct);
-
-        return new ImportResultDto(
-            result.SuccessCount,
-            result.ErrorCount,
-            null,
-            successRows,
-            summary.ErrorRows);
+        return await ExecuteImport(parsed, today, conflictResolutions: null, ct);
     }
 
     /// <summary>
@@ -102,23 +84,48 @@ public sealed class CustomerImportWorkflowService(
         ArgumentNullException.ThrowIfNull(conflictResolutions);
 
         var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+        return await ExecuteImport(parsed, today, conflictResolutions, ct);
+    }
+
+    private async Task<ImportResultDto> ExecuteImport(
+        Result<CsvDocument> parsed,
+        DateOnly today,
+        IReadOnlyDictionary<string, string>? conflictResolutions,
+        CancellationToken ct)
+    {
         var summary = await AnalyzeRowsForSummary(parsed, conflictResolutions, today, ct);
 
-        ImportResult result;
+        Result<ImportResult> result;
         try
         {
-            result = await Execute(parsed, today, conflictResolutions, ct);
+            result = parsed.IsFailure
+                ? Result.Ok(new ImportResult(0, 0))
+                : await sender.Send(
+                    new CustomerImportCommand(string.Empty, DryRun: false)
+                    {
+                        Today = today,
+                        Document = parsed.Value,
+                        ConflictResolutions = conflictResolutions
+                    },
+                    ct);
         }
         catch (CustomerEmailConflictException)
         {
             return await CreatePersistenceConflictResult(parsed, summary.SuccessCandidates, ct);
         }
 
+        if (result.IsFailure)
+        {
+            var (field, message) = GetValidationFieldAndMessage(result.ErrorDetails);
+            ImportErrorRowDto[] errors = [.. summary.ErrorRows, new(1, field ?? "Csv", message)];
+            return new ImportResultDto(0, errors.Length, null, [], errors);
+        }
+
         var successRows = await BuildSuccessRows(summary.SuccessCandidates, ct);
 
         return new ImportResultDto(
-            result.SuccessCount,
-            result.ErrorCount,
+            result.Value.SuccessCount,
+            result.Value.ErrorCount,
             null,
             successRows,
             summary.ErrorRows);
@@ -128,18 +135,6 @@ public sealed class CustomerImportWorkflowService(
         parsed.IsFailure
             ? Task.FromResult<IReadOnlyList<ImportConflictDto>>([])
             : conflictDetector.FindDatabaseEmailConflicts(parsed.Value, ct);
-
-    private async Task<ImportResult> Execute(
-        Result<CsvDocument> parsed,
-        DateOnly today,
-        IReadOnlyDictionary<string, string>? conflictResolutions,
-        CancellationToken ct) =>
-        parsed.IsFailure
-            ? new ImportResult(0, 0)
-            : await commandHandler.Handle(
-                new CustomerImportCommand(string.Empty, false) { Today = today, Document = parsed.Value },
-                ct,
-                conflictResolutions);
 
     private async Task<ImportResultDto> CreatePersistenceConflictResult(
         Result<CsvDocument> parsed,

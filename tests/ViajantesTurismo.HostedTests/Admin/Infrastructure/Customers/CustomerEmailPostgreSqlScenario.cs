@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.Infrastructure.Customers;
 using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +8,18 @@ using Npgsql;
 using PandaBear.Domain.EntityFrameworkCore;
 using PandaBear.EntityFrameworkCore;
 using PandaBear.Idempotency.EntityFrameworkCore;
+using PandaBear.Mediator;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using PandaBear.Results;
+using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Customers.Import;
+using ViajantesTurismo.Admin.Application.Import;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Customers;
@@ -110,10 +116,73 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         return await dbContext.Customers.CountAsync(ct);
     }
 
+    /// <summary>Commits an import, injecting a competing insert immediately before the real database save.</summary>
+    public async Task<(ImportResultDto Result, bool UsedTransaction, int SaveCalls)> CommitImportWithConcurrentInsert(
+        string csv,
+        IReadOnlyDictionary<string, string> resolutions,
+        string racedEmail,
+        CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var store = new CustomerStore(dbContext);
+        var saveProbe = new CustomerImportSaveProbe(dbContext, () => AddCustomer(racedEmail, ct));
+        await using var provider = CreateImportProvider(dbContext, store, saveProbe);
+        await using var scope = provider.CreateAsyncScope();
+        var workflow = scope.ServiceProvider.GetRequiredService<CustomerImportWorkflowService>();
+        var result = await workflow.Commit(csv, resolutions, ct);
+        return (result, saveProbe.UsedTransaction, saveProbe.SaveCalls);
+    }
+
+    /// <summary>Dispatches a dry run through the generated Admin mediator against the real write context.</summary>
+    public async Task<(Result<ImportResult> Result, int SaveCalls)> DryRunImport(string csv, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var store = new CustomerStore(dbContext);
+        var saveProbe = new CustomerImportSaveProbe(dbContext);
+        await using var provider = CreateImportProvider(dbContext, store, saveProbe);
+        await using var scope = provider.CreateAsyncScope();
+        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+        var result = await sender.Send(new CustomerImportCommand(csv, DryRun: true), ct);
+        return (result, saveProbe.SaveCalls);
+    }
+
+    /// <summary>Dispatches a write that encounters a transient failure after its first database flush.</summary>
+    public async Task<(Result<ImportResult> Result, int SaveCalls)> RetryImportAfterRealSave(string csv, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext(enableRetry: true);
+        var store = new CustomerStore(dbContext);
+        var saveProbe = new CustomerImportSaveProbe(dbContext, afterSave: static attempt =>
+        {
+            if (attempt == 1)
+            {
+                throw new TimeoutException("Fixture timeout after the first import save.");
+            }
+        });
+        await using var provider = CreateImportProvider(dbContext, store, saveProbe);
+        await using var scope = provider.CreateAsyncScope();
+        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+        var result = await sender.Send(new CustomerImportCommand(csv, DryRun: false), ct);
+        return (result, saveProbe.SaveCalls);
+    }
+
     /// <summary>Disposes the fixture-issued database.</summary>
     public ValueTask DisposeAsync() => database.DisposeAsync();
 
-    private AdminWriteDbContext CreateDbContext()
+    private static ServiceProvider CreateImportProvider(AdminWriteDbContext dbContext, ICustomerStore store, IUnitOfWork unitOfWork)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<DbContext>(dbContext);
+        services.AddSingleton(store);
+        services.AddSingleton(unitOfWork);
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<CustomerImportConflictDetector>();
+        services.AddScoped<CustomerImportWorkflowService>();
+        services.AddSharedKernelMediator();
+        return services.BuildServiceProvider();
+    }
+
+    private AdminWriteDbContext CreateDbContext(bool enableRetry = false)
     {
         var services = new ServiceCollection();
         services.AddDomainEventDispatch<AdminWriteDbContext>();
@@ -125,7 +194,13 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         using var provider = services.BuildServiceProvider();
         var configurations = provider.GetServices<IDbContextConfiguration<AdminWriteDbContext>>().ToArray();
         var options = new DbContextOptionsBuilder<AdminWriteDbContext>()
-            .UseNpgsql(connectionString)
+            .UseNpgsql(connectionString, options =>
+            {
+                if (enableRetry)
+                {
+                    options.EnableRetryOnFailure();
+                }
+            })
             .Options;
         return new AdminWriteDbContext(options, configurations);
     }

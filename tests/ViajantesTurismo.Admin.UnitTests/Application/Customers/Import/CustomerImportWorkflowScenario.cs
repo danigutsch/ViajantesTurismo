@@ -17,7 +17,7 @@ internal sealed class CustomerImportWorkflowScenario
     {
         Store = new FakeCustomerStore();
         var handler = new CustomerImportCommandHandler(Store, new FakeUnitOfWork(), TimeProvider.System);
-        Service = new CustomerImportWorkflowService(Store, new CustomerImportConflictDetector(Store), handler, TimeProvider.System);
+        Service = new CustomerImportWorkflowService(Store, new CustomerImportConflictDetector(Store), new CustomerImportTestSender(handler.Handle), TimeProvider.System);
     }
 
     /// <summary>Gets the fake customer store used by the workflow.</summary>

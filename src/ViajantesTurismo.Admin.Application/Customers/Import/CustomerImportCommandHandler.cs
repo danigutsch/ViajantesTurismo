@@ -1,3 +1,5 @@
+using PandaBear.Mediator;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Domain.Customers;
 
@@ -9,7 +11,7 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 public sealed class CustomerImportCommandHandler(
     ICustomerStore customerStore,
     IUnitOfWork unitOfWork,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider) : ICommandHandler<CustomerImportCommand, Result<ImportResult>>
 {
     private enum ImportRowOutcome
     {
@@ -24,13 +26,11 @@ public sealed class CustomerImportCommandHandler(
     /// </summary>
     /// <param name="command">Import command carrying CSV content and dry-run flag.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <param name="conflictResolutions">Optional conflict resolutions keyed by email ("keep", "overwrite", or "mixed").</param>
     /// <returns>Aggregated import result counts.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
-    public async Task<ImportResult> Handle(
+    public async ValueTask<Result<ImportResult>> Handle(
         CustomerImportCommand command,
-        CancellationToken ct,
-        IReadOnlyDictionary<string, string>? conflictResolutions = null)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         ct.ThrowIfCancellationRequested();
@@ -42,7 +42,7 @@ public sealed class CustomerImportCommandHandler(
             var documentResult = CsvDocument.Parse(command.CsvContent);
             if (documentResult.IsFailure)
             {
-                return new ImportResult(0, 0);
+                return documentResult.ConvertError<CsvDocument, ImportResult>();
             }
 
             document = documentResult.Value;
@@ -67,7 +67,7 @@ public sealed class CustomerImportCommandHandler(
             var outcome = await ProcessImportRow(
                 document,
                 row,
-                conflictResolutions,
+                command.ConflictResolutions,
                 customersToCreate,
                 customersToOverwrite,
                 today,
@@ -81,7 +81,7 @@ public sealed class CustomerImportCommandHandler(
 
         await PersistImport(command, today, customersToCreate, customersToOverwrite, ct);
 
-        return new ImportResult(customersToCreate.Count + customersToOverwrite.Count, errorCount);
+        return Result.Ok(new ImportResult(customersToCreate.Count + customersToOverwrite.Count, errorCount));
     }
 
     private async Task<ImportRowOutcome> ProcessImportRow(

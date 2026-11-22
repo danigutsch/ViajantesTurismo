@@ -1591,6 +1591,35 @@
         "resolved": "18.1.0",
         "contentHash": "5K+9KFg2TdTl7VXv88Qzi/0lqK6JFoNP3lRuImPYGRV7K/QYklDyTrj4+A+KAki1JsQi6qKY+hDyY7d6WRqjrw=="
       },
+      "viajantesturismo.admin.api": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[11.0.0, )",
+          "Microsoft.AspNetCore.OpenApi": "[11.0.0, )",
+          "Microsoft.Extensions.ApiDescription.Server": "[11.0.0, )",
+          "PandaBear.SharedKernel.ApiVersioning.AspNetCore": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.AspNetCore": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.AspNetCore.Authentication": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.AspNetCore.RateLimiting": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.AspNetCore.Seo": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.HttpCaching.AspNetCore": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.HttpClients": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.IO": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.Idempotency.AspNetCore": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.MalwareScanning": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.MalwareScanning.ClamAv": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.Mediator": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.OpenApi": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.Results": "[0.1.0-alpha.719.1, )",
+          "PandaBear.SharedKernel.Results.AspNet": "[0.1.0-alpha.719.1, )",
+          "ViajantesTurismo.Admin.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Application": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Contracts.Http": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Admin.Infrastructure": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.admin.application": {
         "type": "Project",
         "dependencies": {
@@ -2662,6 +2691,15 @@
         "requested": "[0.1.0-alpha.719.1, )",
         "resolved": "0.1.0-alpha.719.1",
         "contentHash": "xHc/QEkFV+Cc6TJ03cSe++pSkj73tcC/XqoaJGe2bER2MKd3IQ1j+m1JC6883pP65kr6hcEDLVrrizzKkn46sw=="
+      },
+      "PandaBear.SharedKernel.Results.AspNet": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.719.1, )",
+        "resolved": "0.1.0-alpha.719.1",
+        "contentHash": "QFucJPW+Fbkj5GR1pBCWdF6Kc8OcSgtBpayNIlxAGBhu92hilrd8gwCPaaMxj+VkJyVOsG+t28b1MHOh8x4PgQ==",
+        "dependencies": {
+          "PandaBear.SharedKernel.Results": "0.1.0-alpha.719.1"
+        }
       },
       "PandaBear.SharedKernel.Scheduling": {
         "type": "CentralTransitive",

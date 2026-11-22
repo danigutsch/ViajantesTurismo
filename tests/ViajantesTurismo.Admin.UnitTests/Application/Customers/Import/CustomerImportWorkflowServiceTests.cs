@@ -23,7 +23,7 @@ public sealed class CustomerImportWorkflowServiceTests
         };
         var store = new FakeCustomerStore();
         var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), clock);
-        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, clock);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), new CustomerImportTestSender(handler.Handle), clock);
         var csv = $"{CsvHeaders}\n{CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "birthday@example.com")}";
         // Act
         var result = await sut.Import(csv, TestContext.Current.CancellationToken);
@@ -51,7 +51,7 @@ public sealed class CustomerImportWorkflowServiceTests
         };
         var store = new FakeCustomerStore();
         var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), clock);
-        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, clock);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), new CustomerImportTestSender(handler.Handle), clock);
         var csv = $"{CsvHeaders}\n{CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "commit-birthday@example.com")}";
         // Act
         var result = await sut.Commit(csv, new Dictionary<string, string>(), TestContext.Current.CancellationToken);
@@ -74,7 +74,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var clock = new FakeTimeProvider(new DateTimeOffset(1999, 12, 31, 23, 59, 59, TimeSpan.Zero));
         var store = new FakeCustomerStore();
         var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), clock);
-        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, clock);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), new CustomerImportTestSender(handler.Handle), clock);
         var csv = $"{CsvHeaders}\n{CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "boundary@example.com")}";
         // Act
         var result = await sut.Import(csv, TestContext.Current.CancellationToken);
@@ -105,7 +105,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var unitOfWork = new FakeUnitOfWork();
         var conflictDetector = new CustomerImportConflictDetector(store);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler, TimeProvider.System);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, new CustomerImportTestSender(handler.Handle), TimeProvider.System);
 
         // Act
         var result = await sut.Import(csv, CancellationToken.None);
@@ -129,7 +129,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var conflictDetector = new CustomerImportConflictDetector(store);
         var unitOfWork = new ConcurrentCustomerEmailConflictUnitOfWork(store, email);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler, TimeProvider.System);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, new CustomerImportTestSender(handler.Handle), TimeProvider.System);
 
         // Act
         var result = await sut.Import(csv, TestContext.Current.CancellationToken);
@@ -152,7 +152,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var conflictDetector = new CustomerImportConflictDetector(store);
         var unitOfWork = new ConcurrentCustomerEmailConflictUnitOfWork(store, email);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler, TimeProvider.System);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, new CustomerImportTestSender(handler.Handle), TimeProvider.System);
 
         // Act
         var result = await sut.Commit(csv, new Dictionary<string, string>(), TestContext.Current.CancellationToken);
@@ -175,7 +175,7 @@ public sealed class CustomerImportWorkflowServiceTests
         var conflictDetector = new CustomerImportConflictDetector(store);
         var unitOfWork = new RolledBackCustomerEmailConflictUnitOfWork(store);
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, conflictDetector, handler, TimeProvider.System);
+        var sut = new CustomerImportWorkflowService(store, conflictDetector, new CustomerImportTestSender(handler.Handle), TimeProvider.System);
 
         // Act
         var result = await sut.Commit(csv, new Dictionary<string, string>(), TestContext.Current.CancellationToken);

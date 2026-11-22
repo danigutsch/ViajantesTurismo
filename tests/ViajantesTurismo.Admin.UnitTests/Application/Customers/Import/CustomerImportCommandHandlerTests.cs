@@ -28,9 +28,10 @@ public sealed class CustomerImportCommandHandlerTests
         var command = new CustomerImportCommand(csv, DryRun: false);
 
         // Act
-        var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
+        var response = await _sut.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
+        var result = response.ShouldBeSuccess();
         result.SuccessCount.ShouldBe(0);
         result.ErrorCount.ShouldBe(1);
         _fakeCustomerStore.AllCustomers.ShouldBeEmpty();
@@ -44,9 +45,10 @@ public sealed class CustomerImportCommandHandlerTests
         var command = new CustomerImportCommand(CsvRows.Build(), DryRun: true);
 
         // Act
-        var result = await _sut.Handle(command, CancellationToken.None);
+        var response = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
+        var result = response.ShouldBeSuccess();
         result.SuccessCount.ShouldBe(1);
         result.ErrorCount.ShouldBe(0);
         _uow.SaveEntitiesCallCount.ShouldBe(0);
@@ -59,9 +61,10 @@ public sealed class CustomerImportCommandHandlerTests
         var command = new CustomerImportCommand(CsvRows.Build("imported@example.com"), DryRun: false);
 
         // Act
-        var result = await _sut.Handle(command, CancellationToken.None);
+        var response = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
+        var result = response.ShouldBeSuccess();
         result.SuccessCount.ShouldBe(1);
         result.ErrorCount.ShouldBe(0);
         _uow.SaveEntitiesCallCount.ShouldBe(1);
@@ -82,9 +85,10 @@ public sealed class CustomerImportCommandHandlerTests
         var command = new CustomerImportCommand(csv, DryRun: false);
 
         // Act
-        var result = await _sut.Handle(command, CancellationToken.None);
+        var response = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
+        var result = response.ShouldBeSuccess();
         result.SuccessCount.ShouldBe(1);
         result.ErrorCount.ShouldBe(1);
     }
@@ -100,9 +104,10 @@ public sealed class CustomerImportCommandHandlerTests
         var command = new CustomerImportCommand(CsvRows.Build(existingEmail), DryRun: false);
 
         // Act
-        var result = await sut.Handle(command, CancellationToken.None);
+        var response = await sut.Handle(command, CancellationToken.None);
 
         // Assert
+        var result = response.ShouldBeSuccess();
         result.SuccessCount.ShouldBe(0);
         result.ErrorCount.ShouldBe(1);
         _uow.SaveEntitiesCallCount.ShouldBe(0);
