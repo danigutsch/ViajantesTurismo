@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using OpenTelemetry;
 using PandaBear.Testing;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
-[Collection(RawNpgsqlTracingGroup.Name)]
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogNpgsqlTracingTests(HostedTestFixture shared)
@@ -33,6 +33,9 @@ public sealed class CatalogNpgsqlTracingTests(HostedTestFixture shared)
         parent.Start();
         var parentSpanId = parent.SpanId;
         var traceId = parent.TraceId;
+
+        // The raw listener still sees the driver span while OpenTelemetry skips export processing for this probe.
+        using var suppression = SuppressInstrumentationScope.Begin();
 
         // Act
         var result = await scenario.ExecuteParameterizedTracingProbe(sentinel, cancellationToken);
