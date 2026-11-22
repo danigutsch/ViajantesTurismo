@@ -397,6 +397,6 @@ public sealed class BrandingApiEndpointTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         problem.ShouldNotBeNull().Errors.Keys.Order(StringComparer.Ordinal).ToArray().ShouldBe(
-            [nameof(BrandingSettingsDto.AccentColor), nameof(BrandingSettingsDto.TextColor)]);
+            [nameof(BrandingSettingsDto.AccentColor), nameof(BrandingSettingsDto.PrimaryColor), nameof(BrandingSettingsDto.TextColor)]);
     }
 }

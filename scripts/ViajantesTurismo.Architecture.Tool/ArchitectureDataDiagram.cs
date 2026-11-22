@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 
 using PandaBear.Documentation;
@@ -24,32 +23,14 @@ internal static class ArchitectureDataDiagram
             ?? throw new InvalidOperationException($"Missing architecture metadata in {MetadataPath}.");
         Validate(catalog);
 
-        var config = new
-        {
-            docsPath = DocsPath,
-            generatorName = "ViajantesTurismo.Architecture.Tool",
-            blocks = new[]
-            {
-                new
-                {
-                    name = "data-ownership",
-                    targetPath = "data-ownership.md",
-                    kind = "mermaid-flowchart",
-                    flowchart = "flowchart LR",
-                    lines = DiagramLines(catalog),
-                },
-            },
-        };
-        var configPath = Path.GetTempFileName();
-        try
-        {
-            File.WriteAllText(configPath, JsonSerializer.Serialize(config, JsonSerializerOptions.Web));
-            return DocumentationGenerator.Run(root, configPath, checkOnly);
-        }
-        finally
-        {
-            File.Delete(configPath);
-        }
+        var diagram = new DataOwnershipDiagram(
+            [.. catalog.Boundaries.Select(boundary => new DataOwnershipBoundary(boundary.Key, boundary.Value))],
+            [.. catalog.Services.Select(service => new DataOwnershipNode(service.Id, service.Boundary,
+                [service.Label, $"Audience: {string.Join(", ", service.Audiences.Order(StringComparer.Ordinal))}", catalog.Lifecycle[service.State]]))],
+            [.. catalog.Stores.Select(store => new DataOwnershipNode(store.Id, store.Boundary, [.. StoreLabels(catalog, store)]))],
+            [.. catalog.Stores.SelectMany(store => store.Consumers.Select(consumer => new DataOwnershipAccess(consumer, store.Id, store.Access)))]);
+        return DocumentationGenerator.RunDataOwnership(root, DocsPath, "ViajantesTurismo.Architecture.Tool",
+            "data-ownership", "data-ownership.md", diagram, checkOnly);
     }
 
     private static void Validate(ArchitectureCatalog catalog)
@@ -103,36 +84,6 @@ internal static class ArchitectureDataDiagram
         value.Length > 0 && char.IsAsciiLetter(value[0])
         && value.All(character => char.IsAsciiLetterOrDigit(character) || character == '_');
 
-    private static string[] DiagramLines(ArchitectureCatalog catalog)
-    {
-        var lines = new List<string>();
-        foreach (var (boundary, label) in catalog.Boundaries.OrderBy(item => item.Key, StringComparer.Ordinal))
-        {
-            var services = catalog.Services.Where(service => service.Boundary == boundary)
-                .OrderBy(service => service.Id, StringComparer.Ordinal).ToArray();
-            var stores = catalog.Stores.Where(store => store.Boundary == boundary)
-                .OrderBy(store => store.Id, StringComparer.Ordinal).ToArray();
-            if (services.Length == 0 && stores.Length == 0)
-            {
-                continue;
-            }
-
-            lines.Add($"    subgraph boundary_{boundary}[\"{WebUtility.HtmlEncode(label)}\"]");
-            lines.AddRange(services.Select(service => Node(service.Id,
-                [service.Label, $"Audience: {string.Join(", ", service.Audiences.Order(StringComparer.Ordinal))}", catalog.Lifecycle[service.State]])));
-            lines.AddRange(stores.Select(store => Node(store.Id, StoreLabels(catalog, store))));
-            lines.Add("    end");
-        }
-
-        foreach (var store in catalog.Stores.OrderBy(store => store.Id, StringComparer.Ordinal))
-        {
-            lines.AddRange(store.Consumers.Order(StringComparer.Ordinal)
-                .Select(consumer => $"    {consumer} -->|\"{WebUtility.HtmlEncode(store.Access)}\"| {store.Id}"));
-        }
-
-        return [.. lines];
-    }
-
     private static IEnumerable<string> StoreLabels(ArchitectureCatalog catalog, ArchitectureStore store)
     {
         yield return store.DbContext ?? store.Id;
@@ -145,6 +96,4 @@ internal static class ArchitectureDataDiagram
         }
     }
 
-    private static string Node(string id, IEnumerable<string> labels) =>
-        $"        {id}[\"{string.Join("<br/>", labels.Select(WebUtility.HtmlEncode))}\"]";
 }

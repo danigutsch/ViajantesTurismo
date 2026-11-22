@@ -13,7 +13,7 @@ if (args[0] == "generate")
     return 0;
 }
 
-if (File.Exists(artifactPath) && string.Equals(File.ReadAllText(artifactPath), generated, StringComparison.Ordinal))
+if (PandaBear.Documentation.AsyncApiDocument.MatchesFile(artifactPath, generated))
 {
     return 0;
 }

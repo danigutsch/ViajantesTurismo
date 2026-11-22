@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.Playwright;
+using PandaBear.Testing.Playwright;
 
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
@@ -21,9 +22,7 @@ internal static class BrowserFileSelection
     public static async Task Select(IPage page, string inputSelector, IReadOnlyCollection<FilePayload> files)
     {
         var input = page.Locator(inputSelector);
-        await input.EvaluateAsync(
-            "element => new Promise(resolve => { const check = () => element._blazorInputFileNextFileId !== undefined ? resolve() : setTimeout(check, 20); check(); })");
-        await input.SetInputFilesAsync(files);
+        await input.SetBlazorInputFiles(files);
     }
 
     /// <summary>Dispatches a browser file drag event and reports whether its default action was canceled.</summary>

@@ -15,6 +15,7 @@
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
     <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
     <PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" />
+    <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
     <PackageReference Include="PandaBear.SharedKernel.Observability" />
     <PackageReference Include="PandaBear.SharedKernel.ServiceDefaults" />
   </ItemGroup>

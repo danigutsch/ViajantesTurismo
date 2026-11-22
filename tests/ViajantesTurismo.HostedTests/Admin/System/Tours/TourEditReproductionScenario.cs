@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using PandaBear.Testing.Playwright;
+using PandaBear.Testing.Snapshots;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
@@ -49,7 +50,7 @@ internal static class TourEditReproductionScenario
         get;
     } = new(
         "browser.tour-edit-duration",
-        ReproductionManifestCodec.GetSourceRevision(typeof(TourEditReproductionScenario).Assembly),
+        ReproductionFixtureEnvironment.GetSourceRevision(typeof(TourEditReproductionScenario).Assembly),
         ApprovedOutcomes);
 
     /// <summary>Creates a new tour through the authenticated Admin API using fixed synthetic dates.</summary>

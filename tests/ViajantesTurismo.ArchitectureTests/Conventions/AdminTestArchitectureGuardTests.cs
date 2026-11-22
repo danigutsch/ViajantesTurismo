@@ -165,8 +165,8 @@ public sealed partial class AdminTestArchitectureGuardTests
         var helper = File.ReadAllText(helperPath);
 
         // Assert
-        helper.ShouldContain("_blazorInputFileNextFileId", StringComparison.Ordinal);
-        helper.IndexOf("_blazorInputFileNextFileId", StringComparison.Ordinal)
+        helper.ShouldContain("WaitForBlazorInputFile", StringComparison.Ordinal);
+        helper.IndexOf("WaitForBlazorInputFile", StringComparison.Ordinal)
             .ShouldBeLessThan(helper.IndexOf("RunAndWaitForFileChooserAsync", StringComparison.Ordinal));
         helper.ShouldNotContain("Task.Delay", StringComparison.Ordinal);
     }

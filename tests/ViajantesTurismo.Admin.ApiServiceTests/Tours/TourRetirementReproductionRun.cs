@@ -1,7 +1,7 @@
 using System.Diagnostics;
+using PandaBear.Testing.Snapshots;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Tours;
-using ViajantesTurismo.Testing.Reproduction;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Tours;
 

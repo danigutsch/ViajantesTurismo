@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using ViajantesTurismo.Testing.Reproduction;
+using PandaBear.Testing.Snapshots;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Reproduction;
 

@@ -6,8 +6,17 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is `0.1.0-alpha.653.1` at clean library revision
-[`d1a0676a24a8c0fbe876cf0986bf9db378c6377d`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/d1a0676a24a8c0fbe876cf0986bf9db378c6377d).
+The published candidate is [`0.1.0-alpha.716.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.716.1)
+at clean library revision [`4f1b0325c9073a36103b21301dd80f55cbeaf314`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/4f1b0325c9073a36103b21301dd80f55cbeaf314).
+The adoption uses shared sitemap and theme CSS endpoints, filesystem object storage and media helpers, upload deadlines,
+documentation generators, test fixtures, and migration artifact verification. The SDK stays at 11.0.100.
+Linux and Windows package consumption and NativeAOT evidence come from
+[SharedKernel validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45005831777).
+
+### Earlier candidates
+
+Candidate [`0.1.0-alpha.653.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.653.1) was the first
+.NET 11-only candidate adopted here.
 On top of `0.1.0-alpha.649.1` it targets .NET 11 only, so this adoption moves the application to
 `net11.0` and SDK 11.0.100, the SDK `stage-candidate` requires to match SharedKernel's. ASP.NET Core and the
 `Microsoft.Extensions.*` packages the candidate requires are on the 11.0.0 line, `Microsoft.OpenApi` is 3.11.0 (required
@@ -167,9 +176,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/d1a0676a24a8c0fbe876cf0986bf9db378c6377d/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/4f1b0325c9073a36103b21301dd80f55cbeaf314/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`d1a0676a24a8c0fbe876cf0986bf9db378c6377d`, which equals the `libraryRevision` in
+`4f1b0325c9073a36103b21301dd80f55cbeaf314`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

@@ -1,7 +1,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using ViajantesTurismo.Admin.Application;
+using PandaBear.Testing.Snapshots;
 using ViajantesTurismo.Admin.Application.Tours;
+using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
@@ -30,7 +31,7 @@ internal static class TourRetirementReproductionScenario
     {
         get;
     } = new(
-        "admin.tour-retirement", ReproductionManifestCodec.GetSourceRevision(typeof(TourRetirementReproductionScenario).Assembly),
+        "admin.tour-retirement", ReproductionFixtureEnvironment.GetSourceRevision(typeof(TourRetirementReproductionScenario).Assembly),
         [Outcome(Accepted), Outcome(Conflict), Outcome(Denied)]);
 
     /// <summary>Maps a verified scenario outcome to the fixed resource-state vocabulary.</summary>

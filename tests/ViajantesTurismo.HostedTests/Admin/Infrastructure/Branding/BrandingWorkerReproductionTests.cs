@@ -1,3 +1,4 @@
+using PandaBear.Testing.Snapshots;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Testing.Reproduction;
@@ -16,7 +17,7 @@ public sealed class BrandingWorkerReproductionTests(PostgreSqlTestServerFixture 
         using var scratch = new TemporaryDirectory();
         var specification = BrandingWorkerReproductionScenario.Specification;
         var outcome = BrandingWorkerReproductionScenario.Replayed;
-        var resultsDirectory = ReproductionManifestCodec.GetLocalResultsDirectory() ?? scratch.Path;
+        var resultsDirectory = ReproductionFixtureEnvironment.GetLocalResultsDirectory() ?? scratch.Path;
         var ct = TestContext.Current.CancellationToken;
         var expectedRetry = new BrandingWorkerDelivery(false, 1,
             BrandingWorkerReproductionScenario.InitialTime.AddSeconds(1),

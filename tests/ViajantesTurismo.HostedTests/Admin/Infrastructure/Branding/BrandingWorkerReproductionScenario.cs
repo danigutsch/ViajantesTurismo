@@ -17,6 +17,7 @@ using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.HostedTests.Catalog.Infrastructure.Branding;
+using PandaBear.Testing.Snapshots;
 using ViajantesTurismo.Testing.Reproduction;
 using PostgreSqlTestDatabaseLease = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 
@@ -56,7 +57,7 @@ internal sealed class BrandingWorkerReproductionScenario : IAsyncDisposable
         get;
     } = new(
         "background.branding-redelivery",
-        ReproductionManifestCodec.GetSourceRevision(typeof(BrandingWorkerReproductionScenario).Assembly),
+        ReproductionFixtureEnvironment.GetSourceRevision(typeof(BrandingWorkerReproductionScenario).Assembly),
         [Replayed]);
 
     private readonly IHost host;

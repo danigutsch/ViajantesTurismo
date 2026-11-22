@@ -1,3 +1,4 @@
+using PandaBear.Testing.Snapshots;
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Testing.Reproduction;
@@ -16,7 +17,7 @@ public sealed class CatalogReproductionTests
         var ct = TestContext.Current.CancellationToken;
         var specification = CatalogReproductionScenario.StaleWrite;
         using var scratch = new TemporaryDirectory();
-        var resultsDirectory = ReproductionManifestCodec.GetLocalResultsDirectory() ?? scratch.Path;
+        var resultsDirectory = ReproductionFixtureEnvironment.GetLocalResultsDirectory() ?? scratch.Path;
 
         // Act
         var first = await CatalogReproductionScenario.RunManagement(ct);
@@ -60,7 +61,7 @@ public sealed class CatalogReproductionTests
         var ct = TestContext.Current.CancellationToken;
         var specification = CatalogReproductionScenario.LocalizedRead;
         using var scratch = new TemporaryDirectory();
-        var resultsDirectory = ReproductionManifestCodec.GetLocalResultsDirectory() ?? scratch.Path;
+        var resultsDirectory = ReproductionFixtureEnvironment.GetLocalResultsDirectory() ?? scratch.Path;
 
         // Act
         var first = await CatalogReproductionScenario.RunLocalizedRead(ct);

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PandaBear.Testing;
+using PandaBear.Testing.Playwright;
 using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.HostedTests.Management.Browser;
@@ -24,7 +25,7 @@ public sealed class BrandingThemePreviewCspTests : ManagementWebBrowserTestBase
     public async Task Preview_applies_the_form_colours_under_the_strict_policy_without_a_violation()
     {
         // Arrange
-        var recorder = await CspViolationRecorder.Start(Page);
+        using var recorder = await CspViolationRecorder.Start(Page);
         await NavigateTo("/branding");
         await Expect(Page.Locator(PreviewHeading)).ToHaveCSSAsync("color", "rgb(31, 41, 55)");
 

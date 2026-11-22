@@ -20,8 +20,8 @@ public sealed class BrandingLogoServingOverKestrelTests
         store.Logos.Add(logo.Sha256, logo);
         store.Logos.Add(other.Sha256, other);
         await using var root = BrandingApiTestHost.CreateAnonymous(store);
-        await using var factory = root.WithWebHostBuilder(host => host.UseRandomLoopbackPort());
-        using var client = new HttpClient { BaseAddress = factory.Start(), Timeout = WireTimeout.Default };
+        await using var host = KestrelTestHost.StartFromFactory(root);
+        using var client = new HttpClient { BaseAddress = host.BaseAddress, Timeout = WireTimeout.Default };
         var ct = TestContext.Current.CancellationToken;
 
         // Act

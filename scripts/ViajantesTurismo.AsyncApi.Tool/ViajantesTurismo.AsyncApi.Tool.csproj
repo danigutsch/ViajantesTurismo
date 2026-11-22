@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="PandaBear.SharedKernel.Documentation" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.IntegrationEvents\ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Contracts.IntegrationEvents\ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Catalog.Contracts.IntegrationEvents\ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />

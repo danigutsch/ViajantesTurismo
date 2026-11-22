@@ -1,3 +1,4 @@
+using PandaBear.Testing.Snapshots;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Testing.Reproduction;
@@ -20,7 +21,7 @@ public sealed class TourRetirementReproductionTests
         using var scratch = new TemporaryDirectory();
         var specification = TourRetirementReproductionScenario.Specification;
         var outcome = TourRetirementReproductionScenario.Outcome(outcomeCode);
-        var resultsDirectory = ReproductionManifestCodec.GetLocalResultsDirectory() ?? scratch.Path;
+        var resultsDirectory = ReproductionFixtureEnvironment.GetLocalResultsDirectory() ?? scratch.Path;
         var accepted = expectedRetirement == HttpStatusCode.Accepted;
 
         // Act

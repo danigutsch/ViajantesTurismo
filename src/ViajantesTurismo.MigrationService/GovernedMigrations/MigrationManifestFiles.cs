@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using PandaBear.IO;
@@ -25,23 +24,20 @@ internal static class MigrationManifestFiles
         },
     };
 
+    private static readonly MigrationArtifactJsonContext JsonContext = new(ManifestOptions);
+
     /// <summary>Validates the manifest and records the digest of its unmodified bytes.</summary>
     internal static async Task<(MigrationManifest Manifest, string Directory, string Digest)> Read(
         string manifestPath, string sourceRelease, CancellationToken ct)
     {
-        var path = Path.GetFullPath(manifestPath);
-        var content = await BoundedReader.ReadFile(path, ManifestLimit, ct)
-            ?? throw new InvalidDataException("Migration manifest exceeds the size limit.");
-        var manifest = Deserialize<MigrationManifest>(content);
-        MigrationManifestValidator.Validate(manifest, sourceRelease);
-
-        var directory = Path.GetDirectoryName(path) ?? throw new InvalidDataException("A manifest directory is required.");
-        return (manifest, directory, Convert.ToHexString(SHA256.HashData(content)));
+        var result = await ArtifactManifest.Read(manifestPath, ManifestLimit, JsonContext.MigrationManifest, ct);
+        MigrationManifestValidator.Validate(result.Manifest, sourceRelease);
+        return result;
     }
 
-    /// <summary>Deserializes the reviewed JSON artifacts using their strict manifest property rules.</summary>
-    internal static T Deserialize<T>(ReadOnlySpan<byte> content) where T : class =>
-        JsonSerializer.Deserialize<T>(content, ManifestOptions)
+    /// <summary>Deserializes a receipt using the original strict manifest property rules.</summary>
+    internal static MigrationRetirementReceipt DeserializeReceipt(ReadOnlySpan<byte> content) =>
+        JsonSerializer.Deserialize(content, JsonContext.MigrationRetirementReceipt)
         ?? throw new InvalidDataException("A governed migration JSON artifact must be an object.");
 
     /// <summary>Checks the evidence and any declared recovery scripts without executing them.</summary>

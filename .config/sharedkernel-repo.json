@@ -45,8 +45,8 @@
     "approval": {
       "file": ".config/sharedkernel-candidate.json",
       "values": {
-        "packageVersion": "0.1.0-alpha.653.1",
-        "libraryRevision": "d1a0676a24a8c0fbe876cf0986bf9db378c6377d",
+        "packageVersion": "0.1.0-alpha.716.1",
+        "libraryRevision": "4f1b0325c9073a36103b21301dd80f55cbeaf314",
         "libraryDirty": false
       }
     },

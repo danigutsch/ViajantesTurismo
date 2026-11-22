@@ -36,7 +36,7 @@ internal sealed record MigrationRetirementReceipt(
         MigrationRetirementReceipt receipt;
         try
         {
-            receipt = MigrationManifestFiles.Deserialize<MigrationRetirementReceipt>(bytes.Span);
+            receipt = MigrationManifestFiles.DeserializeReceipt(bytes.Span);
         }
         catch (JsonException)
         {

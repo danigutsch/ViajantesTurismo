@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using PandaBear.EventSourcing;
+using PandaBear.Testing.Snapshots;
 using PandaBear.Testing;
-using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Tours;
+using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Testing.Reproduction;
 
@@ -41,8 +42,8 @@ public sealed class CatalogProjectionRunnerReproductionTests
         attempt.SetParentId(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
         attempt.Start();
         using var scratch = new TemporaryDirectory();
-        var directory = ReproductionManifestCodec.GetLocalResultsDirectory() ?? scratch.Path;
-        var revision = ReproductionManifestCodec.GetSourceRevision(typeof(CatalogProjectionRunnerReproductionTests).Assembly);
+        var directory = ReproductionFixtureEnvironment.GetLocalResultsDirectory() ?? scratch.Path;
+        var revision = ReproductionFixtureEnvironment.GetSourceRevision(typeof(CatalogProjectionRunnerReproductionTests).Assembly);
         var specification = new ReproductionSpecification(Scenario, revision, [Retried]);
         var draftCreated = new CatalogTourDraftCreated(Guid.CreateVersion7(), Guid.CreateVersion7(), slug, DraftTitle, Guid.CreateVersion7(), slug);
         var eventStore = new CapturingEventStore();
@@ -123,7 +124,7 @@ public sealed class CatalogProjectionRunnerReproductionTests
     {
         // Arrange
         using var scratch = new TemporaryDirectory();
-        var revision = ReproductionManifestCodec.GetSourceRevision(typeof(CatalogProjectionRunnerReproductionTests).Assembly);
+        var revision = ReproductionFixtureEnvironment.GetSourceRevision(typeof(CatalogProjectionRunnerReproductionTests).Assembly);
         var specification = new ReproductionSpecification(Scenario, revision, [Retried]);
         var invalidOutcome = Retried with
         {

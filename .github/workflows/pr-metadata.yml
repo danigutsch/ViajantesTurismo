@@ -13,8 +13,8 @@ jobs:
     if: ${{ github.event.action != 'labeled' || github.event.label.name == 'ci:rerun' }}
     permissions:
       contents: read
-    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/pr-metadata-reusable.yml@d1a0676a24a8c0fbe876cf0986bf9db378c6377d
+    uses: danigutsch/PandaBear.SharedKernel/.github/workflows/pr-metadata-reusable.yml@4f1b0325c9073a36103b21301dd80f55cbeaf314
     with:
       runner: ${{ vars.CI_UBUNTU_RUNNER }}
       source-repository: danigutsch/PandaBear.SharedKernel
-      source-ref: d1a0676a24a8c0fbe876cf0986bf9db378c6377d
+      source-ref: 4f1b0325c9073a36103b21301dd80f55cbeaf314

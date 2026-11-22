@@ -14,6 +14,7 @@
         <PackageReference Include="PandaBear.SharedKernel.Blazor.Site" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" />
         <PackageReference Include="PandaBear.SharedKernel.HttpClients" />
+        <PackageReference Include="PandaBear.SharedKernel.InputNormalization" />
         <ProjectReference Include="..\ViajantesTurismo.Branding.Contracts.Http\ViajantesTurismo.Branding.Contracts.Http.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Application\ViajantesTurismo.Catalog.Contracts.Application.csproj"/>
         <ProjectReference Include="..\ViajantesTurismo.Catalog.Contracts.Http\ViajantesTurismo.Catalog.Contracts.Http.csproj"/>

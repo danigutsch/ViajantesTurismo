@@ -1,6 +1,7 @@
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PandaBear.MalwareScanning;
+using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -31,25 +32,24 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
         "75,175,Regular,DoubleOccupancy,SingleBed,Emergency Name,+5511888888888";
 
     private readonly WebApplicationFactory<AdminApiHostEntryPoint> root;
-    private readonly WebApplicationFactory<AdminApiHostEntryPoint> factory;
+    private readonly KestrelTestHost<AdminApiHostEntryPoint> host;
 
     private CustomerImportKestrelScenario(
         WebApplicationFactory<AdminApiHostEntryPoint> root,
-        WebApplicationFactory<AdminApiHostEntryPoint> factory,
-        Uri baseUri,
+        KestrelTestHost<AdminApiHostEntryPoint> host,
         RequestLifetimeProbe probe,
         ChunkObservingMalwareScanner scanner,
         FakeCustomerStore store,
         FakeUnitOfWork unitOfWork)
     {
         this.root = root;
-        this.factory = factory;
-        BaseUri = baseUri;
+        this.host = host;
+        BaseUri = host.BaseAddress;
         Probe = probe;
         Scanner = scanner;
         Store = store;
         UnitOfWork = unitOfWork;
-        Client = new HttpClient { BaseAddress = baseUri, Timeout = TimeSpan.FromSeconds(60) };
+        Client = new HttpClient { BaseAddress = host.BaseAddress, Timeout = TimeSpan.FromSeconds(60) };
         AdminApiTestHost.ConfigureAuthenticatedClient(Client, "Admin");
     }
 
@@ -93,7 +93,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
     public string Authorization => Client.DefaultRequestHeaders.Authorization!.ToString();
 
     /// <summary>Starts a recorder scoped to this server's metrics.</summary>
-    public MeterFactoryRecorder RecordMetrics() => new(factory.Services.GetRequiredService<IMeterFactory>());
+    public MeterFactoryRecorder RecordMetrics() => new(host.Services.GetRequiredService<IMeterFactory>());
 
     /// <summary>Starts the server; <paramref name="routeSuffix"/> selects the observed route.</summary>
     public static CustomerImportKestrelScenario Start(string routeSuffix, Action<IWebHostBuilder>? configureHost = null)
@@ -113,14 +113,10 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
                 handler,
                 TimeProvider.System)));
         });
-        var factory = root.WithWebHostBuilder(host =>
-        {
-            host.UseRandomLoopbackPort();
-            configureHost?.Invoke(host);
-        });
+        var factory = root.WithWebHostBuilder(builder => configureHost?.Invoke(builder));
 
-        var baseUri = factory.Start();
-        return new CustomerImportKestrelScenario(root, factory, baseUri, probe, scanner, store, unitOfWork);
+        var host = KestrelTestHost.StartFromFactory(factory);
+        return new CustomerImportKestrelScenario(root, host, probe, scanner, store, unitOfWork);
     }
 
     /// <summary>Builds the multipart form for a CSV file, with the empty resolutions field the commit route accepts.</summary>
@@ -136,7 +132,7 @@ internal sealed class CustomerImportKestrelScenario : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         Client.Dispose();
-        await factory.DisposeAsync();
+        await host.DisposeAsync();
         await root.DisposeAsync();
     }
 }

@@ -1,3 +1,4 @@
+using PandaBear.Testing.Http;
 using ImageMagick;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using PandaBear.Testing;

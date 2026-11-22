@@ -1,4 +1,5 @@
 @page "/catalog/tours/{Id:guid}/images/review"
+@using PandaBear.InputNormalization
 @using CatalogContractConstants = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants
 @using Microsoft.AspNetCore.Routing
 @using PandaBear.HttpClients
@@ -206,14 +207,7 @@ else
 
     private string? GetPreviewPath(Guid imageId, CatalogMediaImageVariantDto variant)
     {
-        var format = variant.ContentType.Trim().ToUpperInvariant() switch
-        {
-            "IMAGE/AVIF" => "avif",
-            "IMAGE/JPEG" => "jpg",
-            "IMAGE/PNG" => "png",
-            "IMAGE/WEBP" => "webp",
-            _ => null
-        };
+        var format = RasterImageMediaType.Find(variant.ContentType)?.FileExtension;
 
         if (format is null)
         {
