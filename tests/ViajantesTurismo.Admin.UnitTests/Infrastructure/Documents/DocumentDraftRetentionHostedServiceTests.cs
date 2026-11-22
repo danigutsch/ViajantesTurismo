@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 public sealed class DocumentDraftRetentionHostedServiceTests
 {
     [Fact]
-    public async Task RunBatch_purges_expired_drafts_through_the_registered_handler()
+    public async Task RunBatch_purges_expired_drafts_through_the_generated_mediator()
     {
         // Arrange
         var now = new DateTimeOffset(2026, 7, 11, 0, 0, 0, TimeSpan.Zero);
@@ -17,7 +17,7 @@ public sealed class DocumentDraftRetentionHostedServiceTests
         await using var fixture = DocumentDraftRetentionHostedServiceFixture.Create(now, expired);
 
         // Act
-        var removedCount = await fixture.RunBatch(CancellationToken.None);
+        var removedCount = await fixture.RunBatch(TestContext.Current.CancellationToken);
 
         // Assert
         removedCount.ShouldBe(1);

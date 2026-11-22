@@ -134,7 +134,8 @@ internal sealed class DocumentHoldPostgreSqlHarness : IAsyncDisposable
     public async Task<DocumentPurgeCounts> PurgeIdempotencyEntries(CancellationToken ct)
     {
         await using var scope = provider.CreateAsyncScope();
-        return await scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>().Handle(ct);
+        return await scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>()
+            .Handle(new PurgeExpiredDocumentIdempotencyEntriesCommand(), ct);
     }
 
     /// <summary>Runs the audit purge handler.</summary>

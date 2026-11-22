@@ -1,5 +1,6 @@
 using PandaBear.BuildingBlocks;
 using PandaBear.DispositionHold;
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 
@@ -15,14 +16,14 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandler(
     IUnitOfWork unitOfWork,
     IDocumentDispositionTransaction transaction,
     DocumentHoldGate holdGate,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider) : ICommandHandler<PurgeExpiredDocumentAuditsCommand, DocumentPurgeCounts>
 {
     /// <summary>
     /// Removes expired, unheld document audit records and records metadata-only evidence of the run in one save inside
     /// one transaction, and returns the purged and held counts. A failed run discards its staged changes and records
     /// rejected evidence; an unknown hold state records refused evidence and rethrows. Neither removes anything.
     /// </summary>
-    public async Task<DocumentPurgeCounts> Handle(PurgeExpiredDocumentAuditsCommand command, CancellationToken ct)
+    public async ValueTask<DocumentPurgeCounts> Handle(PurgeExpiredDocumentAuditsCommand command, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(command.AuditContext);

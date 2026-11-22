@@ -1,12 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PandaBear.Mediator;
 using PandaBear.Scheduling;
 using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
 /// <summary>Purges expired unfinalized document drafts on a daily schedule.</summary>
-/// <param name="scopeFactory">Creates the scope that resolves the purge handler.</param>
+/// <param name="scopeFactory">Creates the scope that dispatches the purge command.</param>
 /// <param name="logger">The logger for the polling service.</param>
 internal sealed class DocumentDraftRetentionHostedService(
     IServiceScopeFactory scopeFactory,
@@ -21,8 +22,8 @@ internal sealed class DocumentDraftRetentionHostedService(
     protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
-        var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDraftsCommandHandler>();
-        var counts = await handler.Handle(new PurgeExpiredDraftsCommand(), ct).ConfigureAwait(false);
+        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+        var counts = await sender.Send(new PurgeExpiredDraftsCommand(), ct).ConfigureAwait(false);
         if (counts.Held > 0)
         {
             DocumentRetentionLog.SkippedHeld(logger, DocumentDraftRetentionServiceName, counts.Held);

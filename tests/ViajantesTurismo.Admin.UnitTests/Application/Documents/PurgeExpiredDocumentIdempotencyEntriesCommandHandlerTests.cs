@@ -20,7 +20,7 @@ public sealed class PurgeExpiredDocumentIdempotencyEntriesCommandHandlerTests
         var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, DocumentPurgeTestData.CreateRunner(new FakeDocumentPurgeEvidenceStore(), clock), gate, clock);
 
         // Act
-        var counts = await handler.Handle(TestContext.Current.CancellationToken);
+        var counts = await handler.Handle(new PurgeExpiredDocumentIdempotencyEntriesCommand(), TestContext.Current.CancellationToken);
 
         // Assert
         counts.Purged.ShouldBe(5);

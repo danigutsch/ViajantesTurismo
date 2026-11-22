@@ -125,6 +125,19 @@ purges that do exist: unfinalized drafts, document audit records and document id
 - The UI sends and shows opaque codes, dates and subject identifiers only. A hold takes effect when it is placed; the API has
   no separate effective date.
 
+### Retention and projection dispatch
+
+| Operation | Classification and dispatch |
+| --- | --- |
+| Expired document drafts | Command. The Admin draft retention job sends `PurgeExpiredDraftsCommand` through the scoped `ISender`. |
+| Expired document audits | Command. The Admin audit retention job sends `PurgeExpiredDocumentAuditsCommand` through the scoped `ISender`. |
+| Expired idempotency entries | Command. The Admin idempotency retention job sends `PurgeExpiredDocumentIdempotencyEntriesCommand` through the scoped `ISender`. |
+| Branding settings projection | Worker projection. The Admin Integration Event Worker delivers the event to `BrandingSettingsChangedIntegrationHandler` and the projection applier through its inbox and event delivery pipeline. |
+
+The purge handlers return `DocumentPurgeCounts`. Their explicit disposition scopes own the read
+committed transaction, hold check, deletion and successful purge evidence. The generated mediator
+applies the automatic transaction behavior to commands with compatible Result responses.
+
 ### Purge behavior and lock order
 
 - Every purge (draft, audit and idempotency) loads its candidates, calls `IDispositionHoldGuard.Check` once with all candidate
