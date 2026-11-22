@@ -70,3 +70,36 @@ explicit-start resources. Each container then starts once, when a test first ask
   `seaweedfs-hosted-<id>-data`; remove only exact names you recognize with `podman volume rm <name>`.
 - The gates are SharedKernel's `OnDemandResource<T>`, and `Databases` is built with
   `new PostgreSqlTestDatabasePool(ct => postgres.Get(ct))`, which contacts no server until the first database is created.
+
+## PostgreSQL fixture ownership and cleanup
+
+Use `HostedTestFixture.Databases.Create(ct)` for a test-owned database and dispose the lease with
+`await using`. Catalog gallery placement and Management security persistence use those leases.
+The Admin document stores use `PostgreSqlTestServerFixture`, which also leases through the shared
+pool and borrows the same assembly-owned server. The full Admin API and browser cases use their
+existing application stacks and the same assembly owner.
+
+SharedKernel's lease releases the database even if the test token is cancelled. Startup and
+cleanup preserve the identity of the owned resource. The first orphan-container report lacked
+an owner identity and an Aspire trace, so the validation below measures the current lifecycle.
+[SharedKernel fixture guide](https://github.com/danigutsch/PandaBear.SharedKernel/blob/main/src/SharedKernel/SharedKernel.IntegrationTesting/README.md).
+
+- The default-parallel focused run passed 44 tests covering database cancellation and isolation,
+  the Admin document store, Catalog gallery placement, and Management security persistence.
+- Thirty fresh browser test hosts also completed against the shared fixture without manual cleanup.
+- A controlled Linux interruption sent `SIGINT` while a test held an active PostgreSQL lease.
+  The probe identified the container by its mapped port and Aspire creator and resource labels.
+  The runner recorded cancellation, and that exact container was gone after 15.5 seconds.
+  Forceful process termination relies on the container runtime and can leave a resource behind.
+
+For a cleanup failure, inspect the runner's Aspire logs and the container with the matching creator
+and resource labels. Compare the owner process and resource ID before acting on a container.
+Run the four PostgreSQL coverage groups with the hosted test runner.
+
+```bash
+dotnet test --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj \
+  --filter-class '*PostgreSqlTestServerFixtureTests' \
+  --filter-class '*DocumentStorePostgreSqlTests' \
+  --filter-class '*GalleryPlacementPostgreSqlTests' \
+  --filter-class '*ManagementSecurityPersistencePostgreSqlTests'
+```
