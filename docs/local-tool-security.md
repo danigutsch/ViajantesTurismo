@@ -43,6 +43,44 @@ existing `.NET`, shell, or Docker path already covers the same need.
   reuse `.NET`, repository scripts, Docker-backed shell/markdown wrappers, and optional
   PSScriptAnalyzer instead of adding npm helper packages.
 
+## Script retention and migration
+
+Use a pinned .NET tool for reusable commands, a repository-owned .NET tool for application
+metadata, and an MSBuild target or task for build-graph work. The retained standalone shell
+and PowerShell entry points each have a separate dependency and a condition for revisiting
+that choice.
+
+| Entry point | Owner and reason to retain it | Revisit when |
+| --- | --- | --- |
+| `scripts/ensure-dotnet-sdk.sh`, `scripts/ensure-dotnet-sdk.ps1` | Build tooling. They find or optionally install the exact SDK pinned in `global.json`, even when that SDK is missing. | A cross-platform bootstrap outside .NET can verify the exact SDK archive and install it beside existing SDK versions. |
+| `setup-dev.sh`, `setup-dev.ps1` | Build tooling. They select the SDK, bootstrap the pinned SharedKernel CLI from source, and stage the verified package feed before restored .NET tools can run. | The same bootstrap can be invoked on clean Windows and Unix installations through a supported SDK or tool entry point. |
+| `.devcontainer/on-create.sh` | Developer environment. The container hook prepares writable directories and SDK state before normal development commands run. | Dev Container features can establish the same ownership, cache directories, and pinned SDK for the non-root user. |
+| `.devcontainer/post-create.sh` | Developer environment. The lifecycle hook loads the SDK environment from on-create, runs locked restore, and preserves the optional build check. | The lifecycle configuration can provide the same SDK environment and build option through direct commands. |
+| `.devcontainer/post-start.sh` | Developer environment. The lifecycle hook reloads the pinned SDK environment before attempting to trust the development certificate. | The container configuration provides the pinned SDK environment and equivalent trust setup on every start. |
+| `observability/tests/VerifyPostgreSqlServerMetrics.sh` | Observability. The fixture exercises the pinned external Collector and synthetic PostgreSQL independently of the application build. | A maintained .NET Collector fixture reproduces the healthy, disabled, denied and unavailable cases and the metadata privacy assertions. |
+
+Both C# tools under `scripts/` stay repository-owned. `ViajantesTurismo.Architecture.Tool`
+produces application architecture metadata for the shared documentation generator.
+`ViajantesTurismo.AsyncApi.Tool` owns the application event inventory and checks the
+[generated AsyncAPI contract](ASYNC_CONTRACTS.md).
+
+### Migrated commands
+
+| Former helpers | Current command or owner |
+| --- | --- |
+| `commitlint.sh`, `validate-commit-message.sh` | `sharedkernel-ci verify-commit-message` validates local messages and CI event payloads. |
+| `update-architecture-diagrams.sh`, `generate-invariant-coverage.ps1` | `sharedkernel-docs generate` owns configured generated diagrams. The standalone invariant report generator was retired. |
+| `refresh-dependency-lockfiles.sh` | `dotnet restore --force-evaluate` updates locks. `dotnet restore --locked-mode` verifies the committed locks. |
+| `ci-test-slices/`, `run-ci-test-slice.sh`, `benchmark-local-validation.sh`, `collect-ci-build-test-diagnostics.sh`, `write-ci-artifact-summary.sh` | `sharedkernel-ci select` and `run` use `.config/sharedkernel-ci.json` and emit slice timing and diagnostic evidence. |
+| `collect-test-coverage.sh`, `run-tests-with-coverage.sh` | `sharedkernel-ci run --coverage`, `coverage record-symbols`, and `coverage verify` collect and gate changed-code coverage. |
+| `install-playwright.sh` | `sharedkernel-ci install-playwright` installs browsers for the hosted test project. |
+| `lint-links.py`, `lint-links.sh`, `test-lint-links.py`, `lint-gherkin.py`, `lint-gherkin.sh`, `check-line-endings.sh` | `sharedkernel-repo verify-links`, `verify-gherkin`, and `verify-line-endings` own the checks. |
+| `lint-all.sh`, `lint-markdown.sh`, `format-powershell-file.ps1` | CI Lint and the commands listed above cover repository validation. Digest-pinned Markdownlint and optional PSScriptAnalyzer cover their respective file types. |
+| `run-devcontainer-smoke.sh`, `run-mutation-smoke.sh` | `sharedkernel-repo verify-devcontainer` and `sharedkernel-ci run-mutation-tests` run the targeted checks. |
+
+See [CI validation and local reproduction](ci/artifacts-and-local-reproduction.md) for the
+commands used by the current workflow.
+
 ## Local tool restore ordering
 
 Keep the RID-specific `aspire.cli` entry last in `.config/dotnet-tools.json`. The pinned SDK can reuse
