@@ -54,6 +54,59 @@ public sealed class PaymentLifecycleDispatchPostgreSqlTests(PostgreSqlTestServer
     }
 
     [Fact]
+    public async Task Dispatched_review_release_and_reversal_preserve_the_booking_financial_history()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
+        var (bookingId, receiptId, installmentId) = await scenario.SeedCustomerCredit(ct);
+        await using var session = scenario.Open();
+        var original = await session.Financials.GetByBookingId(bookingId, ct);
+        original.ShouldNotBeNull();
+        var reconciliation = original.Reconciliations.ShouldHaveSingleItem();
+        var allocationRequest = new AllocatePaymentCreditDto
+        {
+            ExpectedVersion = original.Version,
+            Confirmed = true,
+            Reason = FinancialReasonDto.AllocationSelected,
+            Allocations = [new InstallmentAllocationDto { TargetId = installmentId, EuroAmount = 100m }]
+        };
+        var allocated = await session.Send(new AllocateBookingPaymentCommand(bookingId, receiptId, allocationRequest,
+            "owner", IdempotencyKey.From("credit-allocation")), ct);
+        allocated.IsSuccess.ShouldBeTrue();
+        var afterAllocation = await session.Financials.GetByBookingId(bookingId, ct);
+        afterAllocation.ShouldNotBeNull();
+        var allocation = afterAllocation.Allocations.ShouldHaveSingleItem();
+
+        // Act
+        var reviewed = await session.Send(new ReviewBookingFinancialRecordCommand(bookingId, reconciliation.Id,
+            new ReviewFinancialRecordDto { ExpectedVersion = afterAllocation.Version, ChangesRequested = false },
+            "reviewer", IdempotencyKey.From("reconciliation-review")), ct);
+        var released = await session.Send(new ReleaseBookingPaymentAllocationsCommand(bookingId, allocationRequest with
+        {
+            ExpectedVersion = afterAllocation.Version + 1,
+            Allocations = [new InstallmentAllocationDto { TargetId = allocation.Id, EuroAmount = 100m }]
+        }, "owner", IdempotencyKey.From("credit-release")), ct);
+        var reversed = await session.Send(new ReverseBookingReceiptCommand(bookingId, receiptId,
+            new ApproveFinancialRecordDto { ExpectedVersion = afterAllocation.Version + 2, Confirmed = true, Reason = FinancialReasonDto.ReceiptError },
+            "owner", IdempotencyKey.From("receipt-reversal")), ct);
+
+        // Assert
+        reviewed.IsSuccess.ShouldBeTrue();
+        released.IsSuccess.ShouldBeTrue();
+        reversed.IsSuccess.ShouldBeTrue();
+        await using var restarted = scenario.Open();
+        var current = await restarted.Financials.GetByBookingId(bookingId, ct);
+        current.ShouldNotBeNull();
+        current.Version.ShouldBe(original.Version + 4);
+        current.Reviews.ShouldHaveSingleItem().TargetId.ShouldBe(reconciliation.Id);
+        current.Allocations.ShouldHaveSingleItem().ActiveEuroCredit.ShouldBe(0m);
+        current.Reversals.Select(item => item.Reason).ShouldBe([FinancialReasonDto.ReceiptError, FinancialReasonDto.AllocationSelected]);
+        current.UnallocatedEuroCredit.ShouldBe(0m);
+        current.OutstandingEuro.ShouldBe(original.OutstandingEuro);
+    }
+
+    [Fact]
     public async Task Dispatched_review_withdrawal_and_update_preserve_account_revision_history()
     {
         // Arrange

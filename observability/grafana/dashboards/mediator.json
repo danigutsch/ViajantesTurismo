@@ -19,7 +19,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**Purpose:** Monitor Admin booking and tour commands dispatched through SharedKernel.Mediator.\n\n**Audience:** Developers and operators of the Admin API.\n\n**Decision supported:** Identify commands with exceptions or slow dispatch. The Failed mediator results panel on the Traces dashboard shows domain failures such as a booking returning 404.\n"
+        "content": "**Purpose:** Monitor Admin commands dispatched through SharedKernel.Mediator.\n\n**Audience:** Developers and operators of the Admin API.\n\n**Decision supported:** Identify commands with exceptions or slow dispatch. The Failed mediator results panel on the Traces dashboard shows domain failures such as a booking returning 404.\n"
       }
     },
     {
