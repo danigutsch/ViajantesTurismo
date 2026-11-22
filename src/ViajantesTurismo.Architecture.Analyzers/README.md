@@ -97,3 +97,29 @@ HTTP JSON extensions. Move request execution into a client under `src/` and invo
 from the wrapper. Forge commands can compose the shared GitHub client. The wrapper owns
 arguments, configuration, dependency composition, and presentation.
 Creating or configuring a client for composition is permitted.
+
+## `VTARCH005` helper placement
+
+Use the advisory analyzer when architecture maintainers have identified a source or test helper for
+review. Opt in on the helper's project and identify the top-level type and reusable capability.
+Keep the capability inventory with the application decision.
+
+```xml
+<PropertyGroup>
+    <ViajantesTurismoSharedKernelHelperCandidates>Example.ElapsedHelper=clock</ViajantesTurismoSharedKernelHelperCandidates>
+    <ViajantesTurismoSharedKernelCapabilityOwners>clock=PandaBear.SharedKernel.Scheduling</ViajantesTurismoSharedKernelCapabilityOwners>
+</PropertyGroup>
+<ItemGroup>
+    <CompilerVisibleProperty Include="ViajantesTurismoSharedKernelHelperCandidates" />
+    <CompilerVisibleProperty Include="ViajantesTurismoSharedKernelCapabilityOwners" />
+</ItemGroup>
+```
+
+Use `|` between multiple entries and include the project-local analyzer reference shown above.
+The analyzer resolves aliases, generic arguments and every partial declaration. It reports the
+referenced types when they come from .NET base libraries or SharedKernel, with xUnit allowed for a
+test project. References to application or other provider types keep the helper in its owning project.
+
+Use a registered package for an exact capability owner. An unregistered capability prompts a
+review for a focused library. Verify reuse and destination compatibility before moving code.
+See the [coupling and cohesion proposal](../../docs/architecture/coupling-and-cohesion-metrics.md).

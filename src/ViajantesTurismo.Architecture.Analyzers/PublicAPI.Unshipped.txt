@@ -16,3 +16,8 @@ ViajantesTurismo.Architecture.Analyzers.ThinToolWrapperAnalyzer
 ViajantesTurismo.Architecture.Analyzers.ThinToolWrapperAnalyzer.ThinToolWrapperAnalyzer() -> void
 override ViajantesTurismo.Architecture.Analyzers.ThinToolWrapperAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
 override ViajantesTurismo.Architecture.Analyzers.ThinToolWrapperAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+const ViajantesTurismo.Architecture.Analyzers.ArchitectureDiagnosticIds.SharedKernelHelperPlacement = "VTARCH005" -> string!
+ViajantesTurismo.Architecture.Analyzers.SharedKernelHelperPlacementAnalyzer
+ViajantesTurismo.Architecture.Analyzers.SharedKernelHelperPlacementAnalyzer.SharedKernelHelperPlacementAnalyzer() -> void
+override ViajantesTurismo.Architecture.Analyzers.SharedKernelHelperPlacementAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override ViajantesTurismo.Architecture.Analyzers.SharedKernelHelperPlacementAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>

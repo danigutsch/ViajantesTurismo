@@ -6,3 +6,4 @@ VTARCH001 | Architecture | Warning | Production APIs should not call another rep
 VTARCH002 | Naming | Warning | Integration events should end with IntegrationEvent
 VTARCH003 | Naming | Warning | Domain error classes should end with Errors
 VTARCH004 | Architecture | Warning | Tool wrappers delegate HTTP requests to source clients
+VTARCH005 | Architecture | Info | Opted-in helper placement evidence
