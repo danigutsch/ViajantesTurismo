@@ -61,7 +61,7 @@ public sealed class ImportContext
         new(CustomerStore);
 
     public CustomerImportWorkflowService CreateWorkflowService() =>
-        new(CustomerStore, CreateConflictDetector(), CreateHandler(), TimeProvider.System);
+        new(CustomerStore, CreateConflictDetector(), new CustomerImportTestSender(CreateHandler().Handle), TimeProvider.System);
 
     public static string BuildValidCsv(int rowCount)
     {

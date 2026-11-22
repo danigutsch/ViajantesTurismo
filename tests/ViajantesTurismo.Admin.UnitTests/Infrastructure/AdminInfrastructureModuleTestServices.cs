@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PandaBear.AuditTrail;
 using PandaBear.Domain.EntityFrameworkCore;
+using PandaBear.Mediator;
 using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
@@ -83,6 +84,7 @@ internal static class AdminInfrastructureModuleTestServices
 
         builder.AddApplication();
         builder.AddInfrastructure();
+        builder.Services.AddSharedKernelMediator();
 
         return CreateScope(BuildValidatedServiceProvider(builder.Services));
     }
@@ -102,6 +104,7 @@ internal static class AdminInfrastructureModuleTestServices
         var builder = CreateConfiguredApplicationBuilder();
         builder.AddApplication();
         builder.AddInfrastructure(addRuntimeBackgroundServices: false);
+        builder.Services.AddSharedKernelMediator();
 
         return CreateScope(BuildValidatedServiceProvider(builder.Services));
     }

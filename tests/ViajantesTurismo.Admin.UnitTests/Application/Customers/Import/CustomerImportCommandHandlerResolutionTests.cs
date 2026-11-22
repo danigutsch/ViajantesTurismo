@@ -24,13 +24,15 @@ public sealed class CustomerImportCommandHandlerResolutionTests
         var store = new FakeCustomerStore();
         var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), TimeProvider.System);
         var csv = CustomerImportWorkflowScenario.Csv(CustomerImportWorkflowCsvRows.Build("Ana", "Silva", Email));
-        (await handler.Handle(new CustomerImportCommand(csv, false), TestContext.Current.CancellationToken)).SuccessCount.ShouldBe(1);
+        var initialImport = await handler.Handle(new CustomerImportCommand(csv, false), TestContext.Current.CancellationToken);
+        initialImport.ShouldBeSuccess().SuccessCount.ShouldBe(1);
         var again = CustomerImportWorkflowScenario.Csv(CustomerImportWorkflowCsvRows.Build("Beatriz", "Silva", Email));
 
         // Act
-        var result = await handler.Handle(new CustomerImportCommand(again, false), TestContext.Current.CancellationToken);
+        var response = await handler.Handle(new CustomerImportCommand(again, false), TestContext.Current.CancellationToken);
 
         // Assert
+        var result = response.ShouldBeSuccess();
         result.SuccessCount.ShouldBe(0);
         result.ErrorCount.ShouldBe(1);
         store.AllCustomers.ShouldHaveSingleItem().PersonalInfo.FirstName.ShouldBe("Ana");
@@ -46,12 +48,15 @@ public sealed class CustomerImportCommandHandlerResolutionTests
         var csv = CustomerImportWorkflowScenario.Csv(CustomerImportWorkflowCsvRows.Build("Ana", "Silva", Email));
 
         // Act
-        var result = await handler.Handle(
-            new CustomerImportCommand(csv, false),
-            TestContext.Current.CancellationToken,
-            new Dictionary<string, string> { [Email] = "overwrite" });
+        var response = await handler.Handle(
+            new CustomerImportCommand(csv, false)
+            {
+                ConflictResolutions = new Dictionary<string, string> { [Email] = "overwrite" },
+            },
+            TestContext.Current.CancellationToken);
 
         // Assert
+        var result = response.ShouldBeSuccess();
         result.SuccessCount.ShouldBe(0);
         result.ErrorCount.ShouldBe(1);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);

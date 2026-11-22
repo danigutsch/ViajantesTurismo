@@ -62,9 +62,10 @@ public sealed class CustomerImportSteps(ImportContext context)
     public async Task WhenIRunTheImport()
     {
         var handler = context.CreateHandler();
-        context.Result = await handler.Handle(
+        var result = await handler.Handle(
             new CustomerImportCommand(context.CsvContent, context.DryRun),
             CancellationToken.None);
+        context.Result = result.ShouldBeSuccess();
     }
 
     [When("I run the import in dry-run mode")]
@@ -72,9 +73,10 @@ public sealed class CustomerImportSteps(ImportContext context)
     {
         context.DryRun = true;
         var handler = context.CreateHandler();
-        context.Result = await handler.Handle(
+        var result = await handler.Handle(
             new CustomerImportCommand(context.CsvContent, DryRun: true),
             CancellationToken.None);
+        context.Result = result.ShouldBeSuccess();
     }
 
     [When("I run the import workflow pre-check")]
@@ -104,9 +106,10 @@ public sealed class CustomerImportSteps(ImportContext context)
     {
         context.ReplaceBlankEmailsWithGeneratedValidEmails();
         var handler = context.CreateHandler();
-        context.Result = await handler.Handle(
+        var result = await handler.Handle(
             new CustomerImportCommand(context.CsvContent, context.DryRun),
             CancellationToken.None);
+        context.Result = result.ShouldBeSuccess();
     }
 
     [Then("{int} customer should be imported successfully")]

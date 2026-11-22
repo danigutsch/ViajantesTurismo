@@ -10,6 +10,16 @@ namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Customers;
 [TestScope(TestScope.Integration)]
 public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
+    private const string ImportHeaders =
+        "FirstName,LastName,Gender,BirthDate,Nationality,Occupation,NationalId,IdNationality," +
+        "Email,Mobile,Street,Neighborhood,PostalCode,City,State,Country," +
+        "WeightKg,HeightCentimeters,BikeType,RoomType,BedType,EmergencyContactName,EmergencyContactMobile";
+
+    private const string ImportRow =
+        "Ana,Silva,Male,1990-01-01,Brazilian,Engineer,A12345678,BR," +
+        "email@example.com,+5511999999999,Rua A,Centro,01000-000,Sao Paulo,SP,BR," +
+        "75,175,Regular,DoubleOccupancy,SingleBed,Emergency Name,+5511888888888";
+
     private CustomerEmailPostgreSqlScenario? scenario;
 
     private CustomerEmailPostgreSqlScenario Scenario =>
@@ -91,6 +101,79 @@ public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fix
         foundAfterUp.Id.ShouldBe(original.Id);
         foundAfterReapply.ShouldNotBeNull();
         foundAfterReapply.Id.ShouldBe(readded.Id);
+    }
+
+    [Fact]
+    public async Task Import_rolls_back_every_row_when_a_competing_email_wins_during_save()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await Scenario.ApplyLatestMigration(ct);
+        const string existingEmail = "existing-import@example.com";
+        const string newEmail = "new-import@example.com";
+        const string racedEmail = "raced-import@example.com";
+        var original = await Scenario.AddCustomer(existingEmail, ct);
+        var rows = new[] { existingEmail, newEmail, racedEmail }
+            .Select(email => ImportRow.Replace("email@example.com", email, StringComparison.Ordinal));
+        var csv = ImportHeaders + "\n" + string.Join('\n', rows);
+        var resolutions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [existingEmail] = "overwrite"
+        };
+
+        // Act
+        var (result, usedTransaction, saveCalls) = await Scenario.CommitImportWithConcurrentInsert(csv, resolutions, racedEmail, ct);
+        var persisted = await Scenario.GetByEmail(existingEmail, ct);
+        var count = await Scenario.CountCustomers(ct);
+
+        // Assert
+        result.SuccessCount.ShouldBe(0);
+        result.Conflicts.ShouldNotBeNull().ShouldContain(conflict => conflict.Email == racedEmail);
+        persisted.ShouldNotBeNull().PersonalInfo.FirstName.ShouldBe(original.PersonalInfo.FirstName);
+        count.ShouldBe(2);
+        saveCalls.ShouldBe(1);
+        usedTransaction.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task A_dispatched_dry_run_reports_rows_without_saving_customers()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await Scenario.ApplyLatestMigration(ct);
+        var csv = ImportHeaders + "\n" + ImportRow;
+
+        // Act
+        var (result, saveCalls) = await Scenario.DryRunImport(csv, ct);
+        var count = await Scenario.CountCustomers(ct);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.SuccessCount.ShouldBe(1);
+        result.Value.ErrorCount.ShouldBe(0);
+        saveCalls.ShouldBe(0);
+        count.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Retrying_after_the_first_database_flush_persists_the_import_once()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await Scenario.ApplyLatestMigration(ct);
+        var secondRow = ImportRow.Replace("email@example.com", "second@example.com", StringComparison.Ordinal);
+        var csv = ImportHeaders + "\n" + ImportRow + "\n" + secondRow;
+
+        // Act
+        var (result, saveCalls) = await Scenario.RetryImportAfterRealSave(csv, ct);
+        var count = await Scenario.CountCustomers(ct);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.SuccessCount.ShouldBe(2);
+        result.Value.ErrorCount.ShouldBe(0);
+        saveCalls.ShouldBe(2);
+        count.ShouldBe(2);
     }
 
     [Fact]

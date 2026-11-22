@@ -1,3 +1,5 @@
+using PandaBear.Mediator;
+using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Import;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
@@ -8,7 +10,14 @@ namespace ViajantesTurismo.Admin.Application.Customers.Import;
 /// <param name="CsvContent">Raw CSV text, where the first line is the header row.</param>
 /// <param name="DryRun">When true, parsing and mapping are performed but changes are not persisted.</param>
 public sealed record CustomerImportCommand(string CsvContent, bool DryRun)
+    : ICommand<Result<ImportResult>>
 {
+    /// <summary>Gets the optional conflict resolutions keyed by customer email.</summary>
+    public IReadOnlyDictionary<string, string>? ConflictResolutions
+    {
+        get; init;
+    }
+
     /// <summary>Gets the already parsed document; when set, the handler uses it instead of parsing <c>CsvContent</c>.</summary>
     public CsvDocument? Document
     {

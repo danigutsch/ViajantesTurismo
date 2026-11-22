@@ -35,9 +35,10 @@ public sealed class CustomerImportParseOnceTests
         var command = new CustomerImportCommand(string.Empty, false) { Document = document };
 
         // Act
-        var result = await handler.Handle(command, TestContext.Current.CancellationToken);
+        var response = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
+        var result = response.ShouldBeSuccess();
         result.SuccessCount.ShouldBe(2);
         result.ErrorCount.ShouldBe(0);
     }

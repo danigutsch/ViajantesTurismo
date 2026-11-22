@@ -1,10 +1,47 @@
+using PandaBear.Results;
+using PandaBear.Testing;
 using ViajantesTurismo.Admin.Application.Customers.Import;
+using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Customers.Import;
 
 public sealed class CustomerImportWorkflowEdgeTests
 {
+    [Theory]
+    [InlineData(true, "Import")]
+    [InlineData(false, "Csv")]
+    [TestFocus(TestFocus.Regression)]
+    public async Task Import_adds_the_dispatched_failure_to_the_row_errors(bool hasValidationField, string expectedField)
+    {
+        // Arrange
+        const string detail = "The import could not be committed.";
+        var failure = hasValidationField
+            ? Result.Invalid<ImportResult>("Import validation failed.", "Import", detail)
+            : Result.Conflict<ImportResult>(detail);
+        var store = new FakeCustomerStore();
+        var sender = new CustomerImportTestSender((_, _) => ValueTask.FromResult(failure));
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), sender, TimeProvider.System);
+        var csv = CustomerImportWorkflowScenario.Csv(
+            CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "ana@example.com"),
+            CustomerImportWorkflowCsvRows.Build(string.Empty, "Souza", "bia@example.com"));
+
+        // Act
+        var result = await sut.Import(csv, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.SuccessCount.ShouldBe(0);
+        result.ErrorCount.ShouldBe(2);
+        result.SuccessRows.ShouldNotBeNull().ShouldBeEmpty();
+        var errors = result.ErrorRows.ShouldNotBeNull();
+        errors.ShouldHaveCount(2);
+        errors[0].LineNumber.ShouldBe(3);
+        errors[1].LineNumber.ShouldBe(1);
+        errors[1].Field.ShouldBe(expectedField);
+        errors[1].Message.ShouldBe(detail);
+        store.AllCustomers.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task Commit_reports_a_retry_error_when_persistence_rejects_an_import_without_success_candidates()
     {
@@ -13,7 +50,7 @@ public sealed class CustomerImportWorkflowEdgeTests
         var store = new ScriptedCustomerStore(inner, call => call == 1);
         var unitOfWork = new ConcurrentCustomerEmailConflictUnitOfWork(inner, "other@example.com");
         var handler = new CustomerImportCommandHandler(store, unitOfWork, TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, TimeProvider.System);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), new CustomerImportTestSender(handler.Handle), TimeProvider.System);
         var csv = CustomerImportWorkflowScenario.Csv(CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "ana@example.com"));
 
         // Act
@@ -35,7 +72,7 @@ public sealed class CustomerImportWorkflowEdgeTests
         var inner = new FakeCustomerStore();
         var store = new ScriptedCustomerStore(inner, call => call == 2 ? true : null);
         var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, TimeProvider.System);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), new CustomerImportTestSender(handler.Handle), TimeProvider.System);
         var csv = CustomerImportWorkflowScenario.Csv(CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "ana@example.com"));
 
         // Act
@@ -55,7 +92,7 @@ public sealed class CustomerImportWorkflowEdgeTests
         var inner = new FakeCustomerStore();
         var store = new ScriptedCustomerStore(inner, hideCustomers: true);
         var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, TimeProvider.System);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), new CustomerImportTestSender(handler.Handle), TimeProvider.System);
         var csv = CustomerImportWorkflowScenario.Csv(CustomerImportWorkflowCsvRows.Build("Ana", "Silva", "ana@example.com"));
 
         // Act
@@ -90,7 +127,7 @@ public sealed class CustomerImportWorkflowEdgeTests
         // Arrange
         var store = new FakeCustomerStore();
         var handler = new CustomerImportCommandHandler(store, new FakeUnitOfWork(), TimeProvider.System);
-        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), handler, TimeProvider.System);
+        var sut = new CustomerImportWorkflowService(store, new CustomerImportConflictDetector(store), new CustomerImportTestSender(handler.Handle), TimeProvider.System);
         var csv = CustomerImportWorkflowScenario.Csv(CustomerImportWorkflowCsvRows.Build(string.Empty, string.Empty, "ana@example.com"));
 
         // Act
