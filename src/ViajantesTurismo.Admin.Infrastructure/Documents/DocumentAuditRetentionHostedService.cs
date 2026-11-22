@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PandaBear.Mediator;
 using PandaBear.Scheduling;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -21,9 +22,9 @@ internal sealed class DocumentAuditRetentionHostedService(
     protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
-        var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentAuditsCommandHandler>();
+        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
         var auditContext = DocumentAuditContext.Create(SystemActorId, Guid.NewGuid().ToString("N")).Value;
-        var counts = await handler.Handle(new PurgeExpiredDocumentAuditsCommand(auditContext), ct).ConfigureAwait(false);
+        var counts = await sender.Send(new PurgeExpiredDocumentAuditsCommand(auditContext), ct).ConfigureAwait(false);
         if (counts.Held > 0)
         {
             DocumentRetentionLog.SkippedHeld(logger, DocumentAuditRetentionServiceName, counts.Held);

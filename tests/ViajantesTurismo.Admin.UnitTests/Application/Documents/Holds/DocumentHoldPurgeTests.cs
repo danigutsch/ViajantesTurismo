@@ -69,7 +69,7 @@ public sealed class DocumentHoldPurgeTests
         var handler = DocumentAuditTestData.CreatePurgeHandler(auditStore, new FakeUnitOfWork(), Now, guard);
 
         // Act
-        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken);
+        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken).AsTask();
         var thrown = await purge.ShouldThrow<DispositionHoldStateUnknownException>();
 
         // Assert
@@ -151,7 +151,7 @@ public sealed class DocumentHoldPurgeTests
         var handler = new PurgeExpiredDocumentIdempotencyEntriesCommandHandler(store, DocumentPurgeTestData.CreateRunner(new FakeDocumentPurgeEvidenceStore(), clock), new DocumentHoldGate(guard, new InMemoryDispositionHoldStore(), clock), clock);
 
         // Act
-        Func<Task> purge = () => handler.Handle(TestContext.Current.CancellationToken);
+        Func<Task> purge = () => handler.Handle(new PurgeExpiredDocumentIdempotencyEntriesCommand(), TestContext.Current.CancellationToken).AsTask();
 
         // Assert
         await purge.ShouldThrow<DispositionHoldStateUnknownException>();

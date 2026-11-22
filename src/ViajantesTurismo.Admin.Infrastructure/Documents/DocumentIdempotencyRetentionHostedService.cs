@@ -1,12 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PandaBear.Mediator;
 using PandaBear.Scheduling;
 using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
 /// <summary>Purges document idempotency entries past their replay window on a daily schedule.</summary>
-/// <param name="scopeFactory">Creates the scope that resolves the purge handler.</param>
+/// <param name="scopeFactory">Creates the scope that dispatches the purge command.</param>
 /// <param name="logger">The logger for the polling service.</param>
 internal sealed class DocumentIdempotencyRetentionHostedService(
     IServiceScopeFactory scopeFactory,
@@ -29,8 +30,8 @@ internal sealed class DocumentIdempotencyRetentionHostedService(
     protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
-        var handler = scope.ServiceProvider.GetRequiredService<PurgeExpiredDocumentIdempotencyEntriesCommandHandler>();
-        var counts = await handler.Handle(ct).ConfigureAwait(false);
+        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+        var counts = await sender.Send(new PurgeExpiredDocumentIdempotencyEntriesCommand(), ct).ConfigureAwait(false);
         LogHeld(counts.Held);
         if (counts.Unattributed > 0)
         {

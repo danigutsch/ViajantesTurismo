@@ -7,14 +7,14 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 public sealed class DocumentAuditRetentionHostedServiceTests
 {
     [Fact]
-    public async Task RunBatch_purges_expired_audit_records_through_the_registered_handler()
+    public async Task RunBatch_purges_expired_audit_records_through_the_generated_mediator()
     {
         // Arrange
         var now = new DateTimeOffset(2026, 7, 16, 12, 0, 0, TimeSpan.Zero);
         await using var fixture = DocumentAuditRetentionHostedServiceFixture.Create(now, 2);
 
         // Act
-        var removedCount = await fixture.RunBatch(CancellationToken.None);
+        var removedCount = await fixture.RunBatch(TestContext.Current.CancellationToken);
 
         // Assert
         removedCount.ShouldBe(2);

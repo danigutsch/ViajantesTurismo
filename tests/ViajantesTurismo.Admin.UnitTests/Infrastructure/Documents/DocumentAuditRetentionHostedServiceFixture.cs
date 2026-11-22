@@ -1,9 +1,9 @@
 using PandaBear.DispositionHold;
+using PandaBear.Mediator;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using ViajantesTurismo.Admin.Application;
-using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -50,7 +50,7 @@ internal sealed class DocumentAuditRetentionHostedServiceFixture : IAsyncDisposa
         services.AddSingleton<IDispositionHoldGuard>(new FakeDispositionHoldGuard());
         services.AddSingleton<IDispositionHoldStore>(new InMemoryDispositionHoldStore());
         services.AddScoped<DocumentHoldGate>();
-        services.AddScoped<PurgeExpiredDocumentAuditsCommandHandler>();
+        services.AddSharedKernelMediator();
         var provider = services.BuildServiceProvider();
 
         return new DocumentAuditRetentionHostedServiceFixture(provider, auditStore);

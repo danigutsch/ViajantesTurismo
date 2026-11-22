@@ -70,7 +70,7 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandlerTests
         var handler = DocumentAuditTestData.CreatePurgeHandler(auditStore, unitOfWork, Now);
 
         // Act
-        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken);
+        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken).AsTask();
         var thrown = await purge.ShouldThrow<InvalidOperationException>();
 
         // Assert
@@ -91,7 +91,7 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandlerTests
         var handler = DocumentAuditTestData.CreatePurgeHandler(auditStore, unitOfWork, Now);
 
         // Act
-        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken);
+        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken).AsTask();
         var thrown = await purge.ShouldThrow<InvalidOperationException>();
 
         // Assert
@@ -112,7 +112,7 @@ public sealed class PurgeExpiredDocumentAuditsCommandHandlerTests
         var handler = DocumentAuditTestData.CreatePurgeHandler(auditStore, new ThrowingUnitOfWork(evidenceFailure), Now);
 
         // Act
-        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken);
+        Func<Task> purge = () => handler.Handle(DocumentAuditTestData.CreatePurgeCommand(), TestContext.Current.CancellationToken).AsTask();
         var thrown = await purge.ShouldThrow<AggregateException>();
 
         // Assert
