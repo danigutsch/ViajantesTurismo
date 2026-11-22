@@ -46,7 +46,7 @@
       "file": ".config/sharedkernel-candidate.json",
       "values": {
         "packageVersion": "0.1.0-alpha.716.1",
-        "libraryRevision": "4f1b0325c9073a36103b21301dd80f55cbeaf314",
+        "libraryRevision": "0567a3ce1101ba19758082a597cd60b26ee6502f",
         "libraryDirty": false
       }
     },
