@@ -48,8 +48,9 @@ describes the production script adoption and rehearsal.
 The [PostgreSQL baseline rehearsal](Baselines/PostgreSql/README.md) records the fresh SQL inputs,
 checksums and verification against the owning contexts.
 
-The history was reset before launch: each context has one `Initial*` migration. A local database built from the old
-history must be recreated; see "Migration history reset before launch" in `docs/CODING_GUIDELINES.md`.
+Each context starts with an `Initial*` migration from the pre-launch history reset. Use the offline migration list
+above for the complete sequence. Local databases created before the reset require recreation. See the
+[history reset guidance](../../docs/CODING_GUIDELINES.md#migration-history-reset-before-launch).
 
 ## Execution
 

@@ -467,12 +467,12 @@ lists the owning projects and the offline validation commands.
 
 #### Migration history reset before launch
 
-Nothing has been deployed, so the migration history was reset before launch: each context (`AdminWriteDbContext`,
-`CatalogDbContext`, `BrandingDbContext`, `ManagementSecurityDbContext`) has one `Initial*` migration that creates the
-final schema. The transport and read contexts share those schemas and have no migrations of their own; the Catalog
-event-sourcing tables come from `PostgreSqlEventSourcingSchema.Initialize`, not from a migration. The hand-written
-SQL of the former `InitialAdmin` (the `LC_CTYPE` guard, the finalized-document constraint and the document, audit and
-payment triggers, and the `Down` guard that refuses to erase payment history) is kept in the new `InitialAdmin`.
+The pre-launch history reset gave each context (`AdminWriteDbContext`, `CatalogDbContext`, `BrandingDbContext`,
+`ManagementSecurityDbContext`) an `Initial*` baseline. Later migrations build on that baseline. Use the owning
+project's offline migration list for the complete sequence. The transport and read contexts use their owners'
+schemas and migration histories. The Catalog event-sourcing tables come from `PostgreSqlEventSourcingSchema.Initialize`.
+The new `InitialAdmin` retains the former `LC_CTYPE` guard, finalized-document constraint, document, audit and payment
+triggers, and the `Down` guard that protects payment history.
 
 A database created from the old history cannot be upgraded, because its `__EFMigrationsHistory` names migrations that
 no longer exist. Local data is ephemeral by default, so stopping and starting `dotnet tool run aspire run` creates an
