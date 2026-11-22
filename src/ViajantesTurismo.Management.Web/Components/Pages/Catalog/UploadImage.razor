@@ -68,7 +68,7 @@
                             <UploadStatus State="@entry.Operation"
                                           Label="Catalog image upload status"
                                           class="alert alert-light border"
-                                          OnCancel="CancelUpload"
+                                          OnCancel="() => CancelUpload(entry)"
                                           CancelClass="btn btn-sm btn-outline-danger mt-2"
                                           CancelLabelFormat="Cancel upload of {0}"
                                           ProgressClass="w-100 mt-2"
@@ -140,7 +140,7 @@
     private static readonly HashSet<string> AcceptedImageTypeSet = new(AcceptedImageTypes.Split(','), StringComparer.OrdinalIgnoreCase);
     private readonly List<CatalogImageUploadEntry> _entries = [];
     private string? _selectionError;
-    private CatalogImageUploadEntry? _activeEntry;
+    private (CatalogImageUploadEntry Entry, CancellationTokenSource Cancellation)? _activeUpload;
     private CancellationTokenSource? _activeBatch;
 
     private static string SelectionCountMessage => $"Select up to {MaximumSelectionCount} images at a time.";
@@ -223,8 +223,10 @@
                     break;
                 }
 
-                _activeEntry = entry;
-                await UploadEntry(entry, batch.Token);
+                using var linkedCancellation = entries.Count > 1 ? CancellationTokenSource.CreateLinkedTokenSource(batch.Token) : null;
+                var uploadCancellation = linkedCancellation ?? batch;
+                _activeUpload = (entry, uploadCancellation);
+                await UploadEntry(entry, uploadCancellation.Token);
                 if (!batch.IsCancellationRequested)
                 {
                     StateHasChanged();
@@ -235,7 +237,7 @@
         {
             if (ReferenceEquals(_activeBatch, batch))
             {
-                _activeEntry = null;
+                _activeUpload = null;
                 _activeBatch = null;
             }
         }
@@ -314,18 +316,22 @@
         }
     }
 
-    private async Task CancelUpload()
+    private async Task CancelUpload(CatalogImageUploadEntry entry)
     {
-        var batch = _activeBatch;
-        var operation = _activeEntry?.Operation;
-        if (batch is null || operation is null || !operation.Cancel(operation.OperationId))
+        if (_activeUpload is not { } upload || !ReferenceEquals(entry, upload.Entry) ||
+            !entry.Operation.Cancel(entry.Operation.OperationId))
         {
             return;
         }
 
-        _activeBatch = null;
-        _activeEntry = null;
-        await batch.CancelAsync();
+        if (ReferenceEquals(_activeBatch, upload.Cancellation))
+        {
+            // A single upload can be retried while the canceled request is still unwinding.
+            _activeBatch = null;
+            _activeUpload = null;
+        }
+
+        await upload.Cancellation.CancelAsync();
     }
 
     private string GetSubmitButtonLabel()
@@ -351,6 +357,16 @@
 
     public async ValueTask DisposeAsync()
     {
-        await CancelUpload();
+        var batch = _activeBatch;
+        if (batch is null)
+        {
+            return;
+        }
+
+        var operation = _activeUpload?.Entry.Operation;
+        operation?.Cancel(operation.OperationId);
+        _activeBatch = null;
+        _activeUpload = null;
+        await batch.CancelAsync();
     }
 }

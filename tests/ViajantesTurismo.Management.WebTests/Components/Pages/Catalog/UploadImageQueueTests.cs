@@ -141,6 +141,88 @@ public sealed class UploadImageQueueTests : BunitContext
     }
 
     [Fact]
+    public async Task Canceling_an_active_image_keeps_the_submitted_sibling_uploading_without_another_submit()
+    {
+        // Arrange
+        var firstStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstCompletion = new TaskCompletionSource<CatalogMediaImageDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var sent = new List<(string FileName, CancellationToken Token)>();
+        var first = new FakeBrowserFile([0x01], "mountains.jpg", "image/jpeg");
+        var second = new FakeBrowserFile([0x01], "river.png", "image/png");
+        catalogApi.UploadTourImageHandler = (_, request, _, ct) =>
+        {
+            sent.Add((request.FileName, ct));
+            if (request.FileName == first.Name)
+            {
+                firstStarted.TrySetResult();
+                return firstCompletion.Task;
+            }
+
+            return Task.FromResult<CatalogMediaImageDto?>(new CatalogMediaImageDto
+            {
+                Id = Guid.CreateVersion7(),
+                AltText = request.AltText,
+                ResponsiveVariants = []
+            });
+        };
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([first, second])));
+        await cut.Find("#altText").ChangeAsync("Mountain pass");
+        await cut.Find("#altText-1").ChangeAsync("Quiet river");
+
+        // Act
+        var submit = cut.Find("form").SubmitAsync();
+        await firstStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        await cut.Find("button[aria-label='Cancel upload of mountains.jpg']").ClickAsync();
+        var secondStreamWasUnopened = second.MaximumAllowedSize is null;
+        firstCompletion.TrySetCanceled(sent[0].Token);
+        await submit;
+
+        // Assert
+        secondStreamWasUnopened.ShouldBeTrue();
+        sent.Select(request => request.FileName).ShouldBe([first.Name, second.Name]);
+        sent[0].Token.IsCancellationRequested.ShouldBeTrue();
+        sent[1].Token.IsCancellationRequested.ShouldBeFalse();
+        var rows = cut.FindAll("ol[aria-label='Selected images'] li");
+        rows[0].QuerySelector("[data-upload-status]").ShouldNotBeNull().TextContent
+            .ShouldBe("Canceled: mountains.jpg. Retry when ready.");
+        rows[1].QuerySelector("[role='status']").ShouldNotBeNull().TextContent
+            .ShouldBe("Image uploaded and awaiting processing.");
+    }
+
+    [Fact]
+    public async Task Leaving_the_page_cancels_the_active_image_and_does_not_start_queued_images()
+    {
+        // Arrange
+        var firstStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstCompletion = new TaskCompletionSource<CatalogMediaImageDto?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        catalogApi.UploadTourImageHandler = (_, _, _, _) =>
+        {
+            firstStarted.TrySetResult();
+            return firstCompletion.Task;
+        };
+        var cut = Render<UploadImage>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
+        var first = new FakeBrowserFile([0x01], "mountains.jpg", "image/jpeg");
+        var second = new FakeBrowserFile([0x01], "river.png", "image/png");
+        await cut.InvokeAsync(() => cut.FindComponent<InputFile>().Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs([first, second])));
+        await cut.Find("#altText").ChangeAsync("Mountain pass");
+        await cut.Find("#altText-1").ChangeAsync("Quiet river");
+        var submit = cut.Find("form").SubmitAsync();
+        await firstStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
+        var requestToken = catalogApi.LastUploadCancellationToken;
+
+        // Act
+        await DisposeComponentsAsync();
+        firstCompletion.TrySetCanceled(requestToken);
+        await submit;
+
+        // Assert
+        requestToken.IsCancellationRequested.ShouldBeTrue();
+        second.MaximumAllowedSize.ShouldBeNull();
+        catalogApi.UploadTourImageCallCount.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task Invalid_files_get_inline_guidance_and_only_the_valid_file_reaches_the_client()
     {
         // Arrange
