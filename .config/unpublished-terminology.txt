@@ -1,0 +1,6 @@
+legacy compatibility layer
+legacy compatibility shim
+temporary compatibility shim
+LegacyCompatibilityLayer
+LegacyCompatibilityShim
+BackwardCompatibilityShim
