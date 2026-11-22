@@ -41,6 +41,7 @@ See [Test guidelines](../TEST_GUIDELINES.md) for how tests use these helpers.
 | `PostgreSqlTestServerFixture` and `PostgreSqlTestServerFixtureTestQueries` | `HostedTests/Infrastructure` | 28 | Project-level reusable. Depends on `HostedTestFixture`, so it stays in this repository |
 | `HostedTestCleanup`, `AdvisoryLockWaitScope` | `HostedTests/Infrastructure` | 8, 3 | Local-only to `HostedTests` |
 | `Catalog.Testing` stores, locks and `CatalogApiTestHost` | `tests/ViajantesTurismo.Catalog.Testing/Infrastructure` | shared by Catalog unit, API and behavior suites | Project-level reusable. Catalog ports only |
+| `StubImageTextGenerator` | `tests/ViajantesTurismo.Catalog.Testing/Infrastructure` | Catalog unit and API suites | Project-level reusable. Shares the fixed-result and request-capture behavior across Catalog |
 | `ReadObservingStream`, `GatedChunkContent`, `SlowUpload`, `RawHttpUpload` and related wire probes | `tests/ViajantesTurismo.UploadWire.Testing` | shared by upload wire tests | Project-level reusable. Upload wire behavior only |
 
 ## Consolidated in this change
@@ -61,6 +62,12 @@ See [Test guidelines](../TEST_GUIDELINES.md) for how tests use these helpers.
   probe `ReadObservingStream` stays local because it reports to the VT request-lifetime probe.
 - **Logger captures.** The six local logger captures are replaced by the SharedKernel `RecordingLogger` and
   `RecordingLoggerProvider`.
+- **Upload malware scanner doubles.** The Catalog Branding and Admin import Kestrel tests use the
+  SharedKernel `TestMalwareScanner` and `CallProxy`. Their local probes record application-specific
+  facts about the spooled intake lease, request cancellation and when the client sent each chunk.
+- **Image text generator.** The Catalog API and unit suites share one `StubImageTextGenerator`.
+  The current SharedKernel candidate has no image generator double. Both consumers exercise
+  Catalog's accessibility-draft behavior, so the stub lives in Catalog test support.
 - **Browser files and distributed caches.** The local browser file and throwing distributed cache doubles are
   replaced by the SharedKernel `FakeBrowserFile` and `ThrowingDistributedCache`. Stream form files and
   blocking-first distributed caches stay local because the shared types do not cover them.

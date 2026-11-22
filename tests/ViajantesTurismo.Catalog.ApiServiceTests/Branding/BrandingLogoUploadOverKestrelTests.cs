@@ -172,12 +172,12 @@ public sealed class BrandingLogoUploadOverKestrelTests
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
-        var scanner = new BrandingLeaseCancellationScanner();
-        await using var scenario = BrandingLogoKestrelScenario.Start(scanner, requestTimeout: TimeSpan.FromSeconds(2));
+        var scanProbe = new BrandingLeaseScanProbe();
+        await using var scenario = BrandingLogoKestrelScenario.Start(scanProbe.Scanner, requestTimeout: TimeSpan.FromSeconds(2));
         using var upload = new RawHttpUpload();
         var body = BrandingTestImages.CreateUncompressedLogoPng();
         await scenario.SendPartialUpload(upload, body, body.Length, ct);
-        var lease = await scanner.Entered.WaitAsync(WireTimeout.Default, ct);
+        var (lease, scanCancellation) = await scanProbe.WaitForScan(ct);
 
         // Act
         var response = await BrandingLogoKestrelScenario.ReadStatusOrAbort(upload, TimeSpan.FromSeconds(8), ct);
@@ -185,7 +185,7 @@ public sealed class BrandingLogoUploadOverKestrelTests
 
         // Assert
         response.ShouldBe("HTTP/1.1 504 Gateway Timeout");
-        scanner.Cancelled.IsCompletedSuccessfully.ShouldBeTrue();
+        scanCancellation.IsCancellationRequested.ShouldBeTrue();
         var file = lease.ShouldBeOfType<FileStream>();
         file.CanRead.ShouldBeFalse();
         File.Exists(file.Name).ShouldBeFalse();
@@ -198,21 +198,21 @@ public sealed class BrandingLogoUploadOverKestrelTests
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
-        var scanner = new BrandingLeaseCancellationScanner();
-        await using var scenario = BrandingLogoKestrelScenario.Start(scanner);
+        var scanProbe = new BrandingLeaseScanProbe();
+        await using var scenario = BrandingLogoKestrelScenario.Start(scanProbe.Scanner);
         using var upload = new RawHttpUpload();
         var body = BrandingTestImages.CreateUncompressedLogoPng();
         await scenario.SendPartialUpload(upload, body, body.Length, ct);
-        var lease = await scanner.Entered.WaitAsync(WireTimeout.Default, ct);
+        var (lease, scanCancellation) = await scanProbe.WaitForScan(ct);
         var file = lease.ShouldBeOfType<FileStream>();
         file.CanRead.ShouldBeTrue();
 
         // Act
         upload.Abort();
-        await scanner.Cancelled.WaitAsync(WireTimeout.Default, ct);
         await scenario.Probe.Finished.WaitAsync(WireTimeout.Default, ct);
 
         // Assert
+        scanCancellation.IsCancellationRequested.ShouldBeTrue();
         file.CanRead.ShouldBeFalse();
         File.Exists(file.Name).ShouldBeFalse();
         scenario.Store.Logos.ShouldBeEmpty();

@@ -1,10 +1,10 @@
 using PandaBear.AI;
 
-namespace ViajantesTurismo.Catalog.ApiServiceTests;
+namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 /// <summary>Image text generator stub that returns a fixed result, records the request, and can be told to throw.</summary>
 /// <param name="result">The result returned for every generation call.</param>
-internal sealed class StubImageTextGenerator(ImageTextGenerationResult result) : IImageTextGenerator
+public sealed class StubImageTextGenerator(ImageTextGenerationResult result) : IImageTextGenerator
 {
     private Exception? exception;
 
