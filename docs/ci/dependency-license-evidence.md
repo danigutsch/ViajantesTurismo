@@ -622,3 +622,15 @@ the repository owner approved carrying forward the license-metadata exceptions f
 `2.25.29` (MIT) and Magick.NET-Q8-AnyCPU `15.1.0` (Apache-2.0). Every resolved lock entry for
 each package has the same content hash as the previous candidate. The approval applies to these
 two versions and this candidate only. The native redistribution review remains open.
+
+## BFF cache concurrency candidate
+
+On November 22, 2026, the repository owner approved carrying forward the two existing license-metadata exceptions
+for backlog preview adoptions with unchanged third-party package versions and content hashes. The approval in
+`.config/sharedkernel-repo.json` for this adoption is bound to version `0.1.0-alpha.719.1` and clean library revision
+`0567a3ce1101ba19758082a597cd60b26ee6502f`.
+
+Compared with the previous pin, every tracked lock entry for StreamJsonRpc `2.25.29` (3 entries) and
+Magick.NET-Q8-AnyCPU `15.1.0` (11 entries) has the same NuGet content hash in the same project and framework.
+The exceptions retain the reviewed MIT and Apache-2.0 metadata, respectively. The native redistribution review remains open.
+Record the same package version and hash comparison against the last approved pin for each later backlog preview.

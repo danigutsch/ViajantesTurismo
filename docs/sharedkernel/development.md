@@ -6,15 +6,21 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is [`0.1.0-alpha.716.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.716.1)
+The published candidate is [`0.1.0-alpha.719.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.719.1)
 at clean library revision
-[`4f1b0325c9073a36103b21301dd80f55cbeaf314`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/4f1b0325c9073a36103b21301dd80f55cbeaf314).
-The adoption uses shared sitemap and theme CSS endpoints, filesystem object storage and media helpers, upload deadlines,
-documentation generators, test fixtures, and migration artifact verification. The SDK stays at 11.0.100.
-Linux and Windows package consumption and NativeAOT evidence come from
-[SharedKernel validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45005831777).
+[`0567a3ce1101ba19758082a597cd60b26ee6502f`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/0567a3ce1101ba19758082a597cd60b26ee6502f).
+Management Web uses its optional BFF cache concurrency contract to replace or delete an unchanged protected token entry in
+PostgreSQL. Local and in-memory deployments keep their existing cache path. The SDK stays at 11.0.100.
+The pin records passing Linux and Windows package consumption and NativeAOT from
+[validation of the published artifacts](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45029597240).
 
 ## Earlier candidates
+
+Candidate [`0.1.0-alpha.716.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.716.1)
+introduced shared sitemap and theme CSS endpoints, filesystem object storage and media helpers, upload deadlines,
+documentation generators, test fixtures, and migration artifact verification. Its Linux and Windows package consumption
+and NativeAOT evidence is recorded in
+[SharedKernel validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45005831777).
 
 Candidate [`0.1.0-alpha.653.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.653.1) was the first
 .NET 11-only candidate adopted here.
@@ -61,8 +67,8 @@ The pin records Linux and Windows package consumption and NativeAOT for `net11.0
 `sharedkernel-version merge-evidence` from SharedKernel's published-candidate run
 [44146765771](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/44146765771), and stable promotion as `pending`.
 
-`SKTEST018` is enabled at `suggestion` in `.editorconfig` so adoption can be measured without failing the build. Promote it to
-`warning` once all test projects are tagged.
+`SKTEST018` requires execution traits in test projects. `.editorconfig` sets it to `warning`, which the repository treats
+as an error during builds.
 
 The library repository keeps only its newest prereleases and the versions that consumers pin; a pruned release keeps its
 tag but cannot be staged again. The previews this repository pinned before, from `0.1.0-alpha.649.1` at revision
@@ -177,9 +183,9 @@ through public package interfaces. This test-only commit does not change the pin
 
 Generic CI pieces come from SharedKernel's
 [reusable workflows and actions](
-https://github.com/danigutsch/PandaBear.SharedKernel/blob/4f1b0325c9073a36103b21301dd80f55cbeaf314/docs/ci/reusable-workflows.md),
+https://github.com/danigutsch/PandaBear.SharedKernel/blob/0567a3ce1101ba19758082a597cd60b26ee6502f/docs/ci/reusable-workflows.md),
 referenced by full commit SHA. The workflow references currently use
-`4f1b0325c9073a36103b21301dd80f55cbeaf314`, which equals the `libraryRevision` in
+`0567a3ce1101ba19758082a597cd60b26ee6502f`, which equals the `libraryRevision` in
 `.config/sharedkernel-candidate.json`. Every pin bump must change all of these in the same commit, and
 `SharedKernelConsumerWorkflowTests` fails when they disagree:
 

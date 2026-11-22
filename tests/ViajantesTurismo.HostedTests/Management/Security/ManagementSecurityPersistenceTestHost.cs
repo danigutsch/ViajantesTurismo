@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using PandaBear.AspNetCore.Authentication;
@@ -26,6 +27,16 @@ internal sealed class ManagementSecurityPersistenceTestHost : IAsyncDisposable
             .CreateProtector(PayloadProtectorPurpose);
         ticketStore = serviceProvider.GetRequiredService<ServerSideTicketStore>();
     }
+
+    /// <summary>Gets the distributed cache used by Management authentication.</summary>
+    public IDistributedCache Cache => serviceProvider.GetRequiredService<IDistributedCache>();
+
+    /// <summary>Gets the protected token cache concurrency capability used by the BFF.</summary>
+    public IUserTokenCacheConcurrency TokenCacheConcurrency =>
+        serviceProvider.GetRequiredService<IUserTokenCacheConcurrency>();
+
+    /// <summary>Gets the PostgreSQL lock held by Management during token refresh.</summary>
+    public IUserSessionLock SessionLock => serviceProvider.GetRequiredService<IUserSessionLock>();
 
     /// <summary>Builds a host with synthetic authentication settings backed by the given connection string, optionally setting the data protection application name.</summary>
     public static ManagementSecurityPersistenceTestHost Create(

@@ -19,6 +19,8 @@ namespace ViajantesTurismo.Management.Web;
 internal static class ManagementAuthenticationServiceCollectionExtensions
 {
     private const string AdvisoryLockDataSourceName = "management-advisory-lock";
+    private const string TokenCacheDataSourceName = "management-token-cache";
+    private const int TokenCacheTimeoutSeconds = 5;
 
     /// <summary>
     /// Registers cookie, OIDC, data protection and token exchange services for the Management Web BFF.
@@ -58,6 +60,7 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
 
         services.AddManagementSecurityPersistence(connectionString!);
         services.AddSingleton(_ => CreateAdvisoryLockDataSource(connectionString!));
+        services.AddKeyedSingleton(TokenCacheDataSourceName, (_, _) => CreateTokenCacheDataSource(connectionString!));
         services.TryAddSingleton(TimeProvider.System);
 
         var dataProtection = services.AddDataProtection()
@@ -122,6 +125,8 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
                 .RequireAuthenticatedUser()
                 .Build());
         services.AddSingleton<IUserSessionLock, PostgreSqlUserSessionLock>();
+        services.AddSingleton<IUserTokenCacheConcurrency>(provider => new PostgreSqlUserTokenCacheConcurrency(
+            provider.GetRequiredKeyedService<NpgsqlDataSource>(TokenCacheDataSourceName)));
         services.AddUserTokenManagement(options =>
         {
             options.CacheKeyPrefix = ManagementAuthenticationDefaults.UserTokenStoreKeyPrefix;
@@ -211,6 +216,21 @@ internal static class ManagementAuthenticationServiceCollectionExtensions
             Name = AdvisoryLockDataSourceName
         };
 
+        return dataSourceBuilder.Build();
+    }
+
+    private static NpgsqlDataSource CreateTokenCacheDataSource(string connectionString)
+    {
+        // Refresh can hold an advisory connection while replacing a cache entry.
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString)
+        {
+            Name = TokenCacheDataSourceName
+        };
+        dataSourceBuilder.ConnectionStringBuilder.Timeout = TokenCacheTimeoutSeconds;
+        dataSourceBuilder.ConnectionStringBuilder.CommandTimeout = TokenCacheTimeoutSeconds;
+        dataSourceBuilder.ConnectionStringBuilder.CancellationTimeout = 1000;
+        dataSourceBuilder.ConnectionStringBuilder.IncludeErrorDetail = false;
+        dataSourceBuilder.ConnectionStringBuilder.LogParameters = false;
         return dataSourceBuilder.Build();
     }
 }
