@@ -153,7 +153,7 @@
         "AdminPerformanceSmoke": "Admin k6 smoke - Full profile with local OIDC and VT_ASPIRE_ENABLE_PERFORMANCE_TESTS",
         "DatabaseObservability": "Database observability - Full profile with local PostgreSQL and Aspire:Features:DatabaseObservability",
         "ManagementWeb": "Management.Web external HTTP",
-        "ObservabilityStack": "Optional Grafana LGTM backends - ASPIRE_ENABLE_OBSERVABILITY_STACK",
+        "ObservabilityStack": "Full run can add Grafana LGTM backends - ASPIRE_ENABLE_OBSERVABILITY_STACK",
         "PublicWeb": "Public.Web external HTTP",
         "clamAv": "ClamAV",
         "seaweedFs": "SeaweedFS",

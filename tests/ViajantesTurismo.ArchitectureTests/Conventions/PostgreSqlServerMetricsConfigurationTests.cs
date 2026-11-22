@@ -34,7 +34,7 @@ public sealed class PostgreSqlServerMetricsConfigurationTests
         }
 
         // Act
-        builder.AddObservabilityStack();
+        builder.AddObservabilityStack(includeDeveloperTooling: true);
         var collector = builder.Resources.OfType<OpenTelemetryCollectorResource>().ShouldHaveSingleItem();
         var mountsOverlay = collector.Annotations.OfType<ContainerMountAnnotation>()
             .Any(mount => Path.GetFileName(mount.Source) == "postgresql-server.yaml");

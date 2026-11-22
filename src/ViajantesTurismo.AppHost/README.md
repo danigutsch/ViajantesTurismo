@@ -79,9 +79,11 @@ Keycloak-compatible RFC 8693 token endpoint. API bearer validation and authoriza
 provider-neutral.
 
 The deployment contract is the set of `Authentication__*` variables listed in
-[`docs/CONFIGURATION.md`](../../docs/CONFIGURATION.md). The AppHost supplies the client ID, the client
-secret parameter, and the token-exchange settings in every mode, and supplies authority, issuer, and
-the HTTP-authority opt-in only in run mode. The publish-mode AppHost test asserts that split.
+[`docs/CONFIGURATION.md`](../../docs/CONFIGURATION.md). Supply the HTTPS authority and issuer to the
+APIs and Management Web, and the client ID and client secret to Management Web. The AppHost supplies
+the required token-exchange settings in both execution modes. It supplies the local client ID,
+generated secret parameter, authority, issuer, and HTTP-authority opt-in only during a run.
+The publish-mode AppHost tests exercise this split with local conformance overrides set.
 
 Standard for local-only resources:
 
@@ -89,11 +91,45 @@ Standard for local-only resources:
   publish mode, as `AddRunModeIdentityProvider` does. Do not branch at each call site.
 - Pass the optional resource to consumers as a nullable argument and add its references and
   environment variables only when it is present.
-- Create credentials that only a local-only resource uses with `AddLocalSecret` inside the same
-  run-mode gate, so publish mode declares no parameter for them. Credentials that published services
-  also need, such as the Management Web client secret, stay outside the gate.
+- Create local credentials with `AddGeneratedSecret` inside the same
+  run-mode gate, so publish mode declares no parameter for them. Published services receive their
+  required credentials from their deployment environment.
 - Cover each local-only resource with a publish-mode model test that proves it is absent and a
   run-mode test that proves it is present.
+
+### Resource modes
+
+The default run uses the Full product profile. The hosted test fixture explicitly selects System
+for both web applications or Admin for integration tests that need only the Admin and Catalog API
+surfaces. The default publish exports the Full product graph with developer tools disabled.
+[ADR-048](../../docs/adr/20261120-apphost-resource-modes.md) records the composition policy.
+
+| Resource | Full run | System tests | Admin tests | Default publish |
+| --- | --- | --- | --- | --- |
+| Admin API, Catalog API, Admin Integration Event Worker | Internal | Internal | Internal | Internal |
+| Migration service | Runs before dependent projects | Same | Same | Included in the model |
+| Admin, Catalog, and security databases | Local PostgreSQL or configured connections | Fixture PostgreSQL | Fixture PostgreSQL | PostgreSQL model or configured connections |
+| Catalog Integration Event Worker | Internal | Internal | Excluded | Internal |
+| Management Web and Public Web | External HTTP endpoints | External HTTP endpoints on the fixture | Excluded | External HTTP endpoints in the model |
+| Redis cache | Local container or configured connection | Fixture Redis | Excluded | Redis model or configured connection |
+| SeaweedFS | Local container or configured endpoint | Fixture SeaweedFS | Configured endpoint only | SeaweedFS model or configured endpoint |
+| ClamAV | Private TCP or configured scanner | Fixture scanner | Fixture scanner | Private TCP model or configured scanner |
+| Keycloak and local conformance/admin/k6 credential parameters | Local OIDC, with an external authority override | Fixture authority | Fixture authority | Excluded |
+| Management Web OIDC client ID and generated secret parameter | Local client settings | Fixture client settings | Parameter available to local Keycloak | Deployment-managed |
+| OpenTelemetry Collector gateway | Local gateway or configured OTLP endpoint | Fixture OTLP endpoint | Fixture OTLP endpoint | Configure a deployment collector |
+| PgWeb and RedisInsight | Local companions when their servers are local | Excluded | Excluded | Excluded |
+| Grafana, Loki, Tempo, and Prometheus | Opt-in local backends | Excluded | Excluded | Excluded |
+| PostgreSQL server metrics and its read-only credential parameters | Opt-in local Collector overlay | Excluded | Excluded | Excluded |
+| Database observability and its index-health connection parameters | Opt-in worker for local PostgreSQL | Excluded | Excluded | Excluded |
+| Admin k6 smoke | Opt-in with local Keycloak | Excluded | Excluded | Excluded |
+
+The hosted test fixture owns and reuses its infrastructure containers. It supplies explicit
+connections and bounded health waits to each test stack. Local PostgreSQL, Redis, and SeaweedFS
+persistence is opt-in. The local ClamAV definitions cache has its own volume. See [Local data](#local-data)
+and [Local malware scanning](#local-malware-scanning) for the lifetime and reset rules. HTTP projects
+declare `/health`. The private scanner uses its TCP health check, and database-dependent services
+wait for migration completion. The publish model is the input to a deployment platform that supplies
+network exposure, secrets, volumes, and the production telemetry destination.
 
 Use these Aspire 13.4 integration points for release work:
 

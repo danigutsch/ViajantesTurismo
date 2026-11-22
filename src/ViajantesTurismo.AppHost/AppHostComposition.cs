@@ -28,14 +28,15 @@ internal static class AppHostComposition
 
         var configuration = builder.Configuration;
         ExternalInfrastructure.RequireAllWhenShared(configuration);
-        builder.AddObservabilityStack();
-        var includeDeveloperTooling = profile.IncludesDeveloperTooling();
+        var isRunMode = builder.ExecutionContext.IsRunMode;
+        var includeDeveloperTooling = isRunMode && profile.IncludesDeveloperTooling();
+        builder.AddObservabilityStack(includeDeveloperTooling);
         var databaseServer = ExternalInfrastructure.HasDatabases(configuration) ? null : builder.AddDatabaseServer(includePgWeb: includeDeveloperTooling);
         var adminDatabase = builder.AddApplicationDatabase(databaseServer, ResourceNames.AdminDatabase);
         var catalogDatabase = builder.AddApplicationDatabase(databaseServer, ResourceNames.CatalogDatabase);
         var securityDatabase = builder.AddApplicationDatabase(databaseServer, ResourceNames.SecurityDatabase);
-        var managementWebClientSecret = builder.AddGeneratedSecret(ResourceNames.ManagementWebClientSecret);
-        var identityProvider = ExternalInfrastructure.IdentityProviderAuthority(configuration) is null
+        var managementWebClientSecret = isRunMode ? builder.AddGeneratedSecret(ResourceNames.ManagementWebClientSecret) : null;
+        var identityProvider = managementWebClientSecret is not null && ExternalInfrastructure.IdentityProviderAuthority(configuration) is null
             ? builder.AddRunModeIdentityProvider(managementWebClientSecret)
             : null;
         var clamAv = ExternalInfrastructure.ClamAv(configuration) is null ? builder.AddMalwareScanner() : null;
@@ -57,7 +58,7 @@ internal static class AppHostComposition
             ? builder.AddConnectionString(ResourceNames.Cache)
             : builder.AddCache(includeRedisInsight: includeDeveloperTooling);
 
-        if (databaseServer is not null && builder.EnablesDatabaseObservability(profile))
+        if (includeDeveloperTooling && databaseServer is not null && builder.EnablesDatabaseObservability())
         {
             builder.AddDatabaseObservability(adminDatabase, catalogDatabase, migrationService);
         }

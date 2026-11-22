@@ -178,9 +178,9 @@ public sealed class AppHostOrchestrationTests
             "ObservabilityStackResourceExtensions.cs"));
 
         // Act
-        var gatewayCallIndex = compositionText.IndexOf("builder.AddObservabilityStack();", StringComparison.Ordinal);
+        var gatewayCallIndex = compositionText.IndexOf("builder.AddObservabilityStack(includeDeveloperTooling);", StringComparison.Ordinal);
         var adminProfileReturnIndex = compositionText.IndexOf("if (profile is HostedProfile.Admin)", StringComparison.Ordinal);
-        var gatewayCallCount = compositionText.Split("builder.AddObservabilityStack();", StringSplitOptions.None).Length - 1;
+        var gatewayCallCount = compositionText.Split("builder.AddObservabilityStack(includeDeveloperTooling);", StringSplitOptions.None).Length - 1;
 
         // Assert
         gatewayCallIndex.ShouldBeGreaterThan(-1);

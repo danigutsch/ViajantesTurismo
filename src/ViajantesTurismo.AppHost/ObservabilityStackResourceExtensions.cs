@@ -9,13 +9,14 @@ internal static class ObservabilityStackResourceExtensions
     /// Routes AppHost telemetry through a trusted OpenTelemetry Collector and optionally adds the local Grafana LGTM stack.
     /// </summary>
     /// <param name="builder">The distributed application builder.</param>
+    /// <param name="includeDeveloperTooling">Whether the AppHost composition allows local developer tools.</param>
     /// <remarks>
     /// The collector gateway is always present. Set <c>ASPIRE_ENABLE_OBSERVABILITY_STACK=1</c> (an environment
-    /// variable or any other AppHost configuration source) before AppHost startup to add the local developer
+    /// variable or any other AppHost configuration source) before a full local run to add the developer
     /// backends; otherwise sanitized telemetry is routed only to the built-in Aspire dashboard. With an external collector configured
     /// under <see cref="ExternalInfrastructure.OtlpEndpointKey"/>, no collector is added and every project exports to that one.
     /// </remarks>
-    public static void AddObservabilityStack(this IDistributedApplicationBuilder builder)
+    public static void AddObservabilityStack(this IDistributedApplicationBuilder builder, bool includeDeveloperTooling)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -28,7 +29,7 @@ internal static class ObservabilityStackResourceExtensions
         var repositoryRoot = Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "..", ".."));
         var observabilityRoot = Path.Combine(repositoryRoot, "observability");
 
-        if (IsEnabled(builder.Configuration[GrafanaLgtmStackDefaults.EnableObservabilityStackVariable]))
+        if (includeDeveloperTooling && IsEnabled(builder.Configuration[GrafanaLgtmStackDefaults.EnableObservabilityStackVariable]))
         {
             builder.AddGrafanaLgtmStack(observabilityRoot);
             builder.AddPostgreSqlServerMetrics(observabilityRoot);

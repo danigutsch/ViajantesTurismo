@@ -19,15 +19,12 @@ internal static class AppHostProfileExtensions
         return profile is HostedProfile.Full or HostedProfile.System;
     }
 
-    /// <summary>Returns true when database observability is enabled by profile and by the feature configuration key.</summary>
-    public static bool EnablesDatabaseObservability(
-        this IDistributedApplicationBuilder builder,
-        HostedProfile profile)
+    /// <summary>Returns true when the database observability feature is enabled in configuration.</summary>
+    public static bool EnablesDatabaseObservability(this IDistributedApplicationBuilder builder)
     {
-        return profile.IncludesDeveloperTooling()
-            && string.Equals(
-                builder.Configuration[DatabaseObservabilityFeatureConfigurationKey],
-                bool.TrueString,
-                StringComparison.OrdinalIgnoreCase);
+        return string.Equals(
+            builder.Configuration[DatabaseObservabilityFeatureConfigurationKey],
+            bool.TrueString,
+            StringComparison.OrdinalIgnoreCase);
     }
 }

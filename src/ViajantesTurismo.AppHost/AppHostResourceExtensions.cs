@@ -422,7 +422,7 @@ internal static class AppHostResourceExtensions
     /// <param name="securityDatabase">The Management Web security-state database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
-    /// <param name="managementWebClientSecret">The confidential Management Web client secret.</param>
+    /// <param name="managementWebClientSecret">The local client secret, supplied only for run mode.</param>
     /// <param name="adminApi">The Admin API resource.</param>
     /// <param name="catalogApi">The Catalog API resource, which also hosts the Branding routes.</param>
     /// <returns>The configured management web resource.</returns>
@@ -432,11 +432,11 @@ internal static class AppHostResourceExtensions
         IResourceBuilder<IResourceWithConnectionString> securityDatabase,
         IResourceBuilder<ProjectResource> migrationService,
         IResourceBuilder<ContainerResource>? identityProvider,
-        IResourceBuilder<ParameterResource> managementWebClientSecret,
+        IResourceBuilder<ParameterResource>? managementWebClientSecret,
         IResourceBuilder<ProjectResource> adminApi,
         IResourceBuilder<ProjectResource> catalogApi)
     {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
+        var managementWeb = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
             .WithExternalHttpEndpoints()
             .WithReference(cache)
             .WaitFor(cache)
@@ -444,14 +444,21 @@ internal static class AppHostResourceExtensions
             .WaitFor(securityDatabase)
             .WaitForCompletion(migrationService)
             .WithLocalIdentityProvider(identityProvider)
-            .WithEnvironment(AuthenticationClientIdEnvironmentVariable, ResourceNames.WebApp)
-            .WithEnvironment(AuthenticationClientSecretEnvironmentVariable, managementWebClientSecret)
             .WithEnvironment(AuthenticationTokenExchangeEnabledEnvironmentVariable, "true")
             .WithEnvironment(AuthenticationTokenExchangeProviderEnvironmentVariable, KeycloakTokenExchangeProvider)
             .WithReference(adminApi)
             .WaitFor(adminApi)
             .WithReference(catalogApi)
             .WaitFor(catalogApi);
+
+        if (managementWebClientSecret is not null)
+        {
+            managementWeb
+                .WithEnvironment(AuthenticationClientIdEnvironmentVariable, ResourceNames.WebApp)
+                .WithEnvironment(AuthenticationClientSecretEnvironmentVariable, managementWebClientSecret);
+        }
+
+        return managementWeb;
     }
 
     private static IResourceBuilder<TResource> WithDevelopmentOidcAuthority<TResource>(
@@ -473,7 +480,7 @@ internal static class AppHostResourceExtensions
 
     /// <summary>
     /// Points the resource at the local identity provider, or at the external authority configured under
-    /// <see cref="ExternalInfrastructure.IdentityProviderAuthorityKey"/> when there is no local one.
+    /// <see cref="ExternalInfrastructure.IdentityProviderAuthorityKey"/> when there is no local one in run mode.
     /// </summary>
     private static IResourceBuilder<TResource> WithLocalIdentityProvider<TResource>(
         this IResourceBuilder<TResource> resource,
@@ -485,7 +492,8 @@ internal static class AppHostResourceExtensions
             return resource.WaitFor(identityProvider).WithDevelopmentOidcAuthority(identityProvider);
         }
 
-        if (ExternalInfrastructure.IdentityProviderAuthority(resource.ApplicationBuilder.Configuration) is not { } authority)
+        if (!resource.ApplicationBuilder.ExecutionContext.IsRunMode
+            || ExternalInfrastructure.IdentityProviderAuthority(resource.ApplicationBuilder.Configuration) is not { } authority)
         {
             return resource;
         }
