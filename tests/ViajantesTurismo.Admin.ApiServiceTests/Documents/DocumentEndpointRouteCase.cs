@@ -43,6 +43,7 @@ internal static class DocumentEndpointRouteCase
         (HttpMethod.Post.Method, "api/v1/documents/bookings/{bookingId:guid}/payment-instructions", $"/api/v1/documents/bookings/{BookingId}/payment-instructions"),
         (HttpMethod.Post.Method, "api/v1/documents/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate", $"/api/v1/documents/bookings/{BookingId}/payment-instructions/{DocumentId}/regenerate"),
         (HttpMethod.Get.Method, "api/v1/documents/{id:guid}/payment-instructions", $"/api/v1/documents/{DocumentId}/payment-instructions"),
+        (HttpMethod.Get.Method, "api/v1/documents/{id:guid}/payment-instructions/reviews", $"/api/v1/documents/{DocumentId}/payment-instructions/reviews"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/payment-instructions/approve", $"/api/v1/documents/{DocumentId}/payment-instructions/approve"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/payment-instructions/finalize", $"/api/v1/documents/{DocumentId}/payment-instructions/finalize"),
         (HttpMethod.Post.Method, "api/v1/documents/{id:guid}/payment-instructions/withdraw-approval", $"/api/v1/documents/{DocumentId}/payment-instructions/withdraw-approval"),
