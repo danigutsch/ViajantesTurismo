@@ -303,7 +303,7 @@ internal static class CatalogTourEndpoints
         }
 
         var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
-        var dto = MapPublicTourDetail(tour, GetReadyImages(images), routes, httpContext);
+        var dto = MapPublicTourDetail(tour, images, routes, httpContext);
         return Results.Ok(dto);
     }
 
@@ -354,7 +354,7 @@ internal static class CatalogTourEndpoints
         TourSummaryDto[] result =
         [
             .. publishedTours.Select(tour => MapPublicTourSummary(
-                tour, GetReadyImages(GetImages(imagesByTour, tour.CatalogTourId)), routes, httpContext))
+                tour, GetImages(imagesByTour, tour.CatalogTourId), routes, httpContext))
         ];
         return result;
     }
@@ -581,7 +581,7 @@ internal static class CatalogTourEndpoints
             Title = tour.Title,
             Slug = tour.Slug,
             Summary = tour.Summary,
-            Images = MapImages(images),
+            Images = MapPublicImages(tour, images),
             UpdatedAt = tour.UpdatedAt
         };
     }
@@ -603,7 +603,7 @@ internal static class CatalogTourEndpoints
             Itinerary = tour.Itinerary,
             SeoTitle = tour.SeoTitle,
             SeoDescription = tour.SeoDescription,
-            Images = MapImages(images),
+            Images = MapPublicImages(tour, images),
             UpdatedAt = tour.UpdatedAt
         };
     }

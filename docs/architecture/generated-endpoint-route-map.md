@@ -130,6 +130,8 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/payment-accounts/{id:guid}/withdraw-verification` | WithdrawPaymentAccountVerification | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `GET` | `/api/v1/public/branding` | GetPublicBrandingSettings | public API | not declared | `ViajantesTurismo.Branding.AspNetCore/BrandingEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/content/{**key}` | GetPublicContent | public API | anonymous | `ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/gallery` | ListPublishedAlbums | public API | anonymous | `ViajantesTurismo.Catalog.Api/Gallery/CatalogGalleryEndpoints.cs` |
+| `GET` | `/api/v1/public/catalog/gallery/{slug}` | GetPublishedAlbum | public API | anonymous | `ViajantesTurismo.Catalog.Api/Gallery/CatalogGalleryEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/media/{id:guid}/{width:int}/{format}` | GetPublicMedia | public API | anonymous | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/tours` | GetPublishedTours | public API | anonymous | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `GET` | `/api/v1/public/catalog/tours/{slug}` | GetPublishedTour | public API | anonymous | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
