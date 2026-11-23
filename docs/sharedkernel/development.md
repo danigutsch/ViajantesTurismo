@@ -13,7 +13,7 @@ Tests use the shared Git and repository-root helpers. CI selection also follows 
 files. The [published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45229639704)
 records Linux and Windows package consumption and NativeAOT for this candidate.
 
-### Compatible dependency updates
+## Compatible dependency updates
 
 The Npgsql driver and EF provider use 10.0.4. EF Core, EF-backed Data Protection and the
 design-time CLI stay on 10.0.15. The published SharedKernel provider uses EF 10 index

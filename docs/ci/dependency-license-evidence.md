@@ -27,7 +27,8 @@ Candidate `0.1.0-alpha.795.1` at library revision
 `2.25.29` and Magick.NET-Q8-AnyCPU `15.1.0`. Both package archives match their previously
 approved SHA-256 values, and all three StreamJsonRpc and 11 Magick locked contexts
 retain their existing package versions and content hashes. The candidate's 143 package hashes
-match both published platform consumption records. [Published candidate validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45229639704)
+match both published platform consumption records.
+[Published candidate validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45229639704)
 
 ## Registration and tool rename candidate
 
