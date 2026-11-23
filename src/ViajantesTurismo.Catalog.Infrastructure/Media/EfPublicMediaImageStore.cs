@@ -7,6 +7,7 @@ using PandaBear.EntityFrameworkCore.Npgsql;
 using PandaBear.Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 using PandaBear.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Media;
@@ -15,7 +16,9 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Media;
 /// EF Core store for public media images, sanitizing text fields on write and read.
 /// </summary>
 /// <param name="dbContext">The Catalog context.</param>
-internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPublicMediaImageStore, IMediaImageUploadStore
+/// <param name="placementIntents">The journal sharing the upload context.</param>
+internal sealed class EfPublicMediaImageStore(
+    CatalogDbContext dbContext, EfCatalogGalleryPlacementIntentStore? placementIntents = null) : IPublicMediaImageStore, IMediaImageUploadStore
 {
     private static readonly NpgsqlUniqueViolationParser UniqueViolationParser = new();
 
@@ -311,11 +314,16 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
 
         public ValueTask DisposeAsync() => transaction.DisposeAsync();
 
-        public async ValueTask Save(PublicMediaImage image, CancellationToken ct)
+        public async ValueTask Save(PublicMediaImage image, bool? canPublishGalleryPlacement, CancellationToken ct)
         {
             owner.AddImage(Sanitize(image), fingerprint);
             try
             {
+                if (canPublishGalleryPlacement is { } canPublish)
+                {
+                    await owner.StageUploadPlacements(image, canPublish, ct).ConfigureAwait(false);
+                }
+
                 await owner.SaveUploadChanges(ct).ConfigureAwait(false);
                 await transaction.CommitAsync(ct).ConfigureAwait(false);
             }
@@ -325,6 +333,15 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
                     "The tour gallery changed while the media image was being saved.",
                     exception);
             }
+        }
+    }
+
+    private async ValueTask StageUploadPlacements(PublicMediaImage image, bool canPublish, CancellationToken ct)
+    {
+        var journal = placementIntents ?? throw new InvalidOperationException("The upload's gallery journal is missing.");
+        foreach (var link in image.TourLinks)
+        {
+            await journal.StageUpload(link.CatalogTourId, image.Id, canPublish, ct).ConfigureAwait(false);
         }
     }
 

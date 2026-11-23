@@ -1,12 +1,15 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.OpenApi;
 using PandaBear.EventSourcing;
 using PandaBear.HttpCaching.AspNetCore;
 using PandaBear.Results;
 using ViajantesTurismo.Catalog.Api.Media;
+using ViajantesTurismo.Catalog.Application.Gallery;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Catalog.Domain;
 using ViajantesTurismo.Catalog.Domain.Media;
 using static ViajantesTurismo.Catalog.Api.CatalogValidationProblems;
 using static ViajantesTurismo.Catalog.Api.Media.CatalogMediaResponses;
@@ -29,6 +32,41 @@ internal static class CatalogTourEndpoints
             .WithName("GetTour")
             .Produces<CatalogTourDto>(StatusCodes.Status200OK)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
+        managementCatalog.MapGet("/tours/{id:guid}/gallery-editor", GetGalleryEditor)
+            .WithName(nameof(GetGalleryEditor))
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
+        managementCatalog.MapPost("/tours/{id:guid}/gallery-editor/options", SearchGalleryPhotoOptions)
+            .WithName(nameof(SearchGalleryPhotoOptions))
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
+        managementCatalog.MapPost("/tours/{id:guid}/gallery-editor/initialize", InitializeGallery)
+            .WithName(nameof(InitializeGallery))
+            .Produces(StatusCodes.Status202Accepted)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddAcceptedLocationHeader(operation, "Management gallery editor resource for the committed initialization.");
+                return Task.CompletedTask;
+            })
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.CatalogWrite);
+        managementCatalog.MapPut("/tours/{id:guid}/gallery-editor", QueueGalleryPlacement)
+            .WithName(nameof(QueueGalleryPlacement))
+            .Produces(StatusCodes.Status202Accepted)
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .AddOpenApiOperationTransformer((operation, _, _) =>
+            {
+                AddAcceptedLocationHeader(operation, "Management gallery editor resource for the accepted placement outcome.");
+                return Task.CompletedTask;
+            })
+            .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
+            .RequireAuthorization(CatalogAuthorization.CatalogWrite);
         managementCatalog.MapPut("/tours/{id:guid}/presentation", UpsertTourPresentation)
             .WithName("UpsertTourPresentation")
             .Produces<CatalogTourDto>(StatusCodes.Status200OK)
@@ -100,6 +138,153 @@ internal static class CatalogTourEndpoints
 
         var images = await imageStore.ListByTour(id, ct);
         return Results.Ok(MapManagementTour(tour, images, routes, context));
+    }
+
+    private static async Task<Results<Ok<CatalogGalleryEditorStateDto>, BadRequest, NotFound>> GetGalleryEditor(
+        Guid id, long? placementSequence, CatalogTourPresentationService tours, IAuthorizationService authorization, HttpContext context, CancellationToken ct)
+    {
+        if (id == Guid.Empty || placementSequence is <= 0)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var canPublish = (await authorization.AuthorizeAsync(context.User, CatalogAuthorization.CatalogPublish).ConfigureAwait(false)).Succeeded;
+        var editor = await tours.GetGalleryEditorState(id, placementSequence, canPublish, ct).ConfigureAwait(false);
+        return editor.IsSuccess ? TypedResults.Ok(editor.Value) : TypedResults.NotFound();
+    }
+
+    private static async Task<Results<Ok<CatalogGalleryPhotoOptionsDto>, BadRequest, NotFound>> SearchGalleryPhotoOptions(
+        Guid id, CatalogGalleryPhotoOptionsRequest request, ICatalogGalleryPhotoOptionsQuery photos, CancellationToken ct)
+    {
+        if (id == Guid.Empty
+            || request.Limit is < 1 or > CatalogGalleryPhotoOptionsRequest.MaxPageSize
+            || request.Query is { Length: > CatalogGalleryPhotoOptionsRequest.MaxQueryLength }
+            || request.IncludedPhotoIds is { Count: > CatalogDomainLimits.MaxGalleryPhotos }
+            || request.IncludedPhotoIds?.Contains(Guid.Empty) == true)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var result = await photos.Search(id, request, ct).ConfigureAwait(false);
+        return result is null ? TypedResults.NotFound() : TypedResults.Ok(result);
+    }
+
+    private static async Task<Results<NoContent, Accepted, ValidationProblem, ForbidHttpResult, NotFound, ProblemHttpResult>> InitializeGallery(
+        Guid id,
+        CatalogTourPresentationService tours,
+        IAuthorizationService authorization,
+        ILogger<CatalogApiHostEntryPoint> logger,
+        LinkGenerator routes,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        if (id == Guid.Empty)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                [nameof(id)] = ["A tour identifier is required."]
+            });
+        }
+
+        var canPublish = (await authorization.AuthorizeAsync(context.User, CatalogAuthorization.CatalogPublish).ConfigureAwait(false)).Succeeded;
+        Result<CatalogTourDraftReadModel> initialized;
+        try
+        {
+            initialized = await tours.BootstrapLegacyGallery(id, canPublish, ct).ConfigureAwait(false);
+        }
+        catch (ExpectedStreamRevisionConflictException)
+        {
+            return TypedResults.Problem("The tour changed while its gallery was being initialized. Refresh and try again.",
+                statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (CatalogTourProjectionPendingException exception)
+        {
+            logger.TourProjectionPending(exception.GetType().Name);
+            var editor = CatalogEndpointLinks.Get(routes, context, "gallery-editor", nameof(GetGalleryEditor),
+                new RouteValueDictionary { ["id"] = id });
+            return TypedResults.Accepted(new Uri(editor.Href, UriKind.Relative));
+        }
+
+        return initialized.Status switch
+        {
+            ResultStatus.Ok => TypedResults.NoContent(),
+            ResultStatus.Forbidden => TypedResults.Forbid(),
+            ResultStatus.NotFound => TypedResults.NotFound(),
+            ResultStatus.Invalid => ToValidationProblem(initialized.ErrorDetails
+                ?? throw new InvalidOperationException("Invalid gallery initialization results must include validation details.")),
+            _ => throw new InvalidOperationException($"Unexpected Catalog gallery initialization result status '{initialized.Status}'.")
+        };
+    }
+
+    private static async Task<Results<Accepted, BadRequest, ValidationProblem, ForbidHttpResult, NotFound, ProblemHttpResult>> QueueGalleryPlacement(
+        Guid id,
+        QueueCatalogGalleryPlacementRequest request,
+        CatalogTourPresentationService tours,
+        IAuthorizationService authorization,
+        LinkGenerator routes,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        if (id == Guid.Empty)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        if (request.StreamVersion < 1)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                [nameof(request.StreamVersion)] = ["StreamVersion must be at least 1."]
+            });
+        }
+
+        if (request.AcceptedPlacementSequence < 0)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                [nameof(request.AcceptedPlacementSequence)] = ["AcceptedPlacementSequence must be at least 0."]
+            });
+        }
+
+        if (request.PhotoIds is null)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                [nameof(request.PhotoIds)] = ["PhotoIds is required."]
+            });
+        }
+
+        var canPublish = (await authorization.AuthorizeAsync(context.User, CatalogAuthorization.CatalogPublish).ConfigureAwait(false)).Succeeded;
+        Result<long> queued;
+        try
+        {
+            queued = await tours.QueueGallery(
+                id, request.PhotoIds, request.CoverId, request.StreamVersion, request.AcceptedPlacementSequence, canPublish, ct).ConfigureAwait(false);
+        }
+        catch (ExpectedStreamRevisionConflictException)
+        {
+            return TypedResults.Problem("The tour changed while this edit was in progress. Reload it and try again.", statusCode: StatusCodes.Status409Conflict);
+        }
+
+        switch (queued.Status)
+        {
+            case ResultStatus.NotFound:
+                return TypedResults.NotFound();
+            case ResultStatus.Conflict:
+                return TypedResults.Problem(queued.ErrorDetails?.Detail, statusCode: StatusCodes.Status409Conflict);
+            case ResultStatus.Forbidden:
+                return TypedResults.Forbid();
+            case ResultStatus.Invalid:
+                return ToValidationProblem(queued.ErrorDetails ?? throw new InvalidOperationException("Invalid gallery placement results must include validation details."));
+            case ResultStatus.Ok:
+                break;
+            default:
+                throw new InvalidOperationException($"Unexpected Catalog gallery placement result status '{queued.Status}'.");
+        }
+
+        var outcome = CatalogEndpointLinks.Get(routes, context, "placement-outcome", nameof(GetGalleryEditor),
+            new RouteValueDictionary { ["id"] = id, ["placementSequence"] = queued.Value });
+        return TypedResults.Accepted(new Uri(outcome.Href, UriKind.Relative));
     }
 
     private static async Task<IResult> GetPublishedTour(
@@ -338,7 +523,8 @@ internal static class CatalogTourEndpoints
         return TypedResults.Accepted(new Uri($"/api/v1/catalog/tours/{id}", UriKind.Relative));
     }
 
-    private static void AddAcceptedLocationHeader(OpenApiOperation operation)
+    private static void AddAcceptedLocationHeader(
+        OpenApiOperation operation, string description = "Management detail resource to poll until projection completes.")
     {
         if (operation.Responses is null
             || !operation.Responses.TryGetValue("202", out var acceptedResponse)
@@ -350,7 +536,7 @@ internal static class CatalogTourEndpoints
         response.Headers ??= new Dictionary<string, IOpenApiHeader>(StringComparer.Ordinal);
         response.Headers["Location"] = new OpenApiHeader
         {
-            Description = "Management detail resource to poll until projection completes.",
+            Description = description,
             Schema = new OpenApiSchema { Type = JsonSchemaType.String }
         };
     }

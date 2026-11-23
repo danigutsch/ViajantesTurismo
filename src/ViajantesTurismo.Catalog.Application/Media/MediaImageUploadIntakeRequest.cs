@@ -16,6 +16,8 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// <param name="Caption">The optional public caption.</param>
 /// <param name="Attribution">The optional attribution text.</param>
 /// <param name="Copyright">The optional copyright notice.</param>
+/// <param name="CanPublishGalleryPlacement">The publication capability of the caller holding the tour mutation lease,
+/// or null when the intake has no authored placement handoff.</param>
 public sealed record MediaImageUploadIntakeRequest(
     Guid MediaImageId,
     Stream Content,
@@ -27,4 +29,5 @@ public sealed record MediaImageUploadIntakeRequest(
     IReadOnlyList<string>? Tags = null,
     string? Caption = null,
     string? Attribution = null,
-    string? Copyright = null);
+    string? Copyright = null,
+    bool? CanPublishGalleryPlacement = null);

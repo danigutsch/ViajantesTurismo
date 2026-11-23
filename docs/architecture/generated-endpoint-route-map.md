@@ -71,6 +71,10 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/api/v1/catalog/tours` | GetTours | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/page` | GetTourPage | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/{id:guid}` | GetTour | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
+| `GET` | `/api/v1/catalog/tours/{id:guid}/gallery-editor` | GetGalleryEditor | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
+| `PUT` | `/api/v1/catalog/tours/{id:guid}/gallery-editor` | QueueGalleryPlacement | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/gallery-editor/initialize` | InitializeGallery | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
+| `POST` | `/api/v1/catalog/tours/{id:guid}/gallery-editor/options` | SearchGalleryPhotoOptions | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/{id:guid}/images` | ListTourImages | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `POST` | `/api/v1/catalog/tours/{id:guid}/images` | UploadTourImage | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/{id:guid}/images/review/next` | GetNextPendingReviewImage | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |

@@ -243,7 +243,8 @@ public sealed partial class MediaImageUploadIntake(
 
             try
             {
-                await StoreImageEventAndCompensateObject(upload, image, originalStoredEvent, objectKey, ct).ConfigureAwait(false);
+                await StoreImageEventAndCompensateObject(
+                    upload, image, originalStoredEvent, objectKey, request.CanPublishGalleryPlacement, ct).ConfigureAwait(false);
             }
             catch (MediaGalleryPlacementConflictException)
             {
@@ -332,6 +333,7 @@ public sealed partial class MediaImageUploadIntake(
         PublicMediaImage image,
         MediaImageOriginalStoredIntegrationEvent originalStoredEvent,
         ObjectStorageKey objectKey,
+        bool? canPublishGalleryPlacement,
         CancellationToken ct)
     {
         try
@@ -340,7 +342,7 @@ public sealed partial class MediaImageUploadIntake(
                 async ct =>
                 {
                     await outbox.Enqueue(originalStoredEvent, ct).ConfigureAwait(false);
-                    await upload.Save(image, ct).ConfigureAwait(false);
+                    await upload.Save(image, canPublishGalleryPlacement, ct).ConfigureAwait(false);
                 },
                 _ => MediaObjectCompensation.Delete(objectStore, objectKey.Value),
                 ct).ConfigureAwait(false);
