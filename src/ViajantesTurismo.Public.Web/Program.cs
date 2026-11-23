@@ -11,7 +11,7 @@ using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddSharedKernelServiceDefaults(static options =>
+builder.AddApplicationDefaults(static options =>
 {
     ViajantesTurismoServiceDefaults.Configure(options);
     options.ConfigureResilience = PublicCatalogClientServiceCollectionExtensions.ConfigureResilience;
@@ -54,6 +54,6 @@ app.UseRequestLocalization(options =>
 app.UseRateLimiter();
 app.MapPublicWebEndpoints();
 
-app.MapSharedKernelDefaultEndpoints();
+app.MapHealthEndpoints();
 
 await app.RunAsync();

@@ -71,13 +71,13 @@ methods or follow discovered links with the same authorization as a direct API c
 The Admin, Catalog, and Branding contract tests read the committed OpenAPI artifacts and compare them
 with generated documents. Regenerate the committed artifacts intentionally when HTTP contracts change:
 
-After a locked restore, `sharedkernel-ci openapi` builds the `admin`, `branding`, and `catalog` targets of
+After a locked restore, `dotnet ci openapi` builds the `admin`, `branding`, and `catalog` targets of
 `.config/sharedkernel-ci.json` in order with a minimal child environment. Trusted generation omits JWT/OIDC
 registration while retaining authorization metadata for the generated Bearer security documents. Normal
 application runs remain fail-closed when authentication configuration is missing.
 
 ```bash
-dotnet tool run sharedkernel-ci -- openapi refresh
+dotnet ci openapi refresh
 ```
 
 ADR-040 keeps the `branding` target and the Branding-owned canonical artifact paths stable while

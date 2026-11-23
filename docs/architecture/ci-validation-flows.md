@@ -2,7 +2,7 @@
 
 Generation ownership: source/configuration in [generated-diagrams.json](generated-diagrams.json),
 with per-output sources in the [diagram inventory](generated-diagram-roadmap.md).
-Refresh: `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`;
+Refresh: `dotnet docs generate --config docs/architecture/generated-diagrams.json`;
 check: the same command with `verify` instead of `generate`.
 Edit manual narrative outside generated markers; review under the
 [documentation governance policy](../DOCUMENTATION_GOVERNANCE.md#generated-output-review-and-finalization).
@@ -71,7 +71,7 @@ Workflow details: [CI overview](../ci/overview.md) and [main workflow](../ci/mai
 | `Secret Scan` | Detect committed secrets and publish SARIF when allowed. | Fast security lane. |
 | `Quality Gate` | Enforce the changed-code coverage threshold over the slices' reports. | Runs after tests; no analysis secrets. |
 
-`sharedkernel-ci select`, configured by `.config/sharedkernel-ci.json`, owns path decisions. If diff
+`dotnet ci select`, configured by `.config/sharedkernel-ci.json`, owns path decisions. If diff
 or project-graph detection is uncertain, it selects every test project so CI runs more work rather than
 skipping a needed check.
 
@@ -121,11 +121,11 @@ Use the narrowest command that reproduces the failing lane.
 | --- | --- |
 | Full build | `dotnet build ViajantesTurismo.slnx` |
 | Full test suite | `dotnet test --solution ViajantesTurismo.slnx` |
-| Repository content checks | `dotnet tool run sharedkernel-repo -- verify-links --root .` and the other `verify-*` checks of the Lint job |
-| Generated documentation drift | `dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json` |
-| CI change classification | `dotnet tool run sharedkernel-ci -- select --base <commit>` |
-| One CI test slice | `dotnet tool run sharedkernel-ci -- run --slice <name>` |
-| Devcontainer smoke | `dotnet tool run sharedkernel-repo -- verify-devcontainer --exec "dotnet --version" --root .` |
+| Repository content checks | `dotnet repo verify-links --root .` and the other `verify-*` checks of the Lint job |
+| Generated documentation drift | `dotnet docs verify --config docs/architecture/generated-diagrams.json` |
+| CI change classification | `dotnet ci select --base <commit>` |
+| One CI test slice | `dotnet ci run --slice <name>` |
+| Devcontainer smoke | `dotnet repo verify-devcontainer --exec "dotnet --version" --root .` |
 | Devcontainer deeper validation | `verify-devcontainer` with the full-mode `--exec` values of `devcontainer-smoke.yml` |
 | Aspire local run | `dotnet tool run aspire run` |
 

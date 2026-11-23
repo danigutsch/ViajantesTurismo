@@ -77,7 +77,7 @@ dotnet run --project benchmarks/ViajantesTurismo.FileScanning.Benchmarks/Viajant
 Run real Kestrel upload scanning with k6:
 
 ```bash
-dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
+dotnet loadtest run --scenario file-upload-scan
 ```
 
 Raw two-terminal upload flow:
@@ -94,7 +94,7 @@ Useful overrides:
 - `VT_K6_DURATION=<duration>`
 - `VT_UPLOAD_PAYLOAD_BYTES=<bytes>`
 - `VT_UPLOAD_MODE=streaming|buffered` (raw k6 usage; default `streaming`)
-- `--container` and `--image <ref@sha256:digest>` options of `sharedkernel-k6 run`
+- `--container` and `--image <ref@sha256:digest>` options of `dotnet loadtest run`
 
 Security defaults:
 
@@ -108,7 +108,7 @@ Security defaults:
 
 ## Recorded smoke result
 
-`sharedkernel-k6 run --scenario file-upload-scan` (smoke profile, 1 virtual user, 20 seconds, 256 KiB payload,
+`dotnet loadtest run --scenario file-upload-scan` (smoke profile, 1 virtual user, 20 seconds, 256 KiB payload,
 local k6, loopback) on 2026-10-27: 7,844 requests at about 392 requests per second, about 103 MB/s sent, 0 failed
 requests and 15,687 of 15,687 checks passed. `http_req_duration` averaged 2.29 ms with a p95 of 2.81 ms and a
 maximum of 11.43 ms. This measures the isolated benchmark host streaming endpoint, not the production import or media

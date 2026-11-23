@@ -154,7 +154,7 @@ has no established test type for that SUT yet.
 Once the pinned repository tool provides the verifier, run this command during the naming and ownership migration.
 
 ```sh
-dotnet tool run sharedkernel-repo -- verify-test-taxonomy --root . --report
+dotnet repo verify-test-taxonomy --root . --report
 ```
 
 The validator reads tracked files and explicit declarations. Stage new project files and seam registers before running

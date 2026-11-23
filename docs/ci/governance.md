@@ -173,7 +173,7 @@ taxonomy than the default ecosystem label. The `devcontainers` entry also relies
 so the repository does not need to maintain a separate custom label for that ecosystem.
 Those custom labels are the `labels` section of `.config/sharedkernel-repo.json`;
 `.github/workflows/sync-labels.yml` creates the missing ones and updates those that differ with
-`sharedkernel-repo github sync-labels --force`, and never deletes a label.
+`dotnet repo github sync-labels --force`, and never deletes a label.
 
 No separate `docker` ecosystem entry is configured because the repository does not
 currently contain Dockerfiles, Docker Compose files, or Kubernetes manifests for

@@ -322,7 +322,7 @@ As of 2026-10-25 this decision is implemented in code; no production deployment 
   transport for consumer `admin`, and `Admin.IntegrationEventWorker` applies it to the `branding_projection`
   schema.
 - Branding `branding` and `public-branding` OpenAPI artifacts are generated from Catalog.Api with
-  `dotnet tool run sharedkernel-ci -- openapi refresh --target branding`. Catalog's own `v1` document includes
+  `dotnet ci openapi refresh --target branding`. Catalog's own `v1` document includes
   the co-hosted Branding routes; there is no Branding-only `v1` artifact.
 - `VTARCH001` is enabled in Admin.Api and Catalog.Api; Branding HTTP clients resolve to the Catalog
   API destination.

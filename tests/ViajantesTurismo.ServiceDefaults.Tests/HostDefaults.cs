@@ -9,7 +9,7 @@ internal static class HostDefaults
     /// <summary>Adds the SharedKernel service defaults and the ViajantesTurismo telemetry on top.</summary>
     public static void Add<TBuilder>(TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure)
+        builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure)
             .AddViajantesTurismoTelemetry();
     }
 }

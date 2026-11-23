@@ -52,7 +52,7 @@ internal static class ObservabilitySignalCatalog
             .Where(invocation => invocation.Expression is MemberAccessExpressionSyntax member && member.Name.Identifier.ValueText == method)
             .SelectMany(invocation => invocation.ArgumentList.Arguments)
             .Select(argument => SourceName(argument.Expression))
-            .Concat(SharedKernelInstrumentationExtensions.NamePatterns).Distinct(StringComparer.Ordinal)];
+            .Concat(InstrumentationExtensions.NamePatterns).Distinct(StringComparer.Ordinal)];
 
     /// <summary>Gets whether the registration subscribes to the given meter or activity source.</summary>
     public static bool MatchesRegistration(string pattern, string name) =>

@@ -34,6 +34,7 @@ public sealed class PublicWebCatalogClientPipelineTests
     public async Task Catalog_client_does_not_retry_a_public_catalog_quota_answer()
     {
         // Arrange
+        const string quotaPath = "/api/v1/public/catalog/tours";
         using var catalog = new RecordingHttpMessageHandler(HttpStatusCode.TooManyRequests);
         await using var host = PublicWebTestHost.CreateFactory(
             configuration: new Dictionary<string, string?> { ["services:catalog-api:https:0"] = "https://catalog.test" });
@@ -42,10 +43,10 @@ public sealed class PublicWebCatalogClientPipelineTests
         using var client = factory.Services.GetRequiredService<IHttpClientFactory>().CreateClient(CatalogClientName);
 
         // Act
-        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri(quotaPath, UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
-        catalog.Requests.Count.ShouldBe(1);
+        catalog.Requests.ShouldHaveSingleItem(request => request.PathAndQuery == quotaPath);
     }
 }

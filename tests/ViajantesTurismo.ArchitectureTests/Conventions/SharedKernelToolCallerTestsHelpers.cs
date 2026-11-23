@@ -13,8 +13,8 @@ internal static partial class SharedKernelToolCallerTestsHelpers
     // The CI and RepoConfig tools also run from SharedKernel source; the packaged tool of the pinned version parses those lines.
     private static readonly Dictionary<string, string> SourceToolCommands = new(StringComparer.Ordinal)
     {
-        ["SharedKernel.CI.Tool"] = "sharedkernel-ci",
-        ["SharedKernel.RepoConfig.Tool"] = "sharedkernel-repo",
+        ["SharedKernel.CI.Tool"] = "ci",
+        ["SharedKernel.RepoConfig.Tool"] = "repo",
     };
 
     // Shell arrays that a script fills at run time, mapped to every argument list the script can build.
@@ -60,9 +60,9 @@ internal static partial class SharedKernelToolCallerTestsHelpers
     };
 
     /// <summary>
-    /// sharedkernel-codefix has no [diagram] directive, so its command lines cannot be parsed without running it.
+    /// codefix has no [diagram] directive, so its command lines cannot be parsed without running it.
     /// </summary>
-    public const string CommandWithoutDiagramDirective = "sharedkernel-codefix";
+    public const string CommandWithoutDiagramDirective = "codefix";
 
     /// <summary>Finds every SharedKernel tool command line in the text and JSON caller files under the repository root.</summary>
     public static IReadOnlyList<ToolCommandLine> FindCommandLines(string root)
@@ -99,7 +99,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
             RedirectStandardError = true,
             UseShellExecute = false,
         };
-        foreach (var argument in (string[])["tool", "run", line.Command, "--", "[diagram]", .. line.Arguments])
+        foreach (var argument in (string[])[line.Command, "[diagram]", .. line.Arguments])
         {
             startInfo.ArgumentList.Add(argument);
         }
@@ -317,7 +317,7 @@ internal static partial class SharedKernelToolCallerTestsHelpers
     private static string Quote(string token) =>
         token.Any(char.IsWhiteSpace) ? $"\"{token}\"" : token;
 
-    [GeneratedRegex(@"dotnet\s+(?:tool\s+run\s+(?<command>sharedkernel-[a-z0-9-]+)|run\s+--project\s+[^\n]*?tools/(?<project>SharedKernel\.[A-Za-z.]+?\.Tool)\b[^\n]*?\s--(?=\s|$))(?:\s+--(?=\s|$))?", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\bdotnet\s+(?:(?<command>ci|release|docs|repo|codefix|loadtest|browsermcp)(?=\s|$)|run\s+--project\s+[^\n]*?tools/(?<project>SharedKernel\.[A-Za-z.]+?\.Tool)\b[^\n]*?\s--(?=\s|$))", RegexOptions.CultureInvariant)]
     private static partial Regex ToolCommandRegex();
 
     [GeneratedRegex(@"\$\{?(?:env:)?(?<name>[A-Za-z_][A-Za-z0-9_]*)", RegexOptions.CultureInvariant)]

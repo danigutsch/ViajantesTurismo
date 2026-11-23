@@ -30,7 +30,7 @@ The repository no longer uses that architecture as the main direction.
 Current dispatching is centered on `SharedKernel.Mediator` and already provides:
 
 - generated `AppMediator` request and notification dispatch
-- generated DI registration through `AddSharedKernelMediator`
+- generated DI registration through `AddMediator`
 - generated pipeline invocation
 - generated typed request dispatch plus internal object dispatch support
 - analyzer coverage for handler, stream, pipeline, and cancellation rules
@@ -112,7 +112,7 @@ generated registration styles.
 This also aligns with the present repository direction.
 
 The current generator owns the primary mediator registration path through
-`AddSharedKernelMediator`, and analyzer effort has moved toward implemented handler/pipeline
+`AddMediator`, and analyzer effort has moved toward implemented handler/pipeline
 correctness rules rather than protecting a hybrid runtime-registration model.
 
 #### Decision for registration cleanup

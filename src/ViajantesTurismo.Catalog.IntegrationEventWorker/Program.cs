@@ -4,7 +4,7 @@ using ViajantesTurismo.ServiceDefaults;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
+builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddCatalogIntegrationEventWorkerInfrastructure();
 
 var host = builder.Build();

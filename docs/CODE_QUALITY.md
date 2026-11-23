@@ -8,13 +8,13 @@ This project uses automated tools to enforce consistent formatting and style acr
   (`DavidAnson/markdownlint-cli2-action` in CI and Dockerized CLI locally, no npm required)
 - **[ShellCheck](https://www.shellcheck.net/)** - Bash/shell script linting (direct CLI or Docker fallback)
 - **[shfmt](https://github.com/mvdan/sh)** - Bash/shell script formatting (direct CLI or Docker fallback)
-- **Repository Gherkin validator** (`sharedkernel-repo verify-gherkin`) - BDD/Gherkin feature-file
+- **Repository Gherkin validator** (`dotnet repo verify-gherkin`) - BDD/Gherkin feature-file
   linting
-- **Repository JSON validator** (`sharedkernel-repo verify-json`) - Git-indexed JSON
+- **Repository JSON validator** (`dotnet repo verify-json`) - Git-indexed JSON
   validation using the .NET SDK, with comments and trailing commas allowed
-- **Repository link validator** (`sharedkernel-repo verify-links`) - Local Markdown/text link, anchor,
+- **Repository link validator** (`dotnet repo verify-links`) - Local Markdown/text link, anchor,
   and durable docs-link validation
-- **Repository line-ending and encoding validators** (`sharedkernel-repo verify-line-endings` and
+- **Repository line-ending and encoding validators** (`dotnet repo verify-line-endings` and
   `verify-text-encoding`) - `.gitattributes` line endings and UTF-8 text in the Git index
 - **[PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer)** - PowerShell script linting
   (PowerShell module)
@@ -132,7 +132,7 @@ Invoke-ScriptAnalyzer -Path script.ps1 -Settings PSGallery
 ### Configuration
 
 Gherkin rules are the `gherkin` section of `.config/sharedkernel-repo.json`, which
-`sharedkernel-repo verify-gherkin` applies to the tracked `.feature` files under `tests/`.
+`dotnet repo verify-gherkin` applies to the tracked `.feature` files under `tests/`.
 
 **Key Rules:**
 
@@ -161,7 +161,7 @@ See `tests/BDD_GUIDE.md` for comprehensive Gherkin linting documentation.
 
 ### Configuration
 
-JSON validation is performed by `sharedkernel-repo verify-json`, which accepts
+JSON validation is performed by `dotnet repo verify-json`, which accepts
 JSONC-style comments and trailing commas in tracked `*.json` files.
 
 **Key Rules:**
@@ -173,14 +173,14 @@ Untracked package caches, generated artifacts, and nested library checkouts are 
 ### Tool
 
 - **Repository JSON validator** - Run
-  `dotnet tool run sharedkernel-repo -- verify-json --root .`.
+  `dotnet repo verify-json --root .`.
   The command validates all indexed JSON files and accepts no directory arguments. Roadmap
   validation uses this same repository-wide policy.
 
 ## Link Validation
 
 The repository validates maintained Markdown and selected text links with
-`dotnet tool run sharedkernel-repo -- verify-links --root .`, which scans the files that the `links`
+`dotnet repo verify-links --root .`, which scans the files that the `links`
 section of `.config/sharedkernel-repo.json` selects. The pinned .NET tool avoids transient npm execution
 and adds no package ecosystem for documentation checks.
 
@@ -385,34 +385,34 @@ Invoke-ScriptAnalyzer -Path ./setup-dev.ps1
 **Gherkin/Feature Files:**
 
 ```powershell
-dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+dotnet repo verify-gherkin --root .
 ```
 
 **JSON Files:**
 
 ```powershell
-dotnet tool run sharedkernel-repo -- verify-json --root .
+dotnet repo verify-json --root .
 ```
 
 **Links:**
 
 ```powershell
-dotnet tool run sharedkernel-repo -- verify-links --root .                  # Configured files
-dotnet tool run sharedkernel-repo -- verify-links docs README.md --root .  # Selected paths
+dotnet repo verify-links --root .                  # Configured files
+dotnet repo verify-links docs README.md --root .  # Selected paths
 ```
 
 **Encoding, line endings, and generated documentation:**
 
 ```powershell
-dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
-dotnet tool run sharedkernel-repo -- verify-line-endings --root .
-dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
-dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
+dotnet repo verify-text-encoding --root .
+dotnet repo verify-line-endings --root .
+dotnet docs verify --config docs/architecture/generated-diagrams.json
+dotnet docs check --config docs/architecture/documentation-conformance.json
 ```
 
 The opencode `lint` command runs every check above in order, and `lint-fix` formats the shell scripts
 and Markdown and regenerates the architecture diagrams with
-`dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`.
+`dotnet docs generate --config docs/architecture/generated-diagrams.json`.
 
 **All Tools:**
 
@@ -424,16 +424,16 @@ dotnet tool restore      # Install all pinned .NET tools
 
 The repository installs no Git hooks.
 
-- Lint is CI-owned: the CI Lint job runs shellcheck, the `sharedkernel-repo` and `sharedkernel-docs`
+- Lint is CI-owned: the CI Lint job runs shellcheck, the `dotnet repo` and `dotnet docs`
   checks, and `DavidAnson/markdownlint-cli2-action`.
 - The opencode `lint-fix` command applies the supported autofixes before strict checks.
 - Markdown lint runs via the official `DavidAnson/markdownlint-cli2-action` GitHub Action,
   and locally through the digest-pinned Docker image `davidanson/markdownlint-cli2`.
 - Gherkin, link, JSON, line-ending, and text-encoding checks run through the pinned
-  `sharedkernel-repo` .NET tool; no Python or npm is involved.
+  `dotnet repo` .NET tool; no Python or npm is involved.
 - Local shellcheck runs need an installed `shellcheck`; Markdown and shfmt fixes run in Docker.
 - Validate a commit message locally with
-  `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>`.
+  `dotnet ci verify-commit-message --file <path-to-commit-message-file>`.
 - For the repository's explicit local helper-tool acquisition rules, see
   [Local tool security model](local-tool-security.md).
 
@@ -450,8 +450,8 @@ project; `run` restores, builds, and tests the slice's selected projects and wri
 `TestResults/selection/execution-<slice>/phase-timings.tsv`:
 
 ```bash
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --slice fast-validation-1
+dotnet ci select
+dotnet ci run --slice fast-validation-1
 ```
 
 The slice names are the `slices[].name` values of `.config/sharedkernel-ci.json`.
@@ -480,8 +480,8 @@ Recommended fast local path by change type:
 | Change type | Fast local path | Full confidence before PR when risk is real |
 | --- | --- | --- |
 | Dependency-graph change | `dotnet restore ViajantesTurismo.slnx --force-evaluate`, then `--locked-mode` | `dotnet build ViajantesTurismo.slnx --no-restore` plus impacted test slice |
-| AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `dotnet tool run sharedkernel-ci -- run --slice hosted-tests --install-playwright` |
-| Test-only change | `dotnet test --project <changed-test-project>.csproj` | Matching CI slice through `dotnet tool run sharedkernel-ci -- run --slice <name>` |
+| AppHost-only change | `dotnet build src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj --no-restore` | `dotnet tool run aspire run` and `dotnet ci run --slice hosted-tests --install-playwright` |
+| Test-only change | `dotnet test --project <changed-test-project>.csproj` | Matching CI slice through `dotnet ci run --slice <name>` |
 
 Concrete improvement options:
 
@@ -503,7 +503,7 @@ Use [CONTRIBUTING.md](../CONTRIBUTING.md#commit-messages) as the canonical commi
 This quality guide only owns the validation command reference:
 
 ```powershell
-dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>
+dotnet ci verify-commit-message --file <path-to-commit-message-file>
 ```
 
 ### VS Code Integration
@@ -530,8 +530,8 @@ Collect coverage through the same engine CI uses, then merge the per-project rep
 
 ```bash
 dotnet tool restore
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --slice fast-validation-1 --coverage
+dotnet ci select
+dotnet ci run --slice fast-validation-1 --coverage
 dotnet tool run reportgenerator "-reports:TestResults/selection/execution-*/results/**/*.cobertura*.xml" \
     "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```

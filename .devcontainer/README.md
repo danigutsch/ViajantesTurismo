@@ -90,7 +90,7 @@ No additional database containers are configured in the dev container - Aspire h
 5. **Run the Shared Smoke Validation (Optional)**:
 
    ```bash
-   dotnet tool run sharedkernel-repo -- verify-devcontainer --exec 'dotnet --version && git --version && docker version --format "{{.Server.Version}}"' --root .
+   dotnet repo verify-devcontainer --exec 'dotnet --version && git --version && docker version --format "{{.Server.Version}}"' --root .
    ```
 
    Run it on the host from the repository root. This runs the same non-interactive
@@ -99,9 +99,9 @@ No additional database containers are configured in the dev container - Aspire h
 
    Full mode adds the `INSTALL_PLAYWRIGHT_DEPENDENCIES` and `RUN_TEST_SLICES` values of
    that workflow as further `--exec` arguments: it installs Chromium's runtime libraries,
-   selects every test project with `sharedkernel-ci select`, and runs the slices of
+   selects every test project with `dotnet ci select`, and runs the slices of
    `.config/sharedkernel-ci.json` one after another with
-   `sharedkernel-ci run --slice <name> --install-playwright`. Running one slice at a time
+   `dotnet ci run --slice <name> --install-playwright`. Running one slice at a time
    avoids all-solution test concurrency flakes.
 
 ## Port Forwarding

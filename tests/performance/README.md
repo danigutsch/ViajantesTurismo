@@ -30,7 +30,7 @@ Current workload profiles:
 
 Current runner:
 
-- `sharedkernel-k6`, configured by `../../.config/sharedkernel-k6.json` with the `file-upload-scan` scenario
+- `dotnet loadtest`, configured by `../../.config/sharedkernel-k6.json` with the `file-upload-scan` scenario
 - the `admin-smoke` scenario runs only as the AppHost resource below
 
 Current Aspire integration:
@@ -52,12 +52,12 @@ This is not yet a full load-testing suite.
 
 ## Run
 
-The Admin smoke runs through Aspire (see below). For real multipart upload scanning, run the `file-upload-scan` scenario. `sharedkernel-k6` starts the
+The Admin smoke runs through Aspire (see below). For real multipart upload scanning, run the `file-upload-scan` scenario. `dotnet loadtest` starts the
 isolated benchmark host on an ephemeral loopback Kestrel port, waits for the URL it writes to
 `VT_UPLOAD_BENCHMARK_READY_FILE`, probes `/health`, and runs k6 against the real socket:
 
 ```bash
-dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
+dotnet loadtest run --scenario file-upload-scan
 ```
 
 Use `VT_UPLOAD_PAYLOAD_BYTES=<bytes>` to change the deterministic multipart payload size. See
@@ -96,7 +96,7 @@ ends it with a non-zero exit code.
 
 ## Results
 
-Each `sharedkernel-k6` run writes its k6 summary to its own directory under `tests/performance/results/`, which the
+Each `dotnet loadtest` run writes its k6 summary to its own directory under `tests/performance/results/`, which the
 tool prints. The Admin smoke container writes `tests/performance/results/admin-smoke-summary.json`. That folder is
 ignored by Git so local investigation output does not become source.
 

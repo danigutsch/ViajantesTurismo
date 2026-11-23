@@ -36,7 +36,7 @@ Configuration boundaries:
 
 ## Health and readiness strategy
 
-Every ASP.NET Core service that calls `MapDefaultEndpoints()` exposes:
+Every ASP.NET Core service that calls `MapHealthEndpoints()` exposes:
 
 | Endpoint | Scope | Expected use | Public detail |
 | --- | --- | --- | --- |

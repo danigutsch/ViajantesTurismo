@@ -22,7 +22,7 @@ return await MigrationProcess.Run(() =>
 {
     var builder = Host.CreateApplicationBuilder(args);
 
-    builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
+    builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 
     builder.AddAdminDatabaseInitialization();
     builder.AddBrandingInfrastructure(addOutboxRelay: false);

@@ -24,7 +24,7 @@ internal static class DocumentIdempotencyRetentionBatch
         services.AddSingleton<TimeProvider>(clock);
         services.AddSingleton(new DocumentHoldGate(new FakeDispositionHoldGuard(), new InMemoryDispositionHoldStore(), clock));
         services.AddSingleton(DocumentPurgeTestData.CreateRunner(new FakeDocumentPurgeEvidenceStore(), clock));
-        services.AddSharedKernelMediator();
+        services.AddMediator();
 
         await using var provider = services.BuildServiceProvider();
         using var job = new DocumentIdempotencyRetentionHostedService(

@@ -17,51 +17,51 @@
       "rollForward": false
     },
     "pandabear.sharedkernel.versioning.tool": {
-      "version": "0.1.0-alpha.727.1",
+      "version": "0.1.0-alpha.774.1",
       "commands": [
-        "sharedkernel-version"
+        "release"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.ci.tool": {
-      "version": "0.1.0-alpha.727.1",
+      "version": "0.1.0-alpha.774.1",
       "commands": [
-        "sharedkernel-ci"
+        "ci"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.playwrightmcp.tool": {
-      "version": "0.1.0-alpha.727.1",
+      "version": "0.1.0-alpha.774.1",
       "commands": [
-        "sharedkernel-playwright-mcp"
+        "browsermcp"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.testing.codefixrunner": {
-      "version": "0.1.0-alpha.727.1",
+      "version": "0.1.0-alpha.774.1",
       "commands": [
-        "sharedkernel-codefix"
+        "codefix"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.repoconfig.tool": {
-      "version": "0.1.0-alpha.727.1",
+      "version": "0.1.0-alpha.774.1",
       "commands": [
-        "sharedkernel-repo"
+        "repo"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.documentation.tool": {
-      "version": "0.1.0-alpha.727.1",
+      "version": "0.1.0-alpha.774.1",
       "commands": [
-        "sharedkernel-docs"
+        "docs"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.k6.tool": {
-      "version": "0.1.0-alpha.727.1",
+      "version": "0.1.0-alpha.774.1",
       "commands": [
-        "sharedkernel-k6"
+        "loadtest"
       ],
       "rollForward": false
     },

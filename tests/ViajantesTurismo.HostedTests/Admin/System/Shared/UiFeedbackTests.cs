@@ -35,16 +35,17 @@ public class UiFeedbackTests(AspireSystemTestFixture fixture) : AspireSystemTest
         var customer = await ApiClient.CreateCustomer();
         var booking = await ApiClient.CreateConfirmedBooking(tour.Id, customer.Id);
 
-        // Act
         await BookingWorkflow.NavigateToEdit(booking.Id);
-        await Page.GetButton("Update Booking").ClickAsync();
+        var redirectAlert = UiFeedback.GetRedirectAlert("Redirecting to bookings page in 3 seconds...");
 
-        var redirectAlert = Page.Locator(".alert-info").Filter(new LocatorFilterOptions { HasText = "Redirecting" });
-        await UiFeedback.ExpectRedirectAlert();
-        await redirectAlert.GetButton("Cancel").ClickAsync();
+        // Act
+        var cancelRedirect = redirectAlert.GetByRole(AriaRole.Button,
+            new LocatorGetByRoleOptions { Name = "Cancel", Exact = true }).ClickAsync();
+        await Task.WhenAll(cancelRedirect, Page.GetButton("Update Booking").ClickAsync());
 
         // Assert
         await Expect(Page.GetButton("Go to Bookings")).ToBeVisibleAsync();
+        await Expect(redirectAlert).ToBeHiddenAsync();
         await Page.ShouldHaveTitle("Edit Booking");
     }
 }

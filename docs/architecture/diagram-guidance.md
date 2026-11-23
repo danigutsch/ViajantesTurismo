@@ -39,16 +39,16 @@ source is discoverable.
 The repository-owned config is `docs/architecture/generated-diagrams.json`. Refresh diagrams with:
 
 ```text
-dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json
+dotnet docs generate --config docs/architecture/generated-diagrams.json
 ```
 
 Check drift with:
 
 ```text
-dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
+dotnet docs verify --config docs/architecture/generated-diagrams.json
 ```
 
-`sharedkernel-docs` delegates reusable generation logic
+`dotnet docs` delegates reusable generation logic
 to `PandaBear.SharedKernel.Documentation`.
 
 ## References

@@ -27,7 +27,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.WebHost.ConfigureApiRequestLimits();
 
-builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
+builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<CustomerImportTelemetry>();
@@ -67,7 +67,7 @@ builder.Services.AddMultipartUploadTimeout();
 builder.Services.AddConfiguredClamAvMalwareScanner(builder.Configuration, builder.Environment);
 
 builder.AddApplication();
-builder.Services.AddSharedKernelMediator();
+builder.Services.AddMediator();
 builder.AddInfrastructure();
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, ViajantesTurismo.Admin.Contracts.Application.PaymentAccountContractJsonContext.Default));
@@ -103,6 +103,6 @@ app.MapPaymentInstructionEndpoints();
 app.MapErrorDocumentationEndpoints();
 app.MapRobotsTxt(ApiRobotsTxt);
 
-app.MapSharedKernelDefaultEndpoints();
+app.MapHealthEndpoints();
 
 await app.RunAsync();

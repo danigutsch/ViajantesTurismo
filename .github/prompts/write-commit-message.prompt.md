@@ -20,7 +20,7 @@ Requirements:
 
 Useful references:
 
-- `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path>`
+- `dotnet ci verify-commit-message --file <path>`
 - [`CONTRIBUTING.md`](../../CONTRIBUTING.md)
 
 Return:

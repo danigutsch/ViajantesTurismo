@@ -7,7 +7,7 @@ strict up-to-date checks remain enabled. SharedKernel validation remains advisor
 ## Validation ownership
 
 Application selection, slice execution, OpenAPI generation, Playwright installation, symbol evidence,
-changed-code coverage, dependency-review planning, and PR title validation run through `sharedkernel-ci`,
+changed-code coverage, dependency-review planning, and PR title validation run through `dotnet ci`,
 built from the pinned SharedKernel source and configured by `.config/sharedkernel-ci.json`. GitHub
 Actions owns scheduling, permissions, caching, and artifact transport. Required source-validation names
 remain stable.
@@ -25,8 +25,8 @@ conservative for package READMEs and uncertain build inputs.
 ## Documentation-only validation
 
 Documentation changes skip application builds, test matrices, and version calculation on both pull
-requests and main pushes. Selection builds only the source-runnable `sharedkernel-ci`. Markdown lint, local link validation, line endings, metadata, and secret
-scanning remain active, and required aggregate checks still report a result.
+requests and main pushes. Selection builds only the CI tool. Markdown lint, local link validation,
+line endings, metadata, and secret scanning remain active, and required aggregate checks still report a result.
 
 The documentation allowlist covers Markdown and image files under `docs/` plus root `README.md`,
 `AGENTS.md`, `CONTRIBUTING.md`, and `SECURITY.md`. Package READMEs, scripts, unknown extensions,
@@ -47,7 +47,7 @@ informational Scorecard output. These timestamps do not isolate license lookup f
 lookup, and they do not prove snapshot retrying was the cause. The pinned action defaults snapshot
 retrying to false. Keep vulnerability/license enforcement and preview approvals unchanged.
 
-Dependency review skips graph submission and review only when `sharedkernel-ci select` reports
+Dependency review skips graph submission and review only when `dotnet ci select` reports
 `documentation_only=true`. It does not skip source changes or reuse another revision's snapshot. Broader skipping
 requires evaluated restore-input evidence; unknown input and comparison failures retain full review.
 

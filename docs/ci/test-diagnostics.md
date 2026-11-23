@@ -16,7 +16,7 @@ and browser capture are follow-up designs. Application test and CI maintainers o
 ## Current evidence
 
 The [main workflow](../../.github/workflows/ci.yml) already uploads test results and run evidence per
-slice with seven-day retention. `sharedkernel-ci run` writes `phase-timings.tsv`, `manifest.json`,
+slice with seven-day retention. `dotnet ci run` writes `phase-timings.tsv`, `manifest.json`,
 `diagnostics.txt` (phase status, escaped failure message, and file inventory), and one log per phase to
 `TestResults/selection/execution-<slice>/`, whether the run passes, fails, or is canceled, and a failed
 slice prints `dotnet --info`.

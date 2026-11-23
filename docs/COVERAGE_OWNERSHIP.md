@@ -40,8 +40,8 @@ coverage exists.
 Useful local command:
 
 ```bash
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --coverage
+dotnet ci select
+dotnet ci run --coverage
 dotnet tool run reportgenerator "-reports:TestResults/selection/execution/results/**/*.cobertura*.xml" \
     "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```

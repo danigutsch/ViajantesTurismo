@@ -173,9 +173,9 @@ for the resource changed. Dev Container image/Feature changes require its smoke 
 4. Stage and refresh locks: `bash setup-dev.sh`, then
    `dotnet restore ViajantesTurismo.slnx --force-evaluate` and
    `dotnet restore ViajantesTurismo.slnx --locked-mode`.
-5. Refresh the roadmap schema: run `dotnet tool run sharedkernel-repo -- init --root <empty directory>`,
+5. Refresh the roadmap schema: run `dotnet repo init --root <empty directory>`,
    copy any changed `roadmap/schema/*.json` into this repository with a final newline, then run
-   `dotnet tool run sharedkernel-repo -- verify`. `RoadmapSchemaContractTests` compares the committed
+   `dotnet repo verify`. `RoadmapSchemaContractTests` compares the committed
    schema with the pinned tool's output.
 6. Respond to NuGet audit failures: restore audits every package (`NuGetAuditMode` `all`, level `high`,
    warnings as errors), and the SharedKernel tool build audits its own lock file. Adopt a SharedKernel

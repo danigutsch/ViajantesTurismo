@@ -24,10 +24,7 @@
       "type": "local",
       "command": [
         "dotnet",
-        "tool",
-        "run",
-        "sharedkernel-playwright-mcp",
-        "--",
+        "browsermcp",
         "serve"
       ],
       "timeout": 120000,
@@ -123,11 +120,11 @@
     },
     "lint": {
       "description": "Run the repository shell, content, documentation, and Markdown checks.",
-      "template": "!`shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh && dotnet tool run sharedkernel-repo -- verify-text-encoding --root . && dotnet tool run sharedkernel-repo -- verify-line-endings --root . && dotnet tool run sharedkernel-repo -- verify-json --root . && dotnet tool run sharedkernel-repo -- verify-links --root . && dotnet tool run sharedkernel-repo -- verify-gherkin --root . && dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json && dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json && docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/davidanson/markdownlint-cli2:v0.18.1@sha256:173cb697a255a8a985f2c6a83b4f7a8b3c98f4fb382c71c45f1c52e4d4fed63a --config /workspace/.markdownlint-cli2.jsonc \"**/*.md\" \"#artifacts\"`"
+      "template": "!`shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh && dotnet repo verify-text-encoding --root . && dotnet repo verify-line-endings --root . && dotnet repo verify-json --root . && dotnet repo verify-links --root . && dotnet repo verify-gherkin --root . && dotnet docs verify --config docs/architecture/generated-diagrams.json && dotnet docs check --config docs/architecture/documentation-conformance.json && docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/davidanson/markdownlint-cli2:v0.18.1@sha256:173cb697a255a8a985f2c6a83b4f7a8b3c98f4fb382c71c45f1c52e4d4fed63a --config /workspace/.markdownlint-cli2.jsonc \"**/*.md\" \"#artifacts\"`"
     },
     "lint-fix": {
       "description": "Format shell scripts and Markdown, then regenerate the architecture diagrams.",
-      "template": "!`docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/mvdan/shfmt:v3.11.0@sha256:9c6f228b50928e4b174d13da1b10adacd7bbb50796527f58a85ea18e155e0806 -w -i 4 -ci -bn -sr .devcontainer/*.sh scripts/*.sh setup-dev.sh && docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/davidanson/markdownlint-cli2:v0.18.1@sha256:173cb697a255a8a985f2c6a83b4f7a8b3c98f4fb382c71c45f1c52e4d4fed63a --config /workspace/.markdownlint-cli2.jsonc --fix \"**/*.md\" \"#artifacts\" && dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`"
+      "template": "!`docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/mvdan/shfmt:v3.11.0@sha256:9c6f228b50928e4b174d13da1b10adacd7bbb50796527f58a85ea18e155e0806 -w -i 4 -ci -bn -sr .devcontainer/*.sh scripts/*.sh setup-dev.sh && docker run --rm --user \"$(id -u):$(id -g)\" --env HOME=/tmp --volume \"$PWD:/workspace\" --workdir /workspace docker.io/davidanson/markdownlint-cli2:v0.18.1@sha256:173cb697a255a8a985f2c6a83b4f7a8b3c98f4fb382c71c45f1c52e4d4fed63a --config /workspace/.markdownlint-cli2.jsonc --fix \"**/*.md\" \"#artifacts\" && dotnet docs generate --config docs/architecture/generated-diagrams.json`"
     },
     "prepare-pr": {
       "description": "Prepare a pull request summary using the repository template.",

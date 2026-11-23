@@ -54,7 +54,7 @@ internal sealed class DocumentAuditRetentionHostedServiceFixture : IAsyncDisposa
         services.AddSingleton<IDispositionHoldGuard>(new FakeDispositionHoldGuard());
         services.AddSingleton<IDispositionHoldStore>(new InMemoryDispositionHoldStore());
         services.AddScoped<DocumentHoldGate>();
-        services.AddSharedKernelMediator();
+        services.AddMediator();
         var provider = services.BuildServiceProvider();
 
         return new DocumentAuditRetentionHostedServiceFixture(provider, auditStore);
