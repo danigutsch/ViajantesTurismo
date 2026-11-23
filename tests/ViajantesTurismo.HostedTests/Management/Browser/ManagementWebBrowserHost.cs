@@ -36,6 +36,16 @@ internal sealed class ManagementWebBrowserHost : IAsyncDisposable
         get;
     }
 
+    /// <summary>Starts the payment pages with typed clients bound to the supplied Admin API.</summary>
+    public static Task<ManagementWebBrowserHost> StartWithPayments(HttpClient admin, CancellationToken ct)
+    {
+        var registrations = new ServiceCollection();
+        registrations.AddSingleton<IBookingPaymentsApiClient>(new BookingPaymentsApiClient(admin));
+        registrations.AddSingleton<IPaymentInstructionsApiClient>(PaymentInstructionsApiClient.WithLatestReviewOnly(admin));
+        registrations.AddSingleton<IPaymentAccountsApiClient>(new PaymentAccountsApiClient(admin));
+        return Start(registrations, ct);
+    }
+
     /// <summary>Starts the host with typed clients for the pages under test.</summary>
     public static Task<ManagementWebBrowserHost> StartWithClients(
         CancellationToken ct,

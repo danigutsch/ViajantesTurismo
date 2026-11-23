@@ -22,6 +22,61 @@ internal static class PaymentPageData
         return revisions.ToJsonString();
     }
 
+    /// <summary>Builds one instruction with a long independent review history.</summary>
+    public static string InstructionWithReviews(Guid bookingId, int count)
+    {
+        var revisions = JsonNode.Parse(InstructionRevisions(bookingId, 1)).ShouldNotBeNull().AsArray();
+        var instruction = revisions[0].ShouldNotBeNull().AsObject();
+        var document = instruction["document"].ShouldNotBeNull().AsObject();
+        var documentId = document["id"].ShouldNotBeNull().GetValue<string>();
+        var reviews = new JsonArray();
+        for (var index = 1; index <= count; index++)
+        {
+            reviews.Add(new JsonObject
+            {
+                ["targetId"] = documentId,
+                ["targetRevision"] = 1,
+                ["reviewerId"] = FormattableString.Invariant($"reviewer-{index:D4}"),
+                ["reviewedAt"] = "2030-01-05T12:00:00Z",
+                ["changesRequested"] = index == count,
+            });
+        }
+        instruction["reviews"] = reviews;
+        return revisions.ToJsonString();
+    }
+
+    /// <summary>Builds an approved schedule and a mixed quote history for instruction choices.</summary>
+    public static string InstructionChoiceHistory(Guid bookingId, int eligibleCount, long version = 12)
+    {
+        var history = JsonNode.Parse(History).ShouldNotBeNull().AsObject();
+        history["bookingId"] = bookingId;
+        history["version"] = version;
+        var quotes = history["quotes"].ShouldNotBeNull().AsArray();
+        var approved = quotes[0].ShouldNotBeNull().AsObject().DeepClone();
+        var draft = quotes[1].ShouldNotBeNull().AsObject().DeepClone();
+        var installments = new JsonArray();
+        quotes.Clear();
+        for (var index = 1; index <= eligibleCount + 40; index++)
+        {
+            var eligible = index > 40;
+            var quote = (eligible ? approved : draft).DeepClone().AsObject();
+            quote["id"] = FormattableString.Invariant($"{index:X8}-4444-4444-4444-444444444444");
+            quotes.Add(quote);
+            installments.Add(new JsonObject
+            {
+                ["id"] = FormattableString.Invariant($"{index:X8}-5555-5555-5555-555555555555"),
+                ["dueDate"] = "2030-01-10",
+                ["euroAmount"] = 5,
+                ["allocatedEuro"] = eligible ? 0 : 5,
+                ["outstandingEuro"] = eligible ? 5 : 0,
+            });
+        }
+
+        var schedule = history["schedules"].ShouldNotBeNull().AsArray()[0].ShouldNotBeNull().AsObject();
+        schedule["installments"] = installments;
+        return history.ToJsonString();
+    }
+
     /// <summary>Builds distinct verified accounts with synthetic masked details.</summary>
     public static string VerifiedAccounts(int count)
     {
@@ -35,6 +90,26 @@ internal static class PaymentPageData
         }
 
         return accounts.ToJsonString();
+    }
+
+    /// <summary>Builds a masked financial history with distinct synthetic retained receipts.</summary>
+    public static string HistoryWithReceipts(Guid bookingId, int count)
+    {
+        var history = JsonNode.Parse(History).ShouldNotBeNull().AsObject();
+        var template = history["receipts"].ShouldNotBeNull().AsArray()[0].ShouldNotBeNull();
+        var receipts = new JsonArray();
+        for (var index = 1; index <= count; index++)
+        {
+            var receipt = template.DeepClone().AsObject();
+            receipt["id"] = FormattableString.Invariant($"{index:X8}-3333-3333-3333-333333333333");
+            receipt["reference"] = FormattableString.Invariant($"…{index:D4}");
+            receipts.Add(receipt);
+        }
+
+        history["bookingId"] = bookingId;
+        history["version"] = count + 12;
+        history["receipts"] = receipts;
+        return history.ToJsonString();
     }
 
     /// <summary>JSON list of payment accounts in verified, draft and retired states.</summary>

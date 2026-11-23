@@ -12,6 +12,7 @@ public sealed class PaymentAuthorizationTests
     [InlineData("POST", "/api/v1/payment-accounts/11111111-1111-1111-1111-111111111111/retire")]
     [InlineData("POST", "/api/v1/payment-accounts/11111111-1111-1111-1111-111111111111/review")]
     [InlineData("GET", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/finances/details")]
+    [InlineData("GET", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/finances/projection/details?section=Receipts")]
     [InlineData("POST", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/finances/schedules")]
     [InlineData("POST", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/finances/quotes")]
     [InlineData("POST", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/finances/schedules/22222222-2222-2222-2222-222222222222/approve")]
@@ -40,6 +41,7 @@ public sealed class PaymentAuthorizationTests
 
     [Theory]
     [InlineData("GET", "/api/v1/payment-accounts/")]
+    [InlineData("GET", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/finances/projection")]
     [InlineData("POST", "/api/v1/bookings/11111111-1111-1111-1111-111111111111/finances/receipts")]
     [InlineData("POST", "/api/v1/payment-accounts/")]
     public async Task Payment_routes_reject_anonymous_callers(string method, string path)
