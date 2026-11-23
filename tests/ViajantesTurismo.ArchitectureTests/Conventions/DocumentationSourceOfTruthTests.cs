@@ -1,7 +1,6 @@
 using System.Text.Json;
 using PandaBear.Documentation;
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -12,7 +11,7 @@ public sealed class DocumentationSourceOfTruthTests
     public void System_overview_should_retain_the_management_security_database_edges()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var configPath = Path.Combine(repositoryRoot, "docs", "architecture", "generated-diagrams.json");
         using var config = JsonDocument.Parse(File.ReadAllText(configPath));
         var systemOverview = config.RootElement.GetProperty("blocks")
@@ -36,7 +35,7 @@ public sealed class DocumentationSourceOfTruthTests
     public void Documentation_conformance_should_match_source_backed_facts()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var checkCount = DocumentationConformanceChecker.Check(
@@ -51,7 +50,7 @@ public sealed class DocumentationSourceOfTruthTests
     public void API_request_shape_policy_should_be_canonical_and_linked()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var policyPath = Path.Combine(repositoryRoot, "docs", "API_REQUEST_SHAPES.md");
         var documentationIndex = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "README.md"));
 
@@ -70,7 +69,7 @@ public sealed class DocumentationSourceOfTruthTests
     public void Artifact_reconciliation_runbook_links_to_the_sharedkernel_candidate_workflow()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var policyPath = Path.Combine(repositoryRoot, "docs", "operations", "document-retention-and-legal-hold.md");
 
         // Act

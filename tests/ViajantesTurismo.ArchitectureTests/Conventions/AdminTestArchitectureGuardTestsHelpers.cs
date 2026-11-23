@@ -33,7 +33,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     /// <summary>Finds public members that expose the service provider or scopes, returned as "path:Lline text" offenses.</summary>
     public static string[] FindGenericServiceProviderReachThrough(string filePath)
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var lines = File.ReadAllLines(filePath);
         var offenses = new List<string>();
 
@@ -58,7 +58,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
             return [];
         }
 
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var lines = File.ReadAllLines(filePath);
         var offenses = new List<string>();
         var insideRawStringLiteral = false;
@@ -86,7 +86,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     /// <summary>Finds lines that couple the SharedKernel testing code to product-specific names, returned as offenses.</summary>
     public static string[] FindProductSpecificSharedKernelTestingCoupling(string filePath)
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var lines = File.ReadAllLines(filePath);
         var offenses = new List<string>();
 
@@ -107,7 +107,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     /// <summary>Finds raw service-collection, provider or scope plumbing inside Fact and Theory method bodies, returned as offenses.</summary>
     public static string[] FindRawServiceProviderPlumbingInTestMethods(string filePath)
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var lines = File.ReadAllLines(filePath);
         var offenses = new List<string>();
         var insideTestMethod = false;
@@ -156,7 +156,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     /// <summary>Finds serial collection definitions without a nearby SerialTestJustification attribute, returned as offenses.</summary>
     public static string[] FindUndocumentedSerialCollectionDefinitions(string filePath)
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var lines = File.ReadAllLines(filePath);
         var offenses = new List<string>();
 
@@ -186,25 +186,6 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         }
 
         return [.. offenses];
-    }
-
-    /// <summary>Returns the repository root: the nearest ancestor of the test output directory that holds ViajantesTurismo.slnx.</summary>
-    public static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (currentDirectory is not null)
-        {
-            var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-            if (File.Exists(solutionPath))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
     }
 
     /// <summary>Reports whether the path is build output, a feature-file code-behind, or other generated test source.</summary>

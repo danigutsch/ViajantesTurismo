@@ -1,5 +1,4 @@
 using System.Xml.Linq;
-using ViajantesTurismo.ArchitectureTests.Dependencies;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -46,14 +45,14 @@ internal static class TestCoverageMatrixTestsHelpers
     /// <summary>Returns source project names from the solution in ordinal order.</summary>
     public static string[] ReadSourceProjectNames()
     {
-        var root = LayerDependencyTestsHelpers.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         return SelectSourceProjectNames(ReadSolutionProjects(root));
     }
 
     /// <summary>Returns the source project names in the coverage inventory in ordinal order.</summary>
     public static string[] ReadDocumentedProjectNames()
     {
-        var root = LayerDependencyTestsHelpers.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var inventory = Path.Combine(root, "docs", "testing", "PROJECT_TEST_COVERAGE.md");
         return [.. File.ReadLines(inventory)
             .Where(line => line.StartsWith("| `ViajantesTurismo.", StringComparison.Ordinal))
@@ -64,7 +63,7 @@ internal static class TestCoverageMatrixTestsHelpers
     /// <summary>Returns the sorted source projects (from the solution) that lack a direct test project of the required category.</summary>
     public static string[] FindUncoveredProjects()
     {
-        var root = LayerDependencyTestsHelpers.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var solutionProjects = ReadSolutionProjects(root);
         var sources = SelectSourceProjectNames(solutionProjects);
         var testReferences = solutionProjects.Where(path => path.StartsWith("tests/", StringComparison.Ordinal))

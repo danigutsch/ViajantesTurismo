@@ -1,5 +1,3 @@
-using ViajantesTurismo.ArchitectureTests.Repository;
-
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>Checks the ownership of public browsing components, client registration, and feature tests.</summary>
@@ -19,7 +17,7 @@ public sealed class PublicWebFeatureOwnershipTests
     public void Public_workflow_files_live_with_their_features(string relativePath)
     {
         // Arrange
-        var expectedPath = Path.Combine(RepositoryRoot.Locate(), relativePath);
+        var expectedPath = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), relativePath);
 
         // Act
         var exists = File.Exists(expectedPath);

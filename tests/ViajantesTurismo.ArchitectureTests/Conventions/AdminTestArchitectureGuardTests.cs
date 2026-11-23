@@ -9,7 +9,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     public void Registered_test_suites_have_a_test_seam()
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), ".config", "test-taxonomy.json");
+        var path = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".config", "test-taxonomy.json");
         using var inventory = JsonDocument.Parse(File.ReadAllText(path));
 
         // Act
@@ -25,7 +25,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Admin_test_architecture_guide_should_declare_the_canonical_documentation_owner()
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var guidePath = Path.Combine(repositoryRoot, "tests", "README.md");
         var guideText = File.ReadAllText(guidePath);
         var architectureReadmePath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.ArchitectureTests", "README.md");
@@ -40,7 +40,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     public void Admin_hosted_test_infrastructure_should_use_the_approved_fixture_and_base_class_model()
     {
         // Arrange
-        var root = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests");
+        var root = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests", "ViajantesTurismo.HostedTests");
         var owner = File.ReadAllText(Path.Combine(root, "Infrastructure", "AssemblyFixture.cs"));
         var fixture = File.ReadAllText(Path.Combine(root, "Infrastructure", "HostedTestFixture.cs"));
         var api = File.ReadAllText(Path.Combine(root, "Admin", "Api", "Infrastructure", "ApiFixture.cs"));
@@ -69,7 +69,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     public void SystemTests_should_use_repository_parallelism_without_a_local_override()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var systemTestsPath = Path.Combine(repositoryRoot, "tests", "ViajantesTurismo.HostedTests", "Admin", "System");
         var runnerConfigurationPath = Path.Combine(repositoryRoot, "tests", "xunit.runner.json");
         var localRunnerConfigurationPaths = Directory.GetFiles(
@@ -101,7 +101,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     public void Management_web_should_render_routes_only_after_interactive_server_connection()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var componentsPath = Path.Combine(repositoryRoot, "src", "ViajantesTurismo.Management.Web", "Components");
         var pagesPath = Path.Combine(componentsPath, "Pages");
         var appPath = Path.Combine(componentsPath, "App.razor");
@@ -154,7 +154,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         // Arrange
         var helperPath = Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "tests",
             "ViajantesTurismo.HostedTests", "Admin", "System",
             "Infrastructure",
@@ -176,7 +176,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         // Arrange
         var createPagesPath = Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "src",
             "ViajantesTurismo.Management.Web",
             "Components",
@@ -208,7 +208,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Serial_test_collection_definitions_should_declare_a_justification()
     {
-        var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
+        var testsRoot = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests");
 
         var undocumentedSerialDefinitions = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsGeneratedTestPath(path))
@@ -227,8 +227,8 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         var infrastructureRoots = new[]
         {
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Admin", "Api", "Infrastructure"),
-            Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Admin", "System", "Infrastructure")
+            Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests", "ViajantesTurismo.HostedTests", "Admin", "Api", "Infrastructure"),
+            Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests", "ViajantesTurismo.HostedTests", "Admin", "System", "Infrastructure")
         };
 
         var offendingMembers = infrastructureRoots
@@ -245,7 +245,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Concrete_test_methods_should_not_own_raw_serviceprovider_or_scope_plumbing()
     {
-        var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
+        var testsRoot = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests");
         var offendingLines = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsGeneratedTestPath(path))
             .SelectMany(FindRawServiceProviderPlumbingInTestMethods)
@@ -261,7 +261,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     {
         // Arrange
         var helperPath = Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "tests",
             "ViajantesTurismo.Admin.UnitTests",
             "Infrastructure",
@@ -277,7 +277,7 @@ public sealed partial class AdminTestArchitectureGuardTests
     [Fact]
     public void Test_trait_names_should_use_canonical_constants()
     {
-        var testsRoot = Path.Combine(GetRepositoryRoot(), "tests");
+        var testsRoot = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests");
         var offendingLines = Directory.GetFiles(testsRoot, "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsGeneratedTestPath(path))
             .SelectMany(FindHardcodedCanonicalTraitNames)

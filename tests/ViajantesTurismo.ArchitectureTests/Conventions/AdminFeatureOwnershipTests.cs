@@ -1,5 +1,3 @@
-using ViajantesTurismo.ArchitectureTests.Repository;
-
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>Checks ownership of the Admin booking, tour, and customer operations.</summary>
@@ -46,7 +44,7 @@ public sealed class AdminFeatureOwnershipTests
     public void Files_live_with_their_feature(string relativePath)
     {
         // Arrange
-        var repositoryRoot = RepositoryRoot.Locate();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var expectedPath = Path.Combine(repositoryRoot, relativePath);
 
         // Act

@@ -1,5 +1,3 @@
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
-
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed class AppHostOrchestrationTests
@@ -9,31 +7,31 @@ public sealed class AppHostOrchestrationTests
     {
         // Arrange
         var appHostReadmeText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "src",
             "ViajantesTurismo.AppHost",
             "README.md"));
 
         var releaseWorkflowDocsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "docs",
             "ci",
             "supplemental-workflows.md"));
 
         var releaseWorkflowText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             ".github",
             "workflows",
             "release-prep.yml"));
 
         var deploymentDocsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "docs",
             "architecture",
             "runtime-wiring-and-deployment.md"));
 
         var releasePublisherText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "src",
             "ViajantesTurismo.AppHost",
             "DevelopmentProjectResourceExtensions.cs"));
@@ -83,7 +81,7 @@ public sealed class AppHostOrchestrationTests
     {
         // Arrange
         var resourceExtensionsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "src",
             "ViajantesTurismo.AppHost",
             "AppHostResourceExtensions.cs"));
@@ -97,7 +95,7 @@ public sealed class AppHostOrchestrationTests
     {
         // Arrange
         var profileExtensionsText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "src",
             "ViajantesTurismo.AppHost",
             "AppHostProfileExtensions.cs"));
@@ -147,7 +145,7 @@ public sealed class AppHostOrchestrationTests
     {
         // Arrange
         var appHostText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "src",
             "ViajantesTurismo.AppHost",
             "ObservabilityStackResourceExtensions.cs"));
@@ -168,12 +166,12 @@ public sealed class AppHostOrchestrationTests
     {
         // Arrange
         var compositionText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "src",
             "ViajantesTurismo.AppHost",
             "AppHostComposition.cs"));
         var observabilityStackText = File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "src",
             "ViajantesTurismo.AppHost",
             "ObservabilityStackResourceExtensions.cs"));
@@ -195,7 +193,7 @@ public sealed class AppHostOrchestrationTests
     public void Collector_pipelines_sanitize_resources_and_trace_payloads_before_export()
     {
         // Arrange
-        var collectorRoot = Path.Combine(GetRepositoryRoot(), "observability", "otel-collector");
+        var collectorRoot = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "observability", "otel-collector");
         var privacyConfig = File.ReadAllText(Path.Combine(collectorRoot, "privacy.yaml"))
             .ReplaceLineEndings("\n");
         var aspireRoutingConfig = File.ReadAllText(Path.Combine(collectorRoot, "aspire.yaml"))
@@ -255,7 +253,7 @@ public sealed class AppHostOrchestrationTests
     public void Media_object_storage_source_configuration_is_private_and_pinned()
     {
         // Arrange
-        var appHostExtensionsText = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost", "AppHostResourceExtensions.cs"));
+        var appHostExtensionsText = File.ReadAllText(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost", "AppHostResourceExtensions.cs"));
 
         // Assert
         appHostExtensionsText.ShouldContain("AddMediaObjectStorage(this IDistributedApplicationBuilder builder)", StringComparison.Ordinal);

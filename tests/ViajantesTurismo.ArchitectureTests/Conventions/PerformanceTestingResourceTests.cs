@@ -2,7 +2,6 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.PerformanceTestingResourceTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -82,7 +81,7 @@ public sealed class PerformanceTestingResourceTests
     public void The_file_upload_scenario_alone_remains_in_the_k6_tool_configuration()
     {
         // Arrange
-        var text = File.ReadAllText(Path.Combine(GetRepositoryRoot(), ".config", "sharedkernel-k6.json"));
+        var text = File.ReadAllText(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".config", "sharedkernel-k6.json"));
 
         // Act
         var json = System.Text.Json.Nodes.JsonNode.Parse(text)!;

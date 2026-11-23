@@ -325,25 +325,6 @@ internal static class AnalyzerSuppressionPolicyTestsHelpers
         return EnablesProductionHttpAnalyzer(XDocument.Parse(projectXml));
     }
 
-    /// <summary>Returns the repository root: the nearest ancestor of the test output directory that holds ViajantesTurismo.slnx.</summary>
-    public static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (currentDirectory is not null)
-        {
-            var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-            if (File.Exists(solutionPath))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
-    }
-
     private static bool EnablesProductionHttpAnalyzer(XDocument project)
     {
         return project.Descendants().Any(static element =>

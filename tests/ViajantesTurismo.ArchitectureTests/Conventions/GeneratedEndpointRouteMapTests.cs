@@ -1,6 +1,5 @@
 using System.Text.Json;
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -17,7 +16,7 @@ public sealed class GeneratedEndpointRouteMapTests
     public void Published_API_operations_have_unique_operation_names(string context, string document)
     {
         // Arrange
-        var source = Path.Combine(GetRepositoryRoot(), "src", $"ViajantesTurismo.{context}.Contracts.Http", "OpenApi", $"{document}.openapi.json");
+        var source = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", $"ViajantesTurismo.{context}.Contracts.Http", "OpenApi", $"{document}.openapi.json");
         using var artifact = JsonDocument.Parse(File.ReadAllText(source));
 
         // Act
@@ -46,7 +45,7 @@ public sealed class GeneratedEndpointRouteMapTests
         string method, string path, string operation, string audience, string authorization)
     {
         // Arrange
-        var document = Path.Combine(GetRepositoryRoot(), "docs", "architecture", "generated-endpoint-route-map.md");
+        var document = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "docs", "architecture", "generated-endpoint-route-map.md");
         var expected = $"| `{method}` | `{path}` | {operation} | {audience} | {authorization} |";
 
         // Act

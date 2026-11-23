@@ -15,7 +15,7 @@ public sealed class LocalDevelopmentCredentialsTests
     public void Development_settings_define_only_the_sign_in_passwords()
     {
         // Arrange
-        var apphost = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost");
+        var apphost = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost");
         var settings = JsonNode.Parse(File.ReadAllText(Path.Combine(apphost, "appsettings.Development.json")));
 
         // Act
@@ -36,7 +36,7 @@ public sealed class LocalDevelopmentCredentialsTests
     public void Non_development_settings_define_no_parameter_values()
     {
         // Arrange
-        var apphost = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost");
+        var apphost = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost");
         var settings = JsonNode.Parse(File.ReadAllText(Path.Combine(apphost, "appsettings.json")));
 
         // Act
@@ -50,7 +50,7 @@ public sealed class LocalDevelopmentCredentialsTests
     public void The_readme_documents_each_fixed_parameter_and_value()
     {
         // Arrange
-        var apphost = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost");
+        var apphost = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost");
         var readme = File.ReadAllText(Path.Combine(apphost, "README.md"));
         var settings = JsonNode.Parse(File.ReadAllText(Path.Combine(apphost, "appsettings.Development.json")));
 

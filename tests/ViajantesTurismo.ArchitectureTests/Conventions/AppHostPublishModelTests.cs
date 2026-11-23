@@ -24,7 +24,7 @@ public sealed class AppHostPublishModelTests
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = ["--operation", "publish", "--publisher", "manifest"],
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost"),
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost"),
         });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -69,7 +69,7 @@ public sealed class AppHostPublishModelTests
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = args,
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost")
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost")
         });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -105,7 +105,7 @@ public sealed class AppHostPublishModelTests
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = args,
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost")
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost")
         });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -171,7 +171,7 @@ public sealed class AppHostPublishModelTests
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = ["--operation", "publish", "--publisher", "manifest"],
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost")
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost")
         });
 
         // Act
@@ -191,7 +191,7 @@ public sealed class AppHostPublishModelTests
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = ["--operation", "publish", "--publisher", "manifest"],
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost")
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost")
         });
         builder.Configuration["AppHost:External:IdentityProvider:Authority"] = "http://localhost:8080/realms/local-test";
         AppHost.AppHostComposition.AddProductResources(builder, HostedProfile.System);
@@ -221,7 +221,7 @@ public sealed class AppHostPublishModelTests
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = [],
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost")
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost")
         });
 
         // Act

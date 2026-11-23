@@ -1,5 +1,4 @@
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -17,7 +16,7 @@ public sealed class PrometheusAlertFixtureTests
         // Arrange
         const string thresholdPrefix = "params: [";
         var grafanaRules = File.ReadAllText(Path.Combine(AlertingRoot(), "rules.yaml"));
-        var fixture = File.ReadAllLines(Path.Combine(GetRepositoryRoot(), "observability", "prometheus", "tests", fixtureFile));
+        var fixture = File.ReadAllLines(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "observability", "prometheus", "tests", fixtureFile));
 
         // Act
         var provisioned = RuleSeparator().Split(grafanaRules)

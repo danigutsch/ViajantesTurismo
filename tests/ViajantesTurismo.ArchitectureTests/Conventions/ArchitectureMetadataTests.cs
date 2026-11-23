@@ -4,7 +4,6 @@ using PandaBear.EventSourcing.Npgsql;
 using PandaBear.Testing;
 using ViajantesTurismo.ArchitectureTests.Repository;
 using ViajantesTurismo.RepositoryDocumentation.Architecture;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -15,7 +14,7 @@ public sealed class ArchitectureMetadataTests
     public void The_generated_data_view_matches_the_architecture_metadata()
     {
         // Arrange
-        var repository = GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var result = ArchitectureDataDiagram.Run(repository, checkOnly: true);
@@ -43,7 +42,7 @@ public sealed class ArchitectureMetadataTests
     public void The_data_inventory_covers_every_application_DbContext()
     {
         // Arrange
-        var repository = GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var source = Path.Combine(repository, "docs", "architecture", "architecture-metadata.json");
         var actualContexts = ArchitectureMetadataSources.DbContexts()
             .Select(type => type.Name)
@@ -73,7 +72,7 @@ public sealed class ArchitectureMetadataTests
         string context, string schema, string table, string role, string dataClass)
     {
         // Arrange
-        var repository = GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var source = Path.Combine(repository, "docs", "architecture", "architecture-metadata.json");
         using var metadata = JsonDocument.Parse(File.ReadAllText(source));
         var store = metadata.RootElement.GetProperty("stores").EnumerateArray()
@@ -93,7 +92,7 @@ public sealed class ArchitectureMetadataTests
     public void The_event_store_inventory_uses_the_registered_provider_schema()
     {
         // Arrange
-        var repository = GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var source = Path.Combine(repository, "docs", "architecture", "architecture-metadata.json");
         using var metadata = JsonDocument.Parse(File.ReadAllText(source));
         var eventStore = metadata.RootElement.GetProperty("stores").EnumerateArray()
@@ -120,7 +119,7 @@ public sealed class ArchitectureMetadataTests
         string context, string schemaOwner)
     {
         // Arrange
-        var repository = GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var source = Path.Combine(repository, "docs", "architecture", "architecture-metadata.json");
         using var metadata = JsonDocument.Parse(File.ReadAllText(source));
         var store = metadata.RootElement.GetProperty("stores").EnumerateArray()
@@ -145,7 +144,7 @@ public sealed class ArchitectureMetadataTests
     public void The_architecture_vocabulary_defines_boundaries_and_lifecycle_for_documented_components()
     {
         // Arrange
-        var repository = GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var source = Path.Combine(repository, "docs", "architecture", "architecture-metadata.json");
         using var metadata = JsonDocument.Parse(File.ReadAllText(source));
         var diagram = Path.Combine(repository, "docs", "architecture", "data-ownership.md");

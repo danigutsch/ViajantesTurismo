@@ -10,7 +10,7 @@ public sealed class HostedTestSeamTests
     public void HTTP_and_browser_test_bodies_do_not_construct_persistence_adapters(string seam)
     {
         // Arrange
-        var root = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Admin", seam);
+        var root = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests", "ViajantesTurismo.HostedTests", "Admin", seam);
         string[] persistenceConstructors = ["new NpgsqlConnection(", "new AdminWriteDbContext(", "new CatalogDbContext(", "new EfBrandingSettingsStore("];
 
         // Act
@@ -28,7 +28,7 @@ public sealed class HostedTestSeamTests
     public void System_tests_use_the_shared_application_fixture()
     {
         // Arrange
-        var root = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests", "Admin", "System");
+        var root = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests", "ViajantesTurismo.HostedTests", "Admin", "System");
 
         // Act
         var violations = Directory.GetFiles(root, "*Tests.cs", SearchOption.AllDirectories)

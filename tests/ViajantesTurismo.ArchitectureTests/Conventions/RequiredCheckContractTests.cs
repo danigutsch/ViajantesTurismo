@@ -1,5 +1,4 @@
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.RequiredCheckContractTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -11,7 +10,7 @@ public sealed class RequiredCheckContractTests
     public void Required_checks_match_workflow_jobs_that_ignore_unrelated_label_events()
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var checks = ReadRequiredChecks(Path.Combine(root, "docs", "ci", "governance.md"));
 
         // Act

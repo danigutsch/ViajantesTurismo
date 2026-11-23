@@ -1,5 +1,3 @@
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
-
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
@@ -9,7 +7,7 @@ public sealed class TelemetryPrivacyConfigurationTests
     public void Npgsql_registrations_share_tracing_privacy_configuration_without_disabling_tracing_or_parameter_logging()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var adminInfrastructure = File.ReadAllText(Path.Combine(
             repositoryRoot,
             "src",

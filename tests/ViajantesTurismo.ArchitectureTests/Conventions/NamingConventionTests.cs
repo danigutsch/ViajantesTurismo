@@ -68,7 +68,7 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void XUnit_test_methods_should_follow_underscore_naming_convention()
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var offendingMethods = Directory
             .GetFiles(Path.Combine(repositoryRoot, "tests"), "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsGeneratedTestPath(path))
@@ -84,7 +84,7 @@ public sealed partial class NamingConventionTests
     public void XUnit_method_scanner_resumes_after_single_line_raw_string_literal()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var fixturePath = Path.Combine(
             repositoryRoot,
             "tests",
@@ -106,7 +106,7 @@ public sealed partial class NamingConventionTests
     public void XUnit_method_scanner_resolves_aliases_without_matching_unrelated_attributes()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var fixturePath = Path.Combine(
             repositoryRoot,
             "tests",
@@ -127,7 +127,7 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void Behavior_feature_files_should_use_kebab_case()
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var behaviorSpecsRoot = Path.Combine(
             repositoryRoot,
             "tests",
@@ -153,7 +153,7 @@ public sealed partial class NamingConventionTests
     [Fact]
     public void Mediator_tests_should_not_invoke_methods_inside_simple_assertions()
     {
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var mediatorTestsRoot = Path.Combine(repositoryRoot, "tests");
         var offendingAssertions = Directory
             .GetFiles(mediatorTestsRoot, "*.cs", SearchOption.AllDirectories)

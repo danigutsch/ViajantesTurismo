@@ -1,5 +1,3 @@
-using ViajantesTurismo.ArchitectureTests.Repository;
-
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>Checks ownership of the Catalog endpoints, projection, and media storage.</summary>
@@ -20,7 +18,7 @@ public sealed class CatalogFeatureOwnershipTests
     public void Workflow_files_live_with_their_features(string relativePath)
     {
         // Arrange
-        var expectedPath = Path.Combine(RepositoryRoot.Locate(), relativePath);
+        var expectedPath = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), relativePath);
 
         // Act
         var exists = File.Exists(expectedPath);
