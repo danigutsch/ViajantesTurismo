@@ -55,6 +55,15 @@ public static class AsyncApiDocument
             handler: "ViajantesTurismo.Admin.IntegrationEventWorker.BrandingSettingsChangedIntegrationHandler",
             transportConsumer: "AdminBrandingTransportDbContext"),
         AsyncApiEvent.Describe(
+            CatalogIntegrationEventJsonContext.Default.CatalogGalleryPlacementQueuedIntegrationEvent,
+            title: "Catalog gallery placement queued",
+            producer: "Catalog",
+            consumer: "Catalog",
+            consumerName: IntegrationEventConsumerNames.Catalog,
+            outbox: "CatalogDbContext",
+            inbox: "CatalogDbContext",
+            handler: "ViajantesTurismo.Catalog.Application.Gallery.CatalogGalleryPlacementQueuedHandler"),
+        AsyncApiEvent.Describe(
             CatalogIntegrationEventJsonContext.Default.MediaImageOriginalStoredIntegrationEvent,
             title: "Catalog media image original stored",
             producer: "Catalog",
