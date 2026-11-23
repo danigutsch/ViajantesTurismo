@@ -1,5 +1,6 @@
 using System.Reflection;
 using PandaBear.IO;
+using PandaBear.Testing;
 
 namespace ViajantesTurismo.Testing.Reproduction;
 
@@ -28,15 +29,9 @@ internal static class ReproductionFixtureEnvironment
             return null;
         }
 
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "ViajantesTurismo.slnx")))
-            {
-                return RepositoryPath.Parse("TestResults/reproduction").ResolveUnder(directory.FullName);
-            }
-        }
-
-        throw new InvalidOperationException("Reproduction exports require the repository's local TestResults directory.");
+        var repositoryRoot = RepositoryRoot.TryLocate("ViajantesTurismo.slnx")
+            ?? throw new InvalidOperationException("Reproduction exports require the repository's local TestResults directory.");
+        return RepositoryPath.Parse("TestResults/reproduction").ResolveUnder(repositoryRoot);
     }
 
     private static bool IsRevision([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? value) =>

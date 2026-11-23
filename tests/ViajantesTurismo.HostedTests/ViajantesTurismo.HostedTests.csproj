@@ -13,7 +13,19 @@
         <Using Include="ViajantesTurismo.HostedTests.Infrastructure" />
     </ItemGroup>
     <ItemGroup>
-        <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/*.sql"
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/admin.sql"
+                 Link="Fixtures/MigrationBaselines/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/branding.sql"
+                 Link="Fixtures/MigrationBaselines/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/catalog-event-store.sql"
+                 Link="Fixtures/MigrationBaselines/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/catalog.sql"
+                 Link="Fixtures/MigrationBaselines/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/management-security.sql"
                  Link="Fixtures/MigrationBaselines/%(Filename)%(Extension)"
                  CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
