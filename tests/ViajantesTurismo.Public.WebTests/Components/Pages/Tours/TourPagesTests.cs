@@ -8,6 +8,109 @@ namespace ViajantesTurismo.Public.WebTests.Components.Pages.Tours;
 public sealed class TourPagesTests
 {
     [Fact]
+    public async Task Public_tour_index_returns_a_bounded_window_and_has_a_crawlable_localized_next_page()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        for (var number = 1; number <= 803; number++)
+        {
+            var slug = FormattableString.Invariant($"page-ride-{number:D3}");
+            var title = FormattableString.Invariant($"Page Ride {number:D3}");
+            catalogApi.AddTour(PublicTourTestData.CreateDetails(slug, title));
+        }
+
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi, canonicalOrigin: "https://public.example.test");
+        using var client = factory.CreateClient();
+        var ct = TestContext.Current.CancellationToken;
+
+        // Act
+        using var first = await client.GetAsync(new Uri("/pt/group-bike-tours", UriKind.Relative), ct);
+        var firstContent = await first.Content.ReadAsStringAsync(ct);
+        using var next = await client.GetAsync(new Uri("/pt/group-bike-tours?page=2", UriKind.Relative), ct);
+        var nextContent = await next.Content.ReadAsStringAsync(ct);
+
+        // Assert
+        first.StatusCode.ShouldBe(HttpStatusCode.OK);
+        next.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var firstHeadings = firstContent.Split("<h2 class=\"site-card__title\">", StringSplitOptions.None).Length - 1;
+        var nextHeadings = nextContent.Split("<h2 class=\"site-card__title\">", StringSplitOptions.None).Length - 1;
+        firstHeadings.ShouldBe(12);
+        nextHeadings.ShouldBe(12);
+        firstContent.ShouldContain("Page Ride 012", StringComparison.Ordinal);
+        firstContent.ShouldNotContain("Page Ride 013", StringComparison.Ordinal);
+        firstContent.ShouldContain("href=\"/pt/group-bike-tours?page=2\"", StringComparison.Ordinal);
+        nextContent.ShouldContain("Page Ride 013", StringComparison.Ordinal);
+        nextContent.ShouldNotContain("Page Ride 012", StringComparison.Ordinal);
+        nextContent.ShouldContain("rel=\"canonical\" href=\"https://public.example.test/pt/group-bike-tours?page=2\"", StringComparison.Ordinal);
+        PrerenderedComponentState.ShouldKeepServerStateBelow(firstContent);
+        PrerenderedComponentState.ShouldKeepServerStateBelow(nextContent);
+    }
+
+    [Fact]
+    public async Task Public_tour_detail_displays_a_cover_and_one_window_of_a_large_photo_collection()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        var photos = Enumerable.Range(0, 803)
+            .Select(index => PublicTourTestData.CreateImage(FormattableString.Invariant($"Road photo {index:D3}")) with
+            {
+                IsCover = index == 0,
+                SortOrder = index
+            })
+            .ToArray();
+        catalogApi.AddTour(PublicTourTestData.CreateDetails("large-legacy-tour", "Large legacy tour") with
+        {
+            Images = photos
+        });
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi, canonicalOrigin: "https://public.example.test");
+        using var client = factory.CreateClient();
+        var ct = TestContext.Current.CancellationToken;
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/en/group-bike-tours/large-legacy-tour", UriKind.Relative), ct);
+        var content = await response.Content.ReadAsStringAsync(ct);
+        using var next = await client.GetAsync(new Uri("/en/group-bike-tours/large-legacy-tour?page=2", UriKind.Relative), ct);
+        var nextContent = await next.Content.ReadAsStringAsync(ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var photoElements = content.Split("alt=\"Road photo ", StringSplitOptions.None).Length - 1;
+        photoElements.ShouldBe(7);
+        content.ShouldContain("alt=\"Road photo 000\"", StringComparison.Ordinal);
+        content.ShouldContain("alt=\"Road photo 006\"", StringComparison.Ordinal);
+        content.ShouldNotContain("alt=\"Road photo 007\"", StringComparison.Ordinal);
+        content.ShouldContain("href=\"/en/group-bike-tours/large-legacy-tour?page=2\"", StringComparison.Ordinal);
+        next.StatusCode.ShouldBe(HttpStatusCode.OK);
+        nextContent.ShouldContain("alt=\"Road photo 000\"", StringComparison.Ordinal);
+        nextContent.ShouldContain("alt=\"Road photo 007\"", StringComparison.Ordinal);
+        nextContent.ShouldNotContain("alt=\"Road photo 006\"", StringComparison.Ordinal);
+        nextContent.ShouldContain("rel=\"canonical\" href=\"https://public.example.test/en/group-bike-tours/large-legacy-tour?page=2\"", StringComparison.Ordinal);
+        PrerenderedComponentState.ShouldKeepServerStateBelow(content);
+        PrerenderedComponentState.ShouldKeepServerStateBelow(nextContent);
+    }
+
+    [Theory]
+    [InlineData("/en/group-bike-tours?page=0")]
+    [InlineData("/pt/group-bike-tours?page=99")]
+    [InlineData("/en/group-bike-tours/camino-norte?page=invalid")]
+    public async Task Invalid_public_tour_pages_return_not_found_without_redirecting(string path)
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        catalogApi.AddTour(PublicTourTestData.CreateDetails("camino-norte", "Camino Norte"));
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.Headers.Location.ShouldBeNull();
+    }
+
+
+    [Fact]
     public async Task Public_tour_list_returns_published_tours_when_catalog_loads()
     {
         // Arrange

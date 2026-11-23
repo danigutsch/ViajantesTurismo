@@ -32,6 +32,19 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     }
 
     /// <inheritdoc />
+    public Task<HttpOutcome<PublishedTourPageDto>> GetPublishedTourPage(string? page, int pageSize, CancellationToken ct)
+    {
+        var path = FormattableString.Invariant($"{RoutePrefix}/tours/browse/page?pageSize={pageSize}");
+        if (page is not null)
+        {
+            path += $"&page={Uri.EscapeDataString(page)}";
+        }
+
+        return HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.Relative)),
+            HttpStatusCode.OK, Json.PublishedTourPageDto, Json.ContractValidationProblemDto, ct);
+    }
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(slug);
@@ -44,6 +57,20 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
             Json.TourDetailsDto,
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<PublishedTourDetailsPageDto>> GetPublishedTourDetailsPage(string slug, string? page, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(slug);
+        var path = $"{RoutePrefix}/tours/{Uri.EscapeDataString(slug)}/photo-page";
+        if (page is not null)
+        {
+            path += $"?page={Uri.EscapeDataString(page)}";
+        }
+
+        return HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.Relative)),
+            HttpStatusCode.OK, Json.PublishedTourDetailsPageDto, Json.ContractValidationProblemDto, ct);
     }
 
     /// <inheritdoc />

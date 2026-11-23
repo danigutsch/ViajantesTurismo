@@ -66,6 +66,38 @@ public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore, 
     }
 
     /// <inheritdoc />
+    public ValueTask<PublishedTourPageDto?> ListPublishedPage(string? page, int pageSize, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var published = GetSnapshot().Where(tour => tour.IsPubliclyVisible).ToArray();
+        var window = PageWindow.Create(page, pageSize, published.Length);
+        if (window.IsOutOfRange)
+        {
+            return ValueTask.FromResult<PublishedTourPageDto?>(null);
+        }
+
+        var cards = published.OrderBy(tour => tour.Title, StringComparer.Ordinal).ThenBy(tour => tour.CatalogTourId)
+            .Skip(window.Skip).Take(window.Take).Select(tour => new TourSummaryDto
+            {
+                Title = tour.Title,
+                Slug = tour.Slug,
+                Summary = tour.Summary,
+                UpdatedAt = tour.UpdatedAt,
+                Images = []
+            }).ToArray();
+        return ValueTask.FromResult<PublishedTourPageDto?>(new(window.Page, window.PageSize, window.Total, cards));
+    }
+
+    /// <inheritdoc />
+    public ValueTask<(PageWindow Window, IReadOnlyList<CatalogTourImageDto> Images)?> ListPublishedPhotos(
+        CatalogTourDraftReadModel tour, string? page, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var window = PageWindow.Create(page, PublishedTourDetailsPageDto.PhotosPerPage, 0);
+        return ValueTask.FromResult<(PageWindow, IReadOnlyList<CatalogTourImageDto>)?>(window.IsOutOfRange ? null : (window, []));
+    }
+
+    /// <inheritdoc />
     public ValueTask<bool> AdvanceStreamVersion(Guid catalogTourId, long streamVersion, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
