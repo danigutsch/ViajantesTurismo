@@ -1,6 +1,7 @@
 @page "/catalog/content"
 @implements IDisposable
 @using System.ComponentModel.DataAnnotations
+@using PandaBear.Blazor.Site
 @using ViajantesTurismo.Catalog.Contracts.Application
 @using PandaBear.HttpClients
 @using ViajantesTurismo.Management.Web.Helpers
@@ -32,7 +33,7 @@
             {
                 <p><em>Loading...</em></p>
             }
-            else if (_content.Length == 0)
+            else if (_content.Count == 0)
             {
                 <div class="alert alert-info" role="status">No public content entries yet.</div>
             }
@@ -49,6 +50,8 @@
                         </button>
                     }
                 </div>
+                <Pager Window="@_window" PageHref="ContentPageHref"
+                       Label="Content pages" PreviousText="Previous" NextText="Next" />
             }
         </section>
     </div>
@@ -102,10 +105,16 @@
 </div>
 
 @code {
-    private PublicContentDto[] _content = [];
+    private IReadOnlyList<PublicContentOverviewItemDto> _content = [];
+    private PageWindow _window;
+    private string? _listedPage;
+    private int _listRequest;
     private IReadOnlyList<ErrorSummaryItem> _summaryItems = [];
     private ServerValidationBinder? _binder;
     private EditContext? _editContext;
+
+    [SupplyParameterFromQuery(Name = "page")]
+    private string? RequestedPage { get; set; }
 
     private static readonly IReadOnlyList<KeyValuePair<string, string>> FieldIds =
     [
@@ -145,10 +154,10 @@
     private string? _successMessage;
 
     /// <inheritdoc />
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadContent();
-    }
+    protected override Task OnParametersSetAsync() =>
+        _listRequest != 0 && string.Equals(_listedPage, RequestedPage, StringComparison.Ordinal)
+            ? Task.CompletedTask
+            : LoadContent();
 
     private RenderFragment RenderVariant(string idPrefix, PublicContentVariantFormModel variant) => @<div>
         <div class="mb-3">
@@ -190,12 +199,22 @@
 
     private async Task LoadContent()
     {
+        var revision = ++_listRequest;
+        var page = RequestedPage;
+        _listedPage = page;
+        _loading = true;
         _errorMessage = null;
 
-        var outcome = await PublicContentApi.GetContent(CancellationToken.None);
+        var outcome = await PublicContentApi.GetContentPage(page, CancellationToken.None);
+        if (revision != _listRequest)
+        {
+            return;
+        }
+
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } content })
         {
-            _content = content;
+            _content = content.Items;
+            _window = PageWindow.Create(page, PublicContentOverviewPageDto.ItemsPerPage, content.Total);
         }
         else
         {
@@ -205,6 +224,10 @@
 
         _loading = false;
     }
+
+    private static LinkTarget ContentPageHref(int page) => LinkTarget.Create(page == 1
+        ? "/catalog/content"
+        : FormattableString.Invariant($"/catalog/content?page={page}")).Value;
 
     private async Task LoadEntry(string key)
     {

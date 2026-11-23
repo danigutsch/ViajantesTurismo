@@ -49,6 +49,38 @@ public sealed class DetailsPageHoldTests : BunitContext
     }
 
     [Fact]
+    public async Task Holds_are_paged_while_the_notice_covers_a_restraining_hold_on_a_later_page()
+    {
+        // Arrange
+        const int pageSize = 25;
+        for (var index = 0; index < pageSize; index++)
+        {
+            documentsApiClient.Holds.Add(DocumentHoldTestData.Create(released: true));
+        }
+
+        var restraining = DocumentHoldTestData.Create();
+        documentsApiClient.Holds.Add(restraining);
+
+        // Act
+        var cut = HoldPageActions.Render(this, document.Id);
+
+        // Assert
+        cut.FindAll("tr[data-hold-id]").Count.ShouldBe(pageSize);
+        cut.FindAll($"tr[data-hold-id='{restraining.Id}']").ShouldBeEmpty();
+        cut.Find(".alert-warning").TextContent.ShouldContain("A legal hold restrains this document.", StringComparison.Ordinal);
+
+        await cut.Find("button[aria-label='Next holds page']").ClickAsync();
+
+        cut.FindAll("tr[data-hold-id]").ShouldHaveSingleItem().GetAttribute("data-hold-id").ShouldBe(restraining.Id.ToString());
+
+        await cut.Find("button[aria-label='Previous holds page']").ClickAsync();
+
+        cut.FindAll("tr[data-hold-id]").Count.ShouldBe(pageSize);
+        documentsApiClient.OverviewQueries.Select(query => query.Page).ShouldBe([1, 2, 1]);
+        documentsApiClient.OverviewQueries.All(query => query.DocumentId == document.Id).ShouldBeTrue();
+    }
+
+    [Fact]
     public void An_overdue_review_is_labelled_with_text_and_not_only_colour()
     {
         // Arrange
@@ -124,6 +156,22 @@ public sealed class DetailsPageHoldTests : BunitContext
         // Assert
         cut.Find("#document-holds-title").ShouldNotBeNull();
         cut.Find("[role='alert']").TextContent.Trim().ShouldNotBeEmpty();
+        cut.Markup.ShouldContain("Holds are not available", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void An_unscoped_hold_page_is_not_rendered_in_document_details()
+    {
+        // Arrange
+        var hold = DocumentHoldTestData.Create();
+        documentsApiClient.OverviewHandler = _ => DocumentHoldTestData.OverviewPage(
+            [new GetDocumentHoldOverviewItemDto { Hold = hold, LineageId = Guid.CreateVersion7() }], false);
+
+        // Act
+        var cut = HoldPageActions.Render(this, document.Id);
+
+        // Assert
+        cut.FindAll("tr[data-hold-id]").ShouldBeEmpty();
         cut.Markup.ShouldContain("Holds are not available", StringComparison.Ordinal);
     }
 

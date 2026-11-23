@@ -8,6 +8,8 @@ public interface IPaymentAccountsApiClient
 {
     /// <summary>Lists masked recipient accounts.</summary>
     Task<HttpOutcome<IReadOnlyList<GetPaymentAccountDto>>> List(CancellationToken ct);
+    /// <summary>Reads one bounded page of masked accounts, optionally limited to verified recipients.</summary>
+    Task<HttpOutcome<GetPaymentAccountPageDto>> ListPage(int page, int pageSize, bool verifiedOnly, CancellationToken ct);
     /// <summary>Gets a masked account.</summary>
     Task<HttpOutcome<GetPaymentAccountDto>> GetById(Guid id, CancellationToken ct);
     /// <summary>Explicitly reads sensitive recipient details, requiring Admin authorization and a server audit.</summary>

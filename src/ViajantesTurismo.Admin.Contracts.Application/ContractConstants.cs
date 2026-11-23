@@ -26,6 +26,18 @@ public static class ContractConstants
     /// <summary>The maximum length of tour option search text.</summary>
     public const int MaxTourOptionQueryLength = 200;
 
+    /// <summary>Page size used to browse masked payment account summaries.</summary>
+    public const int DefaultPaymentAccountPageSize = 25;
+
+    /// <summary>Maximum rows in a masked payment account page.</summary>
+    public const int MaxPaymentAccountPageSize = 100;
+
+    /// <summary>Page size used to browse retained payment instruction revisions.</summary>
+    public const int DefaultPaymentInstructionPageSize = 25;
+
+    /// <summary>Maximum revisions in a payment instruction page.</summary>
+    public const int MaxPaymentInstructionPageSize = 100;
+
     /// <summary>The required HTTP header identifying an idempotent financial or document command.</summary>
     public const string IdempotencyKeyHeaderName = "Idempotency-Key";
 

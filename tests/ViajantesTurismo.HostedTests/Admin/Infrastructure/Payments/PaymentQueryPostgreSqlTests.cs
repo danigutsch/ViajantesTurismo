@@ -1,5 +1,6 @@
 using PandaBear.BuildingBlocks;
 using PandaBear.Testing;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
@@ -39,6 +40,51 @@ public sealed class PaymentQueryPostgreSqlTests(PostgreSqlTestServerFixture fixt
         await using var restarted = scenario.Open();
         var persistedAudits = await restarted.AuditCount(ct);
         persistedAudits.ShouldBe(originalAudits + 1);
+    }
+
+    [Fact]
+    public async Task Account_pages_filter_verified_rows_in_stable_order_and_preserve_masking_without_audits()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = await PostgreSqlPaymentScenario.Create(fixture, ct);
+        await using var seed = scenario.Open();
+        await seed.Migrate(ct);
+        const string identifier = "DE89370400440532013000";
+        var recipient = PaymentRecipientDetails.CreateIban("Recipient", identifier, "COBADEFFXXX", Currency.Eur).Value;
+        var now = scenario.Clock.GetUtcNow();
+        var draft = PaymentAccount.Create("Draft recipient", recipient, "owner", now).Value;
+        await seed.SeedAccount(draft, ct);
+        var ids = new List<Guid>();
+        for (var index = 0; index <= ContractConstants.DefaultPaymentAccountPageSize; index++)
+        {
+            var label = FormattableString.Invariant($"Verified recipient {index}");
+            var account = PaymentAccount.Create(label, recipient, "owner", now).Value;
+            account.Verify(account.Version, "owner", now, PaymentAccountVerificationMethod.BankStatement, now, true, true).IsSuccess.ShouldBeTrue();
+            await seed.SeedAccount(account, ct);
+            ids.Add(account.Id);
+        }
+
+        var initialAudits = await seed.AuditCount(ct);
+        await using var reader = scenario.Open();
+
+        // Act
+        var first = await reader.Accounts.ListPage(1, ContractConstants.DefaultPaymentAccountPageSize, verifiedOnly: true, ct);
+        var last = await reader.Accounts.ListPage(999, ContractConstants.DefaultPaymentAccountPageSize, verifiedOnly: true, ct);
+        var all = await reader.Accounts.ListPage(1, ContractConstants.MaxPaymentAccountPageSize, verifiedOnly: false, ct);
+        var finalAudits = await reader.AuditCount(ct);
+
+        // Assert
+        first.Items.Count.ShouldBe(ContractConstants.DefaultPaymentAccountPageSize);
+        first.Total.ShouldBe(ids.Count);
+        last.Page.ShouldBe(2);
+        last.Items.ShouldHaveSingleItem();
+        first.Items.Concat(last.Items).Select(account => account.Id).ShouldBe(ids.Order());
+        first.Items.Concat(last.Items).All(account =>
+            account.Status == PaymentAccountStatusDto.Verified && !account.MaskedIdentifier.Contains(identifier, StringComparison.Ordinal)).ShouldBeTrue();
+        all.Total.ShouldBe(ids.Count + 1);
+        all.Items.ShouldContain(account => account.Id == draft.Id);
+        finalAudits.ShouldBe(initialAudits);
     }
 
     [Fact]

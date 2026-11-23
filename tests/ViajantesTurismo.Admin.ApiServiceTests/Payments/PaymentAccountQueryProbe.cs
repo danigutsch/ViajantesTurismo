@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
 
@@ -6,8 +8,22 @@ namespace ViajantesTurismo.Admin.ApiServiceTests.Payments;
 /// <summary>Query service exposing one verified EUR account and counting sensitive-detail reads.</summary>
 internal sealed class PaymentAccountQueryProbe : IPaymentAccountQueryService
 {
+    /// <summary>Creates the payment read test host with this probe and the requested feature state.</summary>
+    public WebApplicationFactory<AdminApiHostEntryPoint> CreateHost(bool enabled) =>
+        AdminApiTestHost.Create(services =>
+        {
+            services.RemoveAll<IPaymentAccountQueryService>();
+            services.AddSingleton<IPaymentAccountQueryService>(this);
+        }, configureConfiguration: configuration => configuration["Payments:Enabled"] = enabled.ToString());
+
     /// <summary>Gets how many times sensitive account details were read.</summary>
     public int SensitiveReads
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the paging and filter arguments most recently sent to the probe.</summary>
+    public (int? Page, int PageSize, bool VerifiedOnly)? LastPageRequest
     {
         get; private set;
     }
@@ -38,6 +54,18 @@ internal sealed class PaymentAccountQueryProbe : IPaymentAccountQueryService
     };
     /// <summary>Returns the single account.</summary>
     public Task<IReadOnlyList<GetPaymentAccountDto>> List(CancellationToken ct) => Task.FromResult<IReadOnlyList<GetPaymentAccountDto>>([Account]);
+    /// <inheritdoc />
+    public Task<GetPaymentAccountPageDto> ListPage(int? page, int pageSize, bool verifiedOnly, CancellationToken ct)
+    {
+        LastPageRequest = (page, pageSize, verifiedOnly);
+        return Task.FromResult(new GetPaymentAccountPageDto
+        {
+            Items = [Account],
+            Page = 1,
+            PageSize = pageSize,
+            Total = 1
+        });
+    }
     /// <summary>Returns the account when the id matches, otherwise null.</summary>
     public Task<GetPaymentAccountDto?> GetById(Guid id, CancellationToken ct) => Task.FromResult(id == Account.Id ? Account : null);
     /// <summary>Returns recipient details and counts the read when the id matches, otherwise null.</summary>

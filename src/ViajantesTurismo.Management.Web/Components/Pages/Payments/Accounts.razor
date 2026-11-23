@@ -20,7 +20,7 @@
     <caption>Masked recipient accounts; sensitive details require an explicit Admin action.</caption>
     <thead><tr><th scope="col">Account</th><th scope="col">Identifier</th><th scope="col">Currency</th><th scope="col">Revision</th><th scope="col">Status</th><th scope="col">Approval and review</th><th scope="col">Actions</th></tr></thead>
     <tbody>
-    @foreach (var account in _accounts)
+    @foreach (var account in _accountPage?.Items ?? [])
     {
         <tr @key="account.Id">
             <th scope="row">@account.Label</th><td>@account.MaskedIdentifier</td><td>@account.SettlementCurrency</td><td>@account.Revision</td><td>@account.Status</td>
@@ -46,6 +46,16 @@
     }
     </tbody>
 </table>
+@if (_accountPage is { } accountPage && PageWindow.Create(accountPage.Page, accountPage.PageSize, accountPage.Total) is { HasMultiplePages: true } pages)
+{
+    <nav aria-label="Payment account pages" class="d-flex align-items-center gap-3">
+        <button type="button" class="btn btn-outline-secondary" aria-label="Previous payment accounts page"
+                disabled="@(_loading || _submission.IsBusy || pages.PreviousPage is null)" @onclick="() => LoadPage(pages.Page - 1)">Previous page</button>
+        <span>Page @pages.Page of @pages.PageCount</span>
+        <button type="button" class="btn btn-outline-secondary" aria-label="Next payment accounts page"
+                disabled="@(_loading || _submission.IsBusy || pages.NextPage is null)" @onclick="() => LoadPage(pages.Page + 1)">Next page</button>
+    </nav>
+}
 <AuthorizeView Roles="Admin" Context="adminContext">
     <p>Format validation does not prove ownership. You may enter and verify an account yourself after an independent bank or recipient check.</p>
     <EditForm Model="_model" OnValidSubmit="SaveDraft" FormName="payment-account">
@@ -112,7 +122,7 @@
 </AuthorizeView>
 
 @code {
-    private IReadOnlyList<GetPaymentAccountDto> _accounts = [];
+    private GetPaymentAccountPageDto? _accountPage;
     private PaymentAccountFormModel _model = new();
     private GetPaymentAccountDto? _editing;
     private GetPaymentAccountDto? _selected;
@@ -147,13 +157,15 @@
         _checkedAt = Clock.GetUtcNow().UtcDateTime;
         await Load();
     }
-    private async Task Load()
+    private Task Load() => LoadPage(_accountPage?.Page ?? 1);
+
+    private async Task LoadPage(int page)
     {
         _loading = true; _error = null;
         try
         {
-            var outcome = await AccountsApi.List(CancellationToken.None);
-            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } accounts }) { _accounts = accounts; }
+            var outcome = await AccountsApi.ListPage(page, ContractConstants.DefaultPaymentAccountPageSize, verifiedOnly: false, CancellationToken.None);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } accounts }) { _accountPage = accounts; }
             else { _error = new HttpOutcomeMessages("Payment accounts are unavailable. Please try again.").For(outcome.Kind); }
         }
         finally { _loading = false; }

@@ -57,9 +57,33 @@ public sealed class DocumentHoldEndpointTests
 
         // Act
         using var response = await client.GetAsync(new Uri($"/api/v1/documents/{documentId}/holds", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var page = await client.GetAsync(new Uri($"/api/v1/documents/holds?documentId={documentId}", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(expected);
+        page.StatusCode.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task A_scoped_page_rejects_invalid_or_unknown_documents_without_echoing_the_input()
+    {
+        // Arrange
+        const string marker = "invalid-document-key";
+        var documentId = Guid.CreateVersion7();
+        await using var factory = DocumentHoldTestHost.Create(documentId, new InMemoryDispositionHoldStore());
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        var ct = TestContext.Current.CancellationToken;
+
+        // Act
+        using var invalid = await client.GetAsync(new Uri($"/api/v1/documents/holds?documentId={marker}", UriKind.Relative), ct);
+        var body = await invalid.Content.ReadAsStringAsync(ct);
+        using var unknown = await client.GetAsync(new Uri($"/api/v1/documents/holds?documentId={Guid.CreateVersion7()}", UriKind.Relative), ct);
+
+        // Assert
+        invalid.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        unknown.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        body.ShouldNotContain(marker, StringComparison.Ordinal);
     }
 
     [Theory]

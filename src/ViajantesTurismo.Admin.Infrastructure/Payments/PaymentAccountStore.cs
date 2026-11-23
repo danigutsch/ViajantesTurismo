@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
@@ -23,6 +24,22 @@ internal sealed class PaymentAccountStore(AdminWriteDbContext context, PaymentPr
     {
         var rows = await context.Set<PaymentAccountRow>().AsNoTracking().OrderBy(row => row.Id).ToArrayAsync(ct);
         return [.. rows.Select(Decode)];
+    }
+
+    /// <inheritdoc />
+    public async Task<(IReadOnlyList<PaymentAccount> Items, PageWindow Window)> ListPage(
+        int? page, int pageSize, bool verifiedOnly, CancellationToken ct)
+    {
+        var query = context.Set<PaymentAccountRow>().AsNoTracking();
+        if (verifiedOnly)
+        {
+            query = query.Where(row => row.Status == PaymentAccountStatus.Verified);
+        }
+
+        var total = await query.CountAsync(ct);
+        var window = PageWindow.Create(page, pageSize, total);
+        var rows = await query.OrderBy(row => row.Id).Skip(window.Skip).Take(window.Take).ToArrayAsync(ct);
+        return ([.. rows.Select(Decode)], window);
     }
 
     /// <summary>Writes the account as a protected row and stages audit rows for its lifecycle events.</summary>

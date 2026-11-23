@@ -8,6 +8,8 @@ public interface IPaymentInstructionsApiClient
 {
     /// <summary>Lists retained immutable instruction revisions for a booking.</summary>
     Task<HttpOutcome<IReadOnlyList<GetPaymentInstructionDto>>> ListForBooking(Guid bookingId, CancellationToken ct);
+    /// <summary>Lists one bounded page of retained immutable instruction revisions for a booking, newest first.</summary>
+    Task<HttpOutcome<GetPaymentInstructionPageDto>> ListPageForBooking(Guid bookingId, int page, int pageSize, CancellationToken ct);
     /// <summary>Gets generated financial fields and masked recipient metadata.</summary>
     Task<HttpOutcome<GetPaymentInstructionDto>> GetById(Guid id, CancellationToken ct);
     /// <summary>Generates a protected immutable draft.</summary>

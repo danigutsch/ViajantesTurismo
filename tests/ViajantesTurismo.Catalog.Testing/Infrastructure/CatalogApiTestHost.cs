@@ -1,5 +1,6 @@
 using PandaBear.ObjectStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -122,6 +123,16 @@ internal static class CatalogApiTestHost
                 ["ConnectionStrings:catalog-database"] = "Host=localhost;Database=viajantes-catalog",
                 [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString
             });
+    }
+
+    /// <summary>Creates a client for the production composition with a caller-supplied test database setup.</summary>
+    internal static (HttpClient Client, IAsyncDisposable Host) CreateProductionClient(
+        Action<IWebHostBuilder> configure, string role)
+    {
+        var factory = CreateProductionComposition();
+        var client = factory.WithWebHostBuilder(configure).CreateClient();
+        ConfigureAuthenticatedClient(client, role);
+        return (client, factory);
     }
 
     /// <summary>Gives the client an Administrator token for the Catalog audience.</summary>

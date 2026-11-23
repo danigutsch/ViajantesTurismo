@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Payments;
@@ -9,6 +10,10 @@ public interface IPaymentInstructionStore
 {
     /// <summary>Lists retained immutable document revisions for a booking.</summary>
     Task<IReadOnlyList<Guid>> GetDocumentIds(Guid bookingId, CancellationToken ct);
+    /// <summary>Lists the retained document identifiers in one page, newest revision first.</summary>
+    Task<(IReadOnlyList<Guid> Items, PageWindow Window)> GetDocumentIdPage(Guid bookingId, int? page, int pageSize, CancellationToken ct);
+    /// <summary>Reads one instruction revision's current lineage version and retirement state.</summary>
+    Task<(long Version, bool IsRetired)?> GetDocumentState(Guid documentId, CancellationToken ct);
     /// <summary>Reads a verified protected snapshot; never falls back to unprotected data.</summary>
     Task<PaymentInstructionSnapshot?> GetSnapshot(Guid documentId, CancellationToken ct);
     /// <summary>Stages a new immutable snapshot linked to existing document lineage.</summary>

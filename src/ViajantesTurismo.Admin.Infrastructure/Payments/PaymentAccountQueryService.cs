@@ -15,6 +15,19 @@ internal sealed class PaymentAccountQueryService(IPaymentAccountStore store, IUn
     /// <summary>Lists all payment account summaries.</summary>
     public async Task<IReadOnlyList<GetPaymentAccountDto>> List(CancellationToken ct) => [.. (await store.List(ct)).Select(PaymentAccountMappings.ToSummary)];
 
+    /// <inheritdoc />
+    public async Task<GetPaymentAccountPageDto> ListPage(int? page, int pageSize, bool verifiedOnly, CancellationToken ct)
+    {
+        var (accounts, window) = await store.ListPage(page, pageSize, verifiedOnly, ct);
+        return new GetPaymentAccountPageDto
+        {
+            Items = [.. accounts.Select(PaymentAccountMappings.ToSummary)],
+            Page = window.Page,
+            PageSize = window.PageSize,
+            Total = window.Total
+        };
+    }
+
     /// <summary>Returns the account summary, or null when not found.</summary>
     public async Task<GetPaymentAccountDto?> GetById(Guid id, CancellationToken ct)
     {

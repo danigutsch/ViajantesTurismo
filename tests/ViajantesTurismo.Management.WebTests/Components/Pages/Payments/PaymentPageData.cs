@@ -1,8 +1,42 @@
+using System.Text.Json.Nodes;
+
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 
 /// <summary>Canned JSON payloads returned by the fake payment HTTP handler.</summary>
 internal static class PaymentPageData
 {
+    /// <summary>Builds retained synthetic instruction revisions in newest-first order.</summary>
+    public static string InstructionRevisions(Guid bookingId, int count)
+    {
+        var revisions = new JsonArray();
+        for (var revision = count; revision >= 1; revision--)
+        {
+            var instruction = JsonNode.Parse(Instruction).ShouldNotBeNull().AsObject();
+            var document = instruction["document"].ShouldNotBeNull().AsObject();
+            document["id"] = FormattableString.Invariant($"{revision:X8}-2222-2222-2222-222222222222");
+            document["bookingId"] = bookingId;
+            document["revision"] = revision;
+            revisions.Add(instruction);
+        }
+
+        return revisions.ToJsonString();
+    }
+
+    /// <summary>Builds distinct verified accounts with synthetic masked details.</summary>
+    public static string VerifiedAccounts(int count)
+    {
+        var accounts = new JsonArray();
+        for (var index = 1; index <= count; index++)
+        {
+            var account = JsonNode.Parse(Account).ShouldNotBeNull().AsObject();
+            account["id"] = FormattableString.Invariant($"{index:X8}-1111-1111-1111-111111111111");
+            account["label"] = FormattableString.Invariant($"Verified recipient {index}");
+            accounts.Add(account);
+        }
+
+        return accounts.ToJsonString();
+    }
+
     /// <summary>JSON list of payment accounts in verified, draft and retired states.</summary>
     public const string Accounts = """
         [

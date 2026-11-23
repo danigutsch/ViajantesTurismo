@@ -11,7 +11,8 @@ internal static class DocumentHoldOverviewQueryParser
     private const string RoundTripFormat = "O";
 
     /// <summary>Parses the optional filters and paging, applying the default page and page size when absent.</summary>
-    public static Result<ListDocumentHoldOverviewQuery> Parse(string? state, string? basis, string? releasedSince, string? page, string? pageSize)
+    public static Result<ListDocumentHoldOverviewQuery> Parse(
+        string? state, string? basis, string? releasedSince, string? page, string? pageSize, string? documentId = null)
     {
         if (!TryParseEnum<DocumentHoldState>(state, out var parsedState))
         {
@@ -38,7 +39,21 @@ internal static class DocumentHoldOverviewQueryParser
             return Reject("pageSize");
         }
 
-        return Result.Ok(new ListDocumentHoldOverviewQuery(parsedState, parsedBasis, parsedSince, parsedPage, parsedPageSize));
+        Guid? parsedDocumentId = null;
+        if (documentId is not null)
+        {
+            if (!Guid.TryParse(documentId, out var id))
+            {
+                return Reject("documentId");
+            }
+
+            parsedDocumentId = id;
+        }
+
+        return Result.Ok(new ListDocumentHoldOverviewQuery(parsedState, parsedBasis, parsedSince, parsedPage, parsedPageSize)
+        {
+            DocumentId = parsedDocumentId
+        });
     }
 
     private static Result<ListDocumentHoldOverviewQuery> Reject(string field) =>

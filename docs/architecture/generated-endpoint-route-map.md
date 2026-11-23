@@ -65,6 +65,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `PUT` | `/api/v1/catalog/media/images/{id:guid}/accessibility-review` | ReviewMediaImageAccessibility | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `GET` | `/api/v1/catalog/media/images/{id:guid}/preview/{width:int}/{format}` | GetManagementMediaPreview | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `GET` | `/api/v1/catalog/public-content` | ListPublicContentForManagement | management API | required | `ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs` |
+| `GET` | `/api/v1/catalog/public-content-overview` | GetPublicContentOverviewPage | management API | required | `ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs` |
 | `GET` | `/api/v1/catalog/public-content/{**key}` | GetPublicContentForManagement | management API | required | `ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/public-content/{**key}` | UpsertPublicContent | management API | required | `ViajantesTurismo.Catalog.Api/PublicContent/CatalogPublicContentEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours` | GetTours | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
@@ -90,6 +91,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/documents/bookings/{bookingId:guid}/contract-drafts` | GenerateDocumentContractDraft | management API | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
 | `GET` | `/api/v1/documents/bookings/{bookingId:guid}/payment-instructions` | ListBookingPaymentInstructions | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
 | `POST` | `/api/v1/documents/bookings/{bookingId:guid}/payment-instructions` | GeneratePaymentInstructions | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
+| `GET` | `/api/v1/documents/bookings/{bookingId:guid}/payment-instructions/page` | ListBookingPaymentInstructionPage | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
 | `POST` | `/api/v1/documents/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate` | RegeneratePaymentInstructions | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentInstructionEndpoints.cs` |
 | `GET` | `/api/v1/documents/holds` | ListDocumentHoldOverview | management API | required | `ViajantesTurismo.Admin.Api/Documents/DocumentHoldEndpoints.cs` |
 | `GET` | `/api/v1/documents/{id:guid}` | GetDocumentById | management API | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
@@ -114,6 +116,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/documents/{id:guid}/void` | VoidDocument | management API | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
 | `GET` | `/api/v1/payment-accounts` | ListPaymentAccounts | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `POST` | `/api/v1/payment-accounts` | CreatePaymentAccount | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
+| `GET` | `/api/v1/payment-accounts/page` | ListPaymentAccountPage | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `GET` | `/api/v1/payment-accounts/{id:guid}` | GetPaymentAccount | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `PUT` | `/api/v1/payment-accounts/{id:guid}` | UpdatePaymentAccount | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `GET` | `/api/v1/payment-accounts/{id:guid}/recipient` | GetPaymentAccountRecipient | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |

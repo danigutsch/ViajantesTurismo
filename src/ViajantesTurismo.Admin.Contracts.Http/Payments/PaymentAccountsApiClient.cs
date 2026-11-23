@@ -17,6 +17,15 @@ public sealed class PaymentAccountsApiClient(HttpClient httpClient) : IPaymentAc
         new HttpRequestMessage(HttpMethod.Get, new Uri(Prefix, UriKind.Relative)), HttpStatusCode.OK, Json.IReadOnlyListGetPaymentAccountDto, Validation, ct);
 
     /// <inheritdoc />
+    public Task<HttpOutcome<GetPaymentAccountPageDto>> ListPage(int page, int pageSize, bool verifiedOnly, CancellationToken ct)
+    {
+        var filter = verifiedOnly ? "&verifiedOnly=true" : string.Empty;
+        var route = FormattableString.Invariant($"{Prefix}/page?page={page}&pageSize={pageSize}{filter}");
+        return HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)),
+            HttpStatusCode.OK, Json.GetPaymentAccountPageDto, Validation, ct);
+    }
+
+    /// <inheritdoc />
     public Task<HttpOutcome<GetPaymentAccountDto>> GetById(Guid id, CancellationToken ct) => HttpOutcomeMapper.Send(httpClient,
         new HttpRequestMessage(HttpMethod.Get, new Uri($"{Prefix}/{id}", UriKind.Relative)), HttpStatusCode.OK, Json.GetPaymentAccountDto, Validation, ct);
 

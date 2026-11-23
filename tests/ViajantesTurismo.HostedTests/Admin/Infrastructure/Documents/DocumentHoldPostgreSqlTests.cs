@@ -621,6 +621,37 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
     }
 
     [Fact]
+    public async Task A_lineage_page_reports_restraint_even_when_filters_hide_the_restraining_hold()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var now = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var lineage = DocumentDraftInfrastructureTestData.CreateLineageWithRevisions(now, 2);
+        var other = DocumentDraftInfrastructureTestData.CreateLineage(now);
+        await Scenario.Seed(lineage);
+        await Scenario.Seed(other);
+        var revisionId = lineage.Revisions[0].Id;
+        var historical = await Harness.Place(revisionId, ct);
+        await Harness.Release(revisionId, historical, ct);
+        var restraining = await Harness.Place(lineage.Revisions[1].Id, ct);
+        _ = await Harness.Place(other.Revisions.ShouldHaveSingleItem().Id, ct);
+        var query = new ListDocumentHoldOverviewQuery(DocumentHoldState.Released, null, null, 1, 1) { DocumentId = revisionId };
+
+        // Act
+        var whileRestrained = await Harness.Overview(query, ct);
+        await Harness.Release(revisionId, restraining, ct);
+        var afterRelease = await Harness.Overview(query, ct);
+
+        // Assert
+        whileRestrained.Value.Items.ShouldHaveSingleItem().Hold.Id.ShouldBe(historical);
+        whileRestrained.Value.HasMore.ShouldBeFalse();
+        whileRestrained.Value.IsLineageRestrained.ShouldBe(true);
+        afterRelease.Value.Items.Count.ShouldBe(1);
+        afterRelease.Value.HasMore.ShouldBeTrue();
+        afterRelease.Value.IsLineageRestrained.ShouldBe(false);
+    }
+
+    [Fact]
     public async Task The_overview_resolves_the_newest_revision_per_lineage_and_leaves_a_purged_lineage_unlinked()
     {
         // Arrange

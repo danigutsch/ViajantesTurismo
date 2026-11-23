@@ -1,4 +1,5 @@
 using System.Net;
+using PandaBear.BuildingBlocks;
 using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
@@ -6,6 +7,17 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 /// <summary>In-memory public content API client that records the last saved key and request.</summary>
 internal sealed class FakePublicContentApiClient : IPublicContentApiClient
 {
+    private readonly List<string?> pageRequests = [];
+
+    /// <summary>Gets the requested overview pages in call order.</summary>
+    public IReadOnlyList<string?> PageRequests => pageRequests;
+
+    /// <summary>Gets the number of full content collection reads.</summary>
+    public int ListCallCount
+    {
+        get; private set;
+    }
+
     /// <summary>Content entries returned by the fake and replaced by a successful save.</summary>
     public PublicContentDto[] Content { get; set; } = [];
 
@@ -43,6 +55,7 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
     public Task<HttpOutcome<PublicContentDto[]>> GetContent(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        ListCallCount++;
 
         return Task.FromResult(ThrowOnGetContent
             ? new HttpOutcome<PublicContentDto[]>
@@ -51,6 +64,30 @@ internal sealed class FakePublicContentApiClient : IPublicContentApiClient
                 Message = "HTTP transport failed."
             }
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Content));
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<PublicContentOverviewPageDto>> GetContentPage(string? page, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        pageRequests.Add(page);
+        if (ThrowOnGetContent)
+        {
+            return Task.FromResult(new HttpOutcome<PublicContentOverviewPageDto>
+            {
+                Kind = HttpOutcomeKind.TransportFailure,
+                Message = "HTTP transport failed."
+            });
+        }
+
+        var window = PageWindow.Create(page, PublicContentOverviewPageDto.ItemsPerPage, Content.Length);
+        var entries = Content.OrderBy(entry => entry.Key, StringComparer.Ordinal)
+            .Skip(window.Skip)
+            .Take(window.Take)
+            .Select(entry => new PublicContentOverviewItemDto(entry.Key, entry.PublicationState))
+            .ToArray();
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK,
+            new PublicContentOverviewPageDto(entries, Content.Length)));
     }
 
     /// <inheritdoc />

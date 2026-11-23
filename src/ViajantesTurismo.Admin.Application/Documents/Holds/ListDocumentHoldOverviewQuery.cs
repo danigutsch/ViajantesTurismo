@@ -8,4 +8,11 @@ namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 /// <param name="ReleasedSince">Keeps only holds released at or after this instant, or ignores release time when <see langword="null" />.</param>
 /// <param name="Page">The one-based page number.</param>
 /// <param name="PageSize">The maximum number of holds per page.</param>
-public sealed record ListDocumentHoldOverviewQuery(DocumentHoldState? State, HoldBasis? Basis, DateTimeOffset? ReleasedSince, int Page, int PageSize);
+public sealed record ListDocumentHoldOverviewQuery(DocumentHoldState? State, HoldBasis? Basis, DateTimeOffset? ReleasedSince, int Page, int PageSize)
+{
+    /// <summary>Limits the hold page to the lineage of this document revision when supplied.</summary>
+    public Guid? DocumentId
+    {
+        get; init;
+    }
+}

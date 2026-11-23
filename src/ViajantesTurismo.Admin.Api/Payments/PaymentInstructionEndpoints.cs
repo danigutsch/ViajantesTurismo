@@ -19,6 +19,8 @@ internal static class PaymentInstructionEndpoints
         var documentsGroup = app.MapDocumentsGroup().WithPaymentWorkflowPolicy().ObserveDocumentOperations();
         documentsGroup.MapGet("/bookings/{bookingId:guid}/payment-instructions", List).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("ListBookingPaymentInstructions", "Lists retained protected payment instruction revisions.", "Lists booking payment instructions.");
+        documentsGroup.MapGet("/bookings/{bookingId:guid}/payment-instructions/page", ListPage).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .WithAdminMetadata("ListBookingPaymentInstructionPage", "Lists up to 100 masked retained instruction revisions, newest first.", "Lists a page of booking payment instructions.");
         documentsGroup.MapGet("/{id:guid}/payment-instructions", Read).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("GetPaymentInstructions", "Retrieves masked generated instruction fields and approval metadata.", "Retrieves payment instructions.");
         documentsGroup.MapPost("/bookings/{bookingId:guid}/payment-instructions", Generate).RequireAuthorization(AdminAuthorization.PaymentManage)
@@ -47,6 +49,21 @@ internal static class PaymentInstructionEndpoints
     }
 
     private static async Task<Ok<IReadOnlyList<GetPaymentInstructionDto>>> List(Guid bookingId, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct) => TypedResults.Ok(await workflow.ListForBooking(bookingId, ct));
+
+    private static async Task<Results<Ok<GetPaymentInstructionPageDto>, ValidationProblem>> ListPage(Guid bookingId,
+        [FromQuery] int? page, [FromQuery] int? pageSize, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct)
+    {
+        var size = pageSize ?? ContractConstants.DefaultPaymentInstructionPageSize;
+        if (size is < 1 or > ContractConstants.MaxPaymentInstructionPageSize)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["pageSize"] = [$"Page size must be between 1 and {ContractConstants.MaxPaymentInstructionPageSize}."]
+            });
+        }
+
+        return TypedResults.Ok(await workflow.ListPageForBooking(bookingId, page, size, ct));
+    }
 
     [ObserveDocumentOperation(DocumentOperation.Preview)]
     private static async Task<Results<Ok<GetPaymentInstructionDto>, NotFound>> Read(Guid id, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct)

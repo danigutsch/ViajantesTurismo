@@ -16,4 +16,5 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 [JsonSerializable(typeof(GetPaymentAccountDetailsDto))]
 [JsonSerializable(typeof(GetPaymentAccountDto[]))]
 [JsonSerializable(typeof(IReadOnlyList<GetPaymentAccountDto>))]
+[JsonSerializable(typeof(GetPaymentAccountPageDto))]
 public sealed partial class PaymentAccountContractJsonContext : JsonSerializerContext;

@@ -103,4 +103,44 @@ public sealed class PaymentInstructionCommandEndpointTests
         var assertionTarget = response.Headers.CacheControl?.NoStore;
         assertionTarget.ShouldNotBeNull().ShouldBeTrue();
     }
+
+    [Theory]
+    [InlineData("Admin", true, "", HttpStatusCode.OK, 25)]
+    [InlineData("Admin", true, "?page=99&pageSize=1", HttpStatusCode.OK, 1)]
+    [InlineData("Admin", true, "?pageSize=0", HttpStatusCode.BadRequest, 0)]
+    [InlineData("Admin", true, "?pageSize=101", HttpStatusCode.BadRequest, 0)]
+    [InlineData("Admin", false, "", HttpStatusCode.NotFound, 0)]
+    [InlineData("Operator", true, "", HttpStatusCode.Forbidden, 0)]
+    public async Task Revision_pages_preserve_administrator_access_and_payment_rollout(string role, bool enabled, string query,
+        HttpStatusCode expectedStatus, int expectedPageSize)
+    {
+        // Arrange
+        ArgumentNullException.ThrowIfNull(role);
+        await using var factory = AdminApiTestHost.Create(
+            services => PaymentEndpointServices.Configure(services, new PaymentEndpointSender(), new PaymentAccountQueryProbe()),
+            configureConfiguration: configuration => configuration["Payments:Enabled"] = enabled.ToString());
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, role);
+        var path = new Uri($"/api/v1/documents/bookings/{Guid.CreateVersion7()}/payment-instructions/page{query}", UriKind.Relative);
+        var ct = TestContext.Current.CancellationToken;
+
+        // Act
+        using var response = await client.GetAsync(path, ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(expectedStatus);
+        if (expectedStatus != HttpStatusCode.Forbidden)
+        {
+            var noStore = response.Headers.CacheControl?.NoStore;
+            noStore.ShouldNotBeNull().ShouldBeTrue();
+        }
+        if (expectedStatus == HttpStatusCode.OK)
+        {
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            json.RootElement.GetProperty("items").GetArrayLength().ShouldBe(0);
+            json.RootElement.GetProperty("page").GetInt32().ShouldBe(1);
+            json.RootElement.GetProperty("pageSize").GetInt32().ShouldBe(expectedPageSize);
+            json.RootElement.GetProperty("total").GetInt32().ShouldBe(0);
+        }
+    }
 }

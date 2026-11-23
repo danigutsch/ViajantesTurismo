@@ -246,10 +246,26 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
     }
 
     /// <summary>Lists retained booking instruction revisions without exposing recipient details.</summary>
-    public async Task<IReadOnlyList<GetPaymentInstructionDto>> ListForBooking(Guid bookingId, CancellationToken ct)
+    public async Task<IReadOnlyList<GetPaymentInstructionDto>> ListForBooking(Guid bookingId, CancellationToken ct) =>
+        await ProjectRevisions(await instructions.GetDocumentIds(bookingId, ct), ct);
+
+    /// <summary>Lists one page of retained booking instruction revisions without exposing recipient details.</summary>
+    public async Task<GetPaymentInstructionPageDto> ListPageForBooking(Guid bookingId, int? page, int pageSize, CancellationToken ct)
     {
-        var results = new List<GetPaymentInstructionDto>();
-        foreach (var id in await instructions.GetDocumentIds(bookingId, ct))
+        var (ids, window) = await instructions.GetDocumentIdPage(bookingId, page, pageSize, ct);
+        return new GetPaymentInstructionPageDto
+        {
+            Items = await ProjectRevisions(ids, ct),
+            Page = window.Page,
+            PageSize = window.PageSize,
+            Total = window.Total
+        };
+    }
+
+    private async Task<IReadOnlyList<GetPaymentInstructionDto>> ProjectRevisions(IReadOnlyList<Guid> ids, CancellationToken ct)
+    {
+        var results = new List<GetPaymentInstructionDto>(ids.Count);
+        foreach (var id in ids)
         {
             var item = await GetById(id, ct);
             if (item is not null)
@@ -263,12 +279,12 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
     /// <summary>Projects generated financial fields and masked recipient metadata for Admin confirmation.</summary>
     public async Task<GetPaymentInstructionDto?> GetById(Guid documentId, CancellationToken ct)
     {
-        var loaded = await Load(documentId, ct);
-        if (loaded.IsFailure)
+        var state = await instructions.GetDocumentState(documentId, ct);
+        var snapshot = await instructions.GetSnapshot(documentId, ct);
+        if (state is not { } current || snapshot is null)
         {
             return null;
         }
-        var current = loaded.Value;
         var dto = await queries.GetById(documentId, ct);
         if (dto is null)
         {
@@ -279,20 +295,20 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
         return new GetPaymentInstructionDto
         {
             Document = dto,
-            DocumentVersion = current.Lineage.Version,
-            AccountId = current.Snapshot.Terms.AccountId,
-            AccountRevisionId = current.Snapshot.Terms.AccountRevisionId,
-            MaskedRecipient = current.Snapshot.Recipient.MaskedIdentifier,
-            Eligible = !current.Document.IsRetired && await Eligible(current, ct),
-            EuroAmount = current.Snapshot.Terms.EuroAmount,
-            SettlementAmount = current.Snapshot.Terms.SettlementAmount,
-            SettlementCurrency = current.Snapshot.Terms.Currency.Code,
-            PaymentReference = current.Snapshot.Terms.Reference,
-            QuoteExpiresAt = current.Snapshot.Terms.QuoteExpiresAt,
+            DocumentVersion = current.Version,
+            AccountId = snapshot.Terms.AccountId,
+            AccountRevisionId = snapshot.Terms.AccountRevisionId,
+            MaskedRecipient = snapshot.Recipient.MaskedIdentifier,
+            Eligible = !current.IsRetired && await Eligible(snapshot, await tours.GetByBookingId(snapshot.Terms.BookingId, ct), ct),
+            EuroAmount = snapshot.Terms.EuroAmount,
+            SettlementAmount = snapshot.Terms.SettlementAmount,
+            SettlementCurrency = snapshot.Terms.Currency.Code,
+            PaymentReference = snapshot.Terms.Reference,
+            QuoteExpiresAt = snapshot.Terms.QuoteExpiresAt,
             Approval = new FinancialApprovalDto
             {
-                CreatedBy = current.Snapshot.CreatedBy,
-                CreatedAt = current.Snapshot.CreatedAt,
+                CreatedBy = snapshot.CreatedBy,
+                CreatedAt = snapshot.CreatedAt,
                 ApprovedBy = approval?.ActorId,
                 ApprovedAt = approval?.OccurredAt,
                 ApprovalReason = approval is null ? null : FinancialReasonDto.InstructionApproved,
@@ -326,13 +342,13 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
             : loaded;
     }
 
-    private async Task<bool> Eligible(PaymentInstructionSources current, CancellationToken ct) =>
-        await Eligible(current, await tours.GetByBookingId(current.Document.BookingId, ct), ct);
+    private Task<bool> Eligible(PaymentInstructionSources current, Tour? tour, CancellationToken ct) =>
+        Eligible(current.Snapshot, tour, ct);
 
-    private async Task<bool> Eligible(PaymentInstructionSources current, Tour? tour, CancellationToken ct)
+    private async Task<bool> Eligible(PaymentInstructionSnapshot snapshot, Tour? tour, CancellationToken ct)
     {
-        var account = await accounts.GetById(current.Snapshot.Terms.AccountId, ct);
-        return tour is not null && account is not null && tour.CanDeliverBookingPaymentInstruction(current.Snapshot.Terms, account, clock.GetUtcNow());
+        var account = await accounts.GetById(snapshot.Terms.AccountId, ct);
+        return tour is not null && account is not null && tour.CanDeliverBookingPaymentInstruction(snapshot.Terms, account, clock.GetUtcNow());
     }
 
     private static PaymentInstructionTarget TargetOf(PaymentInstructionSnapshot snapshot) =>

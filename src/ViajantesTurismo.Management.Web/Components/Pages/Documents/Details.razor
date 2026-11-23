@@ -144,13 +144,17 @@
                     {
                         <div class="alert alert-danger" role="alert">@_holdErrorMessage</div>
                     }
-                    @if (_holds is null)
+                    @if (_holdsLoading)
+                    {
+                        <p role="status">Loading holds…</p>
+                    }
+                    else if (_holdPage is not { } holdPage)
                     {
                         <p><em>Holds are not available.</em></p>
                     }
                     else
                     {
-                        @if (_holds.Any(hold => hold.IsRestraining))
+                        @if (holdPage.IsLineageRestrained is true)
                         {
                             <div class="alert alert-warning" role="status">
                                 <i class="bi bi-lock" aria-hidden="true"></i>
@@ -159,9 +163,9 @@
                                 are blocked until every hold is released or expires. A hold does not stop editing, review or voiding.
                             </div>
                         }
-                        @if (_holds.Count == 0)
+                        @if (holdPage.Items.Count == 0)
                         {
-                            <p>No holds have been placed on this document.</p>
+                            <p>@(holdPage.Page == 1 ? "No holds have been placed on this document." : "No holds on this page.")</p>
                         }
                         else
                         {
@@ -182,8 +186,9 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var hold in _holds)
+                                        @foreach (var item in holdPage.Items)
                                         {
+                                            var hold = item.Hold;
                                             <tr data-hold-id="@hold.Id">
                                                 <td><HoldStatusBadge Hold="hold" /></td>
                                                 <td>@hold.Basis</td>
@@ -206,6 +211,16 @@
                                     </tbody>
                                 </table>
                             </div>
+                        }
+                        @if (holdPage.Page > 1 || holdPage.HasMore)
+                        {
+                            <nav aria-label="Document hold pages" class="d-flex align-items-center gap-3">
+                                <button type="button" class="btn btn-outline-secondary" aria-label="Previous holds page"
+                                        disabled="@(_holdBusy || holdPage.Page == 1)" @onclick="() => LoadHolds(holdPage.Page - 1)">Previous page</button>
+                                <span>Page @holdPage.Page</span>
+                                <button type="button" class="btn btn-outline-secondary" aria-label="Next holds page"
+                                        disabled="@(_holdBusy || !holdPage.HasMore)" @onclick="() => LoadHolds(holdPage.Page + 1)">Next page</button>
+                            </nav>
                         }
 
                         @if (_confirmingPlacement)
@@ -324,7 +339,8 @@
         ContractConstants.DocumentHoldBasisInvestigation
     ];
 
-    private IReadOnlyList<GetDocumentHoldDto>? _holds;
+    private GetDocumentHoldOverviewPageDto? _holdPage;
+    private bool _holdsLoading;
     private readonly PlaceHoldFormModel _form = new();
     private readonly Dictionary<string, string> _placeErrors = new(StringComparer.Ordinal);
     private readonly Dictionary<Guid, ElementReference> _releaseButtons = [];
@@ -369,7 +385,7 @@
         }
 
         _loading = false;
-        await LoadHolds();
+        await LoadHolds(1);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -381,23 +397,35 @@
         }
     }
 
-    private async Task LoadHolds()
+    private async Task LoadHolds(int? requestedPage = null)
     {
-        _holds = null;
+        var page = requestedPage ?? _holdPage?.Page ?? 1;
+        _holdPage = null;
+        _releaseButtons.Clear();
         _holdErrorMessage = null;
         if (_document is null)
         {
             return;
         }
 
-        var outcome = await DocumentsApi.ListHolds(_document.Id, CancellationToken.None);
-        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } holds })
+        _holdsLoading = true;
+        try
         {
-            _holds = holds;
+            var outcome = await DocumentsApi.ListHoldOverview(
+                new DocumentHoldOverviewQuery(Page: page) { DocumentId = _document.Id },
+                CancellationToken.None);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { IsLineageRestrained: not null } holds })
+            {
+                _holdPage = holds;
+            }
+            else
+            {
+                _holdErrorMessage = new HttpOutcomeMessages("The holds of this document could not be loaded.").For(outcome.Kind);
+            }
         }
-        else
+        finally
         {
-            _holdErrorMessage = new HttpOutcomeMessages("The holds of this document could not be loaded.").For(outcome.Kind);
+            _holdsLoading = false;
         }
     }
 

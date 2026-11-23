@@ -10,6 +10,7 @@ namespace ViajantesTurismo.Catalog.Contracts.Http;
 public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicContentApiClient
 {
     private const string RoutePrefix = "/api/v1/catalog/public-content";
+    private const string OverviewRoute = "/api/v1/catalog/public-content-overview";
     private static readonly PublicContentApiClientJsonContext Json = PublicContentApiClientJsonContext.Default;
 
     /// <inheritdoc />
@@ -28,6 +29,19 @@ public sealed class PublicContentApiClient(HttpClient httpClient) : IPublicConte
                 Value = outcome.Value?.OfType<PublicContentDto>().ToArray() ?? []
             }
             : outcome;
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<PublicContentOverviewPageDto>> GetContentPage(string? page, CancellationToken ct)
+    {
+        var route = page is null ? OverviewRoute : $"{OverviewRoute}?page={Uri.EscapeDataString(page)}";
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.PublicContentOverviewPageDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

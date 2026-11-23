@@ -11,28 +11,34 @@ namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1515", Justification = "Blazor instantiates public page components.")]
 public sealed partial class Instructions : IDisposable
 {
+    private const string GenerateOperation = "generating instruction revision";
+
     /// <summary>Gets or sets the owning booking.</summary>
     [Parameter]
     public Guid BookingId
     {
         get; set;
     }
-    private IReadOnlyList<GetPaymentInstructionDto> _instructions = [];
-    private IReadOnlyList<GetPaymentAccountDto> _accounts = [];
+    private GetPaymentInstructionPageDto? _instructionPage;
+    private GetPaymentAccountPageDto? _recipientPage;
+    private GetPaymentAccountDto? _selectedRecipient;
     private GetBookingFinancialHistoryDto? _history;
     private GetPaymentInstructionDto? _selected;
     private GetPaymentInstructionDto? _regenerate;
     private readonly HashSet<Guid> _selectedInstallments = [];
     private Guid _accountId;
+    private Guid _instructionBookingId;
     private Guid? _quoteId;
     private string? _actor;
     private string? _error;
     private string _action = string.Empty;
     private bool _loading;
+    private bool _loadingInstructionPage;
     private bool _confirmed;
     private bool _changesRequested;
     private readonly IdempotentSubmission<GetPaymentInstructionDto> _submission = new();
-    private bool Blocked => _loading || _submission.IsBusy || _submission.HasPending;
+    private bool _loadingRecipients;
+    private bool Blocked => _loading || _loadingRecipients || _loadingInstructionPage || _submission.IsBusy || _submission.HasPending;
     /// <inheritdoc />
     public void Dispose() => Authentication.AuthenticationStateChanged -= OnAuthenticationStateChanged;
 
@@ -51,18 +57,26 @@ public sealed partial class Instructions : IDisposable
 
     protected override async Task OnParametersSetAsync()
     {
+        if (_instructionBookingId != BookingId)
+        {
+            _instructionBookingId = BookingId;
+            _instructionPage = null;
+            _regenerate = null;
+            _selectedInstallments.Clear();
+            _quoteId = null;
+            Cancel();
+        }
         _actor = (await Authentication.GetAuthenticationStateAsync()).User.GetSubjectId();
         await Load();
     }
     private async Task Load()
     {
+        var bookingId = BookingId;
         _loading = true;
         _error = null;
         try
         {
-            var financials = await PaymentsApi.GetByBookingId(BookingId, CancellationToken.None);
-            var accounts = await AccountsApi.List(CancellationToken.None);
-            var instructions = await InstructionsApi.ListForBooking(BookingId, CancellationToken.None);
+            var financials = await PaymentsApi.GetByBookingId(bookingId, CancellationToken.None);
             if (financials is { Kind: HttpOutcomeKind.Succeeded, Value: { } history })
             {
                 _history = history;
@@ -72,25 +86,93 @@ public sealed partial class Instructions : IDisposable
                 _history = null;
                 _error = "Approve a EUR schedule before generating instructions.";
             }
-            if (accounts is { Kind: HttpOutcomeKind.Succeeded, Value: { } recipients })
-            {
-                _accounts = recipients;
-            }
-            else
-            {
-                _accounts = [];
-                _error = "Recipient accounts could not be loaded.";
-            }
-            if (instructions is { Kind: HttpOutcomeKind.Succeeded, Value: { } values })
-            {
-                _instructions = values;
-            }
-            else
-            {
-                _error = new HttpOutcomeMessages("Instruction revisions could not be loaded.").For(instructions.Kind);
-            }
+            await LoadRecipients(_recipientPage?.Page ?? 1);
+            await RefreshSelectedRecipient();
+            await LoadInstructionPage(bookingId, _instructionPage?.Page ?? 1);
         }
         finally { _loading = false; }
+    }
+
+    private Task NavigateInstructionPage(int page)
+    {
+        _error = null;
+        return LoadInstructionPage(BookingId, page);
+    }
+
+    private async Task LoadInstructionPage(Guid bookingId, int page)
+    {
+        _loadingInstructionPage = true;
+        try
+        {
+            var outcome = await InstructionsApi.ListPageForBooking(bookingId, page, ContractConstants.DefaultPaymentInstructionPageSize, CancellationToken.None);
+            if (bookingId != BookingId)
+            {
+                return;
+            }
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } revisions })
+            {
+                _instructionPage = revisions;
+            }
+            else
+            {
+                _error = new HttpOutcomeMessages("Instruction revisions could not be loaded.").For(outcome.Kind);
+            }
+        }
+        finally
+        {
+            _loadingInstructionPage = false;
+        }
+    }
+
+    private async Task LoadRecipients(int page)
+    {
+        _loadingRecipients = true;
+        try
+        {
+            var outcome = await AccountsApi.ListPage(page, ContractConstants.DefaultPaymentAccountPageSize, verifiedOnly: true, CancellationToken.None);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } recipients })
+            {
+                _recipientPage = recipients;
+            }
+            else
+            {
+                _recipientPage = null;
+                _selectedRecipient = null;
+                _accountId = Guid.Empty;
+                _error = "Recipient accounts could not be loaded.";
+            }
+        }
+        finally
+        {
+            _loadingRecipients = false;
+        }
+    }
+
+    private void SelectRecipient()
+    {
+        if (_selectedRecipient?.Id != _accountId)
+        {
+            _selectedRecipient = _recipientPage?.Items.SingleOrDefault(
+                account => account.Id == _accountId && account.Status == PaymentAccountStatusDto.Verified);
+        }
+    }
+
+    private async Task RefreshSelectedRecipient()
+    {
+        if (_selectedRecipient is not { } selected)
+        {
+            return;
+        }
+
+        var current = _recipientPage?.Items.SingleOrDefault(account => account.Id == selected.Id);
+        if (current is null)
+        {
+            var outcome = await AccountsApi.GetById(selected.Id, CancellationToken.None);
+            current = outcome.Kind == HttpOutcomeKind.Succeeded ? outcome.Value : null;
+        }
+
+        _selectedRecipient = current is { Status: PaymentAccountStatusDto.Verified } ? current : null;
+        _accountId = _selectedRecipient?.Id ?? Guid.Empty;
     }
     private void Toggle(Guid id, ChangeEventArgs args)
     {
@@ -128,7 +210,7 @@ public sealed partial class Instructions : IDisposable
     }
     private async Task Generate()
     {
-        if (_history is null || _accounts.SingleOrDefault(item => item.Id == _accountId) is not { } account)
+        if (_history is null || _selectedRecipient is not { } account)
         {
             _error = "Select a verified recipient and approved schedule.";
             return;
@@ -143,10 +225,11 @@ public sealed partial class Instructions : IDisposable
             ExpectedDocumentVersion = _regenerate?.DocumentVersion
         };
         var sourceId = _regenerate?.Document.Id;
+        var bookingId = BookingId;
         _error = null;
-        await Complete(await _submission.Submit("generating instruction revision", sourceId is { } id
-            ? (key, ct) => InstructionsApi.Regenerate(BookingId, id, input, key, ct)
-            : (key, ct) => InstructionsApi.Generate(BookingId, input, key, ct), CancellationToken.None));
+        await Complete(await _submission.Submit(GenerateOperation, sourceId is { } id
+            ? (key, ct) => InstructionsApi.Regenerate(bookingId, id, input, key, ct)
+            : (key, ct) => InstructionsApi.Generate(bookingId, input, key, ct), CancellationToken.None));
     }
     private async Task Confirm()
     {
@@ -191,6 +274,10 @@ public sealed partial class Instructions : IDisposable
         {
             Cancel();
             _regenerate = null;
+            if (_submission.Operation == GenerateOperation)
+            {
+                _instructionPage = null;
+            }
             await Load();
         }
         else if (result.Kind == HttpOutcomeKind.Conflict)

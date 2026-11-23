@@ -15,6 +15,14 @@ public sealed class PaymentInstructionsApiClient(HttpClient httpClient) : IPayme
     public Task<HttpOutcome<IReadOnlyList<GetPaymentInstructionDto>>> ListForBooking(Guid bookingId, CancellationToken ct) => HttpOutcomeMapper.Send(httpClient,
         new HttpRequestMessage(HttpMethod.Get, new Uri($"{Prefix}/bookings/{bookingId}/payment-instructions", UriKind.Relative)), HttpStatusCode.OK, Json.IReadOnlyListGetPaymentInstructionDto, Validation, ct);
     /// <inheritdoc />
+    public Task<HttpOutcome<GetPaymentInstructionPageDto>> ListPageForBooking(Guid bookingId, int page, int pageSize, CancellationToken ct)
+    {
+        var route = FormattableString.Invariant($"{Prefix}/bookings/{bookingId}/payment-instructions/page?page={page}&pageSize={pageSize}");
+        return HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)),
+            HttpStatusCode.OK, Json.GetPaymentInstructionPageDto, Validation, ct);
+    }
+
+    /// <inheritdoc />
     public Task<HttpOutcome<GetPaymentInstructionDto>> GetById(Guid id, CancellationToken ct) => HttpOutcomeMapper.Send(httpClient,
         new HttpRequestMessage(HttpMethod.Get, new Uri($"{Prefix}/{id}/payment-instructions", UriKind.Relative)), HttpStatusCode.OK, Json.GetPaymentInstructionDto, Validation, ct);
     /// <inheritdoc />

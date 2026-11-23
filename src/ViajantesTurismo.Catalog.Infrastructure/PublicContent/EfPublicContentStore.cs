@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Catalog.Application.PublicContent;
+using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.PublicContent;
@@ -17,6 +19,23 @@ internal sealed class EfPublicContentStore(CatalogDbContext dbContext) : IPublic
             .OrderBy(content => content.ContentKey)
             .ToArrayAsync(ct)
             .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<PublicContentOverviewPageDto> ListOverviewPage(string? page, CancellationToken ct)
+    {
+        var content = dbContext.PublicContent.AsNoTracking();
+        var total = await content.CountAsync(ct).ConfigureAwait(false);
+        var window = PageWindow.Create(page, PublicContentOverviewPageDto.ItemsPerPage, total);
+        var rows = await content.OrderBy(entry => entry.ContentKey)
+            .Skip(window.Skip)
+            .Take(window.Take)
+            .Select(entry => new { entry.ContentKey, entry.PublicationState })
+            .ToArrayAsync(ct)
+            .ConfigureAwait(false);
+        var items = rows.Select(row => new PublicContentOverviewItemDto(row.ContentKey.Value, row.PublicationState.ToString()))
+            .ToArray();
+        return new PublicContentOverviewPageDto(items, Math.Max(total, items.Length));
     }
 
     /// <inheritdoc />

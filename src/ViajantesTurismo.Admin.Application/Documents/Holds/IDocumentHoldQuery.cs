@@ -24,7 +24,7 @@ public interface IDocumentHoldQuery
     /// <returns>The hold, or <see langword="null" /> when no such hold belongs to the lineage.</returns>
     Task<Hold?> FindForLineage(Guid lineageId, Guid holdId, CancellationToken ct);
 
-    /// <summary>Searches the holds of every document lineage in the stable order of the search.</summary>
+    /// <summary>Searches the holds of the selected lineages in the stable order of the search.</summary>
     /// <param name="search">The filters and order.</param>
     /// <param name="skip">The number of matching holds to skip.</param>
     /// <param name="take">The maximum number of holds to return.</param>
