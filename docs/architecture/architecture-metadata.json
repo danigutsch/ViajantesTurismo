@@ -122,6 +122,7 @@
       "tables": [
         {"schema": "messaging", "name": "idempotency_keys", "role": "inbox", "dataClasses": ["operational"]},
         {"schema": "messaging", "name": "outbox_messages", "role": "outbox", "dataClasses": ["operational"]},
+        {"schema": "public", "name": "CatalogGalleryPlacementIntents", "role": "domain", "dataClasses": ["operational"]},
         {"schema": "public", "name": "CatalogTourReadModels", "role": "projection", "dataClasses": ["operational", "public"]},
         {"schema": "public", "name": "PublicContent", "role": "domain", "dataClasses": ["operational", "public"]}
       ]

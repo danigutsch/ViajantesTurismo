@@ -241,7 +241,49 @@ Implemented domain events:
 
 Planned/evolving domain events:
 
-- `CatalogTourGalleryChanged`.
+- `CatalogTourGalleryChanged` can be committed by the revision-guarded application command and
+  replayed into the tour read model. The public website continues to use the existing media
+  placement during this stage.
+- The guarded placement queue saves the authored snapshot and its wake-up in the Catalog database
+  transaction. Wake-ups drain the per-tour journal in order. The gallery event stores the intent
+  sequence and identity for safe replay after a committed append. Each newly accepted Catalog
+  upload also records one photo append and a placement wake-up in its upload transaction.
+  Repeated uploads reuse the existing image. Upload appends preserve an authored cover and wait
+  for legacy bootstrap on tours without an authored baseline.
+- Legacy bootstrap records existing linked membership, display order, chosen cover and the
+  accepted journal watermark under the tour mutation lease. The tour projection stages a fresh
+  wake using the committed bootstrap event identity. It saves the wake and its receipt together,
+  so recovery after append or outbox failure can resume the captured journal once. An already
+  represented upload can be acknowledged without changing the gallery. Retired tours and legacy
+  galleries above the existing authored limit retain legacy placement.
+- Editor snapshot admission checks both the event stream revision and the latest accepted journal
+  sequence under the same mutation lease. It waits for earlier accepted placement to apply before
+  another snapshot can be submitted. A draft-only change blocked by actual publication records
+  `CatalogTourGalleryIntentRejected` and advances the durable journal without changing placement.
+  A stale public projection remains retryable. The existing retirement event closes pending wakes
+  for that tour and keeps its stream closed.
+- The management `GET /api/v1/catalog/tours/{id}/gallery-editor` returns the committed authored
+  snapshot, stream and projection revisions, accepted and resolved placement sequences, the
+  current caller's edit permission, and the album's photo limit.
+  The caller can ask for a specific accepted outcome by supplying `placementSequence`. Without
+  a sequence, the response includes the latest accepted outcome when one exists. The endpoint
+  uses the existing Catalog read policy and no-store response policy.
+- The management `POST /api/v1/catalog/tours/{id}/gallery-editor/options` searches photos linked
+  to the specified tour under the existing Catalog read policy. The query returns at most
+  24 choices and their match count. An optional set of selected IDs supports loading a chosen
+  page and searching for a cover within the editor's current selection. Choices expose only a
+  label and one ready preview rendition, using the Management media proxy for the image.
+- The management `POST /api/v1/catalog/tours/{id}/gallery-editor/initialize` records the existing
+  legacy membership, order and cover for an authorized editor. It can capture uploads whose
+  accepted placements are still waiting for an authored baseline. Repeated requests observe the
+  committed baseline and return 202 with the editor link while the projection catches up, or 204
+  when it is ready.
+- The management `PUT /api/v1/catalog/tours/{id}/gallery-editor` accepts the editor's complete
+  photo order and optional cover using the observed stream revision and accepted placement
+  sequence. Catalog write permission is required, and edits to a published tour also require
+  Catalog publication permission. An accepted write returns 202 and a location for the
+  specific queued outcome. Public gallery, cover and rendition queries continue to use the
+  legacy placement during rollout.
 - `CatalogTourArchived`.
 
 Projection types:

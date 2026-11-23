@@ -68,6 +68,7 @@ identifier on replay. A separate request still goes through the tour identifier 
 | C1 | `src/ViajantesTurismo.Catalog.Application/Tours/CatalogTourPresentationUpdate.cs` | Holds title, slug, and length rules that `CatalogTour.ChangePresentation` does not enforce | Rules in the domain | Fixed: the `CatalogTourPresentation` value object enforces them in `ChangePresentation` |
 | C2 | `src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs:115,166,179,218` | Throws exceptions for expected business outcomes | ADR-002 | Fixed: `ChangePresentation` and `Publish` return `Result` values from `CatalogTourErrors` |
 | C3 | `src/ViajantesTurismo.Catalog.Application/Media/MediaImageOriginalStoredIntegrationHandler.cs:45-66` | Chooses the next media processing status in the handler | Behavior over state | Fixed: `PublicMediaImage.CompleteProcessing` and `FailProcessing` |
+| C4 | `src/ViajantesTurismo.Catalog.Domain/Tours/CatalogTour.cs` | Album ordering and cover have no durable tour event | Behavior over state | The aggregate validates authoring with SharedKernel albums and replays the immutable gallery change. The guarded authoring command and read projection are in place. The media write transition is pending. |
 
 ### Value-object follow-up, October 31, 2026
 
