@@ -150,6 +150,10 @@ flowchart TB
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_RepositoryDocumentation[ViajantesTurismo.RepositoryDocumentation] --> ViajantesTurismo_Admin_Contracts_IntegrationEvents[ViajantesTurismo.Admin.Contracts.IntegrationEvents]
+    ViajantesTurismo_RepositoryDocumentation[ViajantesTurismo.RepositoryDocumentation] --> ViajantesTurismo_Branding_Contracts_IntegrationEvents[ViajantesTurismo.Branding.Contracts.IntegrationEvents]
+    ViajantesTurismo_RepositoryDocumentation[ViajantesTurismo.RepositoryDocumentation] --> ViajantesTurismo_Catalog_Contracts_IntegrationEvents[ViajantesTurismo.Catalog.Contracts.IntegrationEvents]
+    ViajantesTurismo_RepositoryDocumentation[ViajantesTurismo.RepositoryDocumentation] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
 ```
 <!-- generated:project-dependencies:end -->

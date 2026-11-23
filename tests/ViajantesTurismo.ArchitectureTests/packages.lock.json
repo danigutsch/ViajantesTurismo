@@ -1358,12 +1358,6 @@
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
-      "viajantesturismo.architecture.tool": {
-        "type": "Project",
-        "dependencies": {
-          "PandaBear.SharedKernel.Documentation": "[0.1.0-alpha.727.1, )"
-        }
-      },
       "viajantesturismo.branding.aspnetcore": {
         "type": "Project",
         "dependencies": {
@@ -1539,6 +1533,16 @@
           "ViajantesTurismo.Catalog.Contracts.Http": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )",
           "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
+        }
+      },
+      "viajantesturismo.repositorydocumentation": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Documentation": "[0.1.0-alpha.727.1, )",
+          "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.resources": {

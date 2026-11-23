@@ -9,14 +9,15 @@ using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents;
 using ViajantesTurismo.Resources;
 
-namespace ViajantesTurismo.AsyncApi.Tool;
+namespace ViajantesTurismo.RepositoryDocumentation.AsyncApi;
 
 /// <summary>Generates the AsyncAPI description of the application's durable integration events.</summary>
-internal static class AsyncApiDocument
+public static class AsyncApiDocument
 {
     private const string IntegrationEventTypeSuffix = "IntegrationEvent";
     private const string GeneratorName = "ViajantesTurismo.AsyncApi.Tool";
     private const string ToolDirectory = $"scripts/{GeneratorName}";
+    private const string SourcePath = "src/ViajantesTurismo.RepositoryDocumentation/AsyncApi/AsyncApiDocument.cs";
     private const string CanonicalArtifactPath = "docs/asyncapi.json";
 
     private static readonly AsyncApiEvent[] Events =
@@ -82,7 +83,7 @@ internal static class AsyncApiDocument
 
     /// <summary>Creates deterministic, indented AsyncAPI JSON with a trailing newline.</summary>
     /// <returns>The JSON document as text.</returns>
-    internal static string Render() => PandaBear.Documentation.AsyncApiDocument.Render(
+    public static string Render() => PandaBear.Documentation.AsyncApiDocument.Render(
         "ViajantesTurismo integration events",
         "1.0.0",
         "Generated from the runtime JSON contracts and durable integration-event topology.",
@@ -97,7 +98,7 @@ internal static class AsyncApiDocument
                 ["provenance"] = new JsonObject
                 {
                     ["generator"] = GeneratorName,
-                    ["source"] = $"{ToolDirectory}/AsyncApiDocument.cs",
+                    ["source"] = SourcePath,
                     ["refreshCommand"] = $"dotnet run --project {ToolDirectory} -- generate {CanonicalArtifactPath}",
                     ["verifyCommand"] = $"dotnet run --project {ToolDirectory} -- verify {CanonicalArtifactPath}",
                 },

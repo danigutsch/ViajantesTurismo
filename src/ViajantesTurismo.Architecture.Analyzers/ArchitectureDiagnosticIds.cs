@@ -25,4 +25,7 @@ public static class ArchitectureDiagnosticIds
 
     /// <summary>Advisory placement evidence for an explicitly selected helper class.</summary>
     public const string SharedKernelHelperPlacement = "VTARCH005";
+
+    /// <summary>Diagnostic emitted when a tool defines a type outside its command entry point.</summary>
+    public const string ToolWrapperImplementationType = "VTARCH006";
 }

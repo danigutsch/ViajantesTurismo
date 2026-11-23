@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using PandaBear.Testing.Roslyn;
 
 namespace ViajantesTurismo.Architecture.Analyzers.Tests;
@@ -96,5 +98,60 @@ public sealed class ThinToolWrapperAnalyzerTests
 
         // Assert
         diagnostics.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public async Task Executable_tool_wrappers_move_additional_implementation_types_to_source_projects(bool selected, bool topLevel)
+    {
+        // Arrange
+        const string explicitEntryPoint = """
+            using System;
+
+            namespace Demo.Tools;
+
+            internal static class Program
+            {
+                public static void Main(string[] arguments)
+                {
+                    var configuration = arguments.Length > 0 ? arguments[0] : string.Empty;
+                    Console.WriteLine(configuration);
+                }
+            }
+            """;
+        const string topLevelEntryPoint = """
+            using System;
+
+            Console.WriteLine(args.Length);
+            """;
+        const string implementation = """
+            internal static class RepositoryProjection
+            {
+                internal static int CountChanges(string[] changes) => changes.Length;
+            }
+            """;
+        var source = (topLevel ? topLevelEntryPoint : explicitEntryPoint) + "\n" + implementation;
+        var compilation = PandaBear.Testing.Roslyn.AnalyzerTestHarness.CreateCompilation(source, string.Empty);
+        var executable = compilation.WithOptions(compilation.Options.WithOutputKind(OutputKind.ConsoleApplication));
+        var options = new AnalyzerOptions([], selected ? ToolOptions : new TestAnalyzerConfigOptionsProvider(null));
+
+        // Act
+        var diagnostics = await executable.WithAnalyzers([new ThinToolWrapperAnalyzer()], options)
+            .GetAnalyzerDiagnosticsAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        if (selected)
+        {
+            var diagnostic = diagnostics.ShouldHaveSingleItem();
+            diagnostic.Id.ShouldBe(ArchitectureDiagnosticIds.ToolWrapperImplementationType);
+            diagnostic.GetMessage(CultureInfo.InvariantCulture).ShouldContain("RepositoryProjection", StringComparison.Ordinal);
+        }
+        else
+        {
+            diagnostics.ShouldBeEmpty();
+        }
     }
 }

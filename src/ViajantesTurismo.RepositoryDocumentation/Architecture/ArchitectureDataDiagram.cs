@@ -2,24 +2,23 @@ using System.Text.Json;
 
 using PandaBear.Documentation;
 
-namespace ViajantesTurismo.ArchitectureDocumentation;
+namespace ViajantesTurismo.RepositoryDocumentation.Architecture;
 
 /// <summary>Adapts the application's architecture facts to the pinned documentation renderer.</summary>
-internal static class ArchitectureDataDiagram
+public static class ArchitectureDataDiagram
 {
     private const string DocsPath = "docs/architecture";
     private const string MetadataPath = DocsPath + "/architecture-metadata.json";
-    private static readonly JsonSerializerOptions MetadataOptions = new(JsonSerializerOptions.Web)
-    {
-        RespectRequiredConstructorParameters = true,
-    };
 
     /// <summary>Regenerates the data ownership diagram or reports drift in check mode.</summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="checkOnly">Whether to report drift without updating the document.</param>
+    /// <returns>The result of generating or verifying the diagram.</returns>
     /// <exception cref="InvalidOperationException">The metadata could not be adapted to the diagram.</exception>
-    internal static DocumentationGenerationResult Run(string root, bool checkOnly)
+    public static DocumentationGenerationResult Run(string root, bool checkOnly)
     {
         var metadata = File.ReadAllText(Path.Combine(root, MetadataPath));
-        var catalog = JsonSerializer.Deserialize<ArchitectureCatalog>(metadata, MetadataOptions)
+        var catalog = JsonSerializer.Deserialize(metadata, ArchitectureCatalogJsonContext.Default.ArchitectureCatalog)
             ?? throw new InvalidOperationException($"Missing architecture metadata in {MetadataPath}.");
         Validate(catalog);
 

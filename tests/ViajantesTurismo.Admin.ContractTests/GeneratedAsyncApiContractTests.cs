@@ -5,10 +5,10 @@ using PandaBear.Messaging.IntegrationEvents;
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.ContractTests.Infrastructure;
-using ViajantesTurismo.AsyncApi.Tool;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents;
+using ViajantesTurismo.RepositoryDocumentation.AsyncApi;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.ContractTests;
@@ -24,7 +24,8 @@ public sealed class GeneratedAsyncApiContractTests
         // Arrange
         const string toolDirectory = "scripts/ViajantesTurismo.AsyncApi.Tool";
         const string artifactPath = "docs/asyncapi.json";
-        var generatorName = typeof(AsyncApiDocument).Assembly.GetName().Name;
+        const string generatorName = "ViajantesTurismo.AsyncApi.Tool";
+        const string sourcePath = "src/ViajantesTurismo.RepositoryDocumentation/AsyncApi/AsyncApiDocument.cs";
         var guidance = File.ReadAllText(Path.Combine(ContractTestRepository.RootPath, "docs", "ASYNC_CONTRACTS.md"));
         using var document = JsonDocument.Parse(AsyncApiContractArtifact.Read());
 
@@ -35,7 +36,7 @@ public sealed class GeneratedAsyncApiContractTests
 
         // Assert
         provenance.GetProperty("generator").GetString().ShouldBe(generatorName);
-        provenance.GetProperty("source").GetString().ShouldBe($"{toolDirectory}/AsyncApiDocument.cs");
+        provenance.GetProperty("source").GetString().ShouldBe(sourcePath);
         refreshCommand.ShouldBe($"dotnet run --project {toolDirectory} -- generate {artifactPath}");
         verifyCommand.ShouldBe($"dotnet run --project {toolDirectory} -- verify {artifactPath}");
         guidance.ShouldContain(refreshCommand, StringComparison.Ordinal);

@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.ArchitectureDocumentation;
+namespace ViajantesTurismo.RepositoryDocumentation.Architecture;
 
 /// <summary>Repository-owned architecture metadata for the data ownership view.</summary>
 /// <param name="SchemaVersion">The version of the metadata format.</param>

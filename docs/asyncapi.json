@@ -582,7 +582,7 @@
     "versioning": "Event type strings are stable names; eventVersion increments on breaking payload changes.",
     "provenance": {
       "generator": "ViajantesTurismo.AsyncApi.Tool",
-      "source": "scripts/ViajantesTurismo.AsyncApi.Tool/AsyncApiDocument.cs",
+      "source": "src/ViajantesTurismo.RepositoryDocumentation/AsyncApi/AsyncApiDocument.cs",
       "refreshCommand": "dotnet run --project scripts/ViajantesTurismo.AsyncApi.Tool -- generate docs/asyncapi.json",
       "verifyCommand": "dotnet run --project scripts/ViajantesTurismo.AsyncApi.Tool -- verify docs/asyncapi.json"
     }

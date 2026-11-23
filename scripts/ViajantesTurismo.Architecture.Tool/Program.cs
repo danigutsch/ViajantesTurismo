@@ -1,4 +1,4 @@
-using ViajantesTurismo.ArchitectureDocumentation;
+using ViajantesTurismo.RepositoryDocumentation.Architecture;
 
 if (args is not ["generate" or "verify", var repositoryRoot])
 {

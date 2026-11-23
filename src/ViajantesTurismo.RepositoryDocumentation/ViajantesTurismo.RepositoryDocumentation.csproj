@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="PandaBear.SharedKernel.Documentation" />
+        <ProjectReference Include="../ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj" />
+        <ProjectReference Include="../ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj" />
+        <ProjectReference Include="../ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj" />
+        <ProjectReference Include="../ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj" />
+    </ItemGroup>
+
+</Project>

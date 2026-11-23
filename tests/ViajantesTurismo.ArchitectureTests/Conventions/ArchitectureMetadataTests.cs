@@ -2,7 +2,8 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PandaBear.EventSourcing.Npgsql;
 using PandaBear.Testing;
-using ViajantesTurismo.ArchitectureDocumentation;
+using ViajantesTurismo.ArchitectureTests.Repository;
+using ViajantesTurismo.RepositoryDocumentation.Architecture;
 using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -21,6 +22,21 @@ public sealed class ArchitectureMetadataTests
 
         // Assert
         result.ChangedFiles.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void The_architecture_catalog_rejects_missing_required_metadata()
+    {
+        // Arrange
+        using var repository = new TemporaryWorkspace();
+        repository.WriteFile("docs/architecture/architecture-metadata.json", """{"schemaVersion":1}""");
+
+        // Act
+        var exception = ShouldAssertionExtensions.ShouldThrow<JsonException>(
+            () => ArchitectureDataDiagram.Run(repository.RootPath, checkOnly: true));
+
+        // Assert
+        exception.Message.ShouldContain("boundaries", StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

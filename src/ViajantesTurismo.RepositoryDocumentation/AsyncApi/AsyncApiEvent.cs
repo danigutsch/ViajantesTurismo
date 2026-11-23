@@ -2,7 +2,7 @@ using System.Text.Json.Serialization.Metadata;
 
 using PandaBear.Messaging.IntegrationEvents;
 
-namespace ViajantesTurismo.AsyncApi.Tool;
+namespace ViajantesTurismo.RepositoryDocumentation.AsyncApi;
 
 /// <summary>Describes a durable event and its application topology.</summary>
 /// <param name="Contract">The production JSON serializer metadata.</param>
