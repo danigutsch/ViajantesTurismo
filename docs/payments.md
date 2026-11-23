@@ -22,6 +22,20 @@ Only Admins access complete recipient details or evidence references, manage acc
 allocate, reconcile, refund, reverse, generate or download instructions. These restrictions are
 also enforced by the API.
 
+Finances pages retained records and action choices independently. The first view shows up to
+25 records per list and up to five linked entries per record. Older receipts, quotes and installments
+remain available through the relevant pager. An Admin may explicitly reveal sensitive references
+on the displayed receipt, quote or refund page, which records a sensitive access audit.
+
+Payment instructions request separate pages of approved settlement quotes and outstanding installments.
+Selections stay available while browsing one financial revision. When the financial revision changes,
+the form reloads both choice pages and asks the operator to select the terms again.
+Balances and the version used for confirmation come from the complete ledger.
+
+The Management collection routes bound the response and the rendered data. Each financial read
+still loads, decrypts and validates the single protected booking snapshot. The full history and
+sensitive history API routes retain their existing response shapes.
+
 1. Open **Payment accounts**, save a recipient draft, independently check it against a bank or
    recipient source, then explicitly attest the method and check time. Identifier validation proves
    format, not ownership. IBAN/BIC, Brazilian bank details and typed Pix identifiers use reusable

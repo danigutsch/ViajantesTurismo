@@ -1,0 +1,86 @@
+@implements IDisposable
+@inject IPaymentInstructionsApiClient InstructionsApi
+
+@if (_loading)
+{
+    <p role="status">Loading independent reviews…</p>
+}
+@if (_error is not null)
+{
+    <p role="alert">@_error</p>
+}
+@if (_page is { } page)
+{
+    @if (page.Items.Count == 0)
+    {
+        <p>No independent reviews.</p>
+    }
+    else
+    {
+        <ul aria-label="Independent reviews">
+            @foreach (var review in page.Items)
+            {
+                <li>@review.ReviewerId reviewed revision @review.TargetRevision at @review.ReviewedAt. Changes requested: @review.ChangesRequested. Approval remains until explicitly withdrawn.</li>
+            }
+        </ul>
+    }
+    @if (PageWindow.Create(page.Page, page.PageSize, page.Total) is { HasMultiplePages: true } window)
+    {
+        <nav aria-label="Independent review pages" class="d-flex align-items-center gap-3">
+            <button type="button" aria-label="Previous reviews page" disabled="@(_loading || window.PreviousPage is null)"
+                    @onclick="() => Load(window.Page - 1)">Previous page</button>
+            <span>Page @window.Page of @window.PageCount</span>
+            <button type="button" aria-label="Next reviews page" disabled="@(_loading || window.NextPage is null)"
+                    @onclick="() => Load(window.Page + 1)">Next page</button>
+        </nav>
+    }
+}
+
+@code {
+    /// <summary>Gets or sets the instruction revision whose reviews are shown.</summary>
+    [Parameter, EditorRequired]
+    public Guid InstructionId { get; set; }
+
+    private readonly CancellationTokenSource _lifetime = new();
+    private GetPaymentInstructionReviewPageDto? _page;
+    private string? _error;
+    private bool _loading;
+
+    /// <inheritdoc />
+    protected override Task OnInitializedAsync() => Load(1);
+
+    private async Task Load(int page)
+    {
+        var ct = _lifetime.Token;
+        _loading = true;
+        _error = null;
+        try
+        {
+            var result = await InstructionsApi.GetReviewPage(InstructionId, page, ContractConstants.DefaultPaymentInstructionPageSize, ct);
+            ct.ThrowIfCancellationRequested();
+            if (result is { Kind: HttpOutcomeKind.Succeeded, Value: { } reviews })
+            {
+                _page = reviews;
+            }
+            else
+            {
+                _error = "Instruction reviews could not be loaded.";
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Closing the review history ends the active request.
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+}

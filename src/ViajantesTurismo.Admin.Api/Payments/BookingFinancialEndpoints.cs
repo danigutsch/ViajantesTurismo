@@ -19,6 +19,10 @@ internal static class BookingFinancialEndpoints
             .WithAdminMetadata("GetBookingFinancialHistory", "Retrieves masked financial history and approved EUR balances.", "Retrieves masked booking finances.");
         bookingFinancesGroup.MapGet("/details", ReadSensitive).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("GetBookingFinancialDetails", "Audits Admin access to full settlement evidence references.", "Retrieves sensitive financial evidence.");
+        bookingFinancesGroup.MapGet("/projection", ReadPage).RequireAuthorization(AdminAuthorization.PaymentRead)
+            .WithAdminMetadata("GetBookingFinancialPage", "Retrieves authoritative balances and bounded masked financial windows.", "Retrieves a page of booking finances.");
+        bookingFinancesGroup.MapGet("/projection/details", ReadSensitivePage).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .WithAdminMetadata("GetBookingFinancialEvidencePage", "Audits Admin access to a bounded window of settlement evidence references.", "Retrieves a page of sensitive financial evidence.");
         bookingFinancesGroup.MapPost("/schedules", DraftBookingPaymentSchedule).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("DraftBookingPaymentSchedule", "Executes DraftBookingPaymentSchedule with a required idempotency key and revision precondition.", "DraftBookingPaymentSchedule operation.");
@@ -81,6 +85,57 @@ internal static class BookingFinancialEndpoints
         }
         var history = await queries.GetSensitiveDetails(bookingId, actorId, ct);
         return history is null ? TypedResults.NotFound() : TypedResults.Ok(history);
+    }
+
+    private static async Task<Results<Ok<GetBookingFinancialPageDto>, NotFound, ValidationProblem>> ReadPage(Guid bookingId, [AsParameters] BookingFinancialPageRequestDto request, [FromServices] IPaymentFinancialQueryService queries, CancellationToken ct)
+    {
+        if (ValidatePage(request) is { } invalid)
+        {
+            return invalid;
+        }
+        var page = await queries.GetPage(bookingId, request, ct);
+        return page is null ? TypedResults.NotFound() : TypedResults.Ok(page);
+    }
+
+    private static async Task<Results<Ok<GetBookingFinancialPageDto>, NotFound, ValidationProblem, UnauthorizedHttpResult>> ReadSensitivePage(Guid bookingId, [AsParameters] BookingFinancialPageRequestDto request, [FromServices] IPaymentFinancialQueryService queries, HttpContext context, CancellationToken ct)
+    {
+        var actorId = context.User.GetSubjectId();
+        if (string.IsNullOrWhiteSpace(actorId))
+        {
+            return TypedResults.Unauthorized();
+        }
+        if (ValidatePage(request) is { } invalid)
+        {
+            return invalid;
+        }
+        var page = await queries.GetSensitivePage(bookingId, actorId, request, ct);
+        return page is null ? TypedResults.NotFound() : TypedResults.Ok(page);
+    }
+
+    private static ValidationProblem? ValidatePage(BookingFinancialPageRequestDto request)
+    {
+        if (request.PageSize is < 1 or > ContractConstants.MaxBookingFinancialPageSize)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["pageSize"] = [$"Page size must be between 1 and {ContractConstants.MaxBookingFinancialPageSize}."]
+            });
+        }
+        if (request.Section is { } section && !Enum.IsDefined(section))
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["section"] = ["Select a supported financial section."]
+            });
+        }
+        var nested = request.Section is BookingFinancialSection.ScheduleInstallments or BookingFinancialSection.ReconciliationSelections
+            or BookingFinancialSection.RefundSelections or BookingFinancialSection.ReversalLinks;
+        return nested != request.ParentId.HasValue
+            ? TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["parentId"] = [nested ? "Select the record that owns this section." : "Omit the record identifier for this section."]
+            })
+            : null;
     }
 
     private static async Task<Results<Ok<GetPaymentCommandResultDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> DraftBookingPaymentSchedule(Guid bookingId, [FromBody] CreatePaymentScheduleDto input, [FromServices] ISender sender, HttpContext context, CancellationToken ct)

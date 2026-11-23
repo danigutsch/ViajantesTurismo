@@ -38,6 +38,12 @@ public static class ContractConstants
     /// <summary>Maximum revisions in a payment instruction page.</summary>
     public const int MaxPaymentInstructionPageSize = 100;
 
+    /// <summary>Gets the default number of items per booking financial window.</summary>
+    public const int DefaultBookingFinancialPageSize = 25;
+
+    /// <summary>Gets the upper limit for a requested booking financial window.</summary>
+    public const int MaxBookingFinancialPageSize = 100;
+
     /// <summary>The required HTTP header identifying an idempotent financial or document command.</summary>
     public const string IdempotencyKeyHeaderName = "Idempotency-Key";
 
