@@ -39,6 +39,19 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     /// <inheritdoc />
+    public async Task<HttpOutcome<GetTourPageDto>> GetTourPage(int page, TourPageSort sort, bool descending, CancellationToken ct)
+    {
+        var route = FormattableString.Invariant($"{RoutePrefix}/page?page={page}&sort={sort}&descending={descending}");
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.GetTourPageDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<GetTourOptionsDto>> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);

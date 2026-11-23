@@ -111,6 +111,36 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
+    public async Task Conflict_lookup_sends_email_keys_only_in_the_JSON_body_and_keeps_match_order()
+    {
+        // Arrange
+        const string email = "existing@example.test";
+        const string missingEmail = "file-only@example.test";
+        var id = Guid.CreateVersion7();
+        string[]? body = null;
+        string? path = null;
+        HttpMethod? method = null;
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(async (request, ct) =>
+        {
+            path = request.RequestUri?.PathAndQuery;
+            method = request.Method;
+            body = await request.Content.ShouldNotBeNull().ReadFromJsonAsync<string[]>(ct);
+            return CatalogToursApiClientTestsHelpers.JsonResponse($"[null,\"{id}\"]");
+        });
+        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
+
+        // Act
+        var outcome = await sut.FindCustomerImportConflictIds([missingEmail, email], TestContext.Current.CancellationToken);
+
+        // Assert
+        method.ShouldBe(HttpMethod.Post);
+        path.ShouldBe("/api/v1/customers/import/conflicts/lookup");
+        body.ShouldNotBeNull().ShouldBe([missingEmail, email]);
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        outcome.Value.ShouldNotBeNull().ShouldBe([null, id]);
+    }
+
+    [Fact]
     public async Task GetCustomerById_returns_null_when_not_found()
     {
         // Arrange

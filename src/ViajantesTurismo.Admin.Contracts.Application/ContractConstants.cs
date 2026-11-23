@@ -8,6 +8,12 @@ public static class ContractConstants
     /// <summary>The maximum number of summaries returned in a booking page.</summary>
     public const int BookingListPageSize = 10;
 
+    /// <summary>The maximum number of summaries returned in a customer page.</summary>
+    public const int CustomerListPageSize = 10;
+
+    /// <summary>The maximum number of summaries returned in an active tour page.</summary>
+    public const int TourListPageSize = 10;
+
     /// <summary>The maximum number of choices in a customer option search.</summary>
     public const int MaxCustomerOptions = 20;
 
@@ -158,6 +164,9 @@ public static class ContractConstants
     /// Maximum accepted customer import file size in bytes.
     /// </summary>
     public const long CustomerImportMaxFileBytes = 1_048_576;
+
+    /// <summary>Maximum number of email keys in one existing-customer lookup for import conflicts.</summary>
+    public const int CustomerImportConflictLookupMaxKeys = 100;
 
     /// <summary>
     /// Maximum budget for the serialized customer import conflict-resolution form field in bytes.

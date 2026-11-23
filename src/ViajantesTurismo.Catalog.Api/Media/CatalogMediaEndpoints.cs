@@ -43,6 +43,10 @@ internal static class CatalogMediaEndpoints
             .WithName(TourImagesEndpointName)
             .Produces<CatalogMediaImageDto[]>(StatusCodes.Status200OK)
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
+        managementCatalog.MapGet("/tours/{id:guid}/images/review/next", GetNextPendingReviewImage)
+            .WithName(nameof(GetNextPendingReviewImage))
+            .WithSummary("Gets the next linked image that requires an accessibility review.")
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/media/images/{id:guid}/preview/{width:int}/{format}", GetManagementMediaPreview)
             .WithName("GetManagementMediaPreview")
             .Produces<Stream>(StatusCodes.Status200OK, MediaImageContentTypes[0], MediaImageContentTypes[1..])
@@ -236,6 +240,29 @@ internal static class CatalogMediaEndpoints
 
         var images = await imageStore.ListByTour(id, ct);
         return Results.Ok(images.Select(image => MapManagementMediaImage(image, routes, context)).ToArray());
+    }
+
+    private static async Task<Results<Ok<CatalogPendingImageReviewDto>, BadRequest, NotFound>> GetNextPendingReviewImage(
+        Guid id,
+        ICatalogTourReadModelStore store,
+        IPublicMediaImageStore imageStore,
+        LinkGenerator routes,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        if (id == Guid.Empty)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        if (await store.GetTour(id, ct) is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var image = await imageStore.GetNextPendingReviewByTour(id, ct);
+        return TypedResults.Ok(new CatalogPendingImageReviewDto(
+            image is null ? null : MapManagementMediaImage(image, routes, context)));
     }
 
     private static async Task<Results<Created<CatalogMediaImageDto>, BadRequest, NotFound, ValidationProblem, ProblemHttpResult, ForbidHttpResult>> UploadTourImage(

@@ -512,6 +512,55 @@
         ]
       }
     },
+    "/api/v1/catalog/tours/{id}/images/review/next": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "summary": "Gets the next linked image that requires an accessibility review.",
+        "operationId": "GetNextPendingReviewImage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogPendingImageReviewDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/catalog/media/images/{id}/preview/{width}/{format}": {
       "get": {
         "tags": [
@@ -954,6 +1003,24 @@
               "string"
             ],
             "format": "int64"
+          }
+        }
+      },
+      "CatalogPendingImageReviewDto": {
+        "required": [
+          "image"
+        ],
+        "type": "object",
+        "properties": {
+          "image": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CatalogMediaImageDto"
+              }
+            ]
           }
         }
       },

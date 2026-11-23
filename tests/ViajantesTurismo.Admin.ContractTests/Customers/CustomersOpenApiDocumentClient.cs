@@ -45,6 +45,11 @@ internal static class CustomersOpenApiDocumentClient
             throw new InvalidOperationException("The customers collection path is missing required operations.");
         }
 
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/page", out var customerPagePath) || customerPagePath.Get is null)
+        {
+            throw new InvalidOperationException("The bounded customer page path is missing the required operation.");
+        }
+
         if (!document.Paths.TryGetValue($"{RoutePrefix}/options/search", out var optionsSearchPath) ||
             optionsSearchPath.Post is null)
         {
@@ -89,6 +94,7 @@ internal static class CustomersOpenApiDocumentClient
             document.OpenApi,
             document.Info.Title,
             customersPath.Get.OperationId,
+            customerPagePath.Get.OperationId,
             optionsSearchPath.Post.OperationId,
             optionSearchSchemaReference,
             customerByIdPath.Get.OperationId,

@@ -24,7 +24,54 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             .OrderByDescending(tour => tour.Id)
             .ToArrayAsync(ct);
 
-        return [.. tours.Select(MapTour)];
+        return [.. tours.Select(tour => MapTour(tour, tour.CurrentCustomerCount))];
+    }
+
+    /// <inheritdoc />
+    public async Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct)
+    {
+        var tours = dbContext.Tours.Where(tour => tour.RetirementId == null);
+        var total = await tours.CountAsync(ct);
+        var window = PageWindow.Create(page, ContractConstants.TourListPageSize, total);
+        var summaries = tours.Select(tour => new
+        {
+            tour.Id,
+            tour.Identifier,
+            tour.Name,
+            tour.Schedule.StartDate,
+            tour.Schedule.EndDate,
+            tour.Pricing.BasePrice,
+            tour.Pricing.SingleRoomSupplementPrice,
+            tour.Pricing.RegularBikePrice,
+            tour.Pricing.EBikePrice,
+            tour.Pricing.Currency,
+            tour.Capacity,
+            // Match Tour.CurrentCustomerCount when counting confirmed travelers in SQL.
+            CurrentCustomerCount = tour.Bookings.Where(booking => booking.Status == BookingStatus.Confirmed)
+                .Sum(booking => booking.CompanionCustomer == null ? 1 : 2)
+        });
+        var ordered = sort switch
+        {
+            TourPageSort.Identifier => OrderBy(summaries, tour => tour.Identifier, descending),
+            TourPageSort.Name => OrderBy(summaries, tour => tour.Name, descending),
+            TourPageSort.StartDate => OrderBy(summaries, tour => tour.StartDate, descending),
+            TourPageSort.EndDate => OrderBy(summaries, tour => tour.EndDate, descending),
+            TourPageSort.Price => OrderBy(summaries, tour => tour.BasePrice, descending),
+            TourPageSort.CurrentCustomerCount => OrderBy(summaries, tour => tour.CurrentCustomerCount, descending),
+            _ => summaries.OrderByDescending(tour => tour.Id)
+        };
+        if (sort != TourPageSort.Default)
+        {
+            ordered = ordered.ThenByDescending(tour => tour.Id);
+        }
+
+        var rows = await ordered.Skip(window.Skip).Take(window.Take).ToArrayAsync(ct);
+        var items = rows.Select(row => new GetTourListItemDto(row.Id, row.Identifier, row.Name, row.StartDate, row.EndDate,
+            row.BasePrice, row.SingleRoomSupplementPrice, row.RegularBikePrice, row.EBikePrice, row.Currency.Code,
+            row.Capacity.MinCustomers, row.Capacity.MaxCustomers, row.CurrentCustomerCount,
+            row.Capacity.AvailableSpotsAt(row.CurrentCustomerCount), row.Capacity.IsFullAt(row.CurrentCustomerCount),
+            row.Capacity.HasReachedMinimum(row.CurrentCustomerCount))).ToArray();
+        return new GetTourPageDto(items, Math.Max(total, items.Length));
     }
 
     /// <inheritdoc />
@@ -51,23 +98,23 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
     }
 
     /// <inheritdoc />
-    public async Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct)
-    {
-        var tour = await dbContext.Tours
-            .Include(tour => tour.Bookings)
-            .FirstOrDefaultAsync(tour => tour.Id == id, ct);
-
-        return tour is null ? null : MapTour(tour);
-    }
+    public Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct) =>
+        ReadTourDetail(dbContext.Tours.Where(tour => tour.Id == id), ct);
 
     /// <inheritdoc />
-    public async Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct)
-    {
-        var tour = await dbContext.Tours
-            .Include(tour => tour.Bookings)
-            .FirstOrDefaultAsync(tour => tour.Id == id && tour.RetirementId == null, ct);
+    public Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct) =>
+        ReadTourDetail(dbContext.Tours.Where(tour => tour.Id == id && tour.RetirementId == null), ct);
 
-        return tour is null ? null : MapTour(tour);
+    private static async Task<GetTourDto?> ReadTourDetail(IQueryable<Tour> tours, CancellationToken ct)
+    {
+        var row = await tours.Select(tour => new
+        {
+            Tour = tour,
+            // Match Tour.CurrentCustomerCount without materializing the booking history.
+            CurrentCustomerCount = tour.Bookings.Where(booking => booking.Status == BookingStatus.Confirmed)
+                .Sum(booking => booking.CompanionCustomer == null ? 1 : 2)
+        }).SingleOrDefaultAsync(ct);
+        return row is null ? null : MapTour(row.Tour, row.CurrentCustomerCount);
     }
 
     /// <inheritdoc />
@@ -84,7 +131,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             .SingleOrDefaultAsync(ct);
     }
 
-    private static GetTourDto MapTour(Tour tour) => new()
+    private static GetTourDto MapTour(Tour tour, int currentCustomerCount) => new()
     {
         Id = tour.Id,
         Identifier = tour.Identifier,
@@ -99,10 +146,10 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         IncludedServices = [.. tour.IncludedServices],
         MinCustomers = tour.Capacity.MinCustomers,
         MaxCustomers = tour.Capacity.MaxCustomers,
-        CurrentCustomerCount = tour.CurrentCustomerCount,
-        AvailableSpots = tour.AvailableSpots,
-        IsFullyBooked = tour.IsFullyBooked,
-        IsAtMinimumCapacity = tour.IsAtMinimumCapacity
+        CurrentCustomerCount = currentCustomerCount,
+        AvailableSpots = tour.Capacity.AvailableSpotsAt(currentCustomerCount),
+        IsFullyBooked = tour.Capacity.IsFullAt(currentCustomerCount),
+        IsAtMinimumCapacity = tour.Capacity.HasReachedMinimum(currentCustomerCount)
     };
 
     /// <inheritdoc />
@@ -122,6 +169,41 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                 BikeType = CustomerMapper.MapToBikeTypeDto(c.PhysicalInfo.BikeType)
             })
         ];
+    }
+
+    /// <inheritdoc />
+    public async Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct)
+    {
+        var customers = dbContext.Customers;
+        var total = await customers.CountAsync(ct);
+        var window = PageWindow.Create(page, ContractConstants.CustomerListPageSize, total);
+        var ordered = sort switch
+        {
+            CustomerPageSort.Email => OrderBy(customers, customer => customer.ContactInfo.Email, descending),
+            CustomerPageSort.Nationality => OrderBy(customers, customer => customer.PersonalInfo.Nationality, descending),
+            _ => descending
+                ? customers.OrderByDescending(customer => customer.PersonalInfo.FirstName)
+                    .ThenByDescending(customer => customer.PersonalInfo.LastName)
+                : customers.OrderBy(customer => customer.PersonalInfo.FirstName)
+                    .ThenBy(customer => customer.PersonalInfo.LastName)
+        };
+
+        var rows = await ordered.ThenBy(customer => customer.Id)
+            .Skip(window.Skip)
+            .Take(window.Take)
+            .Select(customer => new
+            {
+                customer.Id,
+                customer.PersonalInfo.FirstName,
+                customer.PersonalInfo.LastName,
+                customer.ContactInfo.Email,
+                customer.ContactInfo.Mobile,
+                customer.PersonalInfo.Nationality
+            })
+            .ToArrayAsync(ct);
+        var items = rows.Select(row => new GetCustomerListItemDto(
+            row.Id, row.FirstName, row.LastName, row.Email.Value, row.Mobile.Value, row.Nationality)).ToArray();
+        return new GetCustomerPageDto(items, Math.Max(total, items.Length));
     }
 
     /// <inheritdoc />
@@ -277,6 +359,42 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             .ToArrayAsync(ct);
 
         return new GetBookingPageDto(await ReadBookingRows(rows, ct), overview);
+    }
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetTourBookingPage(Guid tourId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct) =>
+        ReadBookingHistoryPage(dbContext.Tours.Where(tour => tour.Id == tourId).SelectMany(tour => tour.Bookings),
+            page, sort, descending, ct);
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetCustomerBookingPage(Guid customerId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct) =>
+        ReadBookingHistoryPage(BookingsForCustomer(customerId), page,
+            sort == BookingPageSort.Default ? BookingPageSort.BookingDate : sort,
+            sort == BookingPageSort.Default || descending, ct);
+
+    private IQueryable<Booking> BookingsForCustomer(Guid customerId) =>
+        dbContext.Tours.SelectMany(tour => tour.Bookings)
+            .Where(booking => booking.PrincipalCustomer.CustomerId == customerId ||
+                (booking.CompanionCustomer != null && booking.CompanionCustomer.CustomerId == customerId));
+
+    private async Task<GetBookingHistoryPageDto> ReadBookingHistoryPage(
+        IQueryable<Booking> bookings, string? page, BookingPageSort sort, bool descending, CancellationToken ct)
+    {
+        var total = await bookings.CountAsync(ct);
+        if (total == 0)
+        {
+            return new GetBookingHistoryPageDto([], 0);
+        }
+
+        var window = PageWindow.Create(page, ContractConstants.BookingListPageSize, total);
+        var rows = await OrderBookingPage(bookings, sort, descending)
+            .Skip(window.Skip)
+            .Take(window.Take)
+            .ToArrayAsync(ct);
+        var items = await ReadBookingRows(rows, ct);
+        return new GetBookingHistoryPageDto(items, Math.Max(total, items.Count));
     }
 
     private IQueryable<Booking> OrderBookingPage(IQueryable<Booking> bookings, BookingPageSort sort, bool descending)
@@ -522,10 +640,7 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
     /// <inheritdoc />
     public async Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
     {
-        var bookings = await dbContext.Tours
-            .SelectMany(t => t.Bookings)
-            .Where(b => b.PrincipalCustomer.CustomerId == customerId ||
-                        (b.CompanionCustomer != null && b.CompanionCustomer.CustomerId == customerId))
+        var bookings = await BookingsForCustomer(customerId)
             .OrderByDescending(b => b.BookingDate)
             .ToArrayAsync(ct);
 

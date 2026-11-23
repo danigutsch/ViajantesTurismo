@@ -122,6 +122,65 @@
         ]
       }
     },
+    "/api/v1/customers/page": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Retrieves bounded customer summaries and the total count. The optional page number is one-based.",
+        "description": "Retrieves a page of customers.",
+        "operationId": "GetCustomerPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCustomerPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/customers/options/search": {
       "post": {
         "tags": [
@@ -279,6 +338,69 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/customers/import/conflicts/lookup": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Finds existing customer IDs for import conflicts.",
+        "description": "Returns an ID or null for each email in request order. A request accepts at most 100 emails.",
+        "operationId": "FindCustomerImportConflictIds",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -738,6 +860,38 @@
           }
         }
       },
+      "GetCustomerListItemDto": {
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "mobile",
+          "nationality"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "mobile": {
+            "type": "string"
+          },
+          "nationality": {
+            "type": "string"
+          }
+        }
+      },
       "GetCustomerOptionDto": {
         "required": [
           "id",
@@ -777,6 +931,29 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GetCustomerOptionDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "GetCustomerPageDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetCustomerListItemDto"
             }
           },
           "total": {

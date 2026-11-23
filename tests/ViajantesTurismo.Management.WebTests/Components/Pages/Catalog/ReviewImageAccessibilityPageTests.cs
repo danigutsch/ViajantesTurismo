@@ -262,7 +262,7 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
             ]
         };
         catalogApi.Images = [image];
-        catalogApi.ThrowOnSubsequentGetTourImages = true;
+        catalogApi.ThrowOnSubsequentGetNextPendingReview = true;
 
         // Act
         var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
@@ -274,13 +274,15 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
 
         // Assert
         cut.Find("[role='alert']").TextContent.ShouldBe("The next image could not be loaded. Refresh the page and try again.");
+        catalogApi.GetNextPendingReviewCallCount.ShouldBe(2);
+        catalogApi.GetTourImagesCallCount.ShouldBe(0);
     }
 
     [Fact]
     public void Shows_an_error_when_images_cannot_be_loaded()
     {
         // Arrange
-        catalogApi.ThrowOnGetTourImages = true;
+        catalogApi.ThrowOnGetNextPendingReview = true;
 
         // Act
         var cut = Render<ReviewImageAccessibility>(parameters => parameters.Add(component => component.Id, Guid.CreateVersion7()));
@@ -294,10 +296,10 @@ public sealed class ReviewImageAccessibilityPageTests : BunitContext
     }
 
     [Fact]
-    public void Shows_a_safe_error_when_the_image_list_is_malformed()
+    public void Shows_a_safe_error_when_the_review_response_is_malformed()
     {
         // Arrange
-        catalogApi.GetTourImagesOutcome = HttpOutcomeMapper.Status<CatalogMediaImageDto[]>(
+        catalogApi.NextPendingReviewOutcome = HttpOutcomeMapper.Status<CatalogPendingImageReviewDto>(
             HttpOutcomeKind.MalformedBody,
             HttpStatusCode.OK,
             "The catalog image response body was invalid.");

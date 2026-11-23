@@ -22,6 +22,15 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
         await new[] { Customer }.ToAsyncEnumerable().ToArrayAsync(ct);
 
     /// <inheritdoc />
+    public Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var row = new GetCustomerListItemDto(Customer.Id, Customer.FirstName, Customer.LastName,
+            Customer.Email, Customer.Mobile, Customer.Nationality);
+        return Task.FromResult(new GetCustomerPageDto([row], 1));
+    }
+
+    /// <inheritdoc />
     public Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -36,6 +45,13 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
     /// <inheritdoc />
     public async Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) =>
         await new[] { Tour }.ToAsyncEnumerable().ToArrayAsync(ct);
+
+    /// <inheritdoc />
+    public Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(new GetTourPageDto([DtoBuilders.ToTourListItem(Tour)], 1));
+    }
 
     /// <inheritdoc />
     public Task<GetTourOptionsDto> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct)
@@ -73,6 +89,26 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
     {
         ct.ThrowIfCancellationRequested();
         return Task.FromResult(new GetBookingPageDto([Booking], new BookingOverviewCountsDto(1, 1, 0, 0, 0)));
+    }
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetTourBookingPage(Guid tourId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(Booking.TourId == tourId
+            ? new GetBookingHistoryPageDto([Booking], 1)
+            : new GetBookingHistoryPageDto([], 0));
+    }
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetCustomerBookingPage(Guid customerId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(Booking.CustomerId == customerId || Booking.CompanionId == customerId
+            ? new GetBookingHistoryPageDto([Booking], 1)
+            : new GetBookingHistoryPageDto([], 0));
     }
 
     /// <inheritdoc />

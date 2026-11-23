@@ -16,6 +16,14 @@ public interface IToursApiClient
     /// <returns>The materialized tour-list outcome.</returns>
     Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue);
 
+    /// <summary>Gets a bounded page of active tour summaries.</summary>
+    /// <param name="page">The one-based page to request.</param>
+    /// <param name="sort">The requested column.</param>
+    /// <param name="descending">Whether the selected column uses descending order.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The outcome containing the requested tour summaries and total.</returns>
+    Task<HttpOutcome<GetTourPageDto>> GetTourPage(int page, TourPageSort sort, bool descending, CancellationToken ct);
+
     /// <summary>Searches for a bounded set of active tour choices.</summary>
     /// <param name="request">The optional search text and requested result limit.</param>
     /// <param name="ct">Cancellation token for the request.</param>

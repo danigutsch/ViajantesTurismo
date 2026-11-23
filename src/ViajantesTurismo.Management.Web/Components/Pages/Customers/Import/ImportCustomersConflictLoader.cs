@@ -35,32 +35,35 @@ internal static class ImportCustomersConflictLoader
         CancellationToken ct)
     {
         var result = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-        var customersOutcome = await customersApi.GetCustomers(ct);
-        if (customersOutcome is not { Kind: PandaBear.HttpClients.HttpOutcomeKind.Succeeded, Value: { } customers })
+        var emails = conflicts.Select(conflict => conflict.Email).Distinct(StringComparer.OrdinalIgnoreCase);
+        foreach (var batch in emails.Chunk(ContractConstants.CustomerImportConflictLookupMaxKeys))
         {
-            throw new InvalidOperationException(LoadFailureMessage);
-        }
-
-        foreach (var conflictEmail in conflicts.Select(conflict => conflict.Email))
-        {
-            var existingSummary = customers.FirstOrDefault(customer => customer.Email.Equals(conflictEmail, StringComparison.OrdinalIgnoreCase));
-            if (existingSummary is null)
-            {
-                continue;
-            }
-
-            var detailsOutcome = await customersApi.GetCustomerById(existingSummary.Id, ct);
-            if (detailsOutcome.Kind == PandaBear.HttpClients.HttpOutcomeKind.NotFound)
-            {
-                continue;
-            }
-
-            if (detailsOutcome is not { Kind: PandaBear.HttpClients.HttpOutcomeKind.Succeeded, Value: { } details })
+            var idsOutcome = await customersApi.FindCustomerImportConflictIds(batch, ct);
+            if (idsOutcome is not { Kind: PandaBear.HttpClients.HttpOutcomeKind.Succeeded, Value: { } ids } || ids.Length != batch.Length)
             {
                 throw new InvalidOperationException(LoadFailureMessage);
             }
 
-            result[conflictEmail] = MapCustomerDetailsToFieldValues(details);
+            for (var index = 0; index < batch.Length; index++)
+            {
+                if (ids[index] is not { } id)
+                {
+                    continue;
+                }
+
+                var detailsOutcome = await customersApi.GetCustomerById(id, ct);
+                if (detailsOutcome.Kind == PandaBear.HttpClients.HttpOutcomeKind.NotFound)
+                {
+                    continue;
+                }
+
+                if (detailsOutcome is not { Kind: PandaBear.HttpClients.HttpOutcomeKind.Succeeded, Value: { } details })
+                {
+                    throw new InvalidOperationException(LoadFailureMessage);
+                }
+
+                result[batch[index]] = MapCustomerDetailsToFieldValues(details);
+            }
         }
 
         return result;

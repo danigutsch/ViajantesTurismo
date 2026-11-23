@@ -10,6 +10,10 @@ internal sealed class MissingDocumentSourceQueries : IQueryService
     public Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) => Task.FromResult<IReadOnlyList<GetTourDto>>([]);
 
     /// <inheritdoc />
+    public Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<GetTourOptionsDto> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct) => throw new NotSupportedException();
     /// <summary>Returns no tour.</summary>
     public Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct) => Task.FromResult<GetTourDto?>(null);
@@ -19,6 +23,10 @@ internal sealed class MissingDocumentSourceQueries : IQueryService
     public Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct) => Task.FromResult<GetTourRetirementDto?>(null);
     /// <summary>Returns no customers.</summary>
     public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => Task.FromResult<IReadOnlyList<GetCustomerDto>>([]);
+
+    /// <inheritdoc />
+    public Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct) =>
+        throw new NotSupportedException();
 
     /// <inheritdoc />
     public Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct) =>
@@ -31,6 +39,14 @@ internal sealed class MissingDocumentSourceQueries : IQueryService
     /// <inheritdoc />
     public Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetTourBookingPage(Guid tourId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetCustomerBookingPage(Guid customerId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct) => throw new NotSupportedException();
+
     /// <summary>Returns no booking.</summary>
     public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct) => Task.FromResult<GetBookingDto?>(null);
     /// <summary>Returns no bookings for the tour.</summary>

@@ -263,11 +263,7 @@ else if (_customer != null)
                         </button>
                     </div>
                     <div class="card-body">
-                        @if (_loadingBookings)
-                        {
-                            <p><em>Loading bookings...</em></p>
-                        }
-                        else if (_showBookingForm)
+                        @if (_showBookingForm)
                         {
                             <div class="border rounded p-3 mb-3">
                                 <h5>Create New Booking</h5>
@@ -281,8 +277,7 @@ else if (_customer != null)
                         }
                         else
                         {
-                            <BookingsList Bookings="_bookings"
-                                          ShowCustomerInfo="false" />
+                            <BookingHistory @key="Id" OwnerId="@Id" />
                         }
                     </div>
                 </div>
@@ -303,8 +298,8 @@ else if (_customer != null)
     private bool _loading = true;
     private bool _notFound;
     private string? _errorMessage;
-    private GetBookingDto[]? _bookings;
-    private bool _loadingBookings = true;
+    private Guid? _loadedOwner;
+    private int _loadVersion;
     private bool _showBookingForm;
 
     private BookingFormModel _bookingFormModel = new();
@@ -314,13 +309,28 @@ else if (_customer != null)
     private ToastNotification? _toast;
 
     /// <inheritdoc />
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
+        if (_loadedOwner == Id)
+        {
+            return;
+        }
+
+        _loadedOwner = Id;
+        var version = ++_loadVersion;
+        _loading = true;
+        _notFound = false;
+        _errorMessage = null;
+        _showBookingForm = false;
         var outcome = await CustomersApi.GetCustomerById(Id, CancellationToken.None);
+        if (version != _loadVersion)
+        {
+            return;
+        }
+
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customer })
         {
             _customer = customer;
-            await LoadBookings();
         }
         else if (outcome.Kind == HttpOutcomeKind.NotFound)
         {
@@ -332,22 +342,6 @@ else if (_customer != null)
         }
 
         _loading = false;
-    }
-
-    private async Task LoadBookings()
-    {
-        _loadingBookings = true;
-        try
-        {
-            var outcome = await BookingsApi.GetBookingsByCustomerId(Id, CancellationToken.None);
-            _bookings = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } bookings }
-                ? bookings
-                : [];
-        }
-        finally
-        {
-            _loadingBookings = false;
-        }
     }
 
     private void ShowCreateBookingForm()
@@ -385,7 +379,6 @@ else if (_customer != null)
                 return;
             }
 
-            await LoadBookings();
             HideBookingForm();
             _toast?.ShowSuccess("Booking created successfully.");
         }

@@ -24,6 +24,8 @@ internal static class BookingsOpenApiAssertions
         contract.DeleteBookingOperationId.ShouldBe("DeleteBooking");
         contract.GetBookingsByTourIdOperationId.ShouldBe("GetBookingsByTourId");
         contract.GetBookingsByCustomerIdOperationId.ShouldBe("GetBookingsByCustomerId");
+        contract.GetTourBookingPageOperationId.ShouldBe("GetTourBookingPage");
+        contract.GetCustomerBookingPageOperationId.ShouldBe("GetCustomerBookingPage");
         contract.UpdateBookingDiscountOperationId.ShouldBe("UpdateBookingDiscount");
         contract.UpdateBookingDiscountSchemaReference.ShouldBe("#/components/schemas/UpdateBookingDiscountDto");
         contract.UpdateBookingDetailsOperationId.ShouldBe("UpdateBookingDetails");

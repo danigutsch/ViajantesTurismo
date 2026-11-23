@@ -105,6 +105,10 @@ internal sealed class FakeCatalogBrowserApiClient(CatalogTourDto tour) : ICatalo
     public Task<HttpOutcome<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
+    public Task<HttpOutcome<CatalogPendingImageReviewDto>> GetNextPendingReviewImage(Guid id, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<HttpOutcome<CatalogMediaImageDto>> ReviewMediaImageAccessibility(Guid id, PublicMediaImageAccessibilityReviewRequest request, CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />

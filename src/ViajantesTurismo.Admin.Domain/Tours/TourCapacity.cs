@@ -30,6 +30,15 @@ public sealed class TourCapacity : ValueObject
         get;
     }
 
+    /// <summary>Gets the number of places remaining for the supplied occupancy.</summary>
+    internal int AvailableSpotsAt(int customerCount) => MaxCustomers - customerCount;
+
+    /// <summary>Determines whether the supplied occupancy reaches the tour minimum.</summary>
+    internal bool HasReachedMinimum(int customerCount) => customerCount >= MinCustomers;
+
+    /// <summary>Determines whether the supplied occupancy has filled the tour.</summary>
+    internal bool IsFullAt(int customerCount) => customerCount >= MaxCustomers;
+
     /// <summary>
     /// Creates a new tour capacity with validation.
     /// </summary>

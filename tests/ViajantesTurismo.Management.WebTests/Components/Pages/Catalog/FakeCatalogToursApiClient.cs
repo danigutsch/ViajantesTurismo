@@ -84,14 +84,22 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     /// <summary>Images returned by tour image reads and replaced by accessibility reviews.</summary>
     public IReadOnlyList<CatalogMediaImageDto> Images { get; set; } = [];
 
-    /// <summary>When true, tour image reads return a transport failure.</summary>
-    public bool ThrowOnGetTourImages
+    /// <summary>Gets the number of calls to the legacy image list.</summary>
+    public int GetTourImagesCallCount => Volatile.Read(ref getTourImagesRequests);
+
+    /// <summary>Gets the number of bounded review reads.</summary>
+    public int GetNextPendingReviewCallCount => Volatile.Read(ref getNextPendingReviewRequests);
+
+    private int getNextPendingReviewRequests;
+
+    /// <summary>When true, pending image reviews return a transport failure.</summary>
+    public bool ThrowOnGetNextPendingReview
     {
         get; set;
     }
 
-    /// <summary>When set, tour image reads return this outcome instead of <see cref="Images"/>.</summary>
-    public HttpOutcome<CatalogMediaImageDto[]>? GetTourImagesOutcome
+    /// <summary>When set, pending image reviews return this outcome instead of selecting from <see cref="Images"/>.</summary>
+    public HttpOutcome<CatalogPendingImageReviewDto>? NextPendingReviewOutcome
     {
         get; set;
     }
@@ -174,8 +182,8 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         get; set;
     }
 
-    /// <summary>When true, tour image reads after the first return a transport failure.</summary>
-    public bool ThrowOnSubsequentGetTourImages
+    /// <summary>When true, pending image reads after the first return a transport failure.</summary>
+    public bool ThrowOnSubsequentGetNextPendingReview
     {
         get; set;
     }
@@ -371,27 +379,37 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.Created, uploaded);
     }
 
-    /// <summary>Returns the configured tour images outcome, a transport failure, or <see cref="Images"/>.</summary>
+    /// <summary>Returns all configured images.</summary>
     public Task<HttpOutcome<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-
-        if (ThrowOnGetTourImages)
-        {
-            return Task.FromResult(TransportFailure<CatalogMediaImageDto[]>());
-        }
-
-        if (GetTourImagesOutcome is not null)
-        {
-            return Task.FromResult(GetTourImagesOutcome);
-        }
-
-        if (ThrowOnSubsequentGetTourImages && Interlocked.Increment(ref getTourImagesRequests) > 1)
-        {
-            return Task.FromResult(TransportFailure<CatalogMediaImageDto[]>());
-        }
-
+        Interlocked.Increment(ref getTourImagesRequests);
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Images.ToArray()));
+    }
+
+    /// <summary>Returns the next pending image or a configured outcome.</summary>
+    public Task<HttpOutcome<CatalogPendingImageReviewDto>> GetNextPendingReviewImage(Guid id, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var calls = Interlocked.Increment(ref getNextPendingReviewRequests);
+        if (ThrowOnGetNextPendingReview)
+        {
+            return Task.FromResult(TransportFailure<CatalogPendingImageReviewDto>());
+        }
+
+        if (NextPendingReviewOutcome is not null)
+        {
+            return Task.FromResult(NextPendingReviewOutcome);
+        }
+
+        if (ThrowOnSubsequentGetNextPendingReview && calls > 1)
+        {
+            return Task.FromResult(TransportFailure<CatalogPendingImageReviewDto>());
+        }
+
+        var image = Images.FirstOrDefault(image => image.RequiresHumanReview ||
+            image.AccessibilityTexts.Any(text => text.RequiresHumanReview));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogPendingImageReviewDto(image)));
     }
 
     /// <summary>Records the review request and returns the reviewed image, replacing it in <see cref="Images"/>, or not found.</summary>

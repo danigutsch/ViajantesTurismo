@@ -23,6 +23,22 @@ public interface IBookingsApiClient
     /// <returns>The materialized page outcome.</returns>
     Task<HttpOutcome<GetBookingPageDto>> GetBookingPage(int page, BookingPageSort sort, bool descending, CancellationToken ct);
 
+    /// <summary>Retrieves a page of bookings for the given tour.</summary>
+    /// <param name="tourId">The booked tour.</param>
+    /// <param name="page">The one-based page.</param>
+    /// <param name="sort">The requested sort.</param>
+    /// <param name="descending">Whether to reverse the selected sort.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task<HttpOutcome<GetBookingHistoryPageDto>> GetTourBookingPage(Guid tourId, int page, BookingPageSort sort, bool descending, CancellationToken ct);
+
+    /// <summary>Retrieves a page where the given customer is principal or companion.</summary>
+    /// <param name="customerId">The customer whose bookings are returned.</param>
+    /// <param name="page">The one-based page.</param>
+    /// <param name="sort">The requested sort.</param>
+    /// <param name="descending">Whether to reverse the selected sort.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task<HttpOutcome<GetBookingHistoryPageDto>> GetCustomerBookingPage(Guid customerId, int page, BookingPageSort sort, bool descending, CancellationToken ct);
+
     /// <summary>
     /// Gets a specific booking by its ID.
     /// </summary>

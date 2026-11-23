@@ -10,6 +10,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private readonly List<CustomerDetailsDto> _customerDetails = [];
     private readonly List<GetCustomerDto> _customers = [];
     private Func<CancellationToken, int, Task<IReadOnlyList<GetCustomerDto>>>? _getCustomersHandler;
+    private Func<string[], CancellationToken, Task<Guid?[]>>? _findImportConflictIdsHandler;
     private Func<ReadOnlyMemory<byte>, string, IReadOnlyDictionary<string, string>, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _commitImportHandler;
     private Func<ReadOnlyMemory<byte>, string, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _importCustomersHandler;
     public CancellationToken LastCommitCancellationToken
@@ -30,8 +31,10 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private HttpOutcome? _createCustomerOutcome;
     private Exception? _getCustomerByIdException;
     private HttpOutcome<CustomerDetailsDto>? _getCustomerByIdOutcome;
+    private HttpOutcome<Guid?[]>? _findImportConflictIdsOutcome;
     private Exception? _getCustomersException;
     private HttpOutcome<GetCustomerDto[]>? _getCustomersOutcome;
+    private HttpOutcome<GetCustomerPageDto>? _getCustomerPageOutcome;
     private Func<CustomerOptionSearchDto, CancellationToken, Task<HttpOutcome<GetCustomerOptionsDto>>>? _searchCustomerOptionsHandler;
     private Exception? _importCustomersException;
     private HttpOutcome<ImportResultDto>? _importCustomersOutcome;
@@ -55,6 +58,12 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     }
 
     public int? LastGetCustomersMaxItems
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the most recent customer page number and sort.</summary>
+    public (int Page, CustomerPageSort Sort, bool Descending)? LastCustomerPageRequest
     {
         get; private set;
     }
@@ -87,6 +96,34 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
         return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _customers.Take(maxItems).ToArray());
     }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetCustomerPageDto>> GetCustomerPage(int page, CustomerPageSort sort, bool descending, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        LastCustomerPageRequest = (page, sort, descending);
+        if (_getCustomerPageOutcome is not null)
+        {
+            return Task.FromResult(_getCustomerPageOutcome);
+        }
+
+        var ordered = sort switch
+        {
+            CustomerPageSort.Email => OrderCustomers(customer => customer.Email, descending),
+            CustomerPageSort.Nationality => OrderCustomers(customer => customer.Nationality, descending),
+            _ => descending
+                ? OrderCustomers(customer => customer.FirstName, descending).ThenByDescending(customer => customer.LastName, StringComparer.Ordinal)
+                : OrderCustomers(customer => customer.FirstName, descending).ThenBy(customer => customer.LastName, StringComparer.Ordinal)
+        };
+        var window = PageWindow.Create(page, ContractConstants.CustomerListPageSize, _customers.Count);
+        var rows = ordered.ThenBy(customer => customer.Id).Skip(window.Skip).Take(window.Take)
+            .Select(customer => new GetCustomerListItemDto(customer.Id, customer.FirstName, customer.LastName,
+                customer.Email, customer.Mobile, customer.Nationality)).ToArray();
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetCustomerPageDto(rows, window.Total)));
+    }
+
+    private IOrderedEnumerable<GetCustomerDto> OrderCustomers(Func<GetCustomerDto, string> key, bool descending) =>
+        descending ? _customers.OrderByDescending(key, StringComparer.Ordinal) : _customers.OrderBy(key, StringComparer.Ordinal);
 
     public Task<HttpOutcome<GetCustomerOptionsDto>> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct)
     {
@@ -135,6 +172,26 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         return Task.FromResult(customer is null
             ? HttpOutcomeMapper.Status<CustomerDetailsDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, customer));
+    }
+
+    public async Task<HttpOutcome<Guid?[]>> FindCustomerImportConflictIds(string[] emails, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(emails);
+        ct.ThrowIfCancellationRequested();
+
+        if (_findImportConflictIdsHandler is not null)
+        {
+            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, await _findImportConflictIdsHandler(emails, ct));
+        }
+
+        if (_findImportConflictIdsOutcome is not null)
+        {
+            return _findImportConflictIdsOutcome;
+        }
+
+        var matches = emails.Select(email => _customers.FirstOrDefault(
+            customer => customer.Email.Equals(email, StringComparison.OrdinalIgnoreCase))?.Id).ToArray();
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, matches);
     }
 
     public Task<HttpOutcome> CreateCustomer(CreateCustomerDto dto, CancellationToken ct)
@@ -260,6 +317,15 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public void SetGetCustomersHandler(Func<CancellationToken, int, Task<IReadOnlyList<GetCustomerDto>>> handler) => _getCustomersHandler = handler;
 
     public void SetGetCustomersOutcome(HttpOutcome<GetCustomerDto[]> outcome) => _getCustomersOutcome = outcome;
+
+    /// <summary>Sets the response for requests to the customer page.</summary>
+    public void SetGetCustomerPageOutcome(HttpOutcome<GetCustomerPageDto> outcome) => _getCustomerPageOutcome = outcome;
+
+    /// <summary>Sets the response for an import conflict lookup.</summary>
+    public void SetFindImportConflictIdsOutcome(HttpOutcome<Guid?[]> outcome) => _findImportConflictIdsOutcome = outcome;
+
+    /// <summary>Replaces the import conflict lookup with a test-owned handler.</summary>
+    public void SetFindImportConflictIdsHandler(Func<string[], CancellationToken, Task<Guid?[]>> handler) => _findImportConflictIdsHandler = handler;
 
     public void SetCreateCustomerException(Exception exception) => _createCustomerException = exception;
 

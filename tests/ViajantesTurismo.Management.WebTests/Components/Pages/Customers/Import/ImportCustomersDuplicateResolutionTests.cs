@@ -364,9 +364,9 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
             return Task.FromResult(new ImportResultDto(0, 0, [new ImportConflictDto(conflictEmail)]));
         });
         var oldLookupStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var oldLookupCompletion = new TaskCompletionSource<IReadOnlyList<GetCustomerDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var oldLookupCompletion = new TaskCompletionSource<Guid?[]>(TaskCreationOptions.RunContinuationsAsynchronously);
         var lookupCount = 0;
-        _fakeCustomersApi.SetGetCustomersHandler((_, _) =>
+        _fakeCustomersApi.SetFindImportConflictIdsHandler((_, _) =>
         {
             if (Interlocked.Increment(ref lookupCount) == 1)
             {
@@ -374,7 +374,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
                 return oldLookupCompletion.Task;
             }
 
-            return Task.FromResult<IReadOnlyList<GetCustomerDto>>([]);
+            return Task.FromResult<Guid?[]>([null]);
         });
 
         // Act
@@ -383,7 +383,7 @@ public sealed class ImportCustomersDuplicateResolutionTests : BunitContext
         await cut.Find("button[aria-label='Cancel upload of customers.csv']").ClickAsync();
         await cut.Find("button[data-action='confirm-import']").ClickAsync();
         await cut.WaitForAssertionAsync(() => cut.Markup.ShouldContain("new@example.com", StringComparison.Ordinal));
-        oldLookupCompletion.TrySetResult([]);
+        oldLookupCompletion.TrySetResult([null]);
         await oldCommit;
 
         // Assert

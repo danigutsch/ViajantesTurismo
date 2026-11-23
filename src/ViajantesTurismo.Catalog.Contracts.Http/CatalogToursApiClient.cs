@@ -176,6 +176,20 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
+    public async Task<HttpOutcome<CatalogPendingImageReviewDto>> GetNextPendingReviewImage(Guid id, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get,
+            new Uri($"{RoutePrefix}/tours/{id}/images/review/next", UriKind.Relative));
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            request,
+            HttpStatusCode.OK,
+            Json.CatalogPendingImageReviewDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<CatalogMediaImageDto>> ReviewMediaImageAccessibility(
         Guid id,
         PublicMediaImageAccessibilityReviewRequest request,

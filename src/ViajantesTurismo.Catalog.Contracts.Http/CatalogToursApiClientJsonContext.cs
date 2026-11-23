@@ -16,6 +16,7 @@ namespace ViajantesTurismo.Catalog.Contracts.Http;
 [JsonSerializable(typeof(PublicMediaImageAccessibilityDraftRequest))]
 [JsonSerializable(typeof(CatalogMediaImageDto))]
 [JsonSerializable(typeof(CatalogMediaImageDto[]))]
+[JsonSerializable(typeof(CatalogPendingImageReviewDto))]
 [JsonSerializable(typeof(CatalogMediaImageVariantDto))]
 [JsonSerializable(typeof(PublicMediaImageAccessibilityReviewRequest))]
 internal sealed partial class CatalogToursApiClientJsonContext : JsonSerializerContext;

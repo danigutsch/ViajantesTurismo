@@ -105,6 +105,13 @@ internal sealed class TransientCatalogToursApiClient(
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Array.Empty<CatalogMediaImageDto>()));
     }
 
+    /// <summary>Returns an empty accessibility review queue.</summary>
+    public Task<HttpOutcome<CatalogPendingImageReviewDto>> GetNextPendingReviewImage(Guid id, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogPendingImageReviewDto(null)));
+    }
+
     /// <summary>Always reports not found.</summary>
     public Task<HttpOutcome<CatalogMediaImageDto>> ReviewMediaImageAccessibility(
         Guid id,

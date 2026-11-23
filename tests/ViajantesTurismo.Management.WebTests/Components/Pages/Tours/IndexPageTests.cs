@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.QuickGrid;
 using PandaBear.Testing;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Tours.Index;
 
@@ -248,18 +249,97 @@ public class IndexPageTests : BunitContext
 
         // Assert
         IndexPageTestsHelper.AssertNameSortIsAscending(cut);
+        var lastRequest = _fakeToursApi.TourPageRequests[^1];
+        lastRequest.ShouldBe((1, TourPageSort.Name, false));
+        _fakeToursApi.GetToursCallCount.ShouldBe(0);
     }
 
     [Fact]
     public void Transport_failure_while_loading_shows_a_safe_error_message()
     {
         // Arrange
-        _fakeToursApi.SetGetToursOutcome(FakeApiClientOutcomes.TransportFailure<GetTourDto[]>());
+        _fakeToursApi.SetGetTourPageOutcome(FakeApiClientOutcomes.TransportFailure<GetTourPageDto>());
 
         // Act
         var cut = Render<Index>();
 
         // Assert
         cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("Tours could not be loaded. Try again later."));
+    }
+
+    [Theory]
+    [InlineData("Identifier", TourPageSort.Identifier)]
+    [InlineData("Name", TourPageSort.Name)]
+    [InlineData("Start Date", TourPageSort.StartDate)]
+    [InlineData("End Date", TourPageSort.EndDate)]
+    [InlineData("Price", TourPageSort.Price)]
+    [InlineData("Capacity", TourPageSort.CurrentCustomerCount)]
+    public async Task Large_tour_grid_pages_and_sorts_using_the_bounded_route(string title, TourPageSort sort)
+    {
+        // Arrange
+        foreach (var index in Enumerable.Range(0, 125))
+        {
+            _fakeToursApi.AddTour(BuildTourDto(id: Guid.Parse($"00000000-0000-0000-0000-{index + 1:D12}"),
+                identifier: $"TOUR-{index:D3}", name: $"Fixture{index:D3}"));
+        }
+
+        // Act
+        var cut = Render<Index>();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Fixture115", StringComparison.Ordinal));
+        var initialMarkup = cut.Markup;
+        var initialRequest = _fakeToursApi.TourPageRequests[^1];
+        var pagination = cut.FindComponent<Paginator>().Instance.State;
+        await cut.InvokeAsync(() => pagination.SetCurrentPageIndexAsync(10));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Fixture015", StringComparison.Ordinal));
+        var laterMarkup = cut.Markup;
+        var laterRequest = _fakeToursApi.TourPageRequests[^1];
+        ColumnBase<GetTourListItemDto> column = sort switch
+        {
+            TourPageSort.Identifier or TourPageSort.Name => cut.FindComponents<PropertyColumn<GetTourListItemDto, string>>()
+                .ShouldHaveSingleItem(item => item.Instance.Title == title).Instance,
+            TourPageSort.StartDate or TourPageSort.EndDate => cut.FindComponents<PropertyColumn<GetTourListItemDto, DateOnly>>()
+                .ShouldHaveSingleItem(item => item.Instance.Title == title).Instance,
+            _ => cut.FindComponents<TemplateColumn<GetTourListItemDto>>()
+                .ShouldHaveSingleItem(item => item.Instance.Title == title).Instance
+        };
+        var grid = cut.FindComponent<QuickGrid<GetTourListItemDto>>().Instance;
+        await cut.InvokeAsync(() => grid.SortByColumnAsync(column, SortDirection.Descending));
+        var (_, descendingSort, descending) = _fakeToursApi.TourPageRequests[^1];
+        await cut.InvokeAsync(() => grid.SortByColumnAsync(column, SortDirection.Ascending));
+        var (_, ascendingSort, ascendingDescending) = _fakeToursApi.TourPageRequests[^1];
+
+        // Assert
+        initialMarkup.ShouldContain("Total tours: 125", StringComparison.Ordinal);
+        initialMarkup.ShouldNotContain("Fixture114", StringComparison.Ordinal);
+        laterMarkup.ShouldNotContain("Fixture014", StringComparison.Ordinal);
+        initialRequest.ShouldBe((1, TourPageSort.Default, false));
+        laterRequest.ShouldBe((11, TourPageSort.Default, false));
+        descendingSort.ShouldBe(sort);
+        descending.ShouldBeTrue();
+        ascendingSort.ShouldBe(sort);
+        ascendingDescending.ShouldBeFalse();
+        _fakeToursApi.GetToursCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task A_later_page_failure_clears_the_stale_tour_rows_and_shows_the_safe_error()
+    {
+        // Arrange
+        foreach (var index in Enumerable.Range(0, 15))
+        {
+            _fakeToursApi.AddTour(BuildTourDto(identifier: $"TOUR-{index:D3}", name: $"Fixture{index:D3}"));
+        }
+
+        var cut = Render<Index>();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Total tours: 15", StringComparison.Ordinal));
+        var pagination = cut.FindComponent<Paginator>().Instance.State;
+        _fakeToursApi.SetGetTourPageOutcome(FakeApiClientOutcomes.TransportFailure<GetTourPageDto>());
+
+        // Act
+        await cut.InvokeAsync(() => pagination.SetCurrentPageIndexAsync(1));
+
+        // Assert
+        cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("Tours could not be loaded. Try again later."));
+        cut.FindAll("tbody tr").ShouldBeEmpty();
     }
 }

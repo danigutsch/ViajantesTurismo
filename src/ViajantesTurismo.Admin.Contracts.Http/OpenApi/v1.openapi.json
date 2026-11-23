@@ -122,6 +122,65 @@
         ]
       }
     },
+    "/api/v1/tours/page": {
+      "get": {
+        "tags": [
+          "Tours"
+        ],
+        "summary": "Retrieves bounded tour summaries. The optional page number is one-based.",
+        "description": "Retrieves a page of active tours.",
+        "operationId": "GetTourPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTourPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/tours/options/search": {
       "post": {
         "tags": [
@@ -539,6 +598,65 @@
         ]
       }
     },
+    "/api/v1/customers/page": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Retrieves bounded customer summaries and the total count. The optional page number is one-based.",
+        "description": "Retrieves a page of customers.",
+        "operationId": "GetCustomerPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCustomerPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/customers/options/search": {
       "post": {
         "tags": [
@@ -696,6 +814,69 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/customers/import/conflicts/lookup": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Finds existing customer IDs for import conflicts.",
+        "description": "Returns an ID or null for each email in request order. A request accepts at most 100 emails.",
+        "operationId": "FindCustomerImportConflictIds",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1187,6 +1368,74 @@
         ]
       }
     },
+    "/api/v1/bookings/tour/{tourId}/page": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves bookings for the requested tour. The optional page number is one-based.",
+        "description": "Retrieves a page from a tour's booking history.",
+        "operationId": "GetTourBookingPage",
+        "parameters": [
+          {
+            "name": "tourId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingHistoryPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/bookings/customer/{customerId}": {
       "get": {
         "tags": [
@@ -1219,6 +1468,74 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/customer/{customerId}/page": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves bookings where the customer is principal or companion. The optional page number is one-based.",
+        "description": "Retrieves a page from a customer's booking history.",
+        "operationId": "GetCustomerBookingPage",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingHistoryPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Authentication is required."
@@ -7116,6 +7433,29 @@
           }
         }
       },
+      "GetBookingHistoryPageDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetBookingDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "GetBookingPageDto": {
         "required": [
           "items",
@@ -7304,6 +7644,38 @@
           }
         }
       },
+      "GetCustomerListItemDto": {
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "mobile",
+          "nationality"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "mobile": {
+            "type": "string"
+          },
+          "nationality": {
+            "type": "string"
+          }
+        }
+      },
       "GetCustomerOptionDto": {
         "required": [
           "id",
@@ -7343,6 +7715,29 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GetCustomerOptionDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "GetCustomerPageDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetCustomerListItemDto"
             }
           },
           "total": {
@@ -8421,6 +8816,120 @@
           }
         }
       },
+      "GetTourListItemDto": {
+        "required": [
+          "id",
+          "identifier",
+          "name",
+          "startDate",
+          "endDate",
+          "price",
+          "singleRoomSupplementPrice",
+          "regularBikePrice",
+          "eBikePrice",
+          "currency",
+          "minCustomers",
+          "maxCustomers",
+          "currentCustomerCount",
+          "availableSpots",
+          "isFullyBooked",
+          "isAtMinimumCapacity"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "price": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "singleRoomSupplementPrice": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "regularBikePrice": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "eBikePrice": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "minCustomers": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxCustomers": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "currentCustomerCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "availableSpots": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "isFullyBooked": {
+            "type": "boolean"
+          },
+          "isAtMinimumCapacity": {
+            "type": "boolean"
+          }
+        }
+      },
       "GetTourOptionDto": {
         "required": [
           "id",
@@ -8457,6 +8966,29 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GetTourOptionDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "GetTourPageDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetTourListItemDto"
             }
           },
           "total": {

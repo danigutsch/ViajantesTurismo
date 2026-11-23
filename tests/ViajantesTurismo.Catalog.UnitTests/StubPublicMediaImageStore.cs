@@ -31,6 +31,10 @@ internal sealed class StubPublicMediaImageStore : IPublicMediaImageStore
     }
 
     /// <summary>Returns an empty image list for each distinct tour identifier.</summary>
+    public ValueTask<PublicMediaImage?> GetNextPendingReviewByTour(Guid catalogTourId, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct)

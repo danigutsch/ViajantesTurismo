@@ -162,6 +162,27 @@ internal sealed class EfPublicMediaImageStore(CatalogDbContext dbContext) : IPub
     }
 
     /// <inheritdoc />
+    public async ValueTask<PublicMediaImage?> GetNextPendingReviewByTour(Guid catalogTourId, CancellationToken ct)
+    {
+        var image = await dbContext.PublicMediaImages
+            .AsNoTracking()
+            .Where(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId))
+            .Where(image => image.RequiresHumanReview || image.AccessibilityTexts.Any(text => text.RequiresHumanReview))
+            .OrderByDescending(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId && link.IsCover))
+            .ThenBy(image => image.TourLinks.Where(link => link.CatalogTourId == catalogTourId)
+                .Select(link => link.DisplayOrder).FirstOrDefault())
+            .ThenBy(image => image.Id)
+            .Include(image => image.ResponsiveVariants)
+            .Include(image => image.TourLinks.Where(link => link.CatalogTourId == catalogTourId))
+            .Include(image => image.AccessibilityTexts)
+            .AsSingleQuery()
+            .FirstOrDefaultAsync(ct)
+            .ConfigureAwait(false);
+
+        return image is null ? null : ForTour(image, catalogTourId);
+    }
+
+    /// <inheritdoc />
     public async ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct)

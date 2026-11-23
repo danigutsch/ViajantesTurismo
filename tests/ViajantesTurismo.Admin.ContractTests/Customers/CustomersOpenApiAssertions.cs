@@ -17,6 +17,7 @@ internal static class CustomersOpenApiAssertions
         contract.OpenApiVersion.ShouldBe("3.2.0");
         contract.Title.ShouldBe("ViajantesTurismo.Admin.Api | customers");
         contract.ListCustomersOperationId.ShouldBe("GetCustomers");
+        contract.GetCustomerPageOperationId.ShouldBe("GetCustomerPage");
         contract.SearchCustomerOptionsOperationId.ShouldBe("SearchCustomerOptions");
         contract.CustomerOptionSearchSchemaReference.ShouldBe("#/components/schemas/CustomerOptionSearchDto");
         contract.GetCustomerByIdOperationId.ShouldBe("GetCustomerById");

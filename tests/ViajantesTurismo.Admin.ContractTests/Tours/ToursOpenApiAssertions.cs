@@ -22,6 +22,7 @@ internal static class ToursOpenApiAssertions
         contract.UpdateTourSchemaReference.ShouldBe("#/components/schemas/UpdateTourDto");
         contract.SearchTourOptionsOperationId.ShouldBe("SearchTourOptions");
         contract.SearchTourOptionsSchemaReference.ShouldBe("#/components/schemas/TourOptionSearchDto");
+        contract.GetTourPageOperationId.ShouldBe("GetTourPage");
     }
 
     /// <summary>

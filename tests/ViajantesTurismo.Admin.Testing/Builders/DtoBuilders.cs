@@ -72,6 +72,17 @@ public static class DtoBuilders
         };
     }
 
+    /// <summary>Projects an existing test tour response to the overview contract.</summary>
+    /// <param name="tour">The tour to project.</param>
+    /// <returns>The corresponding overview row.</returns>
+    public static GetTourListItemDto ToTourListItem(GetTourDto tour)
+    {
+        ArgumentNullException.ThrowIfNull(tour);
+        return new GetTourListItemDto(tour.Id, tour.Identifier, tour.Name, tour.StartDate, tour.EndDate, tour.Price,
+            tour.SingleRoomSupplementPrice, tour.RegularBikePrice, tour.EBikePrice, tour.Currency, tour.MinCustomers,
+            tour.MaxCustomers, tour.CurrentCustomerCount, tour.AvailableSpots, tour.IsFullyBooked, tour.IsAtMinimumCapacity);
+    }
+
     /// <summary>
     /// Returns the booking with the booked-services and status-transition facts consistent with its
     /// status, mirroring what the API reports from the booking.

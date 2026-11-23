@@ -25,6 +25,10 @@ internal sealed class CancelingPublicMediaImageStore(PublicMediaImage image, Can
         ValueTask.FromResult<IReadOnlyList<PublicMediaImage>>([]);
 
     /// <summary>Always returns an empty dictionary.</summary>
+    public ValueTask<PublicMediaImage?> GetNextPendingReviewByTour(Guid catalogTourId, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct) =>

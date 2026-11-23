@@ -99,17 +99,17 @@ public sealed partial class Tour : IAggregateRoot<Guid>
     /// <summary>
     /// Gets the number of available spots remaining.
     /// </summary>
-    public int AvailableSpots => Capacity.MaxCustomers - CurrentCustomerCount;
+    public int AvailableSpots => Capacity.AvailableSpotsAt(CurrentCustomerCount);
 
     /// <summary>
     /// Gets whether the tour has reached its minimum capacity.
     /// </summary>
-    public bool IsAtMinimumCapacity => CurrentCustomerCount >= Capacity.MinCustomers;
+    public bool IsAtMinimumCapacity => Capacity.HasReachedMinimum(CurrentCustomerCount);
 
     /// <summary>
     /// Gets whether the tour is fully booked (at maximum capacity).
     /// </summary>
-    public bool IsFullyBooked => CurrentCustomerCount >= Capacity.MaxCustomers;
+    public bool IsFullyBooked => Capacity.IsFullAt(CurrentCustomerCount);
 
     /// <summary>
     /// Gets the bookings for this tour.

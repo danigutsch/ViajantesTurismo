@@ -28,6 +28,31 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
+    public void Changing_the_booking_history_owner_refreshes_the_tour_and_its_history()
+    {
+        // Arrange
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        var first = BuildTourDto(name: "First History Tour");
+        var second = BuildTourDto(name: "Second History Tour");
+        var firstBooking = BuildBookingDto(tourId: first.Id);
+        var secondBooking = BuildBookingDto(tourId: second.Id);
+        _fakeToursApi.AddTours([first, second]);
+        _fakeBookingsApi.AddBooking(firstBooking);
+        _fakeBookingsApi.AddBooking(secondBooking);
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, first.Id));
+        cut.WaitForElement($"a[href='/bookings/{firstBooking.Id}']");
+
+        // Act
+        cut.Render(parameters => parameters.Add(page => page.Id, second.Id));
+
+        // Assert
+        cut.WaitForElement($"a[href='/bookings/{secondBooking.Id}']");
+        cut.Markup.ShouldContain(second.Name, StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain(first.Name, StringComparison.Ordinal);
+        cut.FindAll($"a[href='/bookings/{firstBooking.Id}']").ShouldBeEmpty();
+    }
+
+    [Fact]
     [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Booking_creation_on_tour_details_keeps_the_route_tour_fixed()
@@ -299,6 +324,8 @@ public class DetailsPageTests : BunitContext
             cut.Markup.ShouldNotContain("Create New Booking", StringComparison.Ordinal);
             cut.Markup.ShouldNotContain("No bookings found.", StringComparison.Ordinal);
         });
+        _fakeBookingsApi.HistoryRequests.ShouldBe(Enumerable.Repeat((tour.Id, true, 1, BookingPageSort.Default, false), 2));
+        _fakeBookingsApi.GetBookingHistoryCollectionCallCount.ShouldBe(0);
     }
 
     [Fact]

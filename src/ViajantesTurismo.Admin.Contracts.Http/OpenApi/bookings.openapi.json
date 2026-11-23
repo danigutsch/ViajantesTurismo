@@ -347,6 +347,74 @@
         ]
       }
     },
+    "/api/v1/bookings/tour/{tourId}/page": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves bookings for the requested tour. The optional page number is one-based.",
+        "description": "Retrieves a page from a tour's booking history.",
+        "operationId": "GetTourBookingPage",
+        "parameters": [
+          {
+            "name": "tourId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingHistoryPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/bookings/customer/{customerId}": {
       "get": {
         "tags": [
@@ -379,6 +447,74 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/customer/{customerId}/page": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves bookings where the customer is principal or companion. The optional page number is one-based.",
+        "description": "Retrieves a page from a customer's booking history.",
+        "operationId": "GetCustomerBookingPage",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingHistoryPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Authentication is required."
@@ -3106,6 +3242,29 @@
             "items": {
               "$ref": "#/components/schemas/GetFinancialReviewDto"
             }
+          }
+        }
+      },
+      "GetBookingHistoryPageDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetBookingDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },

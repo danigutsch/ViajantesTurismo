@@ -16,11 +16,25 @@ public interface ICustomersApiClient
     /// <returns>The materialized customer-list outcome.</returns>
     Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100);
 
+    /// <summary>Gets one page of customer overview rows.</summary>
+    /// <param name="page">The one-based page number.</param>
+    /// <param name="sort">The requested sort column.</param>
+    /// <param name="descending">Whether the sort column is descending.</param>
+    /// <param name="ct">Cancellation token for the request.</param>
+    /// <returns>The rows and total count through the materialized response outcome.</returns>
+    Task<HttpOutcome<GetCustomerPageDto>> GetCustomerPage(int page, CustomerPageSort sort, bool descending, CancellationToken ct);
+
     /// <summary>Searches for a bounded set of customer options.</summary>
     /// <param name="request">The name or complete customer identifier and result limit.</param>
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized search outcome.</returns>
     Task<HttpOutcome<GetCustomerOptionsDto>> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct);
+
+    /// <summary>Finds the customer IDs for a bounded set of import conflict email keys.</summary>
+    /// <param name="emails">The conflict email keys, in request order.</param>
+    /// <param name="ct">Cancellation token for the request.</param>
+    /// <returns>One ID or null per requested key, in the same order.</returns>
+    Task<HttpOutcome<Guid?[]>> FindCustomerImportConflictIds(string[] emails, CancellationToken ct);
 
     /// <summary>
     /// Gets detailed information for a specific customer by their ID.

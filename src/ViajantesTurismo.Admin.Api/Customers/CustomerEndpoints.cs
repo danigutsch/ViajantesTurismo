@@ -4,6 +4,7 @@ using ViajantesTurismo.Admin.Api.Customers.CreateCustomer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ViajantesTurismo.Admin.Application;
+using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
 
@@ -34,6 +35,11 @@ internal static class CustomerEndpoints
             .WithDescription("Retrieves all customers.")
             .WithSummary("Retrieves all customers.");
 
+        customersGroup.MapGet("/page", GetCustomerPage)
+            .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
+            .WithAdminMetadata(nameof(GetCustomerPage), "Retrieves a page of customers.",
+                "Retrieves bounded customer summaries and the total count. The optional page number is one-based.");
+
         customersGroup.MapPost("/options/search", SearchCustomerOptions)
             .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
             .WithName(nameof(SearchCustomerOptions))
@@ -46,11 +52,33 @@ internal static class CustomerEndpoints
             .WithDescription("Retrieves a customer by their ID.")
             .WithSummary("Retrieves a customer by their ID.");
 
+        customersGroup.MapPost("/import/conflicts/lookup", FindCustomerImportConflictIds)
+            .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
+            .WithName(nameof(FindCustomerImportConflictIds))
+            .WithSummary("Finds existing customer IDs for import conflicts.")
+            .WithDescription($"Returns an ID or null for each email in request order. A request accepts at most {ContractConstants.CustomerImportConflictLookupMaxKeys} emails.");
+
         customersGroup.MapCreateCustomerEndpoint();
         customersGroup.MapUpdateCustomerEndpoint();
         app.MapCustomerImportEndpoints();
 
         return app;
+    }
+
+    private static async Task<Results<Ok<Guid?[]>, ValidationProblem>> FindCustomerImportConflictIds(
+        [FromBody] string[] emails,
+        [FromServices] CustomerImportConflictDetector detector,
+        CancellationToken ct)
+    {
+        if (emails.Length is 0 or > ContractConstants.CustomerImportConflictLookupMaxKeys)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["emails"] = [$"Provide between 1 and {ContractConstants.CustomerImportConflictLookupMaxKeys} conflict email keys."]
+            });
+        }
+
+        return TypedResults.Ok(await detector.FindExistingCustomerIds(emails, ct));
     }
 
     private static async Task<Ok<IReadOnlyList<GetCustomerDto>>> GetCustomers(
@@ -63,6 +91,23 @@ internal static class CustomerEndpoints
         var links = GetResourceLinks(context, linkGenerator);
         return TypedResults.Ok<IReadOnlyList<GetCustomerDto>>(
             [.. customers.Select(customer => customer with { Links = links.For(customer.Id).Links })]);
+    }
+
+    private static async Task<Results<Ok<GetCustomerPageDto>, BadRequest>> GetCustomerPage(
+        [FromQuery] string? page,
+        [FromQuery] string? sort,
+        [FromQuery] bool? descending,
+        [FromServices] IQueryService queryService,
+        CancellationToken ct)
+    {
+        var sortKey = CustomerPageSort.Name;
+        if (sort is not null && (!Enum.TryParse(sort, ignoreCase: true, out sortKey) || !Enum.IsDefined(sortKey)))
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var customers = await queryService.GetCustomerPage(page, sortKey, descending.GetValueOrDefault(), ct);
+        return TypedResults.Ok(customers);
     }
 
     private static async Task<Results<Ok<GetCustomerOptionsDto>, BadRequest>> SearchCustomerOptions(

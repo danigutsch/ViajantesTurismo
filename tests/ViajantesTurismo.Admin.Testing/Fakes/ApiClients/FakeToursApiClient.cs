@@ -9,6 +9,7 @@ namespace ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 public sealed class FakeToursApiClient : IToursApiClient
 {
     private readonly List<GetTourDto> _tours = [];
+    private readonly List<(int Page, TourPageSort Sort, bool Descending)> _tourPageRequests = [];
     private Exception? _createTourException;
     private HttpOutcome? _createTourOutcome;
     private Exception? _getTourByIdException;
@@ -16,6 +17,7 @@ public sealed class FakeToursApiClient : IToursApiClient
     private HttpOutcome<GetTourDto>? _getTourByIdOutcome;
     private Exception? _getToursException;
     private HttpOutcome<GetTourDto[]>? _getToursOutcome;
+    private HttpOutcome<GetTourPageDto>? _getTourPageOutcome;
     private Func<TourOptionSearchDto, CancellationToken, Task<HttpOutcome<GetTourOptionsDto>>>? _searchTourOptionsHandler;
     private Exception? _updateTourException;
     private HttpOutcome? _updateTourOutcome;
@@ -24,6 +26,9 @@ public sealed class FakeToursApiClient : IToursApiClient
     {
         get; private set;
     }
+
+    /// <summary>Gets the page requests made by the overview grid.</summary>
+    public IReadOnlyList<(int Page, TourPageSort Sort, bool Descending)> TourPageRequests => _tourPageRequests.AsReadOnly();
 
     public Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue)
     {
@@ -42,6 +47,39 @@ public sealed class FakeToursApiClient : IToursApiClient
 
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _tours.Take(maxItems).ToArray()));
     }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetTourPageDto>> GetTourPage(int page, TourPageSort sort, bool descending, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        _tourPageRequests.Add((page, sort, descending));
+        if (_getTourPageOutcome is not null)
+        {
+            return Task.FromResult(_getTourPageOutcome);
+        }
+
+        var window = PageWindow.Create(page, ContractConstants.TourListPageSize, _tours.Count);
+        var ordered = sort switch
+        {
+            TourPageSort.Identifier => OrderTours(tour => tour.Identifier, descending),
+            TourPageSort.Name => OrderTours(tour => tour.Name, descending),
+            TourPageSort.StartDate => OrderTours(tour => tour.StartDate, descending),
+            TourPageSort.EndDate => OrderTours(tour => tour.EndDate, descending),
+            TourPageSort.Price => OrderTours(tour => tour.Price, descending),
+            TourPageSort.CurrentCustomerCount => OrderTours(tour => tour.CurrentCustomerCount, descending),
+            _ => _tours.OrderByDescending(tour => tour.Id)
+        };
+        var rows = ordered.ThenByDescending(tour => tour.Id)
+            .Skip(window.Skip).Take(window.Take).Select(DtoBuilders.ToTourListItem).ToArray();
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetTourPageDto(rows, window.Total)));
+    }
+
+    private IOrderedEnumerable<GetTourDto> OrderTours<TKey>(Func<GetTourDto, TKey> key, bool descending) =>
+        descending ? _tours.OrderByDescending(key) : _tours.OrderBy(key);
+
+    /// <summary>Configures an explicit response for requests from the overview grid.</summary>
+    /// <param name="outcome">The response to return.</param>
+    public void SetGetTourPageOutcome(HttpOutcome<GetTourPageDto> outcome) => _getTourPageOutcome = outcome;
 
     public Task<HttpOutcome<GetTourOptionsDto>> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct)
     {

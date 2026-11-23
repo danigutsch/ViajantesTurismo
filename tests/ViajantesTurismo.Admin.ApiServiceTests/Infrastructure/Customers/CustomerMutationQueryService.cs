@@ -17,11 +17,19 @@ internal sealed class CustomerMutationQueryService(
     public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
+    public Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct) =>
         throw new NotSupportedException();
 
     /// <inheritdoc />
     public Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct) =>
+        throw new NotSupportedException();
 
     /// <inheritdoc />
     public Task<GetTourOptionsDto> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct) => throw new NotSupportedException();
@@ -41,6 +49,14 @@ internal sealed class CustomerMutationQueryService(
     /// <inheritdoc />
     public Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetTourBookingPage(Guid tourId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetCustomerBookingPage(Guid customerId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
     public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct) => throw new NotSupportedException();

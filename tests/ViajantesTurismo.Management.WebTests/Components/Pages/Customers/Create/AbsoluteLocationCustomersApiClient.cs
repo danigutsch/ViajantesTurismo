@@ -10,8 +10,15 @@ internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
     public Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100) => throw new NotImplementedException();
 
     /// <inheritdoc />
+    public Task<HttpOutcome<GetCustomerPageDto>> GetCustomerPage(int page, CustomerPageSort sort, bool descending, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<HttpOutcome<GetCustomerOptionsDto>> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct) =>
         throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<Guid?[]>> FindCustomerImportConflictIds(string[] emails, CancellationToken ct) => throw new NotImplementedException();
 
     /// <inheritdoc />
     public Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct) => throw new NotImplementedException();

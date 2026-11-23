@@ -59,6 +59,11 @@ internal static class ToursOpenApiDocumentClient
             throw new InvalidOperationException("The tours option search path is missing a required POST operation.");
         }
 
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/page", out var pagePath) || pagePath.Get is null)
+        {
+            throw new InvalidOperationException("The tours page path is missing a required GET operation.");
+        }
+
         var createTourSchemaReference = toursPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var updateTourSchemaReference = tourByIdPath.Put.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var searchTourOptionsSchemaReference = optionsSearchPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
@@ -77,7 +82,8 @@ internal static class ToursOpenApiDocumentClient
             createTourSchemaReference,
             updateTourSchemaReference,
             optionsSearchPath.Post.OperationId,
-            searchTourOptionsSchemaReference);
+            searchTourOptionsSchemaReference,
+            pagePath.Get.OperationId);
     }
 
     private static async Task<ToursOpenApiDocumentDto?> ReadDocument(string documentPath, CancellationToken ct)

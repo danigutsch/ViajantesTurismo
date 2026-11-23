@@ -109,6 +109,14 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         return await new CustomerStore(dbContext).GetByEmail(email, ct);
     }
 
+    /// <summary>Resolves customer import conflict keys through the real customer store.</summary>
+    public async Task<Guid?[]> FindImportConflictIds(IReadOnlyList<string> emails, CancellationToken ct)
+    {
+        await using var dbContext = CreateDbContext();
+        var detector = new CustomerImportConflictDetector(new CustomerStore(dbContext));
+        return await detector.FindExistingCustomerIds(emails, ct);
+    }
+
     /// <summary>Counts the stored customers.</summary>
     public async Task<int> CountCustomers(CancellationToken ct)
     {

@@ -50,9 +50,19 @@ internal static class BookingEndpoints
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata("GetBookingsByTourId", "Retrieves all bookings for a specific tour.", "Retrieves all bookings for a specific tour.");
 
+        bookingsGroup.MapGet("/tour/{tourId:guid}/page", GetTourBookingPage)
+            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
+            .WithAdminMetadata(nameof(GetTourBookingPage), "Retrieves a page from a tour's booking history.",
+                "Retrieves bookings for the requested tour. The optional page number is one-based.");
+
         bookingsGroup.MapGet("/customer/{customerId:guid}", GetBookingsByCustomerId)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata("GetBookingsByCustomerId", "Retrieves all bookings for a specific customer (as primary or companion).", "Retrieves all bookings for a specific customer.");
+
+        bookingsGroup.MapGet("/customer/{customerId:guid}/page", GetCustomerBookingPage)
+            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
+            .WithAdminMetadata(nameof(GetCustomerBookingPage), "Retrieves a page from a customer's booking history.",
+                "Retrieves bookings where the customer is principal or companion. The optional page number is one-based.");
 
         bookingsGroup.MapCreateBookingEndpoint();
 
@@ -84,8 +94,7 @@ internal static class BookingEndpoints
         HttpContext context,
         CancellationToken ct)
     {
-        var sortKey = BookingPageSort.Default;
-        if (sort is not null && (!Enum.TryParse(sort, ignoreCase: true, out sortKey) || !Enum.IsDefined(sortKey)))
+        if (!TryReadSort(sort, out var sortKey))
         {
             return TypedResults.BadRequest();
         }
@@ -136,6 +145,56 @@ internal static class BookingEndpoints
     {
         var bookings = await queryService.GetBookingsByCustomerId(customerId, ct);
         return TypedResults.Ok(WithResourceLinks(bookings, context, linkGenerator));
+    }
+
+    private static async Task<Results<Ok<GetBookingHistoryPageDto>, BadRequest>> GetTourBookingPage(
+        [FromRoute] Guid tourId,
+        [FromQuery] string? page,
+        [FromQuery] string? sort,
+        [FromQuery] bool? descending,
+        [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        if (!TryReadSort(sort, out var sortKey))
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var history = await queryService.GetTourBookingPage(tourId, page, sortKey, descending.GetValueOrDefault(), ct);
+        return TypedResults.Ok(history with
+        {
+            Items = WithResourceLinks(history.Items, context, linkGenerator)
+        });
+    }
+
+    private static async Task<Results<Ok<GetBookingHistoryPageDto>, BadRequest>> GetCustomerBookingPage(
+        [FromRoute] Guid customerId,
+        [FromQuery] string? page,
+        [FromQuery] string? sort,
+        [FromQuery] bool? descending,
+        [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        if (!TryReadSort(sort, out var sortKey))
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var history = await queryService.GetCustomerBookingPage(customerId, page, sortKey, descending.GetValueOrDefault(), ct);
+        return TypedResults.Ok(history with
+        {
+            Items = WithResourceLinks(history.Items, context, linkGenerator)
+        });
+    }
+
+    private static bool TryReadSort(string? sort, out BookingPageSort sortKey)
+    {
+        sortKey = BookingPageSort.Default;
+        return sort is null || (Enum.TryParse(sort, ignoreCase: true, out sortKey) && Enum.IsDefined(sortKey));
     }
 
     private static IReadOnlyList<GetBookingDto> WithResourceLinks(
