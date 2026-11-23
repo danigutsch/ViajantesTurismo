@@ -55,6 +55,8 @@
 
     <ItemGroup>
         <Compile Include="../fixtures/reproduction/ReproductionFixtureEnvironment.cs" Link="Reproduction/ReproductionFixtureEnvironment.cs" />
+        <Compile Include="../fixtures/hosting/EntryPointHost.cs" Link="Infrastructure/EntryPointHost.cs" />
+        <Compile Include="../fixtures/hosting/HostBuiltObserver.cs" Link="Infrastructure/HostBuiltObserver.cs" />
     </ItemGroup>
 
     <ItemGroup>

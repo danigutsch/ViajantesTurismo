@@ -57,7 +57,7 @@ Local and CI validation path:
 - `dotnet test --project tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj`
   checks that the checked-in artifact exactly matches the generated document and that the registered
   serializer contexts are covered. CI runs the same tests.
-- The CI Lint job validates documentation links (`sharedkernel-repo verify-links`) and Markdown
+- The CI Lint job validates documentation links (`dotnet repo verify-links`) and Markdown
   (markdownlint) surrounding the artifact.
 
 ## Topology metadata

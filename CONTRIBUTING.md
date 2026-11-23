@@ -48,14 +48,14 @@ feat(api)!: remove legacy booking endpoint
 ```
 
 Commit messages can be checked locally with
-`dotnet tool run sharedkernel-ci -- verify-commit-message --file <path-to-commit-message-file>`.
+`dotnet ci verify-commit-message --file <path-to-commit-message-file>`.
 To check each local commit, save this hook as the file that `git rev-parse --git-path hooks/commit-msg`
 prints and make it executable. That path follows `core.hooksPath`; when only the global Git
 configuration sets it, first set `core.hooksPath` in this repository to a directory of its own.
 
 ```sh
 #!/bin/sh
-exec dotnet tool run sharedkernel-ci -- verify-commit-message --file "$1"
+exec dotnet ci verify-commit-message --file "$1"
 ```
 
 ## Signed Commits
@@ -125,17 +125,17 @@ Run the checks relevant to your changes:
 
   ```bash
   shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh
-  dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
-  dotnet tool run sharedkernel-repo -- verify-line-endings --root .
-  dotnet tool run sharedkernel-repo -- verify-json --root .
-  dotnet tool run sharedkernel-repo -- verify-links --root .
-  dotnet tool run sharedkernel-repo -- verify-gherkin --root .
-  dotnet tool run sharedkernel-repo -- verify --root .
-  dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
-  dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
+  dotnet repo verify-text-encoding --root .
+  dotnet repo verify-line-endings --root .
+  dotnet repo verify-json --root .
+  dotnet repo verify-links --root .
+  dotnet repo verify-gherkin --root .
+  dotnet repo verify --root .
+  dotnet docs verify --config docs/architecture/generated-diagrams.json
+  dotnet docs check --config docs/architecture/documentation-conformance.json
   ```
 
-- Documentation links: `dotnet tool run sharedkernel-repo -- verify-links --root .` for focused local relative
+- Documentation links: `dotnet repo verify-links --root .` for focused local relative
   link, anchor, and durable GitHub issue/PR reference policy checks
 - `scripts/` holds only the SDK bootstrap scripts. Remove untracked local Git hooks that call a lint script
   under `scripts/`, or replace that call with the checks above

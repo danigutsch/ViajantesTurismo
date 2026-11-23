@@ -180,14 +180,14 @@ pull request that changes canonical roadmap data.
 The repo config tool also exposes project-style queries over roadmap data:
 
 ```bash
-dotnet tool run sharedkernel-repo -- get next-priority
-dotnet tool run sharedkernel-repo -- get next-unblocked --type issue
-dotnet tool run sharedkernel-repo -- get next-work
-dotnet tool run sharedkernel-repo -- get blockers-of RM-004
-dotnet tool run sharedkernel-repo -- get next-blockers
-dotnet tool run sharedkernel-repo -- get low-hanging-fruit
-dotnet tool run sharedkernel-repo -- get tags
-dotnet tool run sharedkernel-repo -- get by-label "area: tooling"
+dotnet repo get next-priority
+dotnet repo get next-unblocked --type issue
+dotnet repo get next-work
+dotnet repo get blockers-of RM-004
+dotnet repo get next-blockers
+dotnet repo get low-hanging-fruit
+dotnet repo get tags
+dotnet repo get by-label "area: tooling"
 ```
 
 Use `get next-work` for the local executable queue: it promotes unblocked work that
@@ -200,15 +200,15 @@ removes open blockers, then uses canonical order and RICE to break ties. Use
 Use the .NET repo config tool for local setup and verification:
 
 ```bash
-dotnet tool run sharedkernel-repo -- verify
-dotnet tool run sharedkernel-repo -- diff
-dotnet tool run sharedkernel-repo -- init
-dotnet tool run sharedkernel-repo -- set github.repository danigutsch/ViajantesTurismo
-dotnet tool run sharedkernel-repo -- github sync
-dotnet tool run sharedkernel-repo -- github reconcile
-dotnet tool run sharedkernel-repo -- github reconcile --force
-dotnet tool run sharedkernel-repo -- github import
-dotnet tool run sharedkernel-repo -- github import --force
+dotnet repo verify
+dotnet repo diff
+dotnet repo init
+dotnet repo set github.repository danigutsch/ViajantesTurismo
+dotnet repo github sync
+dotnet repo github reconcile
+dotnet repo github reconcile --force
+dotnet repo github import
+dotnet repo github import --force
 ```
 
 The first implementation avoids regular helper scripts and extra package

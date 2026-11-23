@@ -39,7 +39,7 @@ internal sealed class PaymentTestSession : IAsyncDisposable
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { DisableDefaults = true });
         builder.AddApplication();
         var services = builder.Services;
-        services.AddSharedKernelMediator();
+        services.AddMediator();
         services.AddSingleton<ViajantesTurismo.Admin.Application.Branding.IBrandingProjectionStore, PaymentTestBrandingProjection>();
         services.AddSingleton(clock);
         services.AddSingleton(protection);

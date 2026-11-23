@@ -53,7 +53,7 @@ Use nested `AGENTS.md` files for scoped rules.
     prefer `--filter-class`, `--filter-method`, `--filter-namespace`, and `--filter-trait`
     over legacy VSTest filters.
 - Commit messages must pass
-    `dotnet tool run sharedkernel-ci -- verify-commit-message --file <path>`;
+    `dotnet ci verify-commit-message --file <path>`;
     use Conventional Commits, keep the header at or under 100 characters,
     and wrap every body line to 100 characters or less.
 - Put test-host arguments after `--` when required.
@@ -61,8 +61,8 @@ Use nested `AGENTS.md` files for scoped rules.
     `Format` job and requires 90% coverage of changed lines in `Quality Gate`; run the format check before pushing and
     give every new branch a test. See `docs/ci/quality-gates.md`.
 - Docs/scripts/spec quality checks run in the CI Lint job: shellcheck, markdownlint,
-    `sharedkernel-repo verify-text-encoding|verify-line-endings|verify-json|verify-links|verify-gherkin|verify-dependabot|verify`,
-    and `sharedkernel-docs verify|check`.
+    `dotnet repo verify-text-encoding|verify-line-endings|verify-json|verify-links|verify-gherkin|verify-dependabot|verify`,
+    and `dotnet docs verify|check`.
 
 ## Local worktrees
 
@@ -76,7 +76,7 @@ Use nested `AGENTS.md` files for scoped rules.
 - `tests/ViajantesTurismo.ArchitectureTests/Repository/DocumentationCiTests.cs` runs the `Quality Gate` script from
     `.github/workflows/ci.yml`; changing that script (for example adding a required job result) needs the test updated.
 - After changing `ci.yml`, refresh the generated diagrams:
-    `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`.
+    `dotnet docs generate --config docs/architecture/generated-diagrams.json`.
 - A new rejection path in a document command handler needs its reason code allowed for that operation in
     `DocumentAuditRecord`; otherwise the audit write fails and hides the real result.
 - Documentation must not contain bare `#NNN` issue references; the link check rejects them.

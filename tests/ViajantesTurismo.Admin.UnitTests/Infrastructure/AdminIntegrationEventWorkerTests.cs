@@ -1,3 +1,5 @@
+extern alias AdminWorker;
+
 using System.Text;
 using System.Text.Json;
 using PandaBear.Testing;
@@ -5,6 +7,8 @@ using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.UnitTests.Application.Branding;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
+using ViajantesTurismo.Resources;
+using ViajantesTurismo.Testing.Hosting;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
@@ -15,16 +19,25 @@ public sealed class AdminIntegrationEventWorkerTests
     public void The_admin_worker_runs_one_catalog_transport_consumer()
     {
         // Arrange
-        using var scenario = AdminIntegrationEventWorkerScenario.ComposeWorker();
+        var assembly = typeof(AdminWorker::ViajantesTurismo.Admin.IntegrationEventWorker.AdminWorkerIntegrationEvents).Assembly;
+        string[] args =
+        [
+            "--environment=Production",
+            $"--ConnectionStrings:{ResourceNames.AdminDatabase}=Host=localhost;Database=admin;Username=test;Password=test",
+            $"--ConnectionStrings:{ResourceNames.CatalogDatabase}=Host=localhost;Database=catalog;Username=test;Password=test"
+        ];
 
         // Act
-        var hostedServices = scenario.HostedServiceNames()
-            .Where(name => name.Contains("IntegrationEvent", StringComparison.Ordinal)
-                           || name.Contains("Retention", StringComparison.Ordinal))
-            .ToArray();
+        using var host = EntryPointHost.Build(assembly, args);
 
         // Assert
-        hostedServices.ShouldBe(["PostgreSqlIntegrationEventTransportConsumerHostedService`1<AdminBrandingTransportDbContext>"]);
+        var workers = host.HostedServiceTypes
+            .Where(type => type.Name.Contains("IntegrationEvent", StringComparison.Ordinal)
+                           || type.Name.Contains("Retention", StringComparison.Ordinal));
+        var worker = workers.ShouldHaveSingleItem();
+        worker.Name.ShouldBe("PostgreSqlIntegrationEventTransportConsumerHostedService`1");
+        worker.GenericTypeArguments.ShouldBe([typeof(AdminBrandingTransportDbContext)]);
+        host.HasHealthCheck("self", "live").ShouldBeTrue();
     }
 
     [Fact]

@@ -6,15 +6,20 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The published candidate is [`0.1.0-alpha.727.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.727.1)
+The pin uses [published candidate `0.1.0-alpha.774.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.774.1)
 at clean library revision
-[`3f3122727c6c4e9627e3e34b9e3c433e4b316932`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/3f3122727c6c4e9627e3e34b9e3c433e4b316932).
-Admin commands can declare transaction locks without an Entity Framework dependency. The consumer verifier validates
-the committed lock exemptions in the selected solution. The SDK stays at 11.0.100.
-The [published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45034665982)
+[`3c5e0df4ef801809449ea47372ce2c129c245acd`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/3c5e0df4ef801809449ea47372ce2c129c245acd).
+This candidate updates the host, observability and mediator registration names and adopts the
+short .NET tool commands. The package IDs and SDK 11.0.100 stay the same.
+The [published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45174602104)
 records Linux and Windows package consumption and NativeAOT for this candidate.
 
 ## Earlier candidates
+
+Candidate [`0.1.0-alpha.727.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.727.1)
+let Admin commands declare transaction locks without an Entity Framework dependency. The consumer verifier
+also began validating committed lock exemptions for the selected solution.
+[Published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45034665982)
 
 Candidate [`0.1.0-alpha.719.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.719.1)
 introduced the optional BFF cache concurrency contract. Management Web uses it for conditional replacement and deletion
@@ -144,7 +149,7 @@ Then validate the application:
 
 ```sh
 dotnet build ViajantesTurismo.slnx -c Release --no-restore
-dotnet tool run sharedkernel-ci -- openapi generate
+dotnet ci openapi generate
 dotnet test --solution ViajantesTurismo.slnx -c Release --no-build --no-restore
 ```
 
@@ -162,8 +167,8 @@ in an application worktree. Stage the exact artifacts, run the application check
 those changes, and record compatibility using:
 
 ```sh
-dotnet tool run sharedkernel-version -- verify-consumer --candidate .local/sharedkernel-feed/candidate.json -- \
-  bash -c 'dotnet tool restore && dotnet restore ViajantesTurismo.slnx --locked-mode && dotnet tool run sharedkernel-ci -- openapi generate && dotnet test --solution ViajantesTurismo.slnx -c Release'
+dotnet release verify-consumer --candidate .local/sharedkernel-feed/candidate.json -- \
+  bash -c 'dotnet tool restore && dotnet restore ViajantesTurismo.slnx --locked-mode && dotnet ci openapi generate && dotnet test --solution ViajantesTurismo.slnx -c Release'
 ```
 
 The example uses Bash on Unix. Run tool restore and OpenAPI generation inside the verified command,
@@ -260,15 +265,15 @@ Linux and Windows must consume the same hashed packages. Record platform tests a
 separately; an unavailable platform remains pending. Registry publication remains deferred: this
 workflow consumes GitHub release assets and publishes nothing to nuget.org.
 
-Generic commands use `dotnet tool run sharedkernel-repo -- <command>` and documentation commands use
-`dotnet tool run sharedkernel-docs -- <command>`. Endpoint metadata methods and audience classification
+Generic commands use `dotnet repo <command>` and documentation commands use
+`dotnet docs <command>`. Endpoint metadata methods and audience classification
 are consumer settings in `docs/architecture/generated-diagrams.json`. Shared telemetry privacy processors
 always enforce the baseline, with additional business-sensitive attribute policy supplied by ServiceDefaults.
 
 ## Shared security tooling
 
 Security baseline checking and deterministic scanner orchestration are provided by the pinned
-`sharedkernel-repo security` commands. Application document contracts, endpoint policies, CI
+`dotnet repo security` commands. Application document contracts, endpoint policies, CI
 permissions, and runtime security tests remain here. SharedKernel also uses the same implementation
 for its own baseline. The Linux scanner installer pins and verifies Gitleaks separately from NuGet
 packages; see [the application baseline](../security/security-baseline.md).

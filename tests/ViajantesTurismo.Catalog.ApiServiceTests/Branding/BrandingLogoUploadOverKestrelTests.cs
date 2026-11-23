@@ -173,20 +173,21 @@ public sealed class BrandingLogoUploadOverKestrelTests
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         var scanProbe = new BrandingLeaseScanProbe();
-        await using var scenario = BrandingLogoKestrelScenario.Start(scanProbe.Scanner, requestTimeout: TimeSpan.FromSeconds(2));
+        await using var scenario = BrandingLogoKestrelScenario.Start(scanProbe.Scanner, requestTimeout: TimeSpan.FromSeconds(10));
         using var upload = new RawHttpUpload();
         var body = BrandingTestImages.CreateUncompressedLogoPng();
         await scenario.SendPartialUpload(upload, body, body.Length, ct);
         var (lease, scanCancellation) = await scanProbe.WaitForScan(ct);
+        var file = lease.ShouldBeOfType<FileStream>();
+        file.CanRead.ShouldBeTrue();
 
         // Act
-        var response = await BrandingLogoKestrelScenario.ReadStatusOrAbort(upload, TimeSpan.FromSeconds(8), ct);
+        var response = await BrandingLogoKestrelScenario.ReadStatusOrAbort(upload, WireTimeout.Default, ct);
         await scenario.Probe.Finished.WaitAsync(WireTimeout.Default, ct);
 
         // Assert
         response.ShouldBe("HTTP/1.1 504 Gateway Timeout");
         scanCancellation.IsCancellationRequested.ShouldBeTrue();
-        var file = lease.ShouldBeOfType<FileStream>();
         file.CanRead.ShouldBeFalse();
         File.Exists(file.Name).ShouldBeFalse();
         scenario.Store.Logos.ShouldBeEmpty();

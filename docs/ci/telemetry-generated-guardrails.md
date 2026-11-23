@@ -17,7 +17,7 @@ CI does not maintain a separate library test lane.
   behavior and composition against the pinned candidate.
 
 These projects remain in the application test slices declared in `.config/sharedkernel-ci.json`.
-`sharedkernel-ci select` requires every application test project to belong to exactly one slice.
+`dotnet ci select` requires every application test project to belong to exactly one slice.
 
 ## Library changes and adoption
 

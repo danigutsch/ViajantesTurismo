@@ -19,7 +19,7 @@ public sealed class SecurityWorkflowContractTests
 
         // Assert
         publication.ShouldBeGreaterThan(0);
-        scanner.ShouldContain("sharedkernel-repo -- security scan", StringComparison.Ordinal);
+        scanner.ShouldContain("dotnet repo security scan", StringComparison.Ordinal);
         scanner.ShouldContain("setup-security-scanner@", StringComparison.Ordinal);
         scanner.ShouldNotContain("security-events: write", StringComparison.Ordinal);
         scanner.ShouldNotContain("contents: write", StringComparison.Ordinal);

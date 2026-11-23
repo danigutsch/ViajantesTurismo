@@ -223,7 +223,7 @@ See [Reqnroll: Reporting][reporting] for advanced reporting options.
 
 ### Enforced Rules
 
-`sharedkernel-repo verify-gherkin` checks the tracked `.feature` files under `tests/`:
+`dotnet repo verify-gherkin` checks the tracked `.feature` files under `tests/`:
 
 - every tag on a tag line matches an `allowedTagPatterns` entry of the `gherkin` section of
   `.config/sharedkernel-repo.json` as a whole, and forbidden tags such as `@skip` are rejected
@@ -242,10 +242,10 @@ The CI Lint job runs the same command:
 
 ```powershell
 # Validate all tracked feature files
-dotnet tool run sharedkernel-repo -- verify-gherkin --root .
+dotnet repo verify-gherkin --root .
 
 # Validate one directory or file
-dotnet tool run sharedkernel-repo -- verify-gherkin tests/ViajantesTurismo.Admin.BehaviorTests --root .
+dotnet repo verify-gherkin tests/ViajantesTurismo.Admin.BehaviorTests --root .
 ```
 
 **Configuration:** The allowed tag patterns, forbidden tags, and name lengths are the `gherkin`

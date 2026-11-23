@@ -95,8 +95,8 @@ Implication for this repo:
 ### Human-facing surfaces
 
 - skip steps append short summary notes to `GITHUB_STEP_SUMMARY`
-- `sharedkernel-ci run --github-summary` appends a phase table for each slice
-- changed-code coverage emits a result and JSON evidence through `sharedkernel-ci coverage verify`
+- `dotnet ci run --github-summary` appends a phase table for each slice
+- changed-code coverage emits a result and JSON evidence through `dotnet ci coverage verify`
 
 ### Machine-facing surfaces
 

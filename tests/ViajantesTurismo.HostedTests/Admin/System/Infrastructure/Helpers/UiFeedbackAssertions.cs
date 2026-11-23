@@ -38,15 +38,13 @@ internal sealed class UiFeedbackAssertions(IPage page)
     }
 
     /// <summary>
-    /// Verifies that the standard timed redirect alert is visible and cancellable.
+    /// Locates a redirect alert with the exact, visible feedback text.
     /// </summary>
     /// <param name="expectedText">The expected redirect message.</param>
-    public async Task ExpectRedirectAlert(string expectedText = "Redirecting to bookings page in 3 seconds...")
-    {
-        var redirectAlert = page.Locator(".alert-info").Filter(new LocatorFilterOptions { HasText = "Redirecting" });
-        await redirectAlert.WaitForAsync();
-        var assertionTarget1 = await redirectAlert.InnerTextAsync();
-        assertionTarget1.ShouldContain(expectedText, StringComparison.Ordinal);
-        await redirectAlert.GetButton("Cancel").WaitForAsync();
-    }
+    public ILocator GetRedirectAlert(string expectedText) =>
+        page.GetByRole(AriaRole.Alert).Filter(new LocatorFilterOptions
+        {
+            Has = page.GetByText(expectedText, new PageGetByTextOptions { Exact = true })
+                .Filter(new LocatorFilterOptions { Visible = true })
+        });
 }

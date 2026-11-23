@@ -174,7 +174,7 @@ Mutation-testing note:
   projects. Run all configured targets from the repository root:
 
 ```bash
-dotnet tool run sharedkernel-ci -- run-mutation-tests
+dotnet ci run-mutation-tests
 ```
 
 Do not gate CI on this while Stryker.NET MTP support remains in preview.
@@ -188,8 +188,8 @@ This repository uses `coverlet.MTP` for xUnit v3 test projects on Microsoft.Test
 Generate fresh Cobertura coverage for every test project, then merge it into an HTML report:
 
 ```bash
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --coverage
+dotnet ci select
+dotnet ci run --coverage
 dotnet tool run reportgenerator "-reports:TestResults/selection/execution/results/**/*.cobertura*.xml" \
     "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```
@@ -743,8 +743,8 @@ Code coverage uses `coverlet.MTP` with Microsoft.Testing.Platform. Collection se
 
 ```bash
 # Collect per-project Cobertura through the CI engine, then aggregate
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --coverage
+dotnet ci select
+dotnet ci run --coverage
 dotnet tool run reportgenerator "-reports:TestResults/selection/execution/results/**/*.cobertura*.xml" \
     "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```
@@ -780,8 +780,8 @@ dotnet test --project tests/ViajantesTurismo.HostedTests --filter-class Conditio
 
 ```bash
 # All tests with Cobertura coverage and an aggregated HTML report
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --coverage
+dotnet ci select
+dotnet ci run --coverage
 dotnet tool run reportgenerator "-reports:TestResults/selection/execution/results/**/*.cobertura*.xml" \
     "-targetdir:TestResults/CoverageReport" "-reporttypes:Html;Cobertura"
 ```
@@ -826,7 +826,7 @@ serialization first; check the daemon.
 **Check and recover.**
 
 ```bash
-dotnet tool run sharedkernel-repo -- verify-podman-dns
+dotnet repo verify-podman-dns
 # exits 1 when stale state is detected
 ```
 

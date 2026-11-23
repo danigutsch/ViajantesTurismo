@@ -79,7 +79,7 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
         services.AddSingleton<IDocumentPurgeEvidenceStore>(new FakeDocumentPurgeEvidenceStore());
         services.AddSingleton<IUnitOfWork>(new FakeUnitOfWork());
         services.AddScoped<DocumentPurgeRunner>();
-        services.AddSharedKernelMediator();
+        services.AddMediator();
         var provider = services.BuildServiceProvider();
 
         return new DocumentDraftRetentionHostedServiceFixture(provider, store);

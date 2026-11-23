@@ -84,7 +84,7 @@ internal static class AdminInfrastructureModuleTestServices
 
         builder.AddApplication();
         builder.AddInfrastructure();
-        builder.Services.AddSharedKernelMediator();
+        builder.Services.AddMediator();
 
         return CreateScope(BuildValidatedServiceProvider(builder.Services));
     }
@@ -104,7 +104,7 @@ internal static class AdminInfrastructureModuleTestServices
         var builder = CreateConfiguredApplicationBuilder();
         builder.AddApplication();
         builder.AddInfrastructure(addRuntimeBackgroundServices: false);
-        builder.Services.AddSharedKernelMediator();
+        builder.Services.AddMediator();
 
         return CreateScope(BuildValidatedServiceProvider(builder.Services));
     }

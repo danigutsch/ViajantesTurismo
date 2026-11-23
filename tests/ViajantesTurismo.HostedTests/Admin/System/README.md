@@ -14,12 +14,12 @@ dotnet build
 pwsh bin/Debug/net11.0/playwright.ps1 install
 ```
 
-On supported Ubuntu versions, `sharedkernel-ci` installs browser OS dependencies too, as CI does.
+On supported Ubuntu versions, `dotnet ci` installs browser OS dependencies too, as CI does.
 On Ubuntu 26.04, first set `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64` (or `ubuntu24.04-arm64`),
 because Playwright 1.60 has no Ubuntu 26.04 manifests yet:
 
 ```bash
-dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj \
+dotnet ci install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj \
     --browser chromium --with-dependencies
 ```
 

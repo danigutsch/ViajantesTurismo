@@ -298,7 +298,7 @@ payloads, scripts, or arbitrary URL-bearing CSS.
 
 ## OpenAPI ownership through co-hosting
 
-`dotnet tool run sharedkernel-ci -- openapi refresh --target branding` regenerates the Branding
+`dotnet ci openapi refresh --target branding` regenerates the Branding
 artifacts. The `branding` target in `.config/sharedkernel-ci.json` builds Catalog.Api's
 Branding-only document generation mode. Canonical `branding` and `public-branding` artifacts remain
 under `ViajantesTurismo.Branding.Contracts.Http/OpenApi` and remain owned by Branding contracts;

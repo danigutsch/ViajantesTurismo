@@ -70,12 +70,12 @@ The repository contains local smoke targets for contained unit-test and Roslyn a
 - Stryker.NET version: `mutation.strykerVersion` (`5.0.0`), installed on first use under
   `TestResults/tools/dotnet-stryker/<version>` and kept out of the tool manifest
 - runner: `mtp`
-- command: `dotnet tool run sharedkernel-ci -- run-mutation-tests`
+- command: `dotnet ci run-mutation-tests`
 
 Run all configured smoke targets from the repository root:
 
 ```bash
-dotnet tool run sharedkernel-ci -- run-mutation-tests
+dotnet ci run-mutation-tests
 ```
 
 The command stops at the first failing config and prints each config's output when its run ends.

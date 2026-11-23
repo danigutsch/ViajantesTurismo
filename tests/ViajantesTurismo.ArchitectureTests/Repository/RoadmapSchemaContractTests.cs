@@ -12,7 +12,7 @@ public sealed class RoadmapSchemaContractTests
         // Arrange
         using var workspace = new TemporaryWorkspace();
         var init = await TestProcess.Run("dotnet", RepositoryRoot.Locate(),
-            ["tool", "run", "sharedkernel-repo", "--", "init", "--root", workspace.RootPath], TestContext.Current.CancellationToken);
+            ["repo", "init", "--root", workspace.RootPath], TestContext.Current.CancellationToken);
         init.ExitCode.ShouldBe(0, init.StandardOutput + init.StandardError);
 
         using var configDocument = JsonDocument.Parse(RoadmapConfigSchemaTestFiles.ReadCheckedInConfig());
@@ -38,7 +38,7 @@ public sealed class RoadmapSchemaContractTests
         // Arrange
         using var workspace = new TemporaryWorkspace();
         var init = await TestProcess.Run("dotnet", RepositoryRoot.Locate(),
-            ["tool", "run", "sharedkernel-repo", "--", "init", "--root", workspace.RootPath], TestContext.Current.CancellationToken);
+            ["repo", "init", "--root", workspace.RootPath], TestContext.Current.CancellationToken);
         init.ExitCode.ShouldBe(0, init.StandardOutput + init.StandardError);
 
         using var checkedInSchemaDocument = JsonDocument.Parse(RoadmapConfigSchemaTestFiles.ReadCheckedInItemSchema());

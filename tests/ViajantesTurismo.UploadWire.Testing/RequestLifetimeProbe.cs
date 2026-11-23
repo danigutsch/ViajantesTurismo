@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace ViajantesTurismo.UploadWire.Testing;
 
 /// <summary>
@@ -23,10 +25,10 @@ public sealed class RequestLifetimeProbe(string pathSuffix)
     /// <summary>Completes when the request cancellation token of the observed request fires.</summary>
     public Task Aborted => aborted.Task;
 
-    /// <summary>Completes when the pipeline has returned for the observed request.</summary>
+    /// <summary>Completes after Kestrel finalizes the response status for the observed request.</summary>
     public Task Finished => finished.Task;
 
-    /// <summary>Gets the response status code set when the pipeline returned.</summary>
+    /// <summary>Gets the final response status code for the observed request.</summary>
     public int StatusCode
     {
         get; private set;
@@ -76,10 +78,10 @@ public sealed class RequestLifetimeProbe(string pathSuffix)
     }
 
     /// <summary>
-    /// Gets whether the pipeline observed the client disappearing mid-body: either the request token fired, or the
-    /// framework answered the incomplete body with <c>400</c> before the token callback ran.
+    /// Gets whether the request token fired or Kestrel recorded an incomplete or client-closed request.
     /// </summary>
-    public bool DisconnectObserved => aborted.Task.IsCompleted || StatusCode == 400;
+    public bool DisconnectObserved => aborted.Task.IsCompleted
+        || StatusCode is StatusCodes.Status400BadRequest or StatusCodes.Status499ClientClosedRequest;
 
     /// <summary>Records the started event.</summary>
     internal void OnStarted() => started.TrySetResult();
@@ -87,7 +89,7 @@ public sealed class RequestLifetimeProbe(string pathSuffix)
     /// <summary>Records the aborted event.</summary>
     internal void OnAborted() => aborted.TrySetResult();
 
-    /// <summary>Records that the pipeline returned with the given status code.</summary>
+    /// <summary>Records the final response status of the observed request.</summary>
     internal void OnFinished(int statusCode)
     {
         StatusCode = statusCode;

@@ -31,6 +31,7 @@ public sealed class SharedKernelToolCallerTests
             ".github/workflows/ci.yml",
             ".github/workflows/dependency-review.yml",
             ".github/workflows/devcontainer-smoke.yml",
+            ".github/workflows/release-prep.yml",
             ".github/workflows/roadmap-maintenance.yml",
             ".github/workflows/sync-labels.yml",
             "opencode.json",
@@ -40,23 +41,27 @@ public sealed class SharedKernelToolCallerTests
         ];
         string[] knownCommands =
         [
-            "sharedkernel-repo verify-text-encoding",
-            "sharedkernel-repo verify-line-endings",
-            "sharedkernel-repo verify-json",
-            "sharedkernel-repo verify-links",
-            "sharedkernel-repo verify-gherkin",
-            "sharedkernel-repo verify",
-            "sharedkernel-repo github sync-labels",
-            "sharedkernel-repo verify-devcontainer",
-            "sharedkernel-docs verify",
-            "sharedkernel-docs check",
-            "sharedkernel-docs generate",
-            "sharedkernel-ci select",
-            "sharedkernel-ci run",
-            "sharedkernel-k6 run",
+            "repo verify-text-encoding",
+            "repo verify-line-endings",
+            "repo verify-json",
+            "repo verify-links",
+            "repo verify-gherkin",
+            "repo verify",
+            "repo github sync-labels",
+            "repo verify-devcontainer",
+            "docs verify",
+            "docs check",
+            "docs generate",
+            "ci select",
+            "ci run",
+            "release calculate",
+            "browsermcp serve",
+            "loadtest run",
         ];
         knownCallers.Except(commandLines.Select(static line => line.Source)).ShouldBeEmpty("The scanner missed known callers.");
-        knownCommands.Where(command => !commandLines.Any(line => $"{line.Command} {string.Join(' ', line.Arguments)}".StartsWith(command + " ", StringComparison.Ordinal)))
+        var parsedCommands = commandLines.Select(static line => $"{line.Command} {string.Join(' ', line.Arguments)}").ToHashSet(StringComparer.Ordinal);
+        knownCommands.Where(command => !parsedCommands.Contains(command)
+            && !parsedCommands.Any(parsed => parsed.StartsWith(command + " ", StringComparison.Ordinal)))
             .ShouldBeEmpty("The scanner missed known commands.");
         failures.ShouldBeEmpty(string.Join(Environment.NewLine, failures));
     }

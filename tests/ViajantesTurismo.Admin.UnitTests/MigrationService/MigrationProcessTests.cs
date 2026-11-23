@@ -1,12 +1,35 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Admin.UnitTests.Infrastructure;
 using ViajantesTurismo.MigrationService;
+using ViajantesTurismo.Resources;
+using ViajantesTurismo.Testing.Hosting;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
 [Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class MigrationProcessTests
 {
+    [Fact]
+    public void The_default_entry_point_registers_health_checks_and_database_initialization()
+    {
+        // Arrange
+        var assembly = typeof(MigrationProcess).Assembly;
+        string[] args =
+        [
+            "--environment=Production",
+            $"--ConnectionStrings:{ResourceNames.AdminDatabase}=Host=localhost;Database=admin;Username=test;Password=test",
+            $"--ConnectionStrings:{ResourceNames.CatalogDatabase}=Host=localhost;Database=catalog;Username=test;Password=test",
+            $"--ConnectionStrings:{ResourceNames.SecurityDatabase}=Host=localhost;Database=security;Username=test;Password=test"
+        ];
+
+        // Act
+        using var host = EntryPointHost.Build(assembly, args);
+
+        // Assert
+        host.HasHealthCheck("self", "live").ShouldBeTrue();
+        host.Registers<DatabaseInitializationWorker>().ShouldBeTrue();
+    }
+
     [Fact]
     public async Task Returns_zero_after_successful_run_and_cleanup()
     {

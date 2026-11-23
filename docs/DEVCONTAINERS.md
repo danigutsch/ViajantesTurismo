@@ -34,7 +34,7 @@ The current lifecycle flow is:
 3. `postStartCommand` runs `.devcontainer/post-start.sh`, which trusts the development certificate
 
 `Directory.Build.props` moves `bin` and `obj` to `.build` when `REMOTE_CONTAINERS` is `true`. Builds that run with a
-minimal environment, such as OpenAPI generation through `sharedkernel-ci`, drop `REMOTE_CONTAINERS` unless the target
+minimal environment, such as OpenAPI generation through `dotnet ci`, drop `REMOTE_CONTAINERS` unless the target
 lists it in `preserveEnvironment`, so every `openApi` target of `.config/sharedkernel-ci.json` lists it and keeps its
 paths equal to the restore.
 
@@ -106,10 +106,10 @@ dotnet build ViajantesTurismo.slnx --no-restore
 ### Run the shared smoke validation locally
 
 To run the same non-interactive devcontainer smoke path used by CI, run the pinned
-`sharedkernel-repo` from the repository root after `dotnet tool restore`:
+`dotnet repo` from the repository root after `dotnet tool restore`:
 
 ```bash
-dotnet tool run sharedkernel-repo -- verify-devcontainer --exec 'dotnet --version && git --version && docker version --format "{{.Server.Version}}"' --root .
+dotnet repo verify-devcontainer --exec 'dotnet --version && git --version && docker version --format "{{.Server.Version}}"' --root .
 ```
 
 `verify-devcontainer`:
@@ -129,7 +129,7 @@ The `Devcontainer Smoke` workflow runs the same command:
 
 - weekly schedule and pushes run the toolchain check above
 - the monthly schedule runs full validation: the same check, then Chromium's runtime libraries and
-  every CI slice of `.config/sharedkernel-ci.json` one after another with `sharedkernel-ci run`
+  every CI slice of `.config/sharedkernel-ci.json` one after another with `dotnet ci run`
 - manual dispatch lets you choose either mode
 
 The full-mode commands are the `INSTALL_PLAYWRIGHT_DEPENDENCIES` and `RUN_TEST_SLICES` values in
@@ -148,7 +148,7 @@ The repository also has a supplemental `Devcontainer Smoke` workflow in
 `.github/workflows/devcontainer-smoke.yml`. It runs weekly, monthly in full mode, on manual dispatch,
 and on pushes to `main` that touch `.devcontainer/**`, `global.json`, `setup-dev.sh`, or the workflow.
 
-That workflow runs `sharedkernel-repo verify-devcontainer`, so local and CI smoke validation share
+That workflow runs `dotnet repo verify-devcontainer`, so local and CI smoke validation share
 the same bootstrap path.
 
 The command validates the non-interactive baseline by:

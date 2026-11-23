@@ -13,7 +13,7 @@ internal static class DatabaseObservabilityHostConfiguration
     /// <summary>Adds service defaults and, when enabled, PostgreSQL index-health monitoring for the Admin and Catalog databases.</summary>
     public static void Configure(IHostApplicationBuilder builder)
     {
-        builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
+        builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 
         var options = builder.Configuration
             .GetSection(PostgreSqlIndexHealthHostOptions.SectionName)

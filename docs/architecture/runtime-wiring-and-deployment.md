@@ -2,7 +2,7 @@
 
 Generation ownership: source/configuration in [generated-diagrams.json](generated-diagrams.json),
 with per-output sources in the [diagram inventory](generated-diagram-roadmap.md).
-Refresh: `dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`;
+Refresh: `dotnet docs generate --config docs/architecture/generated-diagrams.json`;
 check: the same command with `verify` instead of `generate`.
 Edit manual narrative outside generated markers; review under the
 [documentation governance policy](../DOCUMENTATION_GOVERNANCE.md#generated-output-review-and-finalization).
@@ -227,7 +227,7 @@ Release workflows own version and registry values. The AppHost owns the resource
 references, health checks, and local developer-tool wiring; it must not inspect Git tags, parse commit
 history, or become the release-version source.
 
-The release flow should calculate versions with `sharedkernel-version calculate-release`, then
+The release flow should calculate versions with `dotnet release calculate`, then
 pass the computed `package_version` into `aspire publish` as configuration, environment variables, or
 MSBuild properties. Application container resources can then use Aspire publish hooks such as
 `PublishAsDockerFile(...)`, `WithImageTag(...)`, `WithImageRegistry(...)`, and

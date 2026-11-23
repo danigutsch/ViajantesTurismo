@@ -30,9 +30,9 @@ Set that variable to the current repository CI baseline runner.
 
 For build-relevant changes, this job waits for selection, checks out full history, stages the pinned SharedKernel
 candidate through `setup-ci-prerequisites`, restores the local tools, and runs
-`dotnet tool run sharedkernel-version -- calculate-release` with its values passed through `env:`. The tool finds the latest `v*` SemVer tag when one exists;
+`dotnet release calculate` with its values passed through `env:`. The tool finds the latest `v*` SemVer tag when one exists;
 otherwise it uses `0.1.0` as the base while the repository has no versioned release tags. It feeds
-commit messages into `sharedkernel-version compute` and exposes the calculated SemVer, release impact,
+commit messages into `dotnet release compute` and exposes the calculated SemVer, release impact,
 package version, assembly version, file version, informational version, base version, source tag, and
 raw JSON as job outputs for later release workflow steps.
 
@@ -96,7 +96,7 @@ evidence. `Lint` validates Markdown, links, and line endings without running tes
 
 ### Detect Changes
 
-The required change classification is `sharedkernel-ci select`, built from the pinned SharedKernel
+The required change classification is `dotnet ci select`, built from the pinned SharedKernel
 source by `.github/actions/build-sharedkernel-tool` before any candidate is staged. It reads
 `.config/sharedkernel-ci.json` and compares a base revision with the checkout:
 
@@ -149,7 +149,7 @@ several minutes downloading extra font packages from the Ubuntu mirror.
 [timed hosted job]: https://github.com/danigutsch/ViajantesTurismo/actions/runs/44230316584/job/134553881791
 
 Lane placement follows [ADR-030: CI Test Lane Selection](../adr/20260629-ci-test-lane-selection.md).
-Measure locally with `dotnet tool run sharedkernel-ci -- run --slice <name>` and its phase timings before
+Measure locally with `dotnet ci run --slice <name>` and its phase timings before
 changing CI slice membership.
 
 Fast-slice membership is intentionally stricter than "small test count." A project that starts an
@@ -180,7 +180,7 @@ must review regenerated locks and follow the canonical
 | Runner | Repository CI baseline |
 
 The job requires successful change detection, test slices, and solution build. For build-relevant
-pull requests and merge groups it builds the pinned `sharedkernel-ci` from source, downloads the solution
+pull requests and merge groups it builds the pinned CI tool from source, downloads the solution
 build evidence and every `ci-test-slice-*-results` artifact, and runs one check:
 
 ```bash
@@ -215,9 +215,9 @@ Documentation-only and code changes run the same steps; the job does not wait fo
 3. On non-pull-request runs, lint the full repository Markdown scope with `DavidAnson/markdownlint-cli2-action` using the bundled Node.js runtime.
 4. Stage the pinned candidate and restore local tools with `setup-ci-prerequisites`.
 5. Install shellcheck from the runner's package feed and lint `.devcontainer/*.sh`, `scripts/*.sh`, and `setup-dev.sh` with `.shellcheckrc`.
-6. Run `sharedkernel-repo verify-text-encoding`, `verify-line-endings`, `verify-json`, `verify-links`, `verify-gherkin`,
+6. Run `dotnet repo verify-text-encoding`, `verify-line-endings`, `verify-json`, `verify-links`, `verify-gherkin`,
    and `verify` (roadmap structure, schema, and reciprocal blocker links).
-7. Run `sharedkernel-docs verify` (generated-diagram drift) and `sharedkernel-docs check` (documentation conformance).
+7. Run `dotnet docs verify` (generated-diagram drift) and `dotnet docs check` (documentation conformance).
 
 ## Workflow evolution
 
@@ -237,13 +237,13 @@ For missing PR-context checks, see [Governance](governance.md#recovery-for-missi
 ## Parallel solution-build evidence
 
 `Solution Build` runs after change detection alongside test slices. It restores and builds the
-complete solution, including projects outside test dependency graphs, runs `sharedkernel-ci coverage
+complete solution, including projects outside test dependency graphs, runs `dotnet ci coverage
 record-symbols`, and uploads `TestResults/symbol-evidence.json` with the Release PDBs under `src` as
 `solution-build-evidence`. `Quality Gate` verifies those revision-bound symbols inside `coverage verify`;
 it does not rebuild the full solution after tests. A changed file that no report lists passes only when
 a recorded portable PDB maps no executable code to it.
 
-The job saves the locked restore output and runs `sharedkernel-ci verify-restore-warnings` on it before the build.
+The job saves the locked restore output and runs `dotnet ci verify-restore-warnings` on it before the build.
 A high or critical NuGet vulnerability advisory (`NU1903`, `NU1904`) fails the job and names each package and version;
 lower severities and other NuGet warnings stay advisory. Findings covered by an unexpired record in
 `.github/ci-warning-exceptions.json` count as accepted instead. Restore itself is unchanged, so `--locked-mode`
@@ -251,10 +251,10 @@ still rejects drift.
 
 ### Warning Summary
 
-Each required job writes a warning report with `sharedkernel-ci warning-report` (or `verify-restore-warnings --report`)
+Each required job writes a warning report with `dotnet ci warning-report` (or `verify-restore-warnings --report`)
 and uploads it as a `warning-report-*` artifact: `Solution Build` reports restore and build, each test slice reports
 `Tests <slice>`, and `Lint` reports `Lint`. A failed step is one blocking finding; a skipped step writes no report, so
 "not run" never reads as "passed". The `Warning Summary` job downloads the reports and runs
-`sharedkernel-ci warning-summary`, which writes one table of blocking, advisory, and accepted totals per tool to the
+`dotnet ci warning-summary`, which writes one table of blocking, advisory, and accepted totals per tool to the
 job summary. It runs even when a required job failed, adds no annotations, and is not a merge gate: the blocking
 jobs already fail their own checks.

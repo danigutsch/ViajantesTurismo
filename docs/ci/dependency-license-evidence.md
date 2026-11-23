@@ -13,10 +13,20 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Rate-limit and reconciliation candidate renewal](#rate-limit-and-reconciliation-candidate-renewal)
 - [DDD standards candidate](#ddd-standards-candidate)
 - [ShouldThrow message candidate](#shouldthrow-message-candidate)
+- [Registration and tool rename candidate](#registration-and-tool-rename-candidate)
 - [Hosted-test lease candidate](#hosted-test-lease-candidate)
 - [Playwright ObjectModel dependency](#playwright-objectmodel-dependency)
 - [Remaining decision](#remaining-decision)
 - [Candidate that targets net11 only](#candidate-that-targets-net11-only)
+
+## Registration and tool rename candidate
+
+The preview approval pins `0.1.0-alpha.774.1` at library revision
+`3c5e0df4ef801809449ea47372ce2c129c245acd`. The approved StreamJsonRpc `2.25.29` and
+Magick.NET-Q8-AnyCPU `15.1.0` archives retain their exact hashes across three and 11 locked scopes,
+respectively. Both platform consumption records match the artifact's 142 package hashes.
+The version-specific exception continues to apply within the existing dependency-review policy.
+[SharedKernel candidate validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45171146106)
 
 ## Hosted-test lease candidate
 

@@ -139,8 +139,8 @@ same metadata. In hybrid Markdown, keep these instructions with the manual prose
 `generated:<block>:start` and `generated:<block>:end` comments to delimit each tool-owned block.
 
 - Generated architecture pages link to their [generator configuration](architecture/generated-diagrams.json)
-  and [source inventory](architecture/generated-diagram-roadmap.md). The configuration names the
-  pinned `sharedkernel-docs` command, which also writes its attribution inside each generated block.
+  and [source inventory](architecture/generated-diagram-roadmap.md). The configuration declares the
+  generator name used for attribution inside each block produced by `dotnet docs generate`.
 - Generated JSON contract artifacts use a root `x-viajantes.provenance` object with `generator`,
   `source`, `refreshCommand`, and `verifyCommand`. The source points to the generator's input
   declarations when they aggregate several files. Keep manual guidance in the artifact's companion
@@ -177,7 +177,7 @@ generated, or narrowly scoped.
 ### Maintenance model
 
 Prefer a generated or tool-verified TOC when an existing repository tool supports the document.
-The current `sharedkernel-docs` owns generated architecture-document outputs; it does
+The documentation tool owns generated architecture-document outputs; it does
 not yet generate general Markdown TOCs. Do not add a second tool or script for this policy.
 
 Until a supported generator exists, maintain a required or recommended TOC in the same change that
@@ -216,12 +216,12 @@ are checked against the same anchor rules.
 The current repository checks remain authoritative for their distinct responsibilities:
 
 - The CI Lint job checks maintained documentation quality with markdownlint and generated-document
-  drift with `sharedkernel-docs verify`.
-- `sharedkernel-repo verify-links` validates local links and durable external-reference policy for the
+  drift with `dotnet docs verify`.
+- `dotnet repo verify-links` validates local links and durable external-reference policy for the
   files that the `links` section of `.config/sharedkernel-repo.json` selects.
-- `sharedkernel-docs` owns its configured generated-document outputs.
+- `dotnet docs` owns its configured generated-document outputs.
 
-`sharedkernel-docs check` validates the small set of machine-readable governance and
+`dotnet docs check` validates the small set of machine-readable governance and
 architecture facts that have concrete consumers. Do not add broader schema enforcement unless a
 new durable fact has a real consumer; extend the existing .NET tool rather than adding another
 script or tool.
@@ -230,7 +230,7 @@ script or tool.
 
 The [generated diagram inventory](architecture/generated-diagram-roadmap.md) names each output,
 source, and generator. Refresh with
-`dotnet tool run sharedkernel-docs -- generate --config docs/architecture/generated-diagrams.json`;
+`dotnet docs generate --config docs/architecture/generated-diagrams.json`;
 verify with the same command using `verify` instead of `generate`. Change the source/configuration
 first and review the resulting diff.
 Keep manual commentary outside generated markers; never fix a generated claim by hand inside a block.

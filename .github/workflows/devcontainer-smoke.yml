@@ -55,10 +55,10 @@ jobs:
           aarch64) export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-arm64 ;;
         esac
         selection=TestResults/devcontainer-selection
-        dotnet tool run sharedkernel-ci -- select --selection "${selection}"
+        dotnet ci select --selection "${selection}"
         for slice in $(pwsh -NoProfile -Command "(Get-Content .config/sharedkernel-ci.json -Raw | ConvertFrom-Json).slices.name"); do
           echo "==> Running ${slice}"
-          dotnet tool run sharedkernel-ci -- run --slice "${slice}" --selection "${selection}" --install-playwright
+          dotnet ci run --slice "${slice}" --selection "${selection}" --install-playwright
         done
     steps:
       - name: Checkout repository
@@ -95,12 +95,12 @@ jobs:
 
       - name: Validate the devcontainer toolchains
         if: steps.validation-mode.outputs.mode == 'smoke'
-        run: dotnet tool run sharedkernel-repo -- verify-devcontainer --exec "$VERIFY_TOOLCHAINS" --root .
+        run: dotnet repo verify-devcontainer --exec "$VERIFY_TOOLCHAINS" --root .
 
       - name: Validate the devcontainer with every test slice
         if: steps.validation-mode.outputs.mode == 'full'
         run: |
-          dotnet tool run sharedkernel-repo -- verify-devcontainer --exec "$VERIFY_TOOLCHAINS" \
+          dotnet repo verify-devcontainer --exec "$VERIFY_TOOLCHAINS" \
             --exec "$INSTALL_PLAYWRIGHT_DEPENDENCIES" --exec "$RUN_TEST_SLICES" --root .
 
       - name: Upload devcontainer smoke logs

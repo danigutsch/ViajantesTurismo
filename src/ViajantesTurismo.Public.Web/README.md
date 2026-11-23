@@ -19,7 +19,7 @@ not reference `ViajantesTurismo.Management.Web` or operator-only UI dependencies
   host page renders no inline `<style>`.
 - `/robots.txt` and `/sitemap.xml`; the sitemap lists every page once per culture with `hreflang` alternates and
   `x-default`.
-- Standard service defaults and health endpoints through `MapDefaultEndpoints()`.
+- Standard service defaults and health endpoints through `MapHealthEndpoints()`.
 - Aspire AppHost registration as `ResourceNames.PublicWebApp`.
 
 ## Feature ownership

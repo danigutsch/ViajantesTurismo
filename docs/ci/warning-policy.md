@@ -35,12 +35,12 @@ and must not contain blocker work. Preserve fork safety and documentation-only e
 "not run" must be distinguishable from "passed" in review evidence. The `Solution Build` job enforces
 high and critical NuGet vulnerability advisories. Build, test slice, restore, and lint steps each write a warning
 report, and the `Warning Summary` job publishes one table of blocking, advisory, and accepted totals per tool with
-`sharedkernel-ci warning-summary`; see the [main workflow](main-workflow.md#warning-summary).
+`dotnet ci warning-summary`; see the [main workflow](main-workflow.md#warning-summary).
 
 ## Exceptions and baseline
 
 Keep each accepted exception with its owning configuration or a linked durable record. Findings a CI
-producer emits are excepted in `.github/ci-warning-exceptions.json`, read by `sharedkernel-ci` (currently by
+producer emits are excepted in `.github/ci-warning-exceptions.json`, read by `dotnet ci` (currently by
 `verify-restore-warnings --exceptions`). Each record there names the tool, exact rule, scope, baseline count,
 rationale, owner, and an expiry date. A covered finding counts as accepted up to the baseline; an expired record
 accepts nothing and fails the check until it is renewed or removed. The file currently holds no records.

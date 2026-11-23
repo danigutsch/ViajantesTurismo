@@ -48,7 +48,8 @@ public sealed class AppHostOrchestrationTests
         releaseWorkflowDocsText.ShouldContain("src/ViajantesTurismo.AppHost/README.md", StringComparison.Ordinal);
         appHostReadmeText.ShouldContain("docs/ci/supplemental-workflows.md", StringComparison.Ordinal);
         deploymentDocsText.ShouldContain("Release workflows own version and registry values", StringComparison.Ordinal);
-        releaseWorkflowText.ShouldContain("calculate-release", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("dotnet release \\", StringComparison.Ordinal);
+        releaseWorkflowText.ShouldContain("            calculate \\", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("package_version", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("VT_ASPIRE_CONTAINER_IMAGE_TAG", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("ComputedInformationalVersion", StringComparison.Ordinal);
@@ -56,7 +57,7 @@ public sealed class AppHostOrchestrationTests
         releaseWorkflowText.ShouldContain("test -s artifacts/aspire/release-prep/aspire-manifest.json", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("path: artifacts/aspire/release-prep/aspire-manifest.json", StringComparison.Ordinal);
         releaseWorkflowText.ShouldContain("if-no-files-found: error", StringComparison.Ordinal);
-        combinedDocsText.ShouldContain("sharedkernel-version calculate-release", StringComparison.Ordinal);
+        combinedDocsText.ShouldContain("dotnet release calculate", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("PublishAsDockerFile", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithImageTag", StringComparison.Ordinal);
         combinedDocsText.ShouldContain("WithImageRegistry", StringComparison.Ordinal);

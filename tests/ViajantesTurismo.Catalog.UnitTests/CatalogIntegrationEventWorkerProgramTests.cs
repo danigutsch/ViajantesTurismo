@@ -1,12 +1,11 @@
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using PandaBear.MalwareScanning.ClamAv;
 using PandaBear.Testing;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
 using ViajantesTurismo.Catalog.Infrastructure.Tours;
+using ViajantesTurismo.Testing.Hosting;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -38,9 +37,9 @@ public sealed class CatalogIntegrationEventWorkerProgramTests
         using var host = EntryPointHost.Build(workerAssembly, args);
 
         // Assert
-        var hostedServiceTypes = host.Services.GetServices<IHostedService>().Select(service => service.GetType()).ToArray();
+        var hostedServiceTypes = host.HostedServiceTypes;
         hostedServiceTypes.ShouldContain(typeof(CatalogProjectionHostedService));
         hostedServiceTypes.ShouldContain(typeof(MediaObjectReconciliationHostedService));
-        host.Services.GetRequiredService<IServiceProviderIsService>().IsService(typeof(HealthCheckService)).ShouldBeTrue();
+        host.Registers<HealthCheckService>().ShouldBeTrue();
     }
 }

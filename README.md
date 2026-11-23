@@ -100,13 +100,13 @@ This script will:
 
 - ✅ Verify the exact .NET SDK version pinned in `global.json`
 - ✅ Install a missing exact SDK side-by-side only when explicitly requested
-- ✅ Build `sharedkernel-ci` from the pinned SharedKernel source and stage the pinned candidate
+- ✅ Build the CI tool from the pinned SharedKernel source and stage the pinned candidate
 - ✅ Restore .NET dependencies (`dotnet restore --locked-mode`)
 - ✅ Restore .NET local tools (`dotnet tool restore` - includes dotnet-ef, reportgenerator, Aspire CLI, and the
-  SharedKernel tools `sharedkernel-ci`, `sharedkernel-repo`, `sharedkernel-version`, `sharedkernel-docs`,
-  `sharedkernel-playwright-mcp`, and `sharedkernel-codefix`)
+  SharedKernel tools `dotnet ci`, `dotnet repo`, `dotnet release`, `dotnet docs`,
+  `dotnet browsermcp`, `dotnet codefix`, and `dotnet loadtest`)
 - ✅ Verify PowerShell availability for Playwright browser installation
-- ✅ Explain the Playwright browser install step (`sharedkernel-ci install-playwright` after build)
+- ✅ Explain the Playwright browser install step (`dotnet ci install-playwright` after build)
 - ✅ Detect optional PSScriptAnalyzer for PowerShell linting (PowerShell only)
 - ✅ Detect optional `k6` availability for `tests/performance/`
 - ✅ Explain that Markdown and Gherkin lint tooling remains CI-owned for now
@@ -153,7 +153,7 @@ The supported local helper-tool model is intentionally npm-minimized. Prefer rep
 `.NET` tools, the stage-0 setup scripts, and digest-pinned lint containers over transient package
 execution. See [docs/local-tool-security.md](docs/local-tool-security.md).
 
-Documentation link checks use `dotnet tool run sharedkernel-repo -- verify-links`, which scans the files
+Documentation link checks use `dotnet repo verify-links`, which scans the files
 that the `links` section of `.config/sharedkernel-repo.json` selects. The check validates local Markdown and
 selected text links and anchors, blocks GitHub issue and pull request references by URL, path, or bare
 numeric shorthand in maintained docs, and avoids external URL probing in PR gating to keep lint stable.
@@ -180,7 +180,7 @@ dotnet tool restore
 dotnet build ViajantesTurismo.slnx --no-restore
 
 # 5. Install Playwright browsers (requires pwsh on Linux/macOS; add --with-dependencies on supported Ubuntu)
-dotnet tool run sharedkernel-ci -- install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj --browser chromium
+dotnet ci install-playwright --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj --browser chromium
 
 # 6. Install PowerShell linting (optional, when working on PowerShell scripts)
 Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
@@ -192,7 +192,7 @@ Install-Module -Name PSScriptAnalyzer -Scope CurrentUser
 
 # 8. Optional local commit validation
 printf "%s\n" "feat: example message" > /tmp/commit-msg.txt
-dotnet tool run sharedkernel-ci -- verify-commit-message --file /tmp/commit-msg.txt
+dotnet ci verify-commit-message --file /tmp/commit-msg.txt
 ```
 
 On Linux, `pwsh` is required for the generated Playwright installer, and Aspire HTTPS
@@ -228,10 +228,10 @@ Install `k6` only if you plan to run those scenarios:
 Example run:
 
 ```bash
-dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
+dotnet loadtest run --scenario file-upload-scan
 ```
 
-`sharedkernel-k6` runs the scenarios that `.config/sharedkernel-k6.json` configures; for
+`dotnet loadtest` runs the scenarios that `.config/sharedkernel-k6.json` configures; for
 `file-upload-scan` it starts its own benchmark-only Kestrel host on an ephemeral loopback port.
 Docker k6 runs only with `--container` and a digest-pinned image.
 
@@ -305,8 +305,8 @@ dotnet test --project tests/ViajantesTurismo.Admin.UnitTests/ViajantesTurismo.Ad
 
 ```bash
 time dotnet test --solution ViajantesTurismo.slnx --no-restore
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --slice fast-validation-1
+dotnet ci select
+dotnet ci run --slice fast-validation-1
 ```
 
 `run` writes per-phase timings to `TestResults/selection/execution-<slice>/phase-timings.tsv`.
@@ -321,7 +321,7 @@ dotnet run --project benchmarks/ViajantesTurismo.FileScanning.Benchmarks/Viajant
 **Run real Kestrel upload scanning benchmark:**
 
 ```powershell
-dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
+dotnet loadtest run --scenario file-upload-scan
 ```
 
 **Dependency graph and lock files:**
@@ -347,14 +347,14 @@ workflow and rebase recovery steps.
 
 ```bash
 shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh
-dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
-dotnet tool run sharedkernel-repo -- verify-line-endings --root .
-dotnet tool run sharedkernel-repo -- verify-json --root .
-dotnet tool run sharedkernel-repo -- verify-links --root .
-dotnet tool run sharedkernel-repo -- verify-gherkin --root .
-dotnet tool run sharedkernel-repo -- verify --root .
-dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
-dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
+dotnet repo verify-text-encoding --root .
+dotnet repo verify-line-endings --root .
+dotnet repo verify-json --root .
+dotnet repo verify-links --root .
+dotnet repo verify-gherkin --root .
+dotnet repo verify --root .
+dotnet docs verify --config docs/architecture/generated-diagrams.json
+dotnet docs check --config docs/architecture/documentation-conformance.json
 ```
 
 The CI Lint job runs these checks and the markdownlint action. Local contributors do not need to run

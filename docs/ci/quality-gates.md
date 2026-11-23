@@ -54,7 +54,7 @@ Pull requests and merge groups require at least **90% combined coverage of chang
 lines and conditions**. This is not a whole-repository 90% threshold. Full runs publish coverage
 trends; selected slices do not represent repository-wide trends.
 
-`sharedkernel-ci coverage verify` reads `.config/sharedkernel-ci.json`: `coverage.thresholdPercent` (90),
+`dotnet ci coverage verify` reads `.config/sharedkernel-ci.json`: `coverage.thresholdPercent` (90),
 the `coverage.include` patterns (`src/*.cs`, `src/*.razor`), and the `coverage.exclude` patterns
 (migrations, `obj`, generated files, and AppHost). It runs its own zero-context `git diff <base>...HEAD`
 with repository Git configuration and attributes neutralized, reads every `*.cobertura*.xml` under each
@@ -67,16 +67,16 @@ hiding uninstrumented application code. Its JSON output defaults to `TestResults
 ```bash
 # Collect coverage for every test project through the CI engine
 dotnet tool restore
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --coverage
+dotnet ci select
+dotnet ci run --coverage
 
 # Build current Release symbols for non-executable source evidence
 dotnet restore ViajantesTurismo.slnx --locked-mode
 dotnet build ViajantesTurismo.slnx -c Release --no-restore
-dotnet tool run sharedkernel-ci -- coverage record-symbols
+dotnet ci coverage record-symbols
 
 # Replace the base with the actual comparison base (full object ID) when reproducing a CI run
-dotnet tool run sharedkernel-ci -- coverage verify --report TestResults/selection \
+dotnet ci coverage verify --report TestResults/selection \
   --base "$(git rev-parse origin/main)" --symbols TestResults/symbol-evidence.json
 ```
 

@@ -121,11 +121,11 @@ composite actions are covered by the weekly schedule.
 3. Choose a validation mode.
    - Weekly schedule and pushes use the default smoke path.
    - Monthly schedule and manual full runs use the deeper mode.
-4. Run `sharedkernel-repo verify-devcontainer`. It builds the devcontainer, runs lifecycle hooks,
+4. Run `dotnet repo verify-devcontainer`. It builds the devcontainer, runs lifecycle hooks,
    and runs each `--exec` command inside the container before cleanup:
    - smoke mode: `VERIFY_TOOLCHAINS` checks .NET, Git, and Docker access;
    - deeper mode: `VERIFY_TOOLCHAINS`, then `INSTALL_PLAYWRIGHT_DEPENDENCIES` and `RUN_TEST_SLICES`,
-     which run every CI slice one after another with `sharedkernel-ci run`.
+     which run every CI slice one after another with `dotnet ci run`.
 5. Upload `devcontainer-smoke-logs` (`TestResults/devcontainer-smoke`) when the workflow fails.
 
 This workflow is intentionally supplemental rather than required. It is meant to catch
@@ -163,7 +163,7 @@ dispatch.
 1. Checkout full history so version calculation can inspect tags and commits.
 2. Stage the pinned SharedKernel candidate and restore application dependencies and local tools
    through the shared CI prerequisite action.
-3. Run the pinned `sharedkernel-version calculate-release` tool to calculate the application version.
+3. Run the pinned `dotnet release calculate` tool to calculate the application version.
 4. Run the pinned `aspire do publish-manifest` command with the computed version and source revision
    to export `artifacts/aspire/release-prep/aspire-manifest.json`.
 5. Require a nonempty manifest and upload that exact file for review.
@@ -183,7 +183,7 @@ Library release and API validation belong to the
 
 ### Aspire Release Integration Boundary
 
-Release workflows should reuse the same `calculate-release` output. AppHost code stays the
+Release workflows should reuse the same `calculate` output. AppHost code stays the
 orchestration model and receives precomputed values from the workflow; it must not inspect Git tags or
 commit history itself.
 

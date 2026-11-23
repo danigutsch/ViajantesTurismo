@@ -47,8 +47,8 @@ All CI commands map directly to local developer commands.
 dotnet tool restore
 dotnet dev-certs https --trust || true
 export SSL_CERT_DIR="$HOME/.aspnet/dev-certs/trust"
-dotnet tool run sharedkernel-ci -- select
-dotnet tool run sharedkernel-ci -- run --slice <slice-id> --coverage
+dotnet ci select
+dotnet ci run --slice <slice-id> --coverage
 ```
 
 `select` without `--base` selects every test project; pass `--base <commit>` to select what a change
@@ -76,12 +76,12 @@ at the SHA and run `verify-action-pins --root . --manifest <checkout>/.github/ac
 
 ```bash
 shellcheck -- .devcontainer/*.sh scripts/*.sh setup-dev.sh
-dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
-dotnet tool run sharedkernel-repo -- verify-line-endings --root .
-dotnet tool run sharedkernel-repo -- verify-json --root .
-dotnet tool run sharedkernel-repo -- verify-links --root .
-dotnet tool run sharedkernel-repo -- verify-gherkin --root .
-dotnet tool run sharedkernel-repo -- verify --root .
-dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
-dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
+dotnet repo verify-text-encoding --root .
+dotnet repo verify-line-endings --root .
+dotnet repo verify-json --root .
+dotnet repo verify-links --root .
+dotnet repo verify-gherkin --root .
+dotnet repo verify --root .
+dotnet docs verify --config docs/architecture/generated-diagrams.json
+dotnet docs check --config docs/architecture/documentation-conformance.json
 ```

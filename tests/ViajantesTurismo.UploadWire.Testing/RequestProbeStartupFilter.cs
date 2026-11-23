@@ -33,14 +33,12 @@ public sealed class RequestProbeStartupFilter(RequestLifetimeProbe probe) : ISta
                 probe.OnStarted();
                 await using var registration = context.RequestAborted.Register(probe.OnAborted).ConfigureAwait(false);
                 context.Request.Body = new ReadObservingStream(context.Request.Body, probe);
-                try
-                {
-                    await pipeline(context);
-                }
-                finally
+                context.Response.OnCompleted(() =>
                 {
                     probe.OnFinished(context.Response.StatusCode);
-                }
+                    return Task.CompletedTask;
+                });
+                await pipeline(context);
             });
             next(app);
         };
