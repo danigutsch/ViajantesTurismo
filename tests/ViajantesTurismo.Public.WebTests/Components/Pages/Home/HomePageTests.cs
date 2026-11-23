@@ -8,6 +8,36 @@ namespace ViajantesTurismo.Public.WebTests.Components.Pages.Home;
 public sealed class HomePageTests
 {
     [Fact]
+    public async Task Home_shows_a_bounded_preview_and_links_to_the_complete_tour_index()
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        for (var number = 1; number <= 803; number++)
+        {
+            var slug = FormattableString.Invariant($"preview-ride-{number:D3}");
+            var title = FormattableString.Invariant($"Preview Ride {number:D3}");
+            catalogApi.AddTour(PublicTourTestData.CreateDetails(slug, title));
+        }
+
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+        var ct = TestContext.Current.CancellationToken;
+
+        // Act
+        using var response = await client.GetAsync(new Uri("/en/", UriKind.Relative), ct);
+        var content = await response.Content.ReadAsStringAsync(ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var headings = content.Split("<h3 class=\"site-card__title\">", StringSplitOptions.None).Length - 1;
+        headings.ShouldBe(6);
+        content.ShouldContain("Preview Ride 006", StringComparison.Ordinal);
+        content.ShouldNotContain("Preview Ride 007", StringComparison.Ordinal);
+        content.ShouldContain("href=\"/en/group-bike-tours\">Browse all tours", StringComparison.Ordinal);
+        PrerenderedComponentState.ShouldKeepServerStateBelow(content);
+    }
+
+    [Fact]
     public async Task Root_returns_public_landing_page()
     {
         // Arrange

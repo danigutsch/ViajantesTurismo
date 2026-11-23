@@ -114,10 +114,18 @@ internal static class CatalogTourEndpoints
             .WithName("GetPublishedTours")
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
+        versionedApi.MapGet("/public/catalog/tours/browse/page", GetPublishedTourPage)
+            .WithName("GetPublishedTourPage")
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
+            .AllowAnonymous();
         versionedApi.MapGet("/public/catalog/tours/{slug}", GetPublishedTour)
             .WithName("GetPublishedTour")
             .Produces<TourDetailsDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
+            .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
+            .AllowAnonymous();
+        versionedApi.MapGet("/public/catalog/tours/{slug}/photo-page", GetPublishedTourDetailsPage)
+            .WithName("GetPublishedTourDetailsPage")
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
     }
@@ -303,8 +311,23 @@ internal static class CatalogTourEndpoints
         }
 
         var images = await imageStore.ListByTour(tour.CatalogTourId, ct);
-        var dto = MapPublicTourDetail(tour, images, routes, httpContext);
+        var dto = MapPublicTourDetail(tour, MapPublicImages(tour, images), routes, httpContext);
         return Results.Ok(dto);
+    }
+
+    private static async Task<Results<Ok<PublishedTourDetailsPageDto>, NotFound>> GetPublishedTourDetailsPage(
+        string slug, string? page, ICatalogTourReadModelStore store, ICatalogTourListReader reader, LinkGenerator routes, HttpContext context, CancellationToken ct)
+    {
+        HttpCacheHeaders.SetNoStore(context);
+        var tour = await store.GetPublishedTourBySlug(slug, ct);
+        if (tour is null || await reader.ListPublishedPhotos(tour, page, ct) is not { } photos)
+        {
+            return TypedResults.NotFound();
+        }
+
+        var (window, images) = photos;
+        var details = MapPublicTourDetail(tour, images, routes, context);
+        return TypedResults.Ok(new PublishedTourDetailsPageDto(details, window.Page, window.PageSize, window.Total));
     }
 
     private static async Task<IReadOnlyList<CatalogTourDto>> GetTours(
@@ -357,6 +380,39 @@ internal static class CatalogTourEndpoints
                 tour, GetImages(imagesByTour, tour.CatalogTourId), routes, httpContext))
         ];
         return result;
+    }
+
+    private static async Task<Results<Ok<PublishedTourPageDto>, ValidationProblem, NotFound>> GetPublishedTourPage(
+        string? page,
+        int? pageSize,
+        ICatalogTourListReader reader,
+        LinkGenerator routes,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        HttpCacheHeaders.SetNoStore(context);
+        var size = pageSize ?? PublishedTourPageDto.IndexPageSize;
+        if (size is < 1 or > PublishedTourPageDto.IndexPageSize)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["pageSize"] = [$"Page size must be between 1 and {PublishedTourPageDto.IndexPageSize}."]
+            });
+        }
+
+        var result = await reader.ListPublishedPage(page, size, ct);
+        if (result is null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        return TypedResults.Ok(result with
+        {
+            Tours = [.. result.Tours.Select(tour => tour with
+            {
+                Links = [CatalogEndpointLinks.Get(routes, context, "self", nameof(GetPublishedTour), new RouteValueDictionary { ["slug"] = tour.Slug })]
+            })]
+        });
     }
 
     private static async Task<Results<Ok<CatalogTourDto>, Accepted, BadRequest, ValidationProblem, NotFound, ProblemHttpResult>> UpsertTourPresentation(
@@ -587,7 +643,7 @@ internal static class CatalogTourEndpoints
     }
 
     private static TourDetailsDto MapPublicTourDetail(
-        CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage> images, LinkGenerator routes, HttpContext context)
+        CatalogTourDraftReadModel tour, IReadOnlyList<CatalogTourImageDto> images, LinkGenerator routes, HttpContext context)
     {
         return new TourDetailsDto
         {
@@ -603,7 +659,7 @@ internal static class CatalogTourEndpoints
             Itinerary = tour.Itinerary,
             SeoTitle = tour.SeoTitle,
             SeoDescription = tour.SeoDescription,
-            Images = MapPublicImages(tour, images),
+            Images = images,
             UpdatedAt = tour.UpdatedAt
         };
     }

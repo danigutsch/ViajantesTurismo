@@ -157,6 +157,39 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     /// <summary>Returns the tour summaries after any configured response gate.</summary>
     public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
     {
+        await ObserveTourList(ct);
+        return FailListRequests
+            ? TransportFailure<TourSummaryDto[]>()
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tours.ToArray());
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<PublishedTourPageDto>> GetPublishedTourPage(string? page, int pageSize, CancellationToken ct)
+    {
+        await ObserveTourList(ct);
+        if (FailListRequests)
+        {
+            return TransportFailure<PublishedTourPageDto>();
+        }
+
+        var window = PageWindow.Create(page, pageSize, tours.Count);
+        if (window.IsOutOfRange)
+        {
+            return HttpOutcomeMapper.Status<PublishedTourPageDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound);
+        }
+
+        var items = tours.OrderBy(tour => tour.Title, StringComparer.Ordinal).ThenBy(tour => tour.Slug, StringComparer.Ordinal)
+            .Skip(window.Skip).Take(window.Take)
+            .Select(tour => tour with
+            {
+                Images = [.. tour.Images.OrderByDescending(image => image.IsCover).ThenBy(image => image.SortOrder).ThenBy(image => image.Id).Take(1)]
+            })
+            .ToArray();
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new PublishedTourPageDto(window.Page, window.PageSize, window.Total, items));
+    }
+
+    private async Task ObserveTourList(CancellationToken ct)
+    {
         ct.ThrowIfCancellationRequested();
         ListStarted?.TrySetResult();
 
@@ -169,10 +202,6 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         {
             throw new OperationCanceledException("Catalog request canceled upstream.");
         }
-
-        return FailListRequests
-            ? TransportFailure<TourSummaryDto[]>()
-            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tours.ToArray());
     }
 
     /// <summary>Returns the tour with the given slug, not found if absent, honoring the failure switches.</summary>
@@ -194,6 +223,34 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         return Task.FromResult(tour is null
             ? HttpOutcomeMapper.Status<TourDetailsDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour));
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<PublishedTourDetailsPageDto>> GetPublishedTourDetailsPage(string slug, string? page, CancellationToken ct)
+    {
+        var details = await GetPublishedTourBySlug(slug, ct);
+        if (details.Kind == HttpOutcomeKind.NotFound)
+        {
+            return HttpOutcomeMapper.Status<PublishedTourDetailsPageDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound);
+        }
+
+        if (details.Value is not { } tour)
+        {
+            return TransportFailure<PublishedTourDetailsPageDto>();
+        }
+
+        var images = tour.Images.OrderByDescending(image => image.IsCover).ThenBy(image => image.SortOrder).ThenBy(image => image.Id).ToArray();
+        var window = PageWindow.Create(page, PublishedTourDetailsPageDto.PhotosPerPage, Math.Max(0, images.Length - 1));
+        if (window.IsOutOfRange)
+        {
+            return HttpOutcomeMapper.Status<PublishedTourDetailsPageDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound);
+        }
+
+        var detail = tour with
+        {
+            Images = [.. images.Take(1), .. images.Skip(window.Skip + 1).Take(window.Take)]
+        };
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new PublishedTourDetailsPageDto(detail, window.Page, window.PageSize, window.Total));
     }
 
     /// <summary>Returns content for the key and culture (<c>en-US</c> when blank), not found if absent, honoring the failure switches.</summary>
