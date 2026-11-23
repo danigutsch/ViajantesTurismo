@@ -46,13 +46,15 @@ public sealed class PaymentInstructionCommandEndpointTests
     }
 
     [Theory]
-    [InlineData(false, 400)]
-    [InlineData(false, 404)]
-    [InlineData(false, 409)]
-    [InlineData(true, 400)]
-    [InlineData(true, 404)]
-    [InlineData(true, 409)]
-    public async Task Instruction_generation_preserves_rejected_source_and_revision_outcomes(bool regenerate, int status)
+    [InlineData(false, 400, "rejected")]
+    [InlineData(false, 404, "rejected")]
+    [InlineData(false, 409, "rejected")]
+    [InlineData(false, 503, "failed")]
+    [InlineData(true, 400, "rejected")]
+    [InlineData(true, 404, "rejected")]
+    [InlineData(true, 409, "rejected")]
+    [InlineData(true, 503, "failed")]
+    public async Task Instruction_generation_preserves_response_and_classifies_telemetry(bool regenerate, int status, string outcome)
     {
         // Arrange
         var sender = new PaymentEndpointSender { Status = status };
@@ -63,6 +65,7 @@ public sealed class PaymentInstructionCommandEndpointTests
         client.DefaultRequestHeaders.Add("Idempotency-Key", Guid.CreateVersion7().ToString("N"));
         var path = "/api/v1/documents/bookings/" + Guid.CreateVersion7() + "/payment-instructions" + (regenerate ? "/" + Guid.CreateVersion7() + "/regenerate" : "");
         using var input = new StringContent("""{"expectedVersion":2,"accountId":"11111111-1111-1111-1111-111111111111","expectedAccountVersion":1,"installmentIds":[]}""", Encoding.UTF8, "application/json");
+        using var metrics = AdminApiTestHost.RecordMetrics(factory);
 
         // Act
         using var response = await client.PostAsync(new Uri(path, UriKind.Relative), input, TestContext.Current.CancellationToken);
@@ -72,6 +75,13 @@ public sealed class PaymentInstructionCommandEndpointTests
         sender.Calls.ShouldBe(1);
         var assertionTarget = response.Headers.CacheControl?.NoStore;
         assertionTarget.ShouldNotBeNull().ShouldBeTrue();
+        var (count, tags) = metrics.Counters("admin.document.operation").ShouldHaveSingleItem();
+        count.ShouldBe(1L);
+        tags.ShouldBe(
+        [
+            new KeyValuePair<string, object?>("document.operation", regenerate ? "regenerate" : "generate"),
+            new KeyValuePair<string, object?>("document.outcome", outcome),
+        ]);
     }
 
     [Fact]

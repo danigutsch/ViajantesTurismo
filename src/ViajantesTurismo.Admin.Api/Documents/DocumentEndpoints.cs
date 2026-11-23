@@ -9,6 +9,7 @@ using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.Admin.Api.Documents;
 
@@ -25,6 +26,7 @@ internal static class DocumentEndpoints
         var documentsGroup = app.MapDocumentsGroup();
 
         documentsGroup.MapPost("/bookings/{bookingId:guid}/contract-drafts", GenerateContractDraft)
+            .ObserveDocumentOperation(DocumentOperation.Generate)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>(StatusCodes.Status201Created)
@@ -35,12 +37,14 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("GenerateDocumentContractDraft", "Generates the server-selected contract draft for an eligible booking.", "Generates a contract draft.");
 
         documentsGroup.MapGet("/{id:guid}", GetDocumentById)
+            .ObserveDocumentOperation(DocumentOperation.Preview)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .WithAdminMetadata("GetDocumentById", "Retrieves one generated document revision.", "Retrieves a document.");
 
         documentsGroup.MapPost("/{id:guid}/review", BeginReview)
+            .ObserveDocumentOperation(DocumentOperation.Review)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -49,6 +53,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("BeginDocumentReview", "Starts or resumes staff review of a document draft.", "Starts document review.");
 
         documentsGroup.MapPost("/{id:guid}/changes-requested", RequestChanges)
+            .ObserveDocumentOperation(DocumentOperation.RequestChanges)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -57,6 +62,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("RequestDocumentChanges", "Records requested changes for a document draft.", "Requests document changes.");
 
         documentsGroup.MapPost("/{id:guid}/changes-acknowledged", AcknowledgeChanges)
+            .ObserveDocumentOperation(DocumentOperation.AcknowledgeChanges)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -65,6 +71,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("AcknowledgeDocumentChanges", "Acknowledges the source or template changes of a regenerated document draft so it can be approved.", "Acknowledges document changes.");
 
         documentsGroup.MapPatch("/{id:guid}/fields/{fieldId}", UpdateField)
+            .ObserveDocumentOperation(DocumentOperation.UpdateField)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -74,6 +81,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("UpdateDocumentField", "Updates one staff-editable document field.", "Updates a document field.");
 
         documentsGroup.MapPost("/{id:guid}/approve", Approve)
+            .ObserveDocumentOperation(DocumentOperation.Approve)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -82,6 +90,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("ApproveDocument", "Approves a document draft for finalization.", "Approves a document.");
 
         documentsGroup.MapPost("/{id:guid}/finalize", FinalizeDocument)
+            .ObserveDocumentOperation(DocumentOperation.Finalize)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -90,6 +99,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("FinalizeDocument", "Finalizes and seals a document artifact.", "Finalizes a document.");
 
         documentsGroup.MapPost("/{id:guid}/regenerate", Regenerate)
+            .ObserveDocumentOperation(DocumentOperation.Regenerate)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -100,6 +110,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("RegenerateDocument", "Creates a replacement document revision from current source data.", "Regenerates a document.");
 
         documentsGroup.MapPost("/{id:guid}/void", Void)
+            .ObserveDocumentOperation(DocumentOperation.Void)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -108,6 +119,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("VoidDocument", "Voids a document using the server-defined administrative reason code.", "Voids a document.");
 
         documentsGroup.MapGet("/{id:guid}/download", DownloadFinalizedArtifact)
+            .ObserveDocumentOperation(DocumentOperation.Download)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<Stream>(StatusCodes.Status200OK, contentType: "text/html")
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
@@ -525,7 +537,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
-    /// <summary>Creates the trusted audit context from the authenticated subject and a new correlation identifier.</summary>
+    /// <summary>Creates the trusted audit context with the request's server-generated correlation identifier.</summary>
     internal static DocumentAuditContext CreateAuditContext(HttpContext httpContext)
     {
         var actorId = httpContext.User.GetSubjectId();
@@ -534,7 +546,7 @@ internal static class DocumentEndpoints
             throw new InvalidOperationException("Document operations require an authenticated subject identifier.");
         }
 
-        var auditContextResult = DocumentAuditContext.Create(actorId, Guid.CreateVersion7().ToString("N"));
+        var auditContextResult = DocumentAuditContext.Create(actorId, DocumentEndpointTelemetry.GetCorrelationId(httpContext).ToString("N"));
         if (auditContextResult.IsFailure)
         {
             throw new InvalidOperationException("Document operations require valid audit metadata.");

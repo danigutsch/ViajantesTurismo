@@ -10,7 +10,7 @@ internal static partial class ObservabilityAssetsTestsHelpers
     /// <summary>Dashboard file names the repository must provision.</summary>
     public static readonly string[] ExpectedDashboards =
     [
-        "branding-cache", "catalog-pipeline", "collector-gateway", "event-store", "http-platform", "logs",
+        "branding-cache", "catalog-pipeline", "collector-gateway", "document-operations", "event-store", "http-platform", "logs",
         "media-accessibility", "mediator", "operation-health", "platform-smoke", "postgresql-observability", "runtime", "traces"
     ];
 
@@ -30,7 +30,7 @@ internal static partial class ObservabilityAssetsTestsHelpers
         "branding-invalidation-failures", "catalog-event-errors", "catalog-media-upload-failures",
         "catalog-media-upload-latency", "collector-export-failing",
         "collector-refusing-telemetry", "collector-self-telemetry-down", "customer-import-failures",
-        "customer-import-latency", "http-5xx-ratio", "management-session-ticket-failures",
+        "customer-import-latency", "document-operation-failures", "http-5xx-ratio", "management-session-ticket-failures",
         "migration-initialization-failed", "unhandled-exceptions"
     ];
 
@@ -46,6 +46,7 @@ internal static partial class ObservabilityAssetsTestsHelpers
     /// <summary>Label values each metric can emit, with the source file that emits them.</summary>
     public static readonly (string Metric, string Label, string Source, string[] Values)[] EmittedLabelValues =
     [
+        ("admin_document_operation_total", "document_outcome", "src/ViajantesTurismo.Admin.Infrastructure/Documents/DocumentOperationTelemetry.cs", ["succeeded", "rejected", "failed", "canceled"]),
         ("branding_cache_invalidations_total", "outcome", "src/ViajantesTurismo.Branding.AspNetCore/BrandingTelemetry.cs", ["succeeded", "failed"]),
         ("branding_cache_requests_total", "outcome", "src/ViajantesTurismo.Branding.AspNetCore/BrandingTelemetry.cs", ["hit", "miss"]),
         ("catalog_integration_event_total", "catalog_outcome", "src/ViajantesTurismo.Catalog.Application/CatalogTelemetry.cs", ["success", "skipped", "acquired", "completed", "error"]),

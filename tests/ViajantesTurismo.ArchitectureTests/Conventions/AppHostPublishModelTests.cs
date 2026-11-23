@@ -2,6 +2,7 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using PandaBear.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -46,6 +47,33 @@ public sealed class AppHostPublishModelTests
         names.ShouldContain(ResourceNames.SecurityDatabase);
         names.ShouldContain(ResourceNames.WebApp);
         names.ShouldContain(ResourceNames.PublicWebApp);
+    }
+
+    [Fact]
+    public async Task Publish_keeps_API_readiness_dependencies_and_leaves_maintenance_to_deployed_services()
+    {
+        // Arrange
+        string[] args = ["--operation", "publish", "--publisher", "manifest"];
+        var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
+        {
+            Args = args,
+            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost")
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            [HttpMaintenanceConfiguration.EnabledKey] = "true"
+        });
+
+        // Act
+        AppHost.AppHostComposition.AddProductResources(builder, HostedProfileArguments.FromArguments(args));
+        var web = AppHostTestBuilder.Project(builder, ResourceNames.PublicWebApp);
+        var api = AppHostTestBuilder.Project(builder, ResourceNames.CatalogApi);
+        var environment = await AppHostModel.EvaluateEnvironment(web, TestContext.Current.CancellationToken);
+
+        // Assert
+        environment.Keys.ShouldNotContain(HttpMaintenanceConfiguration.EnabledEnvironmentVariable);
+        web.Annotations.OfType<WaitAnnotation>().ShouldHaveSingleItem(wait => wait.Resource == api)
+            .WaitType.ShouldBe(WaitType.WaitUntilHealthy);
     }
 
     [Theory]

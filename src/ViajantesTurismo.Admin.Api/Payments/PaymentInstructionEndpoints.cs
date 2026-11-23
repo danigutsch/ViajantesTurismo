@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using PandaBear.Mediator;
 using PandaBear.Results;
+using ViajantesTurismo.Admin.Api.Documents;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.Admin.Api.Payments;
 
@@ -18,28 +20,36 @@ internal static class PaymentInstructionEndpoints
         documentsGroup.MapGet("/bookings/{bookingId:guid}/payment-instructions", List).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("ListBookingPaymentInstructions", "Lists retained protected payment instruction revisions.", "Lists booking payment instructions.");
         documentsGroup.MapGet("/{id:guid}/payment-instructions", Read).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .ObserveDocumentOperation(DocumentOperation.Preview)
             .WithAdminMetadata("GetPaymentInstructions", "Retrieves masked generated instruction fields and approval metadata.", "Retrieves payment instructions.");
         documentsGroup.MapPost("/bookings/{bookingId:guid}/payment-instructions", Generate).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .ObserveDocumentOperation(DocumentOperation.Generate)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithAdminMetadata("GeneratePaymentInstructions", "Generates a new immutable protected instruction draft.", "Generates payment instructions.");
         documentsGroup.MapPost("/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate", Regenerate).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .ObserveDocumentOperation(DocumentOperation.Regenerate)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithAdminMetadata("RegeneratePaymentInstructions", "Creates an immutable replacement from current approved sources.", "Regenerates payment instructions.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/approve", ApprovePaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .ObserveDocumentOperation(DocumentOperation.Approve)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("ApprovePaymentInstructions", "Executes a confirmed, revision-preconditioned ApprovePaymentInstructions operation.", "ApprovePaymentInstructions operation.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/finalize", FinalizePaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .ObserveDocumentOperation(DocumentOperation.Finalize)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("FinalizePaymentInstructions", "Executes a confirmed, revision-preconditioned FinalizePaymentInstructions operation.", "FinalizePaymentInstructions operation.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/withdraw-approval", WithdrawPaymentInstructionApproval).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .ObserveDocumentOperation(DocumentOperation.WithdrawApproval)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("WithdrawPaymentInstructionApproval", "Executes a confirmed, revision-preconditioned WithdrawPaymentInstructionApproval operation.", "WithdrawPaymentInstructionApproval operation.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/void", VoidPaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .ObserveDocumentOperation(DocumentOperation.Void)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("VoidPaymentInstructions", "Executes a confirmed, revision-preconditioned VoidPaymentInstructions operation.", "VoidPaymentInstructions operation.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/review", ReviewPaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .ObserveDocumentOperation(DocumentOperation.Review)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("ReviewPaymentInstructions", "Executes a confirmed, revision-preconditioned ReviewPaymentInstructions operation.", "ReviewPaymentInstructions operation.");
     }

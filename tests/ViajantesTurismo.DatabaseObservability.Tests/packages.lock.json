@@ -520,6 +520,9 @@
           "ViajantesTurismo.ServiceDefaults": "[0.1.0-alpha.0, )"
         }
       },
+      "viajantesturismo.resources": {
+        "type": "Project"
+      },
       "viajantesturismo.servicedefaults": {
         "type": "Project",
         "dependencies": {
@@ -529,7 +532,8 @@
           "OpenTelemetry.Instrumentation.GrpcNetClient": "[1.21.0-beta.1, )",
           "PandaBear.SharedKernel.AspNetCore": "[0.1.0-alpha.727.1, )",
           "PandaBear.SharedKernel.Observability": "[0.1.0-alpha.727.1, )",
-          "PandaBear.SharedKernel.ServiceDefaults": "[0.1.0-alpha.727.1, )"
+          "PandaBear.SharedKernel.ServiceDefaults": "[0.1.0-alpha.727.1, )",
+          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
       "JetBrains.Annotations": {

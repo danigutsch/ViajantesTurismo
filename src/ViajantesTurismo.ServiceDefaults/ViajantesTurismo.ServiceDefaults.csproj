@@ -18,6 +18,7 @@
     <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
     <PackageReference Include="PandaBear.SharedKernel.Observability" />
     <PackageReference Include="PandaBear.SharedKernel.ServiceDefaults" />
+    <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" />
   </ItemGroup>
 
 </Project>

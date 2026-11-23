@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
@@ -228,9 +229,13 @@ public sealed class DocumentPrivacySafeguardTests
     public async Task Unhandled_document_exception_overrides_unsafe_cache_headers_with_no_store()
     {
         // Arrange
+        const string failureMarker = "SYNTHETIC_DOCUMENT_STORE_FAILURE_69FE";
+        using var loggerProvider = new RecordingLoggerProvider();
         await using var factory = AdminApiTestHost.Create(services =>
         {
-            services.RemoveAll<GetFinalizedDocumentArtifactHandler>();
+            services.Replace(ServiceDescriptor.Scoped<IDocumentStore>(_ =>
+                new ThrowingDocumentStore(new InvalidOperationException(failureMarker))));
+            services.AddLogging(logging => logging.AddProvider(loggerProvider));
             services.Configure<ProblemDetailsOptions>(options =>
             {
                 options.CustomizeProblemDetails = context =>
@@ -241,6 +246,8 @@ public sealed class DocumentPrivacySafeguardTests
         }, environment: Environments.Production);
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        using var metrics = AdminApiTestHost.RecordMetrics(factory);
+        using var traces = AdminApiTestHost.RecordDocumentTraces(factory);
 
         // Act
         using var response = await client.GetAsync(
@@ -250,6 +257,22 @@ public sealed class DocumentPrivacySafeguardTests
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
         DocumentNoStoreHeaders.ArePresent(response).ShouldBeTrue();
+        var (count, tags) = metrics.Counters("admin.document.operation").ShouldHaveSingleItem();
+        count.ShouldBe(1L);
+        tags.ShouldBe(
+        [
+            new KeyValuePair<string, object?>("document.operation", "download"),
+            new KeyValuePair<string, object?>("document.outcome", "failed"),
+        ]);
+        var operation = traces.DocumentOperations().ShouldHaveSingleItem();
+        operation.Events.ShouldBeEmpty();
+        operation.Status.ShouldBe(ActivityStatusCode.Error);
+        operation.StatusDescription.ShouldBeNull();
+        traces.GetCapturedText(operation.TraceId).ShouldNotContain(failureMarker, StringComparison.Ordinal);
+        var log = loggerProvider.Records.Where(record => record.EventId.Name == "DocumentOperationCompleted").ShouldHaveSingleItem();
+        log.Level.ShouldBe(LogLevel.Error);
+        log.Exception.ShouldBeNull();
+        log.Message.ShouldNotContain(failureMarker, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -337,7 +360,6 @@ public sealed class DocumentPrivacySafeguardTests
         const string tokenMarker = "SYNTHETIC_AUTHORIZATION_TOKEN_B275";
         var missingDocuments = new MissingDocumentServices();
         using var loggerProvider = new RecordingLoggerProvider();
-        using var telemetryCapture = new DocumentPrivacyTelemetryCapture();
         await using var factory = AdminApiTestHost.Create(services =>
         {
             services.RemoveAll<IDocumentStore>();
@@ -349,10 +371,13 @@ public sealed class DocumentPrivacySafeguardTests
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
         var documentId = Guid.CreateVersion7();
+        using var metrics = AdminApiTestHost.RecordMetrics(factory);
+        using var telemetryCapture = AdminApiTestHost.RecordDocumentTraces(factory);
         using var request = new HttpRequestMessage(
             HttpMethod.Patch,
             new Uri($"/api/v1/documents/{documentId}/fields/greeting", UriKind.Relative));
         request.Headers.TryAddWithoutValidation("X-Synthetic-Authorization-Marker", tokenMarker);
+        request.Headers.TryAddWithoutValidation("X-Correlation-ID", requestMarker);
         request.Content = new StringContent(
             $$"""
             {
@@ -362,18 +387,77 @@ public sealed class DocumentPrivacySafeguardTests
             """,
             Encoding.UTF8,
             "application/json");
-        using var parentActivity = telemetryCapture.StartParent();
-
         // Act
         using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
         var responseBody = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        var (count, tags) = metrics.Counters("admin.document.operation").ShouldHaveSingleItem();
+        count.ShouldBe(1L);
+        tags.ShouldBe(
+        [
+            new KeyValuePair<string, object?>("document.operation", "update_field"),
+            new KeyValuePair<string, object?>("document.outcome", "rejected"),
+        ]);
+        var operation = telemetryCapture.DocumentOperations().ShouldHaveSingleItem();
+        var correlation = operation.GetTagItem("document.correlation") as string;
+        Guid.TryParseExact(correlation, "N", out _).ShouldBeTrue();
+        var documentTags = operation.TagObjects.Where(tag => tag.Key.StartsWith("document.", StringComparison.Ordinal)).ToArray();
+        documentTags.ShouldBe(
+        [
+            new KeyValuePair<string, object?>("document.operation", "update_field"),
+            new KeyValuePair<string, object?>("document.correlation", correlation),
+            new KeyValuePair<string, object?>("document.outcome", "rejected"),
+        ]);
+        var log = loggerProvider.Records.Where(record => record.EventId.Name == "DocumentOperationCompleted").ShouldHaveSingleItem();
+        log.Level.ShouldBe(LogLevel.Information);
+        log.Exception.ShouldBeNull();
+        log.State.Where(pair => pair.Key != "{OriginalFormat}").OrderBy(pair => pair.Key, StringComparer.Ordinal).ToArray().ShouldBe(
+        [
+            new KeyValuePair<string, object?>("Correlation", correlation),
+            new KeyValuePair<string, object?>("Operation", "update_field"),
+            new KeyValuePair<string, object?>("Outcome", "rejected"),
+        ]);
         foreach (var marker in new[] { contentMarker, requestMarker, tokenMarker })
         {
             responseBody.ShouldNotContain(marker, StringComparison.Ordinal);
             DocumentPrivacyLogText.From(loggerProvider).ShouldNotContain(marker, StringComparison.Ordinal);
-            telemetryCapture.GetCapturedText(parentActivity.TraceId).ShouldNotContain(marker, StringComparison.Ordinal);
+            telemetryCapture.GetCapturedText(operation.TraceId).ShouldNotContain(marker, StringComparison.Ordinal);
         }
+    }
+
+    [Fact]
+    public async Task Preview_rejection_audit_and_telemetry_share_server_generated_correlation()
+    {
+        // Arrange
+        const string requestCorrelation = "SYNTHETIC_UNTRUSTED_CORRELATION_8C4B";
+        var auditStore = new CapturingDocumentAuditStore();
+        using var loggerProvider = new RecordingLoggerProvider();
+        await using var factory = AdminApiTestHost.Create(services =>
+        {
+            services.Replace(ServiceDescriptor.Scoped<IDocumentQueryService, MissingDocumentServices>());
+            services.Replace(ServiceDescriptor.Singleton<IDocumentAuditStore>(auditStore));
+            services.Replace(ServiceDescriptor.Singleton<IUnitOfWork>(new FakeUnitOfWork()));
+            services.AddLogging(logging => logging.AddProvider(loggerProvider));
+        });
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        using var telemetry = AdminApiTestHost.RecordDocumentTraces(factory);
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"/api/v1/documents/{Guid.CreateVersion7()}", UriKind.Relative));
+        request.Headers.TryAddWithoutValidation("X-Correlation-ID", requestCorrelation);
+
+        // Act
+        using var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        var audit = auditStore.Records.ShouldHaveSingleItem();
+        Guid.TryParseExact(audit.CorrelationId, "N", out _).ShouldBeTrue();
+        var operation = telemetry.DocumentOperations().ShouldHaveSingleItem();
+        operation.GetTagItem("document.operation").ShouldBe("preview");
+        operation.GetTagItem("document.correlation").ShouldBe(audit.CorrelationId);
+        var log = loggerProvider.Records.Where(record => record.EventId.Name == "DocumentOperationCompleted").ShouldHaveSingleItem();
+        log.State.ShouldContain(new KeyValuePair<string, object?>("Correlation", audit.CorrelationId));
     }
 }

@@ -447,9 +447,9 @@ internal static class AppHostResourceExtensions
             .WithEnvironment(AuthenticationTokenExchangeEnabledEnvironmentVariable, "true")
             .WithEnvironment(AuthenticationTokenExchangeProviderEnvironmentVariable, KeycloakTokenExchangeProvider)
             .WithReference(adminApi)
-            .WaitFor(adminApi)
+            .WaitForHttpDependency(adminApi)
             .WithReference(catalogApi)
-            .WaitFor(catalogApi);
+            .WaitForHttpDependency(catalogApi);
 
         if (managementWebClientSecret is not null)
         {
@@ -563,6 +563,6 @@ internal static class AppHostResourceExtensions
             .WithExternalHttpEndpoints()
             .WithSelfOrigin(PublicWebSitemapCanonicalOriginEnvironmentVariable)
             .WithReference(catalogApi)
-            .WaitFor(catalogApi);
+            .WaitForHttpDependency(catalogApi);
     }
 }

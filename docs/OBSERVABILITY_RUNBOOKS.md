@@ -192,3 +192,25 @@ branding until the bounded freshness window expires.
 **First checks.** `branding-cache` for the source revision per instance and the invalidation outcomes.
 
 **Rollback.** Restart the affected instance to reload Branding settings.
+
+## Document operation failures
+
+**What it means.** A document request returned a server error or threw an exception, or a retention
+batch failed. The alert fires after one minute when a failure lands in the preceding ten minutes,
+including the first sample of a new failure series. It clears after the failure leaves that window.
+Validation or state rejections and cooperative cancellations have their own outcomes.
+
+**First checks.** Open `document-operations` to identify the operation and whether the failure came
+from a request or a retention batch. Filter logs for `DocumentOperationCompleted` with `Outcome`
+equal to `failed`. Use the trace attached to that event, or search for the `admin.document.operation`
+span with the matching `document.correlation`. That correlation also appears in ordinary document
+API audit evidence and audit retention evidence. Previews count the authorized revision read. A
+download counts when the API opens the artifact for delivery. Use HTTP telemetry to diagnose the
+subsequent client transfer. The panels show cumulative attempts and can be empty in idle deployments.
+Request counts cover operations that reach the authorized endpoint handler.
+
+**Retention response.** Corroborate the failure with the polling cycle and its bounded failure type.
+Check database and hold-store availability, then confirm a scheduled batch completes. Retention
+handles draft, audit, and idempotency records independently. Keep legal holds in effect while
+investigating. A successful batch can retain held items. Start with the
+[retention policy](operations/document-retention-and-legal-hold.md) for evidence and schedule details.

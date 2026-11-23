@@ -87,10 +87,10 @@ internal static class CatalogApiTestHost
         return Create(null, tourStore, null, mediaStore, null, null, eventStore: eventStore);
     }
 
-    /// <summary>Creates a host whose clients carry no authentication token.</summary>
-    public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous()
+    /// <summary>Creates a host whose clients carry no authentication token, with optional startup configuration overrides.</summary>
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateAnonymous(Action<Dictionary<string, string?>>? configureConfiguration = null)
     {
-        return Create(null, null, null, null, null, null, authenticateClient: false);
+        return Create(null, null, null, null, null, null, authenticateClient: false, configureConfiguration: configureConfiguration);
     }
 
     /// <summary>Creates a host whose clients carry an Administrator token for the co-hosted Branding routes.</summary>
@@ -177,7 +177,8 @@ internal static class CatalogApiTestHost
         IImageTextGenerator? imageTextGenerator,
         bool authenticateClient = true,
         TestEventStore? eventStore = null,
-        Action<HttpClient>? configureClient = null)
+        Action<HttpClient>? configureClient = null,
+        Action<Dictionary<string, string?>>? configureConfiguration = null)
     {
         var configuredTourStore = tourStore ?? new TestCatalogTourReadModelStore();
         var configuredEventStore = eventStore ?? new TestEventStore();
@@ -214,6 +215,8 @@ internal static class CatalogApiTestHost
             configuration[$"{MediaObjectStorageSectionName}:AccessKey"] = "access";
             configuration[$"{MediaObjectStorageSectionName}:SecretKey"] = "secret";
         }
+
+        configureConfiguration?.Invoke(configuration);
 
         return WebApplicationTestHost.Create<CatalogApiHostEntryPoint>(
             hostEnvironment,

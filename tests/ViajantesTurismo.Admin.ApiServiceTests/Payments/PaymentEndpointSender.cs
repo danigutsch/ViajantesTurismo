@@ -38,6 +38,7 @@ internal sealed class PaymentEndpointSender : ISender
             200 => Result.Ok(ResultId),
             404 => Result.NotFound(detail: "Missing financial record.").ConvertError<Guid>(),
             409 => Result.Conflict(detail: "Revision changed.").ConvertError<Guid>(),
+            503 => Result.Unavailable(detail: "Instruction generation is unavailable.").ConvertError<Guid>(),
             _ => Result.Invalid(detail: "Rejected financial command.", field: "record", message: "Rejected financial command.").ConvertError<Guid>()
         };
         return ValueTask.FromResult((TResponse)(object)result);

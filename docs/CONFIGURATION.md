@@ -19,6 +19,7 @@ overridden per environment.
 | `Authentication:TokenExchange:Enabled` | None; required `true` | Boolean; must be `true` | Yes | `ViajantesTurismo.Management.Web` | Enables the required BFF audience-token exchange; it is not an optional feature flag. |
 | `Authentication:TokenExchange:Provider` | None; required `Keycloak` | Case-insensitive `Keycloak` | Yes | `ViajantesTurismo.Management.Web` | Selects the current Keycloak RFC 8693 audience-token exchange implementation. |
 | `CatalogIntegrationEvents:IdempotencyLockDuration` | `00:05:00` | .NET `TimeSpan` round-trip `c` format; greater than zero | Yes | `ViajantesTurismo.Catalog.Application` integration event handlers | Controls how long an idempotency lock is held while processing one integration event. |
+| `Maintenance:Enabled` | `false` | Boolean | Yes | Admin API, Catalog API, Management Web, Public Web | Read at startup. See the [planned maintenance runbook](operations/production-readiness.md#planned-maintenance). |
 | `PublicWeb:Sitemap:CanonicalOrigin` | None in production | Absolute `http` or `https` origin without path, query, fragment, or userinfo | Yes | `ViajantesTurismo.Public.Web` | Emits canonical absolute URLs in public `/sitemap.xml`, `/robots.txt`, and the canonical, `hreflang`, and OpenGraph links of every page. Local AppHost injects its HTTPS endpoint. |
 
 Environment variable form:
@@ -34,6 +35,7 @@ Environment variable form:
 | `Authentication:TokenExchange:Enabled` | `Authentication__TokenExchange__Enabled` |
 | `Authentication:TokenExchange:Provider` | `Authentication__TokenExchange__Provider` |
 | `CatalogIntegrationEvents:IdempotencyLockDuration` | `CatalogIntegrationEvents__IdempotencyLockDuration` |
+| `Maintenance:Enabled` | `Maintenance__Enabled` |
 | `PublicWeb:Sitemap:CanonicalOrigin` | `PublicWeb__Sitemap__CanonicalOrigin` |
 
 Production configuration rules:
