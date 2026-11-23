@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 
-namespace ViajantesTurismo.Catalog.UnitTests;
+namespace ViajantesTurismo.Testing.Hosting;
 
 /// <summary>Subscribes to the hosting diagnostic listener and reports each host it announces as built.</summary>
 /// <param name="onHostBuilt">Called with every built host; it may throw to stop the entry point.</param>

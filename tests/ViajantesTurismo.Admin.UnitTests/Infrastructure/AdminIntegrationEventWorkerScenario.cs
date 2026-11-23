@@ -65,15 +65,6 @@ internal sealed class AdminIntegrationEventWorkerScenario : IDisposable
         return new AdminIntegrationEventWorkerScenario(services.BuildServiceProvider());
     }
 
-    /// <summary>Returns the sorted display names of the registered hosted services, including generic type arguments.</summary>
-    public string[] HostedServiceNames() =>
-        [.. provider.GetServices<IHostedService>()
-            .Select(service => service.GetType())
-            .Select(type => type.IsGenericType
-                ? $"{type.Name}<{string.Join(",", type.GenericTypeArguments.Select(argument => argument.Name))}>"
-                : type.Name)
-            .Order(StringComparer.Ordinal)];
-
     /// <summary>Returns the schema and table name mapped for the entity whose CLR type has the given name.</summary>
     public (string? Schema, string? Table) TableOf<TContext>(string clrTypeName)
         where TContext : DbContext
