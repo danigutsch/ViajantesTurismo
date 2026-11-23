@@ -31,14 +31,12 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
     /// Creates a booking from the tour details page and returns the created booking identifier.
     /// </summary>
     /// <param name="tour">The tour that will receive the new booking.</param>
-    /// <param name="customerFullName">The owned test customer full name used to identify the new row.</param>
-    /// <param name="customerSelectionLabel">The select option label shown in the booking form.</param>
+    /// <param name="customer">The owned test customer to find in the picker and the new booking row.</param>
     /// <param name="expectedFinalTotal">The rendered total that proves the server processed the selected options.</param>
     /// <returns>The identifier of the created booking.</returns>
     public async Task<Guid> CreateFromTourDetails(
         GetTourDto tour,
-        string customerFullName,
-        string customerSelectionLabel,
+        GetCustomerDto customer,
         string expectedFinalTotal)
     {
         await navigateTo($"/tours/{tour.Id}");
@@ -53,10 +51,14 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
         await bookingForm.WaitForAsync();
         await bookingForm.GetButton("Create Booking").WaitForAsync();
 
-        var customerField = bookingForm.Locator("div.mb-3")
-            .Filter(new LocatorFilterOptions { HasText = "Customer" }).First;
-        await customerField.Locator("select")
-            .SelectOptionAsync(new SelectOptionValue { Label = customerSelectionLabel });
+        var customerFullName = $"{customer.FirstName} {customer.LastName}";
+        await bookingForm.GetByLabel("Search for a customer", new LocatorGetByLabelOptions { Exact = true })
+            .FillAsync(customerFullName);
+        await bookingForm.Locator("#customerId").SelectOptionAsync(new SelectOptionValue
+        {
+            Value = customer.Id.ToString("D"),
+            Label = $"{customerFullName} ({customer.Email})",
+        });
 
         var roomTypeField = bookingForm.Locator("div.mb-3")
             .Filter(new LocatorFilterOptions { HasText = "Room Type" }).First;

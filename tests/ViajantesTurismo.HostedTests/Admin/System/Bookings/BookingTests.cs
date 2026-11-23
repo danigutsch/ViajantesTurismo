@@ -18,13 +18,11 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = "USD" });
         var customer = await ApiClient.CreateCustomer();
         var customerFullName = $"{customer.FirstName} {customer.LastName}";
-        var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
 
         // Act
         var createdBookingId = await BookingWorkflow.CreateFromTourDetails(
             tour,
-            customerFullName,
-            customerSelectionLabel,
+            customer,
             MoneyText.Of(1300.00m, "USD"));
         await BookingWorkflow.NavigateToDetails(createdBookingId);
 
@@ -45,12 +43,9 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
         // Arrange
         var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = "EUR" });
         var customer = await ApiClient.CreateCustomer();
-        var customerFullName = $"{customer.FirstName} {customer.LastName}";
-        var customerSelectionLabel = $"{customerFullName} ({customer.Email})";
         var createdBookingId = await BookingWorkflow.CreateFromTourDetails(
             tour,
-            customerFullName,
-            customerSelectionLabel,
+            customer,
             MoneyText.Of(1300.00m, "EUR"));
 
         // Act
