@@ -11,7 +11,8 @@ internal static class PaymentWorkflowServiceCollectionExtensions
     {
         services.AddHttpClient<IBookingPaymentsApiClient, BookingPaymentsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
             .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
-        services.AddHttpClient<IPaymentInstructionsApiClient, PaymentInstructionsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+        services.AddHttpClient(nameof(IPaymentInstructionsApiClient), client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+            .AddTypedClient<IPaymentInstructionsApiClient>(PaymentInstructionsApiClient.WithLatestReviewOnly)
             .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
         services.AddHttpClient<IPaymentAccountsApiClient, PaymentAccountsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
             .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);

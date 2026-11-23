@@ -20,9 +20,11 @@ internal static class PaymentInstructionEndpoints
         documentsGroup.MapGet("/bookings/{bookingId:guid}/payment-instructions", List).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("ListBookingPaymentInstructions", "Lists retained protected payment instruction revisions.", "Lists booking payment instructions.");
         documentsGroup.MapGet("/bookings/{bookingId:guid}/payment-instructions/page", ListPage).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .WithAdminMetadata("ListBookingPaymentInstructionPage", "Lists up to 100 masked retained instruction revisions, newest first.", "Lists a page of booking payment instructions.");
+            .WithAdminMetadata("ListBookingPaymentInstructionPage", "Lists up to 100 masked retained instruction revisions, newest first. The optional latestReviewOnly query returns at most the latest review per revision.", "Lists a page of booking payment instructions.");
         documentsGroup.MapGet("/{id:guid}/payment-instructions", Read).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("GetPaymentInstructions", "Retrieves masked generated instruction fields and approval metadata.", "Retrieves payment instructions.");
+        documentsGroup.MapGet("/{id:guid}/payment-instructions/reviews", ReadReviewPage).RequireAuthorization(AdminAuthorization.PaymentManage)
+            .WithAdminMetadata("ListPaymentInstructionReviewPage", "Lists up to 100 independent reviews of one payment instruction revision in recorded order.", "Lists one page of payment instruction reviews.");
         documentsGroup.MapPost("/bookings/{bookingId:guid}/payment-instructions", Generate).RequireAuthorization(AdminAuthorization.PaymentManage)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
@@ -51,18 +53,15 @@ internal static class PaymentInstructionEndpoints
     private static async Task<Ok<IReadOnlyList<GetPaymentInstructionDto>>> List(Guid bookingId, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct) => TypedResults.Ok(await workflow.ListForBooking(bookingId, ct));
 
     private static async Task<Results<Ok<GetPaymentInstructionPageDto>, ValidationProblem>> ListPage(Guid bookingId,
-        [FromQuery] int? page, [FromQuery] int? pageSize, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct)
+        [FromQuery] int? page, [FromQuery] int? pageSize, [FromQuery] bool? latestReviewOnly, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct)
     {
         var size = pageSize ?? ContractConstants.DefaultPaymentInstructionPageSize;
         if (size is < 1 or > ContractConstants.MaxPaymentInstructionPageSize)
         {
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            {
-                ["pageSize"] = [$"Page size must be between 1 and {ContractConstants.MaxPaymentInstructionPageSize}."]
-            });
+            return InvalidPageSize();
         }
 
-        return TypedResults.Ok(await workflow.ListPageForBooking(bookingId, page, size, ct));
+        return TypedResults.Ok(await workflow.ListPageForBooking(bookingId, page, size, latestReviewOnly == true, ct));
     }
 
     [ObserveDocumentOperation(DocumentOperation.Preview)]
@@ -72,8 +71,27 @@ internal static class PaymentInstructionEndpoints
         return instruction is null ? TypedResults.NotFound() : TypedResults.Ok(instruction);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Preview)]
+    private static async Task<Results<Ok<GetPaymentInstructionReviewPageDto>, NotFound, ValidationProblem>> ReadReviewPage(Guid id,
+        [FromQuery] int? page, [FromQuery] int? pageSize, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct)
+    {
+        var size = pageSize ?? ContractConstants.DefaultPaymentInstructionPageSize;
+        if (size is < 1 or > ContractConstants.MaxPaymentInstructionPageSize)
+        {
+            return InvalidPageSize();
+        }
+
+        var reviews = await workflow.GetReviewPage(id, page, size, ct);
+        return reviews is null ? TypedResults.NotFound() : TypedResults.Ok(reviews);
+    }
+
+    private static ValidationProblem InvalidPageSize() => TypedResults.ValidationProblem(new Dictionary<string, string[]>
+    {
+        ["pageSize"] = [$"Page size must be between 1 and {ContractConstants.MaxPaymentInstructionPageSize}."]
+    });
+
     [ObserveDocumentOperation(DocumentOperation.Generate)]
-    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Generate(Guid bookingId, [FromBody] GeneratePaymentInstructionsDto input, [FromServices] ISender sender, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Generate(Guid bookingId, [FromBody] GeneratePaymentInstructionsDto input, [FromQuery] bool? latestReviewOnly, [FromServices] ISender sender, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -86,11 +104,11 @@ internal static class PaymentInstructionEndpoints
             return key.ToValidationProblem();
         }
         var result = await sender.Send(new GeneratePaymentInstructionsCommand(bookingId, null, input, actorId, key.Value), ct);
-        return await RespondCreated(result, workflow, ct);
+        return await RespondCreated(result, latestReviewOnly == true, workflow, ct);
     }
 
     [ObserveDocumentOperation(DocumentOperation.Regenerate)]
-    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Regenerate(Guid bookingId, Guid id, [FromBody] GeneratePaymentInstructionsDto input, [FromServices] ISender sender, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Regenerate(Guid bookingId, Guid id, [FromBody] GeneratePaymentInstructionsDto input, [FromQuery] bool? latestReviewOnly, [FromServices] ISender sender, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -103,11 +121,11 @@ internal static class PaymentInstructionEndpoints
             return key.ToValidationProblem();
         }
         var result = await sender.Send(new GeneratePaymentInstructionsCommand(bookingId, id, input, actorId, key.Value), ct);
-        return await RespondCreated(result, workflow, ct);
+        return await RespondCreated(result, latestReviewOnly == true, workflow, ct);
     }
 
     [ObserveDocumentOperation(DocumentOperation.Approve)]
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApprovePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApprovePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromQuery] bool? latestReviewOnly, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -120,11 +138,11 @@ internal static class PaymentInstructionEndpoints
             return key.ToValidationProblem();
         }
         var result = await workflow.Change(id, input, actorId, key.Value, PaymentInstructionAuditOperation.Approved, ct);
-        return await Respond(result, workflow, ct);
+        return await Respond(result, latestReviewOnly == true, workflow, ct);
     }
 
     [ObserveDocumentOperation(DocumentOperation.Finalize)]
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> FinalizePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> FinalizePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromQuery] bool? latestReviewOnly, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -137,11 +155,11 @@ internal static class PaymentInstructionEndpoints
             return key.ToValidationProblem();
         }
         var result = await workflow.Change(id, input, actorId, key.Value, PaymentInstructionAuditOperation.Finalized, ct);
-        return await Respond(result, workflow, ct);
+        return await Respond(result, latestReviewOnly == true, workflow, ct);
     }
 
     [ObserveDocumentOperation(DocumentOperation.WithdrawApproval)]
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawPaymentInstructionApproval(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawPaymentInstructionApproval(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromQuery] bool? latestReviewOnly, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -154,11 +172,11 @@ internal static class PaymentInstructionEndpoints
             return key.ToValidationProblem();
         }
         var result = await workflow.Change(id, input, actorId, key.Value, PaymentInstructionAuditOperation.ApprovalWithdrawn, ct);
-        return await Respond(result, workflow, ct);
+        return await Respond(result, latestReviewOnly == true, workflow, ct);
     }
 
     [ObserveDocumentOperation(DocumentOperation.Void)]
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> VoidPaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> VoidPaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromQuery] bool? latestReviewOnly, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -171,11 +189,11 @@ internal static class PaymentInstructionEndpoints
             return key.ToValidationProblem();
         }
         var result = await workflow.Change(id, input, actorId, key.Value, PaymentInstructionAuditOperation.Voided, ct);
-        return await Respond(result, workflow, ct);
+        return await Respond(result, latestReviewOnly == true, workflow, ct);
     }
 
     [ObserveDocumentOperation(DocumentOperation.Review)]
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewPaymentInstructions(Guid id, [FromBody] ReviewPaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewPaymentInstructions(Guid id, [FromBody] ReviewPaymentInstructionsDto input, [FromQuery] bool? latestReviewOnly, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
         if (string.IsNullOrWhiteSpace(actorId))
@@ -188,10 +206,10 @@ internal static class PaymentInstructionEndpoints
             return key.ToValidationProblem();
         }
         var result = await workflow.Review(id, input, actorId, key.Value, ct);
-        return await Respond(result, workflow, ct);
+        return await Respond(result, latestReviewOnly == true, workflow, ct);
     }
 
-    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> Respond(Result<Guid> result, PaymentInstructionWorkflow workflow, CancellationToken ct)
+    private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> Respond(Result<Guid> result, bool latestReviewOnly, PaymentInstructionWorkflow workflow, CancellationToken ct)
     {
         if (result.IsFailure)
         {
@@ -203,7 +221,7 @@ internal static class PaymentInstructionEndpoints
                 _ => throw new InvalidOperationException("Unexpected payment instruction result.")
             };
         }
-        var instruction = await workflow.GetById(result.Value, ct);
+        var instruction = await workflow.GetById(result.Value, latestReviewOnly, ct);
         if (instruction is null)
         {
             return TypedResults.NotFound(new ProblemDetails { Title = "Payment instruction not found.", Status = StatusCodes.Status404NotFound });
@@ -211,7 +229,7 @@ internal static class PaymentInstructionEndpoints
         return TypedResults.Ok(instruction);
     }
 
-    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> RespondCreated(Result<Guid> result, PaymentInstructionWorkflow workflow, CancellationToken ct)
+    private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> RespondCreated(Result<Guid> result, bool latestReviewOnly, PaymentInstructionWorkflow workflow, CancellationToken ct)
     {
         if (result.IsFailure)
         {
@@ -224,7 +242,7 @@ internal static class PaymentInstructionEndpoints
                 _ => throw new InvalidOperationException("Unexpected payment instruction result.")
             };
         }
-        var instruction = await workflow.GetById(result.Value, ct);
+        var instruction = await workflow.GetById(result.Value, latestReviewOnly, ct);
         if (instruction is null)
         {
             return TypedResults.NotFound(new ProblemDetails { Title = "Payment instruction not found.", Status = StatusCodes.Status404NotFound });

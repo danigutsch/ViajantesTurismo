@@ -6,7 +6,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 /// <summary>Maps payment audit rows to the PaymentAudits table.</summary>
 internal sealed class PaymentAuditConfiguration : IEntityTypeConfiguration<PaymentAuditRow>
 {
-    /// <summary>Configures the key, identity sequence, length limits and resource/time index.</summary>
+    /// <summary>Configures the key, identity sequence, length limits and audit indexes.</summary>
     public void Configure(EntityTypeBuilder<PaymentAuditRow> entity)
     {
         entity.ToTable("PaymentAudits");
@@ -18,5 +18,6 @@ internal sealed class PaymentAuditConfiguration : IEntityTypeConfiguration<Payme
         entity.Property(row => row.Operation).HasMaxLength(64).IsRequired();
         entity.Property(row => row.Reason).HasMaxLength(64).IsRequired();
         entity.HasIndex(row => new { row.ResourceId, row.OccurredAt });
+        entity.HasIndex(row => new { row.TargetId, row.Sequence });
     }
 }
