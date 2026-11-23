@@ -251,6 +251,7 @@ internal static class CatalogApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourMutationLock>(new TestCatalogTourMutationLock()));
                 var images = mediaStore ?? new TestPublicMediaImageStore();
                 services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(images));
+                services.Replace(ServiceDescriptor.Singleton<ICatalogGalleryReadStore>(new TestCatalogGalleryReadStore(configuredTourStore, images)));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogGalleryPhotoOptionsQuery>(new TestCatalogGalleryPhotoOptionsQuery(configuredTourStore, images)));
                 services.Replace(ServiceDescriptor.Singleton(
                     galleryPlacementIntents ?? new UnsupportedCatalogGalleryPlacementIntentStore()));

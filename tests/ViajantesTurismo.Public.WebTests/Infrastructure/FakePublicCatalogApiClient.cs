@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using System.Collections.Concurrent;
 using PandaBear.HttpClients;
 
@@ -242,6 +243,52 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         }
 
         return Task.FromResult(Media);
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<CatalogGalleryIndexDto>> ListPublishedAlbums(string culture, string? page, CancellationToken ct)
+    {
+        var published = await GetPublishedTours(ct);
+        if (published.Value is not { } summaries)
+        {
+            return TransportFailure<CatalogGalleryIndexDto>();
+        }
+
+        var albums = summaries.Where(tour => tour.Images.Count > 0).Select(tour => new CatalogGallerySummaryDto(
+            tour.Slug, tour.Title, "en-US", tour.Images.Count,
+            tour.Images.OrderByDescending(image => image.IsCover).ThenBy(image => image.SortOrder).First())).ToArray();
+        var window = PageWindow.Create(page, 24, albums.Length);
+
+        return window.IsOutOfRange
+            ? HttpOutcomeMapper.Status<CatalogGalleryIndexDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogGalleryIndexDto(
+                window.Page, window.PageSize, window.Total, [.. albums.Skip(window.Skip).Take(window.Take)]));
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<CatalogGalleryAlbumDto>> GetPublishedAlbum(string slug, string culture, string? page, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (ThrowOperationCanceledExceptionOnDetailsRequests)
+        {
+            throw new OperationCanceledException("Catalog album request canceled upstream.");
+        }
+
+        if (FailDetailsRequests)
+        {
+            return Task.FromResult(TransportFailure<CatalogGalleryAlbumDto>());
+        }
+
+        var tour = tours.Find(tour => string.Equals(tour.Slug, slug, StringComparison.Ordinal));
+        var window = PageWindow.Create(page, 24, tour?.Images.Count ?? 0);
+        if (tour is null || window.Total == 0 || window.IsOutOfRange)
+        {
+            return Task.FromResult(HttpOutcomeMapper.Status<CatalogGalleryAlbumDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound));
+        }
+
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogGalleryAlbumDto(
+            tour.Slug, tour.Title, "en-US", window.Page, window.PageSize, window.Total,
+            [.. tour.Images.OrderBy(image => image.SortOrder).Skip(window.Skip).Take(window.Take)])));
     }
 
     private static string CreateContentKey(string key, string culture) => $"{key}\u001F{culture}";
