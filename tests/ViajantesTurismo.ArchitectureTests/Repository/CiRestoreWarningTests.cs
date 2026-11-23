@@ -9,7 +9,7 @@ public sealed class CiRestoreWarningTests
     public void Solution_build_fails_on_blocking_restore_advisories_and_always_uploads_its_warning_reports()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var workflow = File.ReadAllText(Path.Combine(root, ".github/workflows/ci.yml"));
 
         // Act
@@ -38,7 +38,7 @@ public sealed class CiRestoreWarningTests
     public void Every_required_job_uploads_a_warning_report_and_one_job_publishes_the_summary()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var workflow = File.ReadAllText(Path.Combine(root, ".github/workflows/ci.yml"));
 
         // Act

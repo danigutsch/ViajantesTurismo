@@ -17,7 +17,7 @@ public sealed class CiRunManifestTests
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
-        var repository = RepositoryRoot.Locate();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var workflow = await File.ReadAllTextAsync(Path.Combine(repository, ".github/workflows/ci.yml"), ct);
         const string manifestStep = "      - name: Write CI run manifest";
         var manifestStart = workflow.IndexOf(manifestStep, StringComparison.Ordinal);

@@ -11,7 +11,7 @@ public sealed class RoadmapSchemaContractTests
     {
         // Arrange
         using var workspace = new TemporaryWorkspace();
-        var init = await TestProcess.Run("dotnet", RepositoryRoot.Locate(),
+        var init = await TestProcess.Run("dotnet", RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             ["repo", "init", "--root", workspace.RootPath], TestContext.Current.CancellationToken);
         init.ExitCode.ShouldBe(0, init.StandardOutput + init.StandardError);
 
@@ -37,7 +37,7 @@ public sealed class RoadmapSchemaContractTests
     {
         // Arrange
         using var workspace = new TemporaryWorkspace();
-        var init = await TestProcess.Run("dotnet", RepositoryRoot.Locate(),
+        var init = await TestProcess.Run("dotnet", RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             ["repo", "init", "--root", workspace.RootPath], TestContext.Current.CancellationToken);
         init.ExitCode.ShouldBe(0, init.StandardOutput + init.StandardError);
 

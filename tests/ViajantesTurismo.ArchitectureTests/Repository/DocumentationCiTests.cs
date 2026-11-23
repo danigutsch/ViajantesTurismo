@@ -13,7 +13,7 @@ public sealed class DocumentationCiTests
         // Arrange
         const string manifestPath = ".config/dotnet-tools.json";
         const string configPath = "docs/architecture/generated-diagrams.json";
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, manifestPath)));
         using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, configPath)));
         var pinnedCommand = manifest.RootElement.GetProperty("tools")
@@ -41,7 +41,7 @@ public sealed class DocumentationCiTests
     public void Documentation_workflow_avoids_hidden_test_runs_and_lints_every_change_alike()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var workflow = File.ReadAllText(Path.Combine(root, ".github/workflows/ci.yml"));
 
         // Act
@@ -95,7 +95,7 @@ public sealed class DocumentationCiTests
         string required, string tests, string build, string format, int expected)
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var workflow = await File.ReadAllTextAsync(Path.Combine(root, ".github/workflows/ci.yml"), TestContext.Current.CancellationToken);
         var step = workflow.Split("      - name: Require successful change selection and tests\n", StringSplitOptions.None)[1]
             .Split("      - name: Checkout repository", StringSplitOptions.None)[0];

@@ -1,3 +1,4 @@
+using PandaBear.Testing;
 using PandaBear.Testing.Snapshots;
 
 namespace ViajantesTurismo.Catalog.ContractTests;
@@ -33,23 +34,5 @@ internal static class CatalogOpenApiSnapshots
     }
 
     private static string GetOpenApiDirectory()
-        => Path.Combine(GetRepositoryRoot(), "src", "ViajantesTurismo.Catalog.Contracts.Http", "OpenApi");
-
-    private static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (currentDirectory is not null)
-        {
-            var candidatePath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-            if (File.Exists(candidatePath))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate the repository root for contract test artifacts.");
-    }
+        => Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.Catalog.Contracts.Http", "OpenApi");
 }

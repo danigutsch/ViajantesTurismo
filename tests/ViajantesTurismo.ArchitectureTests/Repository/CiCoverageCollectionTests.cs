@@ -10,7 +10,7 @@ public sealed class CiCoverageCollectionTests
     public void Independent_solution_build_preserves_projects_outside_test_dependency_graphs()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var solution = XDocument.Load(Path.Combine(root, "ViajantesTurismo.slnx"));
         var independentProjects = solution.Descendants("Project")
             .Select(static project => project.Attribute("Path")?.Value)
