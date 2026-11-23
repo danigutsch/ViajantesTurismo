@@ -23,6 +23,35 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
+    public void Changing_the_booking_history_owner_refreshes_the_customer_and_their_history()
+    {
+        // Arrange
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        var first = BuildCustomerDetailsDto();
+        var secondName = first.PersonalInfo with
+        {
+            FirstName = "SecondHistoryCustomer"
+        };
+        var second = BuildCustomerDetailsDto(personalInfo: secondName);
+        var firstBooking = BuildBookingDto(customerId: first.Id);
+        var secondBooking = BuildBookingDto(companionId: second.Id);
+        _fakeCustomersApi.AddCustomerDetails(first);
+        _fakeCustomersApi.AddCustomerDetails(second);
+        _fakeBookingsApi.AddBooking(firstBooking);
+        _fakeBookingsApi.AddBooking(secondBooking);
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, first.Id));
+        cut.WaitForElement($"a[href='/bookings/{firstBooking.Id}']");
+
+        // Act
+        cut.Render(parameters => parameters.Add(page => page.Id, second.Id));
+
+        // Assert
+        cut.WaitForElement($"a[href='/bookings/{secondBooking.Id}']");
+        cut.Markup.ShouldContain(second.PersonalInfo.FirstName, StringComparison.Ordinal);
+        cut.FindAll($"a[href='/bookings/{firstBooking.Id}']").ShouldBeEmpty();
+    }
+
+    [Fact]
     [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Customer_details_defers_booking_choices_until_the_form_opens()
@@ -633,6 +662,8 @@ public sealed class DetailsPageTests : BunitContext
             cut.Markup.ShouldNotContain("Create New Booking", StringComparison.Ordinal);
             cut.Markup.ShouldNotContain("No bookings found.", StringComparison.Ordinal);
         });
+        _fakeBookingsApi.HistoryRequests.ShouldBe(Enumerable.Repeat((customer.Id, false, 1, BookingPageSort.Default, false), 2));
+        _fakeBookingsApi.GetBookingHistoryCollectionCallCount.ShouldBe(0);
     }
 
     [Fact]

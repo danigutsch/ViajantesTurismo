@@ -87,9 +87,9 @@ else
         _isAiGenerated = text?.IsAiGenerated ?? (IsDefaultLanguage && _image?.IsAiGenerated == true);
     }
 
-    private void SelectPendingImage(CatalogMediaImageDto[] images)
+    private void SelectPendingImage(CatalogMediaImageDto? image)
     {
-        _image = images.FirstOrDefault(image => image.RequiresHumanReview || image.AccessibilityTexts.Any(text => text.RequiresHumanReview));
+        _image = image;
         _language = _image?.AccessibilityTexts.FirstOrDefault(text => text.RequiresHumanReview)?.Language ?? PublicContentLanguageTags.EnglishUnitedStates;
         SelectLanguage();
     }
@@ -101,10 +101,10 @@ else
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        var outcome = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
-        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } images })
+        var outcome = await CatalogToursApi.GetNextPendingReviewImage(Id, CancellationToken.None);
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } review })
         {
-            SelectPendingImage(images);
+            SelectPendingImage(review.Image);
         }
         else
         {
@@ -194,10 +194,10 @@ else
 
     private async Task LoadNextImage()
     {
-        var outcome = await CatalogToursApi.GetTourImages(Id, CancellationToken.None);
-        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } images })
+        var outcome = await CatalogToursApi.GetNextPendingReviewImage(Id, CancellationToken.None);
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } review })
         {
-            SelectPendingImage(images);
+            SelectPendingImage(review.Image);
         }
         else
         {

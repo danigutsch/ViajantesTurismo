@@ -429,9 +429,9 @@ public sealed class ImportCustomersPageTests : BunitContext
     {
         // Arrange
         var loadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var loadCompletion = new TaskCompletionSource<IReadOnlyList<GetCustomerDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var loadCompletion = new TaskCompletionSource<Guid?[]>(TaskCreationOptions.RunContinuationsAsynchronously);
         _fakeCustomersApi.SetImportCustomersResult(new ImportResultDto(0, 0, [new ImportConflictDto("a@example.com")]));
-        _fakeCustomersApi.SetGetCustomersHandler((_, _) =>
+        _fakeCustomersApi.SetFindImportConflictIdsHandler((_, _) =>
         {
             loadStarted.TrySetResult();
             return loadCompletion.Task;
@@ -442,7 +442,7 @@ public sealed class ImportCustomersPageTests : BunitContext
         var importTask = ImportCustomersTestDomHelper.FindButtonByText(cut, "Confirm Import").ClickAsync();
         await loadStarted.Task.WaitAsync(Xunit.TestContext.Current.CancellationToken);
         await cut.Find("button[aria-label='Cancel upload of customers.csv']").ClickAsync();
-        loadCompletion.TrySetResult([]);
+        loadCompletion.TrySetResult([null]);
         await importTask;
 
         // Assert

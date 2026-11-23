@@ -8,8 +8,10 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import
 [TestScope(TestScope.Unit)]
 public sealed class ImportCustomersConflictLoaderTests
 {
-    [Fact]
-    public async Task LoadConflictStates_when_existing_customer_is_found_populates_existing_and_incoming_values()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(100)]
+    public async Task LoadConflictStates_when_existing_customer_is_found_populates_existing_and_incoming_values(int precedingCustomers)
     {
         // Arrange
         const string conflictEmail = "existing@example.com";
@@ -18,7 +20,7 @@ public sealed class ImportCustomersConflictLoaderTests
 
         var customersApi = new FakeCustomersApiClient();
         var customerId = Guid.NewGuid();
-        customersApi.AddCustomer(new GetCustomerDto
+        var existingCustomer = new GetCustomerDto
         {
             Id = customerId,
             FirstName = "ExistingFirst",
@@ -27,7 +29,17 @@ public sealed class ImportCustomersConflictLoaderTests
             Mobile = "+551111111111",
             Nationality = "Brazilian",
             BikeType = BikeTypeDto.Regular,
-        });
+        };
+        for (var index = 0; index < precedingCustomers; index++)
+        {
+            customersApi.AddCustomer(existingCustomer with
+            {
+                Id = Guid.NewGuid(),
+                Email = $"unrelated-{index}@example.com",
+            });
+        }
+
+        customersApi.AddCustomer(existingCustomer);
         customersApi.AddCustomerDetails(ImportCustomersConflictLoaderTestHelper.BuildCustomerDetails(customerId, conflictEmail, existingLastName));
 
         var mappedFileBytes = Encoding.UTF8.GetBytes(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -50,25 +62,31 @@ public sealed class ImportCustomersConflictLoaderTests
         conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName).ShouldBe(incomingFirstName);
         conflictState.GetExistingValue(CustomerImportFieldNames.LastName).ShouldBe(existingLastName);
         conflictState.GetExistingValue(CustomerImportFieldNames.Email).ShouldBe(conflictEmail);
+        customersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
-    [Fact]
-    public async Task LoadConflictStates_when_existing_customer_details_are_missing_leaves_existing_values_empty()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LoadConflictStates_when_existing_customer_details_are_unavailable_leaves_existing_values_empty(bool customerExists)
     {
         // Arrange
         const string conflictEmail = "missing-details@example.com";
 
         var customersApi = new FakeCustomersApiClient();
-        customersApi.AddCustomer(new GetCustomerDto
+        if (customerExists)
         {
-            Id = Guid.NewGuid(),
-            FirstName = "ExistingFirst",
-            LastName = "ExistingLast",
-            Email = conflictEmail,
-            Mobile = "+551111111111",
-            Nationality = "Brazilian",
-            BikeType = BikeTypeDto.Regular,
-        });
+            customersApi.AddCustomer(new GetCustomerDto
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "ExistingFirst",
+                LastName = "ExistingLast",
+                Email = conflictEmail,
+                Mobile = "+551111111111",
+                Nationality = "Brazilian",
+                BikeType = BikeTypeDto.Regular,
+            });
+        }
 
         var mappedFileBytes = Encoding.UTF8.GetBytes(CustomerImportCsvTestData.AllCanonicalHeaders + "\n" + CustomerImportCsvTestData.BuildCsvRow(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -90,15 +108,18 @@ public sealed class ImportCustomersConflictLoaderTests
         conflictState.GetExistingValue(CustomerImportFieldNames.Email).ShouldBe(string.Empty);
     }
 
-    [Fact]
-    public async Task LoadConflictStates_when_customer_list_load_fails_does_not_build_incomplete_conflict_state()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LoadConflictStates_when_conflict_lookup_fails_does_not_build_incomplete_conflict_state(bool incompleteResponse)
     {
         // Arrange
         const string conflictEmail = "existing@example.com";
         var customersApi = new FakeCustomersApiClient();
-        customersApi.SetGetCustomersOutcome(HttpOutcomeMapper.Status<GetCustomerDto[]>(
-            HttpOutcomeKind.Unauthorized,
-            System.Net.HttpStatusCode.Unauthorized));
+        var outcome = incompleteResponse
+            ? HttpOutcomeMapper.Succeeded(System.Net.HttpStatusCode.OK, Array.Empty<Guid?>())
+            : HttpOutcomeMapper.Status<Guid?[]>(HttpOutcomeKind.Unauthorized, System.Net.HttpStatusCode.Unauthorized);
+        customersApi.SetFindImportConflictIdsOutcome(outcome);
         var mappedFileBytes = Encoding.UTF8.GetBytes(
             CustomerImportCsvTestData.AllCanonicalHeaders
             + "\n"

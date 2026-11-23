@@ -56,6 +56,14 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
         return ValueTask.FromResult(ListByTour(catalogTourId));
     }
 
+    public ValueTask<PublicMediaImage?> GetNextPendingReviewByTour(Guid catalogTourId, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var image = ListByTour(catalogTourId).FirstOrDefault(image =>
+            image.RequiresHumanReview || image.AccessibilityTexts.Any(text => text.RequiresHumanReview));
+        return ValueTask.FromResult(image);
+    }
+
     public ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct)

@@ -64,6 +64,12 @@ public interface ICatalogToursApiClient
     /// </summary>
     Task<HttpOutcome<CatalogMediaImageDto[]>> GetTourImages(Guid id, CancellationToken ct);
 
+    /// <summary>Gets the next pending accessibility review for a tour.</summary>
+    /// <param name="id">The Catalog tour identifier.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The outcome and the pending image, when one exists.</returns>
+    Task<HttpOutcome<CatalogPendingImageReviewDto>> GetNextPendingReviewImage(Guid id, CancellationToken ct);
+
     /// <summary>
     /// Approves media image accessibility text.
     /// </summary>

@@ -32,6 +32,18 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     }
 
     /// <inheritdoc />
+    public async Task<HttpOutcome<GetBookingHistoryPageDto>> GetTourBookingPage(Guid tourId, int page, BookingPageSort sort, bool descending,
+        CancellationToken ct) =>
+        await ReadHistory(FormattableString.Invariant(
+            $"{RoutePrefix}/tour/{tourId}/page?page={page}&sort={sort}&descending={descending}"), ct).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<GetBookingHistoryPageDto>> GetCustomerBookingPage(Guid customerId, int page, BookingPageSort sort, bool descending,
+        CancellationToken ct) =>
+        await ReadHistory(FormattableString.Invariant(
+            $"{RoutePrefix}/customer/{customerId}/page?page={page}&sort={sort}&descending={descending}"), ct).ConfigureAwait(false);
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
     {
         return await HttpOutcomeMapper.Send(
@@ -144,6 +156,15 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
             }
             : outcome;
     }
+
+    private async Task<HttpOutcome<GetBookingHistoryPageDto>> ReadHistory(string requestUri, CancellationToken ct) =>
+        await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(requestUri, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.GetBookingHistoryPageDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
 
     private async Task<HttpOutcome> SendCommand(
         HttpMethod method,

@@ -104,6 +104,24 @@ public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fix
     }
 
     [Fact]
+    public async Task Import_conflict_lookup_preserves_exact_case_insensitive_matching_and_request_order()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await Scenario.ApplyLatestMigration(ct);
+        var ascii = await Scenario.AddCustomer("jose@example.com", ct);
+        var accented = await Scenario.AddCustomer("josé@example.com", ct);
+
+        // Act
+        var matches = await Scenario.FindImportConflictIds(
+            [" JOSÉ@EXAMPLE.COM ", "file-only@example.com", "JOSE@EXAMPLE.COM"],
+            ct);
+
+        // Assert
+        matches.ShouldBe([accented.Id, null, ascii.Id]);
+    }
+
+    [Fact]
     public async Task Import_rolls_back_every_row_when_a_competing_email_wins_during_save()
     {
         // Arrange

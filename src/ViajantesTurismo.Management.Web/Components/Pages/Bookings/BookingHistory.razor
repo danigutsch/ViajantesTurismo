@@ -1,0 +1,94 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using PandaBear.Blazor
+@using PandaBear.HttpClients
+@using ViajantesTurismo.Admin.Contracts.Application
+@using ViajantesTurismo.Management.Web.Helpers
+
+@inject IBookingsApiClient BookingsApi
+@inject IUiFailureReporter Failures
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+else if (_total is null)
+{
+    <p><em>Loading bookings...</em></p>
+}
+else
+{
+    <BookingsList ItemsProvider="@_loadBookings" TotalBookings="@_total"
+                  ShowTourInfo="@(!IsTourHistory)" ShowCustomerInfo="@IsTourHistory" />
+}
+
+@code {
+    private GridItemsProvider<GetBookingDto>? _loadBookings;
+    private GetBookingHistoryPageDto? _initialPage;
+    private int? _total;
+    private string? _errorMessage;
+
+    /// <summary>Gets or sets the owner whose booking history this component renders.</summary>
+    [Parameter]
+    [EditorRequired]
+    public Guid OwnerId { get; set; }
+
+    /// <summary>Gets or sets whether the owner is a tour.</summary>
+    [Parameter]
+    public bool IsTourHistory { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        _loadBookings = LoadBookings;
+        _initialPage = await FetchBookings(1, BookingPageSort.Default, descending: false, CancellationToken.None);
+    }
+
+    private async ValueTask<GridItemsProviderResult<GetBookingDto>> LoadBookings(GridItemsProviderRequest<GetBookingDto> request)
+    {
+        var (pageNumber, sort, descending) = BookingsList.GetPageRequest(request);
+        var initialPage = _initialPage;
+        _initialPage = null;
+        if (initialPage is not null && pageNumber == 1 && sort == BookingPageSort.Default && !descending)
+        {
+            return GridItemsProviderResult.From(initialPage.Items.ToArray(), initialPage.Total);
+        }
+
+        var previousTotal = _total;
+        var page = await FetchBookings(pageNumber, sort, descending, request.CancellationToken);
+        if (_total != previousTotal)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+
+        return page is not null
+            ? GridItemsProviderResult.From(page.Items.ToArray(), page.Total)
+            : GridItemsProviderResult.From(Array.Empty<GetBookingDto>(), 0);
+    }
+
+    private async ValueTask<GetBookingHistoryPageDto?> FetchBookings(int page, BookingPageSort sort, bool descending, CancellationToken ct)
+    {
+        try
+        {
+            var outcome = IsTourHistory
+                ? await BookingsApi.GetTourBookingPage(OwnerId, page, sort, descending, ct)
+                : await BookingsApi.GetCustomerBookingPage(OwnerId, page, sort, descending, ct);
+            ct.ThrowIfCancellationRequested();
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } bookings })
+            {
+                _total = bookings.Total;
+                _errorMessage = null;
+                return bookings;
+            }
+
+            _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load bookings")).For(outcome.Kind);
+        }
+        catch (Exception exception) when (!ct.IsCancellationRequested)
+        {
+            Failures.Report(exception, "bookings.history.load");
+            _errorMessage = UserFacingErrorMessage.ForOperation("load bookings");
+        }
+
+        _total = null;
+        return null;
+    }
+}

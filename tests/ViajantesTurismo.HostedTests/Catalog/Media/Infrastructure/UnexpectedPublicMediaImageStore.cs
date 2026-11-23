@@ -16,6 +16,10 @@ internal sealed class UnexpectedPublicMediaImageStore : IPublicMediaImageStore
     public ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct) => throw new InvalidOperationException("Image metadata is not expected when scanning fails.");
 
     /// <summary>Always throws because no image metadata is expected when scanning fails.</summary>
+    public ValueTask<PublicMediaImage?> GetNextPendingReviewByTour(Guid catalogTourId, CancellationToken ct) =>
+        throw new InvalidOperationException("Image metadata is not expected when scanning fails.");
+
+    /// <inheritdoc />
     public ValueTask<IReadOnlyDictionary<Guid, IReadOnlyList<PublicMediaImage>>> ListByTours(
         IReadOnlyCollection<Guid> catalogTourIds,
         CancellationToken ct) => throw new InvalidOperationException("Image metadata is not expected when scanning fails.");

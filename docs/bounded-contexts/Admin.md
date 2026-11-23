@@ -95,6 +95,11 @@ the status badges across all visible bookings and sorts before fetching the page
 order lists cancelled bookings first and uses booking date descending within each group. Booking
 ID breaks ties for every sort.
 
+The Management customer overview requests up to ten rows per page through `GET /api/v1/customers/page`.
+It uses Customer Read and Customer Sensitive Read. The server sorts by name, email, or nationality
+in either direction and uses customer ID to break ties. The response carries the total independently
+of the displayed page.
+
 Booking creation searches up to 20 options at a time after the form opens. Customer choices use
 `POST /api/v1/customers/options/search` with Customer Read and Customer Sensitive Read. The companion
 search excludes the principal before counting and selecting matches. Tour choices use

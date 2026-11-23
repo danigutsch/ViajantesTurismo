@@ -30,6 +30,12 @@ public interface IPublicMediaImageStore
     /// <returns>The linked media images ordered by the store implementation.</returns>
     ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct);
 
+    /// <summary>Gets the first linked image with a pending accessibility review in gallery order.</summary>
+    /// <param name="catalogTourId">The Catalog tour identifier.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The pending image, or <see langword="null"/> when no linked image requires a review.</returns>
+    ValueTask<PublicMediaImage?> GetNextPendingReviewByTour(Guid catalogTourId, CancellationToken ct);
+
     /// <summary>
     /// Lists public media images linked to multiple Catalog tours.
     /// </summary>

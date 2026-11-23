@@ -133,11 +133,7 @@ else if (_tour != null)
             </button>
         </div>
         <div class="card-body">
-            @if (_loadingBookings)
-            {
-                <p><em>Loading bookings...</em></p>
-            }
-            else if (_showCreateForm)
+            @if (_showCreateForm)
             {
                 <div class="border rounded p-3 mb-3">
                     <h5>Create New Booking</h5>
@@ -152,8 +148,7 @@ else if (_tour != null)
             }
             else
             {
-                <BookingsList Bookings="_bookings"
-                              ShowTourInfo="false" />
+                <BookingHistory @key="Id" OwnerId="@Id" IsTourHistory="true" />
             }
         </div>
     </div>
@@ -171,9 +166,8 @@ else if (_tour != null)
     private bool _loading = true;
     private bool _notFound;
     private string? _errorMessage;
-
-    private GetBookingDto[]? _bookings;
-    private bool _loadingBookings = true;
+    private Guid? _loadedOwner;
+    private int _loadVersion;
     private bool _showCreateForm;
 
     private BookingFormModel _bookingFormModel = new();
@@ -182,13 +176,29 @@ else if (_tour != null)
 
     private ToastNotification? _toast;
 
-    protected override async Task OnInitializedAsync()
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
     {
+        if (_loadedOwner == Id)
+        {
+            return;
+        }
+
+        _loadedOwner = Id;
+        var version = ++_loadVersion;
+        _loading = true;
+        _notFound = false;
+        _errorMessage = null;
+        _showCreateForm = false;
         var outcome = await ToursApi.GetTourById(Id, CancellationToken.None);
+        if (version != _loadVersion)
+        {
+            return;
+        }
+
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour })
         {
             _tour = tour;
-            await LoadBookings();
         }
         else if (outcome.Kind == HttpOutcomeKind.NotFound)
         {
@@ -200,22 +210,6 @@ else if (_tour != null)
         }
 
         _loading = false;
-    }
-
-    private async Task LoadBookings()
-    {
-        _loadingBookings = true;
-        try
-        {
-            var outcome = await BookingsApi.GetBookingsByTourId(Id, CancellationToken.None);
-            _bookings = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } bookings }
-                ? bookings
-                : [];
-        }
-        finally
-        {
-            _loadingBookings = false;
-        }
     }
 
     private void ShowCreateBookingForm()
@@ -249,8 +243,6 @@ else if (_tour != null)
             }
 
             _toast?.ShowSuccess("Booking created successfully.");
-
-            await LoadBookings();
             HideBookingForm();
         }
         finally

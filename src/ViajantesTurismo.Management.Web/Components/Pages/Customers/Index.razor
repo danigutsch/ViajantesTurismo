@@ -24,11 +24,11 @@
 {
     <div class="alert alert-danger" role="alert">@_errorMessage</div>
 }
-else if (_customers == null)
+else if (_total is null)
 {
     <p><em>Loading...</em></p>
 }
-else if (_customers.Count == 0)
+else if (_total == 0)
 {
     <div class="alert alert-info">
         <i class="bi bi-info-circle"></i> No customers found.
@@ -39,56 +39,96 @@ else if (_customers.Count == 0)
 else
 {
     <div class="table-responsive-wrapper">
-    <QuickGrid Items="@_customers.AsQueryable()" Class="table table-hover" Pagination="@(_customers.Count > 10 ? _pagination : null)">
-        <TemplateColumn Title="Name" Sortable="true" SortBy="GridSort<GetCustomerDto>.ByAscending(c => c.FirstName).ThenAscending(c => c.LastName)">
-            @context.FirstName @context.LastName
-        </TemplateColumn>
+        <QuickGrid TGridItem="GetCustomerListItemDto" ItemsProvider="@_loadCustomers" Class="table table-hover" Pagination="@_pagination">
+            <TemplateColumn Title="Name" Sortable="true" SortBy="GridSort<GetCustomerListItemDto>.ByAscending(c => c.FirstName).ThenAscending(c => c.LastName)">
+                @context.FirstName @context.LastName
+            </TemplateColumn>
 
-        <PropertyColumn Property="@(c => c.Email)" Title="Email" Sortable="true" />
-        <PropertyColumn Property="@(c => c.Mobile)" Title="Mobile" />
-        <PropertyColumn Property="@(c => c.Nationality)" Title="Nationality" Sortable="true" />
+            <PropertyColumn Property="@(c => c.Email)" Title="Email" Sortable="true" />
+            <PropertyColumn Property="@(c => c.Mobile)" Title="Mobile" />
+            <PropertyColumn Property="@(c => c.Nationality)" Title="Nationality" Sortable="true" />
 
-        <TemplateColumn Title="Actions">
-            <div class="btn-group" role="group">
-                <NavLink href="@GetCustomerDetailsUrl(context.Id)" class="btn btn-sm btn-info">
-                    <i class="bi bi-eye"></i> View
-                </NavLink>
-                <NavLink href="@GetCustomerEditUrl(context.Id)" class="btn btn-sm btn-primary">
-                    <i class="bi bi-pencil"></i> Edit
-                </NavLink>
-            </div>
-        </TemplateColumn>
-    </QuickGrid>
+            <TemplateColumn Title="Actions">
+                <div class="btn-group" role="group">
+                    <NavLink href="@GetCustomerDetailsUrl(context.Id)" class="btn btn-sm btn-info">
+                        <i class="bi bi-eye"></i> View
+                    </NavLink>
+                    <NavLink href="@GetCustomerEditUrl(context.Id)" class="btn btn-sm btn-primary">
+                        <i class="bi bi-pencil"></i> Edit
+                    </NavLink>
+                </div>
+            </TemplateColumn>
+        </QuickGrid>
     </div>
 
-    @if (_customers.Count > 10)
+    @if (_total > ContractConstants.CustomerListPageSize)
     {
         <Paginator State="@_pagination" />
     }
 
     <div class="mt-3">
-        <p class="text-muted">Total customers: @_customers.Count</p>
+        <p class="text-muted">Total customers: @_total</p>
     </div>
 }
 
 @code {
-    private IReadOnlyList<GetCustomerDto>? _customers;
+    private GridItemsProvider<GetCustomerListItemDto>? _loadCustomers;
+    private GetCustomerPageDto? _initialPage;
+    private int? _total;
     private string? _errorMessage;
-    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+    private readonly PaginationState _pagination = new() { ItemsPerPage = ContractConstants.CustomerListPageSize };
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        _errorMessage = null;
-        var outcome = await CustomersApi.GetCustomers(CancellationToken.None);
-        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers })
+        _loadCustomers = LoadCustomers;
+        _initialPage = await FetchCustomers(1, CustomerPageSort.Name, descending: false, CancellationToken.None);
+    }
+
+    private async ValueTask<GridItemsProviderResult<GetCustomerListItemDto>> LoadCustomers(
+        GridItemsProviderRequest<GetCustomerListItemDto> request)
+    {
+        var sort = request.GetSortByProperties().FirstOrDefault().PropertyName switch
         {
-            _customers = customers;
-            return;
+            nameof(GetCustomerListItemDto.Email) => CustomerPageSort.Email,
+            nameof(GetCustomerListItemDto.Nationality) => CustomerPageSort.Nationality,
+            _ => CustomerPageSort.Name
+        };
+        var pageNumber = (request.StartIndex / ContractConstants.CustomerListPageSize) + 1;
+        var descending = request.SortByColumn is not null && !request.SortByAscending;
+        var initialPage = _initialPage;
+        _initialPage = null;
+        if (initialPage is not null && pageNumber == 1 && sort == CustomerPageSort.Name && !descending)
+        {
+            return GridItemsProviderResult.From(initialPage.Items.ToArray(), initialPage.Total);
         }
 
-        _customers = [];
+        var previousTotal = _total;
+        var page = await FetchCustomers(pageNumber, sort, descending, request.CancellationToken);
+        if (_total != previousTotal)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+
+        return page is not null
+            ? GridItemsProviderResult.From(page.Items.ToArray(), page.Total)
+            : GridItemsProviderResult.From(Array.Empty<GetCustomerListItemDto>(), 0);
+    }
+
+    private async ValueTask<GetCustomerPageDto?> FetchCustomers(int page, CustomerPageSort sort, bool descending, CancellationToken ct)
+    {
+        _errorMessage = null;
+        var outcome = await CustomersApi.GetCustomerPage(page, sort, descending, ct);
+        ct.ThrowIfCancellationRequested();
+        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } result })
+        {
+            _total = result.Total;
+            return result;
+        }
+
         _errorMessage = new HttpOutcomeMessages("Customers could not be loaded. Try again later.").For(outcome.Kind);
+        _total = 0;
+        return null;
     }
 
     private static string GetCustomerDetailsUrl(Guid customerId) => $"/customers/{customerId}";

@@ -40,6 +40,19 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
+    public async Task<HttpOutcome<GetCustomerPageDto>> GetCustomerPage(int page, CustomerPageSort sort, bool descending, CancellationToken ct)
+    {
+        var route = FormattableString.Invariant($"{RoutePrefix}/page?page={page}&sort={sort}&descending={descending}");
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.GetCustomerPageDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<GetCustomerOptionsDto>> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -53,6 +66,23 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
             Json.GetCustomerOptionsDto,
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<Guid?[]>> FindCustomerImportConflictIds(string[] emails, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(emails);
+
+        return HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Post, new Uri($"{RoutePrefix}/import/conflicts/lookup", UriKind.Relative))
+            {
+                Content = JsonContent.Create(emails, Json.StringArray)
+            },
+            HttpStatusCode.OK,
+            Json.NullableGuidArray,
+            Json.ContractValidationProblemDto,
+            ct);
     }
 
     /// <inheritdoc />

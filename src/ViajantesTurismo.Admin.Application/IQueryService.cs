@@ -25,6 +25,14 @@ public interface IQueryService
     /// <returns>A read-only list of <see cref="GetTourDto"/> representing all tours.</returns>
     Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct);
 
+    /// <summary>Retrieves a bounded page of active tour summaries.</summary>
+    /// <param name="page">The optional one-based page number.</param>
+    /// <param name="sort">The requested column.</param>
+    /// <param name="descending">Whether the selected column uses descending order.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The selected tour summaries and the active total.</returns>
+    Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct);
+
     /// <summary>Finds a bounded slice of active tours by name or operational identifier.</summary>
     /// <param name="request">The optional search text and requested result limit.</param>
     /// <param name="ct">Cancellation token for the operation.</param>
@@ -51,6 +59,14 @@ public interface IQueryService
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>A read-only list of customer DTOs.</returns>
     Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct);
+
+    /// <summary>Retrieves a bounded page of customer summaries.</summary>
+    /// <param name="page">The optional one-based page number.</param>
+    /// <param name="sort">The requested column.</param>
+    /// <param name="descending">Whether to sort the column in descending order.</param>
+    /// <param name="ct">Cancellation token for the operation.</param>
+    /// <returns>The customer summaries and total count.</returns>
+    Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct);
 
     /// <summary>Finds a bounded slice of customer choices by name or complete identifier.</summary>
     /// <param name="request">The search text, result limit, and optional excluded customer.</param>
@@ -80,6 +96,22 @@ public interface IQueryService
     /// <param name="ct">Cancellation token for the operation.</param>
     /// <returns>The page and overview counts.</returns>
     Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct);
+
+    /// <summary>Retrieves a page from a tour's booking history.</summary>
+    /// <param name="tourId">The booked tour.</param>
+    /// <param name="page">The optional one-based page.</param>
+    /// <param name="sort">The requested sort, where default puts cancelled bookings first and then newest first.</param>
+    /// <param name="descending">Whether to reverse the selected sort.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task<GetBookingHistoryPageDto> GetTourBookingPage(Guid tourId, string? page, BookingPageSort sort, bool descending, CancellationToken ct);
+
+    /// <summary>Retrieves a page from a customer's history as principal or companion.</summary>
+    /// <param name="customerId">The customer whose bookings are returned.</param>
+    /// <param name="page">The optional one-based page.</param>
+    /// <param name="sort">The requested sort, where default uses the newest booking date first.</param>
+    /// <param name="descending">Whether to reverse the selected sort.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task<GetBookingHistoryPageDto> GetCustomerBookingPage(Guid customerId, string? page, BookingPageSort sort, bool descending, CancellationToken ct);
 
     /// <summary>
     /// Retrieves a booking by ID.

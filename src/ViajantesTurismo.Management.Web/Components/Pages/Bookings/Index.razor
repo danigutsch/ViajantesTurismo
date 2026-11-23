@@ -60,16 +60,7 @@
 
     private async ValueTask<GridItemsProviderResult<GetBookingDto>> LoadBookings(GridItemsProviderRequest<GetBookingDto> request)
     {
-        var sort = request.GetSortByProperties().FirstOrDefault().PropertyName switch
-        {
-            nameof(GetBookingDto.BookingDate) => BookingPageSort.BookingDate,
-            nameof(GetBookingDto.TourName) => BookingPageSort.TourName,
-            nameof(GetBookingDto.CustomerName) => BookingPageSort.CustomerName,
-            nameof(GetBookingDto.TotalPrice) => BookingPageSort.TotalPrice,
-            _ => BookingPageSort.Default,
-        };
-        var pageNumber = (request.StartIndex / ContractConstants.BookingListPageSize) + 1;
-        var descending = request.SortByColumn is not null && !request.SortByAscending;
+        var (pageNumber, sort, descending) = BookingsList.GetPageRequest(request);
         var initialPage = _initialPage;
         _initialPage = null;
         if (initialPage is not null && pageNumber == 1 && sort == BookingPageSort.Default && !descending)

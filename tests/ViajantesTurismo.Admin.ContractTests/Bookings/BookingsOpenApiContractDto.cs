@@ -13,6 +13,8 @@ namespace ViajantesTurismo.Admin.ContractTests.Bookings;
 /// <param name="DeleteBookingOperationId">Expected operationId of the delete booking operation.</param>
 /// <param name="GetBookingsByTourIdOperationId">Expected operationId of the get bookings by tour id operation.</param>
 /// <param name="GetBookingsByCustomerIdOperationId">Expected operationId of the get bookings by customer id operation.</param>
+/// <param name="GetTourBookingPageOperationId">Expected operationId of the bounded tour booking history.</param>
+/// <param name="GetCustomerBookingPageOperationId">Expected operationId of the bounded customer booking history.</param>
 /// <param name="UpdateBookingDiscountOperationId">Expected operationId of the update booking discount operation.</param>
 /// <param name="UpdateBookingDiscountSchemaReference">Expected $ref of the update booking discount request schema.</param>
 /// <param name="UpdateBookingDetailsOperationId">Expected operationId of the update booking details operation.</param>
@@ -33,6 +35,8 @@ internal sealed record BookingsOpenApiContractDto(
     string DeleteBookingOperationId,
     string GetBookingsByTourIdOperationId,
     string GetBookingsByCustomerIdOperationId,
+    string GetTourBookingPageOperationId,
+    string GetCustomerBookingPageOperationId,
     string UpdateBookingDiscountOperationId,
     string UpdateBookingDiscountSchemaReference,
     string UpdateBookingDetailsOperationId,

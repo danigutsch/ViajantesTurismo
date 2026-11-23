@@ -30,8 +30,10 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/api/v1/bookings` | GetBookings | management API | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
 | `POST` | `/api/v1/bookings` | CreateBooking | management API | required | `ViajantesTurismo.Admin.Api/Bookings/CreateBooking/BookingsCreateBookingEndpoint.cs` |
 | `GET` | `/api/v1/bookings/customer/{customerId:guid}` | GetBookingsByCustomerId | management API | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
+| `GET` | `/api/v1/bookings/customer/{customerId:guid}/page` | GetCustomerBookingPage | management API | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
 | `GET` | `/api/v1/bookings/page` | GetBookingPage | management API | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
 | `GET` | `/api/v1/bookings/tour/{tourId:guid}` | GetBookingsByTourId | management API | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
+| `GET` | `/api/v1/bookings/tour/{tourId:guid}/page` | GetTourBookingPage | management API | required | `ViajantesTurismo.Admin.Api/Bookings/BookingEndpoints.cs` |
 | `GET` | `/api/v1/bookings/{bookingId:guid}/finances` | GetBookingFinancialHistory | management API | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
 | `POST` | `/api/v1/bookings/{bookingId:guid}/finances/allocation-releases` | ReleaseBookingPaymentAllocations | management API | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
 | `GET` | `/api/v1/bookings/{bookingId:guid}/finances/details` | GetBookingFinancialDetails | management API | required | `ViajantesTurismo.Admin.Api/Payments/BookingFinancialEndpoints.cs` |
@@ -70,6 +72,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/api/v1/catalog/tours/{id:guid}` | GetTour | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `GET` | `/api/v1/catalog/tours/{id:guid}/images` | ListTourImages | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `POST` | `/api/v1/catalog/tours/{id:guid}/images` | UploadTourImage | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
+| `GET` | `/api/v1/catalog/tours/{id:guid}/images/review/next` | GetNextPendingReviewImage | management API | required | `ViajantesTurismo.Catalog.Api/Media/CatalogMediaEndpoints.cs` |
 | `PUT` | `/api/v1/catalog/tours/{id:guid}/presentation` | UpsertTourPresentation | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `POST` | `/api/v1/catalog/tours/{id:guid}/publish` | PublishTour | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
 | `POST` | `/api/v1/catalog/tours/{id:guid}/unpublish` | UnpublishTour | management API | required | `ViajantesTurismo.Catalog.Api/Tours/CatalogTourEndpoints.cs` |
@@ -77,7 +80,9 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/customers` | CreateCustomer | management API | required | `ViajantesTurismo.Admin.Api/Customers/CreateCustomer/CreateCustomerEndpoint.cs` |
 | `POST` | `/api/v1/customers/import` | ImportCustomers | management API | not declared | `ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpoints.cs` |
 | `POST` | `/api/v1/customers/import/commit` | CommitImportWithResolutions | management API | not declared | `ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpoints.cs` |
+| `POST` | `/api/v1/customers/import/conflicts/lookup` | FindCustomerImportConflictIds | management API | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
 | `POST` | `/api/v1/customers/options/search` | SearchCustomerOptions | management API | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
+| `GET` | `/api/v1/customers/page` | GetCustomerPage | management API | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
 | `GET` | `/api/v1/customers/{id:guid}` | GetCustomerById | management API | required | `ViajantesTurismo.Admin.Api/Customers/CustomerEndpoints.cs` |
 | `PUT` | `/api/v1/customers/{id:guid}` | UpdateCustomer | management API | required | `ViajantesTurismo.Admin.Api/Customers/UpdateCustomer/UpdateCustomerEndpoint.cs` |
 | `GET` | `/api/v1/docs/errors` | GetErrorDocumentation | management API | not declared | `ViajantesTurismo.Admin.Api/Errors/ErrorDocumentationEndpoints.cs` |
@@ -124,6 +129,7 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `GET` | `/api/v1/tours` | GetTours | management API | required | `ViajantesTurismo.Admin.Api/Tours/ToursEndpoints.cs` |
 | `POST` | `/api/v1/tours` | CreateTour | management API | required | `ViajantesTurismo.Admin.Api/Tours/CreateTour/ToursCreateTourEndpoint.cs` |
 | `POST` | `/api/v1/tours/options/search` | SearchTourOptions | management API | required | `ViajantesTurismo.Admin.Api/Tours/ToursEndpoints.cs` |
+| `GET` | `/api/v1/tours/page` | GetTourPage | management API | required | `ViajantesTurismo.Admin.Api/Tours/ToursEndpoints.cs` |
 | `DELETE` | `/api/v1/tours/{id:guid}` | DeleteTour | management API | required | `ViajantesTurismo.Admin.Api/Tours/DeleteTour/ToursDeleteTourEndpoint.cs` |
 | `GET` | `/api/v1/tours/{id:guid}` | GetTourById | management API | required | `ViajantesTurismo.Admin.Api/Tours/ToursEndpoints.cs` |
 | `PUT` | `/api/v1/tours/{id:guid}` | UpdateTour | management API | required | `ViajantesTurismo.Admin.Api/Tours/UpdateTour/ToursUpdateTourEndpoint.cs` |

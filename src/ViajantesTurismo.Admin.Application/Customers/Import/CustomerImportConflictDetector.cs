@@ -62,6 +62,27 @@ public sealed class CustomerImportConflictDetector(ICustomerStore customerStore)
         return conflicts;
     }
 
+    /// <summary>Finds the existing customer IDs for the supplied import conflict keys in input order.</summary>
+    /// <param name="emails">The conflict email keys.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>One ID per input, or null for a conflict without an existing customer.</returns>
+    public async Task<Guid?[]> FindExistingCustomerIds(IReadOnlyList<string> emails, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(emails);
+
+        var matches = new Guid?[emails.Count];
+        for (var index = 0; index < emails.Count; index++)
+        {
+            if (StringSanitizer.TrySanitize(emails[index], out var email) && email is not null)
+            {
+                var customer = await customerStore.GetByEmail(email, ct);
+                matches[index] = customer?.Id;
+            }
+        }
+
+        return matches;
+    }
+
     private async Task<IReadOnlyList<int>> FindDuplicateEmailLineNumbersAgainstDatabase(
         CsvDocument document,
         CancellationToken ct)

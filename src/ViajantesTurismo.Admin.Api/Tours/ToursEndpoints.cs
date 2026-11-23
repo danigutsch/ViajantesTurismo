@@ -34,6 +34,11 @@ internal static class ToursEndpoints
             .RequireAuthorization(AdminAuthorization.TourRead)
             .WithAdminMetadata(ListEndpoint, "Retrieves all available tours.", "Retrieves all available tours.");
 
+        toursGroup.MapGet("/page", GetTourPage)
+            .RequireAuthorization(AdminAuthorization.TourRead)
+            .WithAdminMetadata(nameof(GetTourPage), "Retrieves a page of active tours.",
+                "Retrieves bounded tour summaries. The optional page number is one-based.");
+
         toursGroup.MapPost("/options/search", SearchTourOptions)
             .RequireAuthorization(AdminAuthorization.TourRead)
             .WithAdminMetadata(nameof(SearchTourOptions), "Searches active tour choices.",
@@ -57,6 +62,23 @@ internal static class ToursEndpoints
         var links = GetResourceLinks(context, linkGenerator);
         return TypedResults.Ok<IReadOnlyList<GetTourDto>>(
             [.. allTours.Select(tour => tour with { Links = links.For(tour.Id).Links })]);
+    }
+
+    private static async Task<Results<Ok<GetTourPageDto>, BadRequest>> GetTourPage(
+        [FromQuery] string? page,
+        [FromQuery] string? sort,
+        [FromQuery] bool? descending,
+        [FromServices] IQueryService queryService,
+        CancellationToken ct)
+    {
+        var sortKey = TourPageSort.Default;
+        if (sort is not null && (!Enum.TryParse(sort, ignoreCase: true, out sortKey) || !Enum.IsDefined(sortKey)))
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var tours = await queryService.GetTourPage(page, sortKey, descending.GetValueOrDefault(), ct);
+        return TypedResults.Ok(tours);
     }
 
     private static async Task<Results<Ok<GetTourOptionsDto>, BadRequest>> SearchTourOptions(

@@ -115,6 +115,21 @@ else
     [Parameter]
     public bool ShowCustomerInfo { get; set; } = true;
 
+    /// <summary>Maps the table's sort and offset to the booking page contract.</summary>
+    internal static (int Page, BookingPageSort Sort, bool Descending) GetPageRequest(GridItemsProviderRequest<GetBookingDto> request)
+    {
+        var sort = request.GetSortByProperties().FirstOrDefault().PropertyName switch
+        {
+            nameof(GetBookingDto.BookingDate) => BookingPageSort.BookingDate,
+            nameof(GetBookingDto.TourName) => BookingPageSort.TourName,
+            nameof(GetBookingDto.CustomerName) => BookingPageSort.CustomerName,
+            nameof(GetBookingDto.TotalPrice) => BookingPageSort.TotalPrice,
+            _ => BookingPageSort.Default,
+        };
+        var page = (request.StartIndex / ContractConstants.BookingListPageSize) + 1;
+        return (page, sort, request.SortByColumn is not null && !request.SortByAscending);
+    }
+
     private static string GetDiscountBadgeClass(DiscountTypeDto discountType)
     {
         return discountType switch

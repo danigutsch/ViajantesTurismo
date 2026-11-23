@@ -16,6 +16,8 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     private Exception? _getBookingPageException;
     private HttpOutcome<GetBookingPageDto>? _getBookingPageOutcome;
     private readonly List<(int Page, BookingPageSort Sort, bool Descending)> _pageRequests = [];
+    private readonly List<(Guid Owner, bool ByTour, int Page, BookingPageSort Sort, bool Descending)> _historyRequests = [];
+    private HttpOutcome<GetBookingHistoryPageDto>? _getBookingHistoryOutcome;
     private Exception? _getBookingByIdException;
     private int? _getBookingByIdExceptionCall;
     private HttpOutcome<GetBookingDto>? _getBookingByIdOutcome;
@@ -44,6 +46,15 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     }
 
     public IReadOnlyList<(int Page, BookingPageSort Sort, bool Descending)> PageRequests => _pageRequests;
+
+    /// <summary>Gets the recorded requests for owner booking pages.</summary>
+    public IReadOnlyList<(Guid Owner, bool ByTour, int Page, BookingPageSort Sort, bool Descending)> HistoryRequests => _historyRequests;
+
+    /// <summary>Gets the number of legacy collection requests for booking histories.</summary>
+    public int GetBookingHistoryCollectionCallCount
+    {
+        get; private set;
+    }
 
     public UpdateBookingDetailsDto? LastUpdatedDetails
     {
@@ -104,24 +115,63 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
             _bookings.Count(booking => booking.Status == BookingStatusDto.Confirmed),
             _bookings.Count(booking => booking.Status == BookingStatusDto.Completed),
             _bookings.Count(booking => booking.Status == BookingStatusDto.Cancelled));
-        var sorted = sort switch
-        {
-            BookingPageSort.BookingDate => OrderBy(booking => booking.BookingDate, descending),
-            BookingPageSort.TourName => OrderBy(booking => booking.TourName, descending),
-            BookingPageSort.CustomerName => OrderBy(booking => booking.CustomerName, descending),
-            BookingPageSort.TotalPrice => OrderBy(booking => booking.TotalPrice, descending),
-            _ => _bookings.OrderByDescending(booking => booking.Status == BookingStatusDto.Cancelled)
-                .ThenByDescending(booking => booking.BookingDate),
-        };
-        var items = sorted.ThenBy(booking => booking.Id)
-            .Skip((page - 1) * ContractConstants.BookingListPageSize)
-            .Take(ContractConstants.BookingListPageSize)
-            .ToArray();
+        var items = ReadWindow(_bookings, page, sort, descending);
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetBookingPageDto(items, counts)));
     }
 
-    private IOrderedEnumerable<GetBookingDto> OrderBy<TKey>(Func<GetBookingDto, TKey> key, bool descending) =>
-        descending ? _bookings.OrderByDescending(key) : _bookings.OrderBy(key);
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetBookingHistoryPageDto>> GetTourBookingPage(Guid tourId, int page, BookingPageSort sort, bool descending,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        _historyRequests.Add((tourId, true, page, sort, descending));
+        return Task.FromResult(_getBookingHistoryOutcome ??
+            ReadHistory(_bookings.Where(booking => booking.TourId == tourId), page, sort, descending));
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetBookingHistoryPageDto>> GetCustomerBookingPage(Guid customerId, int page, BookingPageSort sort, bool descending,
+        CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        _historyRequests.Add((customerId, false, page, sort, descending));
+        return Task.FromResult(_getBookingHistoryOutcome ?? ReadHistory(
+            _bookings.Where(booking => booking.CustomerId == customerId || booking.CompanionId == customerId),
+            page, sort == BookingPageSort.Default ? BookingPageSort.BookingDate : sort, sort == BookingPageSort.Default || descending));
+    }
+
+    /// <summary>Sets a fixed outcome for owner history page requests.</summary>
+    public void SetGetBookingHistoryOutcome(HttpOutcome<GetBookingHistoryPageDto> outcome) => _getBookingHistoryOutcome = outcome;
+
+    private static HttpOutcome<GetBookingHistoryPageDto> ReadHistory(
+        IEnumerable<GetBookingDto> matching, int page, BookingPageSort sort, bool descending)
+    {
+        var bookings = matching.ToArray();
+        var items = ReadWindow(bookings, page, sort, descending);
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetBookingHistoryPageDto(items, bookings.Length));
+    }
+
+    private static GetBookingDto[] ReadWindow(IEnumerable<GetBookingDto> bookings, int page, BookingPageSort sort, bool descending)
+    {
+        var sorted = sort switch
+        {
+            BookingPageSort.BookingDate => OrderBy(bookings, booking => booking.BookingDate, descending),
+            BookingPageSort.TourName => OrderBy(bookings, booking => booking.TourName, descending),
+            BookingPageSort.CustomerName => OrderBy(bookings, booking => booking.CustomerName, descending),
+            BookingPageSort.TotalPrice => OrderBy(bookings, booking => booking.TotalPrice, descending),
+            _ => bookings.OrderByDescending(booking => booking.Status == BookingStatusDto.Cancelled)
+                .ThenByDescending(booking => booking.BookingDate),
+        };
+        return
+        [
+            .. sorted.ThenBy(booking => booking.Id)
+                .Skip((page - 1) * ContractConstants.BookingListPageSize)
+                .Take(ContractConstants.BookingListPageSize)
+        ];
+    }
+
+    private static IOrderedEnumerable<GetBookingDto> OrderBy<TKey>(IEnumerable<GetBookingDto> bookings, Func<GetBookingDto, TKey> key,
+        bool descending) => descending ? bookings.OrderByDescending(key) : bookings.OrderBy(key);
 
     public Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
     {
@@ -149,6 +199,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public Task<HttpOutcome<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        GetBookingHistoryCollectionCallCount++;
         return Task.FromResult(HttpOutcomeMapper.Succeeded(
             HttpStatusCode.OK,
             _bookings.Where(b => b.TourId == tourId).ToArray()));
@@ -157,6 +208,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public Task<HttpOutcome<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        GetBookingHistoryCollectionCallCount++;
         return Task.FromResult(HttpOutcomeMapper.Succeeded(
             HttpStatusCode.OK,
             _bookings.Where(b => b.CustomerId == customerId || b.CompanionId == customerId).ToArray()));

@@ -13,6 +13,10 @@ internal sealed class FakeQueryService(GetBookingDto? booking, GetTourDto? tour 
     public Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
+    public Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<GetTourOptionsDto> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct) => throw new NotSupportedException();
 
     /// <summary>Returns the configured tour when its id matches, otherwise null.</summary>
@@ -28,6 +32,10 @@ internal sealed class FakeQueryService(GetBookingDto? booking, GetTourDto? tour 
     public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
+    public Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
     public Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct) =>
         throw new NotSupportedException();
 
@@ -41,6 +49,14 @@ internal sealed class FakeQueryService(GetBookingDto? booking, GetTourDto? tour 
     /// <inheritdoc />
     public Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetTourBookingPage(Guid tourId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetBookingHistoryPageDto> GetCustomerBookingPage(Guid customerId, string? page, BookingPageSort sort, bool descending,
+        CancellationToken ct) => throw new NotSupportedException();
 
     /// <summary>Returns the configured booking when its id matches, otherwise null.</summary>
     public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct) =>

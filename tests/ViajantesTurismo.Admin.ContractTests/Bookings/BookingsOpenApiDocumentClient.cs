@@ -58,18 +58,6 @@ internal static class BookingsOpenApiDocumentClient
             throw new InvalidOperationException("The bookings item path is missing required operations.");
         }
 
-        if (!document.Paths.TryGetValue($"{RoutePrefix}/tour/{{tourId}}", out var bookingsByTourPath) ||
-            bookingsByTourPath.Get is null)
-        {
-            throw new InvalidOperationException("The bookings-by-tour path is missing the required operation.");
-        }
-
-        if (!document.Paths.TryGetValue($"{RoutePrefix}/customer/{{customerId}}", out var bookingsByCustomerPath) ||
-            bookingsByCustomerPath.Get is null)
-        {
-            throw new InvalidOperationException("The bookings-by-customer path is missing the required operation.");
-        }
-
         if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}/discount", out var discountPath) ||
             discountPath.Put is null)
         {
@@ -129,8 +117,10 @@ internal static class BookingsOpenApiDocumentClient
             bookingsPath.Post.OperationId,
             createBookingSchemaReference,
             bookingByIdPath.Delete.OperationId,
-            bookingsByTourPath.Get.OperationId,
-            bookingsByCustomerPath.Get.OperationId,
+            GetRequiredReadOperationId(document.Paths, $"{RoutePrefix}/tour/{{tourId}}"),
+            GetRequiredReadOperationId(document.Paths, $"{RoutePrefix}/customer/{{customerId}}"),
+            GetRequiredReadOperationId(document.Paths, $"{RoutePrefix}/tour/{{tourId}}/page"),
+            GetRequiredReadOperationId(document.Paths, $"{RoutePrefix}/customer/{{customerId}}/page"),
             discountPath.Put.OperationId,
             updateBookingDiscountSchemaReference,
             detailsPath.Put.OperationId,
@@ -141,6 +131,11 @@ internal static class BookingsOpenApiDocumentClient
             cancelPath.Post.OperationId,
             completePath.Post.OperationId);
     }
+
+    private static string GetRequiredReadOperationId(IReadOnlyDictionary<string, BookingsOpenApiPathDto> paths, string route) =>
+        paths.TryGetValue(route, out var path) && path.Get is not null
+            ? path.Get.OperationId
+            : throw new InvalidOperationException($"The bookings path '{route}' is missing the required GET operation.");
 
     private static async Task<BookingsOpenApiDocumentDto?> ReadDocument(string documentPath, CancellationToken ct)
     {

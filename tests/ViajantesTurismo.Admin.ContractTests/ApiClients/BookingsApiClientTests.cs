@@ -123,6 +123,35 @@ public sealed class BookingsApiClientTests
         bookings.ShouldHaveSingleItem();
     }
 
+    [Theory]
+    [InlineData("tour")]
+    [InlineData("customer")]
+    public async Task Owner_history_pages_use_the_expected_window_and_typed_response(string owner)
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        var ownerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        using var http = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            return CatalogToursApiClientTestsHelpers.JsonResponse(
+                $$"""{"items":[{{AdminApiClientTestsHelpers.BookingJson}}],"total":23}""");
+        });
+        var client = new BookingsApiClient(http);
+        var ct = TestContext.Current.CancellationToken;
+
+        // Act
+        var outcome = owner == "tour"
+            ? await client.GetTourBookingPage(ownerId, 2, BookingPageSort.TotalPrice, descending: true, ct)
+            : await client.GetCustomerBookingPage(ownerId, 2, BookingPageSort.TotalPrice, descending: true, ct);
+
+        // Assert
+        requestPath.ShouldBe($"/api/v1/bookings/{owner}/{ownerId}/page?page=2&sort=TotalPrice&descending=True");
+        var page = outcome.Value.ShouldNotBeNull();
+        page.Total.ShouldBe(23);
+        page.Items.ShouldHaveSingleItem().CustomerName.ShouldBe("Ada Lovelace");
+    }
+
     [Fact]
     public async Task CreateBooking_posts_booking_and_returns_success_outcome()
     {
