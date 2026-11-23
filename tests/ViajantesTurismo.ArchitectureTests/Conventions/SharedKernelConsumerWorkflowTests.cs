@@ -17,12 +17,12 @@ public sealed class SharedKernelConsumerWorkflowTests
         // Act
         var lintJob = workflow.Split("  lint:", StringSplitOptions.None)[1];
         var bootstrapPosition = lintJob.IndexOf("uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
-        var lintPosition = lintJob.IndexOf("dotnet tool run sharedkernel-repo --", StringComparison.Ordinal);
+        var lintPosition = lintJob.IndexOf("dotnet repo verify-text-encoding", StringComparison.Ordinal);
 
         // Assert
         bootstrapPosition.ShouldBeGreaterThanOrEqualTo(0);
         lintPosition.ShouldBeGreaterThan(bootstrapPosition);
-        lintJob.IndexOf("dotnet tool run sharedkernel-docs --", StringComparison.Ordinal).ShouldBeGreaterThan(bootstrapPosition);
+        lintJob.IndexOf("dotnet docs verify", StringComparison.Ordinal).ShouldBeGreaterThan(bootstrapPosition);
         lintJob.ShouldNotContain("bash scripts/", StringComparison.Ordinal);
         lintJob.ShouldNotContain("restore-targets", StringComparison.Ordinal);
         lintJob.ShouldContain("trust-dev-certificate: \"false\"", StringComparison.Ordinal);

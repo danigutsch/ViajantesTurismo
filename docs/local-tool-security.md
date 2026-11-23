@@ -18,23 +18,23 @@ existing `.NET`, shell, or Docker path already covers the same need.
 ## Current approved paths
 
 - `.NET` local tools: restored from `.config/dotnet-tools.json` with `dotnet tool restore`.
-- SharedKernel `.NET` tools (`sharedkernel-ci`, `sharedkernel-repo`, `sharedkernel-version`,
-  `sharedkernel-docs`, `sharedkernel-playwright-mcp`, `sharedkernel-codefix`, `sharedkernel-k6`): restored from the pinned
+- SharedKernel `.NET` tools (`dotnet ci`, `dotnet repo`, `dotnet release`,
+  `dotnet docs`, `dotnet browsermcp`, `dotnet codefix`, `dotnet loadtest`): restored from the pinned
   candidate that `setup-dev.sh` or `setup-dev.ps1` stages in `.local/sharedkernel-feed`. Staging runs
-  `sharedkernel-ci stage-candidate` built from a sparse SharedKernel checkout at the pinned
+  the CI tool's `stage-candidate` command from a sparse SharedKernel checkout at the pinned
   `libraryRevision`, which verifies each package hash before restore; see
   [SharedKernel consumption](SHAREDKERNEL_CONSUMPTION.md).
 - Markdown lint: the digest-pinned `davidanson/markdownlint-cli2` Docker image, as the opencode
   `lint` and `lint-fix` commands and the Markdown formatter in `opencode.json` run it.
 - Shell lint and formatting: local `shellcheck`; local `shfmt`, otherwise the digest-pinned
   `mvdan/shfmt` Docker image.
-- Gherkin, JSON, line-ending, text-encoding, and roadmap checks: `dotnet tool run sharedkernel-repo --`
+- Gherkin, JSON, line-ending, text-encoding, and roadmap checks: `dotnet repo`
   `verify-gherkin`, `verify-json`, `verify-line-endings`, `verify-text-encoding`, and `verify`.
-- Link validation: `dotnet tool run sharedkernel-repo -- verify-links`. It validates local Markdown
+- Link validation: `dotnet repo verify-links`. It validates local Markdown
   links and enforces durable documentation link rules; it does not probe external URLs in PR gating.
 - Optional standalone tools such as `PSScriptAnalyzer`, `pwsh`, and `k6`: install only when
   needed for the specific task, using vendor-documented installation guidance.
-- Local k6 performance runs: `sharedkernel-k6` with a user/system installed `k6` binary from a trusted
+- Local k6 performance runs: `dotnet loadtest` with a user/system installed `k6` binary from a trusted
   package manager, or with `--container` and the digest-pinned `grafana/k6` image.
   Do not vendor or download a repo-local `k6` binary. Docker k6 is explicit opt-in only, must use a
   digest-pinned image, must not mount the repository read-write, and must not forward host environment
@@ -68,15 +68,15 @@ produces application architecture metadata for the shared documentation generato
 
 | Former helpers | Current command or owner |
 | --- | --- |
-| `commitlint.sh`, `validate-commit-message.sh` | `sharedkernel-ci verify-commit-message` validates local messages and CI event payloads. |
-| `update-architecture-diagrams.sh`, `generate-invariant-coverage.ps1` | `sharedkernel-docs generate` owns configured generated diagrams. The standalone invariant report generator was retired. |
+| `commitlint.sh`, `validate-commit-message.sh` | `dotnet ci verify-commit-message` validates local messages and CI event payloads. |
+| `update-architecture-diagrams.sh`, `generate-invariant-coverage.ps1` | `dotnet docs generate` owns configured generated diagrams. The standalone invariant report generator was retired. |
 | `refresh-dependency-lockfiles.sh` | `dotnet restore --force-evaluate` updates locks. `dotnet restore --locked-mode` verifies the committed locks. |
-| `ci-test-slices/`, `run-ci-test-slice.sh`, `benchmark-local-validation.sh`, `collect-ci-build-test-diagnostics.sh`, `write-ci-artifact-summary.sh` | `sharedkernel-ci select` and `run` use `.config/sharedkernel-ci.json` and emit slice timing and diagnostic evidence. |
-| `collect-test-coverage.sh`, `run-tests-with-coverage.sh` | `sharedkernel-ci run --coverage`, `coverage record-symbols`, and `coverage verify` collect and gate changed-code coverage. |
-| `install-playwright.sh` | `sharedkernel-ci install-playwright` installs browsers for the hosted test project. |
-| `lint-links.py`, `lint-links.sh`, `test-lint-links.py`, `lint-gherkin.py`, `lint-gherkin.sh`, `check-line-endings.sh` | `sharedkernel-repo verify-links`, `verify-gherkin`, and `verify-line-endings` own the checks. |
+| `ci-test-slices/`, `run-ci-test-slice.sh`, `benchmark-local-validation.sh`, `collect-ci-build-test-diagnostics.sh`, `write-ci-artifact-summary.sh` | `dotnet ci select` and `run` use `.config/sharedkernel-ci.json` and emit slice timing and diagnostic evidence. |
+| `collect-test-coverage.sh`, `run-tests-with-coverage.sh` | `dotnet ci run --coverage`, `coverage record-symbols`, and `coverage verify` collect and gate changed-code coverage. |
+| `install-playwright.sh` | `dotnet ci install-playwright` installs browsers for the hosted test project. |
+| `lint-links.py`, `lint-links.sh`, `test-lint-links.py`, `lint-gherkin.py`, `lint-gherkin.sh`, `check-line-endings.sh` | `dotnet repo verify-links`, `verify-gherkin`, and `verify-line-endings` own the checks. |
 | `lint-all.sh`, `lint-markdown.sh`, `format-powershell-file.ps1` | CI Lint and the commands listed above cover repository validation. Digest-pinned Markdownlint and optional PSScriptAnalyzer cover their respective file types. |
-| `run-devcontainer-smoke.sh`, `run-mutation-smoke.sh` | `sharedkernel-repo verify-devcontainer` and `sharedkernel-ci run-mutation-tests` run the targeted checks. |
+| `run-devcontainer-smoke.sh`, `run-mutation-smoke.sh` | `dotnet repo verify-devcontainer` and `dotnet ci run-mutation-tests` run the targeted checks. |
 
 See [CI validation and local reproduction](ci/artifacts-and-local-reproduction.md) for the
 commands used by the current workflow.
@@ -103,7 +103,7 @@ shared by the OpenCode instance, and permission prompts gate tool calls rather t
 MCP permissions are not a general command-execution boundary: the normal build agent retains shell
 access and can launch the same executables outside the MCP tool surface. Use the constrained agents
 for MCP output, review shell commands separately, and review `opencode.json` and the pinned
-`sharedkernel-playwright-mcp` version in `.config/dotnet-tools.json` before starting OpenCode from an
+`PandaBear.SharedKernel.PlaywrightMcp.Tool` version in `.config/dotnet-tools.json` before starting OpenCode from an
 untrusted branch.
 
 ### Aspire MCP
@@ -193,8 +193,8 @@ the disposable instance to end the workflow.
   manifest digest. The current pin is `v0.0.78` at
   `sha256:3d871c22ea2d4cca0966e2cfb1860e1cb03eb7353725a3d6cffd133296fb04eb`, reviewed on
   2026-07-18.
-- Use the pinned `sharedkernel-playwright-mcp` local tool. Run `dotnet tool restore` before starting
-  OpenCode; MCP startup uses `dotnet tool run sharedkernel-playwright-mcp -- serve`. Do not use host `npm`, `npx`, shell
+- Use the pinned Playwright MCP local tool. Run `dotnet tool restore` before starting
+  OpenCode; MCP startup uses `dotnet browsermcp serve`. Do not use host `npm`, `npx`, shell
   launchers, persistent browser profiles, storage-state files, secret files, browser extensions, remote
   CDP endpoints, or unrestricted file access.
 - Pre-pull the exact image digest. Runtime startup uses `--pull=never`; it never fetches or updates
@@ -234,13 +234,13 @@ Pre-pull through the pinned tool. It selects the sole installed engine; set
 `PLAYWRIGHT_MCP_ENGINE` when both are installed:
 
 ```bash
-dotnet tool run sharedkernel-playwright-mcp -- prepare
+dotnet browsermcp prepare
 ```
 
 Remove the pinned image from the selected local engine cache:
 
 ```bash
-dotnet tool run sharedkernel-playwright-mcp -- clean
+dotnet browsermcp clean
 ```
 
 When updating Playwright MCP:

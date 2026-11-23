@@ -59,7 +59,7 @@ code builds or before committing.
 ## Release publish integration points
 
 The AppHost must not calculate application versions. Release workflows calculate versions with
-`sharedkernel-version calculate-release`, then pass the computed values into Aspire publish
+`dotnet release calculate`, then pass the computed values into Aspire publish
 steps as configuration, environment variables, or MSBuild properties.
 Release workflow context lives in [`docs/ci/supplemental-workflows.md`](../../docs/ci/supplemental-workflows.md).
 
@@ -155,9 +155,9 @@ Release workflow inputs consumed by the AppHost:
 
 | Configuration key | Source | Purpose |
 | --- | --- | --- |
-| `VT_ASPIRE_CONTAINER_IMAGE_TAG` | `calculate-release` `package_version` | Application container tag |
+| `VT_ASPIRE_CONTAINER_IMAGE_TAG` | `calculate` `package_version` | Application container tag |
 | `VT_ASPIRE_CONTAINER_REGISTRY` | optional workflow variable | Target registry for image publish |
-| `VT_ASPIRE_DEPLOYMENT_VERSION` | `calculate-release` `informational_version` | Deployment metadata environment value |
+| `VT_ASPIRE_DEPLOYMENT_VERSION` | `calculate` `informational_version` | Deployment metadata environment value |
 | `VT_ASPIRE_SOURCE_REVISION` | workflow commit SHA | Deployment traceability metadata |
 
 Reference APIs researched for the pinned `aspire.cli` `13.4.6` toolchain:

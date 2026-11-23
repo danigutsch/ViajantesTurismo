@@ -114,8 +114,8 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
           SOURCE_SHA: ${{ github.sha }}
         run: |
-          dotnet tool run sharedkernel-version -- \
-            calculate-release \
+          dotnet release \
+            calculate \
             --run-number "${RUN_NUMBER}" \
             --sha "${SOURCE_SHA}" \
             --github-output "${GITHUB_OUTPUT}" \
@@ -547,7 +547,7 @@ jobs:
         uses: ./.github/actions/build-sharedkernel-tool
         with:
           tool: SharedKernel.RepoConfig.Tool
-          revision: 3f3122727c6c4e9627e3e34b9e3c433e4b316932
+          revision: 3c5e0df4ef801809449ea47372ce2c129c245acd
           sparse-extra: .github
 
       - name: Verify action pins
@@ -573,18 +573,18 @@ jobs:
 
       - name: Check repository content
         run: |
-          dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
-          dotnet tool run sharedkernel-repo -- verify-line-endings --root .
-          dotnet tool run sharedkernel-repo -- verify-json --root .
-          dotnet tool run sharedkernel-repo -- verify-links --root .
-          dotnet tool run sharedkernel-repo -- verify-gherkin --root .
-          dotnet tool run sharedkernel-repo -- verify-dependabot --root .
-          dotnet tool run sharedkernel-repo -- verify --root .
+          dotnet repo verify-text-encoding --root .
+          dotnet repo verify-line-endings --root .
+          dotnet repo verify-json --root .
+          dotnet repo verify-links --root .
+          dotnet repo verify-gherkin --root .
+          dotnet repo verify-dependabot --root .
+          dotnet repo verify --root .
 
       - name: Check generated documentation
         run: |
-          dotnet tool run sharedkernel-docs -- verify --config docs/architecture/generated-diagrams.json
-          dotnet tool run sharedkernel-docs -- check --config docs/architecture/documentation-conformance.json
+          dotnet docs verify --config docs/architecture/generated-diagrams.json
+          dotnet docs check --config docs/architecture/documentation-conformance.json
 
       - name: Write lint warning report
         if: ${{ !cancelled() }}

@@ -38,11 +38,15 @@ resilience, and service discovery.
 ## Usage
 
 ```csharp
+using PandaBear.ServiceDefaults;
+using ViajantesTurismo.ServiceDefaults;
+
 var builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults();  // Adds all defaults
+builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure)
+    .AddViajantesTurismoTelemetry();
 
 var app = builder.Build();
-app.MapDefaultEndpoints();  // Adds /health and /alive
+app.MapHealthEndpoints();
 ```
 
 ## Dependencies

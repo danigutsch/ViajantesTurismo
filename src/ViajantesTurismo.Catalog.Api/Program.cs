@@ -17,7 +17,7 @@ var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
 builder.WebHost.ConfigureApiRequestLimits();
-builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
+builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddConfiguredTrustedForwardedHeaders();
 builder.Services.AddUnhandledExceptionHandler();
 builder.Services.AddAuthenticationEventTelemetry();
@@ -52,6 +52,6 @@ app.MapCatalogEndpoints();
 app.MapBrandingModule();
 app.MapRobotsTxt(ApiRobotsTxt);
 
-app.MapSharedKernelDefaultEndpoints();
+app.MapHealthEndpoints();
 
 await app.RunAsync();

@@ -45,7 +45,7 @@ Install `k6` at user/system level, not as a repo-local vendored binary:
 - Windows: `winget install k6 --source winget`
 - Linux: follow the official install guide: <https://grafana.com/docs/k6/latest/set-up/install-k6/>
 
-For hermetic local runs without a host install, pass `--container`; `sharedkernel-k6` runs the
+For hermetic local runs without a host install, pass `--container`; `dotnet loadtest` runs the
 digest-pinned image from `.config/sharedkernel-k6.json` with `--pull=never`, so pull it first.
 
 ## Required environment
@@ -62,10 +62,10 @@ Optional overrides:
 - `VT_UPLOAD_PAYLOAD_BYTES`: deterministic multipart payload size for `file-upload-scan.js`, a whole
   number from 1 to 16777216, defaults to `262144`
 
-`sharedkernel-k6` sets `VT_UPLOAD_BASE_URL` for `file-upload-scan.js` from the benchmark host it starts.
+`dotnet loadtest` sets `VT_UPLOAD_BASE_URL` for `file-upload-scan.js` from the benchmark host it starts.
 An unknown `VT_K6_PROFILE` fails the run.
 
-Options of `sharedkernel-k6 run`:
+Options of `dotnet loadtest run`:
 
 - `--container`: run the configured digest-pinned image with Docker instead of local `k6`
 - `--image <ref@sha256:digest>`: replace the configured image; requires `--container`
@@ -77,10 +77,10 @@ Options of `sharedkernel-k6 run`:
 ## Run with repository runners
 
 ```bash
-dotnet tool run sharedkernel-k6 -- run --scenario file-upload-scan
+dotnet loadtest run --scenario file-upload-scan
 ```
 
-For `file-upload-scan`, `sharedkernel-k6` starts `benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost` on
+For `file-upload-scan`, `dotnet loadtest` starts `benchmarks/ViajantesTurismo.FileUpload.BenchmarkHost` on
 an ephemeral Kestrel port, waits for `/health`, and passes the discovered real base URL to k6.
 
 ## Run with Aspire
@@ -101,7 +101,7 @@ readable orchestration map.
 VT_ASPIRE_ENABLE_PERFORMANCE_TESTS=1 dotnet tool run aspire run
 ```
 
-`sharedkernel-k6` runner behavior (`file-upload-scan`):
+`dotnet loadtest` runner behavior (`file-upload-scan`):
 
 - uses local `k6` with a minimal environment by default, and Docker only with `--container`
 - exports summary JSON to a new run directory under the ignored `tests/performance/results/` folder

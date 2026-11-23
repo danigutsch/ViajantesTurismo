@@ -11,7 +11,7 @@ namespace ViajantesTurismo.ServiceDefaults;
 /// <summary>
 /// What every ViajantesTurismo host adds to the SharedKernel service defaults:
 /// <code>
-/// builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
+/// builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 /// </code>
 /// </summary>
 [PublicAPI]
@@ -61,7 +61,7 @@ public static class ViajantesTurismoServiceDefaults
     /// keeps OpenTelemetry the only logging provider, so formatted messages never reach the console or another default provider.
     /// </summary>
     /// <typeparam name="TBuilder">The host builder type.</typeparam>
-    /// <param name="builder">The host builder, after <c>AddSharedKernelServiceDefaults</c>.</param>
+    /// <param name="builder">The host builder, after <c>AddApplicationDefaults</c>.</param>
     /// <returns>The same builder.</returns>
     public static TBuilder AddViajantesTurismoTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {

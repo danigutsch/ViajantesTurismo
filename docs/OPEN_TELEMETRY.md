@@ -128,29 +128,17 @@ these fields in Loki. Application logging policy governs the raw records stored 
 
 ### Shared defaults registration
 
-`ViajantesTurismo.ServiceDefaults` centralizes shared registration used by services calling
-`builder.AddServiceDefaults()`.
+`AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure)` registers the SharedKernel
+defaults, including `AddObservability()`. SharedKernel's `InstrumentationExtensions.NamePatterns`
+defines the shared meter and source subscriptions.
 
 Service defaults remove preconfigured logging providers before adding OpenTelemetry. This keeps the
 sanitized OpenTelemetry pipeline as the sole default logging provider; hosts must not add console,
 debug, or other providers unless those providers enforce the same privacy boundary.
 
-- Metrics registration:
-    - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
-    - `AddSharedKernelMediatorMetrics()` -> `metrics.AddMeter(SharedKernel.Mediator.MediatorTelemetry.Name)`
-    - `AddCatalogMetrics()` -> `metrics.AddMeter(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
-    - `AddBrandingMetrics()` -> `metrics.AddMeter("ViajantesTurismo.Branding")`
-    - `AddSharedKernelAspNetCoreMetrics()` -> `metrics.AddMeter("PandaBear.AspNetCore")`
-    - `AddSharedKernelBlazorMetrics()` -> `metrics.AddMeter("PandaBear.Blazor")`
-    - `AddSharedKernelProviderMetrics()` -> `metrics.AddMeter("SharedKernel.EventSourcing.Npgsql")`
-- Tracing registration:
-    - `src/ViajantesTurismo.ServiceDefaults/OpenTelemetryBuilderExtensions.cs`
-    - `AddSharedKernelMediatorTracing()` -> `tracing.AddSource(SharedKernel.Mediator.MediatorTelemetry.Name)`
-    - `AddCatalogTracing()` -> `tracing.AddSource(ViajantesTurismo.Catalog.Application.CatalogTelemetry.Name)`
-    - `AddSharedKernelProviderTracing()` -> `tracing.AddSource("SharedKernel.EventSourcing.Npgsql")`
-- Applied in pipeline:
-    - `src/ViajantesTurismo.ServiceDefaults/ServiceDefaultsExtensions.cs`
-    - `ConfigureOpenTelemetry()` calls the custom registration helpers.
+`AddViajantesTurismoTelemetry()` adds the `ViajantesTurismo.*` meter and activity source
+subscriptions, the `Npgsql` meter, and gRPC client and Entity Framework Core tracing.
+[Application telemetry registration](../src/ViajantesTurismo.ServiceDefaults/ViajantesTurismoServiceDefaults.cs)
 
 ### Migration service registration
 

@@ -100,7 +100,7 @@ Current state:
   install ShellCheck at the runner distribution's package version.
 - `.github/workflows/secret-scan.yml` verifies the Gitleaks archive against the checksum
   committed with the pinned SharedKernel scanner action.
-- `.github/workflows/devcontainer-smoke.yml` runs `sharedkernel-repo verify-devcontainer`, which
+- `.github/workflows/devcontainer-smoke.yml` runs `dotnet repo verify-devcontainer`, which
   installs its Dev Container CLI and Node.js from archives whose hashes are pinned in the tool and
   pipes no remote installer script into `sh`.
 

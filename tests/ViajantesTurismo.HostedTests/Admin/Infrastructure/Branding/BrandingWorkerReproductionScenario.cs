@@ -143,7 +143,7 @@ internal sealed class BrandingWorkerReproductionScenario : IAsyncDisposable
         var clock = new BrandingWorkerReproductionClock(InitialTime);
         var retryTrace = new TaskCompletionSource<ActivityTraceId>(TaskCreationOptions.RunContinuationsAsynchronously);
         builder.Services.AddSingleton<TimeProvider>(clock);
-        builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
+        builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
         builder.Logging.AddOpenTelemetry(options => options.AddProcessor(
             new SimpleLogRecordExportProcessor(new BrandingWorkerRetryTraceExporter(retryTrace))));
         builder.AddAdminIntegrationEventWorkerInfrastructure();

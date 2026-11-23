@@ -15,7 +15,7 @@ Instructions for files under `src/ViajantesTurismo.Admin.Application/`.
 - Admin commands implement `ICommand<TResponse>` and handlers implement
   `ICommandHandler<TCommand, TResponse>` (`ValueTask<TResponse> Handle`) from `PandaBear.Mediator`.
   Endpoints and workflows dispatch through `ISender`. Result responses use the Admin transaction behavior.
-  Handlers must be public; the assembly carries `[assembly: MediatorModule]` and the host calls `AddSharedKernelMediator()`.
+  Handlers must be public; the assembly carries `[assembly: MediatorModule]` and the host calls `AddMediator()`.
 - Pipeline behaviors live in `Bookings/Pipeline` (booking-scoped) or `Pipeline` (all commands), must be open generic over exactly `<TRequest, TResponse>`,
   and declare `[PipelineOrder(PipelineStage.X)]`.
 - Do not use MediatR.

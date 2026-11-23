@@ -16,7 +16,7 @@ public sealed class ConsumerSetupContractTests
         // Act
         var workflow = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
         var prerequisites = workflow.IndexOf("uses: ./.github/actions/setup-ci-prerequisites", StringComparison.Ordinal);
-        var smoke = workflow.IndexOf("if: steps.validation-mode.outputs.mode == 'smoke'\n        run: dotnet tool run sharedkernel-repo -- verify-devcontainer --exec \"$VERIFY_TOOLCHAINS\" --root .", StringComparison.Ordinal);
+        var smoke = workflow.IndexOf("if: steps.validation-mode.outputs.mode == 'smoke'\n        run: dotnet repo verify-devcontainer --exec \"$VERIFY_TOOLCHAINS\" --root .", StringComparison.Ordinal);
         var full = workflow.IndexOf("if: steps.validation-mode.outputs.mode == 'full'", StringComparison.Ordinal);
         var fullStep = workflow[full..].Split("\n\n", StringSplitOptions.None)[0];
 
@@ -26,9 +26,9 @@ public sealed class ConsumerSetupContractTests
         full.ShouldBeGreaterThan(prerequisites);
         fullStep.ShouldContain("verify-devcontainer --exec \"$VERIFY_TOOLCHAINS\"", StringComparison.Ordinal);
         fullStep.ShouldContain("--exec \"$INSTALL_PLAYWRIGHT_DEPENDENCIES\" --exec \"$RUN_TEST_SLICES\" --root .", StringComparison.Ordinal);
-        workflow.ShouldContain("dotnet tool run sharedkernel-ci -- select --selection \"${selection}\"", StringComparison.Ordinal);
+        workflow.ShouldContain("dotnet ci select --selection \"${selection}\"", StringComparison.Ordinal);
         workflow.ShouldContain(
-            "dotnet tool run sharedkernel-ci -- run --slice \"${slice}\" --selection \"${selection}\" --install-playwright",
+            "dotnet ci run --slice \"${slice}\" --selection \"${selection}\" --install-playwright",
             StringComparison.Ordinal);
         workflow.ShouldContain("    paths:\n      - .devcontainer/**\n      - .github/workflows/devcontainer-smoke.yml\n      - global.json\n      - setup-dev.sh\n  schedule:", StringComparison.Ordinal);
         workflow.ShouldContain("path: TestResults/devcontainer-smoke/**", StringComparison.Ordinal);

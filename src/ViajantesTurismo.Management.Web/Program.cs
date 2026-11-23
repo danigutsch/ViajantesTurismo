@@ -12,7 +12,7 @@ using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddSharedKernelServiceDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
+builder.AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure).AddViajantesTurismoTelemetry();
 builder.AddRedisOutputCache(ResourceNames.Cache);
 builder.Services.AddOutputCache();
 builder.AddConfiguredTrustedForwardedHeaders();
@@ -63,6 +63,6 @@ app.UseOutputCache();
 
 app.MapManagementWebEndpoints();
 
-app.MapSharedKernelDefaultEndpoints();
+app.MapHealthEndpoints();
 
 await app.RunAsync();

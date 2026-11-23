@@ -57,8 +57,8 @@ budget, and multipart envelope headroom. Malware scanning is considered separate
 Run the pinned SharedKernel repository tool after candidate bootstrap and local tool restore:
 
 ```text
-dotnet tool run sharedkernel-repo -- security baseline --root .
-dotnet tool run sharedkernel-repo -- security scan --root . --output TestResults/security
+dotnet repo security baseline --root .
+dotnet repo security scan --root . --output TestResults/security
 ```
 
 The repository-owned `.config/security-baseline.json` declares required Markdown documents and text.

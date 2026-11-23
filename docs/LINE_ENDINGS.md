@@ -46,7 +46,7 @@ dedicated pull request whenever they touch many files.
 Run the focused text-encoding check:
 
 ```bash
-dotnet tool run sharedkernel-repo -- verify-text-encoding --root .
+dotnet repo verify-text-encoding --root .
 ```
 
 The .NET command is the authoritative encoding check. It parses NUL-delimited stage records from
@@ -78,7 +78,7 @@ nor Git line-ending attributes are the authoritative encoding validator.
 Check line endings locally with the command that the CI Lint job runs:
 
 ```bash
-dotnet tool run sharedkernel-repo -- verify-line-endings --root .
+dotnet repo verify-line-endings --root .
 ```
 
 `verify-line-endings` reads `git ls-files --eol` and fails when a tracked file has CRLF or mixed line

@@ -178,7 +178,7 @@ internal sealed class CustomerEmailPostgreSqlScenario : IAsyncDisposable
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<CustomerImportConflictDetector>();
         services.AddScoped<CustomerImportWorkflowService>();
-        services.AddSharedKernelMediator();
+        services.AddMediator();
         return services.BuildServiceProvider();
     }
 

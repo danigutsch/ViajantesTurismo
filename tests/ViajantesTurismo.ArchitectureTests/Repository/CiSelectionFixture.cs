@@ -36,7 +36,7 @@ internal sealed class CiSelectionFixture : IDisposable
 
         var outputs = Path.Combine(RootPath, "github-output.txt");
         await Run("dotnet", _repositoryRoot,
-            ["tool", "run", "sharedkernel-ci", "--", "select", "--base", baseline, "--root", RootPath, "--selection", Path.Combine(RootPath, "selection"), "--github-output", outputs], ct);
+            ["ci", "select", "--base", baseline, "--root", RootPath, "--selection", Path.Combine(RootPath, "selection"), "--github-output", outputs], ct);
         return (await File.ReadAllLinesAsync(outputs, ct))
             .Select(static line => line.Split('=', 2))
             .ToDictionary(static pair => pair[0], static pair => pair[1], StringComparer.Ordinal);

@@ -138,8 +138,8 @@ public sealed class RoadmapMaintenanceWorkflowTests
         var reconcileIndex = workflow.IndexOf("github reconcile --force", StringComparison.Ordinal);
         var previewIndex = workflow.IndexOf("github import \\\n", StringComparison.Ordinal);
         var intakeIndex = workflow.IndexOf("github import --force", StringComparison.Ordinal);
-        var verifyIndex = workflow.IndexOf("-- verify", StringComparison.Ordinal);
-        var diffIndex = workflow.IndexOf("-- diff", StringComparison.Ordinal);
+        var verifyIndex = workflow.IndexOf("dotnet repo verify \\\n", StringComparison.Ordinal);
+        var diffIndex = workflow.IndexOf("dotnet repo diff \\\n", StringComparison.Ordinal);
         var sealIndex = workflow.IndexOf("automation seal-result", StringComparison.Ordinal);
 
         // Assert
@@ -149,8 +149,8 @@ public sealed class RoadmapMaintenanceWorkflowTests
         verifyIndex.ShouldBeGreaterThan(intakeIndex);
         diffIndex.ShouldBeGreaterThan(verifyIndex);
         sealIndex.ShouldBeGreaterThan(diffIndex);
-        workflow.ShouldContain("dotnet tool run sharedkernel-repo -- verify-json --root .", StringComparison.Ordinal);
-        workflow.ShouldContain("dotnet tool run sharedkernel-repo -- verify-links roadmap/README.md --root .", StringComparison.Ordinal);
+        workflow.ShouldContain("dotnet repo verify-json --root .", StringComparison.Ordinal);
+        workflow.ShouldContain("dotnet repo verify-links roadmap/README.md --root .", StringComparison.Ordinal);
         workflow.ShouldContain("uses: DavidAnson/markdownlint-cli2-action@ded1f9488f68a970bc66ea5619e13e9b52e601cd # v23.2.0\n        with:\n          globs: roadmap/README.md\n", StringComparison.Ordinal);
         workflow.IndexOf("globs: roadmap/README.md", StringComparison.Ordinal).ShouldBeLessThan(sealIndex);
         workflow.ShouldNotContain("scripts/", StringComparison.Ordinal);
@@ -263,7 +263,7 @@ public sealed class RoadmapMaintenanceWorkflowTests
         var workflow = RoadmapMaintenanceWorkflowTestFile.Content;
 
         // Act
-        var usesPackagedTool = workflow.Contains("dotnet tool run sharedkernel-repo --", StringComparison.Ordinal);
+        var usesPackagedTool = workflow.Contains("dotnet repo ", StringComparison.Ordinal);
 
         // Assert
         usesPackagedTool.ShouldBeTrue();

@@ -33,7 +33,7 @@ from endpoint authorization metadata and the authenticated fallback policy; it d
 handler or identity-provider configuration.
 
 OpenAPI tool targets are logical contract owners, not permanent executable owners. The `branding`
-target (`dotnet tool run sharedkernel-ci -- openapi refresh --target branding`) builds Catalog.Api
+target (`dotnet ci openapi refresh --target branding`) builds Catalog.Api
 in a Branding-only generation mode. That mode produces the canonical `branding` and `public-branding`
 artifacts under `ViajantesTurismo.Branding.Contracts.Http/OpenApi`, with Branding contract-test ownership.
 Catalog's own `v1` document includes the co-hosted Branding routes. Catalog-hosted generation must not
