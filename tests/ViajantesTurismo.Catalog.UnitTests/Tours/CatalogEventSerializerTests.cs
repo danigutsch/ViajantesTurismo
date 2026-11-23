@@ -169,4 +169,69 @@ public sealed class CatalogEventSerializerTests
         var exception = getEventType.ShouldThrow<NotSupportedException>();
         exception.Message.ShouldContain("System.Object", StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Gallery_change_payload_replays_as_a_catalog_tour_event()
+    {
+        // Arrange
+        var serializer = new CatalogEventSerializer();
+        var tour = CatalogTour.CreateDraft(Guid.CreateVersion7(), "andes-2026", "Andes 2026", Guid.CreateVersion7());
+        var firstPhoto = Guid.CreateVersion7();
+        var coverPhoto = Guid.CreateVersion7();
+        var payload = JsonSerializer.Serialize(new
+        {
+            CatalogTourId = tour.Id,
+            PhotoIds = new[] { firstPhoto, coverPhoto },
+            CoverId = coverPhoto
+        });
+
+        // Act
+        var galleryEvent = serializer.Deserialize("catalog.tours.gallery-changed.v1", payload);
+        var rebuilt = CatalogTour.Rehydrate([.. tour.GetUncommittedEvents(), galleryEvent]);
+
+        // Assert
+        serializer.GetEventType(galleryEvent).ShouldBe("catalog.tours.gallery-changed.v1");
+        galleryEvent.ShouldBeOfType<CatalogTourGalleryChanged>().LegacyBootstrapThroughSequence.ShouldBeNull();
+        var roundTripped = JsonNode.Parse(serializer.Serialize(galleryEvent)).ShouldNotBeNull().AsObject();
+        roundTripped["CatalogTourId"].ShouldNotBeNull().GetValue<Guid>().ShouldBe(tour.Id);
+        roundTripped["PhotoIds"].ShouldNotBeNull().AsArray().Select(photo => photo.ShouldNotBeNull().GetValue<Guid>()).ShouldBe([firstPhoto, coverPhoto]);
+        roundTripped["CoverId"].ShouldNotBeNull().GetValue<Guid>().ShouldBe(coverPhoto);
+        rebuilt.Version.ShouldBe(tour.Version + 1);
+    }
+
+    [Theory]
+    [InlineData("tour")]
+    [InlineData("photo")]
+    [InlineData("duplicates")]
+    [InlineData("cover")]
+    [InlineData("negative bootstrap watermark")]
+    [InlineData("bootstrap intent acknowledgement")]
+    public void Gallery_change_payload_rejects_invalid_identity_and_placement(string invalidPart)
+    {
+        // Arrange
+        var serializer = new CatalogEventSerializer();
+        var photo = Guid.CreateVersion7();
+        Guid[] ordered = invalidPart switch
+        {
+            "photo" => [Guid.Empty],
+            "duplicates" => [photo, photo],
+            _ => [photo]
+        };
+        var recordsIntent = invalidPart == "bootstrap intent acknowledgement";
+        var payload = JsonSerializer.Serialize(new
+        {
+            CatalogTourId = invalidPart == "tour" ? Guid.Empty : Guid.CreateVersion7(),
+            PhotoIds = ordered,
+            CoverId = invalidPart == "cover" ? Guid.CreateVersion7() : (Guid?)null,
+            IntentId = recordsIntent ? Guid.CreateVersion7() : (Guid?)null,
+            IntentSequence = recordsIntent ? 1 : (long?)null,
+            LegacyBootstrapThroughSequence = recordsIntent ? 1 : invalidPart == "negative bootstrap watermark" ? -1 : (long?)null
+        });
+
+        // Act
+        Action deserialize = () => serializer.Deserialize("catalog.tours.gallery-changed.v1", payload);
+
+        // Assert
+        deserialize.ShouldThrow<ArgumentException>();
+    }
 }

@@ -56,7 +56,22 @@ internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
     }
 
     /// <summary>Polls until a session is waiting on a PostgreSQL advisory transaction lock.</summary>
-    public async Task WaitForBlockedMutation(CancellationToken ct)
+    public Task WaitForBlockedMutation(CancellationToken ct) => WaitForBlockedMutation(connectionString, ct);
+
+    /// <summary>Releases a gated upload once another transaction is waiting on its advisory lock.</summary>
+    internal static async Task ReleaseWhenMutationWaits(string connectionString, TaskCompletionSource release, CancellationToken ct)
+    {
+        try
+        {
+            await WaitForBlockedMutation(connectionString, ct);
+        }
+        finally
+        {
+            release.TrySetResult();
+        }
+    }
+
+    private static async Task WaitForBlockedMutation(string connectionString, CancellationToken ct)
     {
         await using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync(ct);
