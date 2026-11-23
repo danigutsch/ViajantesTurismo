@@ -19,6 +19,6 @@ public sealed class DelegatingMediaImageUploadStore(IPublicMediaImageStore store
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-        public ValueTask Save(PublicMediaImage image, CancellationToken ct) => store.Upsert(image, ct);
+        public ValueTask Save(PublicMediaImage image, bool? canPublishGalleryPlacement, CancellationToken ct) => store.Upsert(image, ct);
     }
 }
