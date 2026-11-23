@@ -4,11 +4,11 @@
     "net11.0": {
       "coverlet.MTP": {
         "type": "Direct",
-        "requested": "[10.1.0, )",
-        "resolved": "10.1.0",
-        "contentHash": "FbW1D7OFFUmITgKzYhasyaX0m/oQzuU3ab4ooOURngztKK/QulCT/YuADhRDSGrE79S2dVoEQPgNkg2qBz29tg==",
+        "requested": "[10.1.1, )",
+        "resolved": "10.1.1",
+        "contentHash": "dxxUyMyMa8AHnaglNC6aWkvYYV9PE4Z5mcyRXSWWinQ0OeSJ+kdcD7wNg8Dau/Lj9VK79VIC+QbYXdv1M+TVXA==",
         "dependencies": {
-          "Microsoft.Testing.Platform": "2.4.1"
+          "Microsoft.Testing.Platform": "2.5.2"
         }
       },
       "Microsoft.EntityFrameworkCore.InMemory": {
@@ -313,7 +313,7 @@
       "viajantesturismo.branding.infrastructure": {
         "type": "Project",
         "dependencies": {
-          "Aspire.Npgsql": "[13.6.5, )",
+          "Aspire.Npgsql": "[17.0.0, )",
           "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": "[13.6.5, )",
           "PandaBear.SharedKernel.Branding": "[0.1.0-alpha.774.1, )",
           "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.774.1, )",
@@ -335,14 +335,14 @@
       },
       "Aspire.Npgsql": {
         "type": "CentralTransitive",
-        "requested": "[13.6.5, )",
-        "resolved": "13.6.5",
-        "contentHash": "NSQLgK6Kq+zxWncqcwXP0Evhtfh5vaEjyOGuO7ePpoTF/yi3rMWdhIUzuyzd3q5ZfSRbyu8b/WLg6nKrOoKBkw==",
+        "requested": "[17.0.0, )",
+        "resolved": "17.0.0",
+        "contentHash": "s+nCQDTZXc8AVk+2lG/TBx0YMa5ey3PDvCn17I8WIx4KhoJR+EiTp/Z8lcx2YNURV5CIHTVQfiqXCATRqTAfIg==",
         "dependencies": {
           "AspNetCore.HealthChecks.NpgSql": "9.0.0",
           "Npgsql.DependencyInjection": "10.0.3",
           "Npgsql.OpenTelemetry": "10.0.3",
-          "OpenTelemetry.Extensions.Hosting": "1.17.0"
+          "OpenTelemetry.Extensions.Hosting": "1.18.0"
         }
       },
       "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL": {

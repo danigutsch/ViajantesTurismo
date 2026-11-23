@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Aspire.Hosting.Dotnet;
 using Microsoft.Extensions.Configuration;
 
 namespace ViajantesTurismo.AppHost;
@@ -37,7 +38,7 @@ internal static class PaymentsResourceExtensions
     /// </remarks>
     /// <param name="api">The Admin API resource.</param>
     /// <returns>The same resource builder.</returns>
-    public static IResourceBuilder<ProjectResource> WithPayments(this IResourceBuilder<ProjectResource> api)
+    public static IResourceBuilder<DotnetProjectResource> WithPayments(this IResourceBuilder<DotnetProjectResource> api)
     {
         ArgumentNullException.ThrowIfNull(api);
 

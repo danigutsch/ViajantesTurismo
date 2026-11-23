@@ -14,6 +14,54 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 public sealed class AppHostPublishModelTests
 {
     [Fact]
+    public async Task Publish_mode_keeps_the_release_identity_on_all_application_build_resources()
+    {
+        // Arrange
+        const string imageTag = "0.1.0-alpha.17.1";
+        const string registry = "registry.example.test";
+        const string deploymentVersion = "0.1.0-alpha.17.1+sha.abcdef0";
+        const string sourceRevision = "abcdef0";
+        var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
+        {
+            Args = ["--operation", "publish", "--publisher", "manifest"],
+            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost"),
+        });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["VT_ASPIRE_CONTAINER_IMAGE_TAG"] = imageTag,
+            ["VT_ASPIRE_CONTAINER_REGISTRY"] = registry,
+            ["VT_ASPIRE_DEPLOYMENT_VERSION"] = deploymentVersion,
+            ["VT_ASPIRE_SOURCE_REVISION"] = sourceRevision
+        });
+
+        // Act
+        AppHost.AppHostComposition.AddProductResources(builder, HostedProfile.Full);
+        var buildResources = builder.Resources.OfType<ContainerResource>()
+            .Where(resource => resource.Annotations.OfType<DockerfileBuildAnnotation>().Any())
+            .ToArray();
+
+        // Assert
+        buildResources.Select(resource => resource.Name).ShouldBeEquivalentTo(
+            ResourceNames.MigrationService,
+            ResourceNames.Api,
+            ResourceNames.CatalogApi,
+            ResourceNames.AdminIntegrationEventWorker,
+            ResourceNames.CatalogIntegrationEventWorker,
+            ResourceNames.WebApp,
+            ResourceNames.PublicWebApp);
+        foreach (var resource in buildResources)
+        {
+            var image = resource.Annotations.OfType<ContainerImageAnnotation>().ShouldHaveSingleItem();
+            image.Registry.ShouldBe(registry);
+            image.Tag.ShouldBe(imageTag);
+            var configuration = await ExecutionConfigurationBuilder.Create(resource).WithEnvironmentVariablesConfig()
+                .BuildAsync(builder.ExecutionContext, NullLogger.Instance, TestContext.Current.CancellationToken);
+            configuration.EnvironmentVariables.ShouldContain(KeyValuePair.Create("VT_DEPLOYMENT_VERSION", deploymentVersion));
+            configuration.EnvironmentVariables.ShouldContain(KeyValuePair.Create("VT_SOURCE_REVISION", sourceRevision));
+        }
+    }
+
+    [Fact]
     public void Default_publish_model_excludes_local_developer_resources_even_when_configured()
     {
         // Arrange

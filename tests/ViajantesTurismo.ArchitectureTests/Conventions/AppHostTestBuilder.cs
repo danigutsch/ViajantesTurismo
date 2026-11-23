@@ -1,12 +1,11 @@
 using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Dotnet;
 using Microsoft.Extensions.Configuration;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>
-/// Creates AppHost model builders for this project, which references the AppHost as a library: the Aspire testing builder looks for an
-/// AppHost entry assembly and finds none here, so <c>AppHostModel.Project</c>, which needs that builder, is replaced by <see cref="Project"/>.
+/// Creates model builders that resolve application project paths from the repository's AppHost directory.
 /// </summary>
 internal static class AppHostTestBuilder
 {
@@ -23,6 +22,6 @@ internal static class AppHostTestBuilder
     }
 
     /// <summary>Finds the project resource with the given name.</summary>
-    public static ProjectResource Project(IDistributedApplicationBuilder builder, string name) =>
-        builder.Resources.OfType<ProjectResource>().Single(project => string.Equals(project.Name, name, StringComparison.Ordinal));
+    public static DotnetProjectResource Project(IDistributedApplicationBuilder builder, string name) =>
+        builder.Resources.OfType<DotnetProjectResource>().Single(project => string.Equals(project.Name, name, StringComparison.Ordinal));
 }

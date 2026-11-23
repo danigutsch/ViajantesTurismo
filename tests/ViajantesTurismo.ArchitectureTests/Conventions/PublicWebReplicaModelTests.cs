@@ -1,5 +1,6 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Dotnet;
 using PandaBear.IntegrationTesting;
 using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
@@ -31,7 +32,7 @@ public sealed class PublicWebReplicaModelTests
         // Act
         builder.AddProductResources(HostedProfile.System);
         var publicWeb = builder.Resources.ShouldHaveSingleItem(resource => resource.Name == ResourceNames.PublicWebApp);
-        var otherProjects = builder.Resources.OfType<ProjectResource>()
+        var otherProjects = builder.Resources.OfType<DotnetProjectResource>()
             .Where(resource => resource.Name != ResourceNames.PublicWebApp).ToArray();
 
         // Assert

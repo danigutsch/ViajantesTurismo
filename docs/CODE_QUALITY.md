@@ -519,7 +519,7 @@ All quality tools have VS Code extensions installed for real-time feedback:
 
 ### Coverlet MTP configuration
 
-`coverlet.MTP` 10.1.0 collects Cobertura through Microsoft.Testing.Platform.
+`coverlet.MTP` 10.1.1 collects Cobertura through Microsoft.Testing.Platform.
 `tests/testconfig.json` is authoritative for collection exclusions. Compiler-generated async
 and iterator code stays included. Coverage of separate AppHost child processes is not automatic;
 missing evidence for changed source fails the gate. See [quality gates](ci/quality-gates.md).

@@ -1,13 +1,11 @@
-<Project Sdk="Aspire.AppHost.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <RootNamespace>ViajantesTurismo.HostedTests</RootNamespace>
         <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
-        <!-- This test project uses the Aspire SDK for project metadata, not as an AppHost. With the CLI bundle,
-             the SDK replaces its run command with `aspire run`, which breaks `dotnet test`. Keep the NuGet
-             orchestration packages and suppress ASPIRE010 here only. -->
-        <AspireUseCliBundle>false</AspireUseCliBundle>
-        <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
+        <AspireCliInvocationMode>DnxPinned</AspireCliInvocationMode>
+        <!-- The infrastructure fixture uses the CLI bundle. Microsoft.Testing.Platform owns the test entry point. -->
+        <ASPIRE_SUPPRESS_CLI_RUN_HOOK>true</ASPIRE_SUPPRESS_CLI_RUN_HOOK>
     </PropertyGroup>
     <ItemGroup>
         <Using Include="Xunit" />
@@ -26,6 +24,7 @@
         <PackageReference Include="coverlet.MTP">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Aspire.Hosting.AppHost" />
         <PackageReference Include="Aspire.Hosting.PostgreSQL" />
         <PackageReference Include="Aspire.Hosting.Testing" />
         <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />

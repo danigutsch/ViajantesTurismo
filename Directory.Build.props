@@ -18,11 +18,6 @@
 		<NuGetAuditLevel>high</NuGetAuditLevel>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(IsAspireHost)' == 'true'">
-		<!-- Take DCP and the dashboard from the Aspire CLI bundle, as new Aspire AppHost templates do. The CLI version is pinned in .config/dotnet-tools.json. -->
-		<AspireUseCliBundle>true</AspireUseCliBundle>
-	</PropertyGroup>
-
 	<PropertyGroup>
 		<ComputedSemVer Condition="'$(ComputedSemVer)' == ''">0.1.0-alpha.0</ComputedSemVer>
 		<ComputedAssemblyVersion Condition="'$(ComputedAssemblyVersion)' == ''">0.0.0.0</ComputedAssemblyVersion>
