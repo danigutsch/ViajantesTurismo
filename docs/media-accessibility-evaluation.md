@@ -23,7 +23,8 @@ A human reviewer scores each dimension from 0 (unacceptable) to 2 (fully meets t
 
 Every dimension must score at least 1, unsupported claims must score 2, and no dimension may regress
 against the baseline. Missing cases, duplicated cases, missing provenance, and incomplete score sheets
-fail validation. Set `MEDIA_ACCESSIBILITY_EVALUATION_CANDIDATE` to the candidate JSON path and run the same C# test.
+fail validation. Required fixture terms must appear as whole words in the alternative, ignoring case.
+Set `MEDIA_ACCESSIBILITY_EVALUATION_CANDIDATE` to the candidate JSON path and run the same C# test.
 The test fails for rubric regression or invalid evidence. Golden changes require human
 review; never overwrite the baseline simply to accept a failing candidate. A passing evaluation never
 approves or publishes generated accessibility text: ordinary human review still applies.
@@ -36,6 +37,36 @@ as measured provenance. Runtime traces distinguish the configured LiteLLM adapte
 (which remains `unreported`). The prompt implementation version is the immutable SharedKernel AI
 artifact version; the configuration fingerprint covers non-secret model, completion path, and endpoint
 origin. It excludes credentials. These fields do not claim knowledge of proxy routing or provider usage.
+
+## Local Ollama evaluation
+
+On 2026-11-22 and 2026-11-23, the isolated CPU probes used Ollama `0.40.17` and synthetic images
+through the existing SharedKernel OpenAI-compatible image-text adapter. The first run used the
+published `0.1.0-alpha.742.1` adapter. Qwen2.5-VL 3B described the same shapes correctly in
+English in 44.5 seconds and returned English for the Portuguese request in 39.7 seconds.
+The six versioned fixture and language cases took 31.3–39.8 seconds each. Only three passed
+the preliminary term checks and two Portuguese requests returned English. An unavailable model
+returned the expected provider error. Qwen3-VL 4B exceeded 150 seconds on its first synthetic
+request. [Ollama release](https://github.com/ollama/ollama/releases/tag/v0.40.17) ·
+[Qwen2.5 vision model](https://ollama.com/library/qwen2.5vl:3b) ·
+[Qwen3 vision model](https://ollama.com/library/qwen3-vl:4b)
+
+The follow-up used the application pin at the time, `0.1.0-alpha.727.1`, and the verified
+`qwen2.5vl:3b` model manifest `fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1`.
+It compared the original and localized editorial context for three previously failed
+fixture and language pairs. Requests in each pair used identical raster bytes. All six
+responses arrived in 32.71–45.00 seconds within the 100-second trial budget.
+Both English coast responses omitted the sea. The Portuguese closed-trail control was in
+English. The localized trial's apparent automatic pass counted `mar` inside `amarelo`.
+Replaying the same six outputs with whole-word matching found zero automatic passes. These
+findings reject the tested candidates for this use case. A full human score sheet remains
+necessary for a future candidate to qualify.
+
+An application-boundary failure probe recorded bounded outcome and language tags and persisted
+no draft for either a provider 404 or a transport deadline. The 404 used the provider failure
+mapping. The historical transport deadline escaped that mapping while the caller token was
+active. Resolve and validate that behavior through the pinned candidate workflow before any
+future adoption. [SharedKernel adoption workflow](sharedkernel/development.md#adopt-a-library-change)
 
 ## Observability
 

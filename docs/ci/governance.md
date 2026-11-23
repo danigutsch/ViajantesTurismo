@@ -113,7 +113,7 @@ declared permissions. The SharedKernel pin manifest is authoritative for third-p
 and release comments.
 
 Coverage collection uses `coverlet.MTP` 10.1.1 and the pinned local
-`dotnet-reportgenerator-globaltool` 5.5.11 for HTML and merged Cobertura. The C# repository tool
+`dotnet-reportgenerator-globaltool` 5.6.1 for HTML and merged Cobertura. The C# repository tool
 owns changed-code threshold validation. No scanner or proprietary coverage local tool is needed.
 The workflow lint path runs SharedKernel's reusable actionlint workflow, which installs its default pinned
 `actionlint` release (currently 1.7.9) and verifies the archive checksum.

@@ -25,7 +25,7 @@ endpoints and credentials and applies the approved network and data topology.
 | Service | Available integration and evaluation path |
 | --- | --- |
 | YARP | Defer an application-owned edge until the deployment target supplies a routing requirement. [Edge routing decision](#edge-routing-decision) |
-| Ollama | Evaluate `CommunityToolkit.Aspire.Hosting.Ollama` and its client integration in an opt-in local profile. Keep model selection, prompts, and data eligibility with the owning application. [Ollama integration](https://aspire.dev/integrations/ai/ollama/ollama-get-started/) |
+| Ollama | Retain the current Catalog accessibility draft workflow. The local models tested did not qualify for adoption. [Local AI decision](#local-ai-decision) |
 | FusionCache and backing cache | Keep FusionCache configuration in the consuming runtime. The existing official Redis resource can provide a local distributed cache and backplane when the evaluation warrants them. [Redis integration](https://aspire.dev/integrations/caching/redis/redis-get-started/), [FusionCache setup](https://github.com/ZiggyCreatures/FusionCache/blob/main/docs/StepByStep.md) |
 | NoSQL | Compare the current PostgreSQL model and its projections first. If a concrete flow needs a document store, evaluate the official MongoDB and Azure Cosmos DB integrations against that flow's consistency, operations, and privacy needs. [Aspire gallery](https://aspire.dev/integrations/gallery/) |
 | Keycloak | Local development already uses a digest-pinned container with realm import and generated development credentials. Compare official `Aspire.Hosting.Keycloak` against those contracts and readiness behavior before switching. Production supplies its identity-provider configuration. [Aspire gallery](https://aspire.dev/integrations/gallery/) |
@@ -103,6 +103,33 @@ resource using `Yarp.ReverseProxy` is the supported alternative for application-
 External ingress destinations are deployment configuration. A trial must cover forwarding from each
 frontend hostname, OIDC redirects, private API reachability, failed downstream health, and visitor
 isolation before enabling any new route. [Aspire YARP integration](https://learn.microsoft.com/en-us/dotnet/aspire/proxies/yarp-integration)
+
+## Local AI decision
+
+Keep the existing Catalog accessibility draft provider and editorial review workflow. The first
+use case evaluated was localized alternative text for informative Catalog images. The tested
+models missed the bilingual quality or latency requirements. Keep Ollama out of the application
+configuration and AppHost resource graph. [Local model evaluation](../media-accessibility-evaluation.md#local-ollama-evaluation)
+
+Use original synthetic images and synthetic editorial context for any follow-up. Keep traveler,
+booking, payment and identity data, identifiable people, credentials, object keys, exact coordinates,
+and original files with embedded metadata out of the probe. The use case excludes autonomous
+publication, visitor-facing chat, and bulk generation. Any future use of real Catalog images needs
+explicit data eligibility and provenance decisions from the owning workflow.
+
+`CommunityToolkit.Aspire.Hosting.Ollama` can declare the server and model as AppHost resources.
+The documented first-start model download would require a separate artifact preparation step for
+an offline run. A future opt-in local profile should use a verified preloaded model, wait for model
+readiness, block inference egress and supply its private endpoint to the existing OpenAI-compatible
+adapter. This was a hosting design review. The live probe used the standalone fallback, a
+digest-pinned container with a verified read-only model cache, cloud disabled and loopback-only
+inference. [Aspire Ollama hosting](https://aspire.dev/integrations/ai/ollama/ollama-host/) ·
+[Ollama local mode](https://docs.ollama.com/faq#how-do-i-disable-ollamas-cloud-features)
+
+Revisit integration only after a pinned candidate passes the complete human-reviewed bilingual
+rubric within the Catalog request budget. Before any wiring, validate data eligibility, the
+published adapter's deadline and cancellation behavior, and the selected local resource's readiness
+and isolation. Keep outcome and latency telemetry within the existing Catalog instruments.
 
 ## Data-store evaluation
 

@@ -13,11 +13,21 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Rate-limit and reconciliation candidate renewal](#rate-limit-and-reconciliation-candidate-renewal)
 - [DDD standards candidate](#ddd-standards-candidate)
 - [ShouldThrow message candidate](#shouldthrow-message-candidate)
+- [Published testing helpers candidate](#published-testing-helpers-candidate)
 - [Registration and tool rename candidate](#registration-and-tool-rename-candidate)
 - [Hosted-test lease candidate](#hosted-test-lease-candidate)
 - [Playwright ObjectModel dependency](#playwright-objectmodel-dependency)
 - [Remaining decision](#remaining-decision)
 - [Candidate that targets net11 only](#candidate-that-targets-net11-only)
+
+## Published testing helpers candidate
+
+Candidate `0.1.0-alpha.795.1` at library revision
+`b9bbffe72f8c0899eed6606a229e4bf451344fa4` carries the approved exceptions for StreamJsonRpc
+`2.25.29` and Magick.NET-Q8-AnyCPU `15.1.0`. Both package archives match their previously
+approved SHA-256 values, and all three StreamJsonRpc and 11 Magick locked contexts
+retain their existing package versions and content hashes. The candidate's 143 package hashes
+match both published platform consumption records. [Published candidate validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45229639704)
 
 ## Registration and tool rename candidate
 
@@ -45,13 +55,11 @@ existing `Microsoft.Playwright.TestAdapter` dependency on `Microsoft.TestPlatfor
 That archive declares `LICENSE_NET.txt`, the Microsoft .NET Library terms, which the repository's
 license policy does not allow. This was present in the former system-test lock file.
 
-Central transitive pinning now selects `Microsoft.TestPlatform.ObjectModel 17.14.1`, within the
-adapter's supported version range and the same package major version. Its actual `.nuspec` declares
-the MIT expression and source revision `490850ae3fdc1b470e3804ceab4f6a41cf89ae51`; the
-[official package page](https://www.nuget.org/packages/Microsoft.TestPlatform.ObjectModel/17.14.1)
-also identifies MIT. The net8.0 asset used by this net10.0 test host removes the old NuGet.Frameworks
-dependency. This is an external transitive dependency update and requires browser compatibility
-validation. The license allowlist and exceptions remain unchanged.
+Central transitive pinning selects `Microsoft.TestPlatform.ObjectModel 18.12.0`. The Playwright
+adapter declares 17.3.0 as its minimum. The pinned archive's `.nuspec` declares MIT and source
+revision `8c03f23cd7df6ab28c3f1e3d112dea978eae8b0c`. Its `net8.0` asset has no dependencies and
+is compatible with the `net11.0` test host. The license allowlist and exceptions remain unchanged.
+[Official package metadata](https://www.nuget.org/packages/Microsoft.TestPlatform.ObjectModel/18.12.0)
 
 ## Snapshot failure and correction
 
