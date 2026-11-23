@@ -1,3 +1,5 @@
+using Aspire.Hosting.Dotnet;
+
 namespace ViajantesTurismo.AppHost;
 
 /// <summary>
@@ -47,7 +49,7 @@ internal static class ObservabilityStackResourceExtensions
     {
         builder.Eventing.Subscribe<BeforeStartEvent>((beforeStart, _) =>
         {
-            foreach (var project in beforeStart.Model.Resources.OfType<ProjectResource>())
+            foreach (var project in beforeStart.Model.Resources.OfType<DotnetProjectResource>())
             {
                 builder.CreateResourceBuilder(project)
                     .WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", collector.GetLeftPart(UriPartial.Authority))

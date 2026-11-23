@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <!-- Aspire AppHost orchestration is not a Native AOT publish target. -->
@@ -7,25 +7,38 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
+        <AspireCliInvocationMode>DnxPinned</AspireCliInvocationMode>
         <UserSecretsId>542db91b-8b09-47f2-8b7f-84c6eaf48fd4</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.Api\ViajantesTurismo.Admin.Api.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Catalog.Api\ViajantesTurismo.Catalog.Api.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Admin.IntegrationEventWorker\ViajantesTurismo.Admin.IntegrationEventWorker.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Catalog.IntegrationEventWorker\ViajantesTurismo.Catalog.IntegrationEventWorker.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.MigrationService\ViajantesTurismo.MigrationService.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj" IsAspireProjectResource="false"/>
-        <ProjectReference Include="..\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"/>
-        <ProjectReference Include="..\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"/>
+        <!-- Hosted validation follows these build dependencies. AppHost registers each resource by project path. -->
+        <ProjectReference Include="..\ViajantesTurismo.Admin.Api\ViajantesTurismo.Admin.Api.csproj"
+                          ReferenceOutputAssembly="false" ExcludeAssets="all" Private="false" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.Api\ViajantesTurismo.Catalog.Api.csproj"
+                          ReferenceOutputAssembly="false" ExcludeAssets="all" Private="false" />
+        <ProjectReference Include="..\ViajantesTurismo.Admin.IntegrationEventWorker\ViajantesTurismo.Admin.IntegrationEventWorker.csproj"
+                          ReferenceOutputAssembly="false" ExcludeAssets="all" Private="false" />
+        <ProjectReference Include="..\ViajantesTurismo.Catalog.IntegrationEventWorker\ViajantesTurismo.Catalog.IntegrationEventWorker.csproj"
+                          ReferenceOutputAssembly="false" ExcludeAssets="all" Private="false" />
+        <ProjectReference Include="..\ViajantesTurismo.MigrationService\ViajantesTurismo.MigrationService.csproj"
+                          ReferenceOutputAssembly="false" ExcludeAssets="all" Private="false" />
+        <ProjectReference Include="..\ViajantesTurismo.Management.Web\ViajantesTurismo.Management.Web.csproj"
+                          ReferenceOutputAssembly="false" ExcludeAssets="all" Private="false" />
+        <ProjectReference Include="..\ViajantesTurismo.Public.Web\ViajantesTurismo.Public.Web.csproj"
+                          ReferenceOutputAssembly="false" ExcludeAssets="all" Private="false" />
+        <ProjectReference Include="..\ViajantesTurismo.DatabaseObservability\ViajantesTurismo.DatabaseObservability.csproj"
+                          ReferenceOutputAssembly="false" ExcludeAssets="all" Private="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ViajantesTurismo.Resources\ViajantesTurismo.Resources.csproj"/>
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.Grafana" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.K6" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.ClamAv" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Hosting.SeaweedFs" />
         <PackageReference Include="PandaBear.SharedKernel.Aspire.Analyzers" PrivateAssets="all" />
-        <ProjectReference Include="..\ViajantesTurismo.DatabaseObservability\ViajantesTurismo.DatabaseObservability.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -35,6 +48,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.AppHost"/>
+        <PackageReference Include="Aspire.Hosting.Dotnet"/>
         <PackageReference Include="Aspire.Hosting.PostgreSQL"/>
         <PackageReference Include="Aspire.Hosting.Redis"/>
     </ItemGroup>

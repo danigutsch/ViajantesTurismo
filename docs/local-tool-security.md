@@ -133,10 +133,10 @@ the relevant names, states, and health results when sharing evidence.
 | SeaweedFS | Check the object storage resource state and health. Keep object contents and storage credentials out of the diagnostic record. |
 | Observability | Start the AppHost with `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` to discover `grafana`, `loki`, `tempo`, and `prometheus` alongside `opentelemetry-collector`. Check the Collector before inspecting a downstream backend. |
 
-The pinned Aspire CLI `13.6.5` answered the stdio `initialize` and `tools/list` requests with 14 tools.
-The workspace launcher listed the running isolated AppHost and found each resource above Running and
-Healthy with the optional observability stack enabled. The tool list includes `execute_resource_command`;
-the diagnostic workflow uses `list_apphosts`, `select_apphost`, `list_resources`, and scoped read tools.
+The pinned Aspire CLI `17.0.0` answered the stdio `initialize` and `tools/list` requests with 15 tools.
+The diagnostic workflow uses `list_apphosts`, `select_apphost`, `list_resources`, and scoped read tools.
+The earlier isolated AppHost check on `13.6.5` found each resource above Running and Healthy with the
+optional observability stack enabled.
 Use the HTTPS launch profile in an isolated AppHost with synthetic data for this check.
 Resource responses also include URLs and environment metadata. Keep only the resource names, states,
 and health outcomes in the validation receipt.

@@ -31,7 +31,7 @@ command after `dotnet restore`; fix findings with `dotnet format` or `dotnet for
 
 ## Coverage collection
 
-`coverlet.MTP` 10.1.0 replaces the Microsoft coverage extension and runs with xUnit v3 on
+`coverlet.MTP` 10.1.1 replaces the Microsoft coverage extension and runs with xUnit v3 on
 Microsoft.Testing.Platform. The authoritative configuration is `tests/testconfig.json`.
 It excludes test assemblies, AppHost, migrations, generated files, and explicitly generated
 or excluded attributes. Compiler-generated async and iterator implementations remain included.

@@ -57,7 +57,7 @@
       ".gitleaks.toml",
       ".markdownlintignore",
       ".mcp.json",
-      ".aspire/settings.json",
+      "aspire.config.json",
       "CODEOWNERS",
       "docs/architecture/*.json",
       "tests/AGENTS.md",

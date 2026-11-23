@@ -90,9 +90,8 @@ The architecture test uses these allowlists as the approved broad-suppression in
 entries must exactly match current repository suppressions so removed suppressions cannot be
 reintroduced without review.
 
-| Surface | Suppression kind | Owner | Removal path |
-| --- | --- | --- | --- |
-| `tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj` | `NoWarn`: `ASPIRE010` | Hosted test project | Permanent while the project uses `Aspire.AppHost.Sdk` for project metadata: with the CLI bundle the SDK replaces its run command with `aspire run`, which breaks `dotnet test` |
+The `NoWarn` inventory is empty. The hosted test project uses `Microsoft.NET.Sdk` and sets
+`ASPIRE_SUPPRESS_CLI_RUN_HOOK` so Microsoft.Testing.Platform owns its entry point.
 
 The architecture-test suppression guard owns this allowlist and should fail if new broad
 suppression surfaces appear without review.

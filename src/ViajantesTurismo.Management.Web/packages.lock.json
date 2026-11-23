@@ -4,17 +4,17 @@
     "net11.0": {
       "Aspire.StackExchange.Redis.OutputCaching": {
         "type": "Direct",
-        "requested": "[13.6.5, )",
-        "resolved": "13.6.5",
-        "contentHash": "OPiWIGft/OLVmnmhC2J8DwJsm9w/5u0mQzuQ0jaR5c0Z/dCjQcukZmzgjA56mKw+VeqwhxTLtBQcLSlYKIYStg==",
+        "requested": "[17.0.0, )",
+        "resolved": "17.0.0",
+        "contentHash": "ZlBemMCN22yOge5wKaCuQcQqhus084waTA5xa6M2DovZfhNsLOB9IeulDBfvxsDMKjWZZKZj+wMeAnn+KC0/HQ==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
-          "Aspire.StackExchange.Redis": "13.6.5",
-          "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis": "10.0.14",
+          "Aspire.StackExchange.Redis": "17.0.0",
+          "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis": "11.0.0",
           "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.10.0",
-          "OpenTelemetry.Extensions.Hosting": "1.17.0",
+          "OpenTelemetry.Extensions.Hosting": "1.18.0",
           "StackExchange.Redis": "2.13.17",
-          "System.IO.Hashing": "10.0.14"
+          "System.IO.Hashing": "11.0.0"
         }
       },
       "Microsoft.AspNetCore.App.Internal.Assets": {
@@ -186,14 +186,14 @@
       },
       "Aspire.StackExchange.Redis": {
         "type": "Transitive",
-        "resolved": "13.6.5",
-        "contentHash": "HBBEvamDuAko26lJ1Rs3bMZPT11L7Q6F6rdvMR7cNlkN6KfP0juUBiV+o7zZGSQgarJBjTpRo8OyHfRSFlMtOQ==",
+        "resolved": "17.0.0",
+        "contentHash": "0yTg4yzLtV5eddGzPoDeopSnBwhNMjMp3U5gg3XuCP9DOi+FK/rWfHH9yF3u/yvQKFHu/tHZ2CFq76VYwSqsKA==",
         "dependencies": {
           "AspNetCore.HealthChecks.Redis": "9.0.0",
           "Microsoft.Extensions.DependencyInjection.AutoActivation": "10.10.0",
-          "OpenTelemetry.Extensions.Hosting": "1.17.0",
+          "OpenTelemetry.Extensions.Hosting": "1.18.0",
           "StackExchange.Redis": "2.13.17",
-          "System.IO.Hashing": "10.0.14"
+          "System.IO.Hashing": "11.0.0"
         }
       },
       "AspNetCore.HealthChecks.Redis": {
@@ -214,8 +214,8 @@
       },
       "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis": {
         "type": "Transitive",
-        "resolved": "10.0.14",
-        "contentHash": "AQALE3dbokVs4aEg/06gosTdhBilvquqsZU0DAlw4fmq7ZAbVKTlUC7b4X9LKTdL38bHldVIAuBSflLhXpy1Jg==",
+        "resolved": "11.0.0",
+        "contentHash": "e3dZwPF5NZamLuflFX+8pcpa6bTZchKgi6aSf4qECvqwaLS00D/8GcEiNtvJRnZqsGGHfurt9NHErOD0t04niQ==",
         "dependencies": {
           "StackExchange.Redis": "2.7.27"
         }
@@ -493,8 +493,8 @@
       },
       "System.IO.Hashing": {
         "type": "Transitive",
-        "resolved": "10.0.14",
-        "contentHash": "lVqovhCt3HlZe7ONG5ydaj6BYwYI004gldVfMMkJl/lR5ueeCtWNpW4nejOX75sPmzm8vXCxB69GqwHaYCnyUQ=="
+        "resolved": "11.0.0",
+        "contentHash": "U+Bv2qCYt6eONi+arSP0QIp4uTO6os6uceBsqiAwruZ+Wo2HrRhO/0tj38M9URJtS+4DhAtT3ka2TGNFYsnhyQ=="
       },
       "viajantesturismo.admin.contracts.application": {
         "type": "Project",
