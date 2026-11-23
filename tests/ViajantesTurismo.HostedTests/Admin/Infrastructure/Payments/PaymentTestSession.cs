@@ -95,6 +95,18 @@ internal sealed class PaymentTestSession : IAsyncDisposable
     public Task<IReadOnlyList<PaymentInstructionAuditMetadata>> ReadInstructionAudits(Guid documentId, CancellationToken ct) =>
         _provider.GetRequiredService<IPaymentInstructionStore>().GetAudits(documentId, ct);
 
+    /// <summary>Persists accumulated instruction audits through the same store as a command.</summary>
+    public async Task SeedInstructionAudits(Guid bookingId, IEnumerable<PaymentInstructionAuditMetadata> audits, CancellationToken ct)
+    {
+        var store = _provider.GetRequiredService<IPaymentInstructionStore>();
+        foreach (var audit in audits)
+        {
+            store.AddAudit(bookingId, audit);
+        }
+
+        await Context.SaveEntities(ct);
+    }
+
     /// <summary>Dispatches a payment command through the production mediator pipeline.</summary>
     public ValueTask<Result<Guid>> Send(ICommand<Result<Guid>> command, CancellationToken ct) =>
         _provider.GetRequiredService<ISender>().Send(command, ct);
@@ -131,6 +143,13 @@ internal sealed class PaymentTestSession : IAsyncDisposable
     public async Task<int> AccountCount(CancellationToken ct) => await Context.Set<PaymentAccountRow>().CountAsync(ct);
     /// <summary>Counts persisted payment audit rows.</summary>
     public async Task<int> AuditCount(CancellationToken ct) => await Context.Set<PaymentAuditRow>().CountAsync(ct);
+    /// <summary>Reads the single persisted financial details access audit for a test actor.</summary>
+    public async Task<(Guid BookingId, long Revision, string ActorId, string Reason)> ReadFinancialAccessAudit(string actorId, CancellationToken ct)
+    {
+        var audit = await Context.Set<PaymentAuditRow>().AsNoTracking().SingleAsync(
+            row => row.ActorId == actorId && row.Operation == "FinancialSensitiveAccess", ct);
+        return (audit.ResourceId, audit.Revision, audit.ActorId, audit.Reason);
+    }
     /// <summary>Reads the protected (encrypted) state bytes stored for the payment account with <paramref name="id" />.</summary>
     public async Task<byte[]> AccountCiphertext(Guid id, CancellationToken ct) => await Context.Set<PaymentAccountRow>().Where(row => row.Id == id).Select(row => row.ProtectedState).SingleAsync(ct);
     /// <summary>Loads the tour that contains the booking with <paramref name="bookingId" />, or null when none exists.</summary>

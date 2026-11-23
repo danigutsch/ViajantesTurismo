@@ -71,6 +71,7 @@ public sealed class PaymentInstructionReadPostgreSqlTests(PostgreSqlTestServerFi
         await using var reader = scenario.Open();
         var retained = await reader.Instructions.ListForBooking(booking.Id, ct);
         var newest = await reader.Instructions.ListPageForBooking(booking.Id, page: null, pageSize: 1, ct);
+        var newestSummary = await reader.Instructions.ListPageForBooking(booking.Id, page: 1, pageSize: 1, latestReviewOnly: true, ct);
         var oldest = await reader.Instructions.ListPageForBooking(booking.Id, page: 99, pageSize: 1, ct);
         var other = await reader.Instructions.ListPageForBooking(otherBooking.Id, page: 1, pageSize: 1, ct);
 
@@ -80,6 +81,7 @@ public sealed class PaymentInstructionReadPostgreSqlTests(PostgreSqlTestServerFi
         retained[0].Reviews.ShouldBeEmpty();
         retained[1].MaskedRecipient.ShouldBe("…3000");
         newest.Items.ShouldHaveSingleItem().Document.Id.ShouldBe(lastId);
+        newestSummary.Items.ShouldHaveSingleItem().Reviews.ShouldBeEmpty();
         newest.Page.ShouldBe(1);
         newest.Total.ShouldBe(2);
         var oldestRevision = oldest.Items.ShouldHaveSingleItem();

@@ -27,6 +27,12 @@ internal sealed class EmptyPaymentInstructionStore : IPaymentInstructionStore
     public void AddAudit(Guid bookingId, PaymentInstructionAuditMetadata metadata) => throw new InvalidOperationException("Unexpected audit write in HTTP boundary test.");
     /// <summary>Returns no audits.</summary>
     public Task<IReadOnlyList<PaymentInstructionAuditMetadata>> GetAudits(Guid documentId, CancellationToken ct) => Task.FromResult<IReadOnlyList<PaymentInstructionAuditMetadata>>([]);
+    /// <inheritdoc />
+    public Task<PaymentInstructionAuditMetadata?> GetLatestAudit(Guid documentId, IReadOnlyList<PaymentInstructionAuditOperation> operations, CancellationToken ct) =>
+        Task.FromResult<PaymentInstructionAuditMetadata?>(null);
+    /// <inheritdoc />
+    public Task<(IReadOnlyList<PaymentInstructionAuditMetadata> Items, PageWindow Window)?> GetReviewPage(Guid documentId, int? page, int pageSize, CancellationToken ct) =>
+        Task.FromResult<(IReadOnlyList<PaymentInstructionAuditMetadata>, PageWindow)?>(null);
     /// <summary>Returns no artifact.</summary>
     public Task<byte[]?> GetArtifact(Guid documentId, CancellationToken ct) => Task.FromResult<byte[]?>(null);
 }

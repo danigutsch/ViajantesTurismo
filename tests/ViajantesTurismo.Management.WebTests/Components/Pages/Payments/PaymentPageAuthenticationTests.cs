@@ -20,7 +20,7 @@ public sealed class PaymentPageAuthenticationTests : BunitContext
         Services.AddSingleton<IBookingsApiClient>(_bookings);
         Services.AddSingleton<IBookingPaymentsApiClient>(provider => new BookingPaymentsApiClient(provider.GetRequiredService<HttpClient>()));
         Services.AddSingleton<IPaymentAccountsApiClient>(provider => new PaymentAccountsApiClient(provider.GetRequiredService<HttpClient>()));
-        Services.AddSingleton<IPaymentInstructionsApiClient>(provider => new PaymentInstructionsApiClient(provider.GetRequiredService<HttpClient>()));
+        Services.AddSingleton<IPaymentInstructionsApiClient>(provider => PaymentInstructionsApiClient.WithLatestReviewOnly(provider.GetRequiredService<HttpClient>()));
         Services.AddSingleton(TimeProvider.System);
         Services.AddSingleton<AuthenticationStateProvider>(_authentication);
         Services.AddAuthorizationCore();
