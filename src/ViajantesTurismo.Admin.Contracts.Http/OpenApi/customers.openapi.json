@@ -122,6 +122,52 @@
         ]
       }
     },
+    "/api/v1/customers/options/search": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Searches customer choices.",
+        "description": "Searches for a bounded set of customer choices by name or exact identifier.",
+        "operationId": "SearchCustomerOptions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerOptionSearchDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCustomerOptionsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/customers/{id}": {
       "get": {
         "tags": [
@@ -598,6 +644,36 @@
           }
         }
       },
+      "CustomerOptionSearchDto": {
+        "required": [
+          "query",
+          "limit"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "limit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "excludedCustomerId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "EmergencyContactDto": {
         "required": [
           "name",
@@ -659,6 +735,57 @@
           },
           "bikeType": {
             "$ref": "#/components/schemas/BikeTypeDto"
+          }
+        }
+      },
+      "GetCustomerOptionDto": {
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "bikeType"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "bikeType": {
+            "$ref": "#/components/schemas/BikeTypeDto"
+          }
+        }
+      },
+      "GetCustomerOptionsDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetCustomerOptionDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },

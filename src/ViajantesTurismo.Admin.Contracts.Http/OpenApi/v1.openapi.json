@@ -122,6 +122,52 @@
         ]
       }
     },
+    "/api/v1/tours/options/search": {
+      "post": {
+        "tags": [
+          "Tours"
+        ],
+        "summary": "Searches for a bounded set of active tour choices by name or identifier.",
+        "description": "Searches active tour choices.",
+        "operationId": "SearchTourOptions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TourOptionSearchDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTourOptionsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/tours/{id}": {
       "get": {
         "tags": [
@@ -478,6 +524,52 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/customers/options/search": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Searches customer choices.",
+        "description": "Searches for a bounded set of customer choices by name or exact identifier.",
+        "operationId": "SearchCustomerOptions",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerOptionSearchDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCustomerOptionsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Authentication is required."
@@ -855,6 +947,65 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/page": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves bounded booking summaries and the overview counts. The optional page number is one-based.",
+        "description": "Retrieves a page of bookings.",
+        "operationId": "GetBookingPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Authentication is required."
@@ -5802,6 +5953,58 @@
       "BikeTypeDto": {
         "type": "integer"
       },
+      "BookingOverviewCountsDto": {
+        "required": [
+          "total",
+          "pending",
+          "confirmed",
+          "completed",
+          "cancelled"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pending": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "confirmed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "completed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "cancelled": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "BookingStatusDto": {
         "type": "integer"
       },
@@ -6451,6 +6654,36 @@
           }
         }
       },
+      "CustomerOptionSearchDto": {
+        "required": [
+          "query",
+          "limit"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "limit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "excludedCustomerId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "DiscountTypeDto": {
         "type": "integer"
       },
@@ -6883,6 +7116,24 @@
           }
         }
       },
+      "GetBookingPageDto": {
+        "required": [
+          "items",
+          "counts"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetBookingDto"
+            }
+          },
+          "counts": {
+            "$ref": "#/components/schemas/BookingOverviewCountsDto"
+          }
+        }
+      },
       "GetBookingReceiptDto": {
         "required": [
           "id",
@@ -7050,6 +7301,57 @@
           },
           "bikeType": {
             "$ref": "#/components/schemas/BikeTypeDto"
+          }
+        }
+      },
+      "GetCustomerOptionDto": {
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "bikeType"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "bikeType": {
+            "$ref": "#/components/schemas/BikeTypeDto"
+          }
+        }
+      },
+      "GetCustomerOptionsDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetCustomerOptionDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -8119,6 +8421,54 @@
           }
         }
       },
+      "GetTourOptionDto": {
+        "required": [
+          "id",
+          "name",
+          "identifier",
+          "startDate"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "GetTourOptionsDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetTourOptionDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "GetTourRetirementDto": {
         "required": [
           "tourId",
@@ -8753,6 +9103,29 @@
       "Stream": {
         "type": "string",
         "format": "binary"
+      },
+      "TourOptionSearchDto": {
+        "required": [
+          "query",
+          "limit"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "limit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
       },
       "UpdateBookingDetailsDto": {
         "required": [

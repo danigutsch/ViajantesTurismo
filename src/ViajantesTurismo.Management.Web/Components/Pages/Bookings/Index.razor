@@ -1,4 +1,5 @@
 @page "/bookings"
+@using Microsoft.AspNetCore.Components.QuickGrid
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 
@@ -16,7 +17,7 @@
     {
         <div class="alert alert-danger" role="alert">@_errorMessage</div>
     }
-    else if (_loading)
+    else if (_counts is null)
     {
         <p><em>Loading bookings...</em></p>
     }
@@ -29,56 +30,87 @@
                         <h5 class="mb-0">Bookings Overview</h5>
                     </div>
                     <div class="col-md-6 text-end">
-                        <span class="badge bg-secondary me-2">Total: @_bookings?.Length</span>
-                        <span class="badge bg-warning text-dark me-2">Pending: @_bookings?.Count(b => b.Status == BookingStatusDto.Pending)</span>
-                        <span class="badge bg-success me-2">Confirmed: @_bookings?.Count(b => b.Status == BookingStatusDto.Confirmed)</span>
-                        <span class="badge bg-info me-2">Completed: @_bookings?.Count(b => b.Status == BookingStatusDto.Completed)</span>
-                        <span class="badge bg-danger">Cancelled: @_bookings?.Count(b => b.Status == BookingStatusDto.Cancelled)</span>
+                        <span class="badge bg-secondary me-2">Total: @_counts.Total</span>
+                        <span class="badge bg-warning text-dark me-2">Pending: @_counts.Pending</span>
+                        <span class="badge bg-success me-2">Confirmed: @_counts.Confirmed</span>
+                        <span class="badge bg-info me-2">Completed: @_counts.Completed</span>
+                        <span class="badge bg-danger">Cancelled: @_counts.Cancelled</span>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <BookingsList Bookings="_bookings" />
+                <BookingsList ItemsProvider="_loadBookings" TotalBookings="_counts.Total" />
             </div>
         </div>
     }
 </div>
 
 @code {
-    private GetBookingDto[]? _bookings;
-    private bool _loading = true;
+    private GridItemsProvider<GetBookingDto>? _loadBookings;
+    private GetBookingPageDto? _initialPage;
+    private BookingOverviewCountsDto? _counts;
     private string? _errorMessage;
 
+    /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
-        await LoadBookings();
+        _loadBookings = LoadBookings;
+        _initialPage = await FetchBookings(1, BookingPageSort.Default, descending: false, CancellationToken.None);
     }
 
-    private async Task LoadBookings()
+    private async ValueTask<GridItemsProviderResult<GetBookingDto>> LoadBookings(GridItemsProviderRequest<GetBookingDto> request)
     {
-        _loading = true;
-        _errorMessage = null;
+        var sort = request.GetSortByProperties().FirstOrDefault().PropertyName switch
+        {
+            nameof(GetBookingDto.BookingDate) => BookingPageSort.BookingDate,
+            nameof(GetBookingDto.TourName) => BookingPageSort.TourName,
+            nameof(GetBookingDto.CustomerName) => BookingPageSort.CustomerName,
+            nameof(GetBookingDto.TotalPrice) => BookingPageSort.TotalPrice,
+            _ => BookingPageSort.Default,
+        };
+        var pageNumber = (request.StartIndex / ContractConstants.BookingListPageSize) + 1;
+        var descending = request.SortByColumn is not null && !request.SortByAscending;
+        var initialPage = _initialPage;
+        _initialPage = null;
+        if (initialPage is not null && pageNumber == 1 && sort == BookingPageSort.Default && !descending)
+        {
+            return GridItemsProviderResult.From(initialPage.Items.ToArray(), initialPage.Counts.Total);
+        }
+
+        var previousCounts = _counts;
+        var page = await FetchBookings(pageNumber, sort, descending, request.CancellationToken);
+        if (_counts != previousCounts)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+
+        return page is not null
+            ? GridItemsProviderResult.From(page.Items.ToArray(), page.Counts.Total)
+            : GridItemsProviderResult.From(Array.Empty<GetBookingDto>(), 0);
+    }
+
+    private async ValueTask<GetBookingPageDto?> FetchBookings(int pageNumber, BookingPageSort sort, bool descending, CancellationToken ct)
+    {
         try
         {
-            var outcome = await BookingsApi.GetAllBookings(CancellationToken.None);
-            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } bookings })
+            var outcome = await BookingsApi.GetBookingPage(pageNumber, sort, descending, ct);
+            ct.ThrowIfCancellationRequested();
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } page })
             {
-                _bookings = bookings;
+                _counts = page.Counts;
+                _errorMessage = null;
+                return page;
             }
-            else
-            {
-                _bookings = [];
-                _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load bookings")).For(outcome.Kind);
-            }
+
+            _errorMessage = new HttpOutcomeMessages(UserFacingErrorMessage.ForOperation("load bookings")).For(outcome.Kind);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (!ct.IsCancellationRequested)
         {
             Failures.Report(exception, "bookings.index.load");
             _errorMessage = UserFacingErrorMessage.ForOperation("load bookings");
         }
-        finally
-        {
-            _loading = false;
-        }
+
+        _counts = null;
+        return null;
     }
 }

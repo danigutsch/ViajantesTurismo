@@ -6,7 +6,6 @@
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 @inject IBookingsApiClient BookingsApi
-@inject ICustomersApiClient CustomersApi
 @inject NavigationManager Navigation
 
 <PageTitle>Edit Booking</PageTitle>
@@ -137,27 +136,15 @@ else if (_booking is not null)
                     @if (_model.RoomType == RoomTypeDto.DoubleOccupancy)
                     {
                         <div class="col-md-6 mb-3">
-                            <label for="companionId" class="form-label">Companion (Optional)</label>
-                             <InputSelect id="companionId" class="form-select" @bind-Value="_model.CompanionId"
-                                          @bind-Value:after="OnCompanionChanged" disabled="@AreEditControlsDisabled">
-                                 <option value="">-- No Companion --</option>
-                                 @if (_booking.CompanionId.HasValue &&
-                                      _customers.All(customer => customer.Id != _booking.CompanionId.Value))
-                                 {
-                                     <option value="@_booking.CompanionId">@_booking.CompanionName</option>
-                                 }
-                                 @foreach (var customer in _customers.Where(customer => customer.Id != _booking.CustomerId))
-                                 {
-                                     <option value="@customer.Id">@customer.FirstName @customer.LastName</option>
-                                 }
-                             </InputSelect>
-                             <ValidationMessage For="@(() => _model.CompanionId)"/>
-                             @if (_companionChoicesUnavailable)
-                             {
-                                 <div class="form-text text-warning" role="status">
-                                     Other companion choices are unavailable. The current companion can still be kept or removed.
-                                 </div>
-                             }
+                            <CustomerOptionPicker @bind-Value="_model.CompanionId"
+                                             ExcludedCustomerId="_booking.CustomerId"
+                                             SavedSelectionLabel="@(SavedCompanionLabel)"
+                                             Disabled="@AreEditControlsDisabled"
+                                             ShowEmail="false"
+                                             ChoiceChanged="ApplyCompanionChoice"
+                                             SearchFailureOperation="bookings.edit.load-companions"
+                                             UnavailableMessage="Other companion choices are unavailable. The current companion can still be kept or removed." />
+                            <ValidationMessage For="@(() => _model.CompanionId)"/>
                         </div>
                     }
                 </div>
@@ -318,8 +305,6 @@ else if (_booking is not null)
 }
 
 @code {
-    private const int MaxCompanionChoices = 500;
-
     /// <summary>
     /// The ID of the booking to edit.
     /// </summary>
@@ -328,12 +313,11 @@ else if (_booking is not null)
 
     private GetBookingDto? _booking;
     private readonly BookingFormModel _model = new();
-    private IReadOnlyList<GetCustomerDto> _customers = [];
+    private GetCustomerOptionDto? _selectedCompanion;
     private bool _loading = true;
     private bool _notFound;
     private bool _isSubmitting;
     private bool _success;
-    private bool _companionChoicesUnavailable;
     private readonly BookingEditRedirectState _redirectState = new();
     private string? _loadErrorMessage;
     private string? _errorMessage;
@@ -349,6 +333,8 @@ else if (_booking is not null)
 
     private bool AreEditControlsDisabled => AreMutationsBlocked || _booking?.CanModifyBookedServices is false;
 
+    private string? SavedCompanionLabel => _model.CompanionId == _booking?.CompanionId ? _booking?.CompanionName : null;
+
     private bool RequiresReload => !string.IsNullOrEmpty(_refreshWarningMessage);
 
     protected override async Task OnInitializedAsync()
@@ -362,7 +348,6 @@ else if (_booking is not null)
             {
                 _booking = booking;
                 SyncModelFromBooking(booking);
-                await LoadCompanionChoices();
             }
             else if (outcome.Kind == HttpOutcomeKind.NotFound)
             {
@@ -424,12 +409,9 @@ else if (_booking is not null)
                     return;
                 }
 
-                var companionName = _model.CompanionId == _booking.CompanionId
-                    ? _booking.CompanionName
-                    : _customers
-                        .Where(customer => customer.Id == _model.CompanionId)
-                        .Select(customer => $"{customer.FirstName} {customer.LastName}")
-                        .FirstOrDefault();
+                var companionName = SavedCompanionLabel ?? (_selectedCompanion is { } companion && companion.Id == _model.CompanionId
+                    ? $"{companion.FirstName} {companion.LastName}"
+                    : null);
                 _booking = _booking with
                 {
                     RoomType = _model.RoomType,
@@ -581,6 +563,7 @@ else if (_booking is not null)
 
     private void SyncModelFromBooking(GetBookingDto booking)
     {
+        _selectedCompanion = null;
         _model.RoomType = booking.RoomType;
         _model.PrincipalBikeType = booking.PrincipalBikeType;
         _model.TourId = booking.TourId;
@@ -601,45 +584,13 @@ else if (_booking is not null)
         }
 
         _model.CompanionId = null;
-        _model.CompanionBikeType = null;
+        ApplyCompanionChoice(null);
     }
 
-    private void OnCompanionChanged()
+    private void ApplyCompanionChoice(GetCustomerOptionDto? companion)
     {
-        if (!_model.CompanionId.HasValue)
-        {
-            _model.CompanionBikeType = null;
-            return;
-        }
-
-        var companion = _customers.FirstOrDefault(customer => customer.Id == _model.CompanionId.Value);
-        if (companion is not null)
-        {
-            _model.CompanionBikeType = companion.BikeType;
-        }
-    }
-
-    private async Task LoadCompanionChoices()
-    {
-        try
-        {
-            var outcome = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: MaxCompanionChoices);
-            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers })
-            {
-                _customers = customers;
-                _companionChoicesUnavailable = false;
-                return;
-            }
-
-            _customers = [];
-            _companionChoicesUnavailable = true;
-        }
-        catch (Exception exception)
-        {
-            Failures.Report(exception, "bookings.edit.load-companions");
-            _customers = [];
-            _companionChoicesUnavailable = true;
-        }
+        _selectedCompanion = companion;
+        _model.CompanionBikeType = companion?.BikeType;
     }
 
     private async Task<bool> TryRefreshBookingAndSyncModel()

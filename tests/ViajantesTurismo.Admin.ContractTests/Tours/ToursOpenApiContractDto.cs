@@ -9,10 +9,14 @@ namespace ViajantesTurismo.Admin.ContractTests.Tours;
 /// <param name="GetTourByIdOperationId">The operation id of the get-tour-by-id operation.</param>
 /// <param name="CreateTourSchemaReference">The schema <c>$ref</c> used by the create-tour request body.</param>
 /// <param name="UpdateTourSchemaReference">The schema <c>$ref</c> used by the update-tour request body.</param>
+/// <param name="SearchTourOptionsOperationId">The operation id of the active-tour option search.</param>
+/// <param name="SearchTourOptionsSchemaReference">The schema <c>$ref</c> of the option search request body.</param>
 internal sealed record ToursOpenApiContractDto(
     string OpenApiVersion,
     string Title,
     string ListToursOperationId,
     string GetTourByIdOperationId,
     string CreateTourSchemaReference,
-    string UpdateTourSchemaReference);
+    string UpdateTourSchemaReference,
+    string SearchTourOptionsOperationId,
+    string SearchTourOptionsSchemaReference);

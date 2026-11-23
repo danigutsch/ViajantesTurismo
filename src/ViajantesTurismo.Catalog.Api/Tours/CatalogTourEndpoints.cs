@@ -22,6 +22,9 @@ internal static class CatalogTourEndpoints
         managementCatalog.MapGet("/tours", GetTours)
             .WithName("GetTours")
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
+        managementCatalog.MapGet("/tours/page", GetTourPage)
+            .WithName("GetTourPage")
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/tours/{id:guid}", GetTour)
             .WithName("GetTour")
             .Produces<CatalogTourDto>(StatusCodes.Status200OK)
@@ -133,6 +136,22 @@ internal static class CatalogTourEndpoints
         [
             .. tours.Select(tour => MapManagementTour(tour, GetImages(imagesByTour, tour.CatalogTourId), routes, context))
         ];
+    }
+
+    private static async ValueTask<Results<Ok<CatalogTourPageDto>, BadRequest>> GetTourPage(
+        ICatalogTourListReader reader,
+        CancellationToken ct,
+        string? page = null,
+        string? sort = null,
+        bool descending = false)
+    {
+        var order = CatalogTourListSort.Title;
+        if (sort is not null && (!Enum.TryParse(sort, ignoreCase: true, out order) || !Enum.IsDefined(order)))
+        {
+            return TypedResults.BadRequest();
+        }
+
+        return TypedResults.Ok(await reader.ListPage(page, order, descending, ct));
     }
 
     private static async Task<IReadOnlyList<TourSummaryDto>> GetPublishedTours(

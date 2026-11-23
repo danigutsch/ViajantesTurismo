@@ -1,7 +1,9 @@
 using PandaBear.Testing;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.ContractConstants;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
@@ -18,31 +20,29 @@ public class BookingCreateFormTests : BunitContext
     private const string AliceEmail = "alice@example.com";
     private const string AliceDisplayName = AliceFirstName + " " + AliceLastName;
     private const string AliceCustomerDisplayName = AliceDisplayName + " (" + AliceEmail + ")";
+    private readonly FakeCustomersApiClient _fakeCustomersApi = new();
+
+    public BookingCreateFormTests()
+    {
+        Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
+    }
 
     [Fact]
-    public void Renders_tour_dropdown_when_tours_available()
+    public void Renders_the_fixed_tour_caption_and_date()
     {
         // Arrange
-        var tours = new List<GetTourDto>
-        {
-            BuildTourDto(name: "Tour A", startDate: new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc)),
-            BuildTourDto(name: "Tour B", startDate: new DateTime(2025, 7, 1, 0, 0, 0, DateTimeKind.Utc))
-        };
-        var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
+        var tour = BuildTourDto(name: "Tour A", startDate: new DateTime(2025, 6, 1, 0, 0, 0, DateTimeKind.Utc));
+        var model = new BookingFormModel { TourId = tour.Id };
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
-        var tourSelect = cut.Find(SelectSelector);
-        var options = tourSelect.QuerySelectorAll("option");
-        options.Length.ShouldBe(3); // Placeholder + 2 tours
-        options[1].TextContent.ShouldContain("Tour A (01/06/2025)", StringComparison.Ordinal);
-        options[2].TextContent.ShouldContain("Tour B (01/07/2025)", StringComparison.Ordinal);
+        cut.Find("#bookingTour").TextContent.ShouldBe("Tour A (01/06/2025)");
+        cut.FindAll("#tourId").ShouldBeEmpty();
     }
 
     [Fact]
@@ -50,15 +50,12 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var tour = BuildTourDto(maxCustomers: 10, currentCustomerCount: 3);
-        var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel { TourId = tour.Id };
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
         var availabilityText = cut.Find(".form-text");
@@ -74,15 +71,12 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var tour = BuildTourDto(maxCustomers: 10, currentCustomerCount: 10);
-        var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel { TourId = tour.Id };
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
         var availabilityText = cut.Find(".form-text");
@@ -98,15 +92,12 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var tour = BuildTourDto(maxCustomers: 10, currentCustomerCount: 9);
-        var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel { TourId = tour.Id };
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
         var availabilityText = cut.Find(".form-text");
@@ -124,13 +115,12 @@ public class BookingCreateFormTests : BunitContext
             BuildCustomerDto(firstName: "Bob", lastName: "Smith", email: "bob@example.com")
         };
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
+
+        _fakeCustomersApi.AddCustomers(customers);
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var selects = cut.FindAll(SelectSelector);
@@ -146,14 +136,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var roomTypeSelect = cut.FindAll(SelectSelector)
@@ -173,14 +159,10 @@ public class BookingCreateFormTests : BunitContext
             RoomType = RoomTypeDto.SingleOccupancy,
             CompanionId = null
         };
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var badge = cut.Find(".badge.bg-info");
@@ -193,14 +175,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var bikeSelect = cut.FindAll(SelectSelector)
@@ -216,14 +194,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel { RoomType = RoomTypeDto.SingleOccupancy };
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var labels = cut.FindAll(LabelSelector);
@@ -244,13 +218,12 @@ public class BookingCreateFormTests : BunitContext
             RoomType = RoomTypeDto.DoubleOccupancy,
             CustomerId = customers[0].Id
         };
-        GetTourDto[] tours = [];
+
+        _fakeCustomersApi.AddCustomers(customers);
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var companionLabel = cut.Find($"{LabelSelector}:contains('{CompanionOptionalLabel}')");
@@ -277,13 +250,12 @@ public class BookingCreateFormTests : BunitContext
             CompanionId = customer2.Id
         };
         var customers = new List<GetCustomerDto> { customer1, customer2 };
-        GetTourDto[] tours = [];
+
+        _fakeCustomersApi.AddCustomers(customers);
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var labels = cut.FindAll(LabelSelector);
@@ -301,24 +273,22 @@ public class BookingCreateFormTests : BunitContext
             RoomType = RoomTypeDto.DoubleOccupancy
         };
         var customers = new List<GetCustomerDto> { principalCustomer, companionCustomer };
-        GetTourDto[] tours = [];
+
+        _fakeCustomersApi.AddCustomers(customers);
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
-        cut.FindAll(SelectSelector)[0].Change(principalCustomer.Id);
-        cut.FindAll(SelectSelector)[3].Change(companionCustomer.Id);
+        cut.Find("#customerId").Change(principalCustomer.Id);
+        cut.Find("#companionId").Change(companionCustomer.Id);
 
         // Assert
-        var selectsAfterCompanionSelection = cut.FindAll(SelectSelector);
-        selectsAfterCompanionSelection[2].GetAttribute(ValueAttributeName).ShouldBe("EBike");
-        selectsAfterCompanionSelection[4].GetAttribute(ValueAttributeName).ShouldBe("Regular");
+        cut.Find("#principalBikeType").GetAttribute(ValueAttributeName).ShouldBe("EBike");
+        cut.Find("#companionBikeType").GetAttribute(ValueAttributeName).ShouldBe("Regular");
 
         // Act
-        selectsAfterCompanionSelection[1].Change(RoomTypeDto.SingleOccupancy);
+        cut.Find("#bookingRoomType").Change(RoomTypeDto.SingleOccupancy);
 
         // Assert
         var labelsAfterSingleRoom = cut.FindAll(LabelSelector);
@@ -329,16 +299,55 @@ public class BookingCreateFormTests : BunitContext
         model.CompanionBikeType.ShouldBeNull();
 
         // Act
-        cut.FindAll(SelectSelector)[1].Change(RoomTypeDto.DoubleOccupancy);
+        cut.Find("#bookingRoomType").Change(RoomTypeDto.DoubleOccupancy);
 
         // Assert
         var labelsAfterReturningToDouble = cut.FindAll(LabelSelector);
         labelsAfterReturningToDouble.ShouldContain(label => label.TextContent.Contains(CompanionOptionalLabel, StringComparison.Ordinal));
 
-        var companionSelect = cut.FindAll(SelectSelector)[3];
+        var companionSelect = cut.Find("#companionId");
         var selectedCompanion = companionSelect.GetAttribute(ValueAttributeName) ?? string.Empty;
         selectedCompanion.ShouldBe(string.Empty);
         cut.FindAll(LabelSelector).ShouldNotContain(label => label.TextContent.Contains(CompanionBikeLabel, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Principal_search_finds_a_customer_outside_the_option_window_and_clears_the_duplicate_companion()
+    {
+        // Arrange
+        var principal = BuildCustomerDto(firstName: AliceFirstName, bikeType: BikeTypeDto.Regular);
+        var replacement = BuildCustomerDto(firstName: "Zoe", lastName: "Target", bikeType: BikeTypeDto.EBike);
+        foreach (var index in Enumerable.Range(0, 125))
+        {
+            _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: $"Fixture{index:D3}"));
+        }
+
+        _fakeCustomersApi.AddCustomer(principal);
+        _fakeCustomersApi.AddCustomer(replacement);
+        var model = new BookingFormModel
+        {
+            CustomerId = principal.Id,
+            RoomType = RoomTypeDto.DoubleOccupancy,
+            CompanionId = replacement.Id,
+            CompanionBikeType = replacement.BikeType
+        };
+        var cut = Render<BookingCreateForm>(parameters => parameters.Add(form => form.Model, model));
+        cut.WaitForAssertion(() => cut.FindAll("#customerId option").Count
+            .ShouldBe(AdminContractConstants.MaxCustomerOptions + 1));
+        cut.FindAll("#customerId option").ShouldNotContain(option => option.GetAttribute("value") == replacement.Id.ToString());
+
+        // Act
+        await cut.Find("#customerSearch").InputAsync(new ChangeEventArgs { Value = "Zoe Target" });
+        await cut.Find("#customerId").ChangeAsync(new ChangeEventArgs { Value = replacement.Id.ToString() });
+
+        // Assert
+        model.CustomerId.ShouldBe(replacement.Id);
+        model.PrincipalBikeType.ShouldBe(replacement.BikeType);
+        model.CompanionId.ShouldBeNull();
+        model.CompanionBikeType.ShouldBeNull();
+        cut.WaitForAssertion(() => cut.FindAll("#companionId option")
+            .ShouldNotContain(option => option.GetAttribute("value") == replacement.Id.ToString()));
+        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Fact]
@@ -350,14 +359,10 @@ public class BookingCreateFormTests : BunitContext
             RoomType = RoomTypeDto.DoubleOccupancy,
             CompanionId = null
         };
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var labels = cut.FindAll(LabelSelector);
@@ -369,14 +374,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel { Notes = "Special request" };
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var notesTextArea = cut.Find("textarea#notes");
@@ -389,14 +390,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var discountCard = cut.FindAll(".card").First(c => c.TextContent.Contains("Discount", StringComparison.Ordinal));
@@ -409,14 +406,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var discountTypeSelect = cut.Find("select#discountType");
@@ -432,20 +425,17 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var tour = BuildTourDto(price: 1000m, currency: "EUR");
-        var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel
         {
             TourId = tour.Id,
             RoomType = RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = BikeTypeDto.Regular
         };
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
         var priceCards = cut.FindAll(".card");
@@ -461,7 +451,6 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var tour = BuildTourDto(price: 1000m, currency: "EUR");
-        var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel
         {
             TourId = tour.Id,
@@ -470,13 +459,11 @@ public class BookingCreateFormTests : BunitContext
             DiscountType = DiscountTypeDto.Percentage,
             DiscountAmount = 10m
         };
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
         var priceCards = cut.FindAll(".card");
@@ -504,32 +491,32 @@ public class BookingCreateFormTests : BunitContext
             RoomType = RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = BikeTypeDto.None
         };
-        var tours = new List<GetTourDto> { tour };
         var customers = new List<GetCustomerDto> { principalCustomer };
+
+        _fakeCustomersApi.AddCustomers(customers);
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
         cut.Markup.ShouldContain(MoneyText.Of(1000.00m, "USD"), StringComparison.Ordinal);
 
         // Act
-        cut.FindAll(SelectSelector)[1].Change(principalCustomer.Id);
+        cut.Find("#customerId").Change(principalCustomer.Id);
 
         // Assert
         cut.Markup.ShouldContain(MoneyText.Of(1050.00m, "USD"), StringComparison.Ordinal);
 
         // Act
-        cut.FindAll(SelectSelector)[3].Change(BikeTypeDto.EBike);
+        cut.Find("#principalBikeType").Change(BikeTypeDto.EBike);
 
         // Assert
         cut.Markup.ShouldContain(MoneyText.Of(1100.00m, "USD"), StringComparison.Ordinal);
 
         // Act
-        cut.FindAll(SelectSelector)[2].Change(RoomTypeDto.SingleOccupancy);
+        cut.Find("#bookingRoomType").Change(RoomTypeDto.SingleOccupancy);
 
         // Assert
         cut.Markup.ShouldContain(MoneyText.Of(1300.00m, "USD"), StringComparison.Ordinal);
@@ -554,7 +541,6 @@ public class BookingCreateFormTests : BunitContext
             regularBikePrice: 0m,
             eBikePrice: 0m,
             singleRoomSupplementPrice: 0m);
-        var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel
         {
             TourId = tour.Id,
@@ -563,13 +549,11 @@ public class BookingCreateFormTests : BunitContext
             DiscountType = DiscountTypeDto.Absolute,
             DiscountAmount = 150m
         };
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
         var priceCards = cut.FindAll(".card");
@@ -585,14 +569,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel { TourId = null };
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var cards = cut.FindAll(".card");
@@ -604,14 +584,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var createButton = cut.Find("button[type='submit']");
@@ -624,14 +600,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var cancelButton = cut.Find("button[type='button']:contains('Cancel')");
@@ -643,14 +615,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.IsSubmitting, true));
 
         // Assert
@@ -665,14 +633,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.IsSubmitting, true));
 
         // Assert
@@ -687,14 +651,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
         var cancelCalled = false;
 
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.OnCancel, EventCallback.Factory.Create(this, () => cancelCalled = true)));
 
         // Act
@@ -710,14 +670,10 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetCustomerDto[] customers = [];
-        GetTourDto[] tours = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
-            .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.Model, model));
 
         // Assert
         var validator = cut.FindComponent<DataAnnotationsValidator>();
@@ -729,20 +685,17 @@ public class BookingCreateFormTests : BunitContext
     {
         // Arrange
         var tour = BuildTourDto(price: 1500m, currency: "EUR");
-        var tours = new List<GetTourDto> { tour };
         var model = new BookingFormModel
         {
             TourId = tour.Id,
             RoomType = RoomTypeDto.DoubleOccupancy,
             PrincipalBikeType = BikeTypeDto.Regular
         };
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<BookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers]));
+            .Add(p => p.SelectedTour, tour));
 
         // Assert
         var priceCards = cut.FindAll(".card");

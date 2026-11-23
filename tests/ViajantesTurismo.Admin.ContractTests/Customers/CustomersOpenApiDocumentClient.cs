@@ -45,6 +45,12 @@ internal static class CustomersOpenApiDocumentClient
             throw new InvalidOperationException("The customers collection path is missing required operations.");
         }
 
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/options/search", out var optionsSearchPath) ||
+            optionsSearchPath.Post is null)
+        {
+            throw new InvalidOperationException("The customer option search path is missing the required operation.");
+        }
+
         if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}", out var customerByIdPath) ||
             customerByIdPath.Get is null ||
             customerByIdPath.Put is null)
@@ -65,11 +71,13 @@ internal static class CustomersOpenApiDocumentClient
         }
 
         var createCustomerSchemaReference = customersPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
+        var optionSearchSchemaReference = optionsSearchPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var updateCustomerSchemaReference = customerByIdPath.Put.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var importCustomersSchemaReference = ExtractImportCustomersSchemaReference(importPath.Post.RequestBody?.Content?.MultipartFormData?.Schema);
         var commitImportSchemaToken = ExtractCommitImportSchemaToken(commitImportPath.Post.RequestBody?.Content?.MultipartFormData?.Schema);
 
         if (string.IsNullOrWhiteSpace(createCustomerSchemaReference) ||
+            string.IsNullOrWhiteSpace(optionSearchSchemaReference) ||
             string.IsNullOrWhiteSpace(updateCustomerSchemaReference) ||
             string.IsNullOrWhiteSpace(importCustomersSchemaReference) ||
             string.IsNullOrWhiteSpace(commitImportSchemaToken))
@@ -81,6 +89,8 @@ internal static class CustomersOpenApiDocumentClient
             document.OpenApi,
             document.Info.Title,
             customersPath.Get.OperationId,
+            optionsSearchPath.Post.OperationId,
+            optionSearchSchemaReference,
             customerByIdPath.Get.OperationId,
             customersPath.Post.OperationId,
             createCustomerSchemaReference,

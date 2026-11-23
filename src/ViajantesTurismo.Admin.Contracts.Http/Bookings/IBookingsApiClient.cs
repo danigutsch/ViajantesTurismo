@@ -15,6 +15,14 @@ public interface IBookingsApiClient
     /// <returns>The materialized booking-list outcome.</returns>
     Task<HttpOutcome<GetBookingDto[]>> GetAllBookings(CancellationToken ct);
 
+    /// <summary>Gets a bounded page of booking summaries and the overview counts.</summary>
+    /// <param name="page">The one-based page number.</param>
+    /// <param name="sort">The requested sort key.</param>
+    /// <param name="descending">Whether to reverse the selected sort key.</param>
+    /// <param name="ct">Cancellation token for the request.</param>
+    /// <returns>The materialized page outcome.</returns>
+    Task<HttpOutcome<GetBookingPageDto>> GetBookingPage(int page, BookingPageSort sort, bool descending, CancellationToken ct);
+
     /// <summary>
     /// Gets a specific booking by its ID.
     /// </summary>

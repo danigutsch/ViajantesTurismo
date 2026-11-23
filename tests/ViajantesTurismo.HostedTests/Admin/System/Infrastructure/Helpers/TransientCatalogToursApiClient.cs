@@ -31,6 +31,18 @@ internal sealed class TransientCatalogToursApiClient(
             : Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new[] { tour }));
     }
 
+    /// <inheritdoc />
+    public Task<HttpOutcome<CatalogTourPageDto>> GetTourPage(int page, CatalogTourListSort sort, bool descending, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        GetToursCallCount++;
+        return GetToursCallCount == 1
+            ? Task.FromResult(HttpOutcomeMapper.Status<CatalogTourPageDto>(MapKind(initialFailureStatusCode), initialFailureStatusCode))
+            : Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogTourPageDto(
+                [new(tour.Id, tour.Identifier, tour.Title, tour.Slug, tour.IsPublished, tour.UpdatedAt)], 1)));
+    }
+
     /// <summary>Always reports not found.</summary>
     public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
     {

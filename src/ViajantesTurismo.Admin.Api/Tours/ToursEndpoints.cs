@@ -34,6 +34,11 @@ internal static class ToursEndpoints
             .RequireAuthorization(AdminAuthorization.TourRead)
             .WithAdminMetadata(ListEndpoint, "Retrieves all available tours.", "Retrieves all available tours.");
 
+        toursGroup.MapPost("/options/search", SearchTourOptions)
+            .RequireAuthorization(AdminAuthorization.TourRead)
+            .WithAdminMetadata(nameof(SearchTourOptions), "Searches active tour choices.",
+                "Searches for a bounded set of active tour choices by name or identifier.");
+
         toursGroup.MapGet("/{id:guid}", GetTourById)
             .RequireAuthorization(AdminAuthorization.TourRead)
             .WithAdminMetadata(ItemEndpoint, "Retrieves a tour by its ID.", "Retrieves a tour by its ID.");
@@ -52,6 +57,20 @@ internal static class ToursEndpoints
         var links = GetResourceLinks(context, linkGenerator);
         return TypedResults.Ok<IReadOnlyList<GetTourDto>>(
             [.. allTours.Select(tour => tour with { Links = links.For(tour.Id).Links })]);
+    }
+
+    private static async Task<Results<Ok<GetTourOptionsDto>, BadRequest>> SearchTourOptions(
+        [FromBody] TourOptionSearchDto request,
+        [FromServices] IQueryService queryService,
+        CancellationToken ct)
+    {
+        if (request.Query is { Length: > ContractConstants.MaxTourOptionQueryLength } || request.Limit <= 0)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var options = await queryService.SearchTourOptions(request, ct);
+        return TypedResults.Ok(options);
     }
 
     private static async Task<Results<Ok<GetTourDto>, NotFound<ProblemDetails>>> GetTourById(

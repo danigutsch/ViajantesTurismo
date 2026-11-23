@@ -19,6 +19,19 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
         await ReadBookings(RoutePrefix, ct).ConfigureAwait(false);
 
     /// <inheritdoc />
+    public async Task<HttpOutcome<GetBookingPageDto>> GetBookingPage(int page, BookingPageSort sort, bool descending, CancellationToken ct)
+    {
+        var route = FormattableString.Invariant($"{RoutePrefix}/page?page={page}&sort={sort}&descending={descending}");
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.GetBookingPageDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
     {
         return await HttpOutcomeMapper.Send(

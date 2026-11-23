@@ -40,6 +40,22 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     }
 
     /// <inheritdoc />
+    public async Task<HttpOutcome<GetCustomerOptionsDto>> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Post, new Uri($"{RoutePrefix}/options/search", UriKind.Relative))
+            {
+                Content = JsonContent.Create(request, Json.CustomerOptionSearchDto)
+            },
+            HttpStatusCode.OK,
+            Json.GetCustomerOptionsDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
     {
         return await HttpOutcomeMapper.Send(

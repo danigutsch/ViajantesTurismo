@@ -20,6 +20,8 @@ internal static class ToursOpenApiAssertions
         contract.GetTourByIdOperationId.ShouldBe("GetTourById");
         contract.CreateTourSchemaReference.ShouldBe("#/components/schemas/CreateTourDto");
         contract.UpdateTourSchemaReference.ShouldBe("#/components/schemas/UpdateTourDto");
+        contract.SearchTourOptionsOperationId.ShouldBe("SearchTourOptions");
+        contract.SearchTourOptionsSchemaReference.ShouldBe("#/components/schemas/TourOptionSearchDto");
     }
 
     /// <summary>

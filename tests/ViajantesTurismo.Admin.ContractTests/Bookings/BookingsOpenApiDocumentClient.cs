@@ -45,6 +45,12 @@ internal static class BookingsOpenApiDocumentClient
             throw new InvalidOperationException("The bookings collection path is missing required operations.");
         }
 
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/page", out var bookingPagePath) ||
+            bookingPagePath.Get is null)
+        {
+            throw new InvalidOperationException("The bounded booking page path is missing the required operation.");
+        }
+
         if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}", out var bookingByIdPath) ||
             bookingByIdPath.Get is null ||
             bookingByIdPath.Delete is null)
@@ -118,6 +124,7 @@ internal static class BookingsOpenApiDocumentClient
             document.OpenApi,
             document.Info.Title,
             bookingsPath.Get.OperationId,
+            bookingPagePath.Get.OperationId,
             bookingByIdPath.Get.OperationId,
             bookingsPath.Post.OperationId,
             createBookingSchemaReference,

@@ -1,0 +1,145 @@
+@inherits InputBase<Guid?>
+@using ViajantesTurismo.Management.Web.Helpers
+@inject IToursApiClient ToursApi
+@inject IUiFailureReporter Failures
+
+<label for="tourSearch" class="form-label">Search by tour name or identifier</label>
+<input id="tourSearch" type="search" class="form-control mb-2" aria-controls="tourId"
+       maxlength="@(OptionSearch<GetTourOptionDto>.MaxQueryLength)"
+       disabled="@(Disabled || !_search.IsStarted)" value="@_search.Query" @oninput="SearchChanged" />
+
+<label for="tourId" class="form-label">Tour <span class="text-danger">*</span></label>
+<select id="tourId" name="@NameAttributeValue" class="form-select @CssClass"
+        disabled="@(Disabled || !_search.IsStarted)" value="@CurrentValueAsString" @onchange="SelectionChanged">
+    <option value="">-- Select Tour --</option>
+    @if (CurrentValue is { } id && !_search.Results.Any(choice => choice.Id == id))
+    {
+        <option value="@id">@SelectedLabel(id)</option>
+    }
+    @foreach (var choice in _search.Results)
+    {
+        <option value="@choice.Id">@FormatChoice(choice)</option>
+    }
+</select>
+<div class="form-text" role="status" aria-atomic="true">
+    @if (_search.IsSearching)
+    {
+        <span>Searching tours…</span>
+    }
+    else if (_errorMessage is null)
+    {
+        @_search.Status("{0} of {1} tours", "No tours match.")
+    }
+</div>
+@if (_search.IsTruncated)
+{
+    <p class="form-text">Enter more of the name or identifier to narrow the results.</p>
+}
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+
+@code {
+    private const string SearchError = "Tours could not be loaded for booking selection.";
+    private OptionSearch<GetTourOptionDto> _search = default!;
+    private GetTourOptionDto? _selected;
+    private string? _errorMessage;
+    private bool _disposed;
+
+    /// <summary>Gets or sets whether the form currently accepts edits.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Gets or sets the selected tour detail when the form has loaded it.</summary>
+    [Parameter]
+    public GetTourDto? SelectedTour { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _search = new OptionSearch<GetTourOptionDto>(LoadOptions, ContractConstants.MaxTourOptions);
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Disabled || _search.IsStarted)
+        {
+            return;
+        }
+
+        await _search.Start();
+        if (!_disposed)
+        {
+            StateHasChanged();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, out Guid? result, out string validationErrorMessage)
+    {
+        var valid = BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result);
+        validationErrorMessage = valid ? string.Empty : "Select a valid tour.";
+        return valid;
+    }
+
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing && !_disposed)
+        {
+            _disposed = true;
+            _search.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+    private static string FormatChoice(GetTourOptionDto choice) =>
+        $"{choice.Name} · {choice.Identifier} ({DateFormatter.FormatDate(choice.StartDate)})";
+
+    private string SelectedLabel(Guid id)
+    {
+        if (SelectedTour is { } tour && tour.Id == id)
+        {
+            return FormatChoice(new GetTourOptionDto(tour.Id, tour.Name, tour.Identifier, tour.StartDate));
+        }
+
+        return _selected is { } choice && choice.Id == id ? FormatChoice(choice) : "Selected tour";
+    }
+
+    private void SelectionChanged(ChangeEventArgs args)
+    {
+        CurrentValueAsString = args.Value as string;
+        _selected = _search.Results.FirstOrDefault(choice => choice.Id == CurrentValue);
+    }
+
+    private async Task SearchChanged(ChangeEventArgs args)
+    {
+        _errorMessage = null;
+        await _search.Search(args.Value as string);
+    }
+
+    private async Task<ListSlice<GetTourOptionDto>> LoadOptions(string query, int limit, CancellationToken ct)
+    {
+        try
+        {
+            var outcome = await ToursApi.SearchTourOptions(new TourOptionSearchDto(query, limit), ct);
+            ct.ThrowIfCancellationRequested();
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } choices })
+            {
+                return new ListSlice<GetTourOptionDto>(choices.Items, choices.Total);
+            }
+
+            _errorMessage = new HttpOutcomeMessages(SearchError).For(outcome.Kind);
+        }
+        catch (Exception exception) when (!ct.IsCancellationRequested)
+        {
+            Failures.Report(exception, "bookings.create.load-tours");
+            _errorMessage = SearchError;
+        }
+
+        return new ListSlice<GetTourOptionDto>([], 0);
+    }
+}

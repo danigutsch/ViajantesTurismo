@@ -77,11 +77,12 @@ public sealed class EditPageTests : BunitContext
             companionName: "Existing Companion",
             companionBikeType: BikeTypeDto.Regular);
         _fakeBookingsApi.AddBooking(booking);
-        _fakeCustomersApi.SetGetCustomersOutcome(FakeApiClientOutcomes.TransportFailure<GetCustomerDto[]>());
+        _fakeCustomersApi.SetSearchCustomerOptionsHandler((_, _) =>
+            Task.FromResult(FakeApiClientOutcomes.TransportFailure<GetCustomerOptionsDto>()));
 
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
-        cut.WaitForAssertion(() => cut.Find("form"));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Other companion choices are unavailable", StringComparison.Ordinal));
 
         // Assert
         cut.Find("#companionId").GetAttribute(ValueAttributeName).ShouldBe(companionId.ToString());
@@ -327,12 +328,12 @@ public sealed class EditPageTests : BunitContext
     [Fact]
     [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public void Companion_choices_are_not_truncated_after_one_hundred_customers()
+    public void Retained_companion_is_available_outside_the_first_option_window()
     {
         // Arrange
         for (var index = 0; index < 100; index++)
         {
-            _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: $"Filler{index}"));
+            _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: $"Earlier{index:D3}"));
         }
 
         var companion = BuildCustomerDto(firstName: "Existing", lastName: "Companion");
@@ -352,24 +353,66 @@ public sealed class EditPageTests : BunitContext
         // Assert
         var options = cut.Find("#companionId").QuerySelectorAll("option");
         options.ShouldContain(option => option.GetAttribute(ValueAttributeName) == companion.Id.ToString());
-        options.ShouldContain(option => option.GetAttribute(ValueAttributeName) == alternative.Id.ToString());
+        options.ShouldNotContain(option => option.GetAttribute(ValueAttributeName) == alternative.Id.ToString());
+        options.ShouldContain(option => option.TextContent == "Existing Companion");
     }
 
     [Fact]
     [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-    public void Companion_choice_loading_uses_the_bounded_limit()
+    public async Task Companion_search_finds_eligible_choices_after_the_first_five_hundred_customers()
     {
         // Arrange
-        var booking = BuildBookingDto();
+        foreach (var index in Enumerable.Range(0, 800))
+        {
+            _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: $"Fixture{index:D3}"));
+        }
+
+        var principal = BuildCustomerDto(firstName: "Later", lastName: "Principal");
+        var eligible = BuildCustomerDto(firstName: "Later", lastName: "Companion", bikeType: BikeTypeDto.EBike);
+        _fakeCustomersApi.AddCustomer(principal);
+        _fakeCustomersApi.AddCustomer(eligible);
+        var booking = BuildBookingDto(customerId: principal.Id);
         _fakeBookingsApi.AddBooking(booking);
 
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
-        cut.WaitForAssertion(() => cut.Find("#roomType"));
+        var search = cut.WaitForElement("#companionSearch");
+        cut.WaitForAssertion(() => cut.FindAll("#companionId option").Count.ShouldBe(21));
+        await search.InputAsync(new ChangeEventArgs { Value = "later" });
+        await cut.Find("#companionId").ChangeAsync(new ChangeEventArgs { Value = eligible.Id.ToString() });
 
         // Assert
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBe(500);
+        var options = cut.Find("#companionId").QuerySelectorAll("option");
+        options.ShouldContain(option => option.GetAttribute(ValueAttributeName) == eligible.Id.ToString());
+        options.ShouldNotContain(option => option.GetAttribute(ValueAttributeName) == principal.Id.ToString());
+        cut.Find("#companionBikeType").GetAttribute(ValueAttributeName).ShouldBe(nameof(BikeTypeDto.EBike));
+        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Read_only_booking_disables_the_picker_without_requesting_choices()
+    {
+        // Arrange
+        var requests = 0;
+        var booking = BuildBookingDto(status: BookingStatusDto.Completed, roomType: RoomTypeDto.DoubleOccupancy);
+        _fakeBookingsApi.AddBooking(booking);
+        _fakeCustomersApi.SetSearchCustomerOptionsHandler((_, _) =>
+        {
+            requests++;
+            return Task.FromResult(FakeApiClientOutcomes.TransportFailure<GetCustomerOptionsDto>());
+        });
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
+        var search = cut.WaitForElement("#companionSearch");
+
+        // Assert
+        search.HasAttribute(DisabledAttributeName).ShouldBeTrue();
+        cut.Find("#companionId").HasAttribute(DisabledAttributeName).ShouldBeTrue();
+        requests.ShouldBe(0);
     }
 
     [Fact]
@@ -1243,11 +1286,11 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto();
         _fakeBookingsApi.AddBooking(booking);
-        _fakeCustomersApi.SetGetCustomersException(new InvalidOperationException("customers store offline"));
+        _fakeCustomersApi.SetSearchCustomerOptionsHandler((_, _) => throw new InvalidOperationException("customers store offline"));
 
         // Act
         var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, booking.Id));
-        cut.WaitForAssertion(() => cut.Find("form"));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Other companion choices are unavailable", StringComparison.Ordinal));
 
         // Assert
         cut.Markup.ShouldContain("Other companion choices are unavailable", StringComparison.Ordinal);

@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Components;
 using PandaBear.Testing;
 using System.Net;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
@@ -17,6 +19,74 @@ public sealed class DetailsPageTests : BunitContext
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
         Services.AddSingleton<IBookingsApiClient>(_fakeBookingsApi);
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Customer_details_defers_booking_choices_until_the_form_opens()
+    {
+        // Arrange
+        var customer = BuildCustomerDetailsDto();
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        foreach (var index in Enumerable.Range(0, 800))
+        {
+            _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: $"Fixture{index:D3}"));
+        }
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, customer.Id));
+        cut.WaitForElement("button:contains('Add Booking')");
+
+        // Assert
+        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
+        _fakeToursApi.GetToursCallCount.ShouldBe(0);
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Booking_form_finds_a_tour_beyond_the_first_option_window_and_loads_its_details()
+    {
+        // Arrange
+        var customer = BuildCustomerDetailsDto();
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        foreach (var index in Enumerable.Range(0, 800))
+        {
+            _fakeToursApi.AddTour(BuildTourDto(
+                id: Guid.Parse($"10000000-0000-0000-0000-{index:D12}"),
+                identifier: $"FIXTURE-{index:D3}", name: $"Fixture Tour {index:D3}"));
+        }
+
+        var selected = BuildTourDto(
+            id: Guid.Parse("00000000-0000-0000-0000-000000000001"),
+            identifier: "TARGET-TOUR", name: "Selected Tour", maxCustomers: 12, currentCustomerCount: 5);
+        _fakeToursApi.AddTour(selected);
+        var detailIds = new List<Guid>();
+        _fakeToursApi.SetGetTourByIdHandler((id, ct) =>
+        {
+            ct.ThrowIfCancellationRequested();
+            detailIds.Add(id);
+            return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, selected));
+        });
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, customer.Id));
+
+        // Act
+        await cut.WaitForElement("button:contains('Add Booking')").ClickAsync();
+        var form = cut.FindComponent<CustomerBookingCreateForm>();
+        form.WaitForAssertion(() => form.FindAll("#tourId option").Count.ShouldBe(21));
+        var firstWindow = form.Find("#tourId").TextContent;
+        await form.Find("#tourSearch").InputAsync(new ChangeEventArgs { Value = "target-tour" });
+        await form.Find("#tourId").ChangeAsync(new ChangeEventArgs { Value = selected.Id.ToString() });
+
+        // Assert
+        firstWindow.ShouldNotContain(selected.Name, StringComparison.Ordinal);
+        form.WaitForAssertion(() => form.Markup.ShouldContain("7 spots available", StringComparison.Ordinal));
+        form.Markup.ShouldContain("Price Breakdown", StringComparison.Ordinal);
+        detailIds.ShouldBe([selected.Id]);
+        _fakeToursApi.GetToursCallCount.ShouldBe(0);
+        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Fact]
@@ -442,7 +512,7 @@ public sealed class DetailsPageTests : BunitContext
         await cut.WaitForAssertionAsync(() => cut.FindComponent<CustomerBookingCreateForm>());
 
         var form = cut.FindComponent<CustomerBookingCreateForm>();
-        form.Instance.Model.TourId = tour.Id;
+        await cut.InvokeAsync(() => form.Find("#tourId").Change(tour.Id));
         form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
         await cut.InvokeAsync(() => form.Find("form").Submit());
 
@@ -481,7 +551,7 @@ public sealed class DetailsPageTests : BunitContext
         await cut.InvokeAsync(() => cut.Find("button:contains('Add Booking')").Click());
         await cut.WaitForAssertionAsync(() => cut.FindComponent<CustomerBookingCreateForm>());
         var form = cut.FindComponent<CustomerBookingCreateForm>();
-        form.Instance.Model.TourId = tour.Id;
+        await cut.InvokeAsync(() => form.Find("#tourId").Change(tour.Id));
         form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
 
         // Act
@@ -519,7 +589,7 @@ public sealed class DetailsPageTests : BunitContext
         await cut.WaitForAssertionAsync(() => cut.FindComponent<CustomerBookingCreateForm>());
 
         var form = cut.FindComponent<CustomerBookingCreateForm>();
-        form.Instance.Model.TourId = tour.Id;
+        await cut.InvokeAsync(() => form.Find("#tourId").Change(tour.Id));
         form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
         await cut.InvokeAsync(() => form.Find("form").Submit());
 
@@ -552,7 +622,7 @@ public sealed class DetailsPageTests : BunitContext
         await cut.WaitForAssertionAsync(() => cut.FindComponent<CustomerBookingCreateForm>());
 
         var form = cut.FindComponent<CustomerBookingCreateForm>();
-        form.Instance.Model.TourId = tour.Id;
+        await cut.InvokeAsync(() => form.Find("#tourId").Change(tour.Id));
         form.Instance.Model.PrincipalBikeType = BikeTypeDto.Regular;
         await cut.InvokeAsync(() => form.Find("form").Submit());
 

@@ -13,6 +13,9 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     private HttpOutcome? _createBookingOutcome;
     private Exception? _getAllBookingsException;
     private HttpOutcome<GetBookingDto[]>? _getAllBookingsOutcome;
+    private Exception? _getBookingPageException;
+    private HttpOutcome<GetBookingPageDto>? _getBookingPageOutcome;
+    private readonly List<(int Page, BookingPageSort Sort, bool Descending)> _pageRequests = [];
     private Exception? _getBookingByIdException;
     private int? _getBookingByIdExceptionCall;
     private HttpOutcome<GetBookingDto>? _getBookingByIdOutcome;
@@ -34,6 +37,13 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     {
         get; private set;
     }
+
+    public int GetAllBookingsCallCount
+    {
+        get; private set;
+    }
+
+    public IReadOnlyList<(int Page, BookingPageSort Sort, bool Descending)> PageRequests => _pageRequests;
 
     public UpdateBookingDetailsDto? LastUpdatedDetails
     {
@@ -59,6 +69,7 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public Task<HttpOutcome<GetBookingDto[]>> GetAllBookings(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        GetAllBookingsCallCount++;
 
         if (_getAllBookingsException is not null)
         {
@@ -72,6 +83,45 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
 
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _bookings.ToArray()));
     }
+
+    public Task<HttpOutcome<GetBookingPageDto>> GetBookingPage(int page, BookingPageSort sort, bool descending, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        _pageRequests.Add((page, sort, descending));
+        if (_getBookingPageException is not null)
+        {
+            throw _getBookingPageException;
+        }
+
+        if (_getBookingPageOutcome is not null)
+        {
+            return Task.FromResult(_getBookingPageOutcome);
+        }
+
+        var counts = new BookingOverviewCountsDto(
+            _bookings.Count,
+            _bookings.Count(booking => booking.Status == BookingStatusDto.Pending),
+            _bookings.Count(booking => booking.Status == BookingStatusDto.Confirmed),
+            _bookings.Count(booking => booking.Status == BookingStatusDto.Completed),
+            _bookings.Count(booking => booking.Status == BookingStatusDto.Cancelled));
+        var sorted = sort switch
+        {
+            BookingPageSort.BookingDate => OrderBy(booking => booking.BookingDate, descending),
+            BookingPageSort.TourName => OrderBy(booking => booking.TourName, descending),
+            BookingPageSort.CustomerName => OrderBy(booking => booking.CustomerName, descending),
+            BookingPageSort.TotalPrice => OrderBy(booking => booking.TotalPrice, descending),
+            _ => _bookings.OrderByDescending(booking => booking.Status == BookingStatusDto.Cancelled)
+                .ThenByDescending(booking => booking.BookingDate),
+        };
+        var items = sorted.ThenBy(booking => booking.Id)
+            .Skip((page - 1) * ContractConstants.BookingListPageSize)
+            .Take(ContractConstants.BookingListPageSize)
+            .ToArray();
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetBookingPageDto(items, counts)));
+    }
+
+    private IOrderedEnumerable<GetBookingDto> OrderBy<TKey>(Func<GetBookingDto, TKey> key, bool descending) =>
+        descending ? _bookings.OrderByDescending(key) : _bookings.OrderBy(key);
 
     public Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct)
     {
@@ -263,6 +313,10 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public void SetGetAllBookingsException(Exception exception) => _getAllBookingsException = exception;
 
     public void SetGetAllBookingsOutcome(HttpOutcome<GetBookingDto[]> outcome) => _getAllBookingsOutcome = outcome;
+
+    public void SetGetBookingPageException(Exception exception) => _getBookingPageException = exception;
+
+    public void SetGetBookingPageOutcome(HttpOutcome<GetBookingPageDto> outcome) => _getBookingPageOutcome = outcome;
 
     public void SetGetBookingByIdException(Exception exception) => _getBookingByIdException = exception;
 

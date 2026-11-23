@@ -68,17 +68,20 @@ public sealed class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void Renders_paginator_when_more_than_ten_catalog_tours_exist()
+    public void Requests_one_page_when_the_catalog_has_eight_hundred_tours()
     {
         // Arrange
-        catalogApi.Tours = [.. Enumerable.Range(1, 11).Select(index => IndexPageTestsHelpers.CreateTour($"TOUR-{index:00}", $"Tour {index:00}", $"tour-{index:00}", isPublished: index % 2 == 0))];
+        catalogApi.Tours = [.. Enumerable.Range(1, 800).Select(index => IndexPageTestsHelpers.CreateTour($"TOUR-{index:000}", $"Tour {index:000}", $"tour-{index:000}", isPublished: index % 2 == 0))];
 
         // Act
         var cut = Render<Index>();
-        cut.WaitForState(() => cut.Markup.Contains("TOUR-01", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        cut.WaitForState(() => cut.Markup.Contains("TOUR-010", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
 
         // Assert
         cut.Markup.ShouldContain("pagination", StringComparison.OrdinalIgnoreCase);
+        cut.Markup.ShouldNotContain("TOUR-011", StringComparison.Ordinal);
+        catalogApi.GetToursCallCount.ShouldBe(0);
+        catalogApi.TourPageRequests.ShouldHaveSingleItem().ShouldBe((1, CatalogTourListSort.Title, false));
     }
 
 }

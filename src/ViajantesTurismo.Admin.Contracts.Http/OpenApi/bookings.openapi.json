@@ -122,6 +122,65 @@
         ]
       }
     },
+    "/api/v1/bookings/page": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves bounded booking summaries and the overview counts. The optional page number is one-based.",
+        "description": "Retrieves a page of bookings.",
+        "operationId": "GetBookingPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "descending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/bookings/{id}": {
       "get": {
         "tags": [
@@ -2297,6 +2356,58 @@
       "BikeTypeDto": {
         "type": "integer"
       },
+      "BookingOverviewCountsDto": {
+        "required": [
+          "total",
+          "pending",
+          "confirmed",
+          "completed",
+          "cancelled"
+        ],
+        "type": "object",
+        "properties": {
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pending": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "confirmed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "completed": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "cancelled": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "BookingStatusDto": {
         "type": "integer"
       },
@@ -2995,6 +3106,24 @@
             "items": {
               "$ref": "#/components/schemas/GetFinancialReviewDto"
             }
+          }
+        }
+      },
+      "GetBookingPageDto": {
+        "required": [
+          "items",
+          "counts"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetBookingDto"
+            }
+          },
+          "counts": {
+            "$ref": "#/components/schemas/BookingOverviewCountsDto"
           }
         }
       },

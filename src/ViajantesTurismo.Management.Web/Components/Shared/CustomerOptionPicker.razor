@@ -1,0 +1,247 @@
+@inherits InputBase<Guid?>
+@using PandaBear.Blazor
+
+@inject ICustomersApiClient CustomersApi
+@inject IUiFailureReporter Failures
+
+<label for="@SearchId" class="form-label">@SearchLabel</label>
+<input id="@SearchId" type="search" class="form-control mb-2" aria-controls="@FieldId"
+       maxlength="@(OptionSearch<GetCustomerOptionDto>.MaxQueryLength)"
+       disabled="@(Disabled || !_search.IsStarted)" value="@_search.Query" @oninput="SearchChanged" />
+
+<label for="@FieldId" class="form-label">
+    @FieldLabel
+    @if (IsPrincipal)
+    {
+        <span class="text-danger">*</span>
+    }
+</label>
+<select id="@FieldId" name="@NameAttributeValue" class="form-select @CssClass"
+        value="@CurrentValueAsString" disabled="@(Disabled || !_search.IsStarted)" @onchange="SelectionChanged">
+    <option value="">@EmptyLabel</option>
+    @if (CurrentValue is { } id && !_search.Results.Any(option => option.Id == id))
+    {
+        <option value="@id">@FormatSelection(id)</option>
+    }
+    @foreach (var choice in _search.Results)
+    {
+        <option value="@choice.Id">@FormatChoice(choice)</option>
+    }
+</select>
+
+<div role="status" aria-atomic="true" class="form-text">
+    @if (_search.IsSearching)
+    {
+        <span>Searching customers…</span>
+    }
+    else if (_errorMessage is null)
+    {
+        @_search.Status("{0} of {1} customers", "No customers match.")
+    }
+</div>
+@if (_search.IsTruncated)
+{
+    <p class="form-text">Enter more of the name to narrow the results.</p>
+}
+@if (_errorMessage is not null && UnavailableMessage is not null)
+{
+    <div class="form-text text-warning" role="status">@UnavailableMessage</div>
+}
+else if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+
+@code {
+    private readonly CancellationTokenSource _lifetime = new();
+    private OptionSearch<GetCustomerOptionDto> _search = default!;
+    private GetCustomerOptionDto? _selected;
+    private string? _errorMessage;
+    private bool _disposed;
+
+    /// <summary>Gets or sets whether this field selects the required principal customer.</summary>
+    [Parameter]
+    public bool IsPrincipal { get; set; }
+
+    /// <summary>Gets or sets an ineligible principal customer to exclude from choices.</summary>
+    [Parameter]
+    public Guid? ExcludedCustomerId { get; set; }
+
+    /// <summary>Gets or sets the label already available from the selected booking.</summary>
+    [Parameter]
+    public string? SavedSelectionLabel { get; set; }
+
+    /// <summary>Gets or sets whether the form is currently read-only.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Gets or sets whether to disambiguate the displayed name with the email address.</summary>
+    [Parameter]
+    public bool ShowEmail { get; set; } = true;
+
+    /// <summary>Gets or sets an optional warning when the form can still use its retained selection.</summary>
+    [Parameter]
+    public string? UnavailableMessage { get; set; }
+
+    /// <summary>Gets or sets the failure-reporting operation for the calling form.</summary>
+    [Parameter]
+    public string SearchFailureOperation { get; set; } = "customers.companion-options.search";
+
+    /// <summary>Gets or sets the callback for a newly selected or cleared choice.</summary>
+    [Parameter]
+    public EventCallback<GetCustomerOptionDto?> ChoiceChanged { get; set; }
+
+    private string SearchId => IsPrincipal ? "customerSearch" : "companionSearch";
+
+    private string FieldId => IsPrincipal ? "customerId" : "companionId";
+
+    private string SearchLabel => IsPrincipal ? "Search for a customer" : "Search for a companion";
+
+    private string FieldLabel => IsPrincipal ? "Customer" : "Companion (Optional)";
+
+    private string EmptyLabel => IsPrincipal ? "-- Select Customer --" : "-- No Companion --";
+
+    private string SearchError => IsPrincipal
+        ? "Customers could not be loaded for booking selection."
+        : "Customers could not be loaded for companion selection.";
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _search = new OptionSearch<GetCustomerOptionDto>(LoadOptions, ContractConstants.MaxCustomerOptions);
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Disabled || _search.IsStarted)
+        {
+            return;
+        }
+
+        try
+        {
+            var ct = _lifetime.Token;
+            await _search.Start(ct);
+            if (CurrentValue is { } id && SavedSelectionLabel is null && !ct.IsCancellationRequested)
+            {
+                await HydrateSelection(id, ct);
+            }
+        }
+        catch (OperationCanceledException) when (_disposed)
+        {
+            return;
+        }
+
+        if (!_disposed)
+        {
+            StateHasChanged();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override bool TryParseValueFromString(string? value, out Guid? result, out string validationErrorMessage)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            result = null;
+            validationErrorMessage = string.Empty;
+            return true;
+        }
+
+        if (Guid.TryParse(value, out var id))
+        {
+            result = id;
+            validationErrorMessage = string.Empty;
+            return true;
+        }
+
+        result = null;
+        validationErrorMessage = IsPrincipal ? "Select a valid customer." : "Select a valid companion.";
+        return false;
+    }
+
+    /// <inheritdoc />
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing && !_disposed)
+        {
+            _disposed = true;
+            _search.Dispose();
+            _lifetime.Cancel();
+            _lifetime.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
+    private string FormatChoice(GetCustomerOptionDto choice) =>
+        ShowEmail ? $"{choice.FirstName} {choice.LastName} ({choice.Email})" : $"{choice.FirstName} {choice.LastName}";
+
+    private string FormatSelection(Guid id) =>
+        _selected is { } choice && choice.Id == id
+            ? FormatChoice(choice)
+            : SavedSelectionLabel ?? (IsPrincipal ? "Selected customer" : "Selected companion");
+
+    private async Task SearchChanged(ChangeEventArgs args)
+    {
+        _errorMessage = null;
+        await _search.Search(args.Value as string);
+    }
+
+    private async Task SelectionChanged(ChangeEventArgs args)
+    {
+        var previous = CurrentValue;
+        CurrentValueAsString = args.Value as string;
+        if (CurrentValue != previous)
+        {
+            _selected = _search.Results.FirstOrDefault(choice => choice.Id == CurrentValue);
+            await ChoiceChanged.InvokeAsync(_selected);
+        }
+    }
+
+    private async Task<ListSlice<GetCustomerOptionDto>> LoadOptions(string query, int limit, CancellationToken ct)
+    {
+        try
+        {
+            var outcome = await CustomersApi.SearchCustomerOptions(new CustomerOptionSearchDto(query, limit, ExcludedCustomerId), ct);
+            ct.ThrowIfCancellationRequested();
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } choices })
+            {
+                return new ListSlice<GetCustomerOptionDto>(choices.Items, choices.Total);
+            }
+
+            _errorMessage = new HttpOutcomeMessages(SearchError).For(outcome.Kind);
+        }
+        catch (Exception exception) when (!ct.IsCancellationRequested)
+        {
+            Failures.Report(exception, SearchFailureOperation);
+            _errorMessage = SearchError;
+        }
+
+        return new ListSlice<GetCustomerOptionDto>([], 0);
+    }
+
+    private async Task HydrateSelection(Guid id, CancellationToken ct)
+    {
+        _selected = _search.Results.FirstOrDefault(choice => choice.Id == id);
+        if (_selected is not null)
+        {
+            return;
+        }
+
+        try
+        {
+            var outcome = await CustomersApi.SearchCustomerOptions(new CustomerOptionSearchDto(id.ToString("D"), 1, ExcludedCustomerId), ct);
+            ct.ThrowIfCancellationRequested();
+            if (CurrentValue == id && outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } choices })
+            {
+                _selected = choices.Items.FirstOrDefault(choice => choice.Id == id);
+            }
+        }
+        catch (Exception exception) when (!ct.IsCancellationRequested)
+        {
+            Failures.Report(exception, "customers.companion-options.selection");
+        }
+    }
+}

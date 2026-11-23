@@ -1,5 +1,7 @@
 using ViajantesTurismo.Admin.Application.Bookings;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers;
@@ -23,6 +25,29 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             .ToArrayAsync(ct);
 
         return [.. tours.Select(MapTour)];
+    }
+
+    /// <inheritdoc />
+    public async Task<GetTourOptionsDto> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var tours = dbContext.Tours.Where(tour => tour.RetirementId == null);
+        var key = SearchKey.Of(request.Query);
+        if (key.Length > 0)
+        {
+            var pattern = ToContainsPattern(key);
+            tours = tours.Where(tour =>
+                EF.Functions.ILike(EF.Functions.Unaccent(tour.Name), EF.Functions.Unaccent(pattern), "\\") ||
+                EF.Functions.ILike(EF.Functions.Unaccent(tour.Identifier), EF.Functions.Unaccent(pattern), "\\"));
+        }
+
+        var total = await tours.CountAsync(ct);
+        var options = await tours
+            .OrderByDescending(tour => tour.Id)
+            .Take(Math.Clamp(request.Limit, 1, ContractConstants.MaxTourOptions))
+            .Select(tour => new GetTourOptionDto(tour.Id, tour.Name, tour.Identifier, tour.Schedule.StartDate))
+            .ToArrayAsync(ct);
+        return new GetTourOptionsDto(options, Math.Max(total, options.Length));
     }
 
     /// <inheritdoc />
@@ -97,6 +122,57 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                 BikeType = CustomerMapper.MapToBikeTypeDto(c.PhysicalInfo.BikeType)
             })
         ];
+    }
+
+    /// <inheritdoc />
+    public async Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var customers = dbContext.Customers.AsQueryable();
+        if (request.ExcludedCustomerId is { } excludedId)
+        {
+            customers = customers.Where(customer => customer.Id != excludedId);
+        }
+
+        var key = SearchKey.Of(request.Query);
+        if (Guid.TryParse(key, out var id))
+        {
+            customers = customers.Where(customer => customer.Id == id);
+        }
+        else if (key.Length > 0)
+        {
+            var pattern = ToContainsPattern(key);
+            customers = customers.Where(customer => EF.Functions.ILike(
+                EF.Functions.Unaccent(customer.PersonalInfo.FirstName + " " + customer.PersonalInfo.LastName),
+                EF.Functions.Unaccent(pattern), "\\"));
+        }
+
+        var total = await customers.CountAsync(ct);
+        var rows = await customers
+            .OrderBy(customer => customer.PersonalInfo.FirstName)
+            .ThenBy(customer => customer.PersonalInfo.LastName)
+            .ThenBy(customer => customer.Id)
+            .Take(Math.Clamp(request.Limit, 1, ContractConstants.MaxCustomerOptions))
+            .Select(customer => new
+            {
+                customer.Id,
+                customer.PersonalInfo.FirstName,
+                customer.PersonalInfo.LastName,
+                customer.ContactInfo.Email,
+                customer.PhysicalInfo.BikeType
+            })
+            .ToArrayAsync(ct);
+        var items = rows.Select(row => new GetCustomerOptionDto(
+            row.Id, row.FirstName, row.LastName, row.Email.Value, CustomerMapper.MapToBikeTypeDto(row.BikeType))).ToArray();
+        return new GetCustomerOptionsDto(items, Math.Max(total, items.Length));
+    }
+
+    private static string ToContainsPattern(string key)
+    {
+        var escaped = key.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal);
+        return $"%{escaped}%";
     }
 
     /// <inheritdoc />
@@ -176,6 +252,76 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
             .ThenByDescending(b => b.BookingDate)
             .ToArrayAsync(ct);
 
+        return await ReadBookingRows(bookings, ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct)
+    {
+        var bookings = dbContext.Tours.SelectMany(tour => tour.Bookings);
+        var counts = await bookings
+            .GroupBy(booking => booking.Status)
+            .Select(group => new { Status = group.Key, Count = group.Count() })
+            .ToDictionaryAsync(group => group.Status, group => group.Count, ct);
+        var overview = new BookingOverviewCountsDto(
+            counts.Values.Sum(),
+            counts.GetValueOrDefault(BookingStatus.Pending),
+            counts.GetValueOrDefault(BookingStatus.Confirmed),
+            counts.GetValueOrDefault(BookingStatus.Completed),
+            counts.GetValueOrDefault(BookingStatus.Cancelled));
+        var window = PageWindow.Create(page, ContractConstants.BookingListPageSize, overview.Total);
+
+        var rows = await OrderBookingPage(bookings, sort, descending)
+            .Skip(window.Skip)
+            .Take(window.Take)
+            .ToArrayAsync(ct);
+
+        return new GetBookingPageDto(await ReadBookingRows(rows, ct), overview);
+    }
+
+    private IQueryable<Booking> OrderBookingPage(IQueryable<Booking> bookings, BookingPageSort sort, bool descending)
+    {
+        if (sort == BookingPageSort.TotalPrice)
+        {
+            // SQL ordering mirrors the booking price breakdown. The DTO still reads the domain amount.
+            var priced = bookings.Select(booking => new
+            {
+                Booking = booking,
+                Subtotal = booking.BasePrice + booking.RoomAdditionalCost + booking.PrincipalCustomer.BikePrice +
+                           (booking.CompanionCustomer == null ? 0m : booking.CompanionCustomer.BikePrice)
+            });
+
+            return OrderBy(priced, item => item.Subtotal -
+                    (item.Booking.Discount.Type == DiscountType.Percentage
+                        ? item.Subtotal * (item.Booking.Discount.Amount / 100m)
+                        : item.Booking.Discount.Type == DiscountType.Absolute ? item.Booking.Discount.Amount : 0m), descending)
+                .ThenBy(item => item.Booking.Id)
+                .Select(item => item.Booking);
+        }
+
+        var ordered = sort switch
+        {
+            BookingPageSort.BookingDate => OrderBy(bookings, booking => booking.BookingDate, descending),
+            BookingPageSort.TourName => OrderBy(bookings, booking => dbContext.Tours
+                .Where(tour => tour.Id == booking.TourId)
+                .Select(tour => tour.Name)
+                .FirstOrDefault(), descending),
+            BookingPageSort.CustomerName => OrderBy(bookings, booking => dbContext.Customers
+                .Where(customer => customer.Id == booking.PrincipalCustomer.CustomerId)
+                .Select(customer => customer.PersonalInfo.FirstName + " " + customer.PersonalInfo.LastName)
+                .FirstOrDefault(), descending),
+            _ => bookings.OrderByDescending(booking => booking.Status == BookingStatus.Cancelled)
+                .ThenByDescending(booking => booking.BookingDate),
+        };
+        return ordered.ThenBy(booking => booking.Id);
+    }
+
+    private static IOrderedQueryable<T> OrderBy<T, TKey>(
+        IQueryable<T> query, Expression<Func<T, TKey>> key, bool descending) =>
+        descending ? query.OrderByDescending(key) : query.OrderBy(key);
+
+    private async Task<IReadOnlyList<GetBookingDto>> ReadBookingRows(IReadOnlyList<Booking> bookings, CancellationToken ct)
+    {
         await histories.Attach(bookings, ct);
         var tourIds = bookings.Select(b => b.TourId).Distinct().ToArray();
         var customerIds = bookings.Select(b => b.PrincipalCustomer.CustomerId)

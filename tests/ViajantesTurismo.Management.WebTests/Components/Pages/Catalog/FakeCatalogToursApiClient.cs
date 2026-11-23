@@ -218,14 +218,40 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
 
     private int getTourImagesRequests;
 
+    /// <summary>Gets the page requests made by the Catalog list.</summary>
+    public List<(int Page, CatalogTourListSort Sort, bool Descending)> TourPageRequests { get; } = [];
+
+    /// <summary>Gets the number of calls to the unbounded list.</summary>
+    public int GetToursCallCount
+    {
+        get; private set;
+    }
+
     /// <summary>Returns <see cref="Tours"/>, or a transport failure when configured.</summary>
     public Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        GetToursCallCount++;
 
         return Task.FromResult(ThrowOnGetTours
             ? TransportFailure<CatalogTourDto[]>()
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Tours));
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<CatalogTourPageDto>> GetTourPage(int page, CatalogTourListSort sort, bool descending, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        TourPageRequests.Add((page, sort, descending));
+        if (ThrowOnGetTours)
+        {
+            return Task.FromResult(TransportFailure<CatalogTourPageDto>());
+        }
+
+        var window = PandaBear.BuildingBlocks.PageWindow.Create(page, CatalogTourPageDto.ItemsPerPage, Tours.Length);
+        var items = Tours.Skip(window.Skip).Take(window.Take).Select(tour => new CatalogTourListItemDto(
+            tour.Id, tour.Identifier, tour.Title, tour.Slug, tour.IsPublished, tour.UpdatedAt)).ToArray();
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogTourPageDto(items, window.Total)));
     }
 
     /// <summary>Returns the tour with the given id, not found if absent, or a transport failure when configured.</summary>

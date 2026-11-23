@@ -28,6 +28,20 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
+    public Task<HttpOutcome<CatalogTourPageDto>> GetTourPage(
+        int page, CatalogTourListSort sort, bool descending, CancellationToken ct)
+    {
+        var target = FormattableString.Invariant($"{RoutePrefix}/tours/page?page={page}&sort={sort}&descending={descending}");
+        return HttpOutcomeMapper.Send(
+            httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(target, UriKind.Relative)),
+            HttpStatusCode.OK,
+            Json.CatalogTourPageDto,
+            Json.ContractValidationProblemDto,
+            ct);
+    }
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(
         Guid id,
         UpsertCatalogTourPresentationRequest request,

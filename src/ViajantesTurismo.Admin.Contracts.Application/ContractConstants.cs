@@ -5,6 +5,21 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 /// </summary>
 public static class ContractConstants
 {
+    /// <summary>The maximum number of summaries returned in a booking page.</summary>
+    public const int BookingListPageSize = 10;
+
+    /// <summary>The maximum number of choices in a customer option search.</summary>
+    public const int MaxCustomerOptions = 20;
+
+    /// <summary>The maximum length of customer option search text.</summary>
+    public const int MaxCustomerOptionQueryLength = 200;
+
+    /// <summary>The maximum number of choices in a tour option search.</summary>
+    public const int MaxTourOptions = 20;
+
+    /// <summary>The maximum length of tour option search text.</summary>
+    public const int MaxTourOptionQueryLength = 200;
+
     /// <summary>The required HTTP header identifying an idempotent financial or document command.</summary>
     public const string IdempotencyKeyHeaderName = "Idempotency-Key";
 

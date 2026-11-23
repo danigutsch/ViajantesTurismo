@@ -1,13 +1,151 @@
 using PandaBear.Testing;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using PandaBear.HttpClients;
+using System.Net;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
 [TestScope(TestScope.Component)]
 public class CustomerBookingCreateFormTests : BunitContext
 {
+    private readonly FakeCustomersApiClient _fakeCustomersApi = new();
+    private readonly FakeToursApiClient _fakeToursApi = new();
+    private readonly RecordingUiFailureReporter _failures = new();
+
+    public CustomerBookingCreateFormTests()
+    {
+        Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
+        Services.AddSingleton<IToursApiClient>(_fakeToursApi);
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Late_tour_details_do_not_replace_a_newer_choice()
+    {
+        // Arrange
+        var older = BuildTourDto(name: "Older Tour", maxCustomers: 12, currentCustomerCount: 10);
+        var newer = BuildTourDto(name: "Newer Tour", maxCustomers: 12, currentCustomerCount: 5);
+        _fakeToursApi.AddTours([older, newer]);
+        var olderStarted = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var olderResult = new TaskCompletionSource<HttpOutcome<GetTourDto>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _fakeToursApi.SetGetTourByIdHandler((id, ct) =>
+        {
+            if (id == older.Id)
+            {
+                olderStarted.SetResult(ct);
+                return olderResult.Task;
+            }
+
+            return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, newer));
+        });
+        var model = new BookingFormModel();
+        var cut = Render<CustomerBookingCreateForm>(parameters => parameters.Add(form => form.Model, model));
+        cut.WaitForAssertion(() => cut.FindAll("#tourId option").Count.ShouldBe(3));
+        var testCancellation = Xunit.TestContext.Current.CancellationToken;
+
+        // Act
+        var previous = cut.Find("#tourId").ChangeAsync(new ChangeEventArgs { Value = older.Id.ToString() });
+        var oldToken = await olderStarted.Task.WaitAsync(testCancellation);
+        cut.WaitForAssertion(() => cut.Find("button[type='submit']").HasAttribute("disabled").ShouldBeTrue());
+        await cut.Find("#tourId").ChangeAsync(new ChangeEventArgs { Value = newer.Id.ToString() });
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("7 spots available", StringComparison.Ordinal));
+        var newerRender = cut.RenderCount;
+        await cut.InvokeAsync(() => olderResult.SetResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, older)));
+        await previous;
+        cut.WaitForState(() => cut.RenderCount > newerRender);
+
+        // Assert
+        oldToken.IsCancellationRequested.ShouldBeTrue();
+        model.TourId.ShouldBe(newer.Id);
+        cut.Markup.ShouldContain("7 spots available", StringComparison.Ordinal);
+        cut.Markup.ShouldNotContain("2 spots available", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Unavailable_selected_tour_blocks_submission_until_details_are_loaded()
+    {
+        // Arrange
+        var tour = BuildTourDto();
+        _fakeToursApi.AddTour(tour);
+        var attempts = 0;
+        _fakeToursApi.SetGetTourByIdHandler((_, _) => Task.FromResult(++attempts == 1
+            ? HttpOutcomeMapper.Status<GetTourDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour)));
+        var customerId = Guid.NewGuid();
+        var model = new BookingFormModel { CustomerId = customerId, PrincipalBikeType = BikeTypeDto.Regular };
+        var submits = 0;
+        var cut = Render<CustomerBookingCreateForm>(parameters => parameters
+            .Add(form => form.Model, model)
+            .Add(form => form.CurrentCustomerId, customerId)
+            .Add(form => form.OnValidSubmit, EventCallback.Factory.Create<BookingFormModel>(this, _ => submits++)));
+        cut.WaitForAssertion(() => cut.FindAll("#tourId option").Count.ShouldBe(2));
+
+        // Act
+        await cut.Find("#tourId").ChangeAsync(new ChangeEventArgs { Value = tour.Id.ToString() });
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("The selected tour is no longer available.", StringComparison.Ordinal));
+        var disabledBeforeRetry = cut.Find("button[type='submit']").HasAttribute("disabled");
+        await cut.Find("form").SubmitAsync();
+        var submitsBeforeRetry = submits;
+        await cut.Find("button:contains('Try again')").ClickAsync();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Price Breakdown", StringComparison.Ordinal));
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        disabledBeforeRetry.ShouldBeTrue();
+        submitsBeforeRetry.ShouldBe(0);
+        submits.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Tour_search_can_recover_after_an_API_failure()
+    {
+        // Arrange
+        var tour = BuildTourDto(name: "Serra Waters");
+        var choice = new GetTourOptionDto(tour.Id, tour.Name, tour.Identifier, tour.StartDate);
+        var failure = new InvalidOperationException("Fixture transport failure");
+        _fakeToursApi.SetSearchTourOptionsHandler((request, _) => string.IsNullOrEmpty(request.Query)
+            ? Task.FromException<HttpOutcome<GetTourOptionsDto>>(failure)
+            : Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetTourOptionsDto([choice], 1))));
+        var cut = Render<CustomerBookingCreateForm>();
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Tours could not be loaded for booking selection.", StringComparison.Ordinal));
+        var initialMarkup = cut.Markup;
+
+        // Act
+        await cut.Find("#tourSearch").InputAsync(new ChangeEventArgs { Value = "Serra" });
+
+        // Assert
+        initialMarkup.ShouldNotContain(failure.Message, StringComparison.Ordinal);
+        _failures.Reports.ShouldHaveSingleItem().Operation.ShouldBe("bookings.create.load-tours");
+        cut.Markup.ShouldNotContain("Tours could not be loaded for booking selection.", StringComparison.Ordinal);
+        cut.Find("#tourId").TextContent.ShouldContain(tour.Name, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Search_keeps_the_selected_tour_visible_when_the_new_options_do_not_match()
+    {
+        // Arrange
+        var tour = BuildTourDto(name: "Retained tour");
+        _fakeToursApi.AddTour(tour);
+        var model = new BookingFormModel { TourId = tour.Id };
+        var cut = Render<CustomerBookingCreateForm>(parameters => parameters.Add(form => form.Model, model));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("Price Breakdown", StringComparison.Ordinal));
+
+        // Act
+        await cut.Find("#tourSearch").InputAsync(new ChangeEventArgs { Value = "No matching choices" });
+
+        // Assert
+        model.TourId.ShouldBe(tour.Id);
+        cut.Markup.ShouldContain("No tours match.", StringComparison.Ordinal);
+        var retained = cut.FindAll("#tourId option")
+            .ShouldHaveSingleItem(option => option.GetAttribute("value") == tour.Id.ToString());
+        retained.TextContent.ShouldContain(tour.Name, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void Renders_companion_dropdown()
     {
@@ -19,13 +157,12 @@ public class CustomerBookingCreateFormTests : BunitContext
             BuildCustomerDto(firstName: "Companion", lastName: "Person")
         };
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
+
+        _fakeCustomersApi.AddCustomers(customers);
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, currentCustomerId));
 
         // Assert
@@ -49,13 +186,12 @@ public class CustomerBookingCreateFormTests : BunitContext
             BuildCustomerDto(firstName: "Charlie", lastName: "Jones")
         };
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
+
+        _fakeCustomersApi.AddCustomers(customers);
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, currentCustomerId));
 
         // Assert
@@ -72,14 +208,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel { Notes = "Special requirements" };
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -93,14 +225,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -114,14 +242,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -138,14 +262,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel { DiscountType = DiscountTypeDto.None };
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -165,14 +285,10 @@ public class CustomerBookingCreateFormTests : BunitContext
             DiscountAmount = 10m,
             DiscountReason = "Loyalty discount"
         };
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -199,14 +315,10 @@ public class CustomerBookingCreateFormTests : BunitContext
             DiscountAmount = 50m,
             DiscountReason = "Special promotion"
         };
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -229,14 +341,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel { DiscountType = DiscountTypeDto.Percentage };
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -253,14 +361,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -274,14 +378,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -294,14 +394,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid())
             .Add(p => p.IsSubmitting, true));
 
@@ -317,14 +413,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid())
             .Add(p => p.IsSubmitting, true));
 
@@ -340,14 +432,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
         var cancelCalled = false;
 
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid())
             .Add(p => p.OnCancel, EventCallback.Factory.Create(this, () => cancelCalled = true)));
 
@@ -364,14 +452,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
@@ -384,14 +468,10 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         // Arrange
         var model = new BookingFormModel();
-        GetTourDto[] tours = [];
-        GetCustomerDto[] customers = [];
 
         // Act
         var cut = Render<CustomerBookingCreateForm>(parameters => parameters
             .Add(p => p.Model, model)
-            .Add(p => p.Tours, tours)
-            .Add(p => p.Customers, [.. customers])
             .Add(p => p.CurrentCustomerId, Guid.NewGuid()));
 
         // Assert
