@@ -93,7 +93,9 @@ Standard for local-only resources:
   environment variables only when it is present.
 - Create local credentials with `AddGeneratedSecret` inside the same
   run-mode gate, so publish mode declares no parameter for them. Published services receive their
-  required credentials from their deployment environment.
+  required credentials from their deployment environment. Fix a development value only for a password a
+  person types into one of our apps; see
+  [Fixed local development credentials](#fixed-local-development-credentials).
 - Cover each local-only resource with a publish-mode model test that proves it is absent and a
   run-mode test that proves it is present.
 
@@ -210,6 +212,9 @@ This repository pins `aspire.cli` in `.config/dotnet-tools.json`, so `dotnet too
 the reproducible command for contributors and CI. A global/script installation exposes `aspire`
 directly on `PATH`.
 
+Local credentials are fixed development values; see
+[Fixed local development credentials](#fixed-local-development-credentials).
+
 The Aspire dashboard URL is printed when the AppHost starts. Use it to inspect services, logs,
 traces, metrics, endpoints, and health status.
 
@@ -297,7 +302,9 @@ remain deployment configuration and are never included in the publish model. Man
 enforced audience-token exchange requires a Keycloak-compatible RFC 8693 endpoint in every
 deployment.
 
-AppHost stores the following required values as local secrets:
+AppHost stores the following required values as local secrets. The two user passwords have fixed
+development values (see [Fixed local development credentials](#fixed-local-development-credentials));
+the rest are generated:
 
 - `management-web-client-secret`: Keycloak receives it as `MANAGEMENT_WEB_CLIENT_SECRET` and
   Management Web receives it as `Authentication__ClientSecret`.
@@ -309,8 +316,8 @@ AppHost stores the following required values as local secrets:
 The imported confidential client ID is `web-app`. Keycloak permits only the local dynamic
 `https://localhost:<port>` and `https://127.0.0.1:<port>` host origins; Keycloak does not support
 an exact callback path with a dynamic HTTPS port. The configuration is local-conformance only and
-has no browser web origins because Management Web is a server-side BFF. No resolved credential
-belongs in source control.
+has no browser web origins because Management Web is a server-side BFF. Only the fixed development
+passwords listed in the credentials section belong in source control; real credentials never do.
 
 `web-app` requests the approved Admin, Catalog, and Branding API scopes during sign-in. The protected
 server-side BFF ticket retains the source token, then obtains or reuses a protected cached exchanged
@@ -331,6 +338,44 @@ dotnet user-secrets set "Parameters:seaweedfs-secret-key" "<local-secret-key>" -
 
 Use deployment-managed secret stores for production. Do not copy generated credentials, connection
 strings, endpoint URLs, scanner responses, or uploaded content into documentation or settings files.
+
+## Fixed local development credentials
+
+Only the credentials you type to sign in to our own applications are fixed. Everything that tools or
+services exchange among themselves stays generated and wired automatically by the AppHost: the
+Management Web and k6 client secrets, the PostgreSQL password (Aspire configures PgWeb's connection
+itself), and the SeaweedFS keys. The Keycloak admin password is also generated; it is only needed for
+the Keycloak admin console, which is not one of our apps.
+
+The fixed values are intentionally public, work only against local containers, and live under
+`Parameters:` in `src/ViajantesTurismo.AppHost/appsettings.Development.json`. Only the Development
+environment loads that file; the `Properties/launchSettings.json` profiles select it. The AppHost keeps
+declaring both parameters with `AddGeneratedSecret`, so a run without a configured value still gets a
+random one.
+
+| Sign-in | Parameter | User | Password |
+| --- | --- | --- | --- |
+| Conformance user (`LOCAL_CONFORMANCE_PASSWORD`) | `identity-provider-conformance-user-password` | `conformance` | `conformance123` |
+| Operator conformance user (`LOCAL_OPERATOR_CONFORMANCE_PASSWORD`) | `identity-provider-operator-conformance-user-password` | `operator-conformance` | `operator123` |
+
+Keycloak listens on a dynamic `localhost` port; read the endpoint from the Aspire dashboard. The
+imported realm is `viajantes`.
+
+Rules:
+
+- Never reuse these values in a shared, hosted, or production environment. Both parameters are
+  declared in run mode only, so `aspire publish` omits them, and published services receive their
+  credentials from their deployment environment.
+- Precedence, highest first: `Parameters__<name>` environment variables, user secrets, then
+  `appsettings.Development.json`. To use a different local value, run
+  `dotnet user-secrets set "Parameters:<name>" "<value>" --project src/ViajantesTurismo.AppHost`.
+- Keycloak imports the realm users only when it creates its data. A Keycloak instance first started
+  with generated user passwords keeps them until you reset its data.
+- To add another credential that a person types into one of our apps, declare it with
+  `AddGeneratedSecret` inside the run-mode gate, add its fixed value to `appsettings.Development.json`,
+  and add a row above. `LocalDevelopmentCredentialsTests` fails when the settings file, the parameter names, and this
+  table drift apart. Do not fix
+  machine-to-machine secrets or credentials of third-party tools.
 
 ## Performance Smoke Resource
 
