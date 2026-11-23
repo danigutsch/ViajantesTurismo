@@ -33,6 +33,29 @@ public sealed class PublicContentTests : BunitContext
     }
 
     [Fact]
+    public void The_overview_shows_a_bounded_page_and_keeps_the_entry_editor()
+    {
+        // Arrange
+        publicContentApi.Content =
+        [
+            .. Enumerable.Range(0, 125).Select(index => PublicContentTestsHelpers.CreateContent($"catalog.entry.{index:D4}"))
+        ];
+
+        // Act
+        var cut = Render<PublicContent>();
+        var entries = cut.FindAll("button.list-group-item");
+        entries[0].Click();
+
+        // Assert
+        entries.Count.ShouldBe(PublicContentOverviewPageDto.ItemsPerPage);
+        cut.Find("#content-key").GetAttribute("value").ShouldBe("catalog.entry.0000");
+        cut.Find("nav[aria-label='Content pages'] a[href='/catalog/content?page=2']").ShouldNotBeNull();
+        cut.Markup.ShouldNotContain("catalog.entry.0020", StringComparison.Ordinal);
+        publicContentApi.PageRequests.ShouldHaveSingleItem().ShouldBeNull();
+        publicContentApi.ListCallCount.ShouldBe(0);
+    }
+
+    [Fact]
     public void Renders_load_error_when_public_content_API_fails()
     {
         // Arrange
@@ -178,6 +201,8 @@ public sealed class PublicContentTests : BunitContext
         publicContentApi.SavedRequest.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageTags.EnglishUnitedStates && variant.Title == "Welcome");
         publicContentApi.SavedRequest.Variants.ShouldContain(variant => variant.Language == PublicContentLanguageTags.PortugueseBrazil && variant.Body == "Pedale conosco");
         cut.Markup.ShouldContain("Public content saved", StringComparison.Ordinal);
+        publicContentApi.PageRequests.Count.ShouldBe(2);
+        publicContentApi.ListCallCount.ShouldBe(0);
     }
 
     [Fact]

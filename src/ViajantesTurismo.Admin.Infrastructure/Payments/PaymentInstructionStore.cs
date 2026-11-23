@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
@@ -17,6 +18,32 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
     /// <inheritdoc />
     public async Task<IReadOnlyList<Guid>> GetDocumentIds(Guid bookingId, CancellationToken ct) => await context.Set<PaymentInstructionRow>().AsNoTracking()
         .Where(row => row.BookingId == bookingId).OrderByDescending(row => row.Revision).Select(row => row.DocumentId).ToArrayAsync(ct);
+
+    /// <inheritdoc />
+    public async Task<(IReadOnlyList<Guid> Items, PageWindow Window)> GetDocumentIdPage(Guid bookingId, int? page, int pageSize, CancellationToken ct)
+    {
+        var query = context.Set<PaymentInstructionRow>().AsNoTracking().Where(row => row.BookingId == bookingId);
+        var total = await query.CountAsync(ct);
+        var window = PageWindow.Create(page, pageSize, total);
+        var ids = await query.OrderByDescending(row => row.Revision).ThenBy(row => row.DocumentId)
+            .Skip(window.Skip).Take(window.Take).Select(row => row.DocumentId).ToArrayAsync(ct);
+        return (ids, window);
+    }
+
+    /// <inheritdoc />
+    public async Task<(long Version, bool IsRetired)?> GetDocumentState(Guid documentId, CancellationToken ct)
+    {
+        var state = await (
+            from revision in context.DocumentDrafts.AsNoTracking()
+            join lineage in context.DocumentLineages.AsNoTracking() on revision.DocumentLineageId equals lineage.Id
+            where revision.Id == documentId && revision.Type == DocumentType.PaymentInstructions
+            select new
+            {
+                Revision = revision,
+                lineage.Version
+            }).SingleOrDefaultAsync(ct);
+        return state is null ? null : (state.Version, state.Revision.IsRetired);
+    }
 
     /// <inheritdoc />
     public async Task<PaymentInstructionSnapshot?> GetSnapshot(Guid documentId, CancellationToken ct)

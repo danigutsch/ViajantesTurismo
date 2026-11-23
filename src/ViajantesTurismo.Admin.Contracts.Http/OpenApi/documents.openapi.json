@@ -980,8 +980,8 @@
         "tags": [
           "Documents"
         ],
-        "summary": "Lists holds across documents.",
-        "description": "Lists holds across documents, oldest placement first, one bounded page at a time. Filters: state (the states are disjoint: Active is unreleased with a review date at or after now, OverdueReview is unreleased with a review date before now, Released is released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Page defaults to 1 and pageSize to 25, at most 100.",
+        "summary": "Lists holds across documents or for one lineage.",
+        "description": "Lists holds oldest placement first, one bounded page at a time. Filters: state (the states are disjoint: Active is unreleased with a review date at or after now, OverdueReview is unreleased with a review date before now, Released is released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Supply documentId to limit the page to that document's lineage and report whether any hold restrains the lineage. Page defaults to 1 and pageSize to 25, at most 100.",
         "operationId": "ListDocumentHoldOverview",
         "parameters": [
           {
@@ -1018,6 +1018,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "documentId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1037,6 +1044,16 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -1275,6 +1292,84 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/documents/bookings/{bookingId}/payment-instructions/page": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Lists a page of booking payment instructions.",
+        "description": "Lists up to 100 masked retained instruction revisions, newest first.",
+        "operationId": "ListBookingPaymentInstructionPage",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
           },
           "403": {
             "description": "The authenticated caller lacks the required permission."
@@ -2298,6 +2393,12 @@
           },
           "hasMore": {
             "type": "boolean"
+          },
+          "isLineageRestrained": {
+            "type": [
+              "null",
+              "boolean"
+            ]
           }
         }
       },
@@ -2414,6 +2515,47 @@
             "items": {
               "$ref": "#/components/schemas/GetFinancialReviewDto"
             }
+          }
+        }
+      },
+      "GetPaymentInstructionPageDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentInstructionDto"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },

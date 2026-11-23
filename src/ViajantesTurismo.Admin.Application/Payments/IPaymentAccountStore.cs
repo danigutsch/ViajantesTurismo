@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
 namespace ViajantesTurismo.Admin.Application.Payments;
@@ -9,6 +10,8 @@ public interface IPaymentAccountStore
     Task<PaymentAccount?> GetById(Guid id, CancellationToken ct);
     /// <summary>Loads accounts for masked staff projection.</summary>
     Task<IReadOnlyList<PaymentAccount>> List(CancellationToken ct);
+    /// <summary>Loads only the requested stable page of accounts, optionally limited to verified rows.</summary>
+    Task<(IReadOnlyList<PaymentAccount> Items, PageWindow Window)> ListPage(int? page, int pageSize, bool verifiedOnly, CancellationToken ct);
     /// <summary>Stages encrypted state and metadata-only events; does not commit.</summary>
     Task Save(PaymentAccount account, CancellationToken ct);
     /// <summary>Stages a sensitive-access metadata audit; does not store recipient values.</summary>

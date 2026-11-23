@@ -2,10 +2,11 @@ using PandaBear.DispositionHold;
 using PandaBear.Results;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 
-/// <summary>Lists holds across document lineages for the hold review overview, one bounded page at a time.</summary>
+/// <summary>Lists a bounded page of holds across document lineages or for the lineage of a selected document.</summary>
 public sealed class ListDocumentHoldOverviewQueryHandler(IDocumentHoldQuery holdQuery, TimeProvider timeProvider)
 {
     /// <summary>Returns the requested page, or a validation failure for paging outside the bounds.</summary>
@@ -24,7 +25,22 @@ public sealed class ListDocumentHoldOverviewQueryHandler(IDocumentHoldQuery hold
         }
 
         var now = timeProvider.GetUtcNow();
-        var search = new DocumentHoldSearch(query.State, query.Basis, query.ReleasedSince, now);
+        DispositionScope? scope = null;
+        bool? isLineageRestrained = null;
+        if (query.DocumentId is { } selectedDocumentId)
+        {
+            var lineageId = await holdQuery.FindLineageId(selectedDocumentId, ct);
+            if (lineageId is null)
+            {
+                return DocumentErrors.DocumentNotFound().ConvertError<GetDocumentHoldOverviewPageDto>();
+            }
+
+            scope = DocumentHoldScopes.ForLineage(lineageId.Value);
+            var restraining = new DocumentHoldSearch(null, null, null, now) { Scope = scope, RestrainingOnly = true };
+            isLineageRestrained = (await holdQuery.Search(restraining, 0, 1, ct)).Count != 0;
+        }
+
+        var search = new DocumentHoldSearch(query.State, query.Basis, query.ReleasedSince, now) { Scope = scope };
         var skip = (query.Page - DocumentHoldOverviewPaging.FirstPage) * query.PageSize;
         var holds = await holdQuery.Search(search, skip, query.PageSize + 1, ct);
 
@@ -55,6 +71,7 @@ public sealed class ListDocumentHoldOverviewQueryHandler(IDocumentHoldQuery hold
             Page = query.Page,
             PageSize = query.PageSize,
             HasMore = holds.Count > query.PageSize,
+            IsLineageRestrained = isLineageRestrained,
         });
     }
 }

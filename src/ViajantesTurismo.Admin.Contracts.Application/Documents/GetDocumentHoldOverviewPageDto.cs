@@ -1,6 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace ViajantesTurismo.Admin.Contracts.Application;
 
-/// <summary>Represents one bounded page of the cross-document hold overview.</summary>
+/// <summary>Represents one bounded page of holds across all lineages or for one selected lineage.</summary>
 public sealed record GetDocumentHoldOverviewPageDto
 {
     /// <summary>Gets the holds of the page, oldest placement first.</summary>
@@ -23,6 +25,13 @@ public sealed record GetDocumentHoldOverviewPageDto
 
     /// <summary>Gets whether at least one more hold follows this page.</summary>
     public required bool HasMore
+    {
+        get; init;
+    }
+
+    /// <summary>Gets whether any hold restrains the selected lineage, regardless of the current page or filters.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? IsLineageRestrained
     {
         get; init;
     }

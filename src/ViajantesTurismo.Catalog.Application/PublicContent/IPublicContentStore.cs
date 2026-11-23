@@ -1,3 +1,4 @@
+using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.Application.PublicContent;
@@ -13,6 +14,11 @@ public interface IPublicContentStore
     /// <param name="ct">A token to cancel the operation.</param>
     /// <returns>The stored content entries.</returns>
     Task<IReadOnlyCollection<EditablePublicContent>> ListContent(CancellationToken ct);
+
+    /// <summary>Lists one overview page of editable content without loading localized bodies.</summary>
+    /// <param name="page">The optional one-based requested page.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task<PublicContentOverviewPageDto> ListOverviewPage(string? page, CancellationToken ct);
 
     /// <summary>
     /// Gets an editable public content entry by key.

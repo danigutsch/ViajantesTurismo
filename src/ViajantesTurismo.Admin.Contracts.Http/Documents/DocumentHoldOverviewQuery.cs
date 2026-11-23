@@ -15,6 +15,12 @@ public sealed record DocumentHoldOverviewQuery(
     int Page = 1,
     int PageSize = 25)
 {
+    /// <summary>Limits the read to the lineage of this document revision when supplied.</summary>
+    public Guid? DocumentId
+    {
+        get; init;
+    }
+
     /// <summary>Builds the query string, including the leading question mark.</summary>
     /// <returns>The escaped query string.</returns>
     public string ToQueryString()
@@ -22,6 +28,11 @@ public sealed record DocumentHoldOverviewQuery(
         List<string> parts = [];
         AddText(parts, "state", State);
         AddText(parts, "basis", Basis);
+        if (DocumentId is { } documentId)
+        {
+            AddText(parts, "documentId", documentId.ToString("D"));
+        }
+
         if (ReleasedSince is { } since)
         {
             AddText(parts, "releasedSince", since.ToString("O", CultureInfo.InvariantCulture));

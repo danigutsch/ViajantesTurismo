@@ -28,6 +28,10 @@ internal static class CatalogPublicContentEndpoints
         }).WithName("ListPublicContentForManagement")
             .WithTags("ViajantesTurismo.Catalog.Api")
             .RequireAuthorization(CatalogAuthorization.CatalogRead);
+        managementCatalog.MapGet("/public-content-overview", GetPublicContentOverviewPage)
+            .WithName(nameof(GetPublicContentOverviewPage))
+            .WithTags("ViajantesTurismo.Catalog.Api")
+            .RequireAuthorization(CatalogAuthorization.CatalogRead);
         managementCatalog.MapGet("/public-content/{**key}", GetPublicContentForManagement)
             .WithName("GetPublicContentForManagement")
             .Produces<PublicContentDto>(StatusCodes.Status200OK)
@@ -39,6 +43,10 @@ internal static class CatalogPublicContentEndpoints
             .RequireRateLimiting(CatalogSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(CatalogAuthorization.CatalogWrite);
     }
+
+    private static async Task<Ok<PublicContentOverviewPageDto>> GetPublicContentOverviewPage(
+        string? page, IPublicContentStore store, CancellationToken ct) =>
+        TypedResults.Ok(await store.ListOverviewPage(page, ct).ConfigureAwait(false));
 
     private static async Task<IResult> GetPublicContent(
         string key,

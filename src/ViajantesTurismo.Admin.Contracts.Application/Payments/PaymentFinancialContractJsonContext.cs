@@ -9,6 +9,7 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 [JsonSerializable(typeof(ReviewPaymentInstructionsDto))]
 [JsonSerializable(typeof(GetPaymentInstructionDto))]
 [JsonSerializable(typeof(IReadOnlyList<GetPaymentInstructionDto>))]
+[JsonSerializable(typeof(GetPaymentInstructionPageDto))]
 [JsonSerializable(typeof(GetPaymentCommandResultDto))]
 [JsonSerializable(typeof(PaymentInstallmentDto))]
 [JsonSerializable(typeof(InstallmentAllocationDto))]

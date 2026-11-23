@@ -42,7 +42,8 @@ internal static class DocumentHoldEndpoints
             .RequireAuthorization(AdminAuthorization.DocumentHold)
             .Produces<GetDocumentHoldOverviewPageDto>()
             .ProducesValidationProblem(StatusCodes.Status400BadRequest)
-            .WithAdminMetadata("ListDocumentHoldOverview", "Lists holds across documents, oldest placement first, one bounded page at a time. Filters: state (the states are disjoint: Active is unreleased with a review date at or after now, OverdueReview is unreleased with a review date before now, Released is released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Page defaults to 1 and pageSize to 25, at most 100.", "Lists holds across documents.");
+            .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
+            .WithAdminMetadata("ListDocumentHoldOverview", "Lists holds oldest placement first, one bounded page at a time. Filters: state (the states are disjoint: Active is unreleased with a review date at or after now, OverdueReview is unreleased with a review date before now, Released is released), basis, and releasedSince (an ISO 8601 round-trip instant, inclusive). Supply documentId to limit the page to that document's lineage and report whether any hold restrains the lineage. Page defaults to 1 and pageSize to 25, at most 100.", "Lists holds across documents or for one lineage.");
 
         documentsGroup.MapPost("/{id:guid}/holds/{holdId:guid}/release", ReleaseHold)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
@@ -104,10 +105,11 @@ internal static class DocumentHoldEndpoints
         [FromQuery] string? releasedSince,
         [FromQuery] string? page,
         [FromQuery] string? pageSize,
+        [FromQuery] string? documentId,
         [FromServices] ListDocumentHoldOverviewQueryHandler handler,
         CancellationToken ct)
     {
-        var query = DocumentHoldOverviewQueryParser.Parse(state, basis, releasedSince, page, pageSize);
+        var query = DocumentHoldOverviewQueryParser.Parse(state, basis, releasedSince, page, pageSize, documentId);
         if (query.IsFailure)
         {
             return ToError(query.ConvertError());

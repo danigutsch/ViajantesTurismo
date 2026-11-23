@@ -116,6 +116,150 @@ public sealed class PaymentPagesTests : BunitContext
     }
 
     [Fact]
+    public void Booking_instructions_display_one_page_of_protected_revisions_at_a_time()
+    {
+        // Arrange
+        var bookingId = Guid.NewGuid();
+        Handler.Instructions = PaymentPageData.InstructionRevisions(bookingId, 26);
+
+        // Act
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+
+        // Assert
+        page.WaitForAssertion(() => page.FindAll("section h2").Count.ShouldBe(25));
+        page.FindAll("section h2")[0].TextContent.ShouldContain("Revision 26", StringComparison.Ordinal);
+        page.Find("button[aria-label='Next instruction revisions page']").Click();
+        page.WaitForAssertion(() => page.FindAll("section h2").ShouldHaveSingleItem().TextContent.ShouldContain("Revision 1", StringComparison.Ordinal));
+        page.Find("button[aria-label='Previous instruction revisions page']").Click();
+        page.WaitForAssertion(() => page.FindAll("section h2").Count.ShouldBe(25));
+        var historyReads = Handler.Transport.Requests.Count(request => request.Message.RequestUri?.AbsolutePath.EndsWith("/finances", StringComparison.Ordinal) == true);
+        historyReads.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Regeneration_from_an_older_page_returns_to_the_newest_revision()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        Handler.Accounts = PaymentPageData.VerifiedAccounts(1);
+        Handler.Instructions = PaymentPageData.InstructionRevisions(bookingId, 26);
+        Handler.SubmissionStatus = HttpStatusCode.Created;
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("button[aria-label='Next instruction revisions page']"));
+        page.Find("button[aria-label='Next instruction revisions page']").Click();
+        page.WaitForAssertion(() => page.FindAll("section h2").ShouldHaveSingleItem().TextContent.ShouldContain("Revision 1", StringComparison.Ordinal));
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Select for regeneration").Click();
+        page.Find("#instruction-account").Change("00000001-1111-1111-1111-111111111111");
+        Handler.Instructions = PaymentPageData.InstructionRevisions(bookingId, 27);
+
+        // Act
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Save generated unapproved draft").Click();
+
+        // Assert
+        page.WaitForAssertion(() => page.FindAll("section h2")[0].TextContent.ShouldContain("Revision 27", StringComparison.Ordinal));
+        Handler.Paths.ShouldHaveSingleItem().ShouldEndWith("/regenerate", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Changing_bookings_resets_the_history_page_and_old_revision_selection()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var otherBookingId = Guid.CreateVersion7();
+        Handler.Instructions = PaymentPageData.InstructionRevisions(bookingId, 26);
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("button[aria-label='Next instruction revisions page']"));
+        page.Find("button[aria-label='Next instruction revisions page']").Click();
+        page.WaitForAssertion(() => page.FindAll("section h2").ShouldHaveSingleItem().TextContent.ShouldContain("Revision 1", StringComparison.Ordinal));
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Select for regeneration").Click();
+        Handler.Instructions = PaymentPageData.InstructionRevisions(otherBookingId, 30);
+
+        // Act
+        page.Render(parameters => parameters.Add(value => value.BookingId, otherBookingId));
+
+        // Assert
+        page.WaitForAssertion(() => page.FindAll("section h2")[0].TextContent.ShouldContain("Revision 30", StringComparison.Ordinal));
+        page.Markup.ShouldNotContain("Regenerate revision 1", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Account_register_displays_only_the_first_page_when_the_collection_grows()
+    {
+        // Arrange
+        Handler.Accounts = PaymentPageData.VerifiedAccounts(26);
+
+        // Act
+        var page = Render<Accounts>();
+
+        // Assert
+        page.WaitForAssertion(() => page.FindAll("tbody tr").Count.ShouldBe(25));
+        page.Find("button[aria-label='Next payment accounts page']").Click();
+        page.WaitForAssertion(() => page.FindAll("tbody tr").ShouldHaveSingleItem().TextContent.ShouldContain("Verified recipient 26", StringComparison.Ordinal));
+        page.Find("button[aria-label='Previous payment accounts page']").Click();
+        page.WaitForAssertion(() => page.FindAll("tbody tr").Count.ShouldBe(25));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Instruction_recipient_picker_keeps_the_selected_version_while_browsing_verified_pages(bool returnToFirstPage)
+    {
+        // Arrange
+        Handler.Accounts = PaymentPageData.VerifiedAccounts(26);
+        Handler.SubmissionStatus = HttpStatusCode.Created;
+
+        // Act
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, Guid.CreateVersion7()));
+
+        // Assert
+        page.WaitForAssertion(() => page.FindAll("#instruction-account option").Count.ShouldBe(26));
+        const string selectedId = "00000001-1111-1111-1111-111111111111";
+        page.Find("#instruction-account").Change(selectedId);
+        page.Find("button[aria-label='Next verified recipients page']").Click();
+        page.WaitForAssertion(() => page.FindAll("#instruction-account option").Count.ShouldBe(3));
+        page.Find($"#instruction-account option[value='{selectedId}']").TextContent.ShouldContain("Verified recipient 1", StringComparison.Ordinal);
+        if (returnToFirstPage)
+        {
+            page.Find("button[aria-label='Previous verified recipients page']").Click();
+            page.WaitForAssertion(() => page.FindAll("#instruction-account option").Count.ShouldBe(26));
+        }
+
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Save generated unapproved draft").Click();
+        page.WaitForAssertion(() => Handler.Payloads.ShouldHaveSingleItem());
+        using var payload = JsonDocument.Parse(Handler.Payloads.ShouldHaveSingleItem());
+        payload.RootElement.GetProperty("accountId").GetString().ShouldBe(selectedId);
+        payload.RootElement.GetProperty("expectedAccountVersion").GetInt64().ShouldBe(7);
+        var exactAccountReads = Handler.Transport.Requests.Count(request => request.Message.RequestUri?.AbsolutePath == $"/api/v1/payment-accounts/{selectedId}");
+        exactAccountReads.ShouldBe(returnToFirstPage ? 0 : 1);
+    }
+
+    [Fact]
+    public void Instruction_refresh_discards_a_recipient_that_was_retired_while_the_form_was_open()
+    {
+        // Arrange
+        const string selectedId = "00000001-1111-1111-1111-111111111111";
+        Handler.Accounts = PaymentPageData.VerifiedAccounts(26);
+        Handler.SubmissionStatus = HttpStatusCode.Conflict;
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, Guid.CreateVersion7()));
+        page.WaitForAssertion(() => page.Find("#instruction-account"));
+        page.Find("#instruction-account").Change(selectedId);
+        page.Find("button[aria-label='Next verified recipients page']").Click();
+        var accounts = JsonNode.Parse(Handler.Accounts).ShouldNotBeNull().AsArray();
+        accounts[0].ShouldNotBeNull().AsObject()["status"] = (int)PaymentAccountStatusDto.Inactive;
+        Handler.Accounts = accounts.ToJsonString();
+
+        // Act
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Save generated unapproved draft").Click();
+
+        // Assert
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Instruction or source terms changed", StringComparison.Ordinal));
+        page.FindAll($"#instruction-account option[value='{selectedId}']").ShouldBeEmpty();
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Save generated unapproved draft").Click();
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Select a verified recipient", StringComparison.Ordinal));
+        Handler.Payloads.ShouldHaveSingleItem();
+    }
+
+    [Fact]
     public void Instruction_generation_selects_sources_without_editable_financial_text()
     {
         // Act

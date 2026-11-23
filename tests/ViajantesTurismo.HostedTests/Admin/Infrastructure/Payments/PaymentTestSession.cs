@@ -88,6 +88,9 @@ internal sealed class PaymentTestSession : IAsyncDisposable
     /// <summary>Resolves the payment instruction workflow.</summary>
     public PaymentInstructionWorkflow Instructions => _provider.GetRequiredService<PaymentInstructionWorkflow>();
 
+    /// <summary>Counts instruction documents loaded through the tracked write model.</summary>
+    public int TrackedInstructionRevisions => Context.ChangeTracker.Entries<DocumentDraft>().Count(entry => entry.Entity.RequiresPaymentInstructionWorkflow);
+
     /// <summary>Reads persisted metadata-only audit evidence for an instruction.</summary>
     public Task<IReadOnlyList<PaymentInstructionAuditMetadata>> ReadInstructionAudits(Guid documentId, CancellationToken ct) =>
         _provider.GetRequiredService<IPaymentInstructionStore>().GetAudits(documentId, ct);

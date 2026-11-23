@@ -13,6 +13,11 @@ public interface IPublicContentApiClient
     /// </summary>
     Task<HttpOutcome<PublicContentDto[]>> GetContent(CancellationToken ct);
 
+    /// <summary>Reads one page of the Management content overview.</summary>
+    /// <param name="page">The optional one-based requested page.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task<HttpOutcome<PublicContentOverviewPageDto>> GetContentPage(string? page, CancellationToken ct);
+
     /// <summary>
     /// Gets a public content entry by key.
     /// </summary>

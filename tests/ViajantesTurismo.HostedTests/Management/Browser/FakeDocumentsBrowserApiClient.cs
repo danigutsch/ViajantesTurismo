@@ -72,5 +72,13 @@ internal sealed class FakeDocumentsBrowserApiClient(GetDocumentDto document, Get
     public Task<HttpOutcome<GetDocumentHoldDto>> PlaceHold(Guid documentId, CreateDocumentHoldDto dto, CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
-    public Task<HttpOutcome<GetDocumentHoldOverviewPageDto>> ListHoldOverview(DocumentHoldOverviewQuery query, CancellationToken ct) => throw new NotSupportedException();
+    public Task<HttpOutcome<GetDocumentHoldOverviewPageDto>> ListHoldOverview(DocumentHoldOverviewQuery query, CancellationToken ct) =>
+        Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetDocumentHoldOverviewPageDto
+        {
+            Items = query.Page == 1 ? [new GetDocumentHoldOverviewItemDto { DocumentId = document.Id, LineageId = document.Id, Hold = Hold }] : [],
+            Page = query.Page,
+            PageSize = query.PageSize,
+            HasMore = false,
+            IsLineageRestrained = Hold.IsRestraining
+        }));
 }

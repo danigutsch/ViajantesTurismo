@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
@@ -10,6 +11,12 @@ internal sealed class EmptyPaymentInstructionStore : IPaymentInstructionStore
 {
     /// <summary>Returns no document ids.</summary>
     public Task<IReadOnlyList<Guid>> GetDocumentIds(Guid bookingId, CancellationToken ct) => Task.FromResult<IReadOnlyList<Guid>>([]);
+    /// <summary>Returns no document ids and a single empty page.</summary>
+    public Task<(IReadOnlyList<Guid> Items, PageWindow Window)> GetDocumentIdPage(Guid bookingId, int? page, int pageSize, CancellationToken ct) =>
+        Task.FromResult<(IReadOnlyList<Guid>, PageWindow)>(([], PageWindow.Create(page, pageSize, 0)));
+    /// <summary>Returns no document state.</summary>
+    public Task<(long Version, bool IsRetired)?> GetDocumentState(Guid documentId, CancellationToken ct) =>
+        Task.FromResult<(long, bool)?>(null);
     /// <summary>Returns no snapshot.</summary>
     public Task<PaymentInstructionSnapshot?> GetSnapshot(Guid documentId, CancellationToken ct) => Task.FromResult<PaymentInstructionSnapshot?>(null);
     /// <summary>Always throws because the HTTP boundary test must not write.</summary>

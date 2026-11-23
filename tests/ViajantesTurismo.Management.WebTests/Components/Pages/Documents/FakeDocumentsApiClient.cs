@@ -263,15 +263,27 @@ internal sealed class FakeDocumentsApiClient : IDocumentsApiClient
     public Task<HttpOutcome<GetDocumentHoldOverviewPageDto>> ListHoldOverview(DocumentHoldOverviewQuery query, CancellationToken ct)
     {
         OverviewQueries.Add(query);
-        if (OverviewFailure is { } failure)
+        if ((query.DocumentId is null ? OverviewFailure : ListHoldsFailure) is { } failure)
         {
             return Task.FromResult(Failed<GetDocumentHoldOverviewPageDto>(failure));
         }
 
         var page = OverviewHandler?.Invoke(query)
-            ?? new GetDocumentHoldOverviewPageDto { Items = [], Page = query.Page, PageSize = query.PageSize, HasMore = false };
+            ?? (query.DocumentId is { } documentId
+                ? ScopedHoldPage(query, documentId)
+                : new GetDocumentHoldOverviewPageDto { Items = [], Page = query.Page, PageSize = query.PageSize, HasMore = false });
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, page));
     }
+
+    private GetDocumentHoldOverviewPageDto ScopedHoldPage(DocumentHoldOverviewQuery query, Guid documentId) => new()
+    {
+        Items = [.. Holds.Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).Select(hold =>
+            new GetDocumentHoldOverviewItemDto { DocumentId = documentId, LineageId = documentId, Hold = hold })],
+        Page = query.Page,
+        PageSize = query.PageSize,
+        HasMore = Holds.Count > query.Page * query.PageSize,
+        IsLineageRestrained = Holds.Any(hold => hold.IsRestraining)
+    };
 
     private static HttpOutcome<T> Failed<T>(HttpOutcomeKind kind) where T : class =>
         HttpOutcomeMapper.Status<T>(kind, kind == HttpOutcomeKind.Forbidden ? HttpStatusCode.Forbidden : HttpStatusCode.BadRequest);

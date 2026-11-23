@@ -42,6 +42,33 @@ public sealed class PublicContentApiClientTests
         entry.Key.ShouldBe("home.hero");
     }
 
+    [Theory]
+    [InlineData(null, "/api/v1/catalog/public-content-overview")]
+    [InlineData("2", "/api/v1/catalog/public-content-overview?page=2")]
+    [InlineData("2&sort=state", "/api/v1/catalog/public-content-overview?page=2%26sort%3Dstate")]
+    public async Task GetContentPage_requests_the_typed_overview_with_a_single_page_parameter(string? page, string expectedPath)
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            return CatalogToursApiClientTestsHelpers.JsonResponse("""
+                { "items": [{ "key": "PAGE", "publicationState": "Published" }], "total": 25 }
+                """);
+        });
+        var sut = new PublicContentApiClient(httpClient);
+
+        // Act
+        var outcome = await sut.GetContentPage(page, TestContext.Current.CancellationToken);
+
+        // Assert
+        requestPath.ShouldBe(expectedPath);
+        var overview = outcome.Value.ShouldNotBeNull();
+        overview.Total.ShouldBe(25);
+        overview.Items.ShouldHaveSingleItem().ShouldBe(new PublicContentOverviewItemDto("PAGE", "Published"));
+    }
+
     [Fact]
     public async Task GetContent_by_key_returns_null_when_endpoint_returns_not_found()
     {

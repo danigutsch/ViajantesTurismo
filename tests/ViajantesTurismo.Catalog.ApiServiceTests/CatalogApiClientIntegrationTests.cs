@@ -9,6 +9,27 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 [Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiClientIntegrationTests
 {
+    [Theory]
+    [InlineData(null, HttpStatusCode.Unauthorized)]
+    [InlineData("Reader", HttpStatusCode.Forbidden)]
+    public async Task Public_content_overview_requires_catalog_read(string? role, HttpStatusCode expectedStatus)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var factory = CatalogApiTestHost.CreateAnonymous();
+        using var http = factory.CreateClient();
+        if (role is not null)
+        {
+            CatalogApiTestHost.ConfigureAuthenticatedClient(http, role);
+        }
+
+        // Act
+        using var response = await http.GetAsync(new Uri("/api/v1/catalog/public-content-overview", UriKind.Relative), ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(expectedStatus);
+    }
+
     [Fact]
     public async Task Catalog_tours_clients_update_publish_and_unpublish_through_API_host()
     {

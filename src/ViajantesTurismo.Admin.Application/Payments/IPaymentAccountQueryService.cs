@@ -7,6 +7,8 @@ public interface IPaymentAccountQueryService
 {
     /// <summary>Lists masked accounts.</summary>
     Task<IReadOnlyList<GetPaymentAccountDto>> List(CancellationToken ct);
+    /// <summary>Lists one bounded page of masked accounts, optionally limited to verified accounts.</summary>
+    Task<GetPaymentAccountPageDto> ListPage(int? page, int pageSize, bool verifiedOnly, CancellationToken ct);
     /// <summary>Gets a masked account by stable identifier.</summary>
     Task<GetPaymentAccountDto?> GetById(Guid id, CancellationToken ct);
     /// <summary>Gets sensitive details after the API has enforced Admin authorization, recording access before returning.</summary>

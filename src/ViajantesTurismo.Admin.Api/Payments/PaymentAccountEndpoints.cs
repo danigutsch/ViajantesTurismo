@@ -17,6 +17,8 @@ internal static class PaymentAccountEndpoints
         var paymentAccountsGroup = app.MapPaymentAccountsGroup().WithPaymentWorkflowPolicy();
         paymentAccountsGroup.MapGet("/", List).RequireAuthorization(AdminAuthorization.PaymentRead)
             .WithAdminMetadata("ListPaymentAccounts", "Lists masked recipient accounts.", "Lists masked payment accounts.");
+        paymentAccountsGroup.MapGet("/page", ListPage).RequireAuthorization(AdminAuthorization.PaymentRead)
+            .WithAdminMetadata("ListPaymentAccountPage", "Lists masked recipient accounts in stable identifier order, up to 100 per page. Set verifiedOnly to browse verified recipients.", "Lists a page of masked payment accounts.");
         paymentAccountsGroup.MapGet("/{id:guid}", GetById).RequireAuthorization(AdminAuthorization.PaymentRead)
             .WithAdminMetadata("GetPaymentAccount", "Retrieves masked account and revision metadata.", "Retrieves a masked payment account.");
         paymentAccountsGroup.MapGet("/{id:guid}/recipient", GetRecipient).RequireAuthorization(AdminAuthorization.PaymentManage)
@@ -43,6 +45,25 @@ internal static class PaymentAccountEndpoints
 
     private static async Task<Ok<IReadOnlyList<GetPaymentAccountDto>>> List([FromServices] IPaymentAccountQueryService queries, CancellationToken ct) =>
         TypedResults.Ok(await queries.List(ct));
+
+    private static async Task<Results<Ok<GetPaymentAccountPageDto>, ValidationProblem>> ListPage(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        [FromQuery] bool? verifiedOnly,
+        [FromServices] IPaymentAccountQueryService queries,
+        CancellationToken ct)
+    {
+        var size = pageSize ?? ContractConstants.DefaultPaymentAccountPageSize;
+        if (size is < 1 or > ContractConstants.MaxPaymentAccountPageSize)
+        {
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["pageSize"] = [$"Page size must be between 1 and {ContractConstants.MaxPaymentAccountPageSize}."]
+            });
+        }
+
+        return TypedResults.Ok(await queries.ListPage(page, size, verifiedOnly is true, ct));
+    }
 
     private static async Task<Results<Ok<GetPaymentAccountDto>, NotFound>> GetById(Guid id, [FromServices] IPaymentAccountQueryService queries, CancellationToken ct)
     {

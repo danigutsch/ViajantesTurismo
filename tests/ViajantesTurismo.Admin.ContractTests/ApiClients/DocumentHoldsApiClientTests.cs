@@ -127,10 +127,35 @@ public sealed class DocumentHoldsApiClientTests
         var outcome = await sut.ListHoldOverview(new DocumentHoldOverviewQuery("OverdueReview", "LegalClaim", null, 2, 10), TestContext.Current.CancellationToken);
 
         // Assert
-        captured!.RequestUri!.PathAndQuery.ShouldBe("/api/v1/documents/holds?state=OverdueReview&basis=LegalClaim&page=2&pageSize=10");
-        outcome.Value!.HasMore.ShouldBeTrue();
-        outcome.Value.Items.Count.ShouldBe(2);
-        outcome.Value.Items[0].DocumentId.ShouldBe(Guid.Parse("55555555-5555-5555-5555-555555555555"));
-        outcome.Value.Items[1].DocumentId.ShouldBeNull();
+        var requestUri = captured.ShouldNotBeNull().RequestUri.ShouldNotBeNull();
+        var page = outcome.Value.ShouldNotBeNull();
+        requestUri.PathAndQuery.ShouldBe("/api/v1/documents/holds?state=OverdueReview&basis=LegalClaim&page=2&pageSize=10");
+        page.HasMore.ShouldBeTrue();
+        page.IsLineageRestrained.ShouldBeNull();
+        page.Items.Count.ShouldBe(2);
+        page.Items[0].DocumentId.ShouldBe(Guid.Parse("55555555-5555-5555-5555-555555555555"));
+        page.Items[1].DocumentId.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Lineage_overview_sends_the_document_ID_and_reads_the_scope_wide_restraining_state()
+    {
+        // Arrange
+        var documentId = Guid.CreateVersion7();
+        string? uri = null;
+        using var httpClient = ContractHttpClientTestHelper.CreateClient(request =>
+        {
+            uri = request.RequestUri?.PathAndQuery;
+            return ContractHttpClientTestHelper.JsonResponse(
+                """{"items":[],"page":2,"pageSize":25,"hasMore":false,"isLineageRestrained":true}""");
+        });
+        var sut = new DocumentsApiClient(httpClient);
+
+        // Act
+        var result = await sut.ListHoldOverview(new DocumentHoldOverviewQuery(Page: 2) { DocumentId = documentId }, TestContext.Current.CancellationToken);
+
+        // Assert
+        uri.ShouldBe($"/api/v1/documents/holds?documentId={documentId:D}&page=2&pageSize=25");
+        result.Value.ShouldNotBeNull().IsLineageRestrained.ShouldBe(true);
     }
 }

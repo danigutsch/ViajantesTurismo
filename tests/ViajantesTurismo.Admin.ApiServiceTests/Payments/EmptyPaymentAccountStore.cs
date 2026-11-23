@@ -1,3 +1,4 @@
+using PandaBear.BuildingBlocks;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
@@ -10,6 +11,9 @@ internal sealed class EmptyPaymentAccountStore : IPaymentAccountStore
     public Task<PaymentAccount?> GetById(Guid id, CancellationToken ct) => Task.FromResult<PaymentAccount?>(null);
     /// <summary>Returns no accounts.</summary>
     public Task<IReadOnlyList<PaymentAccount>> List(CancellationToken ct) => Task.FromResult<IReadOnlyList<PaymentAccount>>([]);
+    /// <inheritdoc />
+    public Task<(IReadOnlyList<PaymentAccount> Items, PageWindow Window)> ListPage(int? page, int pageSize, bool verifiedOnly, CancellationToken ct) =>
+        Task.FromResult<(IReadOnlyList<PaymentAccount>, PageWindow)>(([], PageWindow.Create(page, pageSize, 0)));
     /// <summary>Always throws because the HTTP boundary test must not persist.</summary>
     public Task Save(PaymentAccount account, CancellationToken ct) => throw new InvalidOperationException("Unexpected persistence in HTTP boundary test.");
     /// <summary>Always throws because the HTTP boundary test must not audit.</summary>

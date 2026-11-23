@@ -800,6 +800,46 @@
         ]
       }
     },
+    "/api/v1/catalog/public-content-overview": {
+      "get": {
+        "tags": [
+          "ViajantesTurismo.Catalog.Api"
+        ],
+        "operationId": "GetPublicContentOverviewPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicContentOverviewPageDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/catalog/public-content/{key}": {
       "get": {
         "tags": [
@@ -1979,6 +2019,44 @@
           },
           "publicationState": {
             "type": "string"
+          }
+        }
+      },
+      "PublicContentOverviewItemDto": {
+        "required": [
+          "key",
+          "publicationState"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "publicationState": {
+            "type": "string"
+          }
+        }
+      },
+      "PublicContentOverviewPageDto": {
+        "required": [
+          "items",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicContentOverviewItemDto"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },

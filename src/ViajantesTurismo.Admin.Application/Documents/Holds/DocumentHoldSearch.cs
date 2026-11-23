@@ -12,6 +12,18 @@ namespace ViajantesTurismo.Admin.Application.Documents.Holds;
 /// <param name="Now">The instant against which a review date is overdue. The Active, OverdueReview and Released states are disjoint.</param>
 public sealed record DocumentHoldSearch(DocumentHoldState? State, HoldBasis? Basis, DateTimeOffset? ReleasedSince, DateTimeOffset Now)
 {
+    /// <summary>Limits the search to this hold scope when supplied.</summary>
+    public DispositionScope? Scope
+    {
+        get; init;
+    }
+
+    /// <summary>Limits the search to holds restraining disposition at the search instant.</summary>
+    public bool RestrainingOnly
+    {
+        get; init;
+    }
+
     /// <summary>Applies the filters and the stable order, oldest placement first and then by identifier.</summary>
     /// <param name="holds">The holds to search.</param>
     /// <returns>The matching holds in a stable order.</returns>
@@ -36,6 +48,17 @@ public sealed record DocumentHoldSearch(DocumentHoldState? State, HoldBasis? Bas
         if (ReleasedSince is { } since)
         {
             filtered = filtered.Where(hold => hold.ReleasedAt >= since);
+        }
+
+        if (Scope is { } scope)
+        {
+            filtered = filtered.Where(hold => hold.Scope == scope);
+        }
+
+        if (RestrainingOnly)
+        {
+            filtered = filtered.Where(hold => hold.ReleasedAt == null && hold.EffectiveFrom <= now
+                && (hold.ExpiresAt == null || now < hold.ExpiresAt));
         }
 
         return filtered.OrderBy(hold => hold.PlacedAt).ThenBy(hold => hold.Id);

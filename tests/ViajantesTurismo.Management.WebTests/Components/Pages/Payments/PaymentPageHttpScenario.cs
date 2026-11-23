@@ -1,4 +1,8 @@
 using System.Net;
+using System.Globalization;
+using System.Text.Json;
+using Microsoft.AspNetCore.WebUtilities;
+using PandaBear.BuildingBlocks;
 using PandaBear.Testing.Http;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
@@ -65,9 +69,63 @@ internal sealed class PaymentPageHttpScenario : IDisposable
                 : "{\"bookingId\":\"11111111-1111-1111-1111-111111111111\",\"resourceId\":\"22222222-2222-2222-2222-222222222222\"}";
             return HttpResponseFactory.Json(response, SubmissionStatus);
         }
+        const string accountPrefix = "/api/v1/payment-accounts/";
+        if (path.StartsWith(accountPrefix, StringComparison.Ordinal) && Guid.TryParse(path.AsSpan(accountPrefix.Length), out var accountId))
+        {
+            var account = ReadAccounts().SingleOrDefault(item => item.Id == accountId);
+            return account is null
+                ? HttpResponseFactory.Json("{}", HttpStatusCode.NotFound)
+                : HttpResponseFactory.Json(JsonSerializer.Serialize(account, PaymentAccountContractJsonContext.Default.GetPaymentAccountDto), ReadStatus);
+        }
+
         var json = path.EndsWith("/finances", StringComparison.Ordinal) || path.EndsWith("/finances/", StringComparison.Ordinal) || path.EndsWith("/details", StringComparison.Ordinal) ? FinancialHistory
+            : path.EndsWith("/payment-instructions/page", StringComparison.Ordinal) ? PageInstructions(request.Message.RequestUri?.Query ?? string.Empty)
             : path.Contains("payment-instructions", StringComparison.Ordinal) ? Instructions
+            : string.Equals(path, "/api/v1/payment-accounts/page", StringComparison.Ordinal) ? PageAccounts(request.Message.RequestUri?.Query ?? string.Empty)
             : path.EndsWith("/recipient", StringComparison.Ordinal) ? Recipient : Accounts;
         return HttpResponseFactory.Json(json, ReadStatus);
     }
+
+    private string PageInstructions(string queryString)
+    {
+        var query = QueryHelpers.ParseQuery(queryString);
+        var page = int.Parse(query["page"].ToString(), CultureInfo.InvariantCulture);
+        var pageSize = int.Parse(query["pageSize"].ToString(), CultureInfo.InvariantCulture);
+        var json = PaymentFinancialContractJsonContext.Default;
+        var revisions = JsonSerializer.Deserialize(Instructions, json.IReadOnlyListGetPaymentInstructionDto) ?? [];
+        var window = PageWindow.Create(page, pageSize, revisions.Count);
+        var result = new GetPaymentInstructionPageDto
+        {
+            Items = [.. revisions.OrderByDescending(item => item.Document.Revision).ThenBy(item => item.Document.Id).Skip(window.Skip).Take(window.Take)],
+            Page = window.Page,
+            PageSize = window.PageSize,
+            Total = window.Total
+        };
+        return JsonSerializer.Serialize(result, json.GetPaymentInstructionPageDto);
+    }
+
+    private string PageAccounts(string queryString)
+    {
+        var query = QueryHelpers.ParseQuery(queryString);
+        var page = int.Parse(query["page"].ToString(), CultureInfo.InvariantCulture);
+        var pageSize = int.Parse(query["pageSize"].ToString(), CultureInfo.InvariantCulture);
+        var verifiedOnly = bool.TryParse(query.GetValueOrDefault("verifiedOnly").ToString(), out var verified) && verified;
+        var json = PaymentAccountContractJsonContext.Default;
+        var matching = ReadAccounts()
+            .Where(account => !verifiedOnly || account.Status == PaymentAccountStatusDto.Verified)
+            .OrderBy(account => account.Id)
+            .ToArray();
+        var window = PageWindow.Create(page, pageSize, matching.Length);
+        var result = new GetPaymentAccountPageDto
+        {
+            Items = [.. matching.Skip(window.Skip).Take(window.Take)],
+            Page = window.Page,
+            PageSize = window.PageSize,
+            Total = window.Total
+        };
+        return JsonSerializer.Serialize(result, json.GetPaymentAccountPageDto);
+    }
+
+    private IReadOnlyList<GetPaymentAccountDto> ReadAccounts() =>
+        JsonSerializer.Deserialize(Accounts, PaymentAccountContractJsonContext.Default.IReadOnlyListGetPaymentAccountDto) ?? [];
 }
