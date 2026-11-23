@@ -23,10 +23,9 @@ internal static class DocumentEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var documentsGroup = app.MapDocumentsGroup();
+        var documentsGroup = app.MapDocumentsGroup().ObserveDocumentOperations();
 
         documentsGroup.MapPost("/bookings/{bookingId:guid}/contract-drafts", GenerateContractDraft)
-            .ObserveDocumentOperation(DocumentOperation.Generate)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>(StatusCodes.Status201Created)
@@ -37,14 +36,12 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("GenerateDocumentContractDraft", "Generates the server-selected contract draft for an eligible booking.", "Generates a contract draft.");
 
         documentsGroup.MapGet("/{id:guid}", GetDocumentById)
-            .ObserveDocumentOperation(DocumentOperation.Preview)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .WithAdminMetadata("GetDocumentById", "Retrieves one generated document revision.", "Retrieves a document.");
 
         documentsGroup.MapPost("/{id:guid}/review", BeginReview)
-            .ObserveDocumentOperation(DocumentOperation.Review)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -53,7 +50,6 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("BeginDocumentReview", "Starts or resumes staff review of a document draft.", "Starts document review.");
 
         documentsGroup.MapPost("/{id:guid}/changes-requested", RequestChanges)
-            .ObserveDocumentOperation(DocumentOperation.RequestChanges)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -62,7 +58,6 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("RequestDocumentChanges", "Records requested changes for a document draft.", "Requests document changes.");
 
         documentsGroup.MapPost("/{id:guid}/changes-acknowledged", AcknowledgeChanges)
-            .ObserveDocumentOperation(DocumentOperation.AcknowledgeChanges)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -71,7 +66,6 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("AcknowledgeDocumentChanges", "Acknowledges the source or template changes of a regenerated document draft so it can be approved.", "Acknowledges document changes.");
 
         documentsGroup.MapPatch("/{id:guid}/fields/{fieldId}", UpdateField)
-            .ObserveDocumentOperation(DocumentOperation.UpdateField)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -81,7 +75,6 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("UpdateDocumentField", "Updates one staff-editable document field.", "Updates a document field.");
 
         documentsGroup.MapPost("/{id:guid}/approve", Approve)
-            .ObserveDocumentOperation(DocumentOperation.Approve)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -90,7 +83,6 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("ApproveDocument", "Approves a document draft for finalization.", "Approves a document.");
 
         documentsGroup.MapPost("/{id:guid}/finalize", FinalizeDocument)
-            .ObserveDocumentOperation(DocumentOperation.Finalize)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -99,7 +91,6 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("FinalizeDocument", "Finalizes and seals a document artifact.", "Finalizes a document.");
 
         documentsGroup.MapPost("/{id:guid}/regenerate", Regenerate)
-            .ObserveDocumentOperation(DocumentOperation.Regenerate)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -110,7 +101,6 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("RegenerateDocument", "Creates a replacement document revision from current source data.", "Regenerates a document.");
 
         documentsGroup.MapPost("/{id:guid}/void", Void)
-            .ObserveDocumentOperation(DocumentOperation.Void)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<GetDocumentDto>()
@@ -119,7 +109,6 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("VoidDocument", "Voids a document using the server-defined administrative reason code.", "Voids a document.");
 
         documentsGroup.MapGet("/{id:guid}/download", DownloadFinalizedArtifact)
-            .ObserveDocumentOperation(DocumentOperation.Download)
             .RequireAuthorization(AdminAuthorization.DocumentManage)
             .Produces<Stream>(StatusCodes.Status200OK, contentType: "text/html")
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
@@ -127,6 +116,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("DownloadDocumentArtifact", "Downloads a finalized document artifact through a mediated response.", "Downloads a document artifact.");
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Generate)]
     private static async Task<IResult> GenerateContractDraft(
         [FromRoute] Guid bookingId,
         [Required, FromHeader(Name = IdempotencyKeyHeader.Name)] string? idempotencyKeyHeader,
@@ -163,6 +153,7 @@ internal static class DocumentEndpoints
             : TypedResults.Created($"/api/v1/documents/{document.Id}", document);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Preview)]
     private static async Task<IResult> GetDocumentById(
         [FromRoute] Guid id,
         [FromServices] IDocumentQueryService queryService,
@@ -198,6 +189,7 @@ internal static class DocumentEndpoints
         return successfulAudit.IsFailure ? ToError(successfulAudit) : TypedResults.Ok(document);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Review)]
     private static async Task<IResult> BeginReview(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -218,6 +210,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.RequestChanges)]
     private static async Task<IResult> RequestChanges(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -238,6 +231,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.AcknowledgeChanges)]
     private static async Task<IResult> AcknowledgeChanges(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -258,6 +252,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.UpdateField)]
     private static async Task<IResult> UpdateField(
         [FromRoute] Guid id,
         [FromRoute] string fieldId,
@@ -282,6 +277,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Approve)]
     private static async Task<IResult> Approve(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -302,6 +298,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Finalize)]
     private static async Task<IResult> FinalizeDocument(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -322,6 +319,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Regenerate)]
     private static async Task<IResult> Regenerate(
         [FromRoute] Guid id,
         [Required, FromHeader(Name = IdempotencyKeyHeader.Name)] string? idempotencyKeyHeader,
@@ -353,6 +351,7 @@ internal static class DocumentEndpoints
         return document is null ? ToError(DocumentErrors.DocumentNotFound()) : TypedResults.Ok(document);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Void)]
     private static async Task<IResult> Void(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -373,6 +372,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Download)]
     private static async Task<IResult> DownloadFinalizedArtifact(
         [FromRoute] Guid id,
         [FromServices] GetFinalizedDocumentArtifactHandler handler,

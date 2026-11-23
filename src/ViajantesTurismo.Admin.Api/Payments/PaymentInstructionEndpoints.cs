@@ -16,52 +16,46 @@ internal static class PaymentInstructionEndpoints
     /// <summary>Maps the payment instruction endpoints under the payment workflow policy.</summary>
     public static void MapPaymentInstructionEndpoints(this WebApplication app)
     {
-        var documentsGroup = app.MapDocumentsGroup().WithPaymentWorkflowPolicy();
+        var documentsGroup = app.MapDocumentsGroup().WithPaymentWorkflowPolicy().ObserveDocumentOperations();
         documentsGroup.MapGet("/bookings/{bookingId:guid}/payment-instructions", List).RequireAuthorization(AdminAuthorization.PaymentManage)
             .WithAdminMetadata("ListBookingPaymentInstructions", "Lists retained protected payment instruction revisions.", "Lists booking payment instructions.");
         documentsGroup.MapGet("/{id:guid}/payment-instructions", Read).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .ObserveDocumentOperation(DocumentOperation.Preview)
             .WithAdminMetadata("GetPaymentInstructions", "Retrieves masked generated instruction fields and approval metadata.", "Retrieves payment instructions.");
         documentsGroup.MapPost("/bookings/{bookingId:guid}/payment-instructions", Generate).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .ObserveDocumentOperation(DocumentOperation.Generate)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithAdminMetadata("GeneratePaymentInstructions", "Generates a new immutable protected instruction draft.", "Generates payment instructions.");
         documentsGroup.MapPost("/bookings/{bookingId:guid}/payment-instructions/{id:guid}/regenerate", Regenerate).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .ObserveDocumentOperation(DocumentOperation.Regenerate)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .WithAdminMetadata("RegeneratePaymentInstructions", "Creates an immutable replacement from current approved sources.", "Regenerates payment instructions.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/approve", ApprovePaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .ObserveDocumentOperation(DocumentOperation.Approve)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("ApprovePaymentInstructions", "Executes a confirmed, revision-preconditioned ApprovePaymentInstructions operation.", "ApprovePaymentInstructions operation.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/finalize", FinalizePaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .ObserveDocumentOperation(DocumentOperation.Finalize)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("FinalizePaymentInstructions", "Executes a confirmed, revision-preconditioned FinalizePaymentInstructions operation.", "FinalizePaymentInstructions operation.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/withdraw-approval", WithdrawPaymentInstructionApproval).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .ObserveDocumentOperation(DocumentOperation.WithdrawApproval)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("WithdrawPaymentInstructionApproval", "Executes a confirmed, revision-preconditioned WithdrawPaymentInstructionApproval operation.", "WithdrawPaymentInstructionApproval operation.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/void", VoidPaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .ObserveDocumentOperation(DocumentOperation.Void)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("VoidPaymentInstructions", "Executes a confirmed, revision-preconditioned VoidPaymentInstructions operation.", "VoidPaymentInstructions operation.");
         documentsGroup.MapPost("/{id:guid}/payment-instructions/review", ReviewPaymentInstructions).RequireAuthorization(AdminAuthorization.PaymentManage)
-            .ObserveDocumentOperation(DocumentOperation.Review)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .WithAdminMetadata("ReviewPaymentInstructions", "Executes a confirmed, revision-preconditioned ReviewPaymentInstructions operation.", "ReviewPaymentInstructions operation.");
     }
 
     private static async Task<Ok<IReadOnlyList<GetPaymentInstructionDto>>> List(Guid bookingId, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct) => TypedResults.Ok(await workflow.ListForBooking(bookingId, ct));
 
+    [ObserveDocumentOperation(DocumentOperation.Preview)]
     private static async Task<Results<Ok<GetPaymentInstructionDto>, NotFound>> Read(Guid id, [FromServices] PaymentInstructionWorkflow workflow, CancellationToken ct)
     {
         var instruction = await workflow.GetById(id, ct);
         return instruction is null ? TypedResults.NotFound() : TypedResults.Ok(instruction);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Generate)]
     private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Generate(Guid bookingId, [FromBody] GeneratePaymentInstructionsDto input, [FromServices] ISender sender, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
@@ -78,6 +72,7 @@ internal static class PaymentInstructionEndpoints
         return await RespondCreated(result, workflow, ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Regenerate)]
     private static async Task<Results<Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>> Regenerate(Guid bookingId, Guid id, [FromBody] GeneratePaymentInstructionsDto input, [FromServices] ISender sender, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
@@ -94,6 +89,7 @@ internal static class PaymentInstructionEndpoints
         return await RespondCreated(result, workflow, ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Approve)]
     private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ApprovePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
@@ -110,6 +106,7 @@ internal static class PaymentInstructionEndpoints
         return await Respond(result, workflow, ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Finalize)]
     private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> FinalizePaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
@@ -126,6 +123,7 @@ internal static class PaymentInstructionEndpoints
         return await Respond(result, workflow, ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.WithdrawApproval)]
     private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> WithdrawPaymentInstructionApproval(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
@@ -142,6 +140,7 @@ internal static class PaymentInstructionEndpoints
         return await Respond(result, workflow, ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Void)]
     private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> VoidPaymentInstructions(Guid id, [FromBody] UpdatePaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();
@@ -158,6 +157,7 @@ internal static class PaymentInstructionEndpoints
         return await Respond(result, workflow, ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Review)]
     private static async Task<Results<Ok<GetPaymentInstructionDto>, Created<GetPaymentInstructionDto>, NotFound<ProblemDetails>, Conflict<ProblemDetails>, ValidationProblem, UnauthorizedHttpResult>> ReviewPaymentInstructions(Guid id, [FromBody] ReviewPaymentInstructionsDto input, [FromServices] PaymentInstructionWorkflow workflow, HttpContext context, CancellationToken ct)
     {
         var actorId = context.User.GetSubjectId();

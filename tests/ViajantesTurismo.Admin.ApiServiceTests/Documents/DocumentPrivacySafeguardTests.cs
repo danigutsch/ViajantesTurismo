@@ -226,6 +226,28 @@ public sealed class DocumentPrivacySafeguardTests
     }
 
     [Fact]
+    public async Task Disabled_payment_workflow_does_not_record_a_document_operation()
+    {
+        // Arrange
+        await using var factory = AdminApiTestHost.Create(configureConfiguration: configuration => configuration["Payments:Enabled"] = "false");
+        using var client = factory.CreateClient();
+        AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
+        using var metrics = AdminApiTestHost.RecordMetrics(factory);
+        using var traces = AdminApiTestHost.RecordDocumentTraces(factory);
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri($"/api/v1/documents/{Guid.CreateVersion7()}/payment-instructions", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        DocumentNoStoreHeaders.ArePresent(response).ShouldBeTrue();
+        metrics.Counters("admin.document.operation").ShouldBeEmpty();
+        traces.DocumentOperations().ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Unhandled_document_exception_overrides_unsafe_cache_headers_with_no_store()
     {
         // Arrange

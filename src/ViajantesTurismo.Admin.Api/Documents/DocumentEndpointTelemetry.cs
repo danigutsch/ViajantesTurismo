@@ -1,3 +1,4 @@
+using System.Reflection;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.Admin.Api.Documents;
@@ -7,14 +8,29 @@ internal static class DocumentEndpointTelemetry
 {
     private static readonly object CorrelationKey = new();
 
-    /// <summary>Measures the workflow, including service failures, before handing off its response.</summary>
-    public static RouteHandlerBuilder ObserveDocumentOperation(this RouteHandlerBuilder builder, DocumentOperation operation)
+    /// <summary>Measures the annotated workflows in the group before handing off their responses.</summary>
+    public static RouteGroupBuilder ObserveDocumentOperations(this RouteGroupBuilder group)
     {
-        return builder.AddEndpointFilter((context, next) =>
+        ArgumentNullException.ThrowIfNull(group);
+
+        var telemetry = ((IEndpointRouteBuilder)group).ServiceProvider.GetService<DocumentOperationTelemetry>();
+        if (telemetry is null)
         {
-            var http = context.HttpContext;
-            var telemetry = http.RequestServices.GetRequiredService<DocumentOperationTelemetry>();
-            return telemetry.Record(operation, GetCorrelationId(http), () => next(context), Classify, http.RequestAborted);
+            return group;
+        }
+
+        return group.AddEndpointFilterFactory((factory, next) =>
+        {
+            if (factory.MethodInfo.GetCustomAttribute<ObserveDocumentOperationAttribute>() is not { Operation: var operation })
+            {
+                return next;
+            }
+
+            return context =>
+            {
+                var http = context.HttpContext;
+                return telemetry.Record(operation, GetCorrelationId(http), () => next(context), Classify, http.RequestAborted);
+            };
         });
     }
 
