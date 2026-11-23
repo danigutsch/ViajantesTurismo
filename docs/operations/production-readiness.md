@@ -51,6 +51,30 @@ Production policy:
 - Keep backend APIs internal in production where the hosting platform supports private service networking.
 - Treat a failing `/health` after deployment as a failed promotion until triaged.
 
+## Planned maintenance
+
+Set `Maintenance__Enabled=true` on the HTTP services in the maintenance window, then restart or
+redeploy those services with the updated configuration. The switch defaults to `false`, and an
+invalid Boolean prevents the affected host from starting. Restore `false` and restart or redeploy
+to reopen a service after the work is complete.
+
+| Surface | Maintenance response |
+| --- | --- |
+| Admin API and Catalog API | Eligible requests receive `503` Problem Details with `Cache-Control: no-store`. API authorization still applies to protected routes. |
+| Management Web and Public Web | HTTPS requests receive a standalone `503` page with `Cache-Control: no-store`. The page works without sign-in, downstream HTTP calls, or assets. |
+| `/health` | `503 Unhealthy` with the usual status-only body. Probe a service instance directly when ingress has removed it from rotation. |
+| `/alive` | Continues to report process liveness. Use this endpoint for restart probes so planned maintenance does not trigger recovery loops. |
+| Migration service and background workers | Continue their configured workload. Drain or stop workers separately if the procedure requires quiescent databases or queues. |
+
+Readiness failure may cause ingress to return its own `503`. Verify the actual external response
+alongside direct health probes before the window when a maintenance page must reach visitors.
+[ASP.NET Core health checks](https://learn.microsoft.com/aspnet/core/host-and-deploy/health-checks).
+
+To rehearse locally, run `Maintenance__Enabled=true dotnet tool run aspire run`. The local AppHost
+propagates the switch to all four HTTP services and lets the web processes start once their API
+processes start. Database and migration ordering still applies. Restart without the switch and
+verify `/health` and the ordinary browser or API responses before ending the rehearsal.
+
 ## Smoke-test strategy
 
 Run smoke checks after deployment and before promotion. Checks must be read-only unless a future

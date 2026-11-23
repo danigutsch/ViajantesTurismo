@@ -24,7 +24,7 @@ endpoints and credentials and applies the approved network and data topology.
 
 | Service | Available integration and evaluation path |
 | --- | --- |
-| YARP | Evaluate official `Aspire.Hosting.Yarp` for the edge. Compare it with an ASP.NET Core project resource when the edge needs application-owned middleware or routes. [Aspire gallery](https://aspire.dev/integrations/gallery/) |
+| YARP | Defer an application-owned edge until the deployment target supplies a routing requirement. [Edge routing decision](#edge-routing-decision) |
 | Ollama | Evaluate `CommunityToolkit.Aspire.Hosting.Ollama` and its client integration in an opt-in local profile. Keep model selection, prompts, and data eligibility with the owning application. [Ollama integration](https://aspire.dev/integrations/ai/ollama/ollama-get-started/) |
 | FusionCache and backing cache | Keep FusionCache configuration in the consuming runtime. The existing official Redis resource can provide a local distributed cache and backplane when the evaluation warrants them. [Redis integration](https://aspire.dev/integrations/caching/redis/redis-get-started/), [FusionCache setup](https://github.com/ZiggyCreatures/FusionCache/blob/main/docs/StepByStep.md) |
 | NoSQL | Compare the current PostgreSQL model and its projections first. If a concrete flow needs a document store, evaluate the official MongoDB and Azure Cosmos DB integrations against that flow's consistency, operations, and privacy needs. [Aspire gallery](https://aspire.dev/integrations/gallery/) |
@@ -76,6 +76,33 @@ pinning `8.0.2`, the patched version in that line. [Advisory](https://github.com
   Exercise the supported fixture profile and check the published model for development-only
   resources and credentials before enabling production wiring.
   [AppHost CI smoke evidence](https://github.com/danigutsch/ViajantesTurismo/actions/runs/45019870472/job/137200452961)
+
+## Edge routing decision
+
+Keep AppHost's direct frontend endpoints for local development. The production target will determine
+whether platform ingress can fulfill the same routing requirements. Defer an application-owned YARP
+gateway until a deployment needs a route policy, release strategy, or destination change that platform
+ingress cannot supply. [Deployment and promotion model](../operations/production-readiness.md#deployment-and-promotion-model)
+
+| Traffic | Destination and boundary |
+| --- | --- |
+| Public site, tours, galleries, sitemap, and rendition requests | Public Web on its own host name. Public Web owns visitor admission and service-to-service propagation to Catalog. |
+| Staff pages, sign-in and sign-out, and private previews | Management Web on its own host name. Keep the OIDC callback origin and cookie boundary with that service. |
+| Admin, Catalog, and Branding API calls | The private endpoints used by the intended frontend and worker clients. Keep the existing credentials, service discovery, API permissions, and request limits. |
+| Liveness and readiness probes | The owning resource's `/alive` and `/health` endpoints. Supply the selected ingress or orchestrator with only the required health reachability. |
+
+Per-service auth, CORS, security headers, and limits stay with their current owners. Any new edge
+must retain the trusted-hop and forwarding depth policy for each consumer. Keep visit quotas and
+deployment admission separate so an added proxy cannot change visitor isolation. Gateway business
+logic and consolidation of the two frontend host names are outside this decision.
+[Forwarding boundaries](../operations/public-visitor-deployment-validation.md#forwarding-boundaries)
+
+If the selected deployment needs an application-owned edge, first trial the matching official
+`Aspire.Hosting.Yarp` integration with AppHost references and health checks. An ASP.NET Core project
+resource using `Yarp.ReverseProxy` is the supported alternative for application-owned middleware.
+External ingress destinations are deployment configuration. A trial must cover forwarding from each
+frontend hostname, OIDC redirects, private API reachability, failed downstream health, and visitor
+isolation before enabling any new route. [Aspire YARP integration](https://learn.microsoft.com/en-us/dotnet/aspire/proxies/yarp-integration)
 
 ## Data-store evaluation
 

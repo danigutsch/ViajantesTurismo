@@ -39,6 +39,7 @@ builder.Services.AddCatalogWorkflows();
 builder.Services.AddHttpClient<IBrandingManagementClient, BrandingManagementClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
     .AddTokenExchangeHandler(ApiAudienceNames.Branding, scope: ApiAudienceNames.Branding);
 
+var maintenanceEnabled = builder.AddHttpMaintenanceReadiness();
 var app = builder.Build();
 
 app.UseForwardedHeaders();
@@ -52,6 +53,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseManagementWebSecurityHeaders();
+app.UseHttpMaintenance(maintenanceEnabled, browser: true);
 
 app.UseAuthentication();
 app.UseAuthorization();

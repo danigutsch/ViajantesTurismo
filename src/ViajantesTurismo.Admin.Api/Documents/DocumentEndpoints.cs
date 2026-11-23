@@ -9,6 +9,7 @@ using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Domain.Documents;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.Admin.Api.Documents;
 
@@ -22,7 +23,7 @@ internal static class DocumentEndpoints
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var documentsGroup = app.MapDocumentsGroup();
+        var documentsGroup = app.MapDocumentsGroup().ObserveDocumentOperations();
 
         documentsGroup.MapPost("/bookings/{bookingId:guid}/contract-drafts", GenerateContractDraft)
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
@@ -115,6 +116,7 @@ internal static class DocumentEndpoints
             .WithAdminMetadata("DownloadDocumentArtifact", "Downloads a finalized document artifact through a mediated response.", "Downloads a document artifact.");
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Generate)]
     private static async Task<IResult> GenerateContractDraft(
         [FromRoute] Guid bookingId,
         [Required, FromHeader(Name = IdempotencyKeyHeader.Name)] string? idempotencyKeyHeader,
@@ -151,6 +153,7 @@ internal static class DocumentEndpoints
             : TypedResults.Created($"/api/v1/documents/{document.Id}", document);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Preview)]
     private static async Task<IResult> GetDocumentById(
         [FromRoute] Guid id,
         [FromServices] IDocumentQueryService queryService,
@@ -186,6 +189,7 @@ internal static class DocumentEndpoints
         return successfulAudit.IsFailure ? ToError(successfulAudit) : TypedResults.Ok(document);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Review)]
     private static async Task<IResult> BeginReview(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -206,6 +210,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.RequestChanges)]
     private static async Task<IResult> RequestChanges(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -226,6 +231,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.AcknowledgeChanges)]
     private static async Task<IResult> AcknowledgeChanges(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -246,6 +252,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.UpdateField)]
     private static async Task<IResult> UpdateField(
         [FromRoute] Guid id,
         [FromRoute] string fieldId,
@@ -270,6 +277,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Approve)]
     private static async Task<IResult> Approve(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -290,6 +298,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Finalize)]
     private static async Task<IResult> FinalizeDocument(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -310,6 +319,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Regenerate)]
     private static async Task<IResult> Regenerate(
         [FromRoute] Guid id,
         [Required, FromHeader(Name = IdempotencyKeyHeader.Name)] string? idempotencyKeyHeader,
@@ -341,6 +351,7 @@ internal static class DocumentEndpoints
         return document is null ? ToError(DocumentErrors.DocumentNotFound()) : TypedResults.Ok(document);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Void)]
     private static async Task<IResult> Void(
         [FromRoute] Guid id,
         [FromServices] ISender sender,
@@ -361,6 +372,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
+    [ObserveDocumentOperation(DocumentOperation.Download)]
     private static async Task<IResult> DownloadFinalizedArtifact(
         [FromRoute] Guid id,
         [FromServices] GetFinalizedDocumentArtifactHandler handler,
@@ -525,7 +537,7 @@ internal static class DocumentEndpoints
             ct);
     }
 
-    /// <summary>Creates the trusted audit context from the authenticated subject and a new correlation identifier.</summary>
+    /// <summary>Creates the trusted audit context with the request's server-generated correlation identifier.</summary>
     internal static DocumentAuditContext CreateAuditContext(HttpContext httpContext)
     {
         var actorId = httpContext.User.GetSubjectId();
@@ -534,7 +546,7 @@ internal static class DocumentEndpoints
             throw new InvalidOperationException("Document operations require an authenticated subject identifier.");
         }
 
-        var auditContextResult = DocumentAuditContext.Create(actorId, Guid.CreateVersion7().ToString("N"));
+        var auditContextResult = DocumentAuditContext.Create(actorId, DocumentEndpointTelemetry.GetCorrelationId(httpContext).ToString("N"));
         if (auditContextResult.IsFailure)
         {
             throw new InvalidOperationException("Document operations require valid audit metadata.");

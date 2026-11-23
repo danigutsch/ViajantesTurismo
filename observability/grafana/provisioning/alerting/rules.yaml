@@ -518,3 +518,42 @@ groups:
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#management-session-ticket-failures
         labels:
           severity: warning
+      - uid: document-operation-failures
+        title: Document operation failures
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "(sum(increase(admin_document_operation_total{document_outcome=\"failed\"}[10m])) or vector(0)) + (sum(admin_document_operation_total{document_outcome=\"failed\"} unless admin_document_operation_total{document_outcome=\"failed\"} offset 10m) or vector(0))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 1m
+        annotations:
+          summary: Admin document operation failed
+          description: An Admin document request or a scheduled retention batch reported an operational failure.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#document-operation-failures
+        labels:
+          severity: warning

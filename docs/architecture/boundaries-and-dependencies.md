@@ -150,6 +150,7 @@ flowchart TB
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Catalog_Contracts_Http[ViajantesTurismo.Catalog.Contracts.Http]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
     ViajantesTurismo_Public_Web[ViajantesTurismo.Public.Web] --> ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults]
+    ViajantesTurismo_ServiceDefaults[ViajantesTurismo.ServiceDefaults] --> ViajantesTurismo_Resources[ViajantesTurismo.Resources]
 ```
 <!-- generated:project-dependencies:end -->
 

@@ -1,4 +1,5 @@
 using PandaBear.AspNetCore;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.AppHost;
 
@@ -28,12 +29,28 @@ internal static class DevelopmentProjectResourceExtensions
         string name)
         where TProject : IProjectMetadata, new()
     {
-        return builder.AddProject<TProject>(name, launchProfileName: null)
+        var project = builder.AddProject<TProject>(name, launchProfileName: null)
             .WithReleasePublishing(builder)
             .WithHttpEndpoint()
             .WithHttpsEndpoint()
             .WithHttpHealthCheckInAppHostEnvironment();
+
+        if (RunsInHttpMaintenance(builder))
+        {
+            project.WithEnvironment(HttpMaintenanceConfiguration.EnabledEnvironmentVariable, "true");
+        }
+
+        return project;
     }
+
+    /// <summary>Waits for a local API process during maintenance so that the dependent web page can report its own status.</summary>
+    public static IResourceBuilder<ProjectResource> WaitForHttpDependency(
+        this IResourceBuilder<ProjectResource> project, IResourceBuilder<ProjectResource> dependency) =>
+        RunsInHttpMaintenance(project.ApplicationBuilder) ? project.WaitForStart(dependency) : project.WaitFor(dependency);
+
+    private static bool RunsInHttpMaintenance(IDistributedApplicationBuilder builder) =>
+        builder.ExecutionContext.IsRunMode &&
+        HttpMaintenanceConfiguration.IsEnabled(builder.Configuration[HttpMaintenanceConfiguration.EnabledKey]);
 
     /// <summary>
     /// Adds a .NET project without launch profile endpoints.

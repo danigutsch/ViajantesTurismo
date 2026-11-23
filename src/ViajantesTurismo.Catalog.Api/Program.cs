@@ -30,6 +30,7 @@ builder.Services.AddCatalogAndBrandingApiSecurity(builder.Configuration, builder
 builder.AddCatalogInfrastructure();
 builder.AddBrandingModule(addOutboxRelay: !OpenApiGenerationMode.IsEnabled(builder.Environment));
 
+var maintenanceEnabled = builder.AddHttpMaintenanceReadiness();
 var app = builder.Build();
 
 app.UseForwardedHeaders();
@@ -43,6 +44,7 @@ app.UseCors(CatalogSecurityBaseline.CorsPolicyName);
 app.UseNoStoreResponses();
 
 app.UseApiSecurity();
+app.UseHttpMaintenance(maintenanceEnabled, browser: false);
 app.UseRateLimiter();
 app.UseApiRequestTimeouts();
 app.UseOutputCache();

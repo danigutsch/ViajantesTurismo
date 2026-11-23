@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
 /// <summary>In-memory document store fake.</summary>
-internal sealed class FakeDocumentStore : IDocumentStore
+internal sealed class FakeDocumentStore(Exception? purgeFailure = null) : IDocumentStore
 {
     /// <summary>Document drafts added through lineages.</summary>
     public List<DocumentDraft> AddedDocuments { get; } = [];
@@ -61,6 +61,11 @@ internal sealed class FakeDocumentStore : IDocumentStore
     /// <summary>Removes expired drafts as of the given time and returns how many were removed.</summary>
     public async Task<DocumentPurgeCounts> PurgeExpiredDrafts(DateTime now, HeldDocumentLineages heldLineages, CancellationToken ct)
     {
+        if (purgeFailure is not null)
+        {
+            throw purgeFailure;
+        }
+
         var candidates = Documents.Values.Where(document => document.IsExpiredDraft(now)).ToArray();
         var held = await heldLineages([.. candidates.Select(document => document.DocumentLineageId).Distinct()], ct);
         var expired = candidates.Where(document => !held.Contains(document.DocumentLineageId)).ToArray();

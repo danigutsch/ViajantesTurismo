@@ -74,6 +74,7 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.T
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.TypeInfoResolverChain.Insert(0, ViajantesTurismo.Admin.Contracts.Application.PaymentFinancialContractJsonContext.Default));
 
+var maintenanceEnabled = builder.AddHttpMaintenanceReadiness();
 var app = builder.Build();
 
 app.UseForwardedHeaders();
@@ -87,6 +88,7 @@ app.UseCors(AdminSecurityBaseline.CorsPolicyName);
 app.UseNoStoreResponses();
 
 app.UseApiSecurity();
+app.UseHttpMaintenance(maintenanceEnabled, browser: false);
 app.UseRateLimiter();
 app.UseApiRequestTimeouts();
 

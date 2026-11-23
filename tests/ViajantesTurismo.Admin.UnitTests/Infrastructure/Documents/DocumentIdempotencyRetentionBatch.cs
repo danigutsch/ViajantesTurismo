@@ -17,6 +17,9 @@ internal static class DocumentIdempotencyRetentionBatch
     {
         var clock = new FakeTimeProvider(now);
         var services = new ServiceCollection();
+        services.AddMetrics();
+        services.AddLogging();
+        services.AddSingleton<DocumentOperationTelemetry>();
         services.AddSingleton<IDocumentIdempotencyRetentionStore>(store);
         services.AddSingleton<TimeProvider>(clock);
         services.AddSingleton(new DocumentHoldGate(new FakeDispositionHoldGuard(), new InMemoryDispositionHoldStore(), clock));
@@ -25,7 +28,9 @@ internal static class DocumentIdempotencyRetentionBatch
 
         await using var provider = services.BuildServiceProvider();
         using var job = new DocumentIdempotencyRetentionHostedService(
-            provider.GetRequiredService<IServiceScopeFactory>(), NullLogger<DocumentIdempotencyRetentionHostedService>.Instance);
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            provider.GetRequiredService<DocumentOperationTelemetry>(),
+            NullLogger<DocumentIdempotencyRetentionHostedService>.Instance);
         return await job.RunBatch(ct);
     }
 }

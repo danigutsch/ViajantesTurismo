@@ -112,6 +112,7 @@ public static class InfrastructureDependencyInjection
         builder.Services.TryAddScoped<ICustomerStore, CustomerStore>();
         builder.Services.AddScoped<IDocumentStore, DocumentStore>();
         builder.Services.AddScoped<IDocumentAuditStore, DocumentAuditStore>();
+        builder.Services.AddSingleton<DocumentOperationTelemetry>();
         builder.Services.AddScoped<IDocumentIdempotencyClaimStore, DocumentIdempotencyClaimStore>();
         builder.Services.AddScoped<IAfterRollback<BeginDocumentReviewCommand, Result>, DocumentRejectionRollbackAudit<BeginDocumentReviewCommand, Result>>();
         builder.Services.AddScoped<IAfterRollback<RequestDocumentChangesCommand, Result>, DocumentRejectionRollbackAudit<RequestDocumentChangesCommand, Result>>();

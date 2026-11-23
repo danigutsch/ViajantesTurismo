@@ -23,6 +23,7 @@ use is a removal candidate. Verdicts:
 | `SharedKernel.Mediator` | SharedKernel defaults, `SharedKernel.*` | `mediator` |
 | `ViajantesTurismo.Catalog` | `AddViajantesTurismoTelemetry`, `ViajantesTurismo.*` | `catalog-pipeline`, `media-accessibility`, `operation-health` |
 | `ViajantesTurismo.Admin.CustomerImport` | `AddViajantesTurismoTelemetry`, `ViajantesTurismo.*` | `operation-health` |
+| `ViajantesTurismo.Admin.Documents` | `AddViajantesTurismoTelemetry`, `ViajantesTurismo.*` | `document-operations` |
 | `ViajantesTurismo.Branding` | `AddViajantesTurismoTelemetry`, `ViajantesTurismo.*` | `branding-cache` |
 | `PandaBear.AspNetCore` | SharedKernel defaults, `PandaBear.*` | `http-platform` |
 | `PandaBear.AspNetCore.Authentication.Bff` | SharedKernel defaults, `PandaBear.*`, after approved BFF producer adoption | `operation-health` |
@@ -45,6 +46,7 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 
 | Metric | Meter | Unit | Dimensions | Question answered | Used by | Verdict |
 | --- | --- | --- | --- | --- | --- | --- |
+| `admin.document.operation` | `ViajantesTurismo.Admin.Documents` | count | `document.operation`, `document.outcome` | Which document requests and retention batches succeed, reject, fail, or cancel? | `document-operations`, alert `document-operation-failures` | keep |
 | `migration.database_initialization.duration` | `ViajantesTurismo.MigrationService` | `s` | `migration.outcome` (success, error, cancelled) | Did database initialization finish, and how long did it take? | `platform-smoke`, Recent database initializations and Recent database initialization duration, alert `migration-initialization-failed` | keep |
 | `catalog.integration_event` | `ViajantesTurismo.Catalog` | `{event}` | `catalog.outcome`, event type | Are Admin events handled? | `catalog-pipeline`, alert `catalog-event-errors` | keep |
 | `catalog.idempotency.operation` | `ViajantesTurismo.Catalog` | `{operation}` | idempotency outcome | How many deliveries are duplicates? | `catalog-pipeline` | keep |
@@ -96,6 +98,7 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | ActivitySource | Owner | Verdict |
 | --- | --- | --- |
 | `ViajantesTurismo.Admin.Contracts.Clients` | Admin HTTP contracts | keep |
+| `ViajantesTurismo.Admin.Documents` | Admin document workflows | keep |
 | `ViajantesTurismo.Catalog` | Catalog application | keep |
 | `ViajantesTurismo.MigrationService.DatabaseInitializationWorker` | Migration service | keep |
 | `SharedKernel.Mediator` | SharedKernel Mediator | keep |
@@ -112,6 +115,7 @@ attributes for diagnosis. Keep metric labels bounded independently of those trac
 
 | Span | Source | Attributes | Question answered | Used by | Verdict |
 | --- | --- | --- | --- | --- | --- |
+| `admin.document.operation` | `ViajantesTurismo.Admin.Documents` | operation, outcome, server-generated correlation | Which dependency contributed to a failed document request or retention batch? | Tempo search by `document.correlation` | keep |
 | `mediator.send` | `SharedKernel.Mediator` | request type, handler, pipeline depth, outcome | Which command dispatch is slow or throws? | `traces`, Mediator spans | keep |
 | `mediator.stream` | `SharedKernel.Mediator` | request type, outcome | Admin has no mediator stream dispatch to diagnose. | none | remove |
 | `mediator.publish` | `SharedKernel.Mediator` | notification type, handler count, outcome | Admin has no mediator notification fan-out to diagnose. | none | remove |
@@ -177,6 +181,7 @@ Operational panels use severity and application resource; the owner and event ID
 | `DatabaseInitializationWorkerLogger/4` | Initialization cancelled (information) | none | Did initialization stop on cancellation? | Aspire startup logs | keep |
 | `DocumentRetentionLog/1` | Held documents skipped (information) | retention service, count held | Is an active disposition hold preventing expiry? | `logs`, Recent logs | keep |
 | `DocumentRetentionLog/2` | Unattributed entries kept (warning) | retention service, count unattributed | Is document lineage missing for expired entries? | `logs`, Recent warnings and errors | keep |
+| `DocumentOperationTelemetry/10` | Operation completed (information or error) | operation, outcome, server-generated correlation | Which trace and audit entry explain a failed document operation? | `logs`, Recent logs | keep |
 | `MediaObjectReconciliationService/1` | Orphan deletion failed (warning) | error type | Is a storage failure preventing orphan cleanup? | `logs`, Recent warnings and errors | keep |
 
 Retention events expose service names and aggregate counts. Document lineage and audit data stay

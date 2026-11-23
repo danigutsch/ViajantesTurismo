@@ -1,12 +1,17 @@
+using System.Diagnostics.Metrics;
 using PandaBear.DispositionHold;
 using PandaBear.Mediator;
+using PandaBear.Scheduling;
+using RecordedLog = PandaBear.Testing.Logging.RecordedLog;
+using RecordingLoggerProvider = PandaBear.Testing.Logging.RecordingLoggerProvider;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
+using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 
@@ -24,9 +29,12 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
     {
         this.provider = provider;
         DocumentStore = documentStore;
+        Logs = provider.GetRequiredService<RecordingLoggerProvider>();
+        Metrics = new DocumentOperationMetricCapture(provider.GetRequiredService<IMeterFactory>());
         hostedService = new DocumentDraftRetentionHostedService(
             provider.GetRequiredService<IServiceScopeFactory>(),
-            NullLogger<DocumentDraftRetentionHostedService>.Instance);
+            provider.GetRequiredService<DocumentOperationTelemetry>(),
+            provider.GetRequiredService<ILogger<DocumentDraftRetentionHostedService>>());
     }
 
     /// <summary>
@@ -37,14 +45,31 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
         get;
     }
 
+    /// <summary>Gets metrics from the worker's meter factory.</summary>
+    public DocumentOperationMetricCapture Metrics
+    {
+        get;
+    }
+
+    /// <summary>Gets the log output captured by the fixture.</summary>
+    public RecordingLoggerProvider Logs
+    {
+        get;
+    }
+
     /// <summary>
     /// Creates a fixture whose fake store contains <paramref name="draft"/> and whose clock is fixed at <paramref name="now"/>.
     /// </summary>
-    public static DocumentDraftRetentionHostedServiceFixture Create(DateTimeOffset now, DocumentDraft draft)
+    public static DocumentDraftRetentionHostedServiceFixture Create(DateTimeOffset now, DocumentDraft draft, Exception? purgeFailure = null)
     {
-        var store = new FakeDocumentStore();
+        var store = new FakeDocumentStore(purgeFailure);
         store.Documents.Add(draft.Id, draft);
         var services = new ServiceCollection();
+        services.AddMetrics();
+        services.AddSingleton<DocumentOperationTelemetry>();
+        services.AddSingleton<RecordingLoggerProvider>();
+        services.AddSingleton<ILoggerProvider>(sp => sp.GetRequiredService<RecordingLoggerProvider>());
+        services.AddLogging();
         services.AddSingleton<IDocumentStore>(store);
         services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));
         services.AddSingleton<IReadCommittedTransaction>(new FakeReadCommittedTransaction());
@@ -65,12 +90,50 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
     /// </summary>
     public ValueTask<int> RunBatch(CancellationToken ct) => hostedService.RunBatch(ct);
 
+    /// <summary>Starts and stops the polling worker around one observed scheduled failure.</summary>
+    public async Task<RecordedLog> ObserveScheduledFailure(CancellationToken ct)
+    {
+        var observedFailure = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, recorder) =>
+        {
+            if (instrument.Name == SchedulingTelemetry.MetricPollingFailures)
+            {
+                recorder.EnableMeasurementEvents(instrument);
+            }
+        };
+        listener.SetMeasurementEventCallback<long>((_, _, tags, _) =>
+        {
+            foreach (var tag in tags)
+            {
+                if (tag.Key == SchedulingTelemetry.TagServiceName && Equals(tag.Value, "admin-document-draft-retention"))
+                {
+                    observedFailure.TrySetResult();
+                }
+            }
+        });
+        listener.Start();
+
+        await hostedService.StartAsync(ct);
+        try
+        {
+            await observedFailure.Task.WaitAsync(TimeSpan.FromSeconds(10), ct);
+        }
+        finally
+        {
+            await hostedService.StopAsync(ct);
+        }
+
+        return Logs.Records.Single(record => record.EventId.Name == "LogPollingFailure");
+    }
+
     /// <summary>
     /// Disposes the hosted service and the service provider.
     /// </summary>
     public void Dispose()
     {
         hostedService.Dispose();
+        Metrics.Dispose();
         provider.Dispose();
     }
 
@@ -80,6 +143,7 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
     public async ValueTask DisposeAsync()
     {
         hostedService.Dispose();
+        Metrics.Dispose();
         await provider.DisposeAsync();
     }
 }

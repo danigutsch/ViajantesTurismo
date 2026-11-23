@@ -85,6 +85,38 @@ public sealed class AppHostModelTests
         environment["ASPNETCORE_ENVIRONMENT"].ShouldBe(builder.Environment.EnvironmentName);
     }
 
+    [Theory]
+    [InlineData(ResourceNames.WebApp, ResourceNames.Api)]
+    [InlineData(ResourceNames.WebApp, ResourceNames.CatalogApi)]
+    [InlineData(ResourceNames.PublicWebApp, ResourceNames.CatalogApi)]
+    public async Task Local_maintenance_starts_the_web_page_while_its_API_is_unready(string webName, string apiName)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        var builder = AppHostTestBuilder.Create(new Dictionary<string, string?>
+        {
+            [HttpMaintenanceConfiguration.EnabledKey] = "true"
+        });
+
+        // Act
+        builder.AddProductResources(HostedProfile.System);
+        var web = AppHostTestBuilder.Project(builder, webName);
+        var api = AppHostTestBuilder.Project(builder, apiName);
+        var migrations = AppHostTestBuilder.Project(builder, ResourceNames.MigrationService);
+        var webEnvironment = await AppHostModel.EvaluateEnvironment(web, ct);
+        var apiEnvironment = await AppHostModel.EvaluateEnvironment(api, ct);
+        var migrationEnvironment = await AppHostModel.EvaluateEnvironment(migrations, ct);
+
+        // Assert
+        webEnvironment[HttpMaintenanceConfiguration.EnabledEnvironmentVariable].ShouldBe("true");
+        apiEnvironment[HttpMaintenanceConfiguration.EnabledEnvironmentVariable].ShouldBe("true");
+        migrationEnvironment.Keys.ShouldNotContain(HttpMaintenanceConfiguration.EnabledEnvironmentVariable);
+        web.Annotations.OfType<WaitAnnotation>().ShouldHaveSingleItem(wait => wait.Resource == api)
+            .WaitType.ShouldBe(WaitType.WaitUntilStarted);
+        AppHostModel.HasHttpHealthCheck(api, "/health").ShouldBeTrue();
+        AppHostModel.WaitedFor(api).ShouldContain(ResourceNames.MigrationService);
+    }
+
     [Fact]
     public async Task Public_web_builds_its_sitemap_from_its_own_https_endpoint()
     {

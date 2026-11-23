@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,12 +12,14 @@ using PandaBear.Mediator.EntityFrameworkCore;
 using PandaBear.Results;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Api;
+using ViajantesTurismo.Admin.ApiServiceTests.Documents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Infrastructure;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
@@ -25,6 +28,14 @@ namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
 internal static class AdminApiTestHost
 {
     private const string Audience = "admin-api";
+
+    /// <summary>Records measurements from this test host's meter factory.</summary>
+    internal static MeterFactoryRecorder RecordMetrics(WebApplicationFactory<AdminApiHostEntryPoint> factory) =>
+        new(factory.Services.GetRequiredService<IMeterFactory>());
+
+    /// <summary>Captures traces from this test host's document operation source.</summary>
+    internal static DocumentPrivacyTelemetryCapture RecordDocumentTraces(WebApplicationFactory<AdminApiHostEntryPoint> factory) =>
+        new(factory.Services.GetRequiredService<DocumentOperationTelemetry>().Source);
 
     /// <summary>Creates a test host for the optional environment, applying the optional service and configuration overrides.</summary>
     public static WebApplicationFactory<AdminApiHostEntryPoint> Create(

@@ -213,6 +213,10 @@ directly on `PATH`.
 The Aspire dashboard URL is printed when the AppHost starts. Use it to inspect services, logs,
 traces, metrics, endpoints, and health status.
 
+Use `Maintenance__Enabled=true` for a local maintenance rehearsal. The
+[planned maintenance runbook](../../docs/operations/production-readiness.md#planned-maintenance)
+describes the responses, probes, and how to reopen the services.
+
 ## Local data
 
 Application data is ephemeral by default, following Aspire's default container lifetime: PostgreSQL,

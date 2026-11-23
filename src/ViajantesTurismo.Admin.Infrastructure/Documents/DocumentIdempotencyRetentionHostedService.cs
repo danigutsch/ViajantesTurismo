@@ -8,9 +8,11 @@ namespace ViajantesTurismo.Admin.Infrastructure.Documents;
 
 /// <summary>Purges document idempotency entries past their replay window on a daily schedule.</summary>
 /// <param name="scopeFactory">Creates the scope that dispatches the purge command.</param>
+/// <param name="telemetry">Records each idempotency purge outcome.</param>
 /// <param name="logger">The logger for the polling service.</param>
 internal sealed class DocumentIdempotencyRetentionHostedService(
     IServiceScopeFactory scopeFactory,
+    DocumentOperationTelemetry telemetry,
     ILogger<DocumentIdempotencyRetentionHostedService> logger)
     : PollingBackgroundService(logger, DocumentIdempotencyRetentionServiceName, TimeSpan.FromDays(1))
 {
@@ -27,7 +29,12 @@ internal sealed class DocumentIdempotencyRetentionHostedService(
         }
     }
 
-    protected override async ValueTask<int> ExecuteBatch(CancellationToken ct)
+    protected override ValueTask<int> ExecuteBatch(CancellationToken ct)
+    {
+        return telemetry.Record(DocumentOperation.PurgeIdempotency, Guid.CreateVersion7(), () => PurgeBatch(ct), null, ct);
+    }
+
+    private async ValueTask<int> PurgeBatch(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();

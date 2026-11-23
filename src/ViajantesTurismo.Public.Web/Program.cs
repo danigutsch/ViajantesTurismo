@@ -23,6 +23,7 @@ builder.Services.AddPublicBranding();
 builder.Services.AddRazorComponents();
 builder.Services.AddCanonicalOrigin(PublicSiteLinks.CanonicalOriginKey);
 
+var maintenanceEnabled = builder.AddHttpMaintenanceReadiness();
 var app = builder.Build();
 
 app.UseForwardedHeaders();
@@ -39,6 +40,7 @@ app.UseAntiforgery();
 
 app.UseDefaultPublicCaching(PublicWebHttpCache.PublishedContentFreshness);
 app.UsePublicWebSecurityHeaders();
+app.UseHttpMaintenance(maintenanceEnabled, browser: true);
 app.UsePermanentRedirects(PublicCultureRedirects.Resolve);
 app.UseCulturePathRedirect(PublicSiteCultures.Supported, excludedPrefixes: PublicSiteCultures.UnlocalizedPrefixes);
 app.UseRequestLocalization(options =>

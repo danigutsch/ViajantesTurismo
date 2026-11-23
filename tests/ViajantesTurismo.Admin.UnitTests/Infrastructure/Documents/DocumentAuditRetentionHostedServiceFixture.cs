@@ -25,6 +25,7 @@ internal sealed class DocumentAuditRetentionHostedServiceFixture : IAsyncDisposa
         AuditStore = auditStore;
         hostedService = new DocumentAuditRetentionHostedService(
             provider.GetRequiredService<IServiceScopeFactory>(),
+            provider.GetRequiredService<DocumentOperationTelemetry>(),
             NullLogger<DocumentAuditRetentionHostedService>.Instance);
     }
 
@@ -43,6 +44,9 @@ internal sealed class DocumentAuditRetentionHostedServiceFixture : IAsyncDisposa
     {
         var auditStore = new FakeDocumentAuditStore { PurgedCount = purgedCount };
         var services = new ServiceCollection();
+        services.AddMetrics();
+        services.AddLogging();
+        services.AddSingleton<DocumentOperationTelemetry>();
         services.AddSingleton<IDocumentAuditStore>(auditStore);
         services.AddSingleton<IUnitOfWork>(new FakeUnitOfWork());
         services.AddSingleton<TimeProvider>(new FakeTimeProvider(now));

@@ -1,0 +1,56 @@
+{
+  "editable": false,
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose:** Outcomes of Admin document operations and retention batches.\n\n**Audience:** Operators and support staff responsible for Admin documents.\n\n**Decision supported:** Identify an operation with failures and check whether retention batches still complete."
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Document requests by outcome",
+      "description": "Cumulative attempts by operation and outcome. Expected rejections can be distinguished from application failures. Counts reset on process restart. An idle environment can have no series.",
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "verify": "idle-ok",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 5 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (document_operation, document_outcome) (admin_document_operation_total{document_operation!~\"purge_.*\"})",
+          "legendFormat": "{{document_operation}} / {{document_outcome}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Document retention batches by outcome",
+      "description": "Cumulative attempted batches for draft, audit, and idempotency retention. A batch that safely retains held items can succeed. Counts reset on process restart.",
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "verify": "idle-ok",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 5 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (document_operation, document_outcome) (admin_document_operation_total{document_operation=~\"purge_drafts|purge_audits|purge_idempotency\"})",
+          "legendFormat": "{{document_operation}} / {{document_outcome}}"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 41,
+  "tags": ["admin", "documents"],
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Document Operations",
+  "uid": "document-operations",
+  "version": 1
+}
