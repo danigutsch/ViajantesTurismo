@@ -1,3 +1,4 @@
+using ViajantesTurismo.Catalog.Application.Gallery;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -16,6 +17,10 @@ internal static class CatalogTourInfrastructure
     {
         builder.Services.TryAddScoped<ICatalogTourReadModelStore, EfCatalogTourReadModelStore>();
         builder.Services.TryAddScoped<ICatalogTourListReader, EfCatalogTourListReader>();
+        builder.Services.TryAddScoped<EfCatalogGalleryPlacementIntentStore>();
+        builder.Services.TryAddScoped<ICatalogGalleryPlacementIntentStore>(
+            services => services.GetRequiredService<EfCatalogGalleryPlacementIntentStore>());
+        builder.Services.TryAddScoped<ICatalogGalleryPhotoOptionsQuery, EfCatalogGalleryPhotoOptionsQuery>();
         builder.Services.TryAddScoped<ICatalogTourRetirementStore, EfCatalogTourRetirementStore>();
         builder.Services.AddSingleton<IEventSerializer, CatalogEventSerializer>();
         builder.Services.AddSingleton<IEventStore, PostgreSqlEventStore>();
