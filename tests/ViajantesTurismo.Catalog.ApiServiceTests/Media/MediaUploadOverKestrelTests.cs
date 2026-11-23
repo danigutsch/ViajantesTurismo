@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.Timeouts;
 using PandaBear.Testing;
+using PandaBear.Testing.Http;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.UploadWire.Testing;
@@ -21,22 +22,23 @@ public sealed class MediaUploadOverKestrelTests
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var scenario = await MediaUploadKestrelScenario.Start();
-        var body = new byte[8 * 1024 * 1024 + 1];
-        Array.Fill(body, (byte)' ');
-        "{}"u8.CopyTo(body);
-        var route = new Uri($"/api/v1/catalog/tours/{scenario.TourId}/presentation", UriKind.Relative);
+        const long declaredLength = 8 * 1024 * 1024 + 1;
+        var route = new Uri(scenario.BaseUri, $"/api/v1/catalog/tours/{scenario.TourId}/presentation");
         using var request = new HttpRequestMessage(HttpMethod.Put, route)
         {
-            Content = new ReadOnlyMemoryContent(body)
+            Content = new ByteArrayContent([])
         };
+        request.Headers.TryAddWithoutValidation("Authorization", scenario.Authorization);
         request.Content.Headers.TryAddWithoutValidation("Content-Type", "application/json");
         request.Headers.ExpectContinue = true;
+        using var upload = new LoopbackHttpBodyRequest();
 
         // Act
-        using var response = await scenario.Client.SendAsync(request, ct);
+        await upload.Send(request, ReadOnlyMemory<byte>.Empty, declaredLength, ct);
+        var statusLine = await upload.ReadStatusLine(ct).WaitAsync(WireTimeout.Default, ct);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.RequestEntityTooLarge);
+        statusLine.ShouldStartWith("HTTP/1.1 413 ", StringComparison.Ordinal);
     }
 
     [Fact]

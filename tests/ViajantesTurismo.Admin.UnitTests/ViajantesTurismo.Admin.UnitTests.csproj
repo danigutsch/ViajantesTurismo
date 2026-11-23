@@ -11,7 +11,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="../fixtures/hosting/*.cs" Link="Infrastructure/%(Filename)%(Extension)" />
+        <Compile Include="../fixtures/hosting/EntryPointHost.cs" Link="Infrastructure/EntryPointHost.cs" />
+        <Compile Include="../fixtures/hosting/HostBuiltObserver.cs" Link="Infrastructure/HostBuiltObserver.cs" />
     </ItemGroup>
 
     <ItemGroup>
