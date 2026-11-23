@@ -1,6 +1,6 @@
+using Aspire.Hosting.Dotnet;
 using Microsoft.Extensions.Configuration;
 using PandaBear.Aspire.Hosting;
-using Projects;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.AppHost;
@@ -248,13 +248,15 @@ internal static class AppHostResourceExtensions
     /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <param name="securityDatabase">The Management security database resource.</param>
     /// <returns>The configured migration service resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddMigrationService(
+    public static IResourceBuilder<DotnetProjectResource> AddMigrationService(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<IResourceWithConnectionString> adminDatabase,
         IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
         IResourceBuilder<IResourceWithConnectionString> securityDatabase)
     {
-        return builder.AddDevelopmentDotNetProject<ViajantesTurismo_MigrationService>(ResourceNames.MigrationService)
+        return builder.AddDevelopmentDotNetProject(
+                ResourceNames.MigrationService,
+                "../ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj")
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
             .WithReference(securityDatabase)
@@ -271,16 +273,18 @@ internal static class AppHostResourceExtensions
     /// <param name="catalogDatabase">The Catalog database resource.</param>
     /// <param name="migrationService">The migration service resource.</param>
     /// <returns>The configured database observability resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddDatabaseObservability(
+    public static IResourceBuilder<DotnetProjectResource> AddDatabaseObservability(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<IResourceWithConnectionString> adminDatabase,
         IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
-        IResourceBuilder<ProjectResource> migrationService)
+        IResourceBuilder<DotnetProjectResource> migrationService)
     {
         var adminConnectionString = builder.AddParameter(AdminIndexHealthConnectionStringParameterName, secret: true);
         var catalogConnectionString = builder.AddParameter(CatalogIndexHealthConnectionStringParameterName, secret: true);
 
-        var resource = builder.AddDevelopmentDotNetProject<ViajantesTurismo_DatabaseObservability>(ResourceNames.DatabaseObservability)
+        var resource = builder.AddDevelopmentDotNetProject(
+                ResourceNames.DatabaseObservability,
+                "../ViajantesTurismo.DatabaseObservability/ViajantesTurismo.DatabaseObservability.csproj")
             .WaitFor(adminDatabase)
             .WaitFor(catalogDatabase)
             .WaitForCompletion(migrationService);
@@ -300,14 +304,16 @@ internal static class AppHostResourceExtensions
     /// <param name="clamAv">The private ClamAV malware scanner resource.</param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <returns>The configured Admin API resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddAdminApi(
+    public static IResourceBuilder<DotnetProjectResource> AddAdminApi(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<IResourceWithConnectionString> adminDatabase,
-        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<DotnetProjectResource> migrationService,
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Admin_Api>(ResourceNames.Api)
+        return builder.AddDevelopmentAspNetCoreProject(
+                ResourceNames.Api,
+                "../ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj")
             .WithReference(adminDatabase)
             .WaitFor(adminDatabase)
             .WaitForCompletion(migrationService)
@@ -327,16 +333,18 @@ internal static class AppHostResourceExtensions
     /// <param name="seaweedFs">The optional private SeaweedFS object-storage resource.</param>
     /// <param name="identityProvider">The local identity-provider resource.</param>
     /// <returns>The configured Catalog API resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddCatalogApi(
+    public static IResourceBuilder<DotnetProjectResource> AddCatalogApi(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<IResourceWithConnectionString> adminDatabase,
         IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
-        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<DotnetProjectResource> migrationService,
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<SeaweedFsResource>? seaweedFs,
         IResourceBuilder<ContainerResource>? identityProvider)
     {
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Catalog_Api>(ResourceNames.CatalogApi)
+        return builder.AddDevelopmentAspNetCoreProject(
+                ResourceNames.CatalogApi,
+                "../ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj")
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
             .WaitFor(adminDatabase)
@@ -357,15 +365,17 @@ internal static class AppHostResourceExtensions
     /// <param name="clamAv">The optional private ClamAV scanner resource.</param>
     /// <param name="seaweedFs">The optional private SeaweedFS object-storage resource.</param>
     /// <returns>The configured Catalog integration-event worker resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddCatalogIntegrationEventWorker(
+    public static IResourceBuilder<DotnetProjectResource> AddCatalogIntegrationEventWorker(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<IResourceWithConnectionString> adminDatabase,
         IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
-        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<DotnetProjectResource> migrationService,
         IResourceBuilder<ClamAvResource>? clamAv,
         IResourceBuilder<SeaweedFsResource>? seaweedFs)
     {
-        return builder.AddDevelopmentDotNetProject<ViajantesTurismo_Catalog_IntegrationEventWorker>(ResourceNames.CatalogIntegrationEventWorker)
+        return builder.AddDevelopmentDotNetProject(
+                ResourceNames.CatalogIntegrationEventWorker,
+                "../ViajantesTurismo.Catalog.IntegrationEventWorker/ViajantesTurismo.Catalog.IntegrationEventWorker.csproj")
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
             .WaitFor(adminDatabase)
@@ -383,13 +393,15 @@ internal static class AppHostResourceExtensions
     /// <param name="catalogDatabase">The Catalog database resource that holds the transport table.</param>
     /// <param name="migrationService">The migration service resource.</param>
     /// <returns>The configured Admin integration-event worker resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddAdminIntegrationEventWorker(
+    public static IResourceBuilder<DotnetProjectResource> AddAdminIntegrationEventWorker(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<IResourceWithConnectionString> adminDatabase,
         IResourceBuilder<IResourceWithConnectionString> catalogDatabase,
-        IResourceBuilder<ProjectResource> migrationService)
+        IResourceBuilder<DotnetProjectResource> migrationService)
     {
-        return builder.AddDevelopmentDotNetProject<ViajantesTurismo_Admin_IntegrationEventWorker>(ResourceNames.AdminIntegrationEventWorker)
+        return builder.AddDevelopmentDotNetProject(
+                ResourceNames.AdminIntegrationEventWorker,
+                "../ViajantesTurismo.Admin.IntegrationEventWorker/ViajantesTurismo.Admin.IntegrationEventWorker.csproj")
             .WithReference(adminDatabase)
             .WithReference(catalogDatabase)
             .WaitFor(adminDatabase)
@@ -426,17 +438,19 @@ internal static class AppHostResourceExtensions
     /// <param name="adminApi">The Admin API resource.</param>
     /// <param name="catalogApi">The Catalog API resource, which also hosts the Branding routes.</param>
     /// <returns>The configured management web resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddManagementWeb(
+    public static IResourceBuilder<DotnetProjectResource> AddManagementWeb(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<IResourceWithConnectionString> cache,
         IResourceBuilder<IResourceWithConnectionString> securityDatabase,
-        IResourceBuilder<ProjectResource> migrationService,
+        IResourceBuilder<DotnetProjectResource> migrationService,
         IResourceBuilder<ContainerResource>? identityProvider,
         IResourceBuilder<ParameterResource>? managementWebClientSecret,
-        IResourceBuilder<ProjectResource> adminApi,
-        IResourceBuilder<ProjectResource> catalogApi)
+        IResourceBuilder<DotnetProjectResource> adminApi,
+        IResourceBuilder<DotnetProjectResource> catalogApi)
     {
-        var managementWeb = builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Management_Web>(ResourceNames.WebApp)
+        var managementWeb = builder.AddDevelopmentAspNetCoreProject(
+                ResourceNames.WebApp,
+                "../ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj")
             .WithExternalHttpEndpoints()
             .WithReference(cache)
             .WaitFor(cache)
@@ -548,9 +562,9 @@ internal static class AppHostResourceExtensions
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="catalogApi">The Catalog API resource, which also hosts the Branding routes.</param>
     /// <returns>The configured public web resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddPublicWeb(
+    public static IResourceBuilder<DotnetProjectResource> AddPublicWeb(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> catalogApi)
+        IResourceBuilder<DotnetProjectResource> catalogApi)
     {
         var replicas = builder.Configuration.GetValue(PublicWebReplicasConfigurationKey, 1);
         if (replicas < 1)
@@ -558,7 +572,9 @@ internal static class AppHostResourceExtensions
             throw new InvalidOperationException($"{PublicWebReplicasConfigurationKey} must be a positive integer.");
         }
 
-        return builder.AddDevelopmentAspNetCoreProject<ViajantesTurismo_Public_Web>(ResourceNames.PublicWebApp)
+        return builder.AddDevelopmentAspNetCoreProject(
+                ResourceNames.PublicWebApp,
+                "../ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj")
             .WithReplicas(replicas)
             .WithExternalHttpEndpoints()
             .WithSelfOrigin(PublicWebSitemapCanonicalOriginEnvironmentVariable)

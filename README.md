@@ -269,8 +269,9 @@ aspire run
 
 `aspire.cli` is pinned in `.config/dotnet-tools.json` as a **local .NET tool**, so the repository-safe command is
 `dotnet tool run aspire run`. If you install Aspire globally or via the official install script, it adds a standalone
-`aspire` command to your shell `PATH`, and then `aspire run` works directly. The AppHost takes DCP and the dashboard
-from the Aspire CLI bundle (`AspireUseCliBundle`), and `aspire update` keeps the pinned CLI and the Aspire packages aligned.
+`aspire` command to your shell `PATH`, and then `aspire run` works directly. The `dotnet run` fallback resolves the Aspire
+CLI at the `Aspire.Hosting.AppHost` package version through `AspireCliInvocationMode=DnxPinned`. Use `aspire update` to
+update the AppHost packages and keep the version in the local tool manifest aligned.
 
 **Access the application:**
 

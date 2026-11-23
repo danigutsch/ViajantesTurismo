@@ -1,3 +1,4 @@
+using Aspire.Hosting.Dotnet;
 using PandaBear.AspNetCore;
 using ViajantesTurismo.Resources;
 
@@ -20,16 +21,16 @@ internal static class DevelopmentProjectResourceExtensions
     /// Adds an ASP.NET Core project without launch profile endpoints. It runs in the AppHost's environment and has a health check on
     /// <c>/health</c>, which the SharedKernel service defaults map in every environment.
     /// </summary>
-    /// <typeparam name="TProject">The Aspire project metadata type.</typeparam>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="name">The Aspire resource name.</param>
+    /// <param name="projectPath">The project file relative to the AppHost.</param>
     /// <returns>The configured project resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddDevelopmentAspNetCoreProject<TProject>(
+    public static IResourceBuilder<DotnetProjectResource> AddDevelopmentAspNetCoreProject(
         this IDistributedApplicationBuilder builder,
-        string name)
-        where TProject : IProjectMetadata, new()
+        string name,
+        string projectPath)
     {
-        var project = builder.AddProject<TProject>(name, launchProfileName: null)
+        var project = builder.AddDotnetProject(name, projectPath, static options => options.ExcludeLaunchProfile = true)
             .WithReleasePublishing(builder)
             .WithHttpEndpoint()
             .WithHttpsEndpoint()
@@ -44,8 +45,8 @@ internal static class DevelopmentProjectResourceExtensions
     }
 
     /// <summary>Waits for a local API process during maintenance so that the dependent web page can report its own status.</summary>
-    public static IResourceBuilder<ProjectResource> WaitForHttpDependency(
-        this IResourceBuilder<ProjectResource> project, IResourceBuilder<ProjectResource> dependency) =>
+    public static IResourceBuilder<DotnetProjectResource> WaitForHttpDependency(
+        this IResourceBuilder<DotnetProjectResource> project, IResourceBuilder<DotnetProjectResource> dependency) =>
         RunsInHttpMaintenance(project.ApplicationBuilder) ? project.WaitForStart(dependency) : project.WaitFor(dependency);
 
     private static bool RunsInHttpMaintenance(IDistributedApplicationBuilder builder) =>
@@ -55,16 +56,16 @@ internal static class DevelopmentProjectResourceExtensions
     /// <summary>
     /// Adds a .NET project without launch profile endpoints.
     /// </summary>
-    /// <typeparam name="TProject">The Aspire project metadata type.</typeparam>
     /// <param name="builder">The distributed application builder.</param>
     /// <param name="name">The Aspire resource name.</param>
+    /// <param name="projectPath">The project file relative to the AppHost.</param>
     /// <returns>The configured project resource.</returns>
-    public static IResourceBuilder<ProjectResource> AddDevelopmentDotNetProject<TProject>(
+    public static IResourceBuilder<DotnetProjectResource> AddDevelopmentDotNetProject(
         this IDistributedApplicationBuilder builder,
-        string name)
-        where TProject : IProjectMetadata, new()
+        string name,
+        string projectPath)
     {
-        var project = builder.AddProject<TProject>(name, launchProfileName: null);
+        var project = builder.AddDotnetProject(name, projectPath, static options => options.ExcludeLaunchProfile = true);
         if (builder.ExecutionContext.IsRunMode)
         {
             project.WithEnvironment(HostEnvironmentVariableNames.DotNetEnvironment, DevelopmentEnvironment);
@@ -73,8 +74,8 @@ internal static class DevelopmentProjectResourceExtensions
         return project.WithReleasePublishing(builder);
     }
 
-    private static IResourceBuilder<ProjectResource> WithReleasePublishing(
-        this IResourceBuilder<ProjectResource> project,
+    private static IResourceBuilder<DotnetProjectResource> WithReleasePublishing(
+        this IResourceBuilder<DotnetProjectResource> project,
         IDistributedApplicationBuilder builder)
     {
         if (builder.ExecutionContext.IsRunMode)

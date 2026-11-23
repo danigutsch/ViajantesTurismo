@@ -133,7 +133,12 @@ declare `/health`. The private scanner uses its TCP health check, and database-d
 wait for migration completion. The publish model is the input to a deployment platform that supplies
 network exposure, secrets, volumes, and the production telemetry destination.
 
-Use these Aspire 13.4 integration points for release work:
+The AppHost uses `Microsoft.NET.Sdk`, `Aspire.Hosting.AppHost`, and `Aspire.Hosting.Dotnet`.
+Resource paths in `AddDotnetProject` control orchestration. The AppHost project references
+preserve build order. The pinned CLI provides the dashboard and orchestrator.
+[Aspire AppHost configuration](https://aspire.dev/get-started/aspire-sdk/)
+
+Aspire 17 exposes the following release model APIs.
 
 - `PublishAsDockerFile(...)` on project resources that should be built as application containers
   during `aspire publish`. This is enabled only when `VT_ASPIRE_CONTAINER_IMAGE_TAG` is supplied.
@@ -162,14 +167,14 @@ Release workflow inputs consumed by the AppHost:
 | `VT_ASPIRE_DEPLOYMENT_VERSION` | `calculate` `informational_version` | Deployment metadata environment value |
 | `VT_ASPIRE_SOURCE_REVISION` | workflow commit SHA | Deployment traceability metadata |
 
-Reference APIs researched for the pinned `aspire.cli` `13.4.6` toolchain:
+The Aspire 17.0.0 source documents these APIs.
 
-- [`ProjectResourceBuilderExtensions.PublishAsDockerFile`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ProjectResourceBuilderExtensions.cs)
-- [`ContainerResourceBuilderExtensions.WithImageTag`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ContainerResourceBuilderExtensions.cs)
-- [`ContainerResourceBuilderExtensions.WithImageRegistry`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ContainerResourceBuilderExtensions.cs)
-- [`ResourceBuilderExtensions.WithImagePushOptions`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ResourceBuilderExtensions.cs)
-- [`ResourceBuilderExtensions.WithManifestPublishingCallback`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ResourceBuilderExtensions.cs)
-- [`ContainerImageAnnotation`](https://github.com/microsoft/aspire/blob/v13.4.6/src/Aspire.Hosting/ApplicationModel/ContainerImageAnnotation.cs)
+- [`ExecutableResourceBuilderExtensions.PublishAsDockerFile`](https://github.com/microsoft/aspire/blob/v17.0.0/src/Aspire.Hosting/ExecutableResourceBuilderExtensions.cs)
+- [`ContainerResourceBuilderExtensions.WithImageTag`](https://github.com/microsoft/aspire/blob/v17.0.0/src/Aspire.Hosting/ContainerResourceBuilderExtensions.cs)
+- [`ContainerResourceBuilderExtensions.WithImageRegistry`](https://github.com/microsoft/aspire/blob/v17.0.0/src/Aspire.Hosting/ContainerResourceBuilderExtensions.cs)
+- [`ResourceBuilderExtensions.WithImagePushOptions`](https://github.com/microsoft/aspire/blob/v17.0.0/src/Aspire.Hosting/ResourceBuilderExtensions.cs)
+- [`ResourceBuilderExtensions.WithManifestPublishingCallback`](https://github.com/microsoft/aspire/blob/v17.0.0/src/Aspire.Hosting/ResourceBuilderExtensions.cs)
+- [`ContainerImageAnnotation`](https://github.com/microsoft/aspire/blob/v17.0.0/src/Aspire.Hosting/ApplicationModel/ContainerImageAnnotation.cs)
 
 ## Code Organization
 
