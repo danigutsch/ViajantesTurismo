@@ -22,12 +22,28 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
         await new[] { Customer }.ToAsyncEnumerable().ToArrayAsync(ct);
 
     /// <inheritdoc />
+    public Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(new GetCustomerOptionsDto(
+            [new GetCustomerOptionDto(Customer.Id, Customer.FirstName, Customer.LastName, Customer.Email, Customer.BikeType)], 1));
+    }
+
+    /// <inheritdoc />
     public async Task<CustomerDetailsDto?> GetCustomerDetailsById(Guid id, CancellationToken ct) =>
         id == Customer.Id || await customers.GetById(id, ct) is not null ? DtoBuilders.BuildCustomerDetailsDto(id: id) : null;
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) =>
         await new[] { Tour }.ToAsyncEnumerable().ToArrayAsync(ct);
+
+    /// <inheritdoc />
+    public Task<GetTourOptionsDto> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(new GetTourOptionsDto(
+            [new GetTourOptionDto(Tour.Id, Tour.Name, Tour.Identifier, Tour.StartDate)], 1));
+    }
 
     /// <inheritdoc />
     public async Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct)
@@ -51,6 +67,13 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
     /// <inheritdoc />
     public async Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct) =>
         await new[] { Booking }.ToAsyncEnumerable().ToArrayAsync(ct);
+
+    /// <inheritdoc />
+    public Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(new GetBookingPageDto([Booking], new BookingOverviewCountsDto(1, 1, 0, 0, 0)));
+    }
 
     /// <inheritdoc />
     public async Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct)

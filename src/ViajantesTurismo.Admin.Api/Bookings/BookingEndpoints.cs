@@ -37,6 +37,11 @@ internal static class BookingEndpoints
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata(ListEndpoint, "Retrieves all bookings.", "Retrieves all bookings.");
 
+        bookingsGroup.MapGet("/page", GetBookingPage)
+            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
+            .WithAdminMetadata(nameof(GetBookingPage), "Retrieves a page of bookings.",
+                "Retrieves bounded booking summaries and the overview counts. The optional page number is one-based.");
+
         bookingsGroup.MapGet("/{id:guid}", GetBookingById)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata(ItemEndpoint, "Retrieves a booking by its ID.", "Retrieves a booking by its ID.");
@@ -68,6 +73,28 @@ internal static class BookingEndpoints
     {
         var bookings = await queryService.GetAllBookings(ct);
         return TypedResults.Ok(WithResourceLinks(bookings, context, linkGenerator));
+    }
+
+    private static async Task<Results<Ok<GetBookingPageDto>, BadRequest>> GetBookingPage(
+        [FromQuery] string? page,
+        [FromQuery] string? sort,
+        [FromQuery] bool? descending,
+        [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
+        CancellationToken ct)
+    {
+        var sortKey = BookingPageSort.Default;
+        if (sort is not null && (!Enum.TryParse(sort, ignoreCase: true, out sortKey) || !Enum.IsDefined(sortKey)))
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var bookings = await queryService.GetBookingPage(page, sortKey, descending.GetValueOrDefault(), ct);
+        return TypedResults.Ok(bookings with
+        {
+            Items = WithResourceLinks(bookings.Items, context, linkGenerator)
+        });
     }
 
     private static async Task<Results<Ok<GetBookingDto>, NotFound<ProblemDetails>>> GetBookingById(

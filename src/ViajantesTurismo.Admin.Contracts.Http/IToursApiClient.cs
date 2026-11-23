@@ -16,6 +16,12 @@ public interface IToursApiClient
     /// <returns>The materialized tour-list outcome.</returns>
     Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue);
 
+    /// <summary>Searches for a bounded set of active tour choices.</summary>
+    /// <param name="request">The optional search text and requested result limit.</param>
+    /// <param name="ct">Cancellation token for the request.</param>
+    /// <returns>The materialized option-search outcome.</returns>
+    Task<HttpOutcome<GetTourOptionsDto>> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct);
+
     /// <summary>
     /// Gets a specific tour by its ID.
     /// </summary>

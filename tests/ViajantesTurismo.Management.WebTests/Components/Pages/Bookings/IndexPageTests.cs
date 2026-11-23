@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.QuickGrid;
 using PandaBear.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Bookings.Index;
@@ -28,7 +29,7 @@ public class IndexPageTests : BunitContext
     public void Load_failure_shows_a_sanitized_error_instead_of_an_empty_state()
     {
         // Arrange
-        _fakeBookingsApi.SetGetAllBookingsException(new InvalidOperationException("database password leaked"));
+        _fakeBookingsApi.SetGetBookingPageException(new InvalidOperationException("database password leaked"));
 
         // Act
         var cut = Render<Index>();
@@ -185,7 +186,7 @@ public class IndexPageTests : BunitContext
     public void Transport_failure_while_loading_shows_a_safe_error_message()
     {
         // Arrange
-        _fakeBookingsApi.SetGetAllBookingsOutcome(FakeApiClientOutcomes.TransportFailure<GetBookingDto[]>());
+        _fakeBookingsApi.SetGetBookingPageOutcome(FakeApiClientOutcomes.TransportFailure<GetBookingPageDto>());
 
         // Act
         var cut = Render<Index>();
@@ -193,5 +194,49 @@ public class IndexPageTests : BunitContext
         // Assert
         cut.WaitForAssertion(() => cut.Find("[role='alert']").TextContent.ShouldBe("We couldn't load bookings right now. Please try again."));
         _failures.Reports.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Booking Date", BookingPageSort.BookingDate)]
+    [InlineData("Tour", BookingPageSort.TourName)]
+    [InlineData("Customer", BookingPageSort.CustomerName)]
+    [InlineData("Total Price", BookingPageSort.TotalPrice)]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public async Task Large_booking_overview_requests_pages_and_sorts_on_the_server(string title, BookingPageSort sort)
+    {
+        // Arrange
+        var date = new DateTime(2029, 3, 4, 15, 0, 0, DateTimeKind.Utc);
+        foreach (var index in Enumerable.Range(1, 800))
+        {
+            _fakeBookingsApi.AddBooking(BuildBookingDto(
+                tourIdentifier: $"BOOKING-{index:D3}",
+                bookingDate: date.AddDays(-index),
+                totalPrice: index));
+        }
+
+        // Act
+        var cut = Render<Index>();
+        cut.WaitForState(() => cut.Markup.Contains("BOOKING-010", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        var firstPage = cut.Markup;
+        var paginator = cut.FindComponent<Paginator>();
+        await cut.InvokeAsync(() => paginator.Instance.State.SetCurrentPageIndexAsync(1));
+        cut.WaitForState(() => cut.Markup.Contains("BOOKING-020", StringComparison.Ordinal), TimeSpan.FromSeconds(2));
+        ColumnBase<GetBookingDto> sortColumn = sort == BookingPageSort.BookingDate
+            ? cut.FindComponent<PropertyColumn<GetBookingDto, DateTime>>().Instance
+            : cut.FindComponents<TemplateColumn<GetBookingDto>>().ShouldHaveSingleItem(column => column.Instance.Title == title).Instance;
+        var grid = cut.FindComponent<QuickGrid<GetBookingDto>>();
+        await cut.InvokeAsync(() => grid.Instance.SortByColumnAsync(sortColumn, SortDirection.Descending));
+
+        // Assert
+        firstPage.ShouldContain("Total: 800", StringComparison.Ordinal);
+        firstPage.ShouldNotContain("BOOKING-011", StringComparison.Ordinal);
+        cut.Markup.ShouldContain("Total: 800", StringComparison.Ordinal);
+        _fakeBookingsApi.GetAllBookingsCallCount.ShouldBe(0);
+        _fakeBookingsApi.PageRequests[0].ShouldBe((1, BookingPageSort.Default, false));
+        _fakeBookingsApi.PageRequests[1].ShouldBe((2, BookingPageSort.Default, false));
+        var sortRequests = _fakeBookingsApi.PageRequests.Skip(2).ToArray();
+        sortRequests.Length.ShouldBeInRange(1, 2);
+        sortRequests.All(request => request.Sort == sort && request.Descending).ShouldBeTrue();
     }
 }

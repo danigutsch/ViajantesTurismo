@@ -6,7 +6,6 @@
 
 @inject ICustomersApiClient CustomersApi
 @inject IBookingsApiClient BookingsApi
-@inject IToursApiClient ToursApi
 
 <PageTitle>Customer Details</PageTitle>
 
@@ -272,10 +271,8 @@ else if (_customer != null)
                         {
                             <div class="border rounded p-3 mb-3">
                                 <h5>Create New Booking</h5>
-                                <CustomerBookingCreateForm @ref="_bookingCreateFormRef"
+                                <CustomerBookingCreateForm @key="_bookingFormModel" @ref="_bookingCreateFormRef"
                                                            Model="_bookingFormModel"
-                                                           Tours="@_tours"
-                                                           Customers="@_customers"
                                                            CurrentCustomerId="@Id"
                                                            OnValidSubmit="@HandleSaveBooking"
                                                            OnCancel="@(EventCallback.Factory.Create(this, HideBookingForm))"
@@ -310,8 +307,6 @@ else if (_customer != null)
     private bool _loadingBookings = true;
     private bool _showBookingForm;
 
-    private GetTourDto[] _tours = [];
-    private GetCustomerDto[] _customers = [];
     private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
     private CustomerBookingCreateForm? _bookingCreateFormRef;
@@ -325,7 +320,7 @@ else if (_customer != null)
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customer })
         {
             _customer = customer;
-            await Task.WhenAll(LoadBookings(), LoadTours(), LoadCustomers());
+            await LoadBookings();
         }
         else if (outcome.Kind == HttpOutcomeKind.NotFound)
         {
@@ -353,22 +348,6 @@ else if (_customer != null)
         {
             _loadingBookings = false;
         }
-    }
-
-    private async Task LoadTours()
-    {
-        var outcome = await ToursApi.GetTours(CancellationToken.None, maxItems: 100);
-        _tours = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours }
-            ? tours
-            : [];
-    }
-
-    private async Task LoadCustomers()
-    {
-        var outcome = await CustomersApi.GetCustomers(CancellationToken.None, maxItems: 100);
-        _customers = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers }
-            ? customers
-            : [];
     }
 
     private void ShowCreateBookingForm()

@@ -10,6 +10,8 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 [JsonSerializable(typeof(ContractValidationProblemDto))]
 [JsonSerializable(typeof(GetTourDto))]
 [JsonSerializable(typeof(GetTourDto[]))]
+[JsonSerializable(typeof(TourOptionSearchDto))]
+[JsonSerializable(typeof(GetTourOptionsDto))]
 [JsonSerializable(typeof(CreateTourDto))]
 [JsonSerializable(typeof(UpdateTourDto))]
 internal sealed partial class ToursApiClientJsonContext : JsonSerializerContext;

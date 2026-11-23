@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Net;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Tours;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;
 
@@ -23,6 +24,30 @@ public class DetailsPageTests : BunitContext
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);
         Services.AddSingleton<IBookingsApiClient>(_fakeBookingsApi);
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Booking_creation_on_tour_details_keeps_the_route_tour_fixed()
+    {
+        // Arrange
+        var tour = BuildTourDto(name: "Route Tour");
+        var unrelatedTour = BuildTourDto(name: "Unrelated Tour");
+        TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
+        _fakeToursApi.SetGetToursOutcome(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new[] { tour, unrelatedTour }));
+
+        // Act
+        var cut = Render<Details>(parameters => parameters.Add(page => page.Id, tour.Id));
+        cut.WaitForElement("button:contains('Add Booking')").Click();
+
+        // Assert
+        var form = cut.Find("form");
+        form.TextContent.ShouldContain(tour.Name, StringComparison.Ordinal);
+        form.TextContent.ShouldNotContain(unrelatedTour.Name, StringComparison.Ordinal);
+        _fakeToursApi.GetToursCallCount.ShouldBe(0);
+        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Fact]

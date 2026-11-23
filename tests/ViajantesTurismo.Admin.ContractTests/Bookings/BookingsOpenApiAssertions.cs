@@ -17,6 +17,7 @@ internal static class BookingsOpenApiAssertions
         contract.OpenApiVersion.ShouldBe("3.2.0");
         contract.Title.ShouldBe("ViajantesTurismo.Admin.Api | bookings");
         contract.ListBookingsOperationId.ShouldBe("GetBookings");
+        contract.GetBookingPageOperationId.ShouldBe("GetBookingPage");
         contract.GetBookingByIdOperationId.ShouldBe("GetBookingById");
         contract.CreateBookingOperationId.ShouldBe("CreateBooking");
         contract.CreateBookingSchemaReference.ShouldBe("#/components/schemas/CreateBookingDto");

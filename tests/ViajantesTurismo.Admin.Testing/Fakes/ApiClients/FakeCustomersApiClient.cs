@@ -1,4 +1,5 @@
 using System.Net;
+using PandaBear.BuildingBlocks;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 
@@ -31,6 +32,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private HttpOutcome<CustomerDetailsDto>? _getCustomerByIdOutcome;
     private Exception? _getCustomersException;
     private HttpOutcome<GetCustomerDto[]>? _getCustomersOutcome;
+    private Func<CustomerOptionSearchDto, CancellationToken, Task<HttpOutcome<GetCustomerOptionsDto>>>? _searchCustomerOptionsHandler;
     private Exception? _importCustomersException;
     private HttpOutcome<ImportResultDto>? _importCustomersOutcome;
     private ImportResultDto? _importResult;
@@ -57,6 +59,12 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         get; private set;
     }
 
+    /// <summary>Gets the most recent customer update request.</summary>
+    public UpdateCustomerDto? LastUpdatedCustomer
+    {
+        get; private set;
+    }
+
     public async Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
     {
         ct.ThrowIfCancellationRequested();
@@ -79,6 +87,35 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 
         return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _customers.Take(maxItems).ToArray());
     }
+
+    public Task<HttpOutcome<GetCustomerOptionsDto>> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        if (_searchCustomerOptionsHandler is not null)
+        {
+            return _searchCustomerOptionsHandler(request, ct);
+        }
+
+        var query = SearchKey.Of(request.Query);
+        var eligible = _customers.Where(customer => customer.Id != request.ExcludedCustomerId);
+        var matches = (Guid.TryParse(query, out var id)
+            ? eligible.Where(customer => customer.Id == id)
+            : eligible.Where(customer => SearchKey.Of($"{customer.FirstName} {customer.LastName}")
+                .Contains(query, StringComparison.Ordinal))).ToArray();
+        var choices = matches.OrderBy(customer => customer.FirstName)
+            .ThenBy(customer => customer.LastName)
+            .ThenBy(customer => customer.Id)
+            .Take(Math.Clamp(request.Limit, 1, ContractConstants.MaxCustomerOptions))
+            .Select(customer => new GetCustomerOptionDto(
+                customer.Id, customer.FirstName, customer.LastName, customer.Email, customer.BikeType))
+            .ToArray();
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetCustomerOptionsDto(choices, matches.Length)));
+    }
+
+    public void SetSearchCustomerOptionsHandler(Func<CustomerOptionSearchDto, CancellationToken, Task<HttpOutcome<GetCustomerOptionsDto>>> handler) =>
+        _searchCustomerOptionsHandler = handler ?? throw new ArgumentNullException(nameof(handler));
 
     public Task<HttpOutcome<CustomerDetailsDto>> GetCustomerById(Guid id, CancellationToken ct)
     {
@@ -123,6 +160,7 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     {
         ArgumentNullException.ThrowIfNull(dto);
         ct.ThrowIfCancellationRequested();
+        LastUpdatedCustomer = dto;
 
         if (_updateCustomerException is not null)
         {
@@ -208,6 +246,8 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     }
 
     public void AddCustomer(GetCustomerDto customer) => _customers.Add(customer);
+
+    public void AddCustomers(IEnumerable<GetCustomerDto> customers) => _customers.AddRange(customers);
 
     public void AddCustomerDetails(CustomerDetailsDto customer) => _customerDetails.Add(customer);
 

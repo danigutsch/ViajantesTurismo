@@ -6,6 +6,7 @@ namespace ViajantesTurismo.Admin.ContractTests.Bookings;
 /// <param name="OpenApiVersion">Expected OpenAPI specification version of the document.</param>
 /// <param name="Title">The API title declared in the info object.</param>
 /// <param name="ListBookingsOperationId">Expected operationId of the list bookings operation.</param>
+/// <param name="GetBookingPageOperationId">Expected operationId of the bounded booking page operation.</param>
 /// <param name="GetBookingByIdOperationId">Expected operationId of the get booking by id operation.</param>
 /// <param name="CreateBookingOperationId">Expected operationId of the create booking operation.</param>
 /// <param name="CreateBookingSchemaReference">Expected $ref of the create booking request schema.</param>
@@ -25,6 +26,7 @@ internal sealed record BookingsOpenApiContractDto(
     string OpenApiVersion,
     string Title,
     string ListBookingsOperationId,
+    string GetBookingPageOperationId,
     string GetBookingByIdOperationId,
     string CreateBookingOperationId,
     string CreateBookingSchemaReference,

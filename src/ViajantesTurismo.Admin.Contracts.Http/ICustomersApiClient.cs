@@ -16,6 +16,12 @@ public interface ICustomersApiClient
     /// <returns>The materialized customer-list outcome.</returns>
     Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100);
 
+    /// <summary>Searches for a bounded set of customer options.</summary>
+    /// <param name="request">The name or complete customer identifier and result limit.</param>
+    /// <param name="ct">Cancellation token for the request.</param>
+    /// <returns>The materialized search outcome.</returns>
+    Task<HttpOutcome<GetCustomerOptionsDto>> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct);
+
     /// <summary>
     /// Gets detailed information for a specific customer by their ID.
     /// </summary>

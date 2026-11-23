@@ -2,6 +2,8 @@
 @using ViajantesTurismo.Management.Web.Components.Pages.Bookings
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
+@inject IToursApiClient ToursApi
+@inject IUiFailureReporter Failures
 @implements IDisposable
 <EditForm EditContext="@EditContext" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator/>
@@ -10,16 +12,21 @@
     <div class="row">
         <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label">Tour <span class="text-danger">*</span></label>
-                <InputSelect @bind-Value="Model.TourId" class="form-select" @bind-Value:after="OnTourChanged">
-                    <option value="">-- Select Tour --</option>
-                    @foreach (var tour in Tours)
-                    {
-                        <option value="@tour.Id">@tour.Name (@DateFormatter.FormatDate(tour.StartDate))</option>
-                    }
-                </InputSelect>
+                <TourOptionPicker @bind-Value="Model.TourId" @bind-Value:after="LoadSelectedTour"
+                                  SelectedTour="@SelectedTour" Disabled="@IsSubmitting" />
                 <ValidationMessage For="@(() => Model.TourId)"/>
-                @if (Model.TourId.HasValue && SelectedTour is not null)
+                @if (_tourError is not null)
+                {
+                    <div class="alert alert-danger mt-2" role="alert">
+                        @_tourError
+                        <button type="button" class="btn btn-link" @onclick="LoadSelectedTour">Try again</button>
+                    </div>
+                }
+                else if (Model.TourId.HasValue && SelectedTour is null)
+                {
+                    <p class="form-text" role="status">Loading tour details…</p>
+                }
+                @if (SelectedTour is not null)
                 {
                     var availableSpots = SelectedTour.AvailableSpots;
                     <div class="form-text">
@@ -39,15 +46,9 @@
             @if (Model.RoomType == RoomTypeDto.DoubleOccupancy)
             {
                 <div class="mb-3">
-                    <label class="form-label">Companion (Optional)</label>
-                    <InputSelect @bind-Value="Model.CompanionId" class="form-select"
-                                 @bind-Value:after="OnCompanionChanged">
-                        <option value="">-- No Companion --</option>
-                        @foreach (var customer in Customers.Where(c => c.Id != CurrentCustomerId))
-                        {
-                            <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)</option>
-                        }
-                    </InputSelect>
+                    <CustomerOptionPicker @bind-Value="Model.CompanionId" ExcludedCustomerId="CurrentCustomerId"
+                                          Disabled="@IsSubmitting" ChoiceChanged="ApplyCompanionChoice"
+                                          SearchFailureOperation="bookings.create.load-companions" />
                     <ValidationMessage For="@(() => Model.CompanionId)"/>
                     <div class="form-text">
                         Companion is optional for double rooms (allows single occupancy of double room).
@@ -57,8 +58,8 @@
                 @if (Model.CompanionId.HasValue)
                 {
                     <div class="mb-3">
-                        <label class="form-label">Companion Bike <span class="text-danger">*</span></label>
-                        <InputSelect @bind-Value="Model.CompanionBikeType" class="form-select">
+                        <label for="companionBikeType" class="form-label">Companion Bike <span class="text-danger">*</span></label>
+                        <InputSelect id="companionBikeType" @bind-Value="Model.CompanionBikeType" class="form-select">
                             <option value="">-- Select Bike Type --</option>
                             <option value="@BikeTypeDto.Regular">Regular Bike</option>
                             <option value="@BikeTypeDto.EBike">E-Bike</option>
@@ -71,8 +72,8 @@
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Room Type <span class="text-danger">*</span></label>
-        <InputSelect @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
+        <label for="bookingRoomType" class="form-label">Room Type <span class="text-danger">*</span></label>
+        <InputSelect id="bookingRoomType" @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
             <option value="@RoomTypeDto.DoubleOccupancy">Double Room (Base Price)</option>
             <option value="@RoomTypeDto.SingleOccupancy">Single Room (Base Price + Supplement)</option>
         </InputSelect>
@@ -89,8 +90,8 @@
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Bike Type <span class="text-danger">*</span></label>
-        <InputSelect @bind-Value="Model.PrincipalBikeType" class="form-select">
+        <label for="principalBikeType" class="form-label">Bike Type <span class="text-danger">*</span></label>
+        <InputSelect id="principalBikeType" @bind-Value="Model.PrincipalBikeType" class="form-select">
             <option value="">-- Select Bike Type --</option>
             <option value="@BikeTypeDto.Regular">Regular Bike</option>
             <option value="@BikeTypeDto.EBike">E-Bike</option>
@@ -201,7 +202,7 @@
     }
 
     <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
+        <button type="submit" class="btn btn-primary" disabled="@(IsSubmitting || Model.TourId != SelectedTour?.Id)">
             @if (IsSubmitting)
             {
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -219,12 +220,6 @@
     [Parameter]
     public BookingFormModel Model { get; set; } = new();
 
-    [Parameter]
-    public IReadOnlyList<GetTourDto> Tours { get; set; } = [];
-
-    [Parameter]
-    public IReadOnlyList<GetCustomerDto> Customers { get; set; } = [];
-
     [Parameter] public Guid CurrentCustomerId { get; set; }
 
     [Parameter]
@@ -239,6 +234,12 @@
     public EditContext? EditContext { get; private set; }
 
     private ServerValidationBinder? _binder;
+    private GetTourDto? _selectedTour;
+    private CancellationTokenSource? _tourRead;
+    private string? _tourError;
+    private bool _disposed;
+
+    private GetTourDto? SelectedTour => _selectedTour?.Id == Model.TourId ? _selectedTour : null;
 
     /// <summary>
     /// Shows the server's field-keyed validation errors on the matching fields. Unknown keys and unusable text are never shown.
@@ -252,7 +253,12 @@
     }
 
     /// <inheritdoc />
-    public void Dispose() => _binder?.Dispose();
+    public void Dispose()
+    {
+        _disposed = true;
+        _tourRead?.Cancel();
+        _binder?.Dispose();
+    }
 
     protected override void OnParametersSet()
     {
@@ -264,13 +270,74 @@
         }
     }
 
-    private GetTourDto? SelectedTour => Model.TourId.HasValue
-        ? Tours.FirstOrDefault(t => t.Id == Model.TourId.Value)
-        : null;
-
-    private void OnTourChanged()
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        StateHasChanged();
+        if (firstRender && Model.TourId.HasValue)
+        {
+            await LoadSelectedTour();
+            if (!_disposed)
+            {
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task LoadSelectedTour()
+    {
+        var previous = _tourRead;
+        var selection = Model.TourId;
+        _selectedTour = null;
+        _tourError = null;
+        using var read = new CancellationTokenSource();
+        _tourRead = read;
+        var ct = read.Token;
+        try
+        {
+            if (previous is not null)
+            {
+                await previous.CancelAsync();
+            }
+
+            if (ct.IsCancellationRequested || selection is not { } id)
+            {
+                return;
+            }
+
+            var outcome = await ToursApi.GetTourById(id, ct);
+            if (ct.IsCancellationRequested || Model.TourId != id)
+            {
+                return;
+            }
+
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour } && tour.Id == id)
+            {
+                _selectedTour = tour;
+                return;
+            }
+
+            _tourError = outcome.Kind == HttpOutcomeKind.NotFound
+                ? "The selected tour is no longer available."
+                : new HttpOutcomeMessages("The selected tour could not be loaded.").For(outcome.Kind);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            if (!ct.IsCancellationRequested && Model.TourId == selection)
+            {
+                Failures.Report(exception, "bookings.create.load-tour");
+                _tourError = "The selected tour could not be loaded.";
+            }
+        }
+        finally
+        {
+            if (ReferenceEquals(_tourRead, read))
+            {
+                _tourRead = null;
+            }
+        }
     }
 
     private void OnRoomTypeChanged()
@@ -278,29 +345,21 @@
         if (Model.RoomType == RoomTypeDto.SingleOccupancy)
         {
             Model.CompanionId = null;
-            Model.CompanionBikeType = null;
+            ApplyCompanionChoice(null);
         }
     }
 
-    private void OnCompanionChanged()
+    private void ApplyCompanionChoice(GetCustomerOptionDto? companion)
     {
-        if (!Model.CompanionId.HasValue)
-        {
-            Model.CompanionBikeType = null;
-        }
-        else
-        {
-            var companion = Customers.FirstOrDefault(c => c.Id == Model.CompanionId.Value);
-            if (companion is not null)
-            {
-                Model.CompanionBikeType = companion.BikeType;
-            }
-        }
+        Model.CompanionBikeType = companion?.BikeType;
     }
 
     private async Task HandleValidSubmit()
     {
-        await OnValidSubmit.InvokeAsync(Model);
+        if (SelectedTour is not null && !IsSubmitting)
+        {
+            await OnValidSubmit.InvokeAsync(Model);
+        }
     }
 
     private static string FormatPrice(decimal amount, string currency) => Money.Restore(amount, Currency.Restore(currency)).ToString("C", CultureInfo.CurrentUICulture);

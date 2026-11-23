@@ -6,7 +6,6 @@
 
 @inject IToursApiClient ToursApi
 @inject IBookingsApiClient BookingsApi
-@inject ICustomersApiClient CustomersApi
 
 <PageTitle>Tour Details</PageTitle>
 
@@ -142,10 +141,8 @@ else if (_tour != null)
             {
                 <div class="border rounded p-3 mb-3">
                     <h5>Create New Booking</h5>
-                    <BookingCreateForm @ref="_bookingCreateFormRef"
+                    <BookingCreateForm @key="_bookingFormModel" @ref="_bookingCreateFormRef"
                                        Model="_bookingFormModel"
-                                       Customers="_customers"
-                                       Tours="_tours"
                                        SelectedTour="_tour"
                                        OnValidSubmit="@HandleSaveBooking"
                                        OnInvalidSubmit="@HandleInvalidBookingSubmit"
@@ -179,8 +176,6 @@ else if (_tour != null)
     private bool _loadingBookings = true;
     private bool _showCreateForm;
 
-    private GetCustomerDto[] _customers = [];
-    private GetTourDto[] _tours = [];
     private BookingFormModel _bookingFormModel = new();
     private bool _isSubmitting;
     private BookingCreateForm? _bookingCreateFormRef;
@@ -193,7 +188,7 @@ else if (_tour != null)
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour })
         {
             _tour = tour;
-            await Task.WhenAll(LoadBookings(), LoadCustomers(), LoadTours());
+            await LoadBookings();
         }
         else if (outcome.Kind == HttpOutcomeKind.NotFound)
         {
@@ -221,22 +216,6 @@ else if (_tour != null)
         {
             _loadingBookings = false;
         }
-    }
-
-    private async Task LoadCustomers()
-    {
-        var outcome = await CustomersApi.GetCustomers(CancellationToken.None);
-        _customers = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers }
-            ? customers
-            : [];
-    }
-
-    private async Task LoadTours()
-    {
-        var outcome = await ToursApi.GetTours(CancellationToken.None);
-        _tours = outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours }
-            ? tours
-            : [];
     }
 
     private void ShowCreateBookingForm()

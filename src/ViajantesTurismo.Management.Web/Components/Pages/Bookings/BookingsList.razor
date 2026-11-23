@@ -3,7 +3,7 @@
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 
-@if (Bookings == null || !Bookings.Any())
+@if (BookingCount == 0)
 {
     <div class="alert alert-info" role="alert">
         <i class="bi bi-info-circle"></i> No bookings found.
@@ -12,7 +12,8 @@
 else
 {
     <div class="table-responsive-wrapper">
-    <QuickGrid Items="@Bookings.AsQueryable()" Class="table table-hover" Pagination="@(Bookings.Count() > 10 ? _pagination : null)">
+    <QuickGrid TGridItem="GetBookingDto" Items="@Bookings?.AsQueryable()" ItemsProvider="@ItemsProvider"
+               Class="table table-hover" Pagination="@(ItemsProvider is not null || HasMultiplePages ? _pagination : null)">
         <PropertyColumn Property="@(b => b.BookingDate)" Title="Booking Date" Format="@DateFormatter.DateTimeFormat"
                         Sortable="true"/>
 
@@ -84,17 +85,29 @@ else
 
     </div>
 
-    @if (Bookings.Count() > 10)
+    @if (HasMultiplePages)
     {
         <Paginator State="@_pagination" />
     }
 }
 
 @code {
-    private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+    private readonly PaginationState _pagination = new() { ItemsPerPage = ContractConstants.BookingListPageSize };
 
+    private int BookingCount => TotalBookings ?? Bookings?.Count() ?? 0;
+    private bool HasMultiplePages => BookingCount > ContractConstants.BookingListPageSize;
+
+    /// <summary>Gets or sets the materialized rows for an embedded booking list.</summary>
     [Parameter]
     public IEnumerable<GetBookingDto>? Bookings { get; set; }
+
+    /// <summary>Gets or sets the provider for remote sorting and paging.</summary>
+    [Parameter]
+    public GridItemsProvider<GetBookingDto>? ItemsProvider { get; set; }
+
+    /// <summary>Gets or sets the current total of the remotely paged list.</summary>
+    [Parameter]
+    public int? TotalBookings { get; set; }
 
     [Parameter]
     public bool ShowTourInfo { get; set; } = true;

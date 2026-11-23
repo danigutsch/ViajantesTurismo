@@ -27,6 +27,7 @@ internal sealed class AdminReadDbContext(DbContextOptions<AdminReadDbContext> op
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasPostgresExtension("citext");
+        modelBuilder.HasPostgresExtension("unaccent");
         modelBuilder.ApplyConfiguration(new PaymentAccountConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentHistoryConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentInstructionConfiguration());

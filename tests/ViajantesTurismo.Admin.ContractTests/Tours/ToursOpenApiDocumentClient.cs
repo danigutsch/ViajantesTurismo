@@ -53,10 +53,18 @@ internal static class ToursOpenApiDocumentClient
             throw new InvalidOperationException("The tours item path is missing required operations.");
         }
 
+        if (!document.Paths.TryGetValue($"{RoutePrefix}/options/search", out var optionsSearchPath) ||
+            optionsSearchPath.Post is null)
+        {
+            throw new InvalidOperationException("The tours option search path is missing a required POST operation.");
+        }
+
         var createTourSchemaReference = toursPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var updateTourSchemaReference = tourByIdPath.Put.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
+        var searchTourOptionsSchemaReference = optionsSearchPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
 
-        if (string.IsNullOrWhiteSpace(createTourSchemaReference) || string.IsNullOrWhiteSpace(updateTourSchemaReference))
+        if (string.IsNullOrWhiteSpace(createTourSchemaReference) || string.IsNullOrWhiteSpace(updateTourSchemaReference) ||
+            string.IsNullOrWhiteSpace(searchTourOptionsSchemaReference))
         {
             throw new InvalidOperationException("The tours contract is missing request schema references.");
         }
@@ -67,7 +75,9 @@ internal static class ToursOpenApiDocumentClient
             toursPath.Get.OperationId,
             tourByIdPath.Get.OperationId,
             createTourSchemaReference,
-            updateTourSchemaReference);
+            updateTourSchemaReference,
+            optionsSearchPath.Post.OperationId,
+            searchTourOptionsSchemaReference);
     }
 
     private static async Task<ToursOpenApiDocumentDto?> ReadDocument(string documentPath, CancellationToken ct)

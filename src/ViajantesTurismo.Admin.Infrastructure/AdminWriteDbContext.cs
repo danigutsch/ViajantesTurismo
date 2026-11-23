@@ -111,6 +111,7 @@ internal sealed class AdminWriteDbContext(
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasPostgresExtension("citext");
+        modelBuilder.HasPostgresExtension("unaccent");
         modelBuilder.ApplyConfiguration(new PaymentAccountConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentHistoryConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentInstructionConfiguration());

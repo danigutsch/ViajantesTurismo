@@ -39,6 +39,24 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     }
 
     /// <inheritdoc />
+    public async Task<HttpOutcome<GetTourOptionsDto>> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var message = new HttpRequestMessage(HttpMethod.Post, new Uri($"{RoutePrefix}/options/search", UriKind.Relative))
+        {
+            Content = JsonContent.Create(request, Json.TourOptionSearchDto)
+        };
+        return await HttpOutcomeMapper.Send(
+            httpClient,
+            message,
+            HttpStatusCode.OK,
+            Json.GetTourOptionsDto,
+            Json.ContractValidationProblemDto,
+            ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken ct)
     {
         return await HttpOutcomeMapper.Send(

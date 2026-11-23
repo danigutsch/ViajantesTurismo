@@ -23,16 +23,27 @@ internal sealed class TourRetirementQueries(Tour tour, DateTimeOffset? completed
 
     /// <inheritdoc />
     public Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetTourOptionsDto> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct) => throw new NotSupportedException();
     /// <inheritdoc />
     public Task<GetTourDto?> GetTourById(Guid id, CancellationToken ct) => throw new NotSupportedException();
     /// <inheritdoc />
     public Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct) => throw new NotSupportedException();
     /// <inheritdoc />
     public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct) =>
+        throw new NotSupportedException();
     /// <inheritdoc />
     public Task<CustomerDetailsDto?> GetCustomerDetailsById(Guid id, CancellationToken ct) => throw new NotSupportedException();
     /// <inheritdoc />
     public Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct) =>
+        throw new NotSupportedException();
     /// <inheritdoc />
     public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct) => throw new NotSupportedException();
     /// <inheritdoc />

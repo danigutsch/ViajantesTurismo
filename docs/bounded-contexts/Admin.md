@@ -89,6 +89,25 @@ for specific invariants.
 - **Contracts:** split across `ViajantesTurismo.Admin.Contracts.Application`,
   `ViajantesTurismo.Admin.Contracts.Http`, and `ViajantesTurismo.Admin.Contracts.IntegrationEvents`
 
+The Management booking overview reads at most ten summaries per request from
+`GET /api/v1/bookings/page`. This route requires Booking Read and Payment Read. The API calculates
+the status badges across all visible bookings and sorts before fetching the page. The default
+order lists cancelled bookings first and uses booking date descending within each group. Booking
+ID breaks ties for every sort.
+
+Booking creation searches up to 20 options at a time after the form opens. Customer choices use
+`POST /api/v1/customers/options/search` with Customer Read and Customer Sensitive Read. The companion
+search excludes the principal before counting and selecting matches. Tour choices use
+`POST /api/v1/tours/options/search` with Tour Read, match active tours by name or identifier, and
+order by descending tour ID. Both searches match names without regard to case or accents.
+
+Customer Edit uses the same bounded companion choices after the form becomes interactive. It keeps the
+stored companion selection available while search is unavailable.
+
+The Tour Details form uses its route tour. The Customer Details form reads the selected tour by ID
+to show its current availability and price. The booking command still enforces booking eligibility
+and capacity.
+
 ## Country and Currency Reference Data
 
 Inventory of where country and currency data is used, and where each concern belongs.

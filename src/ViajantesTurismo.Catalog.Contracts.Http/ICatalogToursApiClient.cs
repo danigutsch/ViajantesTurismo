@@ -13,6 +13,13 @@ public interface ICatalogToursApiClient
     /// </summary>
     Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct);
 
+    /// <summary>Gets one ordered management page of tour summaries.</summary>
+    /// <param name="page">The one-based page number.</param>
+    /// <param name="sort">The selected sort field.</param>
+    /// <param name="descending">Whether the selected sort field is descending.</param>
+    /// <param name="ct">The cancellation token.</param>
+    Task<HttpOutcome<CatalogTourPageDto>> GetTourPage(int page, CatalogTourListSort sort, bool descending, CancellationToken ct);
+
     /// <summary>
     /// Gets a catalog tour by identifier.
     /// </summary>

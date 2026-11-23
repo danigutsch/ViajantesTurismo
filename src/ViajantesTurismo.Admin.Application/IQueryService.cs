@@ -25,6 +25,12 @@ public interface IQueryService
     /// <returns>A read-only list of <see cref="GetTourDto"/> representing all tours.</returns>
     Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct);
 
+    /// <summary>Finds a bounded slice of active tours by name or operational identifier.</summary>
+    /// <param name="request">The optional search text and requested result limit.</param>
+    /// <param name="ct">Cancellation token for the operation.</param>
+    /// <returns>The matching choices and count.</returns>
+    Task<GetTourOptionsDto> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct);
+
     /// <summary>
     /// Retrieves a tour by ID, including retained historical tours.
     /// </summary>
@@ -46,6 +52,12 @@ public interface IQueryService
     /// <returns>A read-only list of customer DTOs.</returns>
     Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct);
 
+    /// <summary>Finds a bounded slice of customer choices by name or complete identifier.</summary>
+    /// <param name="request">The search text, result limit, and optional excluded customer.</param>
+    /// <param name="ct">Cancellation token for the operation.</param>
+    /// <returns>The matching choices and count.</returns>
+    Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct);
+
     /// <summary>
     /// Retrieves customer details by ID.
     /// </summary>
@@ -60,6 +72,14 @@ public interface IQueryService
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>A read-only list of booking DTOs.</returns>
     Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct);
+
+    /// <summary>Retrieves a bounded page of summaries and overall booking counts.</summary>
+    /// <param name="page">The optional one-based page number.</param>
+    /// <param name="sort">The requested sort key.</param>
+    /// <param name="descending">Whether to reverse the selected sort key.</param>
+    /// <param name="ct">Cancellation token for the operation.</param>
+    /// <returns>The page and overview counts.</returns>
+    Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct);
 
     /// <summary>
     /// Retrieves a booking by ID.

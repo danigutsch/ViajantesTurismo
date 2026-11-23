@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Components;
 using PandaBear.Testing;
 using Microsoft.AspNetCore.Components.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
+using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.ContractConstants;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
 
@@ -14,6 +16,111 @@ public class EditPageTests : BunitContext
     {
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
         Services.AddSingleton<ICountryService>(new FakeCountryService());
+        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
+    }
+
+    [Fact]
+    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+    public void Customer_edit_does_not_load_the_customer_collection_for_companion_selection()
+    {
+        // Arrange
+        var customer = BuildCustomerDetailsDto();
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        foreach (var index in Enumerable.Range(0, 800))
+        {
+            _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: $"Fixture{index:D3}"));
+        }
+
+        // Act
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, customer.Id));
+        cut.WaitForElement("button:contains('Update Customer')");
+
+        // Assert
+        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Companion_search_preserves_the_saved_selection_and_can_choose_a_customer_outside_the_initial_window()
+    {
+        // Arrange
+        var retained = BuildCustomerDto(firstName: "Yara", lastName: "Retained", email: "retained@example.test");
+        var replacement = BuildCustomerDto(firstName: "Zoe", lastName: "Target");
+        var customer = BuildCustomerDetailsDto();
+        customer = customer with
+        {
+            AccommodationPreferences = customer.AccommodationPreferences with
+            {
+                CompanionId = retained.Id
+            }
+        };
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        _fakeCustomersApi.AddCustomer(BuildCustomerDto(id: customer.Id, firstName: "Zoe", lastName: "Target"));
+        _fakeCustomersApi.AddCustomer(retained);
+        _fakeCustomersApi.AddCustomer(replacement);
+        foreach (var index in Enumerable.Range(0, 125))
+        {
+            _fakeCustomersApi.AddCustomer(BuildCustomerDto(firstName: $"Fixture{index:D3}"));
+        }
+
+        _fakeCustomersApi.SetUpdateCustomerOutcome(FakeApiClientOutcomes.TransportFailure());
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, customer.Id));
+        cut.WaitForAssertion(() => cut.Find("#companionId").TextContent.ShouldContain("Yara Retained", StringComparison.Ordinal));
+        var initialChoices = cut.FindAll("#companionId option").Count;
+
+        // Act
+        await cut.Find("#companionSearch").InputAsync(new ChangeEventArgs { Value = "Zoe Target" });
+        var results = cut.FindAll("#companionId option").Select(option => option.GetAttribute("value")).ToArray();
+        await cut.Find("#companionId").ChangeAsync(new ChangeEventArgs { Value = replacement.Id.ToString() });
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        initialChoices.ShouldBe(AdminContractConstants.MaxCustomerOptions + 2);
+        results.ShouldContain(replacement.Id.ToString());
+        results.ShouldNotContain(customer.Id.ToString());
+        var update = _fakeCustomersApi.LastUpdatedCustomer.ShouldNotBeNull();
+        update.AccommodationPreferences.CompanionId.ShouldBe(replacement.Id);
+        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Companion_search_failure_allows_keeping_or_clearing_the_saved_selection(bool clear)
+    {
+        // Arrange
+        var retainedId = Guid.NewGuid();
+        var customer = BuildCustomerDetailsDto();
+        customer = customer with
+        {
+            AccommodationPreferences = customer.AccommodationPreferences with
+            {
+                CompanionId = retainedId
+            }
+        };
+        _fakeCustomersApi.AddCustomerDetails(customer);
+        _fakeCustomersApi.SetSearchCustomerOptionsHandler((_, _) =>
+            Task.FromResult(FakeApiClientOutcomes.TransportFailure<GetCustomerOptionsDto>()));
+        _fakeCustomersApi.SetUpdateCustomerOutcome(FakeApiClientOutcomes.TransportFailure());
+        var cut = Render<Edit>(parameters => parameters.Add(page => page.Id, customer.Id));
+        cut.WaitForAssertion(() => cut.Markup.ShouldContain("You can keep or remove the selected companion.", StringComparison.Ordinal));
+        var selectorEnabled = !cut.Find("#companionId").HasAttribute("disabled");
+        var retainedValue = cut.FindAll("#companionId option")
+            .ShouldHaveSingleItem(option => option.TextContent == "Selected companion").GetAttribute("value");
+
+        // Act
+        if (clear)
+        {
+            await cut.Find("#companionId").ChangeAsync(new ChangeEventArgs { Value = string.Empty });
+        }
+
+        await cut.Find("form").SubmitAsync();
+
+        // Assert
+        selectorEnabled.ShouldBeTrue();
+        retainedValue.ShouldBe(retainedId.ToString());
+        var update = _fakeCustomersApi.LastUpdatedCustomer.ShouldNotBeNull();
+        update.AccommodationPreferences.CompanionId.ShouldBe(clear ? null : retainedId);
     }
 
     [Fact]

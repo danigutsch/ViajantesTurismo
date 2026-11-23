@@ -274,27 +274,10 @@ else
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Companion (Optional)</label>
-                            @if (_customers == null)
-                            {
-                                <div class="form-control">
-                                    <span class="spinner-border spinner-border-sm me-2"></span>
-                                    Loading customers...
-                                </div>
-                            }
-                            else
-                            {
-                                <InputSelect @bind-Value="_model.AccommodationPreferences.CompanionId"
-                                             class="form-select">
-                                    <option value="">-- No Companion --</option>
-                                    @foreach (var customer in _customers.Where(c => c.Id != Id))
-                                    {
-                                        <option
-                                            value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)
-                                        </option>
-                                    }
-                                </InputSelect>
-                            }
+                            <CustomerOptionPicker @bind-Value="_model.AccommodationPreferences.CompanionId"
+                                                  ExcludedCustomerId="Id" Disabled="@_isSubmitting"
+                                                  SearchFailureOperation="customers.edit.search-companions"
+                                                  UnavailableMessage="@CompanionSearchUnavailableMessage" />
                             <small class="form-text text-muted">Select another customer traveling with this person</small>
                         </div>
                     </div>
@@ -401,8 +384,11 @@ else
     private bool _redirectCancelled;
     private CancellationTokenSource? _redirectCts;
     private string? _errorMessage;
-    private IReadOnlyList<GetCustomerDto>? _customers;
     private IReadOnlyList<CountryInfo>? _countries;
+
+    private string? CompanionSearchUnavailableMessage => _model.AccommodationPreferences.CompanionId.HasValue
+        ? "Companion search is unavailable. You can keep or remove the selected companion."
+        : null;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -436,10 +422,6 @@ else
             MedicalInfo = MedicalInfoFormModel.FromDto(customer.MedicalInfo)
         };
 
-        var customersOutcome = await CustomersApi.GetCustomers(CancellationToken.None);
-        _customers = customersOutcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers }
-            ? customers
-            : [];
         _countries = await CountryService.GetCountries(CancellationToken.None);
         _loading = false;
     }

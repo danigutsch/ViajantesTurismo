@@ -31,6 +31,29 @@ public sealed class BookingsApiClientTests
     }
 
     [Fact]
+    public async Task Get_booking_page_requests_the_selected_page_and_reads_overview_counts()
+    {
+        // Arrange
+        var requestPath = string.Empty;
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
+            return CatalogToursApiClientTestsHelpers.JsonResponse(
+                $$"""{"items":[{{AdminApiClientTestsHelpers.BookingJson}}],"counts":{"total":41,"pending":21,"confirmed":10,"completed":6,"cancelled":4} }""");
+        });
+        var client = new BookingsApiClient(httpClient);
+
+        // Act
+        var outcome = await client.GetBookingPage(2, BookingPageSort.TotalPrice, descending: true, TestContext.Current.CancellationToken);
+
+        // Assert
+        requestPath.ShouldBe("/api/v1/bookings/page?page=2&sort=TotalPrice&descending=True");
+        var page = outcome.Value.ShouldNotBeNull();
+        page.Counts.ShouldBe(new BookingOverviewCountsDto(41, 21, 10, 6, 4));
+        page.Items.ShouldHaveSingleItem().TourIdentifier.ShouldBe("TOUR-1");
+    }
+
+    [Fact]
     public async Task Get_booking_by_ID_returns_booking_when_admin_API_returns_success()
     {
         var requestPath = string.Empty;

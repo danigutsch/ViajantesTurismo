@@ -3,18 +3,12 @@
 
 @inject CustomerCreationState State
 @inject NavigationManager Navigation
-@inject ICustomersApiClient CustomersApi
 
 <PageTitle>Create Customer - Accommodation Preferences</PageTitle>
 
 <div class="container mt-4">
     <h1 class="h2">Create New Customer</h1>
     <WizardProgress/>
-
-    @if (_errorMessage is not null)
-    {
-        <div class="alert alert-danger" role="alert">@_errorMessage</div>
-    }
 
     <div class="card">
         <div class="card-header">
@@ -48,26 +42,7 @@
 
                 <div class="row">
                     <div class="col-md-12 mb-3">
-                        <label class="form-label">Companion (Optional)</label>
-                        @if (_customers == null)
-                        {
-                            <div class="form-control">
-                                <span class="spinner-border spinner-border-sm me-2"></span>
-                                Loading customers...
-                            </div>
-                        }
-                        else
-                        {
-                            <InputSelect @bind-Value="_model.CompanionId" class="form-select">
-                                <option value="">-- No Companion --</option>
-                                @foreach (var customer in _customers)
-                                {
-                                    <option
-                                        value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)
-                                    </option>
-                                }
-                            </InputSelect>
-                        }
+                        <CustomerOptionPicker @bind-Value="_model.CompanionId" />
                         <ValidationMessage For="@(() => _model.CompanionId)"/>
                         <small class="form-text text-muted">Select another customer traveling with this person</small>
                     </div>
@@ -88,11 +63,9 @@
 
 @code {
     private AccommodationPreferencesFormModel _model = new();
-    private IReadOnlyList<GetCustomerDto>? _customers;
-    private string? _errorMessage;
 
     /// <inheritdoc />
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         if (State.AccommodationPreferences is not null)
         {
@@ -100,17 +73,6 @@
         }
 
         State.NavigateToStep(6);
-
-        _errorMessage = null;
-        var outcome = await CustomersApi.GetCustomers(CancellationToken.None);
-        if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } customers })
-        {
-            _customers = customers;
-            return;
-        }
-
-        _customers = [];
-        _errorMessage = new HttpOutcomeMessages("Customers could not be loaded for companion selection.").For(outcome.Kind);
     }
 
     private void HandleValidSubmit()

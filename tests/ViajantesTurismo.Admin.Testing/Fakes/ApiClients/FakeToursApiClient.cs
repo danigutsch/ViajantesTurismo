@@ -1,4 +1,5 @@
 using System.Net;
+using PandaBear.BuildingBlocks;
 using PandaBear.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Builders;
@@ -11,15 +12,23 @@ public sealed class FakeToursApiClient : IToursApiClient
     private Exception? _createTourException;
     private HttpOutcome? _createTourOutcome;
     private Exception? _getTourByIdException;
+    private Func<Guid, CancellationToken, Task<HttpOutcome<GetTourDto>>>? _getTourByIdHandler;
     private HttpOutcome<GetTourDto>? _getTourByIdOutcome;
     private Exception? _getToursException;
     private HttpOutcome<GetTourDto[]>? _getToursOutcome;
+    private Func<TourOptionSearchDto, CancellationToken, Task<HttpOutcome<GetTourOptionsDto>>>? _searchTourOptionsHandler;
     private Exception? _updateTourException;
     private HttpOutcome? _updateTourOutcome;
+
+    public int GetToursCallCount
+    {
+        get; private set;
+    }
 
     public Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue)
     {
         ct.ThrowIfCancellationRequested();
+        GetToursCallCount++;
 
         if (_getToursException is not null)
         {
@@ -34,9 +43,36 @@ public sealed class FakeToursApiClient : IToursApiClient
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _tours.Take(maxItems).ToArray()));
     }
 
+    public Task<HttpOutcome<GetTourOptionsDto>> SearchTourOptions(TourOptionSearchDto request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+        if (_searchTourOptionsHandler is not null)
+        {
+            return _searchTourOptionsHandler(request, ct);
+        }
+
+        var key = SearchKey.Of(request.Query);
+        var matches = _tours.Where(tour => SearchKey.Of(tour.Name).Contains(key, StringComparison.Ordinal) ||
+            SearchKey.Of(tour.Identifier).Contains(key, StringComparison.Ordinal)).ToArray();
+        var choices = matches.OrderByDescending(tour => tour.Id)
+            .Take(Math.Clamp(request.Limit, 1, ContractConstants.MaxTourOptions))
+            .Select(tour => new GetTourOptionDto(tour.Id, tour.Name, tour.Identifier, tour.StartDate))
+            .ToArray();
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new GetTourOptionsDto(choices, matches.Length)));
+    }
+
+    public void SetSearchTourOptionsHandler(Func<TourOptionSearchDto, CancellationToken, Task<HttpOutcome<GetTourOptionsDto>>> handler) =>
+        _searchTourOptionsHandler = handler ?? throw new ArgumentNullException(nameof(handler));
+
     public Task<HttpOutcome<GetTourDto>> GetTourById(Guid id, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+
+        if (_getTourByIdHandler is not null)
+        {
+            return _getTourByIdHandler(id, ct);
+        }
 
         if (_getTourByIdException is not null)
         {
@@ -134,6 +170,11 @@ public sealed class FakeToursApiClient : IToursApiClient
     }
 
     public void AddTour(GetTourDto tour) => _tours.Add(tour);
+
+    public void AddTours(IEnumerable<GetTourDto> tours) => _tours.AddRange(tours);
+
+    public void SetGetTourByIdHandler(Func<Guid, CancellationToken, Task<HttpOutcome<GetTourDto>>> handler) =>
+        _getTourByIdHandler = handler ?? throw new ArgumentNullException(nameof(handler));
 
     public void SetGetTourByIdException(Exception exception) => _getTourByIdException = exception;
 

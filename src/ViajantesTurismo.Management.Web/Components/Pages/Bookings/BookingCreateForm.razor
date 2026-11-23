@@ -7,50 +7,35 @@
     <DataAnnotationsValidator/>
     <ValidationSummary class="alert alert-danger" role="alert"/>
 
-    @if (Tours.Any())
+    @if (SelectedTour is not null)
     {
         <div class="mb-3">
-            <label class="form-label">Tour <span class="text-danger">*</span></label>
-            <InputSelect @bind-Value="Model.TourId" class="form-select" @bind-Value:after="OnTourChanged">
-                <option value="">-- Select Tour --</option>
-                @foreach (var tour in Tours)
-                {
-                    <option value="@tour.Id">@tour.Name (@DateFormatter.FormatDate(tour.StartDate))</option>
-                }
-            </InputSelect>
+            <div class="form-label">Tour</div>
+            <p class="mb-1" id="bookingTour">@SelectedTour.Name (@DateFormatter.FormatDate(SelectedTour.StartDate))</p>
             <ValidationMessage For="@(() => Model.TourId)"/>
-            @if (Model.TourId.HasValue && SelectedTour is not null)
-            {
-                var availableSpots = SelectedTour.AvailableSpots;
-                <div class="form-text">
-                    @if (!SelectedTour.IsFullyBooked)
-                    {
-                        <span class="text-success"><i class="bi bi-check-circle"></i> @availableSpots spot@(availableSpots == 1 ? "" : "s") available (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers booked)</span>
-                    }
-                    else
-                    {
-                        <span class="text-danger"><i class="bi bi-x-circle"></i> Tour is fully booked (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers)</span>
-                    }
-                </div>
-            }
+            @{ var availableSpots = SelectedTour.AvailableSpots; }
+            <div class="form-text">
+                @if (!SelectedTour.IsFullyBooked)
+                {
+                    <span class="text-success"><i class="bi bi-check-circle"></i> @availableSpots spot@(availableSpots == 1 ? "" : "s") available (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers booked)</span>
+                }
+                else
+                {
+                    <span class="text-danger"><i class="bi bi-x-circle"></i> Tour is fully booked (@SelectedTour.CurrentCustomerCount / @SelectedTour.MaxCustomers)</span>
+                }
+            </div>
         </div>
     }
 
     <div class="mb-3">
-        <label class="form-label">Customer <span class="text-danger">*</span></label>
-        <InputSelect @bind-Value="Model.CustomerId" class="form-select" @bind-Value:after="OnPrincipalCustomerChanged">
-            <option value="">-- Select Customer --</option>
-            @foreach (var customer in Customers)
-            {
-                <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)</option>
-            }
-        </InputSelect>
+        <CustomerOptionPicker @bind-Value="Model.CustomerId" IsPrincipal="true" ChoiceChanged="ApplyPrincipalChoice"
+                              Disabled="@IsSubmitting" SearchFailureOperation="bookings.create.load-customers" />
         <ValidationMessage For="@(() => Model.CustomerId)"/>
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Room Type <span class="text-danger">*</span></label>
-        <InputSelect @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
+        <label for="bookingRoomType" class="form-label">Room Type <span class="text-danger">*</span></label>
+        <InputSelect id="bookingRoomType" @bind-Value="Model.RoomType" class="form-select" @bind-Value:after="OnRoomTypeChanged">
             <option value="@RoomTypeDto.DoubleOccupancy">Double Room (Base Price)</option>
             <option value="@RoomTypeDto.SingleOccupancy">Single Room (Base Price + Supplement)</option>
         </InputSelect>
@@ -67,8 +52,8 @@
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Principal Customer Bike <span class="text-danger">*</span></label>
-        <InputSelect @bind-Value="Model.PrincipalBikeType" class="form-select">
+        <label for="principalBikeType" class="form-label">Principal Customer Bike <span class="text-danger">*</span></label>
+        <InputSelect id="principalBikeType" @bind-Value="Model.PrincipalBikeType" class="form-select">
             <option value="">-- Select Bike Type --</option>
             <option value="@BikeTypeDto.Regular">Regular Bike</option>
             <option value="@BikeTypeDto.EBike">E-Bike</option>
@@ -79,15 +64,9 @@
     @if (Model.RoomType == RoomTypeDto.DoubleOccupancy)
     {
         <div class="mb-3">
-            <label class="form-label">Companion (Optional)</label>
-            <InputSelect @bind-Value="Model.CompanionId" class="form-select"
-                         @bind-Value:after="OnCompanionCustomerChanged">
-                <option value="">-- No Companion --</option>
-                @foreach (var customer in Customers.Where(c => !Model.CustomerId.HasValue || c.Id != Model.CustomerId.Value))
-                {
-                    <option value="@customer.Id">@customer.FirstName @customer.LastName (@customer.Email)</option>
-                }
-            </InputSelect>
+            <CustomerOptionPicker @key="Model.CustomerId" @bind-Value="Model.CompanionId"
+                                  ExcludedCustomerId="Model.CustomerId" ChoiceChanged="ApplyCompanionChoice"
+                                  Disabled="@IsSubmitting" SearchFailureOperation="bookings.create.load-companions" />
             <ValidationMessage For="@(() => Model.CompanionId)"/>
             <div class="form-text">
                 Companion is optional for double rooms (allows single occupancy of double room).
@@ -97,8 +76,8 @@
         @if (Model.CompanionId.HasValue)
         {
             <div class="mb-3">
-                <label class="form-label">Companion Bike <span class="text-danger">*</span></label>
-                <InputSelect @bind-Value="Model.CompanionBikeType" class="form-select">
+                <label for="companionBikeType" class="form-label">Companion Bike <span class="text-danger">*</span></label>
+                <InputSelect id="companionBikeType" @bind-Value="Model.CompanionBikeType" class="form-select">
                     <option value="">-- Select Bike Type --</option>
                     <option value="@BikeTypeDto.Regular">Regular Bike</option>
                     <option value="@BikeTypeDto.EBike">E-Bike</option>
@@ -230,12 +209,6 @@
     public BookingFormModel Model { get; set; } = new();
 
     [Parameter]
-    public IReadOnlyList<GetCustomerDto> Customers { get; set; } = [];
-
-    [Parameter]
-    public IReadOnlyList<GetTourDto> Tours { get; set; } = [];
-
-    [Parameter]
     public GetTourDto? SelectedTour { get; set; }
 
     [Parameter]
@@ -275,34 +248,20 @@
             EditContext = new EditContext(Model);
             _binder = new ServerValidationBinder(EditContext, BookingFormModel.ServerValidation);
         }
-
-        UpdateSelectedTour();
     }
 
-    private void OnTourChanged()
+    private void ApplyPrincipalChoice(GetCustomerOptionDto? choice)
     {
-        UpdateSelectedTour();
-        StateHasChanged();
-    }
-
-    private void UpdateSelectedTour()
-    {
-        SelectedTour = Model.TourId.HasValue
-            ? Tours.FirstOrDefault(t => t.Id == Model.TourId.Value)
-            : null;
-    }
-
-    private void OnPrincipalCustomerChanged()
-    {
-        if (!Model.CustomerId.HasValue)
+        if (choice is null)
         {
             return;
         }
 
-        var customer = Customers.FirstOrDefault(c => c.Id == Model.CustomerId.Value);
-        if (customer is not null)
+        Model.PrincipalBikeType = choice.BikeType;
+        if (Model.CompanionId == choice.Id)
         {
-            Model.PrincipalBikeType = customer.BikeType;
+            Model.CompanionId = null;
+            ApplyCompanionChoice(null);
         }
     }
 
@@ -314,23 +273,12 @@
         }
 
         Model.CompanionId = null;
-        Model.CompanionBikeType = null;
+        ApplyCompanionChoice(null);
     }
 
-    private void OnCompanionCustomerChanged()
+    private void ApplyCompanionChoice(GetCustomerOptionDto? companion)
     {
-        if (!Model.CompanionId.HasValue)
-        {
-            Model.CompanionBikeType = null;
-        }
-        else
-        {
-            var companion = Customers.FirstOrDefault(c => c.Id == Model.CompanionId.Value);
-            if (companion is not null)
-            {
-                Model.CompanionBikeType = companion.BikeType;
-            }
-        }
+        Model.CompanionBikeType = companion?.BikeType;
     }
 
     private async Task HandleValidSubmit()

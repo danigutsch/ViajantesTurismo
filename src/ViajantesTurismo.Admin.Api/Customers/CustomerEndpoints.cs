@@ -34,6 +34,12 @@ internal static class CustomerEndpoints
             .WithDescription("Retrieves all customers.")
             .WithSummary("Retrieves all customers.");
 
+        customersGroup.MapPost("/options/search", SearchCustomerOptions)
+            .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
+            .WithName(nameof(SearchCustomerOptions))
+            .WithDescription("Searches for a bounded set of customer choices by name or exact identifier.")
+            .WithSummary("Searches customer choices.");
+
         customersGroup.MapGet("/{id:guid}", GetCustomerById)
             .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
             .WithName(ItemEndpoint)
@@ -57,6 +63,20 @@ internal static class CustomerEndpoints
         var links = GetResourceLinks(context, linkGenerator);
         return TypedResults.Ok<IReadOnlyList<GetCustomerDto>>(
             [.. customers.Select(customer => customer with { Links = links.For(customer.Id).Links })]);
+    }
+
+    private static async Task<Results<Ok<GetCustomerOptionsDto>, BadRequest>> SearchCustomerOptions(
+        [FromBody] CustomerOptionSearchDto request,
+        [FromServices] IQueryService queryService,
+        CancellationToken ct)
+    {
+        if (request.Query is { Length: > ContractConstants.MaxCustomerOptionQueryLength } || request.Limit <= 0)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var options = await queryService.SearchCustomerOptions(request, ct);
+        return TypedResults.Ok(options);
     }
 
     private static async Task<Results<Ok<CustomerDetailsDto>, NotFound<ProblemDetails>>> GetCustomerById(
