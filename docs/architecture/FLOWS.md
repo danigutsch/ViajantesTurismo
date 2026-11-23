@@ -183,8 +183,15 @@ writes the public withdrawal marker and queues confirmation in a separate Catalo
 Ordinary projection may still catch up with earlier events, but the withdrawal marker controls
 public visibility independently of that projection.
 
+Catalog can append a gallery order and cover snapshot or record a terminal placement rejection.
+Snapshot replay tracks gallery position and stream revision. A rejection advances only the
+stream revision. Upload acceptance commits the legacy media links and queues its placement in
+the same transaction. Public reads continue to use the legacy links during the transition.
+
 <!-- doc-fact:catalog-tour-events:start -->
 - current-event: `CatalogTourDraftCreated`
+- current-event: `CatalogTourGalleryChanged`
+- current-event: `CatalogTourGalleryIntentRejected`
 - current-event: `CatalogTourPresentationChanged`
 - current-event: `CatalogTourPublished`
 - current-event: `CatalogTourUnpublished`
@@ -193,6 +200,8 @@ public visibility independently of that projection.
 
 <!-- doc-fact:catalog-tour-projection-events:start -->
 - projection-event: `CatalogTourDraftCreated`
+- projection-event: `CatalogTourGalleryChanged`
+- projection-event: `CatalogTourGalleryIntentRejected`
 - projection-event: `CatalogTourPresentationChanged`
 - projection-event: `CatalogTourPublished`
 - projection-event: `CatalogTourUnpublished`

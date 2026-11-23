@@ -310,7 +310,8 @@ internal static class CatalogMediaEndpoints
                 [new MediaImageTourLink(id, existingImages.Count, existingImages.Count == 0)],
                 Caption: form.Caption,
                 Attribution: form.Attribution,
-                Copyright: form.Copyright),
+                Copyright: form.Copyright,
+                CanPublishGalleryPlacement: canPublish),
             ct).ConfigureAwait(false);
 
         return result.Status switch

@@ -31,6 +31,14 @@
         }
       }
     },
+    "catalog.gallery-placement.queued": {
+      "address": "catalog.gallery-placement.queued",
+      "messages": {
+        "catalogGalleryPlacementQueuedV1": {
+          "$ref": "#/components/messages/CatalogGalleryPlacementQueuedV1"
+        }
+      }
+    },
     "catalog.media-image.original-stored": {
       "address": "catalog.media-image.original-stored",
       "messages": {
@@ -120,6 +128,30 @@
         }
       ],
       "summary": "Admin consumes branding.settings.changed from the admin consumer stream."
+    },
+    "publishCatalogGalleryPlacementQueuedV1": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/catalog.gallery-placement.queued"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/catalog.gallery-placement.queued/messages/catalogGalleryPlacementQueuedV1"
+        }
+      ],
+      "summary": "Catalog publishes catalog.gallery-placement.queued for Catalog."
+    },
+    "consumeCatalogGalleryPlacementQueuedV1": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/catalog.gallery-placement.queued"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/catalog.gallery-placement.queued/messages/catalogGalleryPlacementQueuedV1"
+        }
+      ],
+      "summary": "Catalog consumes catalog.gallery-placement.queued from its in-process outbox relay."
     },
     "publishMediaImageOriginalStoredV1": {
       "action": "send",
@@ -289,6 +321,44 @@
           "inboxOwner": "AdminWriteDbContext",
           "handler": "ViajantesTurismo.Admin.IntegrationEventWorker.BrandingSettingsChangedIntegrationHandler",
           "transportConsumer": "AdminBrandingTransportDbContext"
+        }
+      },
+      "CatalogGalleryPlacementQueuedV1": {
+        "name": "catalog.gallery-placement.queued",
+        "title": "Catalog gallery placement queued v1",
+        "contentType": "application/json",
+        "headers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "eventType",
+            "eventVersion"
+          ],
+          "properties": {
+            "eventType": {
+              "const": "catalog.gallery-placement.queued"
+            },
+            "eventVersion": {
+              "const": 1
+            }
+          }
+        },
+        "payload": {
+          "$ref": "#/components/schemas/CatalogGalleryPlacementQueuedIntegrationEventV1"
+        },
+        "x-viajantes": {
+          "producerContext": "Catalog",
+          "consumerContexts": [
+            "Catalog"
+          ],
+          "consumerNames": [
+            "catalog"
+          ],
+          "channel": "catalog.gallery-placement.queued",
+          "sourceType": "ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours.CatalogGalleryPlacementQueuedIntegrationEvent",
+          "outboxOwner": "CatalogDbContext",
+          "inboxOwner": "CatalogDbContext",
+          "handler": "ViajantesTurismo.Catalog.Application.Gallery.CatalogGalleryPlacementQueuedHandler"
         }
       },
       "MediaImageOriginalStoredV1": {
@@ -512,6 +582,34 @@
           "HeadingFontFamily",
           "BodyFontFamily",
           "LogoUri"
+        ],
+        "additionalProperties": false
+      },
+      "CatalogGalleryPlacementQueuedIntegrationEventV1": {
+        "type": "object",
+        "properties": {
+          "EventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "OccurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CatalogTourId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "Sequence": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "EventId",
+          "OccurredAt",
+          "CatalogTourId",
+          "Sequence"
         ],
         "additionalProperties": false
       },
