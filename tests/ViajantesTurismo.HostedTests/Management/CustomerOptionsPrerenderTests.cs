@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using PandaBear.Testing;
 using PandaBear.Testing.AspNetCore;
@@ -7,7 +6,6 @@ using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 using ViajantesTurismo.HostedTests.Management.Browser;
-using ViajantesTurismo.Management.Web.Services;
 
 namespace ViajantesTurismo.HostedTests.Management;
 
@@ -31,19 +29,15 @@ public sealed class CustomerOptionsPrerenderTests(HostedTestFixture fixture)
         using var adminHttp = adminApi.CreateClient();
         ApiTestAuthentication.ConfigureAuthenticatedClient(adminHttp, CustomerOptionPostgreSqlScenario.Audience, "Reader");
         var client = new CustomersApiClient(adminHttp, NullLogger<CustomersApiClient>.Instance);
-        var registrations = new ServiceCollection();
-        registrations.AddSingleton<ICustomersApiClient>(client);
-        registrations.AddSingleton<ICountryService, FakeCountryBrowserService>();
         var booking = DtoBuilders.BuildBookingDto(customerId: matching[0], companionId: matching[^1], companionName: "Retained Companion");
         var bookings = new FakeBookingsApiClient();
         bookings.AddBooking(booking);
-        registrations.AddSingleton<IBookingsApiClient>(bookings);
         var tour = DtoBuilders.BuildTourDto();
         var tours = new FakeToursApiClient();
         tours.AddTour(tour);
-        registrations.AddSingleton<IToursApiClient>(tours);
-        registrations.AddSingleton(TimeProvider.System);
-        await using var management = await ManagementWebBrowserHost.Start(registrations, ct);
+        await using var management = await ManagementWebBrowserHost.StartWithClients(
+            ct, bookings: bookings, customers: client, tours: tours, countries: new FakeCountryBrowserService(),
+            clock: TimeProvider.System);
         using var browser = new HttpClient { BaseAddress = management.BaseUri, Timeout = TimeSpan.FromSeconds(15) };
 
         // Act

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PandaBear.AspNetCore;
 using PandaBear.Blazor;
+using ViajantesTurismo.Admin.Contracts.Http;
+using ViajantesTurismo.Catalog.Contracts.Http;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
@@ -32,6 +34,50 @@ internal sealed class ManagementWebBrowserHost : IAsyncDisposable
     public Uri BaseUri
     {
         get;
+    }
+
+    /// <summary>Starts the host with typed clients for the pages under test.</summary>
+    public static Task<ManagementWebBrowserHost> StartWithClients(
+        CancellationToken ct,
+        IBookingsApiClient? bookings = null,
+        ICustomersApiClient? customers = null,
+        IToursApiClient? tours = null,
+        ICatalogToursApiClient? catalog = null,
+        ICountryService? countries = null,
+        TimeProvider? clock = null)
+    {
+        var registrations = new ServiceCollection();
+        if (bookings is not null)
+        {
+            registrations.AddSingleton(bookings);
+        }
+
+        if (customers is not null)
+        {
+            registrations.AddSingleton(customers);
+        }
+
+        if (tours is not null)
+        {
+            registrations.AddSingleton(tours);
+        }
+
+        if (catalog is not null)
+        {
+            registrations.AddSingleton(catalog);
+        }
+
+        if (countries is not null)
+        {
+            registrations.AddSingleton(countries);
+        }
+
+        if (clock is not null)
+        {
+            registrations.AddSingleton(clock);
+        }
+
+        return Start(registrations, ct);
     }
 
     /// <summary>Starts the host with the given service registrations layered over the page infrastructure.</summary>

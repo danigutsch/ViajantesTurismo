@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using PandaBear.Testing;
 using PandaBear.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -31,9 +30,7 @@ public sealed class BookingListPrerenderTests(HostedTestFixture fixture)
         using var adminHttp = adminApi.CreateClient();
         ApiTestAuthentication.ConfigureAuthenticatedClient(adminHttp, BookingPagePostgreSqlScenario.Audience, "Reader");
         var client = new BookingsApiClient(adminHttp);
-        var registrations = new ServiceCollection();
-        registrations.AddSingleton<IBookingsApiClient>(client);
-        await using var management = await ManagementWebBrowserHost.Start(registrations, ct);
+        await using var management = await ManagementWebBrowserHost.StartWithClients(ct, bookings: client);
         using var browser = new HttpClient { BaseAddress = management.BaseUri, Timeout = TimeSpan.FromSeconds(15) };
 
         // Act

@@ -60,9 +60,7 @@ public sealed class CatalogTourListPrerenderTests(HostedTestFixture fixture)
         }));
         using var catalogHttp = catalogApi.CreateClient();
         var catalogClient = new CatalogToursApiClient(catalogHttp);
-        var registrations = new ServiceCollection();
-        registrations.AddSingleton<ICatalogToursApiClient>(catalogClient);
-        await using var management = await ManagementWebBrowserHost.Start(registrations, ct);
+        await using var management = await ManagementWebBrowserHost.StartWithClients(ct, catalog: catalogClient);
         using var browser = new HttpClient { BaseAddress = management.BaseUri, Timeout = TimeSpan.FromSeconds(15) };
         var first = Enumerable.Range(0, 10);
         var lastReversed = Enumerable.Range(tourCount - 10, 10).Reverse();
