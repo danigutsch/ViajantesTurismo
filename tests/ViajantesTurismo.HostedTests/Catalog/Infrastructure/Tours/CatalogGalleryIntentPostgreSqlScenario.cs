@@ -48,6 +48,9 @@ internal sealed class CatalogGalleryIntentPostgreSqlScenario(
     /// <summary>Gets the bounded Catalog photo options query.</summary>
     public ICatalogGalleryPhotoOptionsQuery PhotoOptions => scope.ServiceProvider.GetRequiredService<ICatalogGalleryPhotoOptionsQuery>();
 
+    /// <summary>Gets the public Catalog album query.</summary>
+    public ICatalogGalleryReadStore PublicGallery => scope.ServiceProvider.GetRequiredService<ICatalogGalleryReadStore>();
+
     /// <summary>Gets the service that authorizes and queues placements.</summary>
     public CatalogTourPresentationService Writer => scope.ServiceProvider.GetRequiredService<CatalogTourPresentationService>();
 

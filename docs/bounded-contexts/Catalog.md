@@ -209,6 +209,15 @@ Current implementation:
   editorial context and trusted geolocation metadata.
 - Public endpoints expose only images whose default accessibility text is reviewed and either non-empty
   or explicitly decorative.
+- The public gallery has a localized album index and a page for each published tour album. Catalog
+  projects existing photo placements into SharedKernel albums and serves up to 24 cards or photos
+  per page. An album needs 1–500 eligible photos to appear. The chosen cover appears when eligible
+  in the requested language. The first eligible photo is the fallback.
+- Gallery photos require processed renditions and reviewed default accessibility text. A reviewed
+  Portuguese translation supplies the Portuguese alt text and caption. Missing translations use the
+  reviewed English text. Photos with a pending Portuguese translation are omitted on Portuguese
+  gallery pages until reviewed. Album titles use the existing Catalog presentation and its default
+  language, en-US.
 - Media object reconciliation compares deterministic `media/` storage keys with live Catalog metadata,
   reports missing and orphaned objects, preserves recent orphans during a grace period, and deletes
   eligible orphaned objects from the integration-event worker.
@@ -242,8 +251,8 @@ Implemented domain events:
 Planned/evolving domain events:
 
 - `CatalogTourGalleryChanged` can be committed by the revision-guarded application command and
-  replayed into the tour read model. The public website continues to use the existing media
-  placement during this stage.
+  replayed into the tour read model. Public reads use a tour's applied authored snapshot after
+  initialization and continue using existing links for a tour without that baseline.
 - The guarded placement queue saves the authored snapshot and its wake-up in the Catalog database
   transaction. Wake-ups drain the per-tour journal in order. The gallery event stores the intent
   sequence and identity for safe replay after a committed append. Each newly accepted Catalog
@@ -282,8 +291,11 @@ Planned/evolving domain events:
   photo order and optional cover using the observed stream revision and accepted placement
   sequence. Catalog write permission is required, and edits to a published tour also require
   Catalog publication permission. An accepted write returns 202 and a location for the
-  specific queued outcome. Public gallery, cover and rendition queries continue to use the
-  legacy placement during rollout.
+  specific queued outcome. While a placement waits for replay, the public album, tour cover
+  and rendition authorization use the last applied placement. A photo must still be linked,
+  processed and reviewed. A direct rendition is available if any visible tour still includes
+  that photo. An explicitly empty authored album removes its public placement without deleting
+  the media asset.
 - `CatalogTourArchived`.
 
 Projection types:

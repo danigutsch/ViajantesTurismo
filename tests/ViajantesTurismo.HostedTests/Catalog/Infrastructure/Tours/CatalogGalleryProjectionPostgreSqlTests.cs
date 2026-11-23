@@ -4,6 +4,7 @@ using PandaBear.EventSourcing;
 using PandaBear.EventSourcing.Npgsql;
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Tours;
+using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
@@ -18,7 +19,7 @@ namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 public sealed class CatalogGalleryProjectionPostgreSqlTests(HostedTestFixture shared)
 {
     [Fact]
-    public async Task A_committed_gallery_write_is_recovered_by_replay_without_an_additional_event()
+    public async Task A_committed_gallery_write_is_recovered_by_replay_before_public_placement_changes()
     {
         // Arrange
         var ct = TestContext.Current.CancellationToken;
@@ -63,6 +64,8 @@ public sealed class CatalogGalleryProjectionPostgreSqlTests(HostedTestFixture sh
         await sameEditBeforeReplay.ShouldThrow<CatalogTourProjectionPendingException>();
         var committed = await events.Load(stream, afterRevision: StreamRevision.From(3), ct);
         var afterFailure = await store.GetTour(tour.Id, ct);
+        var beforeReplay = await new EfCatalogGalleryReadStore(context)
+            .GetAlbum(tour.Slug, PublicContentCultures.EnglishUnitedStates, null, ct);
 
         await using var recoveredContext = new CatalogDbContextDesignTimeFactory().CreateDbContext([]);
         recoveredContext.Database.SetConnectionString(database.ConnectionString);
@@ -77,6 +80,8 @@ public sealed class CatalogGalleryProjectionPostgreSqlTests(HostedTestFixture sh
         Func<Task> oldRevision = async () => await writer.ChangeGallery(tour.Id, [first.Id], first.Id, 3, canPublish: true, ct);
         await oldRevision.ShouldThrow<ExpectedStreamRevisionConflictException>();
         var afterRetry = await events.Load(stream, afterRevision: StreamRevision.From(3), ct);
+        var appliedAlbum = await new EfCatalogGalleryReadStore(recoveredContext)
+            .GetAlbum(tour.Slug, PublicContentCultures.EnglishUnitedStates, null, ct);
 
         // Assert
         legacy.ShouldNotBeNull().GalleryPhotoIds.ShouldBeNull();
@@ -98,5 +103,9 @@ public sealed class CatalogGalleryProjectionPostgreSqlTests(HostedTestFixture sh
         row.GalleryPhotoIds.ShouldNotBeNull().ShouldBe([second.Id]);
         row.GalleryCoverId.ShouldBe(second.Id);
         row.IsPubliclyVisible.ShouldBeTrue();
+        beforeReplay.ShouldNotBeNull().Photos.Select(photo => photo.Id).ShouldBe([first.Id, second.Id]);
+        var appliedPhoto = appliedAlbum.ShouldNotBeNull().Photos.ShouldHaveSingleItem();
+        appliedPhoto.Id.ShouldBe(second.Id);
+        appliedPhoto.IsCover.ShouldBeTrue();
     }
 }
