@@ -63,7 +63,7 @@ public sealed record GetPaymentInstructionDto
     {
         get; init;
     }
-    /// <summary>Gets revision-bound independent reviews.</summary>
+    /// <summary>Gets revision-bound independent reviews, limited to the last review when latestReviewOnly is requested.</summary>
     public required IReadOnlyList<GetFinancialReviewDto> Reviews
     {
         get; init;
