@@ -1,3 +1,6 @@
+using PandaBear.BuildingBlocks;
+using PandaBear.Galleries;
+using ViajantesTurismo.Catalog.Domain.PublicContent;
 using PandaBear.EventSourcing;
 using PandaBear.InputNormalization;
 using PandaBear.Results;
@@ -10,6 +13,13 @@ namespace ViajantesTurismo.Catalog.Domain.Tours;
 public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
 {
     private Guid id;
+    private long? legacyBootstrapThroughSequence;
+
+    private static readonly AlbumRules GalleryRules = new(PublicContentCultures.Supported, CatalogDomainLimits.MaxGalleryPhotos)
+    {
+        MaxTitleLength = CatalogDomainLimits.MaxNameLength,
+        MaxSlugLength = CatalogDomainLimits.MaxSlugLength
+    };
 
     private CatalogTour()
     {
@@ -78,6 +88,25 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
     public Guid? RetirementId
     {
         get; private set;
+    }
+
+    /// <summary>Gets the authored photo order, or null for a tour whose placement still comes from legacy media links.</summary>
+    public IReadOnlyList<Guid>? GalleryPhotoIds
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the cover chosen by the editor. The first eligible photo is the fallback.</summary>
+    public Guid? GalleryCoverId
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets the latest placement sequence resolved in the event stream.</summary>
+    public long GalleryIntentSequence
+    {
+        get;
+        private set;
     }
 
     /// <summary>Determines whether gallery content can change with the caller's publication authority.</summary>
@@ -304,6 +333,100 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
         AddEvent(new CatalogTourUnpublished(Id));
     }
 
+    /// <summary>Records the ordered photo selection and optional cover of the tour album.</summary>
+    /// <param name="photoIds">The ordered selection of Catalog photos.</param>
+    /// <param name="coverId">The chosen cover, or null to use the first eligible photo.</param>
+    /// <param name="photos">Catalog's knowledge of the photo inventory.</param>
+    /// <returns>A success result or the album validation failure.</returns>
+    /// <remarks>Pending photos can be placed. Public gallery reads apply the current rendition and locale review rules.</remarks>
+    public Result ChangeGallery(IReadOnlyList<Guid> photoIds, Guid? coverId, IAlbumPhotoEligibility<Guid> photos) =>
+        ChangeGallery(photoIds, coverId, photos, null, null, null);
+
+    /// <summary>Records the legacy placement once, together with the journal boundary observed under the tour lease.</summary>
+    public Result BootstrapLegacyGallery(
+        IReadOnlyList<Guid> photoIds, Guid? coverId, IAlbumPhotoEligibility<Guid> photos, long throughSequence)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(throughSequence);
+
+        return GalleryPhotoIds is null
+            ? ChangeGallery(photoIds, coverId, photos, null, null, throughSequence)
+            : Result.Ok();
+    }
+
+    /// <summary>Determines whether replay can acknowledge an upload already represented by the baseline without changing placement.</summary>
+    public bool IncludesBootstrappedUpload(Guid photoId, long sequence) =>
+        RetirementId is null && sequence > 0 && sequence <= legacyBootstrapThroughSequence && GalleryPhotoIds?.Contains(photoId) == true;
+
+    /// <summary>Records the next accepted placement intent and the resulting gallery snapshot.</summary>
+    public Result ApplyGalleryIntent(
+        IReadOnlyList<Guid> photoIds, Guid? coverId, IAlbumPhotoEligibility<Guid> photos, Guid intentId, long sequence)
+    {
+        if (sequence <= GalleryIntentSequence)
+        {
+            return Result.Ok();
+        }
+
+        if (sequence != GalleryIntentSequence + 1)
+        {
+            return Result.Conflict("The preceding gallery placement intent is still pending.");
+        }
+
+        return ChangeGallery(photoIds, coverId, photos, intentId, sequence, null);
+    }
+
+    /// <summary>Resolves a draft-only intent whose queued placement would now change a published gallery.</summary>
+    public bool RejectGalleryIntentAfterPublication(bool canPublish, Guid intentId, long sequence)
+    {
+        if (canPublish || !IsPublished)
+        {
+            return false;
+        }
+
+        AddEvent(new CatalogTourGalleryIntentRejected(Id, intentId, sequence));
+        return true;
+    }
+
+    /// <summary>Appends a newly accepted upload to the authored photo order and preserves the chosen cover.</summary>
+    public Result ApplyGalleryUpload(Guid photoId, IAlbumPhotoEligibility<Guid> photos, Guid intentId, long sequence)
+    {
+        if (GalleryPhotoIds is not { } gallery)
+        {
+            return Result.Conflict("The gallery needs an authored baseline before applying uploaded photos.");
+        }
+
+        IReadOnlyList<Guid> placement = gallery.Contains(photoId) ? gallery : [.. gallery, photoId];
+        return ApplyGalleryIntent(placement, GalleryCoverId, photos, intentId, sequence);
+    }
+
+    private Result ChangeGallery(
+        IReadOnlyList<Guid> photoIds, Guid? coverId, IAlbumPhotoEligibility<Guid> photos, Guid? intentId, long? intentSequence,
+        long? bootstrapThroughSequence)
+    {
+        ArgumentNullException.ThrowIfNull(photoIds);
+        ArgumentNullException.ThrowIfNull(photos);
+
+        if (RetirementId is not null)
+        {
+            return CatalogTourErrors.Retired();
+        }
+
+        var translation = new AlbumTranslationDefinition(PublicContentCultures.Supported.Default.Value, Title, Slug, PublicationStatus.Draft);
+        var album = Album.Create(new AlbumDefinition<Guid, Guid>(0, Id, photoIds, coverId, [translation]), GalleryRules, photos);
+        if (album.IsFailure)
+        {
+            return album.ConvertError();
+        }
+
+        var authored = album.Value;
+        if (intentSequence is not null || GalleryPhotoIds is null
+            || !GalleryPhotoIds.SequenceEqual(authored.PhotoIds) || GalleryCoverId != authored.CoverId)
+        {
+            AddEvent(new CatalogTourGalleryChanged(Id, authored.PhotoIds, authored.CoverId, intentId, intentSequence, bootstrapThroughSequence));
+        }
+
+        return Result.Ok();
+    }
+
     /// <inheritdoc />
     protected override void ApplyEvent(object domainEvent)
     {
@@ -328,6 +451,30 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
                 SeoTitle = presentationChanged.SeoTitle;
                 SeoDescription = presentationChanged.SeoDescription;
                 break;
+            case CatalogTourGalleryChanged galleryChanged:
+                EnsureCatalogTourId(galleryChanged.CatalogTourId);
+                if (galleryChanged.LegacyBootstrapThroughSequence is { } bootstrapWatermark)
+                {
+                    if (GalleryPhotoIds is not null)
+                    {
+                        throw new InvalidOperationException("Catalog can bootstrap only the first authored gallery snapshot.");
+                    }
+
+                    legacyBootstrapThroughSequence = bootstrapWatermark;
+                }
+
+                if (galleryChanged.IntentSequence is { } sequence)
+                {
+                    AdvanceGalleryIntentSequence(sequence);
+                }
+
+                GalleryPhotoIds = galleryChanged.PhotoIds;
+                GalleryCoverId = galleryChanged.CoverId;
+                break;
+            case CatalogTourGalleryIntentRejected rejected:
+                EnsureCatalogTourId(rejected.CatalogTourId);
+                AdvanceGalleryIntentSequence(rejected.IntentSequence);
+                break;
             case CatalogTourPublished published:
                 EnsureCatalogTourId(published.CatalogTourId);
                 IsPublished = true;
@@ -345,6 +492,16 @@ public sealed class CatalogTour : EventSourcedAggregateRoot<Guid>
                 throw new InvalidOperationException(
                     $"Catalog tour cannot apply event type '{domainEvent.GetType().FullName}'.");
         }
+    }
+
+    private void AdvanceGalleryIntentSequence(long sequence)
+    {
+        if (sequence != GalleryIntentSequence + 1)
+        {
+            throw new InvalidOperationException("Catalog gallery intents must replay in order.");
+        }
+
+        GalleryIntentSequence = sequence;
     }
 
     private void EnsureCatalogTourId(Guid catalogTourId)

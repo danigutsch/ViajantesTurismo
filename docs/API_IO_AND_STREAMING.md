@@ -222,6 +222,10 @@ change.
    (`MediaObjectCompensation`), so a cancelled request still removes the object it wrote. The original exception keeps flowing;
    a delete that fails is left to `MediaObjectReconciliationService`. The variant handler compensates its variant objects the
    same way.
+5. The existing upload transaction commits the new image, its legacy links, its processing wake-up, and the ordered photo
+   append with its separate placement wake-up. The Catalog tour mutation lease serializes acceptance with other tour edits.
+   Duplicate uploads exit before writing either wake-up. The placement write uses identifiers only. The bounded read, scan,
+   sanitize, decode, hash and object storage passes are unchanged.
 
 Animated PNG and WebP uploads are accepted. Catalog serves a still rendition built from the first
 frame. The shared upload picker tells staff this for file selection, folder selection, and drops.
