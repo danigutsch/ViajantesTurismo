@@ -1,3 +1,4 @@
+using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
 using PandaBear.InputNormalization;
 
@@ -51,4 +52,12 @@ public sealed class StubCatalogTourReadModelStore(params CatalogTourDraftReadMod
             tour.IsPublished && string.Equals(tour.Slug, sanitizedSlug, StringComparison.Ordinal));
         return ValueTask.FromResult(tour);
     }
+
+    public ValueTask<CatalogTourDraftReadModel?> UpdateGallery(
+        CatalogTourGalleryChanged gallery, long streamVersion, long position, DateTimeOffset updatedAt, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public ValueTask<bool> AdvanceStreamVersion(Guid catalogTourId, long streamVersion, CancellationToken ct) =>
+        throw new NotSupportedException();
 }

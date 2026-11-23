@@ -32,7 +32,7 @@ public static class PublicMediaImageTestFactory
         return result.Value;
     }
 
-    public static PublicMediaImage CreateFailedImage(Guid tourId)
+    public static PublicMediaImage CreateFailedImage(Guid tourId, int displayOrder = 2)
     {
         var result = PublicMediaImage.Create(
             new PublicMediaImageMetadata
@@ -48,7 +48,7 @@ public static class PublicMediaImageTestFactory
             },
             [new MediaImageResponsiveVariant("failed-640.jpg", 640, 427, "image/jpeg", 1024)],
             ["failed"],
-            [new MediaImageTourLink(tourId, 2, false)]);
+            [new MediaImageTourLink(tourId, displayOrder, false)]);
 
         return result.Value;
     }
