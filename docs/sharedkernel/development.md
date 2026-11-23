@@ -17,14 +17,12 @@ records Linux and Windows package consumption and NativeAOT for this candidate.
 
 The Npgsql driver and EF provider use 10.0.4. EF Core, EF-backed Data Protection and the
 design-time CLI stay on 10.0.15. The published SharedKernel provider uses EF 10 index
-metadata APIs, and the application needs the inclusive idempotency cutoff when moving
-to EF 11. [Provider compatibility](https://github.com/danigutsch/PandaBear.SharedKernel/issues/493) ·
-[Inclusive cutoff](https://github.com/danigutsch/PandaBear.SharedKernel/issues/467)
+metadata APIs. Adoption of EF 11 requires provider compatibility with its index metadata
+and preservation of the application's inclusive idempotency cutoff.
 
 The application keeps a central OpenAPI.NET 3.11.1 version for the extension preservation
 fix. Recheck that entry when adopting a candidate with the same upstream dependency floor.
-[OpenAPI.NET release](https://www.nuget.org/packages/Microsoft.OpenApi/3.11.1) ·
-[SharedKernel dependency update](https://github.com/danigutsch/PandaBear.SharedKernel/issues/503)
+[OpenAPI.NET release](https://www.nuget.org/packages/Microsoft.OpenApi/3.11.1)
 
 AWS SDK for S3 4.1.2 is verified against SeaweedFS with TLS and workload identity.
 The analyzer, browser test runner and coverage tool updates are recorded in the dependency
