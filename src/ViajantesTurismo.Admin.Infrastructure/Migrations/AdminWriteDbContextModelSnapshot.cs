@@ -1065,6 +1065,8 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
 
                     b.HasIndex("ResourceId", "OccurredAt");
 
+                    b.HasIndex("TargetId", "Sequence");
+
                     b.ToTable("PaymentAudits", (string)null);
                 });
 
