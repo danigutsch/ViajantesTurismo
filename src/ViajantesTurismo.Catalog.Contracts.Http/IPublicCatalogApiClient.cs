@@ -18,6 +18,12 @@ public interface IPublicCatalogApiClient
     /// </summary>
     Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct);
 
+    /// <summary>Gets one page of the public gallery in the requested content language.</summary>
+    Task<HttpOutcome<CatalogGalleryIndexDto>> ListPublishedAlbums(string culture, string? page, CancellationToken ct);
+
+    /// <summary>Gets one page of photos from a public tour album.</summary>
+    Task<HttpOutcome<CatalogGalleryAlbumDto>> GetPublishedAlbum(string slug, string culture, string? page, CancellationToken ct);
+
     /// <summary>
     /// Gets public content by key and culture.
     /// </summary>
