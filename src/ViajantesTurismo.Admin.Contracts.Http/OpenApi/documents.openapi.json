@@ -1227,6 +1227,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -1310,7 +1317,7 @@
           "Documents"
         ],
         "summary": "Lists a page of booking payment instructions.",
-        "description": "Lists up to 100 masked retained instruction revisions, newest first.",
+        "description": "Lists up to 100 masked retained instruction revisions, newest first. The optional latestReviewOnly query returns at most the latest review per revision.",
         "operationId": "ListBookingPaymentInstructionPage",
         "parameters": [
           {
@@ -1344,6 +1351,13 @@
                 "string"
               ],
               "format": "int32"
+            }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -1429,6 +1443,87 @@
         ]
       }
     },
+    "/api/v1/documents/{id}/payment-instructions/reviews": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Lists one page of payment instruction reviews.",
+        "description": "Lists up to 100 independent reviews of one payment instruction revision in recorded order.",
+        "operationId": "ListPaymentInstructionReviewPage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionReviewPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/documents/bookings/{bookingId}/payment-instructions/{id}/regenerate": {
       "post": {
         "tags": [
@@ -1454,6 +1549,13 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -1549,6 +1651,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -1642,6 +1751,13 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -1737,6 +1853,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -1831,6 +1954,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -1924,6 +2054,13 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -2531,6 +2668,47 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/GetPaymentInstructionDto"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "GetPaymentInstructionReviewPageDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetFinancialReviewDto"
             }
           },
           "page": {
