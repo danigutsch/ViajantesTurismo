@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\scripts\ViajantesTurismo.Architecture.Tool\ViajantesTurismo.Architecture.Tool.csproj" />
+        <ProjectReference Include="../../src/ViajantesTurismo.RepositoryDocumentation/ViajantesTurismo.RepositoryDocumentation.csproj" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.AppHost\ViajantesTurismo.AppHost.csproj" IsAspireProjectResource="false" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />

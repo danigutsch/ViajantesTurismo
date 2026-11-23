@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace ViajantesTurismo.Architecture.Analyzers;
 
-/// <summary>Reports direct HTTP requests within repository tool wrappers.</summary>
+/// <summary>Checks that repository tool wrappers delegate source-owned implementation.</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ThinToolWrapperAnalyzer : DiagnosticAnalyzer
 {
@@ -20,8 +20,17 @@ public sealed class ThinToolWrapperAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true,
         description: "Tool wrappers compose reusable clients. HTTP request execution belongs in a source library.");
 
+    private static readonly DiagnosticDescriptor ToolWrapperTypeRule = new(
+        ArchitectureDiagnosticIds.ToolWrapperImplementationType,
+        title: "Tool wrappers delegate implementation types to source projects",
+        messageFormat: "Move tool-owned type '{0}' into a source project under src",
+        category: "Architecture",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "A tool executable owns its command entry point. Other implementation types belong in a source project.");
+
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [ToolWrapperHttpRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [ToolWrapperHttpRule, ToolWrapperTypeRule];
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -48,7 +57,25 @@ public sealed class ThinToolWrapperAnalyzer : DiagnosticAnalyzer
             compilationContext.RegisterOperationAction(
                 operationContext => AnalyzeInvocation(operationContext, httpClient, invoker, jsonExtensions),
                 OperationKind.Invocation);
+
+            if (compilationContext.Compilation.GetEntryPoint(compilationContext.CancellationToken) is { } entryPoint)
+            {
+                compilationContext.RegisterSymbolAction(
+                    symbolContext => AnalyzeToolType(symbolContext, entryPoint.ContainingType),
+                    SymbolKind.NamedType);
+            }
         });
+    }
+
+    private static void AnalyzeToolType(SymbolAnalysisContext context, INamedTypeSymbol entryPointType)
+    {
+        var type = (INamedTypeSymbol)context.Symbol;
+        if (SymbolEqualityComparer.Default.Equals(type, entryPointType))
+        {
+            return;
+        }
+
+        context.ReportDiagnostic(Diagnostic.Create(ToolWrapperTypeRule, type.Locations[0], type.Name));
     }
 
     private static void AnalyzeInvocation(

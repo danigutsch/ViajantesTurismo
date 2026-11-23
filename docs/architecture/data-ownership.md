@@ -24,7 +24,8 @@ by a different bounded context.
 
 ## Generated data ownership view
 
-The repository CLI reads the metadata and renders the diagram with PandaBear.Documentation.
+The [repository documentation project](../../src/ViajantesTurismo.RepositoryDocumentation/Architecture/ArchitectureDataDiagram.cs)
+reads the metadata and renders the diagram with PandaBear.Documentation.
 Refresh and verify using the repository's pinned .NET SDK.
 
 ```bash

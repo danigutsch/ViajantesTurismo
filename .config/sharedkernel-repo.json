@@ -35,6 +35,7 @@
     "src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj",
     "src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj",
     "src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj",
+    "src/ViajantesTurismo.RepositoryDocumentation/ViajantesTurismo.RepositoryDocumentation.csproj",
     "src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj",
     "src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj",
     "tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj",

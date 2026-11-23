@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.ArchitectureDocumentation;
+namespace ViajantesTurismo.RepositoryDocumentation.Architecture;
 
 /// <summary>A database access surface and selected represented table roles.</summary>
 /// <param name="Id">The stable diagram node and store identifier.</param>

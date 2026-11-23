@@ -599,16 +599,6 @@
           "ViajantesTurismo.Admin.Domain": "[0.1.0-alpha.0, )"
         }
       },
-      "viajantesturismo.asyncapi.tool": {
-        "type": "Project",
-        "dependencies": {
-          "PandaBear.SharedKernel.Documentation": "[0.1.0-alpha.727.1, )",
-          "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Catalog.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
-          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
-        }
-      },
       "viajantesturismo.branding.contracts.integrationevents": {
         "type": "Project",
         "dependencies": {
@@ -632,6 +622,16 @@
         "type": "Project",
         "dependencies": {
           "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.727.1, )"
+        }
+      },
+      "viajantesturismo.repositorydocumentation": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Documentation": "[0.1.0-alpha.727.1, )",
+          "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
       "viajantesturismo.resources": {

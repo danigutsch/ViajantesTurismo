@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.ArchitectureDocumentation;
+namespace ViajantesTurismo.RepositoryDocumentation.Architecture;
 
 /// <summary>An application in the architecture view.</summary>
 /// <param name="Id">The stable node identifier.</param>

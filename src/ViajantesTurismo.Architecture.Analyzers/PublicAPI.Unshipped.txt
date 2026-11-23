@@ -21,3 +21,4 @@ ViajantesTurismo.Architecture.Analyzers.SharedKernelHelperPlacementAnalyzer
 ViajantesTurismo.Architecture.Analyzers.SharedKernelHelperPlacementAnalyzer.SharedKernelHelperPlacementAnalyzer() -> void
 override ViajantesTurismo.Architecture.Analyzers.SharedKernelHelperPlacementAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
 override ViajantesTurismo.Architecture.Analyzers.SharedKernelHelperPlacementAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+const ViajantesTurismo.Architecture.Analyzers.ArchitectureDiagnosticIds.ToolWrapperImplementationType = "VTARCH006" -> string!

@@ -123,3 +123,14 @@ test project. References to application or other provider types keep the helper 
 Use a registered package for an exact capability owner. An unregistered capability prompts a
 review for a focused library. Verify reuse and destination compatibility before moving code.
 See the [coupling and cohesion proposal](../../docs/architecture/coupling-and-cohesion-metrics.md).
+
+## `VTARCH006` implementation types in tool wrappers
+
+Executable projects with `ViajantesTurismoToolWrapper` enabled own their command entry point.
+It can parse arguments, load command configuration, compose dependencies, write output, and select
+an exit code. The compiler identifies the entry point for both top-level statements and an explicit
+`Main` method. Move other declared types to a source project under `src/`.
+
+The architecture and AsyncAPI commands delegate metadata validation and rendering input to the
+repository documentation source project. The SharedKernel documentation package supplies their
+common renderers.

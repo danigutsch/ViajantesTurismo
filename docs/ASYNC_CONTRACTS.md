@@ -41,7 +41,7 @@ Current integration-event handlers:
 
 The repository CLI uses the same source-generated JSON metadata as the producer and consumer for each event.
 Register each current durable event's serializer and topology in
-[`AsyncApiDocument.cs`](../scripts/ViajantesTurismo.AsyncApi.Tool/AsyncApiDocument.cs).
+[`AsyncApiDocument.cs`](../src/ViajantesTurismo.RepositoryDocumentation/AsyncApi/AsyncApiDocument.cs).
 Regenerate the artifact when that registration or its serializer changes.
 
 ```bash

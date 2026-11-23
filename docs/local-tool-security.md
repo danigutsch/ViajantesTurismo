@@ -116,6 +116,77 @@ untrusted branch.
 - Aspire can inspect logs and traces and execute resource lifecycle commands. Review each requested
   tool invocation before approval.
 
+#### Local AppHost discovery
+
+Restore the pinned tools and start the AppHost with `dotnet tool run aspire run`. Start the configured
+MCP server from the same development workspace. Use `list_apphosts` to locate the running AppHost and
+`select_apphost` with the project path when several are running. Use `list_resources` to check state and
+health. Review scoped console logs, structured logs, or traces for the chosen resource when state alone
+does not explain the failure. Keep diagnostic output inside the trusted local session and record only
+the relevant names, states, and health results when sharing evidence.
+
+| Local resource | Read-only workflow |
+| --- | --- |
+| PostgreSQL | Check `database-server` and its database resources. Check migration completion before investigating connection or readiness errors. |
+| Redis | Check `cache` health and its scoped console logs. |
+| ClamAV | Check scan service health and scoped startup logs. Use synthetic files for application-level diagnostics. |
+| SeaweedFS | Check the object storage resource state and health. Keep object contents and storage credentials out of the diagnostic record. |
+| Observability | Start the AppHost with `ASPIRE_ENABLE_OBSERVABILITY_STACK=1` to discover `grafana`, `loki`, `tempo`, and `prometheus` alongside `opentelemetry-collector`. Check the Collector before inspecting a downstream backend. |
+
+The pinned Aspire CLI `13.6.5` answered the stdio `initialize` and `tools/list` requests with 14 tools.
+The workspace launcher listed the running isolated AppHost and found each resource above Running and
+Healthy with the optional observability stack enabled. The tool list includes `execute_resource_command`;
+the diagnostic workflow uses `list_apphosts`, `select_apphost`, `list_resources`, and scoped read tools.
+Use the HTTPS launch profile in an isolated AppHost with synthetic data for this check.
+Resource responses also include URLs and environment metadata. Keep only the resource names, states,
+and health outcomes in the validation receipt.
+Stop the AppHost after collecting the result. The [AppHost runbook](../src/ViajantesTurismo.AppHost/README.md)
+describes the resource graph and telemetry configuration.
+
+#### Resource-specific tools
+
+Use the Aspire resource health and scoped diagnostic tools for the current AppHost resources. Add a
+service-specific MCP server when it answers a diagnostic question that these tools cannot answer and
+the service supplies a least-privilege identity for that question.
+
+| Resource | Tool decision |
+| --- | --- |
+| PostgreSQL | Use the approved server and index-health dashboards. A SQL MCP server would need a separately provisioned identity and a bounded query contract for the required metrics. [PostgreSQL monitoring](architecture/postgresql-observability.md) |
+| Redis | Keep health and startup diagnostics in Aspire. The Redis MCP server includes key access, writes, and management tools. A future trial requires synthetic cache data and a restricted Redis ACL. [Redis MCP capabilities](https://redis.io/docs/latest/integrate/redis-mcp/) |
+| ClamAV | Use the scanner resource's health and scoped console logs. Test scanner behavior through the application's existing synthetic-file fixture. [ClamAV daemon commands](https://docs.clamav.net/manual/Usage/Scanning.html#clamd) |
+| SeaweedFS | Use the resource health and the storage integration fixture. Keep bucket contents and workload credentials within the S3 client boundary. [SeaweedFS S3 API](https://github.com/seaweedfs/seaweedfs/wiki/Amazon-S3-API) |
+| Collector, Prometheus, Loki, and Tempo | Use Aspire resource health and the source-provisioned Grafana dashboards. Review exported snapshots through the existing Collector privacy boundary. [Local observability stack](../observability/README.md) |
+| PostgreSQL monitoring project | Use the index-health advisory dashboard and its bounded outcomes. Keep monitoring connection values and database object names in the existing monitoring boundary. |
+| Keycloak | Inspect resource health and OIDC discovery for the synthetic development realm. Realm, user, role, and token operations require a separately approved administrator workflow. |
+| PgWeb and Redis Insight | Use the existing local browser tools for approved diagnostic work. Their interactive queries and key access stay outside the MCP workflow. |
+| k6 performance smoke | Use the pinned opt-in AppHost smoke scenario with its synthetic identity. Read its aggregate test result through the existing performance workflow. |
+| Migration, API, frontend, and worker projects | Use the scoped Aspire resource status and redacted runtime diagnostics. Their existing HTTP, storage, and messaging boundaries own application operations. |
+| Grafana | Use the optional metadata-only stdio workflow below to locate a provisioned dashboard or inspect a panel definition. |
+
+##### Grafana dashboard metadata
+
+Use a disposable local Grafana instance on an internal container network with anonymous access
+disabled. Grant the dedicated service account Viewer permissions for the diagnostic dashboard and
+keep its token and instance address in the operator's environment. Pre-pull the reviewed image
+digest for Grafana MCP `2.3.0` before starting the client. [Grafana MCP release](https://github.com/grafana/mcp-grafana/releases/tag/v2.3.0) ·
+[Service-account authentication](https://grafana.com/docs/grafana/latest/ai-tools/mcp/configure/authentication/)
+
+```bash
+podman run --rm --interactive --pull=never --network "$GRAFANA_MCP_NETWORK" \
+  --read-only --cap-drop ALL --security-opt no-new-privileges \
+  --env GRAFANA_URL --env GRAFANA_SERVICE_ACCOUNT_TOKEN \
+  docker.io/grafana/mcp-grafana@sha256:97d82eea2a7d493beafc56eaa4572dcfbe4f7255ed193cfa12da07ba62c8a3fa \
+  --transport stdio --enabled-tools dashboard,search --disable-write --disable-query --usage-stats disabled
+```
+
+The local proof used `search_dashboards` and `get_dashboard_summary` on the file-provisioned
+PostgreSQL dashboard. The server also exposed folder search, dashboard lookup, property and panel
+query definition reads, and dashboard version listing. All seven tools advertised read-only
+semantics. The Viewer could read the dashboard and received HTTP 403 when attempting to save one.
+Anonymous dashboard search returned HTTP 401. Close the stdio session, revoke the token, and stop
+the disposable instance to end the workflow.
+[Grafana tool controls](https://grafana.com/docs/grafana/latest/ai-tools/mcp/configure/enable-and-disable-tools/)
+
 ### Playwright MCP
 
 - Use the official Microsoft container image pinned by both release tag and reviewed multi-platform

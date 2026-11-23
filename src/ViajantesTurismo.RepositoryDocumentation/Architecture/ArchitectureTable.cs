@@ -1,4 +1,4 @@
-namespace ViajantesTurismo.ArchitectureDocumentation;
+namespace ViajantesTurismo.RepositoryDocumentation.Architecture;
 
 /// <summary>A representative table and its architecture classifications.</summary>
 /// <param name="Schema">The PostgreSQL schema.</param>

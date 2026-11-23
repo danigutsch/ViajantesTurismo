@@ -1,4 +1,4 @@
-using ViajantesTurismo.AsyncApi.Tool;
+using ViajantesTurismo.RepositoryDocumentation.AsyncApi;
 
 if (args is not ["generate" or "verify", var artifactPath])
 {

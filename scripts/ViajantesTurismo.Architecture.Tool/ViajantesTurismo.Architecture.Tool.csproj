@@ -4,16 +4,14 @@
         <OutputType>Exe</OutputType>
         <IsPackable>false</IsPackable>
         <ViajantesTurismoToolWrapper>true</ViajantesTurismoToolWrapper>
-        <RootNamespace>ViajantesTurismo.ArchitectureDocumentation</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ViajantesTurismo.ArchitectureTests" />
         <CompilerVisibleProperty Include="ViajantesTurismoToolWrapper" />
         <ProjectReference Include="../../src/ViajantesTurismo.Architecture.Analyzers/ViajantesTurismo.Architecture.Analyzers.csproj"
                           OutputItemType="Analyzer" ReferenceOutputAssembly="false"
                           PrivateAssets="all" IsAspireProjectResource="false" />
-        <PackageReference Include="PandaBear.SharedKernel.Documentation" />
+        <ProjectReference Include="../../src/ViajantesTurismo.RepositoryDocumentation/ViajantesTurismo.RepositoryDocumentation.csproj" />
     </ItemGroup>
 
 </Project>

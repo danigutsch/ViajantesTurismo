@@ -50,6 +50,16 @@
           "PandaBear.SharedKernel.Messaging.IntegrationEvents": "[0.1.0-alpha.727.1, )"
         }
       },
+      "viajantesturismo.repositorydocumentation": {
+        "type": "Project",
+        "dependencies": {
+          "PandaBear.SharedKernel.Documentation": "[0.1.0-alpha.727.1, )",
+          "ViajantesTurismo.Admin.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Branding.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Catalog.Contracts.IntegrationEvents": "[0.1.0-alpha.0, )",
+          "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
+        }
+      },
       "viajantesturismo.resources": {
         "type": "Project"
       },
