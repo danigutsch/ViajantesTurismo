@@ -8,6 +8,9 @@ using PandaBear.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
+using ViajantesTurismo.Catalog.Application.Gallery;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents;
+using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;
 
@@ -35,5 +38,14 @@ internal static class CatalogTourDependencyInjection
             AdminTourRetiredIntegrationEvent.EventType,
             AdminIntegrationEventJsonContext.Default.AdminTourRetiredIntegrationEvent);
         services.TryAddScoped<CatalogTourPresentationService>();
+        services.TryAddScoped<CatalogGalleryPlacementQueuedHandler>();
+        services.TryAddScoped<IIntegrationEventHandler<CatalogGalleryPlacementQueuedIntegrationEvent>>(provider =>
+            new IdempotentIntegrationHandler<CatalogGalleryPlacementQueuedIntegrationEvent>(
+                provider.GetRequiredService<CatalogGalleryPlacementQueuedHandler>(),
+                provider.GetRequiredService<IIdempotencyStore>(),
+                provider.GetRequiredService<IOptions<IntegrationEventOptions>>(),
+                provider.GetRequiredService<TimeProvider>()));
+        services.AddIntegrationEventConsumer(CatalogGalleryPlacementQueuedIntegrationEvent.EventType,
+            CatalogIntegrationEventJsonContext.Default.CatalogGalleryPlacementQueuedIntegrationEvent);
     }
 }

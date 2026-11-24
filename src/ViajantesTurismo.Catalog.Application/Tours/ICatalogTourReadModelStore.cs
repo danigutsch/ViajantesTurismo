@@ -1,3 +1,5 @@
+using ViajantesTurismo.Catalog.Domain.Tours;
+
 namespace ViajantesTurismo.Catalog.Application.Tours;
 
 /// <summary>
@@ -47,6 +49,19 @@ public interface ICatalogTourReadModelStore
         long position,
         DateTimeOffset updatedAt,
         CancellationToken ct);
+
+    /// <summary>Projects an immutable authored gallery snapshot into the tour read model.</summary>
+    /// <param name="gallery">The committed gallery change.</param>
+    /// <param name="streamVersion">The event-stream version represented by the change.</param>
+    /// <param name="position">The global event position.</param>
+    /// <param name="updatedAt">The event-recorded timestamp.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The tour row, or null if the draft projection is missing.</returns>
+    ValueTask<CatalogTourDraftReadModel?> UpdateGallery(
+        CatalogTourGalleryChanged gallery, long streamVersion, long position, DateTimeOffset updatedAt, CancellationToken ct);
+
+    /// <summary>Advances the stream revision for a committed outcome that leaves the published content unchanged.</summary>
+    ValueTask<bool> AdvanceStreamVersion(Guid catalogTourId, long streamVersion, CancellationToken ct);
 
     /// <summary>
     /// Gets a Catalog tour by its identifier.

@@ -65,6 +65,22 @@ public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore, 
         return ValueTask.FromResult(new CatalogTourPageDto(items, window.Total));
     }
 
+    /// <inheritdoc />
+    public ValueTask<bool> AdvanceStreamVersion(Guid catalogTourId, long streamVersion, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!toursById.TryGetValue(catalogTourId, out var current))
+        {
+            return ValueTask.FromResult(false);
+        }
+
+        toursById[catalogTourId] = current with
+        {
+            StreamVersion = Math.Max(current.StreamVersion, streamVersion)
+        };
+        return ValueTask.FromResult(true);
+    }
+
     public ValueTask UpsertDraft(CatalogTourDraftReadModel tour, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(tour);
@@ -193,5 +209,37 @@ public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore, 
         var tour = toursById.Values.SingleOrDefault(tour => tour.IsPublished && tour.Slug == normalizedSlug);
 
         return ValueTask.FromResult(tour);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<CatalogTourDraftReadModel?> UpdateGallery(
+        CatalogTourGalleryChanged gallery, long streamVersion, long position, DateTimeOffset updatedAt, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(gallery);
+        ct.ThrowIfCancellationRequested();
+
+        while (toursById.TryGetValue(gallery.CatalogTourId, out var current))
+        {
+            if (position <= current.GalleryPosition)
+            {
+                return ValueTask.FromResult<CatalogTourDraftReadModel?>(current);
+            }
+
+            var updated = current with
+            {
+                GalleryPhotoIds = gallery.PhotoIds,
+                GalleryCoverId = gallery.CoverId,
+                GalleryPosition = position,
+                Position = Math.Max(current.Position, position),
+                StreamVersion = Math.Max(current.StreamVersion, streamVersion),
+                UpdatedAt = current.UpdatedAt >= updatedAt ? current.UpdatedAt : updatedAt
+            };
+            if (toursById.TryUpdate(gallery.CatalogTourId, updated, current))
+            {
+                return ValueTask.FromResult<CatalogTourDraftReadModel?>(updated);
+            }
+        }
+
+        return ValueTask.FromResult<CatalogTourDraftReadModel?>(null);
     }
 }

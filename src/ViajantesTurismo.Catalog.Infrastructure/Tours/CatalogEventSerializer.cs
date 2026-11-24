@@ -9,6 +9,8 @@ internal sealed class CatalogEventSerializer : IEventSerializer
 {
     private const string CatalogTourDraftCreatedEventType = "catalog.tours.draft-created.v1";
     private const string CatalogTourPresentationChangedEventType = "catalog.tours.presentation-changed.v1";
+    private const string CatalogTourGalleryChangedEventType = "catalog.tours.gallery-changed.v1";
+    private const string CatalogTourGalleryIntentRejectedEventType = "catalog.tours.gallery-intent-rejected.v1";
     private const string CatalogTourPublishedEventType = "catalog.tours.published.v1";
     private const string CatalogTourUnpublishedEventType = "catalog.tours.unpublished.v1";
     private const string CatalogTourRetiredEventType = "catalog.tours.retired.v1";
@@ -22,6 +24,8 @@ internal sealed class CatalogEventSerializer : IEventSerializer
         {
             CatalogTourDraftCreated => CatalogTourDraftCreatedEventType,
             CatalogTourPresentationChanged => CatalogTourPresentationChangedEventType,
+            CatalogTourGalleryChanged => CatalogTourGalleryChangedEventType,
+            CatalogTourGalleryIntentRejected => CatalogTourGalleryIntentRejectedEventType,
             CatalogTourPublished => CatalogTourPublishedEventType,
             CatalogTourUnpublished => CatalogTourUnpublishedEventType,
             CatalogTourRetired => CatalogTourRetiredEventType,
@@ -38,6 +42,8 @@ internal sealed class CatalogEventSerializer : IEventSerializer
         {
             CatalogTourDraftCreated draftCreated => JsonSerializer.Serialize(draftCreated),
             CatalogTourPresentationChanged presentationChanged => JsonSerializer.Serialize(presentationChanged),
+            CatalogTourGalleryChanged galleryChanged => JsonSerializer.Serialize(galleryChanged),
+            CatalogTourGalleryIntentRejected rejected => JsonSerializer.Serialize(rejected),
             CatalogTourPublished published => JsonSerializer.Serialize(published),
             CatalogTourUnpublished unpublished => JsonSerializer.Serialize(unpublished),
             CatalogTourRetired retired => JsonSerializer.Serialize(retired),
@@ -55,6 +61,10 @@ internal sealed class CatalogEventSerializer : IEventSerializer
         {
             CatalogTourDraftCreatedEventType => DeserializeDraftCreated(payloadJson),
             CatalogTourPresentationChangedEventType => JsonSerializer.Deserialize<CatalogTourPresentationChanged>(payloadJson)
+                ?? throw new InvalidOperationException($"Catalog event payload for '{eventType}' was empty."),
+            CatalogTourGalleryChangedEventType => JsonSerializer.Deserialize<CatalogTourGalleryChanged>(payloadJson)
+                ?? throw new InvalidOperationException($"Catalog event payload for '{eventType}' was empty."),
+            CatalogTourGalleryIntentRejectedEventType => JsonSerializer.Deserialize<CatalogTourGalleryIntentRejected>(payloadJson)
                 ?? throw new InvalidOperationException($"Catalog event payload for '{eventType}' was empty."),
             CatalogTourPublishedEventType => JsonSerializer.Deserialize<CatalogTourPublished>(payloadJson)
                 ?? throw new InvalidOperationException($"Catalog event payload for '{eventType}' was empty."),
