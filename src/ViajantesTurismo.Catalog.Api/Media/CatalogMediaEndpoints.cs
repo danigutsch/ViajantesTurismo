@@ -585,7 +585,7 @@ internal static class CatalogMediaEndpoints
         foreach (var link in image.TourLinks)
         {
             var tour = await tourStore.GetTour(link.CatalogTourId, ct).ConfigureAwait(false);
-            if (tour?.IsPubliclyVisible == true)
+            if (tour is { IsPubliclyVisible: true } && (tour.GalleryPhotoIds is null || tour.GalleryPhotoIds.Contains(image.Id)))
             {
                 return true;
             }

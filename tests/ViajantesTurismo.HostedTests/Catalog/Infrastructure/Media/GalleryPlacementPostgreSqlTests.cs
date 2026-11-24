@@ -1,5 +1,7 @@
 using PandaBear.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Domain.PublicContent;
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
 
@@ -58,5 +60,83 @@ public sealed class GalleryPlacementPostgreSqlTests(HostedTestFixture shared) : 
         await using var coverContext = Scenario.CreateDbContext();
         Func<Task> saveCoverConflict = () => new EfPublicMediaImageStore(coverContext).Upsert(coverConflict, ct).AsTask();
         await saveCoverConflict.ShouldThrow<MediaGalleryPlacementConflictException>();
+    }
+
+    [Fact]
+    public async Task Public_album_pages_use_reviewed_localized_placements_and_a_visible_tour()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await Scenario.MigrateToLatest(ct);
+        await using var context = Scenario.CreateDbContext();
+        var tourId = Guid.CreateVersion7();
+        var draftId = Guid.CreateVersion7();
+        var retiredId = Guid.CreateVersion7();
+        var retiredAdminId = Guid.CreateVersion7();
+        context.CatalogTourReadModels.AddRange(
+            new()
+            {
+                CatalogTourId = tourId,
+                AdminTourId = Guid.CreateVersion7(),
+                Slug = "published-tour",
+                Title = "Published",
+                IsPublished = true
+            },
+            new()
+            {
+                CatalogTourId = draftId,
+                AdminTourId = Guid.CreateVersion7(),
+                Slug = "draft-tour",
+                Title = "Draft"
+            },
+            new()
+            {
+                CatalogTourId = retiredId,
+                AdminTourId = retiredAdminId,
+                Slug = "retired-tour",
+                Title = "Retired",
+                IsPublished = true
+            });
+        context.CatalogTourRetirements.Add(new()
+        {
+            AdminTourId = retiredAdminId,
+            RetirementId = Guid.CreateVersion7(),
+            WithdrawnAt = TimeProvider.System.GetUtcNow()
+        });
+        var english = PublicContentCultures.EnglishUnitedStates;
+        var portuguese = PublicContentCultures.PortugueseBrazil;
+        var photos = Enumerable.Range(0, 26).Select(order => PublicMediaImageTestFactory.CreateReadyImage(
+            tourId, $"source-{order}.jpg", $"variant-{order}.jpg", $"sha256:{order}", $"Photo {order}", order, order == 1)).ToArray();
+        photos[0].SetReviewedAccessibilityText(portuguese, "Ciclistas", "Primeira foto", false).IsSuccess.ShouldBeTrue();
+        photos[1].SetDraftAccessibilityText(portuguese, "Draft alt", "Draft caption").IsSuccess.ShouldBeTrue();
+        context.PublicMediaImages.AddRange(photos);
+        context.PublicMediaImages.AddRange(
+            PublicMediaImageTestFactory.CreateFailedImage(tourId, 26),
+            PublicMediaImageTestFactory.CreateReadyImage(draftId, "draft.jpg", "draft-640.jpg", "sha256:draft", "Draft tour", 0, true),
+            PublicMediaImageTestFactory.CreateReadyImage(retiredId, "retired.jpg", "retired-640.jpg", "sha256:retired", "Retired tour", 0, true));
+        await context.SaveChangesAsync(ct);
+        var albums = new EfCatalogGalleryReadStore(context);
+
+        // Act
+        var englishIndex = await albums.ListAlbums(english, null, ct);
+        var portugueseIndex = await albums.ListAlbums(portuguese, null, ct);
+        var firstPage = await albums.GetAlbum("published-tour", portuguese, null, ct);
+        var secondPage = await albums.GetAlbum("published-tour", portuguese, "2", ct);
+        var outOfRange = await albums.GetAlbum("published-tour", portuguese, "3", ct);
+        var retired = await albums.GetAlbum("retired-tour", english, null, ct);
+
+        // Assert
+        englishIndex.ShouldNotBeNull().Albums.ShouldHaveSingleItem().Cover.Id.ShouldBe(photos[1].Id);
+        var portugueseSummary = portugueseIndex.ShouldNotBeNull().Albums.ShouldHaveSingleItem();
+        portugueseSummary.Cover.Id.ShouldBe(photos[0].Id);
+        portugueseSummary.Cover.AltText.ShouldBe("Ciclistas");
+        portugueseSummary.Cover.Caption.ShouldBe("Primeira foto");
+        portugueseSummary.PhotoCount.ShouldBe(25);
+        firstPage.ShouldNotBeNull().Photos.Count.ShouldBe(24);
+        firstPage.Photos.Select(photo => photo.Id).ShouldBe([photos[0].Id, .. photos.Skip(2).Take(23).Select(photo => photo.Id)]);
+        firstPage.Photos[1].AltText.ShouldBe("Photo 2");
+        secondPage.ShouldNotBeNull().Photos.ShouldHaveSingleItem().Id.ShouldBe(photos[25].Id);
+        outOfRange.ShouldBeNull();
+        retired.ShouldBeNull();
     }
 }
