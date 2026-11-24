@@ -14,7 +14,7 @@ public sealed class SdkSecurityGateTests
     {
         // Arrange
         using var workspace = new TemporaryWorkspace();
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var project = new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
             new XElement("PropertyGroup", new XElement("IsRoslynComponent", "true")),
             new XElement("Import", new XAttribute("Project", Path.Combine(root, "Directory.Build.props"))));

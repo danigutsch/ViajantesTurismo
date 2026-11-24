@@ -1,7 +1,6 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -45,7 +44,7 @@ public sealed class ObservabilityLabelContractTests
     public void Telemetry_sources_emit_every_label_value_the_contract_allows()
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var missing = EmittedLabelValues
@@ -164,7 +163,7 @@ public sealed class ObservabilityLabelContractTests
     public void Observability_documents_select_the_architecture_tests_that_read_them()
     {
         // Arrange
-        using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(GetRepositoryRoot(), ".config", "sharedkernel-ci.json")));
+        using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".config", "sharedkernel-ci.json")));
 
         // Act
         var selecting = config.RootElement.GetProperty("selection").GetProperty("testPaths").EnumerateArray()

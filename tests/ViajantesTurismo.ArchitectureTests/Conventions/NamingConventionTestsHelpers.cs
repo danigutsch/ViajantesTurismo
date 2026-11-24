@@ -85,25 +85,6 @@ internal static partial class NamingConventionTestsHelpers
     /// <summary>Reports whether the type is a static class, which the runtime marks abstract and sealed.</summary>
     public static bool IsStaticClass(Type type) => type is { IsAbstract: true, IsSealed: true };
 
-    /// <summary>Returns the repository root: the nearest ancestor of the test output directory that holds ViajantesTurismo.slnx.</summary>
-    public static string GetRepositoryRoot()
-    {
-        var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (currentDirectory is not null)
-        {
-            var solutionPath = Path.Combine(currentDirectory.FullName, "ViajantesTurismo.slnx");
-            if (File.Exists(solutionPath))
-            {
-                return currentDirectory.FullName;
-            }
-
-            currentDirectory = currentDirectory.Parent;
-        }
-
-        throw new InvalidOperationException("Could not locate the repository root from the test output directory.");
-    }
-
     /// <summary>Reports whether the path is build output, a feature-file code-behind, or other generated test source.</summary>
     public static bool IsGeneratedTestPath(string path)
     {

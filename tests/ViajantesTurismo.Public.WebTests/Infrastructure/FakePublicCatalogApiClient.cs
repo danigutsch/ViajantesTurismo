@@ -3,7 +3,7 @@ using PandaBear.HttpClients;
 
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
-/// <summary>In-memory <see cref="IPublicCatalogApiClient"/> fake with per-endpoint failure, cancellation and delay switches.</summary>
+/// <summary>In-memory <see cref="IPublicCatalogApiClient"/> fake with failure, cancellation and request controls.</summary>
 internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 {
     private readonly List<TourSummaryDto> tours = [];
@@ -58,26 +58,20 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         get; set;
     }
 
-    /// <summary>Delay applied to tour list requests before responding.</summary>
-    public TimeSpan ListDelay
-    {
-        get; set;
-    }
-
-    /// <summary>Delay applied to content requests before responding.</summary>
-    public TimeSpan ContentDelay
+    /// <summary>Optional task that holds tour list and content responses until the test releases them.</summary>
+    public Task? ListAndContentResponseGate
     {
         get; set;
     }
 
     /// <summary>Completed when a tour list request starts, if set.</summary>
-    public TaskCompletionSource<object?>? ListStarted
+    public TaskCompletionSource? ListStarted
     {
         get; set;
     }
 
     /// <summary>Completed when a content request starts, if set.</summary>
-    public TaskCompletionSource<object?>? ContentStarted
+    public TaskCompletionSource? ContentStarted
     {
         get; set;
     }
@@ -146,15 +140,28 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         contentByKeyAndCulture[CreateContentKey(key, culture)] = content;
     }
 
-    /// <summary>Returns the tour summaries, honoring delay, cancellation and failure switches.</summary>
+    /// <summary>Waits for the startup signals and releases the responses even when the wait fails.</summary>
+    public static async Task ReleaseResponsesAfter(Task requestsStarted, TaskCompletionSource allowResponses, CancellationToken ct)
+    {
+        try
+        {
+            await requestsStarted.WaitAsync(ct);
+        }
+        finally
+        {
+            allowResponses.TrySetResult();
+        }
+    }
+
+    /// <summary>Returns the tour summaries after any configured response gate.</summary>
     public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        ListStarted?.TrySetResult(null);
+        ListStarted?.TrySetResult();
 
-        if (ListDelay > TimeSpan.Zero)
+        if (ListAndContentResponseGate is { } responseGate)
         {
-            await Task.Delay(ListDelay, ct);
+            await responseGate.WaitAsync(ct);
         }
 
         if (ThrowOperationCanceledExceptionOnListRequests)
@@ -192,11 +199,11 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     public async Task<HttpOutcome<PublicContentVariantDto>> GetPublicContent(string key, string? culture, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        ContentStarted?.TrySetResult(null);
+        ContentStarted?.TrySetResult();
 
-        if (ContentDelay > TimeSpan.Zero)
+        if (ListAndContentResponseGate is { } responseGate)
         {
-            await Task.Delay(ContentDelay, ct);
+            await responseGate.WaitAsync(ct);
         }
 
         if (ThrowOperationCanceledExceptionOnContentRequests)

@@ -104,11 +104,14 @@ public sealed class HomePageTests
     public async Task Root_loads_public_content_and_tours_concurrently()
     {
         // Arrange
+        var contentStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var listStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowResponses = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var catalogApi = new FakePublicCatalogApiClient
         {
-            ContentDelay = TimeSpan.FromSeconds(2),
-            ContentStarted = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously),
-            ListStarted = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously)
+            ContentStarted = contentStarted,
+            ListStarted = listStarted,
+            ListAndContentResponseGate = allowResponses.Task
         };
         catalogApi.AddTour(PublicTourTestData.CreateDetails("camino-norte", "Camino Norte"));
         catalogApi.AddContent("en-US", new PublicContentVariantDto
@@ -121,13 +124,15 @@ public sealed class HomePageTests
 
         await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
         using var client = factory.CreateClient();
+        using var requestDeadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        requestDeadline.CancelAfter(TimeSpan.FromSeconds(30));
 
         // Act
-        var responseTask = client.GetAsync(new Uri("/en/", UriKind.Relative), TestContext.Current.CancellationToken);
-        await catalogApi.ContentStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
-        await catalogApi.ListStarted.Task.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken);
+        var responseTask = client.GetAsync(new Uri("/en/", UriKind.Relative), requestDeadline.Token);
+        await FakePublicCatalogApiClient.ReleaseResponsesAfter(
+            Task.WhenAll(contentStarted.Task, listStarted.Task), allowResponses, requestDeadline.Token);
         using var response = await responseTask;
-        var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        var content = await response.Content.ReadAsStringAsync(requestDeadline.Token);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);

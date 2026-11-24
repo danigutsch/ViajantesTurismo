@@ -10,7 +10,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Devcontainer_ci_stages_candidate_and_tools_before_validating_the_container()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, ".github", "workflows", "devcontainer-smoke.yml");
 
         // Act
@@ -45,7 +45,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Setup_stages_the_pinned_candidate_from_a_sparse_ci_tool_build_before_restoring(string script, string restoreCommand, string defaultSource)
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, script);
 
         // Act
@@ -70,7 +70,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Devcontainer_marks_the_tool_checkout_safe_before_running_setup()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, ".devcontainer", "on-create.sh");
 
         // Act
@@ -87,7 +87,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Devcontainer_image_is_pinned_by_digest_alone()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var configuration = await File.ReadAllTextAsync(Path.Combine(root, ".devcontainer", "devcontainer.json"), TestContext.Current.CancellationToken);
@@ -101,7 +101,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Devcontainer_setup_gives_the_user_the_local_share_directory_that_the_k6_library_materializes_into()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var onCreate = await File.ReadAllTextAsync(Path.Combine(root, ".devcontainer", "on-create.sh"), TestContext.Current.CancellationToken);
@@ -114,7 +114,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Minimal_environment_builds_keep_the_container_flag_that_selects_the_container_build_paths()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var props = await File.ReadAllTextAsync(Path.Combine(root, "Directory.Build.props"), TestContext.Current.CancellationToken);
@@ -135,7 +135,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Hosted_prerequisites_build_the_ci_tool_and_stage_the_exact_candidate_before_restoring_tools()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, ".github", "actions", "setup-ci-prerequisites", "action.yml");
 
         // Act
@@ -163,7 +163,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Hosted_provisioning_preserves_explicit_local_library_and_feed_overrides()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, ".github", "actions", "setup-ci-prerequisites", "action.yml");
 
         // Act
@@ -187,7 +187,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Tool_build_action_checks_out_only_the_pinned_sparse_tool_source_without_credentials()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, ".github", "actions", "build-sharedkernel-tool", "action.yml");
         var candidatePath = Path.Combine(root, ".config", "sharedkernel-candidate.json");
         using var candidate = JsonDocument.Parse(await File.ReadAllTextAsync(candidatePath, TestContext.Current.CancellationToken));
@@ -229,7 +229,7 @@ public sealed class ConsumerSetupContractTests
     public async Task Workflow_callers_pass_repository_overrides_through_explicit_action_inputs(string workflowName)
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, ".github", "workflows", workflowName);
         var workflow = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
 

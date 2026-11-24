@@ -6,15 +6,36 @@ and library tooling belong to the separate SharedKernel repository. ViajantesTur
 Generic documentation and repository-configuration tooling belongs to SharedKernel. Application
 documentation configuration, CI and coverage policy, setup scripts, and compatibility orchestration stay here.
 
-The pin uses [published candidate `0.1.0-alpha.774.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.774.1)
+The pin uses [published candidate `0.1.0-alpha.795.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.795.1)
 at clean library revision
-[`3c5e0df4ef801809449ea47372ce2c129c245acd`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/3c5e0df4ef801809449ea47372ce2c129c245acd).
-This candidate updates the host, observability and mediator registration names and adopts the
-short .NET tool commands. The package IDs and SDK 11.0.100 stay the same.
-The [published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45174602104)
+[`b9bbffe72f8c0899eed6606a229e4bf451344fa4`](https://github.com/danigutsch/PandaBear.SharedKernel/commit/b9bbffe72f8c0899eed6606a229e4bf451344fa4).
+Tests use the shared Git and repository-root helpers. CI selection also follows linked test data
+files. The [published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45229639704)
 records Linux and Windows package consumption and NativeAOT for this candidate.
 
+## Compatible dependency updates
+
+The Npgsql driver and EF provider use 10.0.4. EF Core, EF-backed Data Protection and the
+design-time CLI stay on 10.0.15. The published SharedKernel provider uses EF 10 index
+metadata APIs. Adoption of EF 11 requires provider compatibility with its index metadata
+and preservation of the application's inclusive idempotency cutoff.
+
+The application keeps a central OpenAPI.NET 3.11.1 version for the extension preservation
+fix. Recheck that entry when adopting a candidate with the same upstream dependency floor.
+[OpenAPI.NET release](https://www.nuget.org/packages/Microsoft.OpenApi/3.11.1)
+
+AWS SDK for S3 4.1.2 is verified against SeaweedFS with TLS and workload identity.
+The analyzer, browser test runner and coverage tool updates are recorded in the dependency
+review and CI configuration. EF and gRPC OpenTelemetry instrumentation retain their existing
+preview versions while their package lines have only preview releases.
+[S3 package](https://www.nuget.org/packages/AWSSDK.S3/4.1.2) ·
+[Dependency review](../ci/dependency-license-evidence.md)
+
 ## Earlier candidates
+
+Candidate [`0.1.0-alpha.774.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.774.1)
+updated the host, observability and mediator registration names and introduced the short .NET tool commands.
+[Published artifact validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45174602104)
 
 Candidate [`0.1.0-alpha.727.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.727.1)
 let Admin commands declare transaction locks without an Entity Framework dependency. The consumer verifier

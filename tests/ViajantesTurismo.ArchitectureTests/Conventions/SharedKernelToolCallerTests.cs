@@ -1,5 +1,4 @@
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.SharedKernelToolCallerTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -11,7 +10,7 @@ public sealed class SharedKernelToolCallerTests
     public async Task Every_sharedkernel_tool_command_line_parses_against_the_pinned_tool()
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var commandLines = FindCommandLines(root);
 
         // Act

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -91,14 +90,14 @@ internal static partial class ObservabilityAssetsTestsHelpers
 
     /// <summary>Returns the Grafana alert provisioning directory.</summary>
     public static string AlertingRoot() =>
-        Path.Combine(GetRepositoryRoot(), "observability", "grafana", "provisioning", "alerting");
+        Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "observability", "grafana", "provisioning", "alerting");
 
     /// <summary>Returns the observability signal catalog path.</summary>
-    public static string CatalogPath() => Path.Combine(GetRepositoryRoot(), "docs", "OBSERVABILITY_CATALOG.md");
+    public static string CatalogPath() => Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "docs", "OBSERVABILITY_CATALOG.md");
 
     /// <summary>Loads every provisioned dashboard keyed by file name.</summary>
     public static Dictionary<string, JsonDocument> LoadDashboards() =>
-        Directory.EnumerateFiles(Path.Combine(GetRepositoryRoot(), "observability", "grafana", "dashboards"), "*.json")
+        Directory.EnumerateFiles(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "observability", "grafana", "dashboards"), "*.json")
             .ToDictionary(path => Path.GetFileNameWithoutExtension(path), path => JsonDocument.Parse(File.ReadAllText(path)));
 
     /// <summary>Enumerates dashboard panels that are neither rows nor text.</summary>

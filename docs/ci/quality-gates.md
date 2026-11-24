@@ -46,7 +46,7 @@ The `Quality Gate` CI job downloads selected test-slice artifacts and runs witho
 including on fork pull requests. Failed selection or tests fail the aggregate first. A locked
 restore and Release build of the full solution also cover samples and benchmarks outside test
 dependency graphs. Each test project writes its Cobertura report into its own `results/<Project>/`
-directory. ReportGenerator 5.5.11 merges the reports into HTML for local inspection.
+directory. ReportGenerator 5.6.1 merges the reports into HTML for local inspection.
 
 ## Changed-code policy
 

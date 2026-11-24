@@ -1,6 +1,5 @@
 using System.Text.Json;
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -11,7 +10,7 @@ public sealed class DependencyReviewWorkflowTests
     public void Dependency_review_requires_complete_base_and_head_snapshots_from_trusted_pull_requests()
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
+        var path = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".github", "workflows", "dependency-review.yml");
 
         // Act
         var workflow = File.ReadAllText(path);
@@ -32,7 +31,7 @@ public sealed class DependencyReviewWorkflowTests
     public void Dependency_snapshots_replace_managed_submission_for_main_and_manual_runs()
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
+        var path = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".github", "workflows", "dependency-review.yml");
 
         // Act
         var workflow = File.ReadAllText(path);
@@ -48,7 +47,7 @@ public sealed class DependencyReviewWorkflowTests
     public void Dependency_snapshots_call_the_shared_workflow_with_the_only_write_permission()
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "dependency-review.yml");
+        var path = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".github", "workflows", "dependency-review.yml");
         var workflow = File.ReadAllText(path);
 
         // Act
@@ -68,7 +67,7 @@ public sealed class DependencyReviewWorkflowTests
     public void License_review_bounds_preview_approval_before_emitting_the_package_exception()
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, ".github", "workflows", "dependency-review.yml");
         using var candidate = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-candidate.json")));
         using var configuration = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-repo.json")));

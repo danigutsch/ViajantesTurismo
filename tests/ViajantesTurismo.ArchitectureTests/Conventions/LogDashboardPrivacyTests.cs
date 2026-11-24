@@ -1,6 +1,5 @@
 using System.Text.Json;
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -22,7 +21,7 @@ public sealed class LogDashboardPrivacyTests
             """;
         var expectedProjection = string.Join(' ', projection.Split('\n', StringSplitOptions.TrimEntries));
         using var dashboard = JsonDocument.Parse(File.ReadAllText(Path.Combine(
-            GetRepositoryRoot(), "observability", "grafana", "dashboards", "logs.json")));
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"), "observability", "grafana", "dashboards", "logs.json")));
         var rowQueries = dashboard.RootElement.GetProperty("panels").EnumerateArray()
             .Where(panel => panel.GetProperty("type").GetString() == "logs")
             .SelectMany(panel => panel.GetProperty("targets").EnumerateArray().Select(target => (

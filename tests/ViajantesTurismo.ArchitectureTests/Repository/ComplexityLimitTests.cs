@@ -12,7 +12,7 @@ public sealed class ComplexityLimitTests
     {
         // Arrange
         using var workspace = new TemporaryWorkspace();
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var source = new StringBuilder("internal static class Probe { internal static int Score(int value) { var score = 0;");
         for (var branch = 0; branch < 60; branch++)
         {

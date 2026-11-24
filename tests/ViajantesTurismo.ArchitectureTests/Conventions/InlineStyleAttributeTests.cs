@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using ViajantesTurismo.ArchitectureTests.Repository;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -20,7 +19,7 @@ public sealed partial class InlineStyleAttributeTests
     public void Razor_markup_of_strict_policy_hosts_declares_no_inline_style_attribute()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var markupFiles = StrictPolicyHosts
             .SelectMany(host => Directory.EnumerateFiles(Path.Combine(root, "src", host), "*.*", SearchOption.AllDirectories))
             .Where(path => path.EndsWith(".razor", StringComparison.Ordinal) || path.EndsWith(".cshtml", StringComparison.Ordinal))

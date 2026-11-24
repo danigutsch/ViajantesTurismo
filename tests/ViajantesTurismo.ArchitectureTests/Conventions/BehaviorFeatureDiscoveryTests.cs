@@ -1,6 +1,5 @@
 using System.Xml.Linq;
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -13,7 +12,7 @@ public sealed class BehaviorFeatureDiscoveryTests
     public void Feature_generation_uses_only_source_specs_and_preserves_runtime_copies(string projectName)
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), "tests", projectName, $"{projectName}.csproj");
+        var path = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests", projectName, $"{projectName}.csproj");
 
         // Act
         var project = XDocument.Load(path);

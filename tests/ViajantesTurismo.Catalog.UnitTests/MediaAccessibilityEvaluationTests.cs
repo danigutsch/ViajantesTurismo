@@ -134,6 +134,33 @@ public sealed class MediaAccessibilityEvaluationTests
     }
 
     [Theory]
+    [InlineData("Uma praia de areia com um círculo amarelo.", false)]
+    [InlineData("Praia de areia junto ao MAR.", true)]
+    public void Required_terms_match_whole_words_in_the_localized_alternative(string altText, bool expected)
+    {
+        // Arrange
+        var directory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "media-accessibility");
+        using var fixtures = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "golden.json")));
+        using var baseline = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "baseline.json")));
+        var candidate = JsonNode.Parse(baseline.RootElement.GetRawText());
+        candidate.ShouldNotBeNull();
+        var cases = candidate["cases"];
+        cases.ShouldNotBeNull();
+        var coast = cases.AsArray().Where(row => row?["id"]?.GetValue<string>() == "coast-pt-BR").ShouldHaveSingleItem();
+        coast.ShouldNotBeNull();
+        coast["alt_text"] = altText;
+        using var evidence = JsonDocument.Parse(candidate.ToJsonString());
+
+        // Act
+        var results = MediaAccessibilityEvaluationEvidence.Evaluate(fixtures.RootElement, baseline.RootElement, evidence.RootElement, allowReference: true);
+
+        // Assert
+        var casesInFixtureOrder = fixtures.RootElement.GetProperty("cases").EnumerateArray().ToArray();
+        var coastIndex = Array.FindIndex(casesInFixtureOrder, row => row.GetProperty("id").GetString() == "coast-pt-BR");
+        results[coastIndex].ShouldBe(expected);
+    }
+
+    [Theory]
     [InlineData("Copacabana beach with blue sea.")]
     [InlineData("A wheelchair accessible beach beside a blue sea.")]
     [InlineData("Mar azul junto a uma praia de areia.")]

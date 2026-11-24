@@ -7,7 +7,7 @@ internal static class HostedTestFixtureSource
     public static string Read()
     {
         var path = Path.Combine(
-            AdminTestArchitectureGuardTestsHelpers.GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "tests",
             "ViajantesTurismo.HostedTests",
             "Infrastructure",

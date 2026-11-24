@@ -1,5 +1,4 @@
 using System.Text.Json;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AdminTestArchitectureGuardTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -13,7 +12,7 @@ public sealed class AspireMcpConfigurationTests
     public void Aspire_resource_discovery_uses_the_repository_local_tool(string configurationFile, string serversProperty)
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         using var configuration = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, configurationFile)));
         using var tools = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "dotnet-tools.json")));
 

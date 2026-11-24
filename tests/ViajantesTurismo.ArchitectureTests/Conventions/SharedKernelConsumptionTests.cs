@@ -9,7 +9,7 @@ public static class SharedKernelConsumptionTests
     public static void Application_consumes_shared_kernel_packages_without_owning_library_sources()
     {
         // Arrange
-        var root = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var solution = XDocument.Load(Path.Combine(root, "ViajantesTurismo.slnx"));
 
         // Act
@@ -34,7 +34,7 @@ public static class SharedKernelConsumptionTests
     public static void Application_build_configuration_does_not_own_library_packaging_rules()
     {
         // Arrange
-        var root = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var libraryRules = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(Path.Combine(root, "src"), "Directory.Build.*")
@@ -49,7 +49,7 @@ public static class SharedKernelConsumptionTests
     public static void All_project_locks_and_library_tools_resolve_the_pinned_candidate()
     {
         // Arrange
-        var root = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         using var pin = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-candidate.json")));
         var version = pin.RootElement.GetProperty("packageVersion").GetString();
         using var tools = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "dotnet-tools.json")));

@@ -9,7 +9,7 @@ public sealed class ToolWrapperRegistrationTests
     public void Every_repository_tool_enables_the_thin_wrapper_analyzer()
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var projects = Directory.GetFiles(Path.Combine(root, "scripts"), "*.Tool.csproj", SearchOption.AllDirectories);
 
         // Act
@@ -32,7 +32,7 @@ public sealed class ToolWrapperRegistrationTests
     public void A_missing_registration_element_has_an_actionable_diagnostic(string missingElement, string expectedMessage)
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var path = Path.Combine(root, "scripts", "Example.Tool", "Example.Tool.csproj");
         var project = XDocument.Parse("""
             <Project Sdk="Microsoft.NET.Sdk">

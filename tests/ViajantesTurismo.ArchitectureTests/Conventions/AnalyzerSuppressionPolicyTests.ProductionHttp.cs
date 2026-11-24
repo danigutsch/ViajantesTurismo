@@ -304,7 +304,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void Production_HTTP_source_suppressions_should_be_exact_site_and_allowlisted()
     {
         // Arrange
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var sourceFiles = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsGeneratedSource(repositoryRoot, path))
@@ -623,7 +623,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void Committed_production_API_sources_should_not_bypass_the_analyzer_as_generated()
     {
         // Arrange
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var sourceFiles = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
             .ToArray();
@@ -906,7 +906,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void Repository_policy_files_should_not_suppress_production_HTTP_enforcement()
     {
         // Arrange
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var policyFiles = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.csproj")
             .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.props"))
             .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.targets"))
@@ -929,7 +929,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void Production_HTTP_analyzer_public_API_baselines_should_be_enforced()
     {
         // Arrange
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var projectPath = Path.Combine(
             repositoryRoot,
             "src",
@@ -958,7 +958,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void Production_HTTP_analyzer_should_be_app_owned_and_enabled_in_every_production_API()
     {
         // Arrange
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var analyzerProjectPath = Path.Combine(
             repositoryRoot,
             "src",

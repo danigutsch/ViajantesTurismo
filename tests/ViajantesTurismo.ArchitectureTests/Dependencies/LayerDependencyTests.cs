@@ -156,7 +156,7 @@ public sealed class LayerDependencyTests
     public void Domain_application_and_contract_projects_should_not_reference_adapter_packages()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var unexpectedReferences = FindLayerAdapterPackageReferences(repositoryRoot);
@@ -169,7 +169,7 @@ public sealed class LayerDependencyTests
     public void Project_references_should_follow_documented_layer_directions()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var unexpectedReferences = FindLayerProjectReferenceDirectionViolations(repositoryRoot);
@@ -195,7 +195,7 @@ public sealed class LayerDependencyTests
     public void Domain_analyzer_packages_should_be_referenced_by_exactly_the_domain_projects()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var violations = FindDomainAnalyzerActivationViolations(repositoryRoot);
@@ -208,7 +208,7 @@ public sealed class LayerDependencyTests
     public void Domain_projects_should_not_reference_contract_projects()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var unexpectedReferences = FindDomainContractProjectReferences(repositoryRoot);
@@ -221,7 +221,7 @@ public sealed class LayerDependencyTests
     public void Product_contract_projects_should_use_split_contract_suffixes()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var unexpectedProjects = FindUnsplitProductContractProjects(repositoryRoot);
@@ -234,7 +234,7 @@ public sealed class LayerDependencyTests
     public void Abstraction_projects_should_not_reference_implementation_projects_or_adapter_packages()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var unexpectedReferences = FindAbstractionProjectImplementationReferences(repositoryRoot);
@@ -247,7 +247,7 @@ public sealed class LayerDependencyTests
     public void Admin_infrastructure_uses_mediator_for_transaction_composition()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var infrastructure = Assembly.Load("ViajantesTurismo.Admin.Infrastructure");
         var flows = File.ReadAllText(Path.Combine(repositoryRoot, "docs", "architecture", "FLOWS.md"));
         var eventsAndMessaging = File.ReadAllText(
@@ -294,7 +294,7 @@ public sealed class LayerDependencyTests
     public void Module_boundary_documentation_should_describe_enforced_rules()
     {
         // Arrange
-        var repositoryRoot = GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var missingRules = FindModuleBoundaryDocumentationRuleGaps(repositoryRoot);

@@ -7,7 +7,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 internal static class LockFilePolicyFiles
 {
     /// <summary>Gets the repository root.</summary>
-    public static string Root => AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+    public static string Root => RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
     /// <summary>Gets the repository-relative project paths that <c>lockExemptProjects</c> lists, in file order.</summary>
     public static string[] ReadExemptProjects()

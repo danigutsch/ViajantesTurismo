@@ -15,7 +15,7 @@ internal static class AppHostTestBuilder
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = [],
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost"),
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost"),
         });
         builder.Configuration.AddInMemoryCollection(configuration ?? new Dictionary<string, string?>());
         return builder;

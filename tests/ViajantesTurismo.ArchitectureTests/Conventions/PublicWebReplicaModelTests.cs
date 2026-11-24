@@ -26,7 +26,7 @@ public sealed class PublicWebReplicaModelTests
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = arguments,
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost")
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost")
         });
 
         // Act
@@ -69,7 +69,7 @@ public sealed class PublicWebReplicaModelTests
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions
         {
             Args = arguments,
-            ProjectDirectory = Path.Combine(AppHostOrchestrationTestsHelpers.GetRepositoryRoot(), "src", "ViajantesTurismo.AppHost")
+            ProjectDirectory = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", "ViajantesTurismo.AppHost")
         });
 
         // Act

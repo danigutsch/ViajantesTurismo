@@ -1,5 +1,4 @@
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilitySignalCatalog;
 
@@ -141,7 +140,7 @@ public sealed class ObservabilityAssetsTests
     {
         // Arrange
         var rules = File.ReadAllText(Path.Combine(AlertingRoot(), "rules.yaml"));
-        var runbooks = File.ReadAllText(Path.Combine(GetRepositoryRoot(), "docs", "OBSERVABILITY_RUNBOOKS.md"))
+        var runbooks = File.ReadAllText(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "docs", "OBSERVABILITY_RUNBOOKS.md"))
             .ToUpperInvariant();
 
         // Act

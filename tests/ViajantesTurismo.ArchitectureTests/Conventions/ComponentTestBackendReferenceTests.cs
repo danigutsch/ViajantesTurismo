@@ -1,4 +1,3 @@
-using ViajantesTurismo.ArchitectureTests.Dependencies;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ComponentTestBackendReferenceFixture;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -9,7 +8,7 @@ public sealed class ComponentTestBackendReferenceTests
     public void Registered_component_suites_only_reference_declared_backend_hosts()
     {
         // Arrange
-        var repositoryRoot = LayerDependencyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
 
         // Act
         var violations = ComponentTestBackendReferencePolicy.FindViolations(repositoryRoot);

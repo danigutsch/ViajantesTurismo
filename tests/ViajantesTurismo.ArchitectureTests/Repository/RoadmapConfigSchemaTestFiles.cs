@@ -7,26 +7,26 @@ internal static class RoadmapConfigSchemaTestFiles
 {
     /// <summary>Reads <c>roadmap/config.json</c> as text.</summary>
     public static string ReadCheckedInConfig() =>
-        File.ReadAllText(Path.Combine(GetRepositoryRoot(), "roadmap", "config.json"));
+        File.ReadAllText(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "roadmap", "config.json"));
 
     /// <summary>Reads the roadmap config JSON schema as text.</summary>
     public static string ReadCheckedInSchema() =>
-        File.ReadAllText(Path.Combine(GetRepositoryRoot(), "roadmap", "schema", "roadmap-config.schema.json"));
+        File.ReadAllText(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "roadmap", "schema", "roadmap-config.schema.json"));
 
     /// <summary>Reads the roadmap item JSON schema as text.</summary>
     public static string ReadCheckedInItemSchema() =>
-        File.ReadAllText(Path.Combine(GetRepositoryRoot(), "roadmap", "schema", "roadmap-item.schema.json"));
+        File.ReadAllText(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "roadmap", "schema", "roadmap-item.schema.json"));
 
     /// <summary>Reads every roadmap item JSON file, ordered by file name.</summary>
     public static string[] ReadCheckedInItems() =>
-        [.. Directory.EnumerateFiles(Path.Combine(GetRepositoryRoot(), "roadmap", "items"), "*.json", SearchOption.TopDirectoryOnly)
+        [.. Directory.EnumerateFiles(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "roadmap", "items"), "*.json", SearchOption.TopDirectoryOnly)
             .Order(StringComparer.Ordinal)
             .Select(File.ReadAllText)];
 
     /// <summary>Reads the single open-issues reconciliation manifest, failing when there is not exactly one.</summary>
     public static string ReadCheckedInReconciliation()
     {
-        var reconciliationFiles = Directory.EnumerateFiles(Path.Combine(GetRepositoryRoot(), "roadmap", "reconciliation"), "open-issues-*.json", SearchOption.TopDirectoryOnly)
+        var reconciliationFiles = Directory.EnumerateFiles(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "roadmap", "reconciliation"), "open-issues-*.json", SearchOption.TopDirectoryOnly)
             .Order(StringComparer.Ordinal)
             .ToArray();
         return reconciliationFiles.Length == 1
@@ -51,18 +51,5 @@ internal static class RoadmapConfigSchemaTestFiles
                 ShouldDeclareConfigProperties(configProperty.Value, schemaProperty);
             }
         }
-    }
-
-    private static string GetRepositoryRoot()
-    {
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "ViajantesTurismo.slnx")))
-            {
-                return directory.FullName;
-            }
-        }
-
-        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

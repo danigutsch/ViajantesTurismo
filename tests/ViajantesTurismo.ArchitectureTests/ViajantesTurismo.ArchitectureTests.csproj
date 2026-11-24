@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="PandaBear.Testing.RepositoryRoot" Alias="RepositoryRoot" />
         <Using Include="Xunit"/>
     </ItemGroup>
 

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -12,7 +11,7 @@ public sealed class PostgreSqlObservabilityDashboardTests
     {
         // Arrange
         var dashboardPath = Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "observability",
             "grafana",
             "dashboards",

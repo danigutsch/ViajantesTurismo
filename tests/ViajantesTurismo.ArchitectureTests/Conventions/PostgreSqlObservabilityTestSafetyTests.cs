@@ -1,5 +1,3 @@
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
-
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 public sealed class PostgreSqlObservabilityTestSafetyTests
@@ -9,7 +7,7 @@ public sealed class PostgreSqlObservabilityTestSafetyTests
     {
         // Arrange
         var scenarioPath = Path.Combine(
-            GetRepositoryRoot(),
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"),
             "tests",
             "ViajantesTurismo.HostedTests", "Admin", "Infrastructure",
             "Observability",
@@ -30,7 +28,7 @@ public sealed class PostgreSqlObservabilityTestSafetyTests
     public void PostgreSql_test_databases_use_the_shared_pool_with_library_owned_cleanup_guards()
     {
         // Arrange
-        var hostedRoot = Path.Combine(GetRepositoryRoot(), "tests", "ViajantesTurismo.HostedTests");
+        var hostedRoot = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "tests", "ViajantesTurismo.HostedTests");
         var project = File.ReadAllText(Path.Combine(hostedRoot, "ViajantesTurismo.HostedTests.csproj"));
         var fixture = File.ReadAllText(Path.Combine(hostedRoot, "Infrastructure", "HostedTestFixture.cs"));
 

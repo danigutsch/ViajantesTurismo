@@ -20,7 +20,7 @@ public sealed class LocalRuntimeDocumentationTests
         // Arrange
         var builder = AppHostTestBuilder.Create();
         builder.AddProductResources(HostedProfile.System);
-        var repository = AppHostOrchestrationTestsHelpers.GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var document = File.ReadAllText(Path.Combine(repository, "docs", "architecture", "runtime-wiring-and-deployment.md"));
 
         // Act
@@ -40,7 +40,7 @@ public sealed class LocalRuntimeDocumentationTests
     public void The_local_runtime_graph_records_resource_enablement(string graphNode, string switchName)
     {
         // Arrange
-        var repository = AppHostOrchestrationTestsHelpers.GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var documentPath = Path.Combine(repository, "docs", "architecture", "runtime-wiring-and-deployment.md");
 
         // Act
@@ -58,7 +58,7 @@ public sealed class LocalRuntimeDocumentationTests
         var builder = AppHostTestBuilder.Create();
         builder.AddProductResources(HostedProfile.System);
         var web = AppHostTestBuilder.Project(builder, ResourceNames.WebApp);
-        var repository = AppHostOrchestrationTestsHelpers.GetRepositoryRoot();
+        var repository = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var cancellationToken = TestContext.Current.CancellationToken;
         var document = await File.ReadAllTextAsync(
             Path.Combine(repository, "docs", "architecture", "runtime-wiring-and-deployment.md"), cancellationToken);

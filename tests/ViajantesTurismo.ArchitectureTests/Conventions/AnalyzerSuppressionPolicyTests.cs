@@ -53,7 +53,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [Fact]
     public void Project_and_props_nowarn_entries_should_match_the_approved_inventory()
     {
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var noWarnEntries = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.csproj")
             .Concat(AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.props"))
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
@@ -66,7 +66,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [Fact]
     public void Hand_written_source_should_only_use_approved_exact_site_pragma_suppressions()
     {
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var unapprovedPragmas = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsGeneratedSource(repositoryRoot, path))
@@ -81,7 +81,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     [Fact]
     public void SuppressMessage_attributes_should_stay_on_the_approved_analyzer_policy_allowlist()
     {
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var filesWithSuppressMessage = AnalyzerSuppressionPolicyTestsHelpers.EnumerateRepositoryFiles(repositoryRoot, "*.cs")
             .Where(path => !AnalyzerSuppressionPolicyTestsHelpers.IsIgnoredPath(path))
             .Where(path => AnalyzerSuppressionPolicyTestsHelpers.ContainsFrameworkSuppressMessageAttribute(File.ReadAllText(path)))
@@ -98,7 +98,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
     public void Global_analyzer_registration_and_configuration_surfaces_should_match_the_allowlist()
     {
         // Arrange
-        var repositoryRoot = AnalyzerSuppressionPolicyTestsHelpers.GetRepositoryRoot();
+        var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         string[] expectedSurfaces =
         [
             "build:Directory.Build.props",

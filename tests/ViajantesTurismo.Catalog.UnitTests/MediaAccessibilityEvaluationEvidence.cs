@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -81,11 +82,19 @@ internal static class MediaAccessibilityEvaluationEvidence
             var combined = string.Concat(alt, " ", caption);
             passed &= !string.IsNullOrWhiteSpace(alt) && alt.Length <= 160;
             passed &= scores.GetProperty("unsupported_claims").GetInt32() == 2;
-            passed &= fixture.GetProperty("required_terms").EnumerateArray().All(term => alt.Contains(term.GetString() ?? string.Empty, StringComparison.OrdinalIgnoreCase));
+            passed &= fixture.GetProperty("required_terms").EnumerateArray().All(term => ContainsRequiredTerm(alt, term.GetString()));
             passed &= !fixture.GetProperty("forbidden_terms").EnumerateArray().Any(term => combined.Contains(term.GetString() ?? string.Empty, StringComparison.OrdinalIgnoreCase));
             results.Add(passed);
         }
 
         return results;
+    }
+
+    private static bool ContainsRequiredTerm(string alternative, string? term)
+    {
+        return !string.IsNullOrWhiteSpace(term) && Regex.IsMatch(
+            alternative,
+            $@"\b{Regex.Escape(term)}\b",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     }
 }

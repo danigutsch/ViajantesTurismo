@@ -1,6 +1,5 @@
 using System.Text.Json;
 using PandaBear.Testing;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -11,7 +10,7 @@ public sealed class SharedKernelConsumerWorkflowTests
     public void Lint_stages_the_pinned_candidate_and_restores_tools_before_running_checks()
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "ci.yml");
+        var path = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".github", "workflows", "ci.yml");
         var workflow = File.ReadAllText(path);
 
         // Act
@@ -33,7 +32,7 @@ public sealed class SharedKernelConsumerWorkflowTests
     public void Lint_verifies_action_pins_against_the_shared_manifest_before_staging_the_candidate()
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "ci.yml");
+        var path = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".github", "workflows", "ci.yml");
         var workflow = File.ReadAllText(path);
 
         // Act
@@ -55,7 +54,7 @@ public sealed class SharedKernelConsumerWorkflowTests
     public void Application_ci_does_not_repeat_library_source_API_validation()
     {
         // Arrange
-        var path = Path.Combine(GetRepositoryRoot(), ".github", "workflows", "ci.yml");
+        var path = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), ".github", "workflows", "ci.yml");
 
         // Act
         var workflow = File.ReadAllText(path);
@@ -69,7 +68,7 @@ public sealed class SharedKernelConsumerWorkflowTests
     public void SharedKernel_scanner_action_is_pinned_to_the_candidate_library_revision()
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         using var pin = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-candidate.json")));
         var revision = pin.RootElement.GetProperty("libraryRevision").GetString();
 
@@ -87,7 +86,7 @@ public sealed class SharedKernelConsumerWorkflowTests
     public void Shared_workflow_references_use_one_revision()
     {
         // Arrange
-        var root = GetRepositoryRoot();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var files = SharedKernelWorkflowReferences.WorkflowFiles(root);
 
         // Act

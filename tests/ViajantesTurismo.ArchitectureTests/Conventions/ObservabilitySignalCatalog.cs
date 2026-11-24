@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using PandaBear.Observability;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -136,7 +135,7 @@ internal static class ObservabilitySignalCatalog
 
     private static CSharpCompilation CreateCompilation()
     {
-        var files = Directory.EnumerateFiles(Path.Combine(GetRepositoryRoot(), "src"), "*.cs", SearchOption.AllDirectories)
+        var files = Directory.EnumerateFiles(Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src"), "*.cs", SearchOption.AllDirectories)
             .Where(file => !file.Split(Path.DirectorySeparatorChar).Any(part => part is "obj" or "bin"));
         var trees = files.Select(file => CSharpSyntaxTree.ParseText(File.ReadAllText(file), path: file));
         MetadataReference[] references =

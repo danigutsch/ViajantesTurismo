@@ -10,7 +10,7 @@ public sealed class CiSliceConfigurationTests
     public void Test_slice_matrix_matches_the_configured_slices()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         using var configuration = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, ".config", "sharedkernel-ci.json")));
         var workflow = File.ReadAllText(Path.Combine(root, ".github", "workflows", "ci.yml"));
 
@@ -38,7 +38,7 @@ public sealed class CiSliceConfigurationTests
     public void Chromium_uses_preinstalled_dependencies_only_on_the_verified_hosted_runner()
     {
         // Arrange
-        var root = RepositoryRoot.Locate();
+        var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         var workflow = File.ReadAllText(Path.Combine(root, ".github", "workflows", "ci.yml"));
 
         // Act

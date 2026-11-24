@@ -50,7 +50,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="../fixtures/media-accessibility/*" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../fixtures/media-accessibility/baseline.json" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../fixtures/media-accessibility/bicycle.svg" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../fixtures/media-accessibility/closed-trail.svg" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../fixtures/media-accessibility/coast.svg" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../fixtures/media-accessibility/golden.json" Link="Fixtures/media-accessibility/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>

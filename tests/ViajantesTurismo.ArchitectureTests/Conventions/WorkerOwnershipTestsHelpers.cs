@@ -1,5 +1,4 @@
 using System.Xml.Linq;
-using ViajantesTurismo.ArchitectureTests.Dependencies;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -17,7 +16,7 @@ internal static class WorkerOwnershipTestsHelpers
     /// <summary>Returns the sorted names of the source projects whose names end with "Worker".</summary>
     public static string[] FindWorkerProjects()
     {
-        var sourceRoot = Path.Combine(LayerDependencyTestsHelpers.GetRepositoryRoot(), "src");
+        var sourceRoot = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src");
 
         return [.. Directory.EnumerateFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
             .Select(Path.GetFileNameWithoutExtension)
@@ -40,7 +39,7 @@ internal static class WorkerOwnershipTestsHelpers
     public static string[] FindForeignContextReferences(string projectName, string owningContext)
     {
         var projectPath = Path.Combine(
-            LayerDependencyTestsHelpers.GetRepositoryRoot(), "src", projectName, $"{projectName}.csproj");
+            RepositoryRoot.Locate("ViajantesTurismo.slnx"), "src", projectName, $"{projectName}.csproj");
         var ownPrefix = $"ViajantesTurismo.{owningContext}.";
 
         return [.. XDocument.Load(projectPath)

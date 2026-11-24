@@ -3,7 +3,6 @@ using Aspire.Hosting.ApplicationModel;
 using PandaBear.Testing;
 using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
-using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostOrchestrationTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -52,7 +51,7 @@ public sealed class PostgreSqlServerMetricsConfigurationTests
     public void Server_metrics_query_only_aggregate_values_and_export_bounded_labels()
     {
         // Arrange
-        var collectorRoot = Path.Combine(GetRepositoryRoot(), "observability", "otel-collector");
+        var collectorRoot = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "observability", "otel-collector");
         var gateway = File.ReadAllText(Path.Combine(collectorRoot, "config.yaml"));
 
         // Act
