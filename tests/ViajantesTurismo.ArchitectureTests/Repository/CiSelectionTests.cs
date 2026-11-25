@@ -19,7 +19,8 @@ public sealed class CiSelectionTests
     [InlineData(".gitignore", "false", "true", "[]")]
     [InlineData("CODEOWNERS", "false", "true", "[]")]
     [InlineData(".mcp.json", "false", "true", "[]")]
-    [InlineData("docs/architecture/generated-diagrams.json", "false", "true", "[]")]
+    [InlineData("docs/architecture/generated-diagrams.json", "true", "false",
+        "[\"fast-validation-1\",\"fast-validation-2\"]")]
     [InlineData("docs/architecture/architecture-metadata.json", "true", "false",
         "[\"fast-validation-1\",\"fast-validation-2\",\"hosted-tests\"]")]
     [InlineData("docs/architecture/data-ownership.md", "true", "false",
