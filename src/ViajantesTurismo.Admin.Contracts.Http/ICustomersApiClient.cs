@@ -8,14 +8,6 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 /// </summary>
 public interface ICustomersApiClient
 {
-    /// <summary>
-    /// Gets a list of customers with optional pagination.
-    /// </summary>
-    /// <param name="ct">Cancellation token for the request.</param>
-    /// <param name="maxItems">Maximum number of items to return (default: 100).</param>
-    /// <returns>The materialized customer-list outcome.</returns>
-    Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100);
-
     /// <summary>Gets one page of customer overview rows.</summary>
     /// <param name="page">The one-based page number.</param>
     /// <param name="sort">The requested sort column.</param>

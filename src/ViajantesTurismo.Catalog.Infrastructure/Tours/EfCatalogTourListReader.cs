@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.BuildingBlocks;
+using ViajantesTurismo.Catalog.Application.Gallery;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Tours;
 
@@ -36,5 +38,122 @@ internal sealed class EfCatalogTourListReader(CatalogDbContext dbContext) : ICat
             .ConfigureAwait(false);
 
         return new CatalogTourPageDto(items, total);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<PublishedTourPageDto?> ListPublishedPage(string? page, int pageSize, CancellationToken ct)
+    {
+        var tours = EfCatalogTourReadModelStore.VisibleTours(dbContext);
+        var total = await tours.CountAsync(ct).ConfigureAwait(false);
+        var window = PageWindow.Create(page, pageSize, total);
+        if (window.IsOutOfRange)
+        {
+            return null;
+        }
+
+        var ready = CatalogPublicMediaQueries.Ready(dbContext);
+        var rows = await tours.OrderBy(tour => tour.Title).ThenBy(tour => tour.CatalogTourId)
+            .Skip(window.Skip).Take(window.Take)
+            .Select(tour => new
+            {
+                tour.CatalogTourId,
+                tour.Title,
+                tour.Slug,
+                tour.Summary,
+                tour.UpdatedAt,
+                CoverId = ready.Where(photo => photo.TourLinks.Any(link => link.CatalogTourId == tour.CatalogTourId)
+                        && (tour.GalleryPhotoIds == null || tour.GalleryPhotoIds.Contains(photo.Id)))
+                    .OrderByDescending(photo => tour.GalleryPhotoIds == null
+                        ? photo.TourLinks.Any(link => link.CatalogTourId == tour.CatalogTourId && link.IsCover)
+                        : photo.Id == tour.GalleryCoverId)
+                    .ThenBy(photo => tour.GalleryPhotoIds == null
+                        ? photo.TourLinks.Where(link => link.CatalogTourId == tour.CatalogTourId).Min(link => link.DisplayOrder)
+                        : Array.IndexOf(tour.GalleryPhotoIds, photo.Id))
+                    .ThenBy(photo => photo.Id)
+                    .Select(photo => (Guid?)photo.Id)
+                    .FirstOrDefault()
+            })
+            .ToArrayAsync(ct).ConfigureAwait(false);
+
+        if (window.Page > 1 && rows.Length == 0)
+        {
+            return null;
+        }
+
+        var coverIds = rows.Select(row => row.CoverId).OfType<Guid>().Distinct().ToArray();
+        var tourIds = rows.Select(row => row.CatalogTourId).ToArray();
+        var covers = await ready.Where(image => coverIds.Contains(image.Id))
+            .Include(image => image.ResponsiveVariants)
+            .Include(image => image.TourLinks.Where(link => tourIds.Contains(link.CatalogTourId)))
+            .AsSplitQuery()
+            .ToDictionaryAsync(image => image.Id, ct).ConfigureAwait(false);
+
+        var cards = rows.Select(row => new TourSummaryDto
+        {
+            Title = row.Title,
+            Slug = row.Slug,
+            Summary = row.Summary,
+            UpdatedAt = row.UpdatedAt,
+            Images = row.CoverId is { } id && covers.TryGetValue(id, out var cover) && cover.BelongsToTour(row.CatalogTourId)
+                ? [CatalogGalleryProjection.MapImage(cover, 0, isCover: true, cover.AltText, cover.IsDecorative, cover.Caption)]
+                : []
+        }).ToArray();
+        return new PublishedTourPageDto(window.Page, window.PageSize, total, cards);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<PublishedTourSitemapEntryDto[]> ListPublishedSitemapEntries(int limit, CancellationToken ct) =>
+        await EfCatalogTourReadModelStore.VisibleTours(dbContext)
+            .OrderBy(tour => tour.Title).ThenBy(tour => tour.CatalogTourId)
+            .Take(limit)
+            .Select(tour => new PublishedTourSitemapEntryDto(tour.Slug, tour.UpdatedAt))
+            .ToArrayAsync(ct).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async ValueTask<(PageWindow Window, IReadOnlyList<CatalogTourImageDto> Images)?> ListPublishedPhotos(
+        CatalogTourDraftReadModel tour, string? page, CancellationToken ct)
+    {
+        var tourId = tour.CatalogTourId;
+        var authored = tour.GalleryPhotoIds?.ToArray();
+        var photos = CatalogPublicMediaQueries.Ready(dbContext)
+            .Where(photo => photo.TourLinks.Any(link => link.CatalogTourId == tourId)
+                && (authored == null || authored.Contains(photo.Id)));
+        var count = await photos.CountAsync(ct).ConfigureAwait(false);
+        var window = PageWindow.Create(page, PublishedTourDetailsPageDto.PhotosPerPage, Math.Max(0, count - 1));
+        if (window.IsOutOfRange)
+        {
+            return null;
+        }
+
+        if (count == 0)
+        {
+            return (window, []);
+        }
+
+        var ordered = authored is null
+            ? photos.OrderByDescending(photo => photo.TourLinks.Any(link => link.CatalogTourId == tourId && link.IsCover))
+                .ThenBy(photo => photo.TourLinks.Where(link => link.CatalogTourId == tourId).Min(link => link.DisplayOrder))
+            : photos.OrderByDescending(photo => photo.Id == tour.GalleryCoverId)
+                .ThenBy(photo => Array.IndexOf(authored, photo.Id));
+        var identifiers = ordered.ThenBy(photo => photo.Id).Select(photo => photo.Id);
+        var coverId = await identifiers.Select(id => (Guid?)id).FirstOrDefaultAsync(ct).ConfigureAwait(false);
+        if (coverId is not { } cover)
+        {
+            return (window, []);
+        }
+
+        var pageIds = await identifiers.Skip(window.Skip + 1).Take(window.Take).ToArrayAsync(ct).ConfigureAwait(false);
+        Guid[] ids = [cover, .. pageIds.Where(id => id != cover)];
+        var images = await photos.Where(photo => ids.Contains(photo.Id))
+            .Include(photo => photo.ResponsiveVariants)
+            .Include(photo => photo.TourLinks.Where(link => link.CatalogTourId == tourId))
+            .ToDictionaryAsync(photo => photo.Id, ct).ConfigureAwait(false);
+        var items = ids.Where(images.ContainsKey).Select(id =>
+        {
+            var image = images[id];
+            return CatalogGalleryProjection.MapImage(image, id == cover ? 0 : window.Skip + Array.IndexOf(pageIds, id) + 1,
+                id == cover, image.AltText, image.IsDecorative, image.Caption);
+        }).ToArray();
+        return (window, items);
     }
 }

@@ -18,10 +18,6 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
     internal GetBookingDto Booking { get; } = DtoBuilders.BuildBookingDto();
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) =>
-        await new[] { Customer }.ToAsyncEnumerable().ToArrayAsync(ct);
-
-    /// <inheritdoc />
     public Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -41,10 +37,6 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
     /// <inheritdoc />
     public async Task<CustomerDetailsDto?> GetCustomerDetailsById(Guid id, CancellationToken ct) =>
         id == Customer.Id || await customers.GetById(id, ct) is not null ? DtoBuilders.BuildCustomerDetailsDto(id: id) : null;
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) =>
-        await new[] { Tour }.ToAsyncEnumerable().ToArrayAsync(ct);
 
     /// <inheritdoc />
     public Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct)
@@ -79,10 +71,6 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
     /// <inheritdoc />
     public async Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct) =>
         await Enumerable.Empty<GetTourRetirementDto>().ToAsyncEnumerable().SingleOrDefaultAsync(ct);
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct) =>
-        await new[] { Booking }.ToAsyncEnumerable().ToArrayAsync(ct);
 
     /// <inheritdoc />
     public Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct)
@@ -123,11 +111,4 @@ internal sealed class AdminHypermediaQueryProbe(FakeCustomerStore customers, Fak
         return tour is null ? null : DtoBuilders.BuildBookingDto(id: id, tourId: tour.Id);
     }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct) =>
-        await new[] { Booking }.ToAsyncEnumerable().Where(booking => booking.TourId == tourId).ToArrayAsync(ct);
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct) =>
-        await new[] { Booking }.ToAsyncEnumerable().Where(booking => booking.CustomerId == customerId).ToArrayAsync(ct);
 }

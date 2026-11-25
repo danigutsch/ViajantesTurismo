@@ -10,6 +10,7 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 [JsonSerializable(typeof(GetPaymentInstructionDto))]
 [JsonSerializable(typeof(IReadOnlyList<GetPaymentInstructionDto>))]
 [JsonSerializable(typeof(GetPaymentInstructionPageDto))]
+[JsonSerializable(typeof(GetPaymentInstructionReviewPageDto))]
 [JsonSerializable(typeof(GetPaymentCommandResultDto))]
 [JsonSerializable(typeof(PaymentInstallmentDto))]
 [JsonSerializable(typeof(InstallmentAllocationDto))]
@@ -33,4 +34,5 @@ namespace ViajantesTurismo.Admin.Contracts.Application;
 [JsonSerializable(typeof(GetFinancialReversalDto))]
 [JsonSerializable(typeof(GetFinancialReviewDto))]
 [JsonSerializable(typeof(GetBookingFinancialHistoryDto))]
+[JsonSerializable(typeof(GetBookingFinancialPageDto))]
 public sealed partial class PaymentFinancialContractJsonContext : JsonSerializerContext;

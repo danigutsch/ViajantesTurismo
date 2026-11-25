@@ -251,7 +251,6 @@ public class IndexPageTests : BunitContext
         IndexPageTestsHelper.AssertNameSortIsAscending(cut);
         var lastRequest = _fakeToursApi.TourPageRequests[^1];
         lastRequest.ShouldBe((1, TourPageSort.Name, false));
-        _fakeToursApi.GetToursCallCount.ShouldBe(0);
     }
 
     [Fact]
@@ -318,7 +317,6 @@ public class IndexPageTests : BunitContext
         descending.ShouldBeTrue();
         ascendingSort.ShouldBe(sort);
         ascendingDescending.ShouldBeFalse();
-        _fakeToursApi.GetToursCallCount.ShouldBe(0);
     }
 
     [Fact]

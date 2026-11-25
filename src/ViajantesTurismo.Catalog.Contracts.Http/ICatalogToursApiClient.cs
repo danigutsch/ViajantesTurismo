@@ -8,11 +8,6 @@ namespace ViajantesTurismo.Catalog.Contracts.Http;
 /// </summary>
 public interface ICatalogToursApiClient
 {
-    /// <summary>
-    /// Gets catalog tours.
-    /// </summary>
-    Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct);
-
     /// <summary>Gets one ordered management page of tour summaries.</summary>
     /// <param name="page">The one-based page number.</param>
     /// <param name="sort">The selected sort field.</param>
@@ -25,10 +20,28 @@ public interface ICatalogToursApiClient
     /// </summary>
     Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct);
 
+    /// <summary>Gets a tour, requesting image metadata when the caller uses it.</summary>
+    /// <param name="id">The Catalog tour identifier.</param>
+    /// <param name="includeImages">Whether to request image metadata from a projection-aware server.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The tour read outcome.</returns>
+    Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, bool includeImages, CancellationToken ct) =>
+        GetTour(id, ct);
+
     /// <summary>
     /// Updates catalog tour presentation data.
     /// </summary>
     Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct);
+
+    /// <summary>Saves the presentation and controls whether the response includes image metadata.</summary>
+    /// <param name="id">The Catalog tour identifier.</param>
+    /// <param name="request">The new presentation and its expected version.</param>
+    /// <param name="includeImages">Whether to request image metadata from a projection-aware server.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The presentation update outcome.</returns>
+    Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(
+        Guid id, UpsertCatalogTourPresentationRequest request, bool includeImages, CancellationToken ct) =>
+        UpdatePresentation(id, request, ct);
 
     /// <summary>
     /// Publishes a Catalog tour explicitly.

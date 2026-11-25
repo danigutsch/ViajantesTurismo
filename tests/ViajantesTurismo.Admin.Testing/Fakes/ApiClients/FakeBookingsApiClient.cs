@@ -11,8 +11,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     private Task _bookingActionTask = Task.CompletedTask;
     private HttpOutcome? _bookingActionOutcome;
     private HttpOutcome? _createBookingOutcome;
-    private Exception? _getAllBookingsException;
-    private HttpOutcome<GetBookingDto[]>? _getAllBookingsOutcome;
     private Exception? _getBookingPageException;
     private HttpOutcome<GetBookingPageDto>? _getBookingPageOutcome;
     private readonly List<(int Page, BookingPageSort Sort, bool Descending)> _pageRequests = [];
@@ -40,21 +38,10 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         get; private set;
     }
 
-    public int GetAllBookingsCallCount
-    {
-        get; private set;
-    }
-
     public IReadOnlyList<(int Page, BookingPageSort Sort, bool Descending)> PageRequests => _pageRequests;
 
     /// <summary>Gets the recorded requests for owner booking pages.</summary>
     public IReadOnlyList<(Guid Owner, bool ByTour, int Page, BookingPageSort Sort, bool Descending)> HistoryRequests => _historyRequests;
-
-    /// <summary>Gets the number of legacy collection requests for booking histories.</summary>
-    public int GetBookingHistoryCollectionCallCount
-    {
-        get; private set;
-    }
 
     public UpdateBookingDetailsDto? LastUpdatedDetails
     {
@@ -75,24 +62,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     public int UpdateBookingNotesCallCount
     {
         get; private set;
-    }
-
-    public Task<HttpOutcome<GetBookingDto[]>> GetAllBookings(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        GetAllBookingsCallCount++;
-
-        if (_getAllBookingsException is not null)
-        {
-            throw _getAllBookingsException;
-        }
-
-        if (_getAllBookingsOutcome is not null)
-        {
-            return Task.FromResult(_getAllBookingsOutcome);
-        }
-
-        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _bookings.ToArray()));
     }
 
     public Task<HttpOutcome<GetBookingPageDto>> GetBookingPage(int page, BookingPageSort sort, bool descending, CancellationToken ct)
@@ -194,24 +163,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
         return Task.FromResult(booking is null
             ? HttpOutcomeMapper.Status<GetBookingDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, booking));
-    }
-
-    public Task<HttpOutcome<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        GetBookingHistoryCollectionCallCount++;
-        return Task.FromResult(HttpOutcomeMapper.Succeeded(
-            HttpStatusCode.OK,
-            _bookings.Where(b => b.TourId == tourId).ToArray()));
-    }
-
-    public Task<HttpOutcome<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        GetBookingHistoryCollectionCallCount++;
-        return Task.FromResult(HttpOutcomeMapper.Succeeded(
-            HttpStatusCode.OK,
-            _bookings.Where(b => b.CustomerId == customerId || b.CompanionId == customerId).ToArray()));
     }
 
     public Task<HttpOutcome> CreateBooking(CreateBookingDto dto, CancellationToken ct)
@@ -361,10 +312,6 @@ public sealed class FakeBookingsApiClient : IBookingsApiClient
     }
 
     public void SetBookingActionOutcome(HttpOutcome outcome) => _bookingActionOutcome = outcome;
-
-    public void SetGetAllBookingsException(Exception exception) => _getAllBookingsException = exception;
-
-    public void SetGetAllBookingsOutcome(HttpOutcome<GetBookingDto[]> outcome) => _getAllBookingsOutcome = outcome;
 
     public void SetGetBookingPageException(Exception exception) => _getBookingPageException = exception;
 

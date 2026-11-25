@@ -65,10 +65,10 @@ public sealed class QueryServiceReadModelFactsTests
         await scenario.Save(ct);
 
         // Act
-        var tours = await scenario.QueryService.GetAllTours(ct);
+        var tours = await scenario.QueryService.GetTourPage(page: null, TourPageSort.Default, descending: false, ct);
 
         // Assert
-        var dto = tours.ShouldHaveSingleItem();
+        var dto = tours.Items.ShouldHaveSingleItem();
         dto.IsFullyBooked.ShouldBeTrue();
         dto.IsAtMinimumCapacity.ShouldBeTrue();
         dto.AvailableSpots.ShouldBe(0);
@@ -109,13 +109,13 @@ public sealed class QueryServiceReadModelFactsTests
 
         // Act
         var byId = await scenario.QueryService.GetBookingById(booking.Id, ct);
-        var byTour = await scenario.QueryService.GetBookingsByTourId(tour.Id, ct);
-        var byCustomer = await scenario.QueryService.GetBookingsByCustomerId(booking.PrincipalCustomer.CustomerId, ct);
-        var all = await scenario.QueryService.GetAllBookings(ct);
+        var byTour = await scenario.QueryService.GetTourBookingPage(tour.Id, page: null, BookingPageSort.Default, descending: false, ct);
+        var byCustomer = await scenario.QueryService.GetCustomerBookingPage(booking.PrincipalCustomer.CustomerId, page: null, BookingPageSort.Default, descending: false, ct);
+        var all = await scenario.QueryService.GetBookingPage(page: null, BookingPageSort.Default, descending: false, ct);
 
         // Assert
         byId.ShouldNotBeNull();
-        GetBookingDto[] dtos = [byId, byTour.ShouldHaveSingleItem(), byCustomer.ShouldHaveSingleItem(), all.ShouldHaveSingleItem()];
+        GetBookingDto[] dtos = [byId, byTour.Items.ShouldHaveSingleItem(), byCustomer.Items.ShouldHaveSingleItem(), all.Items.ShouldHaveSingleItem()];
         foreach (var dto in dtos)
         {
             dto.CanBeConfirmed.ShouldBe(booking.CanBeConfirmed);
@@ -135,13 +135,13 @@ public sealed class QueryServiceReadModelFactsTests
         var booking = await scenario.AddTourWithSingleBooking(tour, ct);
 
         // Act
-        var byTour = await scenario.QueryService.GetBookingsByTourId(tour.Id, ct);
-        var byCustomer = await scenario.QueryService.GetBookingsByCustomerId(booking.PrincipalCustomer.CustomerId, ct);
-        var all = await scenario.QueryService.GetAllBookings(ct);
+        var byTour = await scenario.QueryService.GetTourBookingPage(tour.Id, page: null, BookingPageSort.Default, descending: false, ct);
+        var byCustomer = await scenario.QueryService.GetCustomerBookingPage(booking.PrincipalCustomer.CustomerId, page: null, BookingPageSort.Default, descending: false, ct);
+        var all = await scenario.QueryService.GetBookingPage(page: null, BookingPageSort.Default, descending: false, ct);
 
         // Assert
-        byTour.ShouldHaveSingleItem().CanModifyBookedServices.ShouldBeTrue();
-        byCustomer.ShouldHaveSingleItem().CanModifyBookedServices.ShouldBeTrue();
-        all.ShouldHaveSingleItem().CanModifyBookedServices.ShouldBeTrue();
+        byTour.Items.ShouldHaveSingleItem().CanModifyBookedServices.ShouldBeTrue();
+        byCustomer.Items.ShouldHaveSingleItem().CanModifyBookedServices.ShouldBeTrue();
+        all.Items.ShouldHaveSingleItem().CanModifyBookedServices.ShouldBeTrue();
     }
 }

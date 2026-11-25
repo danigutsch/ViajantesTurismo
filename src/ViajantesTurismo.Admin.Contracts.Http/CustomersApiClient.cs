@@ -16,30 +16,6 @@ public sealed partial class CustomersApiClient(HttpClient httpClient, ILogger<Cu
     private static readonly CustomersApiClientJsonContext Json = CustomersApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
-    {
-        if (maxItems <= 0)
-        {
-            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Array.Empty<GetCustomerDto>());
-        }
-
-        var outcome = await HttpOutcomeMapper.Send(
-            httpClient,
-            new HttpRequestMessage(HttpMethod.Get, new Uri(RoutePrefix, UriKind.Relative)),
-            HttpStatusCode.OK,
-            Json.GetCustomerDtoArray,
-            Json.ContractValidationProblemDto,
-            ct).ConfigureAwait(false);
-
-        return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with
-            {
-                Value = outcome.Value?.OfType<GetCustomerDto>().Take(maxItems).ToArray() ?? []
-            }
-            : outcome;
-    }
-
-    /// <inheritdoc />
     public async Task<HttpOutcome<GetCustomerPageDto>> GetCustomerPage(int page, CustomerPageSort sort, bool descending, CancellationToken ct)
     {
         var route = FormattableString.Invariant($"{RoutePrefix}/page?page={page}&sort={sort}&descending={descending}");

@@ -16,7 +16,7 @@
     {
         <p><em>@(Culture.IsPortuguese ? "Carregando viagens..." : "Loading tours...")</em></p>
     }
-    else if (_tours.Length == 0)
+    else if (_tours.Count == 0)
     {
         <p>@(Culture.IsPortuguese ? "Novas viagens serão publicadas em breve." : "New tours will be published soon.")</p>
     }
@@ -28,6 +28,7 @@
                 <TourCard Tour="tour" HeadingLevel="3" />
             }
         </CardGrid>
+        <a href="@Culture.Localize("/group-bike-tours")">@(Culture.IsPortuguese ? "Veja todas as viagens" : "Browse all tours")</a>
     }
 </Section>
 
@@ -38,7 +39,7 @@
     [CascadingParameter]
     private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
 
-    private TourSummaryDto[]? _tours;
+    private IReadOnlyList<TourSummaryDto>? _tours;
     private PublicContentVariantDto? _hero;
     private bool _loadFailed;
 
@@ -93,10 +94,10 @@
         var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
         try
         {
-            var outcome = await CatalogApi.GetPublishedTours(requestAborted);
-            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours })
+            var outcome = await CatalogApi.GetPublishedTourPage(null, PublishedTourPageDto.HomePreviewSize, requestAborted);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } page })
             {
-                _tours = tours;
+                _tours = page.Tours;
                 return;
             }
         }

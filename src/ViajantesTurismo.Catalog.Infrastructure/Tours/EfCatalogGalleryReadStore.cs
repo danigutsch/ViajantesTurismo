@@ -6,6 +6,7 @@ using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Domain.Tours;
+using ViajantesTurismo.Catalog.Infrastructure.Media;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Tours;
 
@@ -187,8 +188,7 @@ internal sealed class EfCatalogGalleryReadStore(CatalogDbContext dbContext) : IC
     // Match the aggregate's public readiness and locale policy before counting and paging in the database.
     private IQueryable<PublicMediaImage> EligiblePhotos(ContentCulture culture)
     {
-        var ready = dbContext.PublicMediaImages.AsNoTracking().Where(photo => photo.ProcessingStatus == MediaImageProcessingStatus.Ready
-            && photo.ResponsiveVariants.Any() && !photo.RequiresHumanReview && (photo.IsDecorative || !string.IsNullOrWhiteSpace(photo.AltText)));
+        var ready = CatalogPublicMediaQueries.Ready(dbContext);
         return culture == PublicContentCultures.Supported.Default
             ? ready
             : ready.Where(photo => !photo.AccessibilityTexts.Any(text => text.Language == culture

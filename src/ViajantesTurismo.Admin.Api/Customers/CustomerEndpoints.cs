@@ -15,7 +15,7 @@ namespace ViajantesTurismo.Admin.Api.Customers;
 /// </summary>
 internal static class CustomerEndpoints
 {
-    private const string ListEndpoint = nameof(GetCustomers);
+    private const string ListEndpoint = nameof(GetCustomerPage);
     private const string ItemEndpoint = nameof(GetCustomerById);
 
     /// <summary>
@@ -29,15 +29,9 @@ internal static class CustomerEndpoints
 
         var customersGroup = app.MapCustomersGroup();
 
-        customersGroup.MapGet("/", GetCustomers)
-            .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
-            .WithName(ListEndpoint)
-            .WithDescription("Retrieves all customers.")
-            .WithSummary("Retrieves all customers.");
-
         customersGroup.MapGet("/page", GetCustomerPage)
             .RequireAuthorization(AdminAuthorization.CustomerRead, AdminAuthorization.CustomerSensitiveRead)
-            .WithAdminMetadata(nameof(GetCustomerPage), "Retrieves a page of customers.",
+            .WithAdminMetadata(ListEndpoint, "Retrieves a page of customers.",
                 "Retrieves bounded customer summaries and the total count. The optional page number is one-based.");
 
         customersGroup.MapPost("/options/search", SearchCustomerOptions)
@@ -81,23 +75,13 @@ internal static class CustomerEndpoints
         return TypedResults.Ok(await detector.FindExistingCustomerIds(emails, ct));
     }
 
-    private static async Task<Ok<IReadOnlyList<GetCustomerDto>>> GetCustomers(
-        [FromServices] IQueryService queryService,
-        LinkGenerator linkGenerator,
-        HttpContext context,
-        CancellationToken ct)
-    {
-        var customers = await queryService.GetAllCustomers(ct);
-        var links = GetResourceLinks(context, linkGenerator);
-        return TypedResults.Ok<IReadOnlyList<GetCustomerDto>>(
-            [.. customers.Select(customer => customer with { Links = links.For(customer.Id).Links })]);
-    }
-
     private static async Task<Results<Ok<GetCustomerPageDto>, BadRequest>> GetCustomerPage(
         [FromQuery] string? page,
         [FromQuery] string? sort,
         [FromQuery] bool? descending,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var sortKey = CustomerPageSort.Name;
@@ -107,7 +91,11 @@ internal static class CustomerEndpoints
         }
 
         var customers = await queryService.GetCustomerPage(page, sortKey, descending.GetValueOrDefault(), ct);
-        return TypedResults.Ok(customers);
+        var links = GetResourceLinks(context, linkGenerator);
+        return TypedResults.Ok(customers with
+        {
+            Items = [.. customers.Items.Select(customer => customer with { Links = links.For(customer.Id).Links })]
+        });
     }
 
     private static async Task<Results<Ok<GetCustomerOptionsDto>, BadRequest>> SearchCustomerOptions(

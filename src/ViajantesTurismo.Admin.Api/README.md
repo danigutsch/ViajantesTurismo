@@ -17,7 +17,7 @@ customer routes, including import upload binding and authorization.
 
 ### Tours
 
-- `GET /tours` - List all tours
+- `GET /tours/page` - Read a page of active tour summaries
 - `GET /tours/{id}` - Get tour by ID
 - `POST /tours` - Create new tour
 - `PUT /tours/{id}` - Update tour
@@ -25,7 +25,7 @@ customer routes, including import upload binding and authorization.
 
 ### Customers
 
-- `GET /customers` - List all customers
+- `GET /customers/page` - Read a page of customer summaries
 - `GET /customers/{id}` - Get customer by ID
 - `POST /customers` - Create new customer
 - `PUT /customers/{id}` - Update customer
@@ -33,10 +33,10 @@ customer routes, including import upload binding and authorization.
 
 ### Bookings
 
-- `GET /bookings` - List all bookings
+- `GET /bookings/page` - Read a page of bookings
 - `GET /bookings/{id}` - Get booking by ID
-- `GET /bookings/tour/{tourId}` - Get bookings for tour
-- `GET /bookings/customer/{customerId}` - Get bookings for customer
+- `GET /bookings/tour/{tourId}/page` - Read a page of bookings for a tour
+- `GET /bookings/customer/{customerId}/page` - Read a page of bookings for a customer
 - `POST /bookings` - Create booking with discount support
 - `PUT /bookings/{id}/discount` - Update booking discount
 - `PUT /bookings/{id}/details` - Update room type, bikes, companion
@@ -46,6 +46,8 @@ customer routes, including import upload binding and authorization.
 - `PATCH /bookings/{id}/notes` - Update booking notes
 - `POST /bookings/{id}/payments` - Record payment
 - `DELETE /bookings/{id}` - Delete booking
+
+See the [Admin bounded-read migration](../../docs/admin-bounded-read-migration.md) for caller changes.
 
 ## Features
 

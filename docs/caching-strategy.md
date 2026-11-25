@@ -45,18 +45,16 @@ Management Web registers the output cache, but no endpoint or page opts in, so i
 
 ### Admin `QueryService` reads
 
-None of the eight `QueryService` reads is cacheable.
+The Admin tour, customer, and booking reads use current data.
 
 | Read | Verdict | Reason |
 | --- | --- | --- |
-| `GetAllTours`, `GetTourById` | Not cacheable | Include bookings, so every booking write changes the result; `GetTourById` is also read inside document commands |
-| `GetAllCustomers`, `GetCustomerDetailsById` | Not cacheable | Personal data, including national id and medical information; edits must show immediately |
-| `GetAllBookings`, `GetBookingById` | Not cacheable | Personal and payment ledger data; `GetBookingById` is read inside document generation, where a stale value would put wrong figures in a contract |
-| `GetBookingsByTourId`, `GetBookingsByCustomerId` | Not cacheable | Same data, invalidated by every booking write |
+| `GetTourPage`, `GetTourById` | Not cacheable | Capacity depends on booking state. Document generation also reads tour details. |
+| `GetCustomerPage`, `GetCustomerDetailsById` | Not cacheable | Both return personal data that must reflect current edits. Details include national ID and medical information. |
+| `GetBookingPage`, `GetBookingById` | Not cacheable | Personal and payment ledger data. Document generation uses current booking values. |
+| `GetTourBookingPage`, `GetCustomerBookingPage` | Not cacheable | Changes to bookings, travelers, or payments can affect history. |
 
-`GetAllBookings` and `GetAllTours` are the heaviest reads. If measurement shows a need, reduce their cost with
-pagination and column projection rather than caching. The repository has no measurement of call frequency or
-latency yet.
+The collection queries bound each read with paging. Tour and customer overview pages project summaries.
 
 ### Already cached
 

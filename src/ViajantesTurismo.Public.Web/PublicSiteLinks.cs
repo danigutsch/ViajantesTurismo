@@ -38,4 +38,8 @@ internal sealed class PublicSiteLinks(CanonicalOriginOptions options)
 
     /// <summary>Gets an absolute address of a local path under the canonical origin.</summary>
     public Uri Absolute(string localPath) => new(origin, localPath);
+
+    /// <summary>Builds the canonical public page path, using the bare path for page one.</summary>
+    public static string PagePath(string escapedPath, int page) =>
+        page == 1 ? escapedPath : FormattableString.Invariant($"{escapedPath}?page={page}");
 }

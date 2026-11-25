@@ -387,7 +387,6 @@ public sealed class EditPageTests : BunitContext
         options.ShouldContain(option => option.GetAttribute(ValueAttributeName) == eligible.Id.ToString());
         options.ShouldNotContain(option => option.GetAttribute(ValueAttributeName) == principal.Id.ToString());
         cut.Find("#companionBikeType").GetAttribute(ValueAttributeName).ShouldBe(nameof(BikeTypeDto.EBike));
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Fact]

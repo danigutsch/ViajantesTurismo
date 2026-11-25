@@ -75,10 +75,12 @@ internal static class PublicWebEndpoints
         CancellationToken ct)
     {
         PublicWebHttpCache.SetNoStore(httpContext);
-        TourSummaryDto[] tours;
+        var cultureCount = PublicSiteCultures.Supported.Cultures.Count;
+        var tourLimit = (SitemapXmlSerializer.MaximumUrlCount / cultureCount) - StaticPagePaths.Length;
+        PublishedTourSitemapEntryDto[] tours;
         try
         {
-            var outcome = await catalogApi.GetPublishedTours(ct);
+            var outcome = await catalogApi.GetPublishedTourSitemapEntries(tourLimit, ct);
             if (outcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } publishedTours })
             {
                 PublicWebHttpCache.SetServiceUnavailableNoStore(httpContext);
@@ -99,11 +101,10 @@ internal static class PublicWebEndpoints
         }
 
         var links = new PublicSiteLinks(sitemapOptions.Value);
-        var cultureCount = PublicSiteCultures.Supported.Cultures.Count;
-        var tourLimit = (SitemapXmlSerializer.MaximumUrlCount / cultureCount) - StaticPagePaths.Length;
         var urls = StaticPagePaths
             .SelectMany(path => links.SitemapEntries(path))
             .Concat(tours
+                .OfType<PublishedTourSitemapEntryDto>()
                 .Where(tour => Slug.IsCanonical(tour.Slug))
                 .Take(tourLimit)
                 .SelectMany(tour => links.SitemapEntries($"/group-bike-tours/{tour.Slug}", tour.UpdatedAt)));

@@ -28,23 +28,26 @@ public sealed class AdminHypermediaEndpointTests
             "tours" => queries.Tour.Id,
             _ => throw new ArgumentOutOfRangeException(nameof(collection))
         };
-        var listPath = $"{AdminHypermediaPathBase.Prefix}/api/v1/{collection}";
-        var itemPath = $"{listPath}/{id}";
+        var collectionPath = $"{AdminHypermediaPathBase.Prefix}/api/v1/{collection}";
+        var listPath = $"{collectionPath}/page";
+        var itemPath = $"{collectionPath}/{id}";
 
         // Act
         var list = await client.GetFromJsonAsync<JsonElement>(new Uri($"{listPath}?ignored=1", UriKind.Relative), ct);
         var detail = await client.GetFromJsonAsync<JsonElement>(new Uri(itemPath, UriKind.Relative), ct);
-        using var missing = await client.GetAsync(new Uri($"{listPath}/{Guid.CreateVersion7()}", UriKind.Relative), ct);
+        using var missing = await client.GetAsync(new Uri($"{collectionPath}/{Guid.CreateVersion7()}", UriKind.Relative), ct);
+        using var retired = await client.GetAsync(new Uri(collectionPath, UriKind.Relative), ct);
 
         // Assert
-        list.ValueKind.ShouldBe(JsonValueKind.Array);
-        var item = list.EnumerateArray().ShouldHaveSingleItem();
+        var items = list.GetProperty("items");
+        var item = items.EnumerateArray().ShouldHaveSingleItem();
         item.GetProperty("id").GetGuid().ShouldBe(id);
         item.GetProperty("links").EnumerateArray().ShouldHaveSingleItem(link => link.GetProperty("rel").GetString() == "self")
             .GetProperty("href").GetString().ShouldBe(itemPath);
         detail.GetProperty("links").EnumerateArray().ShouldHaveSingleItem(link => link.GetProperty("rel").GetString() == "collection")
             .GetProperty("href").GetString().ShouldBe(listPath);
         missing.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        retired.StatusCode.ShouldBe(HttpStatusCode.MethodNotAllowed);
     }
 
     [Theory]
@@ -61,14 +64,19 @@ public sealed class AdminHypermediaEndpointTests
         var collection = $"{AdminHypermediaPathBase.Prefix}/api/v1/bookings";
 
         // Act
-        var result = await client.GetFromJsonAsync<GetBookingDto[]>(
-            new Uri($"{collection}/{filter}/{filterId}", UriKind.Relative), TestContext.Current.CancellationToken);
+        var ct = TestContext.Current.CancellationToken;
+        var historyPath = $"{collection}/{filter}/{filterId}";
+        var result = await client.GetFromJsonAsync<GetBookingHistoryPageDto>(
+            new Uri($"{historyPath}/page", UriKind.Relative), ct);
+        using var retired = await client.GetAsync(new Uri(historyPath, UriKind.Relative), ct);
 
         // Assert
-        var booking = result.ShouldNotBeNull().ShouldHaveSingleItem();
+        var booking = result.ShouldNotBeNull().Items.ShouldHaveSingleItem();
         booking.Id.ShouldBe(queries.Booking.Id);
         booking.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "self")
             .Href.ShouldBe($"{collection}/{queries.Booking.Id}");
+        booking.Links.ShouldHaveSingleItem(link => link.Rel == "collection").Href.ShouldBe($"{collection}/page");
+        retired.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -100,14 +108,17 @@ public sealed class AdminHypermediaEndpointTests
         customerResponse.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe($"{origin}/customers/{customer.Id}");
         customer.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "self")
             .Href.ShouldBe(customerResponse.Headers.Location.OriginalString);
+        customer.Links.ShouldHaveSingleItem(link => link.Rel == "collection").Href.ShouldBe($"{origin}/customers/page");
         tourResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
         tourResponse.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe($"{origin}/tours/{tour.Id}");
         tour.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "self")
             .Href.ShouldBe(tourResponse.Headers.Location.OriginalString);
+        tour.Links.ShouldHaveSingleItem(link => link.Rel == "collection").Href.ShouldBe($"{origin}/tours/page");
         bookingResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
         booking.ShouldNotBeNull();
         bookingResponse.Headers.Location.ShouldNotBeNull().OriginalString.ShouldBe($"{origin}/bookings/{booking.Id}");
         booking.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "self")
             .Href.ShouldBe(bookingResponse.Headers.Location.OriginalString);
+        booking.Links.ShouldHaveSingleItem(link => link.Rel == "collection").Href.ShouldBe($"{origin}/bookings/page");
     }
 }

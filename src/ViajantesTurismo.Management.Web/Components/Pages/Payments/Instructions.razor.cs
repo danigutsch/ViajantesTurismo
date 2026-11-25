@@ -28,6 +28,7 @@ public sealed partial class Instructions : IDisposable
     private readonly HashSet<Guid> _selectedInstallments = [];
     private Guid _accountId;
     private Guid _instructionBookingId;
+    private Guid? _reviewInstructionId;
     private Guid? _quoteId;
     private string? _actor;
     private string? _error;
@@ -38,7 +39,7 @@ public sealed partial class Instructions : IDisposable
     private bool _changesRequested;
     private readonly IdempotentSubmission<GetPaymentInstructionDto> _submission = new();
     private bool _loadingRecipients;
-    private bool Blocked => _loading || _loadingRecipients || _loadingInstructionPage || _submission.IsBusy || _submission.HasPending;
+    private bool Blocked => _loading || _loadingRecipients || _loadingInstructionPage || _loadingFinancialChoices || _submission.IsBusy || _submission.HasPending;
     /// <inheritdoc />
     public void Dispose() => Authentication.AuthenticationStateChanged -= OnAuthenticationStateChanged;
 
@@ -62,8 +63,7 @@ public sealed partial class Instructions : IDisposable
             _instructionBookingId = BookingId;
             _instructionPage = null;
             _regenerate = null;
-            _selectedInstallments.Clear();
-            _quoteId = null;
+            ResetInstructionChoices();
             Cancel();
         }
         _actor = (await Authentication.GetAuthenticationStateAsync()).User.GetSubjectId();
@@ -76,15 +76,10 @@ public sealed partial class Instructions : IDisposable
         _error = null;
         try
         {
-            var financials = await PaymentsApi.GetByBookingId(bookingId, CancellationToken.None);
-            if (financials is { Kind: HttpOutcomeKind.Succeeded, Value: { } history })
+            await LoadFinancialChoices(bookingId);
+            if (bookingId != BookingId)
             {
-                _history = history;
-            }
-            else
-            {
-                _history = null;
-                _error = "Approve a EUR schedule before generating instructions.";
+                return;
             }
             await LoadRecipients(_recipientPage?.Page ?? 1);
             await RefreshSelectedRecipient();
@@ -102,6 +97,7 @@ public sealed partial class Instructions : IDisposable
     private async Task LoadInstructionPage(Guid bookingId, int page)
     {
         _loadingInstructionPage = true;
+        _reviewInstructionId = null;
         try
         {
             var outcome = await InstructionsApi.ListPageForBooking(bookingId, page, ContractConstants.DefaultPaymentInstructionPageSize, CancellationToken.None);
@@ -123,6 +119,8 @@ public sealed partial class Instructions : IDisposable
             _loadingInstructionPage = false;
         }
     }
+
+    private void ToggleReviewHistory(Guid id) => _reviewInstructionId = _reviewInstructionId == id ? null : id;
 
     private async Task LoadRecipients(int page)
     {

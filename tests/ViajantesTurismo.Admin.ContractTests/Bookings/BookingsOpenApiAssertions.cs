@@ -16,14 +16,11 @@ internal static class BookingsOpenApiAssertions
 
         contract.OpenApiVersion.ShouldBe("3.2.0");
         contract.Title.ShouldBe("ViajantesTurismo.Admin.Api | bookings");
-        contract.ListBookingsOperationId.ShouldBe("GetBookings");
         contract.GetBookingPageOperationId.ShouldBe("GetBookingPage");
         contract.GetBookingByIdOperationId.ShouldBe("GetBookingById");
         contract.CreateBookingOperationId.ShouldBe("CreateBooking");
         contract.CreateBookingSchemaReference.ShouldBe("#/components/schemas/CreateBookingDto");
         contract.DeleteBookingOperationId.ShouldBe("DeleteBooking");
-        contract.GetBookingsByTourIdOperationId.ShouldBe("GetBookingsByTourId");
-        contract.GetBookingsByCustomerIdOperationId.ShouldBe("GetBookingsByCustomerId");
         contract.GetTourBookingPageOperationId.ShouldBe("GetTourBookingPage");
         contract.GetCustomerBookingPageOperationId.ShouldBe("GetCustomerBookingPage");
         contract.UpdateBookingDiscountOperationId.ShouldBe("UpdateBookingDiscount");

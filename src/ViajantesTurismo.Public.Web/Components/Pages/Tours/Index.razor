@@ -1,44 +1,58 @@
 @page "/en/group-bike-tours"
 @page "/pt/group-bike-tours"
+@using SharedKernel.BuildingBlocks
 @inject IPublicCatalogApiClient CatalogApi
+@inject NavigationManager Navigation
 
-<PublicPageHead Title="@DocumentTitle" Description="@MetadataDescription" Path="/group-bike-tours" />
+<PublicPageHead Title="@DocumentTitle" Description="@MetadataDescription" Path="@CanonicalPath" />
 
 <Section Title="@Heading" Level="1">
     @if (_loadFailed)
     {
         <p>@(Culture.IsPortuguese ? "Não foi possível carregar as viagens. Tente novamente mais tarde." : "Tours could not be loaded right now. Try again later.")</p>
     }
-    else if (_tours is null)
+    else if (_tourPage is null)
     {
         <p><em>@(Culture.IsPortuguese ? "Carregando viagens..." : "Loading tours...")</em></p>
     }
-    else if (_tours.Length == 0)
+    else if (_tourPage.Tours.Count == 0)
     {
         <p>@(Culture.IsPortuguese ? "Novas viagens serão publicadas em breve." : "New tours will be published soon.")</p>
     }
     else
     {
         <CardGrid>
-            @foreach (var tour in _tours)
+            @foreach (var tour in _tourPage.Tours)
             {
                 <TourCard Tour="tour" />
             }
         </CardGrid>
+        <Pager Window="@PageWindow.Create(_tourPage.Page, _tourPage.PageSize, _tourPage.Total)"
+               PageHref="@PageLink" Label="@(Culture.IsPortuguese ? "Páginas de viagens" : "Tour pages")"
+               PreviousText="@(Culture.IsPortuguese ? "Anterior" : "Previous")"
+               NextText="@(Culture.IsPortuguese ? "Próxima" : "Next")"
+               PageLabelFormat="@(Culture.IsPortuguese ? "Página {0}" : "Page {0}")" />
     }
 </Section>
 
 @code {
+    private const string IndexPath = "/group-bike-tours";
+
+    [SupplyParameterFromQuery(Name = "page")]
+    private string? Page { get; set; }
+
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
     [CascadingParameter]
     private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
 
-    private TourSummaryDto[]? _tours;
+    private PublishedTourPageDto? _tourPage;
     private bool _loadFailed;
 
     private string DocumentTitle => $"{Heading} - Viajantes Turismo";
+
+    private string CanonicalPath => PublicSiteLinks.PagePath(IndexPath, _tourPage?.Page ?? 1);
 
     private string Heading => Culture.IsPortuguese ? "Viagens de bicicleta em grupo" : "Group Bike Tours";
 
@@ -51,16 +65,24 @@
     /// The public fallback is preserved when an API implementation reports an upstream timeout as cancellation, or
     /// has not materialized transport outcomes and throws <see cref="HttpRequestException" />.
     /// </remarks>
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         PublicWebHttpCache.SetNoStore(HttpContext);
+        _tourPage = null;
+        _loadFailed = false;
         var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
         try
         {
-            var outcome = await CatalogApi.GetPublishedTours(requestAborted);
-            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours })
+            var outcome = await CatalogApi.GetPublishedTourPage(Page, PublishedTourPageDto.IndexPageSize, requestAborted);
+            if (outcome.Kind == HttpOutcomeKind.NotFound)
             {
-                _tours = tours;
+                Navigation.NotFound();
+                return;
+            }
+
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } page })
+            {
+                _tourPage = page;
                 return;
             }
         }
@@ -73,6 +95,7 @@
 
         PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
         _loadFailed = true;
-        _tours = [];
     }
+
+    private LinkTarget PageLink(int page) => LinkTarget.FromString(Culture.Localize(PublicSiteLinks.PagePath(IndexPath, page)));
 }

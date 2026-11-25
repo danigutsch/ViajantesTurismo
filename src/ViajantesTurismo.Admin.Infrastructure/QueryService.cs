@@ -16,18 +16,6 @@ namespace ViajantesTurismo.Admin.Infrastructure;
 internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryStore histories) : IQueryService
 {
     /// <inheritdoc />
-    public async Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct)
-    {
-        var tours = await dbContext.Tours
-            .Where(tour => tour.RetirementId == null)
-            .Include(tour => tour.Bookings)
-            .OrderByDescending(tour => tour.Id)
-            .ToArrayAsync(ct);
-
-        return [.. tours.Select(tour => MapTour(tour, tour.CurrentCustomerCount))];
-    }
-
-    /// <inheritdoc />
     public async Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct)
     {
         var tours = dbContext.Tours.Where(tour => tour.RetirementId == null);
@@ -82,10 +70,10 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         var key = SearchKey.Of(request.Query);
         if (key.Length > 0)
         {
-            var pattern = ToContainsPattern(key);
+            var pattern = SqlLikePattern.ContainsLiteral(key);
             tours = tours.Where(tour =>
-                EF.Functions.ILike(EF.Functions.Unaccent(tour.Name), EF.Functions.Unaccent(pattern), "\\") ||
-                EF.Functions.ILike(EF.Functions.Unaccent(tour.Identifier), EF.Functions.Unaccent(pattern), "\\"));
+                EF.Functions.ILike(EF.Functions.Unaccent(tour.Name), EF.Functions.Unaccent(pattern), SqlLikePattern.EscapeCharacter) ||
+                EF.Functions.ILike(EF.Functions.Unaccent(tour.Identifier), EF.Functions.Unaccent(pattern), SqlLikePattern.EscapeCharacter));
         }
 
         var total = await tours.CountAsync(ct);
@@ -153,25 +141,6 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
     };
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct)
-    {
-        var customers = await dbContext.Customers.OrderBy(c => c.PersonalInfo.FirstName).ThenBy(c => c.PersonalInfo.LastName).ToArrayAsync(ct);
-        return
-        [
-            ..customers.Select(c => new GetCustomerDto
-            {
-                Id = c.Id,
-                FirstName = c.PersonalInfo.FirstName,
-                LastName = c.PersonalInfo.LastName,
-                Email = c.ContactInfo.Email.Value,
-                Mobile = c.ContactInfo.Mobile.Value,
-                Nationality = c.PersonalInfo.Nationality,
-                BikeType = CustomerMapper.MapToBikeTypeDto(c.PhysicalInfo.BikeType)
-            })
-        ];
-    }
-
-    /// <inheritdoc />
     public async Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct)
     {
         var customers = dbContext.Customers;
@@ -223,10 +192,10 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         }
         else if (key.Length > 0)
         {
-            var pattern = ToContainsPattern(key);
+            var pattern = SqlLikePattern.ContainsLiteral(key);
             customers = customers.Where(customer => EF.Functions.ILike(
                 EF.Functions.Unaccent(customer.PersonalInfo.FirstName + " " + customer.PersonalInfo.LastName),
-                EF.Functions.Unaccent(pattern), "\\"));
+                EF.Functions.Unaccent(pattern), SqlLikePattern.EscapeCharacter));
         }
 
         var total = await customers.CountAsync(ct);
@@ -247,14 +216,6 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         var items = rows.Select(row => new GetCustomerOptionDto(
             row.Id, row.FirstName, row.LastName, row.Email.Value, CustomerMapper.MapToBikeTypeDto(row.BikeType))).ToArray();
         return new GetCustomerOptionsDto(items, Math.Max(total, items.Length));
-    }
-
-    private static string ToContainsPattern(string key)
-    {
-        var escaped = key.Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("%", "\\%", StringComparison.Ordinal)
-            .Replace("_", "\\_", StringComparison.Ordinal);
-        return $"%{escaped}%";
     }
 
     /// <inheritdoc />
@@ -323,18 +284,6 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
                 AdditionalInfo = customer.MedicalInfo.AdditionalInfo
             }
         };
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct)
-    {
-        var bookings = await dbContext.Tours
-            .SelectMany(tour => tour.Bookings)
-            .OrderByDescending(b => b.Status == BookingStatus.Cancelled)
-            .ThenByDescending(b => b.BookingDate)
-            .ToArrayAsync(ct);
-
-        return await ReadBookingRows(bookings, ct);
     }
 
     /// <inheritdoc />
@@ -564,147 +513,4 @@ internal sealed class QueryService(AdminReadDbContext dbContext, PaymentHistoryS
         };
     }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct)
-    {
-        var tour = await dbContext.Tours
-            .Include(t => t.Bookings)
-            .FirstOrDefaultAsync(t => t.Id == tourId, ct);
-
-        if (tour is null)
-        {
-            return [];
-        }
-
-        await histories.Attach(tour.Bookings, ct);
-        var customerIds = tour.Bookings.Select(b => b.PrincipalCustomer.CustomerId)
-            .Concat(tour.Bookings.Where(b => b.CompanionCustomer != null).Select(b => b.CompanionCustomer!.CustomerId))
-            .Distinct()
-            .ToArray();
-
-        var customers = await dbContext.Customers
-            .Where(c => customerIds.Contains(c.Id))
-            .ToDictionaryAsync(c => c.Id, ct);
-
-        return
-        [
-            ..tour.Bookings
-                .OrderByDescending(b => b.Status == BookingStatus.Cancelled)
-                .ThenByDescending(b => b.BookingDate)
-                .Select(b =>
-                {
-                    var customer = customers[b.PrincipalCustomer.CustomerId];
-                    var companion = b.CompanionCustomer is not null ? customers[b.CompanionCustomer.CustomerId] : null;
-
-                    return new GetBookingDto
-                    {
-                        Id = b.Id,
-                        TourId = b.TourId,
-                        TourIdentifier = tour.Identifier,
-                        TourName = tour.Name,
-                        CustomerId = b.PrincipalCustomer.CustomerId,
-                        CustomerName = $"{customer.PersonalInfo.FirstName} {customer.PersonalInfo.LastName}",
-                        CompanionId = b.CompanionCustomer?.CustomerId,
-                        CompanionName = companion is not null
-                            ? $"{companion.PersonalInfo.FirstName} {companion.PersonalInfo.LastName}"
-                            : null,
-                        RoomType = BookingMapper.MapToRoomTypeDto(b.RoomType),
-                        PrincipalBikeType = BookingMapper.MapToBikeTypeDto(b.PrincipalCustomer.BikeType),
-                        CompanionBikeType = b.CompanionCustomer is not null
-                            ? BookingMapper.MapToBikeTypeDto(b.CompanionCustomer.BikeType)
-                            : null,
-                        BookingDate = b.BookingDate,
-                        Status = BookingMapper.MapToBookingStatusDto(b.Status),
-                        CanModifyBookedServices = b.CanModifyBookedServices,
-                        CanBeConfirmed = b.CanBeConfirmed,
-                        CanBeCompleted = b.CanBeCompleted,
-                        CanBeCancelled = b.CanBeCancelled,
-                        CanBeRemoved = b.CanBeRemoved,
-                        PaymentStatus = BookingMapper.MapToPaymentStatusDto(b.PaymentStatus),
-                        TotalPrice = b.TotalPrice,
-                        DiscountType = BookingMapper.MapToDiscountTypeDto(b.Discount.Type),
-                        DiscountAmount = b.Discount.Amount,
-                        DiscountReason = b.Discount.Reason,
-                        Notes = b.Notes,
-
-                    FinancialVersion = b.FinancialHistory?.Version,
-                    ApprovedObligationEuro = b.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
-                        AmountPaid = b.AmountPaid,
-                        RemainingBalance = b.RemainingBalance,
-                        Currency = tour.Pricing.Currency.Code
-                    };
-                })
-        ];
-    }
-
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct)
-    {
-        var bookings = await BookingsForCustomer(customerId)
-            .OrderByDescending(b => b.BookingDate)
-            .ToArrayAsync(ct);
-
-        await histories.Attach(bookings, ct);
-        var tourIds = bookings.Select(b => b.TourId).Distinct().ToList();
-        var customerIds = bookings.Select(b => b.PrincipalCustomer.CustomerId)
-            .Concat(bookings.Where(b => b.CompanionCustomer != null).Select(b => b.CompanionCustomer!.CustomerId))
-            .Distinct()
-            .ToArray();
-
-        var tours = await dbContext.Tours
-            .Where(t => tourIds.Contains(t.Id))
-            .ToDictionaryAsync(t => t.Id, ct);
-
-        var customers = await dbContext.Customers
-            .Where(c => customerIds.Contains(c.Id))
-            .ToDictionaryAsync(c => c.Id, ct);
-
-        return
-        [
-            ..bookings.Select(b =>
-            {
-                var tour = tours[b.TourId];
-                var customer = customers[b.PrincipalCustomer.CustomerId];
-                var companion = b.CompanionCustomer != null ? customers[b.CompanionCustomer.CustomerId] : null;
-
-                return new GetBookingDto
-                {
-                    Id = b.Id,
-                    TourId = b.TourId,
-                    TourIdentifier = tour.Identifier,
-                    TourName = tour.Name,
-                    CustomerId = b.PrincipalCustomer.CustomerId,
-                    CustomerName = $"{customer.PersonalInfo.FirstName} {customer.PersonalInfo.LastName}",
-                    CompanionId = b.CompanionCustomer?.CustomerId,
-                    CompanionName = companion != null
-                        ? $"{companion.PersonalInfo.FirstName} {companion.PersonalInfo.LastName}"
-                        : null,
-                    RoomType = BookingMapper.MapToRoomTypeDto(b.RoomType),
-                    PrincipalBikeType = BookingMapper.MapToBikeTypeDto(b.PrincipalCustomer.BikeType),
-                    CompanionBikeType = b.CompanionCustomer is not null
-                        ? BookingMapper.MapToBikeTypeDto(b.CompanionCustomer.BikeType)
-                        : null,
-                    BookingDate = b.BookingDate,
-                    Status = BookingMapper.MapToBookingStatusDto(b.Status),
-                    CanModifyBookedServices = b.CanModifyBookedServices,
-                    CanBeConfirmed = b.CanBeConfirmed,
-                    CanBeCompleted = b.CanBeCompleted,
-                    CanBeCancelled = b.CanBeCancelled,
-                    CanBeRemoved = b.CanBeRemoved,
-                    PaymentStatus = BookingMapper.MapToPaymentStatusDto(b.PaymentStatus),
-                    TotalPrice = b.TotalPrice,
-                    DiscountType = BookingMapper.MapToDiscountTypeDto(b.Discount.Type),
-                    DiscountAmount = b.Discount.Amount,
-                    DiscountReason = b.Discount.Reason,
-                    Notes = b.Notes,
-
-                    FinancialVersion = b.FinancialHistory?.Version,
-                    ApprovedObligationEuro = b.FinancialHistory?.ApprovedSchedule?.Obligation.Amount,
-                    AmountPaid = b.AmountPaid,
-                    RemainingBalance = b.RemainingBalance,
-                    Currency = tour.Pricing.Currency.Code
-                };
-            })
-        ];
-    }
 }

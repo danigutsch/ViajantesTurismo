@@ -156,6 +156,8 @@ public sealed class PublicSitemapTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        catalogApi.TourPageRequestCount.ShouldBe(0);
+        catalogApi.SitemapTourLimits.ShouldBe([24_997]);
         locations.Length.ShouldBe(50_000);
         locations[^1].ShouldBe("https://localhost:7003/pt/group-bike-tours/tour-24996");
         locations.ShouldNotContain("https://localhost:7003/en/group-bike-tours/tour-24997");

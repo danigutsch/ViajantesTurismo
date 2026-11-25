@@ -5,30 +5,17 @@ using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 
-/// <summary>Catalog tours client fake whose first tour list call fails and later calls return the tour; other operations report not found or succeed.</summary>
+/// <summary>Catalog tours client fake whose first tour page call fails and later calls return the seeded tour.</summary>
 /// <param name="tour">The tour returned once the initial failure has passed.</param>
-/// <param name="initialFailureStatusCode">The status code returned by the first tour list call.</param>
+/// <param name="initialFailureStatusCode">The status code returned by the first tour page call.</param>
 internal sealed class TransientCatalogToursApiClient(
     CatalogTourDto tour,
     HttpStatusCode initialFailureStatusCode = HttpStatusCode.InternalServerError) : ICatalogToursApiClient
 {
-    /// <summary>Gets the number of tour list calls made so far.</summary>
-    public int GetToursCallCount
+    /// <summary>Gets the number of tour page calls made so far.</summary>
+    public int GetTourPageCallCount
     {
         get; private set;
-    }
-
-    /// <summary>Fails on the first call with the configured status code, then returns the single tour.</summary>
-    public Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-
-        GetToursCallCount++;
-        return GetToursCallCount == 1
-            ? Task.FromResult(HttpOutcomeMapper.Status<CatalogTourDto[]>(
-                MapKind(initialFailureStatusCode),
-                initialFailureStatusCode))
-            : Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new[] { tour }));
     }
 
     /// <inheritdoc />
@@ -36,17 +23,20 @@ internal sealed class TransientCatalogToursApiClient(
     {
         ct.ThrowIfCancellationRequested();
 
-        GetToursCallCount++;
-        return GetToursCallCount == 1
+        GetTourPageCallCount++;
+        return GetTourPageCallCount == 1
             ? Task.FromResult(HttpOutcomeMapper.Status<CatalogTourPageDto>(MapKind(initialFailureStatusCode), initialFailureStatusCode))
             : Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogTourPageDto(
                 [new(tour.Id, tour.Identifier, tour.Title, tour.Slug, tour.IsPublished, tour.UpdatedAt)], 1)));
     }
 
-    /// <summary>Always reports not found.</summary>
+    /// <summary>Returns the seeded tour when its identifier matches.</summary>
     public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
     {
-        return Task.FromResult(NotFound<CatalogTourDto>());
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(id == tour.Id
+            ? HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour)
+            : NotFound<CatalogTourDto>());
     }
 
     /// <summary>Always reports not found.</summary>

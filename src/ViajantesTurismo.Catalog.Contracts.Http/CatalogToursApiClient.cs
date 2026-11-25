@@ -15,19 +15,6 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     private static readonly object LocalUploadReadExceptionKey = new();
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
-    {
-        var outcome = await HttpOutcomeMapper.Send(
-            httpClient,
-            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours", UriKind.Relative)),
-            HttpStatusCode.OK,
-            Json.CatalogTourDtoArray,
-            Json.ContractValidationProblemDto,
-            ct).ConfigureAwait(false);
-        return NormalizeTours(outcome);
-    }
-
-    /// <inheritdoc />
     public Task<HttpOutcome<CatalogTourPageDto>> GetTourPage(
         int page, CatalogTourListSort sort, bool descending, CancellationToken ct)
     {
@@ -42,16 +29,22 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
+    public Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(
+        Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct) =>
+        UpdatePresentation(id, request, includeImages: true, ct);
+
+    /// <inheritdoc />
     public async Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(
         Guid id,
         UpsertCatalogTourPresentationRequest request,
+        bool includeImages,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         var httpRequest = new HttpRequestMessage(
             HttpMethod.Put,
-            new Uri($"{RoutePrefix}/tours/{id}/presentation", UriKind.Relative))
+            WithImageProjection($"{RoutePrefix}/tours/{id}/presentation", includeImages))
         {
             Content = JsonContent.Create(request, Json.UpsertCatalogTourPresentationRequest)
         };
@@ -80,11 +73,15 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
     }
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct) =>
+        GetTour(id, includeImages: true, ct);
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, bool includeImages, CancellationToken ct)
     {
         var outcome = await HttpOutcomeMapper.Send(
             httpClient,
-            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours/{id}", UriKind.Relative)),
+            new HttpRequestMessage(HttpMethod.Get, WithImageProjection($"{RoutePrefix}/tours/{id}", includeImages)),
             HttpStatusCode.OK,
             Json.CatalogTourDto,
             Json.ContractValidationProblemDto,
@@ -246,6 +243,9 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
             ct).ConfigureAwait(false);
     }
 
+    private static Uri WithImageProjection(string path, bool includeImages) =>
+        new(includeImages ? path : $"{path}?includeImages=false", UriKind.Relative);
+
     private static HttpOutcome<CatalogTourDto> NormalizeTour(HttpOutcome<CatalogTourDto> outcome)
     {
         return outcome is
@@ -259,30 +259,6 @@ public sealed class CatalogToursApiClient(HttpClient httpClient) : ICatalogTours
                 statusCode,
                 "The catalog tour response body was invalid.")
             : outcome;
-    }
-
-    private static HttpOutcome<CatalogTourDto[]> NormalizeTours(HttpOutcome<CatalogTourDto[]> outcome)
-    {
-        if (outcome is not
-            {
-                Kind: HttpOutcomeKind.Succeeded,
-                StatusCode: { } statusCode,
-                Value: { } value
-            })
-        {
-            return outcome;
-        }
-
-        var tours = value.OfType<CatalogTourDto>().ToArray();
-        return tours.Any(tour => tour.Version < 1)
-            ? HttpOutcomeMapper.Status<CatalogTourDto[]>(
-                HttpOutcomeKind.MalformedBody,
-                statusCode,
-                "The catalog tour response body was invalid.")
-            : outcome with
-            {
-                Value = tours
-            };
     }
 
     private static HttpOutcome<CatalogMediaImageDto[]> NormalizeImages(

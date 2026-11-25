@@ -1,3 +1,5 @@
+using SharedKernel.BuildingBlocks;
+
 namespace ViajantesTurismo.Admin.Contracts.Application;
 
 /// <summary>Represents one row in the customer overview.</summary>
@@ -13,4 +15,11 @@ public sealed record GetCustomerListItemDto(
     string LastName,
     string Email,
     string Mobile,
-    string Nationality);
+    string Nationality)
+{
+    /// <summary>Gets the resource and collection links provided by the Admin API.</summary>
+    public IReadOnlyList<HypermediaLink>? Links
+    {
+        get; init;
+    }
+}

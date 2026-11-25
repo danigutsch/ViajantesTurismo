@@ -14,7 +14,7 @@ namespace ViajantesTurismo.Admin.Api.Tours;
 /// </summary>
 internal static class ToursEndpoints
 {
-    private const string ListEndpoint = nameof(GetTours);
+    private const string ListEndpoint = nameof(GetTourPage);
     private const string ItemEndpoint = nameof(GetTourById);
 
     /// <summary>
@@ -30,13 +30,9 @@ internal static class ToursEndpoints
 
         toursGroup.MapCreateTourEndpoint();
 
-        toursGroup.MapGet("/", GetTours)
-            .RequireAuthorization(AdminAuthorization.TourRead)
-            .WithAdminMetadata(ListEndpoint, "Retrieves all available tours.", "Retrieves all available tours.");
-
         toursGroup.MapGet("/page", GetTourPage)
             .RequireAuthorization(AdminAuthorization.TourRead)
-            .WithAdminMetadata(nameof(GetTourPage), "Retrieves a page of active tours.",
+            .WithAdminMetadata(ListEndpoint, "Retrieves a page of active tours.",
                 "Retrieves bounded tour summaries. The optional page number is one-based.");
 
         toursGroup.MapPost("/options/search", SearchTourOptions)
@@ -52,23 +48,13 @@ internal static class ToursEndpoints
         toursGroup.MapDeleteTourEndpoint();
     }
 
-    private static async Task<Ok<IReadOnlyList<GetTourDto>>> GetTours(
-        [FromServices] IQueryService queryService,
-        LinkGenerator linkGenerator,
-        HttpContext context,
-        CancellationToken ct)
-    {
-        var allTours = await queryService.GetAllTours(ct);
-        var links = GetResourceLinks(context, linkGenerator);
-        return TypedResults.Ok<IReadOnlyList<GetTourDto>>(
-            [.. allTours.Select(tour => tour with { Links = links.For(tour.Id).Links })]);
-    }
-
     private static async Task<Results<Ok<GetTourPageDto>, BadRequest>> GetTourPage(
         [FromQuery] string? page,
         [FromQuery] string? sort,
         [FromQuery] bool? descending,
         [FromServices] IQueryService queryService,
+        LinkGenerator linkGenerator,
+        HttpContext context,
         CancellationToken ct)
     {
         var sortKey = TourPageSort.Default;
@@ -78,7 +64,11 @@ internal static class ToursEndpoints
         }
 
         var tours = await queryService.GetTourPage(page, sortKey, descending.GetValueOrDefault(), ct);
-        return TypedResults.Ok(tours);
+        var links = GetResourceLinks(context, linkGenerator);
+        return TypedResults.Ok(tours with
+        {
+            Items = [.. tours.Items.Select(tour => tour with { Links = links.For(tour.Id).Links })]
+        });
     }
 
     private static async Task<Results<Ok<GetTourOptionsDto>, BadRequest>> SearchTourOptions(

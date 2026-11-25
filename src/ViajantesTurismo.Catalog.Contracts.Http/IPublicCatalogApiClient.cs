@@ -8,15 +8,14 @@ namespace ViajantesTurismo.Catalog.Contracts.Http;
 /// </summary>
 public interface IPublicCatalogApiClient
 {
-    /// <summary>
-    /// Gets published tours.
-    /// </summary>
-    Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct);
+    /// <summary>Gets a bounded page of visible tours and at most one eligible cover photo per card.</summary>
+    Task<HttpOutcome<PublishedTourPageDto>> GetPublishedTourPage(string? page, int pageSize, CancellationToken ct);
 
-    /// <summary>
-    /// Gets a published tour by slug.
-    /// </summary>
-    Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct);
+    /// <summary>Gets a bounded list of visible tour slugs and modification times for the sitemap.</summary>
+    Task<HttpOutcome<PublishedTourSitemapEntryDto[]>> GetPublishedTourSitemapEntries(int limit, CancellationToken ct);
+
+    /// <summary>Gets the published tour's details, selected cover and a bounded gallery photo window.</summary>
+    Task<HttpOutcome<PublishedTourDetailsPageDto>> GetPublishedTourDetailsPage(string slug, string? page, CancellationToken ct);
 
     /// <summary>Gets one page of the public gallery in the requested content language.</summary>
     Task<HttpOutcome<CatalogGalleryIndexDto>> ListPublishedAlbums(string culture, string? page, CancellationToken ct);

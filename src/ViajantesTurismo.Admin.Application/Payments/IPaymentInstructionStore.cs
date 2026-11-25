@@ -24,6 +24,10 @@ public interface IPaymentInstructionStore
     void AddAudit(Guid bookingId, PaymentInstructionAuditMetadata metadata);
     /// <summary>Reads immutable instruction audit metadata for approval and independent-review projection.</summary>
     Task<IReadOnlyList<PaymentInstructionAuditMetadata>> GetAudits(Guid documentId, CancellationToken ct);
+    /// <summary>Reads the last audit with a matching operation in persisted sequence order.</summary>
+    Task<PaymentInstructionAuditMetadata?> GetLatestAudit(Guid documentId, IReadOnlyList<PaymentInstructionAuditOperation> operations, CancellationToken ct);
+    /// <summary>Reads one page of independent reviews in recorded order, or null for a missing instruction.</summary>
+    Task<(IReadOnlyList<PaymentInstructionAuditMetadata> Items, PageWindow Window)?> GetReviewPage(Guid documentId, int? page, int pageSize, CancellationToken ct);
     /// <summary>Reads protected HTML only for an authorized, freshly revalidated download operation.</summary>
     Task<byte[]?> GetArtifact(Guid documentId, CancellationToken ct);
 }

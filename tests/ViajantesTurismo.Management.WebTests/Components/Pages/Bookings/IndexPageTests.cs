@@ -232,7 +232,6 @@ public class IndexPageTests : BunitContext
         firstPage.ShouldContain("Total: 800", StringComparison.Ordinal);
         firstPage.ShouldNotContain("BOOKING-011", StringComparison.Ordinal);
         cut.Markup.ShouldContain("Total: 800", StringComparison.Ordinal);
-        _fakeBookingsApi.GetAllBookingsCallCount.ShouldBe(0);
         _fakeBookingsApi.PageRequests[0].ShouldBe((1, BookingPageSort.Default, false));
         _fakeBookingsApi.PageRequests[1].ShouldBe((2, BookingPageSort.Default, false));
         var sortRequests = _fakeBookingsApi.PageRequests.Skip(2).ToArray();

@@ -61,7 +61,7 @@ public class DetailsPageTests : BunitContext
         var tour = BuildTourDto(name: "Route Tour");
         var unrelatedTour = BuildTourDto(name: "Unrelated Tour");
         TourDetailsPageTestsHelper.SetupSuccessfulTourLoad(_fakeToursApi, tour);
-        _fakeToursApi.SetGetToursOutcome(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new[] { tour, unrelatedTour }));
+        _fakeToursApi.AddTour(unrelatedTour);
 
         // Act
         var cut = Render<Details>(parameters => parameters.Add(page => page.Id, tour.Id));
@@ -71,8 +71,7 @@ public class DetailsPageTests : BunitContext
         var form = cut.Find("form");
         form.TextContent.ShouldContain(tour.Name, StringComparison.Ordinal);
         form.TextContent.ShouldNotContain(unrelatedTour.Name, StringComparison.Ordinal);
-        _fakeToursApi.GetToursCallCount.ShouldBe(0);
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
+        _fakeToursApi.TourPageRequests.ShouldBeEmpty();
     }
 
     [Fact]
@@ -325,7 +324,6 @@ public class DetailsPageTests : BunitContext
             cut.Markup.ShouldNotContain("No bookings found.", StringComparison.Ordinal);
         });
         _fakeBookingsApi.HistoryRequests.ShouldBe(Enumerable.Repeat((tour.Id, true, 1, BookingPageSort.Default, false), 2));
-        _fakeBookingsApi.GetBookingHistoryCollectionCallCount.ShouldBe(0);
     }
 
     [Fact]

@@ -30,7 +30,14 @@ public sealed class TourPageEndpointTests
         var page = result.ShouldNotBeNull();
         page.Total.ShouldBe(1);
         var expected = DtoBuilders.ToTourListItem(queries.Tour);
-        page.Items.ShouldHaveSingleItem().ShouldBe(expected);
+        var row = page.Items.ShouldHaveSingleItem();
+        var fields = row with
+        {
+            Links = null
+        };
+        fields.ShouldBe(expected);
+        row.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "collection")
+            .Href.ShouldBe($"{AdminHypermediaPathBase.Prefix}/api/v1/tours/page");
     }
 
     [Theory]

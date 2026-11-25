@@ -13,7 +13,7 @@ public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]
     [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-    public async Task All_booking_read_endpoints_return_persisted_room_and_bike_selections()
+    public async Task Booking_details_and_owner_history_return_persisted_room_and_bike_selections()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -39,15 +39,14 @@ public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         // Act
         var doubleById = await fixture.Client.GetBookingAndRead(doubleRoomBooking.Id, cancellationToken);
         var singleById = await fixture.Client.GetBookingAndRead(singleRoomBooking.Id, cancellationToken);
-        var allBookings = await fixture.Client.GetAllBookingsAndRead(cancellationToken);
-        var tourBookings = await fixture.Client.GetBookingsByTourAndRead(tour.Id, cancellationToken);
-        var actualValue = await fixture.Client.GetBookingsByCustomerAndRead(principal.Id, cancellationToken);
+        var tourBookings = await fixture.Client.ReadTourBookingPage(tour.Id, cancellationToken);
+        var actualValue = await fixture.Client.ReadCustomerBookingPage(principal.Id, cancellationToken);
         var doubleByPrincipal = actualValue
             .ShouldHaveSingleItem(booking => booking.Id == doubleRoomBooking.Id);
-        var actualValue1 = await fixture.Client.GetBookingsByCustomerAndRead(companion.Id, cancellationToken);
+        var actualValue1 = await fixture.Client.ReadCustomerBookingPage(companion.Id, cancellationToken);
         var doubleByCompanion = actualValue1
             .ShouldHaveSingleItem(booking => booking.Id == doubleRoomBooking.Id);
-        var actualValue2 = await fixture.Client.GetBookingsByCustomerAndRead(soloCustomer.Id, cancellationToken);
+        var actualValue2 = await fixture.Client.ReadCustomerBookingPage(soloCustomer.Id, cancellationToken);
         var singleByCustomer = actualValue2
             .ShouldHaveSingleItem(booking => booking.Id == singleRoomBooking.Id);
 
@@ -55,7 +54,6 @@ public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         var doubleRoomReadbacks = new[]
         {
             doubleById,
-            allBookings.ShouldHaveSingleItem(booking => booking.Id == doubleRoomBooking.Id),
             tourBookings.ShouldHaveSingleItem(booking => booking.Id == doubleRoomBooking.Id),
             doubleByPrincipal,
             doubleByCompanion
@@ -69,7 +67,6 @@ public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
         var singleRoomReadbacks = new[]
         {
             singleById,
-            allBookings.ShouldHaveSingleItem(booking => booking.Id == singleRoomBooking.Id),
             tourBookings.ShouldHaveSingleItem(booking => booking.Id == singleRoomBooking.Id),
             singleByCustomer
         };
@@ -82,16 +79,16 @@ public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
     }
 
     [Fact]
-    public async Task Can_getbookings_smoke()
+    public async Task Booking_overview_reads_a_bounded_page()
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
 
         // Act
-        var response = await fixture.Client.GetAsync(new Uri("/api/v1/bookings", UriKind.Relative), cancellationToken);
+        var bookings = await fixture.Client.ReadBookingPage(cancellationToken);
 
         // Assert
-        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        bookings.Count.ShouldBeLessThanOrEqualTo(ContractConstants.BookingListPageSize);
     }
 
     [Fact]
@@ -102,7 +99,7 @@ public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 
         // Act
         var baseUri = fixture.BaseUri;
-        var response = await fixture.Client.GetAsync(new Uri("/api/v1/bookings", UriKind.Relative), cancellationToken);
+        var response = await fixture.Client.GetAsync(new Uri("/api/v1/bookings/page", UriKind.Relative), cancellationToken);
 
         // Assert
         var areEqual = baseUri.Scheme == Uri.UriSchemeHttp || baseUri.Scheme == Uri.UriSchemeHttps;

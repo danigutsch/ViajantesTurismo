@@ -9,7 +9,10 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
 {
     private readonly List<TourSummaryDto> tours = [];
     private readonly List<TourDetailsDto> tourDetails = [];
+    private readonly List<int> sitemapTourLimits = [];
     private readonly ConcurrentDictionary<string, PublicContentVariantDto> contentByKeyAndCulture = new(StringComparer.OrdinalIgnoreCase);
+    private int detailsPageRequestCount;
+    private int tourPageRequestCount;
 
     /// <summary>When true, the tour list returns a transport failure.</summary>
     public bool FailListRequests
@@ -77,6 +80,15 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         get; set;
     }
 
+    /// <summary>Gets the number of tour photo page requests.</summary>
+    public int DetailsPageRequestCount => Volatile.Read(ref detailsPageRequestCount);
+
+    /// <summary>Completed when a tour photo page request starts, if set.</summary>
+    public TaskCompletionSource? DetailsPageStarted
+    {
+        get; set;
+    }
+
     /// <summary>Response returned by media requests; null simulates a missing object.</summary>
     public PublicMediaObjectResponse? Media
     {
@@ -100,6 +112,12 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     {
         get; private set;
     }
+
+    /// <summary>Gets the number of requests to the published tour browse page.</summary>
+    public int TourPageRequestCount => Volatile.Read(ref tourPageRequestCount);
+
+    /// <summary>Limits requested by the sitemap route in request order.</summary>
+    public IReadOnlyList<int> SitemapTourLimits => sitemapTourLimits;
 
     /// <summary>Adds a tour to both the details store and the summary list.</summary>
     public void AddTour(TourDetailsDto tour)
@@ -154,8 +172,45 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         }
     }
 
-    /// <summary>Returns the tour summaries after any configured response gate.</summary>
-    public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
+    /// <inheritdoc />
+    public async Task<HttpOutcome<PublishedTourPageDto>> GetPublishedTourPage(string? page, int pageSize, CancellationToken ct)
+    {
+        Interlocked.Increment(ref tourPageRequestCount);
+        await ObserveTourList(ct);
+        if (FailListRequests)
+        {
+            return TransportFailure<PublishedTourPageDto>();
+        }
+
+        var window = PageWindow.Create(page, pageSize, tours.Count);
+        if (window.IsOutOfRange)
+        {
+            return HttpOutcomeMapper.Status<PublishedTourPageDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound);
+        }
+
+        var items = tours.OrderBy(tour => tour.Title, StringComparer.Ordinal).ThenBy(tour => tour.Slug, StringComparer.Ordinal)
+            .Skip(window.Skip).Take(window.Take)
+            .Select(tour => tour with
+            {
+                Images = [.. tour.Images.OrderByDescending(image => image.IsCover).ThenBy(image => image.SortOrder).ThenBy(image => image.Id).Take(1)]
+            })
+            .ToArray();
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new PublishedTourPageDto(window.Page, window.PageSize, window.Total, items));
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<PublishedTourSitemapEntryDto[]>> GetPublishedTourSitemapEntries(int limit, CancellationToken ct)
+    {
+        sitemapTourLimits.Add(limit);
+        await ObserveTourList(ct);
+        return FailListRequests
+            ? TransportFailure<PublishedTourSitemapEntryDto[]>()
+            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tours.Take(limit)
+                .Select(tour => new PublishedTourSitemapEntryDto(tour.Slug, tour.UpdatedAt))
+                .ToArray());
+    }
+
+    private async Task ObserveTourList(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         ListStarted?.TrySetResult();
@@ -169,14 +224,10 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         {
             throw new OperationCanceledException("Catalog request canceled upstream.");
         }
-
-        return FailListRequests
-            ? TransportFailure<TourSummaryDto[]>()
-            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tours.ToArray());
     }
 
     /// <summary>Returns the tour with the given slug, not found if absent, honoring the failure switches.</summary>
-    public Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    private Task<HttpOutcome<TourDetailsDto>> ReadPublishedTour(string slug, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -194,6 +245,36 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
         return Task.FromResult(tour is null
             ? HttpOutcomeMapper.Status<TourDetailsDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
             : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour));
+    }
+
+    /// <inheritdoc />
+    public async Task<HttpOutcome<PublishedTourDetailsPageDto>> GetPublishedTourDetailsPage(string slug, string? page, CancellationToken ct)
+    {
+        Interlocked.Increment(ref detailsPageRequestCount);
+        DetailsPageStarted?.TrySetResult();
+        var details = await ReadPublishedTour(slug, ct);
+        if (details.Kind == HttpOutcomeKind.NotFound)
+        {
+            return HttpOutcomeMapper.Status<PublishedTourDetailsPageDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound);
+        }
+
+        if (details.Value is not { } tour)
+        {
+            return TransportFailure<PublishedTourDetailsPageDto>();
+        }
+
+        var images = tour.Images.OrderByDescending(image => image.IsCover).ThenBy(image => image.SortOrder).ThenBy(image => image.Id).ToArray();
+        var window = PageWindow.Create(page, PublishedTourDetailsPageDto.PhotosPerPage, Math.Max(0, images.Length - 1));
+        if (window.IsOutOfRange)
+        {
+            return HttpOutcomeMapper.Status<PublishedTourDetailsPageDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound);
+        }
+
+        var detail = tour with
+        {
+            Images = [.. images.Take(1), .. images.Skip(window.Skip + 1).Take(window.Take)]
+        };
+        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new PublishedTourDetailsPageDto(detail, window.Page, window.PageSize, window.Total));
     }
 
     /// <summary>Returns content for the key and culture (<c>en-US</c> when blank), not found if absent, honoring the failure switches.</summary>
@@ -248,13 +329,13 @@ internal sealed class FakePublicCatalogApiClient : IPublicCatalogApiClient
     /// <inheritdoc />
     public async Task<HttpOutcome<CatalogGalleryIndexDto>> ListPublishedAlbums(string culture, string? page, CancellationToken ct)
     {
-        var published = await GetPublishedTours(ct);
-        if (published.Value is not { } summaries)
+        await ObserveTourList(ct);
+        if (FailListRequests)
         {
             return TransportFailure<CatalogGalleryIndexDto>();
         }
 
-        var albums = summaries.Where(tour => tour.Images.Count > 0).Select(tour => new CatalogGallerySummaryDto(
+        var albums = tours.Where(tour => tour.Images.Count > 0).Select(tour => new CatalogGallerySummaryDto(
             tour.Slug, tour.Title, "en-US", tour.Images.Count,
             tour.Images.OrderByDescending(image => image.IsCover).ThenBy(image => image.SortOrder).First())).ToArray();
         var window = PageWindow.Create(page, 24, albums.Length);

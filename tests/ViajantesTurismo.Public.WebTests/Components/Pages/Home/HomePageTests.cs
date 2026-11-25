@@ -7,6 +7,43 @@ namespace ViajantesTurismo.Public.WebTests.Components.Pages.Home;
 [TestScope(TestScope.Integration)]
 public sealed class HomePageTests
 {
+    [Theory]
+    [InlineData("en", "Browse all tours")]
+    [InlineData("pt", "Veja todas as viagens")]
+    public async Task Home_shows_a_bounded_preview_and_links_to_the_localized_tour_index(string culture, string linkText)
+    {
+        // Arrange
+        var catalogApi = new FakePublicCatalogApiClient();
+        for (var number = 1; number <= 803; number++)
+        {
+            var slug = FormattableString.Invariant($"preview-ride-{number:D3}");
+            var title = FormattableString.Invariant($"Preview Ride {number:D3}");
+            catalogApi.AddTour(PublicTourTestData.CreateDetails(slug, title));
+        }
+
+        await using var factory = PublicWebTestHost.CreateFactory(catalogApi);
+        using var client = factory.CreateClient();
+        var ct = TestContext.Current.CancellationToken;
+
+        // Act
+        using var response = await client.GetAsync(new Uri($"/{culture}/", UriKind.Relative), ct);
+        var content = await response.Content.ReadAsStringAsync(ct);
+        var indexPath = $"/{culture}/group-bike-tours";
+        using var indexResponse = await client.GetAsync(new Uri(indexPath, UriKind.Relative), ct);
+        var indexContent = await indexResponse.Content.ReadAsStringAsync(ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var headings = content.Split("<h3 class=\"site-card__title\">", StringSplitOptions.None).Length - 1;
+        headings.ShouldBe(6);
+        content.ShouldContain("Preview Ride 006", StringComparison.Ordinal);
+        content.ShouldNotContain("Preview Ride 007", StringComparison.Ordinal);
+        content.ShouldContain($"href=\"{indexPath}\">{linkText}", StringComparison.Ordinal);
+        PrerenderedComponentState.ShouldKeepServerStateBelow(content);
+        indexResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        indexContent.ShouldContain($"href=\"{indexPath}/preview-ride-007\">Preview Ride 007", StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Root_returns_public_landing_page()
     {

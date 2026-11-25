@@ -7,6 +7,12 @@ namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 public sealed class DelegatingMediaImageUploadStore(IPublicMediaImageStore store) : IMediaImageUploadStore
 {
     /// <inheritdoc />
+    public async ValueTask<int> CountByTour(Guid catalogTourId, CancellationToken ct) =>
+        store is TestPublicMediaImageStore observed
+            ? observed.CountByTour(catalogTourId, ct)
+            : (await store.ListByTour(catalogTourId, ct).ConfigureAwait(false)).Count;
+
+    /// <inheritdoc />
     public ValueTask<IMediaImageUploadLease> Reserve(string fingerprint, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();

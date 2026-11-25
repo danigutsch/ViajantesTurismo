@@ -5,7 +5,6 @@ namespace ViajantesTurismo.Admin.ContractTests.Customers;
 /// </summary>
 /// <param name="OpenApiVersion">Expected OpenAPI specification version of the document.</param>
 /// <param name="Title">The API title declared in the info object.</param>
-/// <param name="ListCustomersOperationId">Expected operationId of the list customers operation.</param>
 /// <param name="GetCustomerPageOperationId">Expected operationId of the bounded customer page.</param>
 /// <param name="SearchCustomerOptionsOperationId">Expected operationId of the bounded customer search.</param>
 /// <param name="CustomerOptionSearchSchemaReference">Expected $ref of the search request body.</param>
@@ -21,7 +20,6 @@ namespace ViajantesTurismo.Admin.ContractTests.Customers;
 internal sealed record CustomersOpenApiContractDto(
     string OpenApiVersion,
     string Title,
-    string ListCustomersOperationId,
     string GetCustomerPageOperationId,
     string SearchCustomerOptionsOperationId,
     string CustomerOptionSearchSchemaReference,

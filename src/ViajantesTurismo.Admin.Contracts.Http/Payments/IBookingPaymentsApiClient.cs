@@ -10,6 +10,12 @@ public interface IBookingPaymentsApiClient
     Task<HttpOutcome<GetBookingFinancialHistoryDto>> GetByBookingId(Guid bookingId, CancellationToken ct);
     /// <summary>Gets explicitly authorized full evidence references, recording a server audit.</summary>
     Task<HttpOutcome<GetBookingFinancialHistoryDto>> GetSensitiveDetails(Guid bookingId, CancellationToken ct);
+
+    /// <summary>Gets authoritative balances and requested masked financial windows.</summary>
+    Task<HttpOutcome<GetBookingFinancialPageDto>> GetPage(Guid bookingId, BookingFinancialPageRequestDto request, CancellationToken ct);
+
+    /// <summary>Reads requested evidence windows after recording sensitive access.</summary>
+    Task<HttpOutcome<GetBookingFinancialPageDto>> GetSensitivePage(Guid bookingId, BookingFinancialPageRequestDto request, CancellationToken ct);
     /// <summary>Executes DraftSchedule with a stable key retained across retries.</summary>
     Task<HttpOutcome<GetPaymentCommandResultDto>> DraftSchedule(Guid bookingId, CreatePaymentScheduleDto input, string idempotencyKey, CancellationToken ct);
     /// <summary>Executes ApproveSchedule with a stable key retained across retries.</summary>

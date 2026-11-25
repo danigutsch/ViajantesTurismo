@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Web;
 using SharedKernel.Testing;
 using System.Net;
 using System.Text.Json;
@@ -11,19 +12,24 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 public sealed class PaymentPagesTests : BunitContext
 {
     private PaymentPageHttpScenario Handler => Services.GetRequiredService<PaymentPageHttpScenario>();
+    private PaymentReviewTransportGate ReviewGate => Services.GetRequiredService<PaymentReviewTransportGate>();
+    private PaymentProjectionResponseGate ProjectionGate => Services.GetRequiredService<PaymentProjectionResponseGate>();
     private readonly FakeBookingsApiClient _bookings = new();
+    private readonly BunitAuthorizationContext _authorization;
     public PaymentPagesTests()
     {
         Services.AddSingleton<PaymentPageHttpScenario>();
-        Services.AddSingleton(provider => new HttpClient(provider.GetRequiredService<PaymentPageHttpScenario>().Transport, disposeHandler: false) { BaseAddress = new Uri("https://payments.example.test") });
+        Services.AddSingleton(provider => new PaymentReviewTransportGate(provider.GetRequiredService<PaymentPageHttpScenario>().Transport));
+        Services.AddSingleton(provider => new PaymentProjectionResponseGate(provider.GetRequiredService<PaymentReviewTransportGate>()));
+        Services.AddSingleton(provider => new HttpClient(provider.GetRequiredService<PaymentProjectionResponseGate>(), disposeHandler: false) { BaseAddress = new Uri("https://payments.example.test") });
         Services.AddSingleton<IBookingsApiClient>(_bookings);
         Services.AddSingleton<IBookingPaymentsApiClient>(provider => new BookingPaymentsApiClient(provider.GetRequiredService<HttpClient>()));
         Services.AddSingleton<IPaymentAccountsApiClient>(provider => new PaymentAccountsApiClient(provider.GetRequiredService<HttpClient>()));
-        Services.AddSingleton<IPaymentInstructionsApiClient>(provider => new PaymentInstructionsApiClient(provider.GetRequiredService<HttpClient>()));
+        Services.AddSingleton<IPaymentInstructionsApiClient>(provider => PaymentInstructionsApiClient.WithLatestReviewOnly(provider.GetRequiredService<HttpClient>()));
         Services.AddSingleton(TimeProvider.System);
-        var authorization = AddAuthorization();
-        authorization.SetAuthorized("owner");
-        authorization.SetRoles("Admin");
+        _authorization = AddAuthorization();
+        _authorization.SetAuthorized("owner");
+        _authorization.SetRoles("Admin");
     }
     [Fact]
     public void Financial_forms_have_labels_and_saving_a_draft_does_not_imply_approval()
@@ -47,6 +53,126 @@ public sealed class PaymentPagesTests : BunitContext
         page.Markup.ShouldContain("Saving does not approve terms", StringComparison.Ordinal);
         Handler.Keys.Count.ShouldBe(0);
     }
+
+    [Fact]
+    public void Booking_finances_limits_receipt_cards_and_action_choices_for_retained_history()
+    {
+        // Arrange
+        const int retainedReceipts = 803;
+        const int firstPageSize = 25;
+        var booking = BuildBookingDto() with
+        {
+            Currency = "EUR"
+        };
+        _bookings.AddBooking(booking);
+        Handler.FinancialHistory = PaymentPageData.HistoryWithReceipts(booking.Id, retainedReceipts);
+
+        // Act
+        var page = Render<Finances>(parameters => parameters.Add(value => value.BookingId, booking.Id));
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Receipts and customer credit", StringComparison.Ordinal));
+        var receiptCards = page.FindAll("h3").Count(heading => heading.TextContent.StartsWith("Receipt ", StringComparison.Ordinal));
+        var reconciliationChoices = page.FindAll("#reconcile-receipt option").Count - 1;
+        var allocationChoices = page.FindAll("#allocation-receipt option").Count - 1;
+        var refundChoices = page.FindAll("#refund-receipt option").Count - 1;
+        var requests = Handler.Transport.Requests.Select(request => request.Message.RequestUri?.PathAndQuery).ToArray();
+        Xunit.TestContext.Current.TestOutputHelper?.WriteLine(
+            $"Financial reads {string.Join(", ", requests)}. Receipt cards {receiptCards}. Reconciliation choices {reconciliationChoices}. Allocation choices {allocationChoices}. Refund choices {refundChoices}.");
+
+        // Assert
+        receiptCards.ShouldBe(firstPageSize);
+        reconciliationChoices.ShouldBeLessThanOrEqualTo(firstPageSize);
+        allocationChoices.ShouldBeLessThanOrEqualTo(firstPageSize);
+        refundChoices.ShouldBeLessThanOrEqualTo(firstPageSize);
+        requests.ShouldBe([$"/api/v1/bookings/{booking.Id}/finances/projection"]);
+    }
+
+    [Fact]
+    public void Receipt_cards_and_receipt_choices_page_independently_and_keep_a_selection()
+    {
+        // Arrange
+        var booking = BuildBookingDto() with
+        {
+            Currency = "EUR"
+        };
+        _bookings.AddBooking(booking);
+        Handler.FinancialHistory = PaymentPageData.HistoryWithReceipts(booking.Id, 53);
+        var page = Render<Finances>(parameters => parameters.Add(value => value.BookingId, booking.Id));
+        page.WaitForAssertion(() => page.Find("nav[aria-label='Receipt history pages']"));
+        var firstReceipt = page.Find("#allocation-receipt option:nth-child(2)").GetAttribute("value").ShouldNotBeNull();
+        page.Find("#allocation-receipt").Change(firstReceipt);
+
+        // Act
+        page.Find("nav[aria-label='Receipt history pages'] button:last-child").Click();
+        page.Find("nav[aria-label='Allocation receipt choice pages'] button:last-child").Click();
+
+        // Assert
+        page.Find("nav[aria-label='Receipt history pages']").TextContent.ShouldContain("Page 2 of 3", StringComparison.Ordinal);
+        page.Find("nav[aria-label='Allocation receipt choice pages']").TextContent.ShouldContain("Page 2 of 3", StringComparison.Ordinal);
+        page.FindAll("h3").ShouldNotContain(heading => heading.TextContent.Contains(firstReceipt, StringComparison.Ordinal));
+        page.Find($"#allocation-receipt option[value='{firstReceipt}']").TextContent.ShouldContain("Selected", StringComparison.Ordinal);
+        var requests = Handler.Transport.Requests.Select(request => request.Message.RequestUri?.PathAndQuery).ToArray();
+        requests.ShouldBe([
+            $"/api/v1/bookings/{booking.Id}/finances/projection",
+            $"/api/v1/bookings/{booking.Id}/finances/projection?section=Receipts&page=2&pageSize=25",
+            $"/api/v1/bookings/{booking.Id}/finances/projection?section=ReceiptChoices&page=2&pageSize=25"
+        ]);
+    }
+
+    [Fact]
+    public void Receipt_evidence_is_requested_for_the_displayed_page_and_cleared_when_browsing()
+    {
+        // Arrange
+        const string privateReference = "private-test-bank-reference";
+        var booking = BuildBookingDto() with
+        {
+            Currency = "EUR"
+        };
+        _bookings.AddBooking(booking);
+        Handler.FinancialHistory = PaymentPageData.HistoryWithReceipts(booking.Id, 53);
+        Handler.ReceiptEvidence = privateReference;
+        var page = Render<Finances>(parameters => parameters.Add(value => value.BookingId, booking.Id));
+        page.WaitForAssertion(() => page.Find("nav[aria-label='Receipt history pages']"));
+        page.Find("nav[aria-label='Receipt history pages'] button:last-child").Click();
+
+        // Act
+        page.FindAll("button").ShouldHaveSingleItem(item => item.TextContent == "View sensitive evidence references (audited)").Click();
+        var revealed = page.Markup;
+        page.Find("nav[aria-label='Receipt history pages'] button:last-child").Click();
+
+        // Assert
+        revealed.ShouldContain(privateReference, StringComparison.Ordinal);
+        page.Markup.ShouldNotContain(privateReference, StringComparison.Ordinal);
+        var auditRead = Handler.Transport.Requests.ShouldHaveSingleItem(request =>
+            request.Message.RequestUri?.AbsolutePath.EndsWith("/projection/details", StringComparison.Ordinal) == true);
+        auditRead.Message.RequestUri.ShouldNotBeNull().Query.ShouldBe("?section=Receipts&page=2&pageSize=25");
+        Handler.Keys.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void A_new_projection_revision_discards_pending_confirmation_and_reloads_balances()
+    {
+        // Arrange
+        var booking = BuildBookingDto() with
+        {
+            Currency = "EUR"
+        };
+        _bookings.AddBooking(booking);
+        Handler.FinancialHistory = PaymentPageData.HistoryWithReceipts(booking.Id, 53);
+        var page = Render<Finances>(parameters => parameters.Add(value => value.BookingId, booking.Id));
+        page.WaitForAssertion(() => page.Find("nav[aria-label='Receipt history pages']"));
+        page.FindAll("button").First(button => button.TextContent == "Reverse erroneous receipt").Click();
+        Handler.FinancialHistory = PaymentPageData.HistoryWithReceipts(booking.Id, 54);
+
+        // Act
+        page.Find("nav[aria-label='Receipt history pages'] button:last-child").Click();
+
+        // Assert
+        page.FindAll("#financial-confirm").ShouldBeEmpty();
+        page.Markup.ShouldContain("Financial revision: 66", StringComparison.Ordinal);
+        page.Find("[role=alert]").TextContent.ShouldContain("Review the current revision", StringComparison.Ordinal);
+        Handler.Keys.ShouldBeEmpty();
+    }
+
     [Fact]
     public void Operators_can_record_pending_receipts_but_do_not_see_admin_approval_or_sensitive_forms()
     {
@@ -133,7 +259,375 @@ public sealed class PaymentPagesTests : BunitContext
         page.Find("button[aria-label='Previous instruction revisions page']").Click();
         page.WaitForAssertion(() => page.FindAll("section h2").Count.ShouldBe(25));
         var historyReads = Handler.Transport.Requests.Count(request => request.Message.RequestUri?.AbsolutePath.EndsWith("/finances", StringComparison.Ordinal) == true);
-        historyReads.ShouldBe(1);
+        historyReads.ShouldBe(0);
+        var choiceReads = Handler.Transport.Requests.Count(request => request.Message.RequestUri?.AbsolutePath.EndsWith("/finances/projection", StringComparison.Ordinal) == true);
+        choiceReads.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Instruction_generation_renders_only_the_first_bounded_eligible_choice_pages()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 803);
+
+        // Act
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("#instruction-quote"));
+
+        // Assert
+        var terms = page.FindAll("#instruction-quote option");
+        terms.Count.ShouldBe(26);
+        var installments = page.FindAll("fieldset").ShouldHaveSingleItem(fieldset =>
+            fieldset.QuerySelector("legend")?.TextContent == "Outstanding installments");
+        installments.QuerySelectorAll("input[type=checkbox]").Length.ShouldBe(25);
+        page.Find("nav[aria-label='Approved quote pages']").TextContent.ShouldContain("803 records", StringComparison.Ordinal);
+        page.Find("nav[aria-label='Outstanding installment pages']").TextContent.ShouldContain("803 records", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Instruction_generation_keeps_selected_quote_and_installments_across_pages_of_one_revision()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        var quoteId = Guid.Parse("00000029-4444-4444-4444-444444444444");
+        var firstInstallment = Guid.Parse("00000029-5555-5555-5555-555555555555");
+        var secondInstallment = Guid.Parse("00000042-5555-5555-5555-555555555555");
+        Handler.Accounts = PaymentPageData.VerifiedAccounts(1);
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51);
+        Handler.SubmissionStatus = HttpStatusCode.Created;
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("#instruction-quote"));
+        page.Find("#instruction-account").Change("00000001-1111-1111-1111-111111111111");
+        page.Find("#instruction-quote").Change(quoteId.ToString("D"));
+        page.Find("fieldset fieldset input[type=checkbox]").Change(true);
+
+        // Act
+        page.Find("nav[aria-label='Approved quote pages'] button:last-child").Click();
+        page.WaitForAssertion(() => page.Find("#instruction-quote option[value='00000042-4444-4444-4444-444444444444']"));
+        var retainedQuote = page.Find("#instruction-quote option[value='00000029-4444-4444-4444-444444444444']").TextContent;
+        page.Find("nav[aria-label='Outstanding installment pages'] button:last-child").Click();
+        page.WaitForAssertion(() => page.Find("nav[aria-label='Outstanding installment pages']").TextContent.ShouldContain("Page 2", StringComparison.Ordinal));
+        page.Find("fieldset fieldset input[type=checkbox]").Change(true);
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Save generated unapproved draft").Click();
+
+        // Assert
+        var payload = Handler.Payloads.ShouldHaveSingleItem();
+        var input = JsonSerializer.Deserialize(payload, PaymentFinancialContractJsonContext.Default.GeneratePaymentInstructionsDto).ShouldNotBeNull();
+        input.ExpectedVersion.ShouldBe(12);
+        input.QuoteId.ShouldNotBeNull().ShouldBe(quoteId);
+        input.InstallmentIds.ShouldBe([firstInstallment, secondInstallment]);
+        retainedQuote.ShouldContain("BRL/EUR", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Choice_navigation_after_financial_changes_clears_selections_and_uses_the_new_revision()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        Handler.Accounts = PaymentPageData.VerifiedAccounts(1);
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51);
+        Handler.SubmissionStatus = HttpStatusCode.Created;
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("#instruction-quote"));
+        page.Find("#instruction-account").Change("00000001-1111-1111-1111-111111111111");
+        page.Find("#instruction-quote").Change("00000029-4444-4444-4444-444444444444");
+        page.Find("fieldset fieldset input[type=checkbox]").Change(true);
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51, version: 13);
+
+        // Act
+        page.Find("nav[aria-label='Approved quote pages'] button:last-child").Click();
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Select the quote and installments again", StringComparison.Ordinal));
+        var firstPageLabel = page.Find("nav[aria-label='Outstanding installment pages']").TextContent;
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Save generated unapproved draft").Click();
+
+        // Assert
+        firstPageLabel.ShouldContain("Page 1", StringComparison.Ordinal);
+        var payload = Handler.Payloads.ShouldHaveSingleItem();
+        var input = JsonSerializer.Deserialize(payload, PaymentFinancialContractJsonContext.Default.GeneratePaymentInstructionsDto).ShouldNotBeNull();
+        input.ExpectedVersion.ShouldBe(13);
+        input.QuoteId.ShouldBeNull();
+        input.InstallmentIds.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Instruction_generation_requires_choice_pages_from_the_same_financial_revision()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51);
+        Handler.InstructionInstallmentVersion = 13;
+
+        // Act
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+
+        // Assert
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Financial terms changed while choices were loading", StringComparison.Ordinal));
+        page.FindAll("#instruction-quote").ShouldBeEmpty();
+        Handler.Payloads.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void A_failed_choice_page_keeps_the_displayed_financial_revision()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51);
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("nav[aria-label='Approved quote pages']"));
+        Handler.ReadStatus = HttpStatusCode.ServiceUnavailable;
+
+        // Act
+        page.Find("nav[aria-label='Approved quote pages'] button:last-child").Click();
+
+        // Assert
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Financial choices could not be loaded", StringComparison.Ordinal));
+        page.Find("nav[aria-label='Approved quote pages']").TextContent.ShouldContain("Page 1", StringComparison.Ordinal);
+        page.FindAll("#instruction-quote option").Count.ShouldBe(26);
+    }
+
+    [Theory]
+    [InlineData(BookingFinancialSection.InstructionSettlementQuoteChoices)]
+    [InlineData(BookingFinancialSection.InstructionOutstandingInstallmentChoices)]
+    public void Generation_waits_for_both_choice_sections_and_recovers_on_refresh(BookingFinancialSection unavailable)
+    {
+        // Arrange
+        const string quote = "#instruction-quote";
+        var bookingId = Guid.CreateVersion7();
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 3);
+        Handler.UnavailableChoiceSection = unavailable;
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Approve a EUR schedule before generating instructions", StringComparison.Ordinal));
+        var quoteControlsBeforeRefresh = page.FindAll(quote).Count;
+        Handler.UnavailableChoiceSection = null;
+
+        // Act
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Refresh").Click();
+
+        // Assert
+        quoteControlsBeforeRefresh.ShouldBe(0);
+        page.WaitForAssertion(() => page.FindAll($"{quote} option").Count.ShouldBe(4));
+        page.FindAll("[role=alert]").ShouldBeEmpty();
+        Handler.Payloads.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Reloading_choices_after_paging_clears_old_terms_if_one_section_is_unavailable()
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51);
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("nav[aria-label='Approved quote pages']"));
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51, version: 13);
+        Handler.UnavailableChoiceSection = BookingFinancialSection.InstructionOutstandingInstallmentChoices;
+
+        // Act
+        page.Find("nav[aria-label='Approved quote pages'] button:last-child").Click();
+
+        // Assert
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Approve a EUR schedule before generating instructions", StringComparison.Ordinal));
+        page.FindAll("#instruction-quote").ShouldBeEmpty();
+        page.Markup.ShouldNotContain("Save generated unapproved draft", StringComparison.Ordinal);
+        Handler.Payloads.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Refresh_preserves_choices_at_the_same_revision_and_clears_them_when_terms_change()
+    {
+        // Arrange
+        const string selectedId = "00000029-4444-4444-4444-444444444444";
+        const string selectedOption = "#instruction-quote option[value='" + selectedId + "']";
+        var bookingId = Guid.CreateVersion7();
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51);
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find(selectedOption));
+        page.Find("#instruction-quote").Change(selectedId);
+        page.Find("fieldset fieldset input[type=checkbox]").Change(true);
+        page.Find("nav[aria-label='Approved quote pages'] button:last-child").Click();
+        page.WaitForAssertion(() => page.Find("nav[aria-label='Approved quote pages']").TextContent.ShouldContain("Page 2", StringComparison.Ordinal));
+
+        // Act
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Refresh").Click();
+        page.WaitForAssertion(() => page.Find(selectedOption));
+        var keptInstallments = page.Find("[role=status]").TextContent;
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51, version: 13);
+        page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Refresh").Click();
+
+        // Assert
+        keptInstallments.ShouldContain("Installments selected: 1", StringComparison.Ordinal);
+        page.WaitForAssertion(() => page.FindAll(selectedOption).ShouldBeEmpty());
+        page.FindAll("[role=status]").Any(status => status.TextContent.Contains("Installments selected", StringComparison.Ordinal)).ShouldBeFalse();
+        page.Find("nav[aria-label='Approved quote pages']").TextContent.ShouldContain("Page 2", StringComparison.Ordinal);
+        Handler.Payloads.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false, 1)]
+    [InlineData(true, 2)]
+    public async Task A_late_quote_response_cannot_replace_the_new_bookings_choices(bool browse, int requestedPage)
+    {
+        // Arrange
+        var ct = Xunit.TestContext.Current.CancellationToken;
+        var bookingId = Guid.CreateVersion7();
+        var otherBookingId = Guid.CreateVersion7();
+        Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(bookingId, eligibleCount: 51);
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("nav[aria-label='Approved quote pages']"));
+        var action = browse
+            ? page.Find("nav[aria-label='Approved quote pages'] button:last-child")
+            : page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == "Refresh");
+        ProjectionGate.HoldNext("/finances/projection", $"section={BookingFinancialSection.InstructionSettlementQuoteChoices}&page={requestedPage}");
+
+        // Act
+        await ProjectionGate.CompleteAfter(() => action.ClickAsync(new MouseEventArgs()), () =>
+        {
+            Handler.FinancialHistory = PaymentPageData.InstructionChoiceHistory(otherBookingId, eligibleCount: 3);
+            page.Render(parameters => parameters.Add(value => value.BookingId, otherBookingId));
+            page.WaitForAssertion(() => page.FindAll("#instruction-quote option").Count.ShouldBe(4));
+        }, ct);
+
+        // Assert
+        page.FindAll("#instruction-quote option").Count.ShouldBe(4);
+        page.FindAll("nav[aria-label='Approved quote pages']").ShouldBeEmpty();
+        page.FindAll("[role=alert]").ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Delayed_sensitive_evidence_cannot_return_after_switching_booking_or_losing_admin_access(bool loseAccess)
+    {
+        // Arrange
+        const string auditedRead = "View sensitive evidence references (audited)";
+        const string previousReference = "previous-booking-private-receipt-evidence";
+        var ct = Xunit.TestContext.Current.CancellationToken;
+        var booking = BuildBookingDto() with
+        {
+            Currency = "EUR"
+        };
+        var otherBooking = BuildBookingDto() with
+        {
+            Currency = "EUR"
+        };
+        _bookings.AddBooking(booking);
+        _bookings.AddBooking(otherBooking);
+        Handler.FinancialHistory = PaymentPageData.HistoryWithReceipts(booking.Id, 3);
+        Handler.ReceiptEvidence = previousReference;
+        var page = Render<Finances>(parameters => parameters.Add(value => value.BookingId, booking.Id));
+        page.WaitForAssertion(() => page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == auditedRead));
+        var evidenceButton = page.FindAll("button").ShouldHaveSingleItem(button => button.TextContent == auditedRead);
+        ProjectionGate.HoldNext("/finances/projection/details", "section=Receipts");
+
+        // Act
+        await ProjectionGate.CompleteAfter(() => evidenceButton.ClickAsync(new MouseEventArgs()), () =>
+        {
+            if (loseAccess)
+            {
+                _authorization.SetRoles("Operator");
+                page.WaitForAssertion(() => PaymentPageAuthentication.ReviewButtons(page, auditedRead).ShouldBeEmpty());
+            }
+            else
+            {
+                Handler.FinancialHistory = PaymentPageData.HistoryWithReceipts(otherBooking.Id, 2);
+                page.Render(parameters => parameters.Add(value => value.BookingId, otherBooking.Id));
+                page.WaitForAssertion(() => page.FindAll("h3")
+                    .Count(heading => heading.TextContent.StartsWith("Receipt ", StringComparison.Ordinal)).ShouldBe(2));
+            }
+        }, ct);
+
+        // Assert
+        page.Markup.ShouldNotContain(previousReference, StringComparison.Ordinal);
+        var evidenceButtons = PaymentPageAuthentication.ReviewButtons(page, auditedRead);
+        if (loseAccess)
+        {
+            evidenceButtons.ShouldBeEmpty();
+        }
+        else
+        {
+            evidenceButtons.ShouldHaveSingleItem().HasAttribute("disabled").ShouldBeFalse();
+        }
+        Handler.Payloads.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(26)]
+    [InlineData(803)]
+    public void Instruction_review_history_loads_on_demand_and_keeps_the_latest_decision_warning(int reviewCount)
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        Handler.Instructions = PaymentPageData.InstructionWithReviews(bookingId, reviewCount);
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Attention requested", StringComparison.Ordinal));
+        var initialReads = Handler.Transport.Requests.ToArray();
+
+        // Act
+        page.Find("button[aria-controls^='reviews-']").Click();
+        page.WaitForAssertion(() => page.FindAll("ul[aria-label='Independent reviews'] li").Count.ShouldBe(25));
+        var firstPage = page.FindAll("ul[aria-label='Independent reviews'] li").Select(item => item.TextContent).ToArray();
+        page.Find("button[aria-label='Next reviews page']").Click();
+        page.WaitForAssertion(() => page.Find("ul[aria-label='Independent reviews']").TextContent.ShouldContain("reviewer-0026", StringComparison.Ordinal));
+        var secondPage = page.FindAll("ul[aria-label='Independent reviews'] li").Select(item => item.TextContent).ToArray();
+        page.Find("button[aria-label='Previous reviews page']").Click();
+        page.WaitForAssertion(() => page.Find("ul[aria-label='Independent reviews']").TextContent.ShouldContain("reviewer-0001", StringComparison.Ordinal));
+        page.Find("button[aria-controls^='reviews-']").Click();
+
+        // Assert
+        initialReads.ShouldNotContain(request => request.Message.RequestUri?.AbsolutePath.EndsWith("/reviews", StringComparison.Ordinal) == true);
+        initialReads.ShouldContain(request => request.Message.RequestUri?.Query.Contains("latestReviewOnly=true", StringComparison.Ordinal) == true);
+        firstPage[0].ShouldContain("reviewer-0001", StringComparison.Ordinal);
+        secondPage.Length.ShouldBe(Math.Min(25, reviewCount - 25));
+        secondPage[0].ShouldContain("reviewer-0026", StringComparison.Ordinal);
+        page.FindAll("ul[aria-label='Independent reviews']").ShouldBeEmpty();
+        page.Markup.ShouldContain("Attention requested", StringComparison.Ordinal);
+        page.Markup.ShouldNotContain("reviewer-0803", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Closing_instruction_review_history_cancels_its_pending_request()
+    {
+        // Arrange
+        var ct = Xunit.TestContext.Current.CancellationToken;
+        var bookingId = Guid.CreateVersion7();
+        Handler.Instructions = PaymentPageData.InstructionWithReviews(bookingId, 2);
+        ReviewGate.HoldReviewRequest = true;
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("button[aria-controls^='reviews-']"));
+
+        // Act
+        var open = page.Find("button[aria-controls^='reviews-']").ClickAsync(new());
+        await ReviewGate.Started.WaitAsync(TimeSpan.FromSeconds(5), ct);
+        page.WaitForAssertion(() => page.Markup.ShouldContain("Loading independent reviews", StringComparison.Ordinal));
+        var beforeClose = page.Markup;
+        await page.Find("button[aria-controls^='reviews-']").ClickAsync(new());
+        await ReviewGate.Canceled.WaitAsync(TimeSpan.FromSeconds(5), ct);
+        await open;
+
+        // Assert
+        beforeClose.ShouldContain("Loading independent reviews", StringComparison.Ordinal);
+        page.Markup.ShouldNotContain("Loading independent reviews", StringComparison.Ordinal);
+        page.Markup.ShouldNotContain("Instruction reviews could not be loaded", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.OK, "No independent reviews.")]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "Instruction reviews could not be loaded.")]
+    public void Instruction_review_history_has_distinct_empty_and_unavailable_states(HttpStatusCode status, string message)
+    {
+        // Arrange
+        var bookingId = Guid.CreateVersion7();
+        Handler.Instructions = PaymentPageData.InstructionWithReviews(bookingId, 0);
+        var page = Render<Instructions>(parameters => parameters.Add(value => value.BookingId, bookingId));
+        page.WaitForAssertion(() => page.Find("button[aria-controls^='reviews-']"));
+        Handler.ReadStatus = status;
+
+        // Act
+        page.Find("button[aria-controls^='reviews-']").Click();
+
+        // Assert
+        page.WaitForAssertion(() => page.Markup.ShouldContain(message, StringComparison.Ordinal));
+        page.FindAll("nav[aria-label='Independent review pages']").ShouldBeEmpty();
     }
 
     [Fact]
@@ -158,6 +652,9 @@ public sealed class PaymentPagesTests : BunitContext
         // Assert
         page.WaitForAssertion(() => page.FindAll("section h2")[0].TextContent.ShouldContain("Revision 27", StringComparison.Ordinal));
         Handler.Paths.ShouldHaveSingleItem().ShouldEndWith("/regenerate", StringComparison.Ordinal);
+        var command = Handler.Transport.Requests.Where(request => request.Method == HttpMethod.Post).ShouldHaveSingleItem();
+        var commandUri = command.Message.RequestUri.ShouldNotBeNull();
+        commandUri.Query.ShouldBe("?latestReviewOnly=true");
     }
 
     [Fact]

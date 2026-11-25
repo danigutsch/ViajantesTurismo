@@ -15,6 +15,37 @@ public sealed class BookingPaymentsApiClient(HttpClient httpClient) : IBookingPa
     public Task<HttpOutcome<GetBookingFinancialHistoryDto>> GetByBookingId(Guid bookingId, CancellationToken ct) => Read($"{Prefix}/{bookingId}/finances", ct);
     /// <inheritdoc />
     public Task<HttpOutcome<GetBookingFinancialHistoryDto>> GetSensitiveDetails(Guid bookingId, CancellationToken ct) => Read($"{Prefix}/{bookingId}/finances/details", ct);
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetBookingFinancialPageDto>> GetPage(Guid bookingId, BookingFinancialPageRequestDto request, CancellationToken ct) =>
+        ReadPage($"{Prefix}/{bookingId}/finances/projection", request, ct);
+    /// <inheritdoc />
+    public Task<HttpOutcome<GetBookingFinancialPageDto>> GetSensitivePage(Guid bookingId, BookingFinancialPageRequestDto request, CancellationToken ct) =>
+        ReadPage($"{Prefix}/{bookingId}/finances/projection/details", request, ct);
+
+    private Task<HttpOutcome<GetBookingFinancialPageDto>> ReadPage(string route, BookingFinancialPageRequestDto request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var query = new List<string>(4);
+        if (request.Section is { } section)
+        {
+            query.Add($"section={section}");
+        }
+        if (request.Page is { } page)
+        {
+            query.Add(FormattableString.Invariant($"page={page}"));
+        }
+        if (request.PageSize is { } pageSize)
+        {
+            query.Add(FormattableString.Invariant($"pageSize={pageSize}"));
+        }
+        if (request.ParentId is { } parentId)
+        {
+            query.Add($"parentId={parentId}");
+        }
+        var path = query.Count == 0 ? route : $"{route}?{string.Join("&", query)}";
+        return HttpOutcomeMapper.Send(httpClient,
+            new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.Relative)), HttpStatusCode.OK, Json.GetBookingFinancialPageDto, Validation, ct);
+    }
 
     private Task<HttpOutcome<GetBookingFinancialHistoryDto>> Read(string route, CancellationToken ct) => HttpOutcomeMapper.Send(httpClient,
         new HttpRequestMessage(HttpMethod.Get, new Uri(route, UriKind.Relative)), HttpStatusCode.OK, Json.GetBookingFinancialHistoryDto, Validation, ct);

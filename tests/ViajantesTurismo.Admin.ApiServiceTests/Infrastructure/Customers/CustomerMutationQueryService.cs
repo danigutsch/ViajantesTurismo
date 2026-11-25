@@ -14,18 +14,12 @@ internal sealed class CustomerMutationQueryService(
         Task.FromResult(customers.AllCustomers.Any(customer => customer.Id == id) ? projectCustomer?.Invoke(id) : null);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => throw new NotSupportedException();
-
-    /// <inheritdoc />
     public Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();
 
     /// <inheritdoc />
     public Task<GetCustomerOptionsDto> SearchCustomerOptions(CustomerOptionSearchDto request, CancellationToken ct) =>
         throw new NotSupportedException();
-
-    /// <inheritdoc />
-    public Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
     public Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct) =>
@@ -44,9 +38,6 @@ internal sealed class CustomerMutationQueryService(
     public Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct) => throw new NotSupportedException();
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct) => throw new NotSupportedException();
-
-    /// <inheritdoc />
     public Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();
 
@@ -61,9 +52,4 @@ internal sealed class CustomerMutationQueryService(
     /// <inheritdoc />
     public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct) => throw new NotSupportedException();
 
-    /// <inheritdoc />
-    public Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct) => throw new NotSupportedException();
-
-    /// <inheritdoc />
-    public Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct) => throw new NotSupportedException();
 }

@@ -8,13 +8,6 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 /// </summary>
 public interface IBookingsApiClient
 {
-    /// <summary>
-    /// Gets all bookings.
-    /// </summary>
-    /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The materialized booking-list outcome.</returns>
-    Task<HttpOutcome<GetBookingDto[]>> GetAllBookings(CancellationToken ct);
-
     /// <summary>Gets a bounded page of booking summaries and the overview counts.</summary>
     /// <param name="page">The one-based page number.</param>
     /// <param name="sort">The requested sort key.</param>
@@ -46,22 +39,6 @@ public interface IBookingsApiClient
     /// <param name="ct">Cancellation token for the request.</param>
     /// <returns>The materialized booking outcome.</returns>
     Task<HttpOutcome<GetBookingDto>> GetBookingById(Guid id, CancellationToken ct);
-
-    /// <summary>
-    /// Gets all bookings for a specific tour.
-    /// </summary>
-    /// <param name="tourId">The unique identifier of the tour.</param>
-    /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The materialized booking-list outcome.</returns>
-    Task<HttpOutcome<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct);
-
-    /// <summary>
-    /// Gets all bookings for a specific customer.
-    /// </summary>
-    /// <param name="customerId">The unique identifier of the customer.</param>
-    /// <param name="ct">Cancellation token for the request.</param>
-    /// <returns>The materialized booking-list outcome.</returns>
-    Task<HttpOutcome<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct);
 
     /// <summary>
     /// Creates a new booking.

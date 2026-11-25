@@ -62,7 +62,6 @@ public sealed class ImportCustomersConflictLoaderTests
         conflictState.GetIncomingValue(CustomerImportFieldNames.FirstName).ShouldBe(incomingFirstName);
         conflictState.GetExistingValue(CustomerImportFieldNames.LastName).ShouldBe(existingLastName);
         conflictState.GetExistingValue(CustomerImportFieldNames.Email).ShouldBe(conflictEmail);
-        customersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Theory]

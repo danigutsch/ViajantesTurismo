@@ -5,14 +5,11 @@ namespace ViajantesTurismo.Admin.ContractTests.Bookings;
 /// </summary>
 /// <param name="OpenApiVersion">Expected OpenAPI specification version of the document.</param>
 /// <param name="Title">The API title declared in the info object.</param>
-/// <param name="ListBookingsOperationId">Expected operationId of the list bookings operation.</param>
 /// <param name="GetBookingPageOperationId">Expected operationId of the bounded booking page operation.</param>
 /// <param name="GetBookingByIdOperationId">Expected operationId of the get booking by id operation.</param>
 /// <param name="CreateBookingOperationId">Expected operationId of the create booking operation.</param>
 /// <param name="CreateBookingSchemaReference">Expected $ref of the create booking request schema.</param>
 /// <param name="DeleteBookingOperationId">Expected operationId of the delete booking operation.</param>
-/// <param name="GetBookingsByTourIdOperationId">Expected operationId of the get bookings by tour id operation.</param>
-/// <param name="GetBookingsByCustomerIdOperationId">Expected operationId of the get bookings by customer id operation.</param>
 /// <param name="GetTourBookingPageOperationId">Expected operationId of the bounded tour booking history.</param>
 /// <param name="GetCustomerBookingPageOperationId">Expected operationId of the bounded customer booking history.</param>
 /// <param name="UpdateBookingDiscountOperationId">Expected operationId of the update booking discount operation.</param>
@@ -27,14 +24,11 @@ namespace ViajantesTurismo.Admin.ContractTests.Bookings;
 internal sealed record BookingsOpenApiContractDto(
     string OpenApiVersion,
     string Title,
-    string ListBookingsOperationId,
     string GetBookingPageOperationId,
     string GetBookingByIdOperationId,
     string CreateBookingOperationId,
     string CreateBookingSchemaReference,
     string DeleteBookingOperationId,
-    string GetBookingsByTourIdOperationId,
-    string GetBookingsByCustomerIdOperationId,
     string GetTourBookingPageOperationId,
     string GetCustomerBookingPageOperationId,
     string UpdateBookingDiscountOperationId,

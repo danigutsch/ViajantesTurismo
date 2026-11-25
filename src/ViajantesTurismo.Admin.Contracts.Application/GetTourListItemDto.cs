@@ -1,3 +1,5 @@
+using SharedKernel.BuildingBlocks;
+
 namespace ViajantesTurismo.Admin.Contracts.Application;
 
 /// <summary>Provides a tour's pricing, dates, and capacity for the Management overview.</summary>
@@ -33,4 +35,11 @@ public sealed record GetTourListItemDto(
     int CurrentCustomerCount,
     int AvailableSpots,
     bool IsFullyBooked,
-    bool IsAtMinimumCapacity);
+    bool IsAtMinimumCapacity)
+{
+    /// <summary>Gets the resource and collection links provided by the Admin API.</summary>
+    public IReadOnlyList<HypermediaLink>? Links
+    {
+        get; init;
+    }
+}

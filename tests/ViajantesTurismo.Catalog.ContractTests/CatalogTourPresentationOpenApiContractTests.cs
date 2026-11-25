@@ -16,7 +16,7 @@ public sealed class CatalogTourPresentationOpenApiContractTests
         var document = CatalogOpenApiSnapshots.CreateSnapshotSet().GetCanonicalSnapshot("public-catalog").AsObject();
         var paths = document["paths"].ShouldNotBeNull().AsObject();
         var schemas = document["components"].ShouldNotBeNull().AsObject()["schemas"].ShouldNotBeNull().AsObject();
-        var listSchema = paths["/api/v1/public/catalog/tours"].ShouldNotBeNull().AsObject()
+        var listSchema = paths["/api/v1/public/catalog/tours/browse/page"].ShouldNotBeNull().AsObject()
             ["get"].ShouldNotBeNull().AsObject()
             ["responses"].ShouldNotBeNull().AsObject()
             ["200"].ShouldNotBeNull().AsObject()
@@ -32,12 +32,21 @@ public sealed class CatalogTourPresentationOpenApiContractTests
             ["schema"].ShouldNotBeNull().AsObject();
 
         // Act
-        var summaryReference = listSchema["items"].ShouldNotBeNull().AsObject()["$ref"].ShouldNotBeNull().GetValue<string>();
-        var detailsReference = detailsSchema["$ref"].ShouldNotBeNull().GetValue<string>();
+        var listReference = listSchema["$ref"].ShouldNotBeNull().GetValue<string>();
+        var pageReference = detailsSchema["$ref"].ShouldNotBeNull().GetValue<string>();
+        var listProperties = schemas["PublishedTourPageDto"].ShouldNotBeNull().AsObject()["properties"].ShouldNotBeNull().AsObject();
+        var pageProperties = schemas["PublishedTourDetailsPageDto"].ShouldNotBeNull().AsObject()["properties"].ShouldNotBeNull().AsObject();
+        var summaryReference = listProperties["tours"].ShouldNotBeNull().AsObject()
+            ["items"].ShouldNotBeNull().AsObject()["$ref"].ShouldNotBeNull().GetValue<string>();
+        var detailsReference = pageProperties["tour"].ShouldNotBeNull().AsObject()["$ref"].ShouldNotBeNull().GetValue<string>();
         var summaryProperties = schemas["TourSummaryDto"].ShouldNotBeNull().AsObject()["properties"].ShouldNotBeNull().AsObject();
         var detailsProperties = schemas["TourDetailsDto"].ShouldNotBeNull().AsObject()["properties"].ShouldNotBeNull().AsObject();
 
         // Assert
+        paths.ContainsKey("/api/v1/public/catalog/tours").ShouldBeFalse();
+        paths.ContainsKey("/api/v1/public/catalog/tours/{slug}/photo-page").ShouldBeFalse();
+        listReference.ShouldBe("#/components/schemas/PublishedTourPageDto");
+        pageReference.ShouldBe("#/components/schemas/PublishedTourDetailsPageDto");
         summaryReference.ShouldBe("#/components/schemas/TourSummaryDto");
         detailsReference.ShouldBe("#/components/schemas/TourDetailsDto");
         summaryProperties.ContainsKey("links").ShouldBeTrue();
@@ -77,6 +86,8 @@ public sealed class CatalogTourPresentationOpenApiContractTests
             .ToArray();
 
         // Assert
+        paths.ContainsKey("/api/v1/catalog/tours").ShouldBeFalse();
+        paths.ContainsKey("/api/v1/catalog/tours/page").ShouldBeTrue();
         foreach (var response in responses)
         {
             response.ContainsKey("202").ShouldBeTrue();

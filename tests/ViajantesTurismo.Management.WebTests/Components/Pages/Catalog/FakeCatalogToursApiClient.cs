@@ -69,6 +69,20 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         get; private set;
     }
 
+    /// <summary>Gets whether the latest tour read requested images.</summary>
+    public bool? LastTourReadIncludedImages
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>Gets whether the latest presentation save requested images.</summary>
+    public bool? LastPresentationResponseIncludedImages
+    {
+        get;
+        private set;
+    }
+
     /// <summary>Request received by the latest publish or unpublish call.</summary>
     public CatalogTourPublicationRequest? LastPublicationRequest
     {
@@ -229,23 +243,6 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     /// <summary>Gets the page requests made by the Catalog list.</summary>
     public List<(int Page, CatalogTourListSort Sort, bool Descending)> TourPageRequests { get; } = [];
 
-    /// <summary>Gets the number of calls to the unbounded list.</summary>
-    public int GetToursCallCount
-    {
-        get; private set;
-    }
-
-    /// <summary>Returns <see cref="Tours"/>, or a transport failure when configured.</summary>
-    public Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        GetToursCallCount++;
-
-        return Task.FromResult(ThrowOnGetTours
-            ? TransportFailure<CatalogTourDto[]>()
-            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Tours));
-    }
-
     /// <inheritdoc />
     public Task<HttpOutcome<CatalogTourPageDto>> GetTourPage(int page, CatalogTourListSort sort, bool descending, CancellationToken ct)
     {
@@ -263,9 +260,14 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
     }
 
     /// <summary>Returns the tour with the given id, not found if absent, or a transport failure when configured.</summary>
-    public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, CancellationToken ct) =>
+        GetTour(id, includeImages: true, ct);
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<CatalogTourDto>> GetTour(Guid id, bool includeImages, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        LastTourReadIncludedImages = includeImages;
 
         if (ThrowOnGetTours)
         {
@@ -273,15 +275,24 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         }
 
         var tour = Tours.SingleOrDefault(tour => tour.Id == id);
-        return Task.FromResult(tour is null
-            ? HttpOutcomeMapper.Status<CatalogTourDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound)
-            : HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, tour));
+        if (tour is null)
+        {
+            return Task.FromResult(HttpOutcomeMapper.Status<CatalogTourDto>(HttpOutcomeKind.NotFound, HttpStatusCode.NotFound));
+        }
+
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, ProjectImages(tour, includeImages)));
     }
 
     /// <summary>Records the request, applies the configured failure or updates the stored tour's presentation fields and version.</summary>
-    public Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct)
+    public Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(Guid id, UpsertCatalogTourPresentationRequest request, CancellationToken ct) =>
+        UpdatePresentation(id, request, includeImages: true, ct);
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<CatalogTourDto>> UpdatePresentation(
+        Guid id, UpsertCatalogTourPresentationRequest request, bool includeImages, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        LastPresentationResponseIncludedImages = includeImages;
 
         if (ValidationException is not null)
         {
@@ -323,8 +334,15 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
         };
 
         Tours = [.. Tours.Select(current => current.Id == id ? updated : current)];
-        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, updated));
+        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, ProjectImages(updated, includeImages)));
     }
+
+    private static CatalogTourDto ProjectImages(CatalogTourDto tour, bool includeImages) => includeImages
+        ? tour
+        : tour with
+        {
+            Images = []
+        };
 
     /// <summary>Marks the tour published, recording the request.</summary>
     public Task<HttpOutcome> Publish(Guid id, CatalogTourPublicationRequest request, CancellationToken ct)

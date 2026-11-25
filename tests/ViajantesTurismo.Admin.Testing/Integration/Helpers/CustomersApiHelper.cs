@@ -23,14 +23,4 @@ public static class CustomersApiHelper
             ct);
     }
 
-    public static async Task<HttpResponseMessage> GetAllCustomers(
-        this HttpClient client,
-        CancellationToken ct)
-    {
-        ArgumentNullException.ThrowIfNull(client);
-
-        return await client.GetAsync(
-            new Uri(RoutePrefix, UriKind.Relative),
-            ct);
-    }
 }

@@ -9,7 +9,6 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
 {
     private readonly List<CustomerDetailsDto> _customerDetails = [];
     private readonly List<GetCustomerDto> _customers = [];
-    private Func<CancellationToken, int, Task<IReadOnlyList<GetCustomerDto>>>? _getCustomersHandler;
     private Func<string[], CancellationToken, Task<Guid?[]>>? _findImportConflictIdsHandler;
     private Func<ReadOnlyMemory<byte>, string, IReadOnlyDictionary<string, string>, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _commitImportHandler;
     private Func<ReadOnlyMemory<byte>, string, IProgress<long>?, CancellationToken, Task<ImportResultDto>>? _importCustomersHandler;
@@ -32,8 +31,6 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     private Exception? _getCustomerByIdException;
     private HttpOutcome<CustomerDetailsDto>? _getCustomerByIdOutcome;
     private HttpOutcome<Guid?[]>? _findImportConflictIdsOutcome;
-    private Exception? _getCustomersException;
-    private HttpOutcome<GetCustomerDto[]>? _getCustomersOutcome;
     private HttpOutcome<GetCustomerPageDto>? _getCustomerPageOutcome;
     private Func<CustomerOptionSearchDto, CancellationToken, Task<HttpOutcome<GetCustomerOptionsDto>>>? _searchCustomerOptionsHandler;
     private Exception? _importCustomersException;
@@ -57,11 +54,6 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
         get; private set;
     }
 
-    public int? LastGetCustomersMaxItems
-    {
-        get; private set;
-    }
-
     /// <summary>Gets the most recent customer page number and sort.</summary>
     public (int Page, CustomerPageSort Sort, bool Descending)? LastCustomerPageRequest
     {
@@ -72,29 +64,6 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public UpdateCustomerDto? LastUpdatedCustomer
     {
         get; private set;
-    }
-
-    public async Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100)
-    {
-        ct.ThrowIfCancellationRequested();
-        LastGetCustomersMaxItems = maxItems;
-
-        if (_getCustomersHandler is not null)
-        {
-            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, (await _getCustomersHandler(ct, maxItems)).ToArray());
-        }
-
-        if (_getCustomersException is not null)
-        {
-            throw _getCustomersException;
-        }
-
-        if (_getCustomersOutcome is not null)
-        {
-            return _getCustomersOutcome;
-        }
-
-        return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _customers.Take(maxItems).ToArray());
     }
 
     /// <inheritdoc />
@@ -311,12 +280,6 @@ public sealed class FakeCustomersApiClient : ICustomersApiClient
     public void SetGetCustomerByIdException(Exception exception) => _getCustomerByIdException = exception;
 
     public void SetGetCustomerByIdOutcome(HttpOutcome<CustomerDetailsDto> outcome) => _getCustomerByIdOutcome = outcome;
-
-    public void SetGetCustomersException(Exception exception) => _getCustomersException = exception;
-
-    public void SetGetCustomersHandler(Func<CancellationToken, int, Task<IReadOnlyList<GetCustomerDto>>> handler) => _getCustomersHandler = handler;
-
-    public void SetGetCustomersOutcome(HttpOutcome<GetCustomerDto[]> outcome) => _getCustomersOutcome = outcome;
 
     /// <summary>Sets the response for requests to the customer page.</summary>
     public void SetGetCustomerPageOutcome(HttpOutcome<GetCustomerPageDto> outcome) => _getCustomerPageOutcome = outcome;

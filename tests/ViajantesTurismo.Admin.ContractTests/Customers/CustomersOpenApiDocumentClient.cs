@@ -39,10 +39,10 @@ internal static class CustomersOpenApiDocumentClient
         }
 
         if (!document.Paths.TryGetValue(RoutePrefix, out var customersPath) ||
-            customersPath.Get is null ||
+            customersPath.Get is not null ||
             customersPath.Post is null)
         {
-            throw new InvalidOperationException("The customers collection path is missing required operations.");
+            throw new InvalidOperationException("The customers collection path must define POST without the superseded GET operation.");
         }
 
         if (!document.Paths.TryGetValue($"{RoutePrefix}/page", out var customerPagePath) || customerPagePath.Get is null)
@@ -93,7 +93,6 @@ internal static class CustomersOpenApiDocumentClient
         return new CustomersOpenApiContractDto(
             document.OpenApi,
             document.Info.Title,
-            customersPath.Get.OperationId,
             customerPagePath.Get.OperationId,
             optionsSearchPath.Post.OperationId,
             optionSearchSchemaReference,

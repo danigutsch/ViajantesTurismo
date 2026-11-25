@@ -43,7 +43,6 @@ public sealed class AccommodationPageTests : BunitContext
         initialOptions.ShouldBe(21);
         cut.Find("#companionId").TextContent.ShouldContain("Customer799 Example", StringComparison.Ordinal);
         cut.FindAll("#companionId option").Count.ShouldBe(2);
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Fact]

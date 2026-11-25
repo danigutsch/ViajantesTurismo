@@ -1,5 +1,4 @@
 using System.Text.Json;
-using SharedKernel.Testing.Http;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
@@ -14,8 +13,8 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 public sealed class CatalogApiAuthorizationTests
 {
     [Theory]
-    [InlineData("/api/v1/catalog/tours")]
-    [InlineData("/API/V1/CATALOG/TOURS")]
+    [InlineData("/api/v1/catalog/tours/page")]
+    [InlineData("/API/V1/CATALOG/TOURS/PAGE")]
     public async Task Management_catalog_endpoint_rejects_anonymous_requests(string path)
     {
         // Arrange
@@ -48,7 +47,7 @@ public sealed class CatalogApiAuthorizationTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/api/v1/catalog/tours", UriKind.Relative),
+            new Uri("/api/v1/catalog/tours/page", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -65,7 +64,7 @@ public sealed class CatalogApiAuthorizationTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/api/v1/catalog/tours", UriKind.Relative),
+            new Uri("/api/v1/catalog/tours/page", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -82,7 +81,7 @@ public sealed class CatalogApiAuthorizationTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/api/v1/catalog/tours", UriKind.Relative),
+            new Uri("/api/v1/catalog/tours/page", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert
@@ -113,14 +112,14 @@ public sealed class CatalogApiAuthorizationTests
         CatalogApiTestHost.ConfigureAuthenticatedClient(client, role);
 
         // Act
-        using var response = await client.GetAsync(new Uri("/api/v1/catalog/tours", UriKind.Relative), ct);
+        using var response = await client.GetAsync(new Uri("/api/v1/catalog/tours/page", UriKind.Relative), ct);
         var payload = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var tour = payload.EnumerateArray().ShouldHaveSingleItem();
-        tour.ShouldHaveGetLink("self", $"/api/v1/catalog/tours/{tourId}");
-        tour.ShouldHaveGetLink("images", $"/api/v1/catalog/tours/{tourId}/images");
+        var tour = payload.GetProperty("items").EnumerateArray().ShouldHaveSingleItem();
+        tour.GetProperty("id").GetGuid().ShouldBe(tourId);
+        tour.GetProperty("title").GetString().ShouldBe("Role Test Tour");
     }
 
     [Theory]
@@ -165,7 +164,7 @@ public sealed class CatalogApiAuthorizationTests
     }
 
     [Theory]
-    [InlineData("/api/v1/public/catalog/tours", HttpStatusCode.OK)]
+    [InlineData("/api/v1/public/catalog/tours/browse/page", HttpStatusCode.OK)]
     [InlineData("/api/v1/public/catalog/tours/missing", HttpStatusCode.NotFound)]
     [InlineData("/api/v1/public/catalog/content/missing", HttpStatusCode.NotFound)]
     [InlineData("/api/v1/public/catalog/media/1d02ec44-41b5-4d3a-878b-89f53261a803/640/jpg", HttpStatusCode.NotFound)]

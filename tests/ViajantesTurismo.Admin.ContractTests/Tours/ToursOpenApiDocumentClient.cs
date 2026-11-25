@@ -40,10 +40,10 @@ internal static class ToursOpenApiDocumentClient
         }
 
         if (!document.Paths.TryGetValue(RoutePrefix, out var toursPath) ||
-            toursPath.Get is null ||
+            toursPath.Get is not null ||
             toursPath.Post is null)
         {
-            throw new InvalidOperationException("The tours collection path is missing required operations.");
+            throw new InvalidOperationException("The tours collection path must define POST without the superseded GET operation.");
         }
 
         if (!document.Paths.TryGetValue($"{RoutePrefix}/{{id}}", out var tourByIdPath) ||
@@ -77,7 +77,6 @@ internal static class ToursOpenApiDocumentClient
         return new ToursOpenApiContractDto(
             document.OpenApi,
             document.Info.Title,
-            toursPath.Get.OperationId,
             tourByIdPath.Get.OperationId,
             createTourSchemaReference,
             updateTourSchemaReference,

@@ -12,7 +12,7 @@
 @if (_error is not null) { <p class="alert alert-danger" role="alert">@_error</p> }
 @if (_submission.HasPending) { <p role="alert">The submission outcome is unknown. Retry the same command before editing.</p><button type="button" @onclick="Retry" disabled="@_submission.IsBusy">Retry same submission</button> }
 <button type="button" @onclick="Load" disabled="@_submission.IsBusy">Refresh</button>
-<AuthorizeView Roles="Admin"><button type="button" @onclick="LoadEvidence" disabled="@Blocked">View sensitive evidence references (audited)</button></AuthorizeView>
+<AuthorizeView Roles="Admin"><button type="button" @onclick="() => LoadEvidence(BookingFinancialSection.Receipts)" disabled="@Blocked">View sensitive evidence references (audited)</button></AuthorizeView>
 @if (_booking is not null && _booking.Currency != Currency.Eur.Code) { <p>Payment obligations require a tour priced in EUR.</p> }
 else if (_booking is not null)
 {
@@ -21,6 +21,7 @@ else if (_booking is not null)
     {
         <p>Approved obligation: @_history.ApprovedObligationEuro EUR. Outstanding: @_history.OutstandingEuro EUR. Unallocated credit: @_history.UnallocatedEuroCredit EUR.</p>
         <p>Business date: @_history.BusinessDate. Overdue: @_history.Overdue. Terms stale: @_history.TermsStale.</p>
+        <BookingFinancialPager Label="Schedule history pages" Window="Window(BookingFinancialSection.Schedules)" Changed="page => Browse(BookingFinancialSection.Schedules, page)" Disabled="@Blocked" />
         @foreach (var schedule in _history.Schedules)
         {
             <section class="card p-3 my-2" @key="schedule.Id"><h2>Schedule @schedule.Revision — @schedule.Status</h2>
@@ -30,6 +31,7 @@ else if (_booking is not null)
                 <table class="table"><caption>Immutable installment terms</caption><thead><tr><th scope="col">Installment</th><th scope="col">Due date</th><th scope="col">EUR</th><th scope="col">Allocated EUR</th><th scope="col">Outstanding EUR</th></tr></thead><tbody>
                     @foreach (var item in schedule.Installments) { <tr><th scope="row">@item.Id</th><td>@item.DueDate</td><td>@item.EuroAmount</td><td>@item.AllocatedEuro</td><td>@item.OutstandingEuro</td></tr> }
                 </tbody></table>
+                <BookingFinancialPager Label="@($"Schedule {schedule.Revision} installment pages")" Window="Window(BookingFinancialSection.ScheduleInstallments, schedule.Id)" Changed="page => Browse(BookingFinancialSection.ScheduleInstallments, page, schedule.Id)" Disabled="@Blocked" />
                 <AuthorizeView Roles="Admin" Context="scheduleAdmin">
                     @if (schedule.Status == PaymentScheduleStatusDto.Draft) { <button type="button" @onclick='() => Select("schedule", schedule.Id, $"Schedule {schedule.Revision}: {schedule.ObligationEuro} EUR", FinancialReasonDto.InitialObligation)'>Approve terms</button> }
                     @if (schedule.Status == PaymentScheduleStatusDto.Approved && !schedule.ApprovalWithdrawn) { <button type="button" @onclick='() => Select("withdraw", schedule.Id, $"Schedule {schedule.Revision}", FinancialReasonDto.ApprovalWithdrawn)'>Withdraw approval</button> }
@@ -38,9 +40,11 @@ else if (_booking is not null)
             </section>
         }
         <h2>Agreed quotes</h2>
+        <AuthorizeView Roles="Admin"><button type="button" @onclick="() => LoadEvidence(BookingFinancialSection.Quotes)" disabled="@Blocked">View quote evidence references (audited)</button></AuthorizeView>
+        <BookingFinancialPager Label="Quote history pages" Window="Window(BookingFinancialSection.Quotes)" Changed="page => Browse(BookingFinancialSection.Quotes, page)" Disabled="@Blocked" />
         @foreach (var quote in _history.Quotes)
         {
-            <div class="card p-2 my-2" @key="quote.Id">@if (RequiresAttention(quote.Id)) { <strong>Attention requested; approval remains until explicitly withdrawn.</strong> }<p>Source: @quote.Source. Reference: @quote.Reference.</p><p>@quote.Id: @quote.BrlPerEuro BRL/EUR; agreed @quote.AgreedAt; expires @quote.ExpiresAt. Refund: @quote.ForRefund. Withdrawn: @quote.ApprovalWithdrawn.</p>
+            <div class="card p-2 my-2" @key="quote.Id">@if (RequiresAttention(quote.Id)) { <strong>Attention requested; approval remains until explicitly withdrawn.</strong> }<p>Source: @QuoteSource(quote). Reference: @QuoteReference(quote).</p><p>@quote.Id: @quote.BrlPerEuro BRL/EUR; agreed @quote.AgreedAt; expires @quote.ExpiresAt. Refund: @quote.ForRefund. Withdrawn: @quote.ApprovalWithdrawn.</p>
                 <p>Creator @quote.Approval.CreatedBy; approver @quote.Approval.ApprovedBy. @if (quote.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
                 <AuthorizeView Roles="Admin" Context="quoteAdmin">
                     @if (quote.Approval.ApprovedAt is null) { <button type="button" @onclick='() => Select("quote", quote.Id, $"Quote {quote.BrlPerEuro} BRL/EUR, expiry {quote.ExpiresAt}", FinancialReasonDto.QuoteAgreed)'>Approve quote</button> }
@@ -50,42 +54,63 @@ else if (_booking is not null)
             </div>
         }
         <h2>Receipts and customer credit</h2>
+        <BookingFinancialPager Label="Receipt history pages" Window="Window(BookingFinancialSection.Receipts)" Changed="page => Browse(BookingFinancialSection.Receipts, page)" Disabled="@Blocked" />
         @foreach (var receipt in _history.Receipts)
         {
             <section class="card p-2 my-2" @key="receipt.Id"><h3>Receipt @receipt.Id</h3><p>@receipt.PaymentDate: gross @receipt.Gross, fees @receipt.Fees, net @receipt.Net @receipt.SettlementCurrency. EUR credit: @receipt.ApprovedEuroCredit. Unallocated EUR: @receipt.UnallocatedEuroCredit. Unallocated cash: @receipt.UnallocatedCashCredit @receipt.SettlementCurrency.</p>
-                <p>Reference: @receipt.Reference. Pending reconciliation: @receipt.PendingReconciliation. Reversed: @receipt.Reversed. Method: @receipt.Method. Creator: @receipt.CreatedBy.</p>
+                <p>Reference: @ReceiptReference(receipt). Pending reconciliation: @receipt.PendingReconciliation. Reversed: @receipt.Reversed. Method: @receipt.Method. Creator: @receipt.CreatedBy.</p>
                 <AuthorizeView Roles="Admin" Context="receiptAdmin">
                     @if (!receipt.Reversed) { <button type="button" @onclick='() => Select("reverse", receipt.Id, $"Full receipt reversal {receipt.Id}, gross {receipt.Gross} {receipt.SettlementCurrency}", FinancialReasonDto.ReceiptError)'>Reverse erroneous receipt</button> }
                 </AuthorizeView>
             </section>
         }
         <h2>Reconciliations</h2>
+        <BookingFinancialPager Label="Reconciliation history pages" Window="Window(BookingFinancialSection.Reconciliations)" Changed="page => Browse(BookingFinancialSection.Reconciliations, page)" Disabled="@Blocked" />
         @foreach (var reconciliation in _history.Reconciliations)
         {
             @if (RequiresAttention(reconciliation.Id)) { <strong>Attention requested; existing approval remains active.</strong> }
             <p>@reconciliation.Id: receipt @reconciliation.ReceiptId, @reconciliation.EuroCredit EUR; creator @reconciliation.Approval.CreatedBy; approved @reconciliation.Approval.ApprovedAt. @if (reconciliation.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
             <AuthorizeView Roles="Admin" Context="reconciliationAdmin">
-                @if (reconciliation.Approval.ApprovedAt is null) { <button type="button" @onclick='() => Select("reconciliation", reconciliation.Id, $"Receipt {reconciliation.ReceiptId}: credit {reconciliation.EuroCredit} EUR to displayed selected installments", FinancialReasonDto.MismatchedReceipt)'>Approve reconciliation</button> }
+                @if (reconciliation.Approval.ApprovedAt is null) { <button type="button" @onclick="() => SelectReconciliation(reconciliation)">Approve reconciliation</button> }
                 @if (reconciliation.Approval.CreatedBy != _actor) { <button type="button" @onclick='() => Select("review", reconciliation.Id, $"Reconciliation {reconciliation.Id}", FinancialReasonDto.ReviewAccepted)'>Optional independent review</button> }
             </AuthorizeView>
             <ul>@foreach (var selection in reconciliation.Allocations) { <li>@selection.TargetId: @selection.EuroAmount EUR</li> }</ul>
+            <BookingFinancialPager Label="@($"Reconciliation {reconciliation.Id} selection pages")" Window="Window(BookingFinancialSection.ReconciliationSelections, reconciliation.Id)" Changed="page => Browse(BookingFinancialSection.ReconciliationSelections, page, reconciliation.Id)" Disabled="@Blocked" />
         }
         <h2>Allocation history</h2>
+        <BookingFinancialPager Label="Allocation history pages" Window="Window(BookingFinancialSection.Allocations)" Changed="page => Browse(BookingFinancialSection.Allocations, page)" Disabled="@Blocked" />
         <ul>@foreach (var allocation in _history.Allocations) { <li>@allocation.Id: receipt @allocation.ReceiptId, installment @allocation.InstallmentId; original @allocation.OriginalEuroCredit EUR, active @allocation.ActiveEuroCredit EUR.</li> }</ul>
         <h2>Refund records</h2>
+        <AuthorizeView Roles="Admin"><button type="button" @onclick="() => LoadEvidence(BookingFinancialSection.Refunds)" disabled="@Blocked">View refund evidence references (audited)</button></AuthorizeView>
+        <BookingFinancialPager Label="Refund record pages" Window="Window(BookingFinancialSection.Refunds)" Changed="page => Browse(BookingFinancialSection.Refunds, page)" Disabled="@Blocked" />
         @foreach (var refund in _history.Refunds)
         {
             @if (RequiresAttention(refund.Id)) { <strong>Attention requested; existing approval remains active.</strong> }
-            <p>Transfer reference: @refund.Reference.</p><p>@refund.Id: receipt @refund.ReceiptId; original cash basis @refund.OriginalCashBasis; EUR credit reversed @refund.EuroCreditReversed; actual settlement @refund.ActualSettlement; FX difference @refund.FxDifference; performed @refund.PerformedAt. Corrected: @refund.Corrected. Creator @refund.Approval.CreatedBy; approver @refund.Approval.ApprovedBy. @if (refund.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
+            <p>Transfer reference: @RefundReference(refund).</p><p>@refund.Id: receipt @refund.ReceiptId; original cash basis @refund.OriginalCashBasis; EUR credit reversed @refund.EuroCreditReversed; actual settlement @refund.ActualSettlement; FX difference @refund.FxDifference; performed @refund.PerformedAt. Corrected: @refund.Corrected. Creator @refund.Approval.CreatedBy; approver @refund.Approval.ApprovedBy. @if (refund.Approval.SelfApproved) { <strong>Self-approved</strong> }</p>
             <AuthorizeView Roles="Admin" Context="refundAdmin">
                 @if (refund.Approval.ApprovedAt is null) { <button type="button" @onclick='() => Select("refund", refund.Id, $"Refund {refund.Id}: actual {refund.ActualSettlement}, reverse {refund.EuroCreditReversed} EUR credit", FinancialReasonDto.RefundPerformed)'>Approve refund record</button> }
                 else if (!refund.Corrected) { <button type="button" @onclick='() => Select("correct", refund.Id, $"Correct refund record {refund.Id}. This does not perform a return transfer. Release conflicting allocations before restoring reversed credit.", FinancialReasonDto.RefundRecordError)'>Correct erroneous refund record</button> }
                 @if (refund.Approval.CreatedBy != _actor) { <button type="button" @onclick='() => Select("review", refund.Id, $"Refund {refund.Id}", FinancialReasonDto.ReviewAccepted)'>Optional independent review</button> }
             </AuthorizeView>
+            @if (refund.ReversedAllocations.Count > 0)
+            {
+                <ul>@foreach (var selection in refund.ReversedAllocations) { <li>@selection.TargetId: @selection.EuroAmount EUR reversed</li> }</ul>
+            }
+            <BookingFinancialPager Label="@($"Refund {refund.Id} reversed allocation pages")" Window="Window(BookingFinancialSection.RefundSelections, refund.Id)" Changed="page => Browse(BookingFinancialSection.RefundSelections, page, refund.Id)" Disabled="@Blocked" />
         }
         <h2>Reversals, releases and corrections</h2>
-        <ul>@foreach (var correction in _history.Reversals) { <li>@correction.Operation: @correction.TargetId; @correction.EuroAmount EUR; recorded and approved by @correction.ApprovedBy at @correction.ApprovedAt; reason @correction.Reason. Linked allocations: @string.Join(", ", correction.AllocationIds).</li> }</ul>
+        <BookingFinancialPager Label="Financial reversal pages" Window="Window(BookingFinancialSection.Reversals)" Changed="page => Browse(BookingFinancialSection.Reversals, page)" Disabled="@Blocked" />
+        <ul>
+            @foreach (var correction in _history.Reversals)
+            {
+                <li @key="correction.Id">
+                    @correction.Operation: @correction.TargetId; @correction.EuroAmount EUR; recorded and approved by @correction.ApprovedBy at @correction.ApprovedAt; reason @correction.Reason. Linked allocations: @string.Join(", ", correction.AllocationIds).
+                    <BookingFinancialPager Label="@($"Reversal {correction.Id} linked allocation pages")" Window="Window(BookingFinancialSection.ReversalLinks, correction.Id)" Changed="page => Browse(BookingFinancialSection.ReversalLinks, page, correction.Id)" Disabled="@Blocked" />
+                </li>
+            }
+        </ul>
         <h2>Independent reviews</h2><p>A request for changes flags attention and does not withdraw approval.</p>
+        <BookingFinancialPager Label="Financial review history pages" Window="Window(BookingFinancialSection.Reviews)" Changed="page => Browse(BookingFinancialSection.Reviews, page)" Disabled="@Blocked" />
         <ul>@foreach (var review in _history.Reviews) { <li>@review.TargetId revision @review.TargetRevision: @review.ReviewerId at @review.ReviewedAt; changes requested: @review.ChangesRequested.</li> }</ul>
     }
     <fieldset disabled="@Blocked"><legend>Record actual receipt pending reconciliation</legend>
@@ -97,6 +122,7 @@ else if (_booking is not null)
         <label for="receipt-time">Bank settlement instant (UTC, optional)</label><input id="receipt-time" type="datetime-local" @bind="_receipt.SettledAtUtc" />
         <label for="receipt-method">Method</label><InputSelect id="receipt-method" @bind-Value="_receipt.Method">@foreach (var method in Enum.GetValues<PaymentMethodDto>()) { <option value="@method">@method</option> }</InputSelect>
         <label for="receipt-reference">Bank reference</label><InputText id="receipt-reference" @bind-Value="_receipt.Reference" autocomplete="off" />
+        <BookingFinancialPager Label="Proposed installment choice pages" Window="Window(BookingFinancialSection.ProposedInstallmentChoices)" Changed="page => Browse(BookingFinancialSection.ProposedInstallmentChoices, page)" Disabled="@Blocked" />
         <PaymentAllocationEditor Rows="_receipt.Allocations" Choices="ReceiptInstallmentChoices" Prefix="receipt" />
         <button type="button" @onclick="RecordReceipt">Record pending receipt</button>
     </fieldset>
@@ -119,26 +145,35 @@ else if (_booking is not null)
             <label><input type="checkbox" @bind="_quote.ForRefund" /> Newly agreed refund quote</label><button type="button" @onclick="SaveQuote">Save unapproved quote</button>
         </fieldset>
         <fieldset disabled="@Blocked"><legend>Save proposed reconciliation</legend>
-            <label for="reconcile-receipt">Receipt</label><InputSelect id="reconcile-receipt" @bind-Value="_reconciliation.ReceiptId"><option value="@Guid.Empty">Select receipt</option>@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — @receipt.Net @receipt.SettlementCurrency</option> }</InputSelect>
+            <label for="reconcile-receipt">Receipt</label><InputSelect id="reconcile-receipt" @bind-Value="_reconciliation.ReceiptId"><option value="@Guid.Empty">Select receipt</option>@if (_reconciliation.ReceiptId != Guid.Empty && Receipts.All(item => item.Id != _reconciliation.ReceiptId)) { <option value="@_reconciliation.ReceiptId">Selected @_reconciliation.ReceiptId</option> }@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — @receipt.Net @receipt.SettlementCurrency</option> }</InputSelect>
+            <BookingFinancialPager Label="Reconciliation receipt choice pages" Window="Window(BookingFinancialSection.ReceiptChoices)" Changed="page => Browse(BookingFinancialSection.ReceiptChoices, page)" Disabled="@Blocked" />
             <label for="reconcile-eur">Approved EUR credit proposal</label><InputNumber id="reconcile-eur" @bind-Value="_reconciliation.EuroCredit" step="0.01" />
-            <label for="reconcile-quote">Agreed quote (BRL)</label><InputSelect id="reconcile-quote" @bind-Value="_reconciliation.QuoteId"><option value="">EUR, no quote</option>@foreach (var quote in Quotes.Where(item => !item.ForRefund)) { <option value="@quote.Id">@quote.Id — @quote.BrlPerEuro BRL/EUR</option> }</InputSelect>
+            <label for="reconcile-quote">Agreed quote (BRL)</label><InputSelect id="reconcile-quote" @bind-Value="_reconciliation.QuoteId"><option value="">EUR, no quote</option>@if (_reconciliation.QuoteId is { } selectedQuote && SettlementQuotes.All(item => item.Id != selectedQuote)) { <option value="@selectedQuote">Selected @selectedQuote</option> }@foreach (var quote in SettlementQuotes) { <option value="@quote.Id">@quote.Id — @quote.BrlPerEuro BRL/EUR</option> }</InputSelect>
+            <BookingFinancialPager Label="Settlement quote choice pages" Window="Window(BookingFinancialSection.SettlementQuoteChoices)" Changed="page => Browse(BookingFinancialSection.SettlementQuoteChoices, page)" Disabled="@Blocked" />
             <label for="reconcile-instruction">Frozen instruction ID (required for exact receipt)</label><InputText id="reconcile-instruction" @bind-Value="_instructionId" />
+            <BookingFinancialPager Label="Reconciliation installment choice pages" Window="Window(BookingFinancialSection.ApprovedInstallmentChoices)" Changed="page => Browse(BookingFinancialSection.ApprovedInstallmentChoices, page)" Disabled="@Blocked" />
             <PaymentAllocationEditor Rows="_reconciliation.Allocations" Choices="InstallmentChoices" Prefix="reconciliation" /><button type="button" @onclick="SaveReconciliation">Save unapproved reconciliation</button>
         </fieldset>
         <fieldset disabled="@Blocked"><legend>Allocate customer credit or release historical allocations</legend>
-            <label for="allocation-receipt">Source receipt for allocation</label><InputSelect id="allocation-receipt" @bind-Value="_allocationReceipt"><option value="@Guid.Empty">Select receipt</option>@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — @receipt.UnallocatedEuroCredit EUR available</option> }</InputSelect>
+            <label for="allocation-receipt">Source receipt for allocation</label><InputSelect id="allocation-receipt" @bind-Value="_allocationReceipt"><option value="@Guid.Empty">Select receipt</option>@if (_allocationReceipt != Guid.Empty && Receipts.All(item => item.Id != _allocationReceipt)) { <option value="@_allocationReceipt">Selected @_allocationReceipt</option> }@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — @receipt.UnallocatedEuroCredit EUR available</option> }</InputSelect>
+            <BookingFinancialPager Label="Allocation receipt choice pages" Window="Window(BookingFinancialSection.ReceiptChoices)" Changed="page => Browse(BookingFinancialSection.ReceiptChoices, page)" Disabled="@Blocked" />
+            <BookingFinancialPager Label="Allocation installment choice pages" Window="Window(BookingFinancialSection.ApprovedInstallmentChoices)" Changed="page => Browse(BookingFinancialSection.ApprovedInstallmentChoices, page)" Disabled="@Blocked" />
             <PaymentAllocationEditor Rows="_allocations" Choices="InstallmentChoices" Prefix="allocate" /><button type="button" @onclick='() => Select("allocate", _allocationReceipt, "Allocate the selected EUR amounts from this receipt to the displayed installments", FinancialReasonDto.AllocationSelected)'>Review allocation</button>
+            <BookingFinancialPager Label="Release allocation choice pages" Window="Window(BookingFinancialSection.ActiveAllocationChoices)" Changed="page => Browse(BookingFinancialSection.ActiveAllocationChoices, page)" Disabled="@Blocked" />
             <PaymentAllocationEditor Rows="_releases" Choices="AllocationChoices" Prefix="release" Legend="Historical allocations to release before reassigning" /><button type="button" @onclick='() => Select("release", BookingId, "Release selected historical EUR allocations into unapplied customer credit", FinancialReasonDto.AllocationSelected)'>Review release</button>
         </fieldset>
         <fieldset disabled="@Blocked"><legend>Record already performed refund</legend><p>This records a transfer and never sends money. EUR credit reversal and obligation adjustment are separate decisions.</p>
-            <label for="refund-receipt">Original receipt</label><InputSelect id="refund-receipt" @bind-Value="_refund.ReceiptId"><option value="@Guid.Empty">Select receipt</option>@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — refundable basis @receipt.RefundableCashBasis @receipt.SettlementCurrency</option> }</InputSelect>
+            <label for="refund-receipt">Original receipt</label><InputSelect id="refund-receipt" @bind-Value="_refund.ReceiptId"><option value="@Guid.Empty">Select receipt</option>@if (_refund.ReceiptId != Guid.Empty && Receipts.All(item => item.Id != _refund.ReceiptId)) { <option value="@_refund.ReceiptId">Selected @_refund.ReceiptId</option> }@foreach (var receipt in Receipts) { <option value="@receipt.Id">@receipt.Id — refundable basis @receipt.RefundableCashBasis @receipt.SettlementCurrency</option> }</InputSelect>
+            <BookingFinancialPager Label="Refund receipt choice pages" Window="Window(BookingFinancialSection.ReceiptChoices)" Changed="page => Browse(BookingFinancialSection.ReceiptChoices, page)" Disabled="@Blocked" />
             <label for="refund-actual">Actual transfer amount (original settlement currency)</label><InputNumber id="refund-actual" @bind-Value="_refund.ActualSettlement" step="0.01" />
             <label for="refund-basis">Original receipt currency cash basis</label><InputNumber id="refund-basis" @bind-Value="_refund.OriginalCashBasis" step="0.01" />
             <label for="refund-credit">EUR credit to reverse</label><InputNumber id="refund-credit" @bind-Value="_refund.EuroCreditReversed" step="0.01" />
             <label for="refund-payable">EUR cash payable</label><InputNumber id="refund-payable" @bind-Value="_refund.EuroCashPayable" step="0.01" />
-            <label for="refund-quote">Newly agreed refund quote (BRL)</label><InputSelect id="refund-quote" @bind-Value="_refund.RefundQuoteId"><option value="">EUR, no quote</option>@foreach (var quote in Quotes.Where(item => item.ForRefund)) { <option value="@quote.Id">@quote.Id — @quote.BrlPerEuro BRL/EUR</option> }</InputSelect>
+            <label for="refund-quote">Newly agreed refund quote (BRL)</label><InputSelect id="refund-quote" @bind-Value="_refund.RefundQuoteId"><option value="">EUR, no quote</option>@if (_refund.RefundQuoteId is { } selectedRefundQuote && RefundQuotes.All(item => item.Id != selectedRefundQuote)) { <option value="@selectedRefundQuote">Selected @selectedRefundQuote</option> }@foreach (var quote in RefundQuotes) { <option value="@quote.Id">@quote.Id — @quote.BrlPerEuro BRL/EUR</option> }</InputSelect>
+            <BookingFinancialPager Label="Refund quote choice pages" Window="Window(BookingFinancialSection.RefundQuoteChoices)" Changed="page => Browse(BookingFinancialSection.RefundQuoteChoices, page)" Disabled="@Blocked" />
             <label for="refund-reference">Actual transfer reference</label><InputText id="refund-reference" @bind-Value="_refund.Reference" autocomplete="off" />
             <label for="refund-time">Performed instant (UTC)</label><input id="refund-time" type="datetime-local" @bind="_refund.PerformedAtUtc" />
+            <BookingFinancialPager Label="Refund allocation choice pages" Window="Window(BookingFinancialSection.ActiveAllocationChoices)" Changed="page => Browse(BookingFinancialSection.ActiveAllocationChoices, page)" Disabled="@Blocked" />
             <PaymentAllocationEditor Rows="_refund.Allocations" Choices="AllocationChoices" Prefix="refund" Legend="Selected original allocations whose EUR credit is reversed" />
             <label><input type="checkbox" @bind="_refund.PerformedAttested" /> I checked evidence that this transfer was already performed.</label><button type="button" disabled="@(!_refund.PerformedAttested)" @onclick="SaveRefund">Save unapproved refund record</button>
         </fieldset>
@@ -148,7 +183,13 @@ else if (_booking is not null)
                 <fieldset disabled="@Blocked"><legend>Explicit action confirmation</legend>
                     @if (_action == "review") { <label><input type="checkbox" @bind="_changesRequested" /> Request changes; existing approval remains active</label> }
                     else { <label for="financial-reason">Reason</label><InputSelect id="financial-reason" @bind-Value="_reason">@foreach (var reason in Reasons) { <option value="@reason">@reason</option> }</InputSelect> }
-                    <label><input type="checkbox" @bind="_confirmed" /> I confirm the displayed summary and selected allocations.</label><button type="button" @onclick="Confirm" disabled="@(!_confirmed)">Confirm @_action</button><button type="button" @onclick="Cancel">Cancel</button>
+                    <label>
+                        <input type="checkbox" @bind="_confirmed" />
+                        @(_action == "reconciliation"
+                            ? "I confirm the full reconciliation and the displayed summary."
+                            : "I confirm the displayed summary and selected allocations.")
+                    </label>
+                    <button type="button" @onclick="Confirm" disabled="@(!_confirmed)">Confirm @_action</button><button type="button" @onclick="Cancel">Cancel</button>
                 </fieldset>
             </section>
         }

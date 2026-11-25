@@ -454,9 +454,9 @@ public class AddPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
-        var outcome = await _fakeToursApi.GetTours(CancellationToken.None);
+        var outcome = await _fakeToursApi.GetTourPage(1, TourPageSort.Default, descending: false, Xunit.TestContext.Current.CancellationToken);
         outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
-        var createdTours = outcome.Value.ShouldNotBeNull();
+        var createdTours = outcome.Value.ShouldNotBeNull().Items;
         createdTours.ShouldHaveSingleItem();
 
         var tour = createdTours[0];
@@ -487,10 +487,13 @@ public class AddPageTests : BunitContext
         // Assert
         await cut.WaitForStateAsync(() => cut.FindAll(".alert-success").Count > 0, TimeSpan.FromSeconds(2));
 
-        var outcome = await _fakeToursApi.GetTours(CancellationToken.None);
+        var ct = Xunit.TestContext.Current.CancellationToken;
+        var outcome = await _fakeToursApi.GetTourPage(1, TourPageSort.Default, descending: false, ct);
         outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
-        var createdTours = outcome.Value.ShouldNotBeNull();
-        var tour = createdTours[0];
+        var createdTours = outcome.Value.ShouldNotBeNull().Items;
+        var created = createdTours.ShouldHaveSingleItem();
+        var details = await _fakeToursApi.GetTourById(created.Id, ct);
+        var tour = details.Value.ShouldNotBeNull();
 
         tour.IncludedServices.Count.ShouldBe(3);
         tour.IncludedServices.ShouldContain("Service 1");

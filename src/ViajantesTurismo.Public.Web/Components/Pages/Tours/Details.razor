@@ -1,5 +1,6 @@
 @page "/en/group-bike-tours/{Slug}"
 @page "/pt/group-bike-tours/{Slug}"
+@using SharedKernel.BuildingBlocks
 @using System.Text.Json
 @using Microsoft.AspNetCore.Routing
 @using Microsoft.Extensions.Options
@@ -30,7 +31,7 @@ else
 
     <PublicPageHead Title="@GetDocumentTitle()"
                     Description="@GetMetadataDescription()"
-                    Path="@TourPath"
+                    Path="@PublicSiteLinks.PagePath(TourPath, _photoWindow.Page)"
                     ImageUrl="@GetSocialImageUrl(coverImage)" />
     <script type="application/ld+json">@DescribeTour(_tour)</script>
 
@@ -62,6 +63,11 @@ else
         {
             <Section Title="@(Culture.IsPortuguese ? "Galeria" : "Gallery")" HeadingId="tour-gallery">
                 <ImageGrid Images="@TourImageRenditions.Gallery(LinkGenerator, galleryImages)" />
+                <Pager Window="@_photoWindow" PageHref="@PhotoLink"
+                       Label="@(Culture.IsPortuguese ? "Páginas de fotos" : "Tour photo pages")"
+                       PreviousText="@(Culture.IsPortuguese ? "Anterior" : "Previous")"
+                       NextText="@(Culture.IsPortuguese ? "Próxima" : "Next")"
+                       PageLabelFormat="@(Culture.IsPortuguese ? "Página {0}" : "Page {0}")" />
             </Section>
         }
     </article>
@@ -71,6 +77,9 @@ else
     [Parameter]
     public string Slug { get; set; } = string.Empty;
 
+    [SupplyParameterFromQuery(Name = "page")]
+    private string? Page { get; set; }
+
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
@@ -78,6 +87,7 @@ else
     private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
 
     private TourDetailsDto? _tour;
+    private PageWindow _photoWindow;
     private bool _loadFailed;
 
     private string UnavailableTitle => Culture.IsPortuguese ? "Viagem indisponível" : "Tour unavailable";
@@ -85,6 +95,8 @@ else
     private string NotFoundTitle => Culture.IsPortuguese ? "Viagem não encontrada" : "Tour not found";
 
     private string TourPath => $"/group-bike-tours/{Uri.EscapeDataString(_tour?.Slug ?? Slug)}";
+
+    private LinkTarget PhotoLink(int page) => LinkTarget.FromString(Culture.Localize(PublicSiteLinks.PagePath(TourPath, page)));
 
     private MarkupString DescribeTour(TourDetailsDto tour)
     {
@@ -144,10 +156,11 @@ else
         var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
         try
         {
-            var outcome = await CatalogApi.GetPublishedTourBySlug(Slug, requestAborted);
-            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour })
+            var outcome = await CatalogApi.GetPublishedTourDetailsPage(Slug, Page, requestAborted);
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } detail })
             {
-                _tour = tour;
+                _tour = detail.Tour;
+                _photoWindow = PageWindow.Create(detail.Page, detail.PageSize, detail.Total);
                 return;
             }
 

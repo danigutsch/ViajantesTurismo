@@ -16,7 +16,6 @@ internal static class ToursOpenApiAssertions
 
         contract.OpenApiVersion.ShouldBe("3.2.0");
         contract.Title.ShouldBe("ViajantesTurismo.Admin.Api | tours");
-        contract.ListToursOperationId.ShouldBe("GetTours");
         contract.GetTourByIdOperationId.ShouldBe("GetTourById");
         contract.CreateTourSchemaReference.ShouldBe("#/components/schemas/CreateTourDto");
         contract.UpdateTourSchemaReference.ShouldBe("#/components/schemas/UpdateTourDto");

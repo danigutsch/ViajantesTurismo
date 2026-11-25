@@ -7,6 +7,12 @@ internal sealed class FakeBrandingApiClient : IBrandingApiClient
 {
     private BrandingSettingsDto branding = CreateDefaultBranding();
 
+    /// <summary>Holds the public settings response until the test releases it, if set.</summary>
+    public Task? ResponseGate
+    {
+        get; set;
+    }
+
     /// <summary>When true, reads throw <see cref="HttpRequestException"/>.</summary>
     public bool FailRequests
     {
@@ -54,7 +60,7 @@ internal sealed class FakeBrandingApiClient : IBrandingApiClient
         }
 
         ThrowIfBrandingContentShouldFail();
-        return Task.FromResult(branding);
+        return ResponseGate is { } gate ? WaitForResponse(gate, ct) : Task.FromResult(branding);
     }
 
     /// <summary>Same as <see cref="GetPublicSettings"/>.</summary>
@@ -69,6 +75,12 @@ internal sealed class FakeBrandingApiClient : IBrandingApiClient
         ct.ThrowIfCancellationRequested();
         branding = request;
         return Task.FromResult(request);
+    }
+
+    private async Task<BrandingSettingsDto> WaitForResponse(Task gate, CancellationToken ct)
+    {
+        await gate.WaitAsync(ct);
+        return branding;
     }
 
     private void ThrowIfBrandingContentShouldFail()

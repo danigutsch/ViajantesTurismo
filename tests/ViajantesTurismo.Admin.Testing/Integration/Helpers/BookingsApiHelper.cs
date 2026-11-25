@@ -55,68 +55,37 @@ public static class BookingsApiHelper
         return (await response.Content.ReadFromJsonAsync<GetBookingDto>(ct))!;
     }
 
-    public static async Task<HttpResponseMessage> GetAllBookings(
-        this HttpClient client,
-        CancellationToken ct)
+    /// <summary>Reads the booking summaries from the first page.</summary>
+    public static async Task<IReadOnlyList<GetBookingDto>> ReadBookingPage(this HttpClient client, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        return await client.GetAsync(
-            new Uri(RoutePrefix, UriKind.Relative),
-            ct);
-    }
-
-    public static async Task<GetBookingDto[]> GetAllBookingsAndRead(
-        this HttpClient client,
-        CancellationToken ct)
-    {
-        var response = await GetAllBookings(client, ct);
+        using var response = await client.GetAsync(new Uri($"{RoutePrefix}/page", UriKind.Relative), ct);
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto[]>(ct))!;
+        var page = await response.Content.ReadFromJsonAsync<GetBookingPageDto>(ct);
+        return page?.Items ?? throw new InvalidOperationException("The Admin API did not return a booking page.");
     }
 
-    public static async Task<HttpResponseMessage> GetBookingsByTour(
-        this HttpClient client,
-        Guid tourId,
-        CancellationToken ct)
+    /// <summary>Reads the first page of the requested tour's booking history.</summary>
+    public static async Task<IReadOnlyList<GetBookingDto>> ReadTourBookingPage(this HttpClient client, Guid tourId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        return await client.GetAsync(
-            new Uri($"{RoutePrefix}/tour/{tourId}", UriKind.Relative),
-            ct);
-    }
-
-    public static async Task<GetBookingDto[]> GetBookingsByTourAndRead(
-        this HttpClient client,
-        Guid tourId,
-        CancellationToken ct)
-    {
-        var response = await GetBookingsByTour(client, tourId, ct);
+        using var response = await client.GetAsync(new Uri($"{RoutePrefix}/tour/{tourId}/page", UriKind.Relative), ct);
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto[]>(ct))!;
+        var page = await response.Content.ReadFromJsonAsync<GetBookingHistoryPageDto>(ct);
+        return page?.Items ?? throw new InvalidOperationException("The Admin API did not return a booking page.");
     }
 
-    public static async Task<HttpResponseMessage> GetBookingsByCustomer(
-        this HttpClient client,
-        Guid customerId,
-        CancellationToken ct)
+    /// <summary>Reads the first page of the requested customer's booking history.</summary>
+    public static async Task<IReadOnlyList<GetBookingDto>> ReadCustomerBookingPage(this HttpClient client, Guid customerId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        return await client.GetAsync(
-            new Uri($"{RoutePrefix}/customer/{customerId}", UriKind.Relative),
-            ct);
-    }
-
-    public static async Task<GetBookingDto[]> GetBookingsByCustomerAndRead(
-        this HttpClient client,
-        Guid customerId,
-        CancellationToken ct)
-    {
-        var response = await GetBookingsByCustomer(client, customerId, ct);
+        using var response = await client.GetAsync(new Uri($"{RoutePrefix}/customer/{customerId}/page", UriKind.Relative), ct);
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<GetBookingDto[]>(ct))!;
+        var page = await response.Content.ReadFromJsonAsync<GetBookingHistoryPageDto>(ct);
+        return page?.Items ?? throw new InvalidOperationException("The Admin API did not return a booking page.");
     }
 
     public static async Task<HttpResponseMessage> ConfirmBooking(

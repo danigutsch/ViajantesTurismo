@@ -71,7 +71,6 @@ public sealed class BookingHistoryTests : BunitContext
         ascendingDescending.ShouldBeFalse();
         initialMarkup.ShouldNotContain($"/bookings/{rows[0].Id}", StringComparison.Ordinal);
         cut.Markup.ShouldNotContain($"/bookings/{unrelated.Id}", StringComparison.Ordinal);
-        api.GetBookingHistoryCollectionCallCount.ShouldBe(0);
     }
 
     [Fact]

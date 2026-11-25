@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
 using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
@@ -9,54 +10,27 @@ namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 public sealed class ToursApiClientTests
 {
     [Fact]
-    public async Task GetTours_requests_admin_tours_endpoint_and_skips_null_items()
+    public async Task Reads_the_requested_tour_page_and_total()
     {
+        // Arrange
         var requestPath = string.Empty;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
         {
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
-            return CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.TourJson}, null]");
+            return CatalogToursApiClientTestsHelpers.JsonResponse(
+                $$"""{"items":[{{AdminApiClientTestsHelpers.TourJson}}],"total":31}""");
         });
         var sut = new ToursApiClient(httpClient);
 
-        var outcome = await sut.GetTours(TestContext.Current.CancellationToken);
+        // Act
+        var outcome = await sut.GetTourPage(2, TourPageSort.Name, descending: true, TestContext.Current.CancellationToken);
 
-        requestPath.ShouldBe("/api/v1/tours");
+        // Assert
+        requestPath.ShouldBe("/api/v1/tours/page?page=2&sort=Name&descending=True");
         outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
-        var tours = outcome.Value.ShouldNotBeNull();
-        var tour = tours.ShouldHaveSingleItem();
-        tour.Identifier.ShouldBe("TOUR-1");
-    }
-
-    [Fact]
-    public async Task GetTours_stops_when_max_items_is_reached()
-    {
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
-            CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.TourJson}, {AdminApiClientTestsHelpers.TourJson}]"));
-        var sut = new ToursApiClient(httpClient);
-
-        var outcome = await sut.GetTours(TestContext.Current.CancellationToken, maxItems: 1);
-
-        var tours = outcome.Value.ShouldNotBeNull();
-        tours.ShouldHaveSingleItem();
-    }
-
-    [Fact]
-    public async Task GetTours_returns_empty_without_request_when_max_items_is_zero()
-    {
-        var requestCount = 0;
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
-        {
-            requestCount++;
-            return CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.TourJson}]");
-        });
-        var sut = new ToursApiClient(httpClient);
-
-        var outcome = await sut.GetTours(TestContext.Current.CancellationToken, maxItems: 0);
-
-        var tours = outcome.Value.ShouldNotBeNull();
-        tours.ShouldBeEmpty();
-        requestCount.ShouldBe(0);
+        var page = outcome.Value.ShouldNotBeNull();
+        page.Total.ShouldBe(31);
+        page.Items.ShouldHaveSingleItem().Identifier.ShouldBe("TOUR-1");
     }
 
     [Fact]

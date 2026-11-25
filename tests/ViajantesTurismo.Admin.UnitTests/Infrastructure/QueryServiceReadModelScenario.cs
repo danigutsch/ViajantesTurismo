@@ -31,6 +31,7 @@ internal sealed class QueryServiceReadModelScenario : IAsyncDisposable
             .Options);
         readContext = new AdminReadDbContext(new DbContextOptionsBuilder<AdminReadDbContext>()
             .UseInMemoryDatabase(databaseName, root)
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
             .EnableServiceProviderCaching(false)
             .Options);
         protection = new PaymentProtection(new ConfigurationBuilder().Build());

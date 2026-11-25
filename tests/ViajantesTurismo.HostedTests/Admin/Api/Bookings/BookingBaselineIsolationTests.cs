@@ -19,7 +19,7 @@ public sealed class BookingBaselineIsolationTests(ApiFixture fixture) : IClassFi
             cancellationToken);
 
         // Act
-        var bookings = await fixture.Client.GetBookingsByTourAndRead(tour.Id, cancellationToken);
+        var bookings = await fixture.Client.ReadTourBookingPage(tour.Id, cancellationToken);
 
         // Assert
         bookings.ShouldBeEmpty();
