@@ -7,12 +7,14 @@ namespace ViajantesTurismo.ArchitectureTests.Repository;
 [Trait(TestTraitNames.CategoryName, TestTraits.CommandLineCategory)]
 public sealed class DocumentationCiTests
 {
-    [Fact]
-    public void Generated_architecture_pages_name_the_pinned_generator_in_their_refresh_command()
+    [Theory]
+    [InlineData("docs/architecture/generated-diagrams.json")]
+    [InlineData("docs/architecture/mediator-topology.json")]
+    [InlineData("docs/generated-tables-of-contents.json")]
+    public void Generated_documents_name_the_pinned_tool_in_their_refresh_command(string configPath)
     {
         // Arrange
         const string manifestPath = ".config/dotnet-tools.json";
-        const string configPath = "docs/architecture/generated-diagrams.json";
         var root = RepositoryRoot.Locate("ViajantesTurismo.slnx");
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, manifestPath)));
         using var config = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, configPath)));
@@ -75,7 +77,16 @@ public sealed class DocumentationCiTests
         }
 
         lint.ShouldContain("dotnet docs verify --config docs/architecture/generated-diagrams.json", StringComparison.Ordinal);
+        lint.ShouldContain("dotnet docs verify --config docs/generated-tables-of-contents.json", StringComparison.Ordinal);
         lint.ShouldContain("dotnet docs check --config docs/architecture/documentation-conformance.json", StringComparison.Ordinal);
+        const string restoreTopology = "dotnet restore src/ViajantesTurismo.Admin.Api --locked-mode";
+        const string emitTopology = "dotnet build src/ViajantesTurismo.Admin.Api -c Release --no-restore -p:GenerateMediatorTopology=true";
+        const string verifyTopology = "dotnet docs verify --config docs/architecture/mediator-topology.json";
+        lint.ShouldContain(restoreTopology, StringComparison.Ordinal);
+        lint.ShouldContain(emitTopology, StringComparison.Ordinal);
+        lint.ShouldContain(verifyTopology, StringComparison.Ordinal);
+        lint.IndexOf(restoreTopology, StringComparison.Ordinal).ShouldBeLessThan(lint.IndexOf(emitTopology, StringComparison.Ordinal));
+        lint.IndexOf(emitTopology, StringComparison.Ordinal).ShouldBeLessThan(lint.IndexOf(verifyTopology, StringComparison.Ordinal));
         lint.ShouldContain("uses: tj-actions/changed-files@", StringComparison.Ordinal);
         lint.ShouldContain("uses: DavidAnson/markdownlint-cli2-action@", StringComparison.Ordinal);
         slices.ShouldContain("needs.detect-changes.outputs.build_required == 'true'", StringComparison.Ordinal);

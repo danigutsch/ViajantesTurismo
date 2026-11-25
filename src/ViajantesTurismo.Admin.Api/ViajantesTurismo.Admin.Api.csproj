@@ -10,6 +10,14 @@
         <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../ViajantesTurismo.Admin.Contracts.Http/OpenApi/.generated</OpenApiDocumentsDirectory>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(GenerateMediatorTopology)' == 'true'">
+        <SharedKernelMediatorEmitCallGraphJson>true</SharedKernelMediatorEmitCallGraphJson>
+        <IntermediateOutputPath>$(BaseIntermediateOutputPath)mediator-topology-build/$(Configuration)/</IntermediateOutputPath>
+        <OutputPath>bin/mediator-topology/$(Configuration)/</OutputPath>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)mediator-topology</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
+
     <ItemGroup>
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.UnitTests" />
         <InternalsVisibleTo Include="ViajantesTurismo.Admin.ApiServiceTests" />
@@ -34,6 +42,8 @@
         <PackageReference Include="PandaBear.SharedKernel.Mediator.SourceGenerator" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.Results.AspNet" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Analyzers" PrivateAssets="all" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.CodeFixes" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Seo" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" />

@@ -217,6 +217,11 @@ The example uses Bash on Unix. Run tool restore and OpenAPI generation inside th
 using the equivalent fail-fast command sequence in the platform shell on Windows. Generated OpenAPI
 files in the working checkout are ignored and are not copied into the fresh verification clone.
 
+When adopting a candidate that adds or updates the isolated Podman runner, also run the
+[focused Hosted storage validation](../../tests/ViajantesTurismo.HostedTests/README.md#isolated-local-podman-validation)
+on Linux inside `verify-consumer`. Restore the pinned tools and locked dependencies inside the
+verified command so the fresh clone exercises the candidate's runner and storage provider together.
+
 Compatibility records both committed repository revisions and package hashes in
 `TestResults/consumer-compatibility.json` as `passed`, `failed`, or `pending` (uncommitted changes run
 nothing). Validation runs in a temporary local clone of the recorded application commit with an isolated

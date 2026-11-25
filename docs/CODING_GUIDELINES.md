@@ -389,6 +389,17 @@ API projects should additionally enable the Request Delegate Generator:
 
 **Note:** `IsAotCompatible=true` implicitly sets `IsTrimmable=true`, enabling both trim and AOT analyzers.
 
+### Runtime endpoint binding
+
+Prefer handler signatures and mapping calls that the Request Delegate Generator can bind at compile time.
+Admin and Catalog build with the SharedKernel `SKASPNET001` analyzer. It checks the effective framework
+mapping method after source generation and reports the missing annotations on a runtime-bound mapping.
+
+If the endpoint needs runtime binding, keep it in a named mapping method and record the reason in the
+review. Use the companion code fix to add the matching `RequiresDynamicCode` and
+`RequiresUnreferencedCode` attributes. Check that the method and its callers support the resulting
+trimming and Native AOT constraints before accepting the fallback.
+
 ### JSON Serialization
 
 Use source-generated JSON serializers instead of reflection-based serialization:

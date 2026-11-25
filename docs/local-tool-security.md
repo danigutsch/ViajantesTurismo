@@ -237,6 +237,13 @@ Pre-pull through the pinned tool. It selects the sole installed engine; set
 dotnet browsermcp prepare
 ```
 
+If the browser launcher fails, quit OpenCode and set `mcp.playwright.enabled` to `false` in
+your local copy of `opencode.json`. Restart OpenCode and use `opencode mcp list` to confirm
+Playwright is disabled. This setting uses the repository's OpenCode V1 configuration and
+keeps Aspire available. To resume browser work, use a verified repository revision, restore
+its local tools, and repeat the launcher checks with Playwright enabled.
+[OpenCode V1 MCP configuration](https://opencode.ai/v1/docs/mcp-servers/)
+
 Remove the pinned image from the selected local engine cache:
 
 ```bash

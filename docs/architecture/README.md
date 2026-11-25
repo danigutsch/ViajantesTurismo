@@ -33,6 +33,9 @@ bounded-context infrastructure unless ADR-027's split threshold justifies a reus
 For the generated project reference map, bounded-context ownership, SharedKernel modules, and allowed
 or forbidden dependency directions, see [Architecture boundaries and dependency flow](boundaries-and-dependencies.md).
 
+The [Admin mediator topology](generated-mediator-topology.md) traces generated dispatch through the
+ordered pipeline and handlers.
+
 ## Admin-to-Catalog content workflow
 
 See [Architecture flows](FLOWS.md) for Admin workflows, the implemented Admin-to-Catalog transport,

@@ -1,0 +1,13 @@
+{
+  "docsPath": "docs",
+  "generatorName": "sharedkernel-docs",
+  "blocks": [
+    {
+      "name": "documentation-governance-toc",
+      "targetPath": "DOCUMENTATION_GOVERNANCE.md",
+      "kind": "markdown-toc",
+      "minHeadingLevel": 2,
+      "maxHeadingLevel": 2
+    }
+  ]
+}
