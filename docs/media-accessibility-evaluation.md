@@ -30,13 +30,12 @@ review; never overwrite the baseline simply to accept a failing candidate. A pas
 approves or publishes generated accessibility text: ordinary human review still applies.
 
 The rubric follows [W3C informative-image guidance](https://www.w3.org/WAI/tutorials/images/informative/).
-Provider/prompt comparisons must use identical fixture hashes and rubric versions. The current
-SharedKernel generator returns text only: actual routed model, prompt, token usage and cost are not
-exposed. Capture those from the provider's controlled evaluation records; do not label guessed values
-as measured provenance. Runtime traces distinguish the configured LiteLLM adapter and requested model from the actual model
-(which remains `unreported`). The prompt implementation version is the immutable SharedKernel AI
-artifact version; the configuration fingerprint covers non-secret model, completion path, and endpoint
-origin. It excludes credentials. These fields do not claim knowledge of proxy routing or provider usage.
+Provider and prompt comparisons must use identical fixture hashes and rubric versions. Capture the
+actual routed model and prompt from the provider's controlled evaluation records. SharedKernel reports
+available provider token counts and cost alongside the generated text. Runtime traces record the
+configured LiteLLM adapter and requested model. The actual model remains `unreported`. The prompt
+implementation version comes from the immutable SharedKernel AI artifact. The configuration fingerprint
+covers the non-secret model, completion path, and endpoint origin.
 
 ## Local Ollama evaluation
 
@@ -92,5 +91,10 @@ Generation stores a per-language pending draft timestamp using the injected `Tim
 review clears only that language's pending timestamp. Queue age is measured after persistence using
 the prior draft timestamp; clock skew clamps negative age to zero. Drafts without timestamps
 do not report an age. The nullable timestamp migration does not invent dates for existing rows.
-Token and cost panels are unavailable because the shared provider
-contract supplies no measured usage. See [.NET metrics guidance](https://learn.microsoft.com/dotnet/core/diagnostics/metrics-instrumentation).
+The token and cost panels use provider-reported measurements from completed generation responses,
+including responses followed by a failed draft write. Token counts carry only the bounded input or
+output dimension. Cost has no measurement tags and uses US dollars. The cost panel estimates
+the increase from scraped counter samples in the selected period. Charges accumulated before
+the first sample are part of its baseline. The panel stays empty until a cost series has at
+least two samples in the interval. A numeric zero denotes no observed increase. Use provider
+invoices for billing reconciliation. [Prometheus counter increase](https://github.com/prometheus/prometheus/blob/v3.5.0/docs/querying/functions.md#increase)

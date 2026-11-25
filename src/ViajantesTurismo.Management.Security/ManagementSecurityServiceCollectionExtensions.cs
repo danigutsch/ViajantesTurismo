@@ -8,6 +8,9 @@ namespace ViajantesTurismo.Management.Security;
 /// </summary>
 public static class ManagementSecurityServiceCollectionExtensions
 {
+    private const string SecurityDataSourceName = "management-security";
+    private const string TicketCacheDataSourceName = "management-ticket-cache";
+
     /// <summary>
     /// Adds Data Protection key persistence and server-side Management ticket storage.
     /// </summary>
@@ -19,10 +22,12 @@ public static class ManagementSecurityServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
-        services.AddDbContext<ManagementSecurityDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<ManagementSecurityDbContext>(options => options.UseNpgsql(connectionString,
+            static npgsql => npgsql.ConfigureDataSource(static dataSource => dataSource.Name = SecurityDataSourceName)));
         services.AddDistributedPostgresCache(options =>
         {
             options.ConnectionString = connectionString;
+            options.ConfigureDataSourceBuilder = static dataSource => dataSource.Name = TicketCacheDataSourceName;
             options.SchemaName = ManagementSecurityDefaults.SchemaName;
             options.TableName = ManagementSecurityDefaults.TicketTableName;
             options.CreateIfNotExists = false;

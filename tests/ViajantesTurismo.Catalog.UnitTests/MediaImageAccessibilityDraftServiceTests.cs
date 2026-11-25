@@ -1,9 +1,12 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using System.Globalization;
 using SharedKernel.AI;
 using SharedKernel.Testing.AI;
 using SharedKernel.BuildingBlocks;
 using SharedKernel.Testing;
+using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
@@ -15,6 +18,78 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 [Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaImageAccessibilityDraftServiceTests
 {
+    [Theory]
+    [InlineData(false, null, null, null)]
+    [InlineData(true, 12L, 7L, "0.0045")]
+    [InlineData(true, 0L, null, null)]
+    [InlineData(true, null, null, "0")]
+    [InlineData(true, -1L, -2L, "-1")]
+    public async Task Provider_usage_is_counted_with_only_bounded_token_dimensions(bool hasUsage, long? inputTokens, long? outputTokens, string? reportedCost)
+    {
+        // Arrange
+        var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
+        var imageStore = new InMemoryPublicMediaImageStore(image);
+        var objects = MediaObjectStoreTestFactory.Create();
+        objects.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
+        decimal? cost = reportedCost is null ? null : decimal.Parse(reportedCost, CultureInfo.InvariantCulture);
+        var generation = new ImageTextGenerationResult("Private generated text", null)
+        {
+            Usage = hasUsage ? new ImageTextGenerationUsage(inputTokens, outputTokens, cost) : null
+        };
+        var service = new MediaImageAccessibilityDraftService(imageStore, objects, new TestImageTextGenerator(generation));
+
+        var tokens = new ConcurrentQueue<(long Value, KeyValuePair<string, object?>[] Tags)>();
+        var costs = new ConcurrentQueue<(double Value, KeyValuePair<string, object?>[] Tags)>();
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = static (instrument, owner) =>
+            {
+                if (instrument.Meter.Name == CatalogTelemetry.Name
+                    && instrument.Name is "catalog.media_accessibility.generation.tokens" or "catalog.media_accessibility.generation.cost_usd")
+                {
+                    owner.EnableMeasurementEvents(instrument);
+                }
+            }
+        };
+        listener.SetMeasurementEventCallback<long>((_, value, tags, _) => tokens.Enqueue((value, tags.ToArray())));
+        listener.SetMeasurementEventCallback<double>((_, value, tags, _) => costs.Enqueue((value, tags.ToArray())));
+        listener.Start();
+
+        // Act
+        var result = await service.GenerateDraft(image.Id,
+            new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.EnglishUnitedStates, Context = "Private prompt" },
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var expectedTokens = new List<(long Value, object Kind)>();
+        if (inputTokens is { } input && input >= 0)
+        {
+            expectedTokens.Add((input, "input"));
+        }
+        if (outputTokens is { } output && output >= 0)
+        {
+            expectedTokens.Add((output, "output"));
+        }
+        var actualTokens = tokens.Select(static measurement =>
+        {
+            var tag = measurement.Tags.ShouldHaveSingleItem();
+            tag.Key.ShouldBe("gen_ai.token.type");
+            return (measurement.Value, tag.Value.ShouldNotBeNull());
+        });
+        actualTokens.ShouldBe(expectedTokens);
+        if (cost is { } usd && usd >= 0)
+        {
+            var (value, tags) = costs.ShouldHaveSingleItem();
+            value.ShouldBe((double)usd);
+            tags.ShouldBeEmpty();
+        }
+        else
+        {
+            costs.ShouldBeEmpty();
+        }
+    }
+
     [Fact]
     public async Task Generated_draft_records_a_persistable_pending_timestamp()
     {

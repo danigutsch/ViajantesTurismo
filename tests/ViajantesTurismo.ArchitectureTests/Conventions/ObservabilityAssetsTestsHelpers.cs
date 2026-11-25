@@ -10,7 +10,8 @@ internal static partial class ObservabilityAssetsTestsHelpers
     public static readonly string[] ExpectedDashboards =
     [
         "branding-cache", "catalog-pipeline", "collector-gateway", "document-operations", "event-store", "http-platform", "logs",
-        "media-accessibility", "mediator", "operation-health", "platform-smoke", "postgresql-observability", "runtime", "traces"
+        "media-accessibility", "mediator", "npgsql-client-pools", "operation-health", "platform-smoke", "polling-liveness",
+        "postgresql-observability", "postgresql-server-health", "runtime", "traces"
     ];
 
     /// <summary>Prefixes of platform metrics that the catalog does not enumerate.</summary>
@@ -30,7 +31,7 @@ internal static partial class ObservabilityAssetsTestsHelpers
         "catalog-media-upload-latency", "collector-export-failing",
         "collector-refusing-telemetry", "collector-self-telemetry-down", "customer-import-failures",
         "customer-import-latency", "document-operation-failures", "http-5xx-ratio", "management-session-ticket-failures",
-        "migration-initialization-failed", "unhandled-exceptions"
+        "migration-initialization-failed", "polling-batch-stalled", "unhandled-exceptions"
     ];
 
     /// <summary>Datasource uids an alert rule query may use.</summary>

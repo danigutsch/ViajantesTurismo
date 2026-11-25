@@ -19,7 +19,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**Purpose**\n\nTrack customer imports, Catalog media intake, and Management Web session ticket failures.\n\n**Audience**\n\nOperators and developers supporting the management workflows.\n\n**Decision supported**\n\nDistinguish input rejections from dependency failures, identify slow stages, and see whether session failures came from protection or cache operations.\n"
+        "content": "**Purpose**\n\nTrack customer imports, Catalog media intake, malware scans, and Management Web session ticket failures.\n\n**Audience**\n\nOperators and developers supporting the management workflows.\n\n**Decision supported**\n\nDistinguish input rejections from dependency failures, find services with slow or failing scans, and see whether session failures came from protection or cache operations.\n"
       }
     },
     {
@@ -206,7 +206,7 @@
       "id": 6,
       "type": "timeseries",
       "title": "Session ticket failures by operation",
-      "description": "bff_session_ticket_failures_total by operation in the last ten minutes. Are ticket-protection errors or cache failures disrupting Management Web sessions?",
+      "description": "sharedkernel_bff_session_ticket_failures_total by operation in the last ten minutes. Are ticket-protection errors or cache failures disrupting Management Web sessions?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -241,8 +241,98 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (operation) ((increase(bff_session_ticket_failures_total[10m]) > 0) or (bff_session_ticket_failures_total unless bff_session_ticket_failures_total offset 10m))",
-          "legendFormat": "{{operation}}",
+          "expr": "sum by (sharedkernel_bff_session_ticket_operation) ((increase(sharedkernel_bff_session_ticket_failures_total[10m]) > 0) or (sharedkernel_bff_session_ticket_failures_total unless sharedkernel_bff_session_ticket_failures_total offset 10m))",
+          "legendFormat": "{{sharedkernel_bff_session_ticket_operation}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Scanner outcomes by service",
+      "description": "sharedkernel_malware_scan_scans_total in scans per second. Which services are seeing clean scans, malware rejections, or scanner errors?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (exported_job, sharedkernel_malware_scan_outcome) (rate(sharedkernel_malware_scan_scans_total[$__rate_interval]))",
+          "legendFormat": "{{exported_job}} · {{sharedkernel_malware_scan_outcome}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Scanner p95 by service",
+      "description": "sharedkernel_malware_scan_duration_seconds in seconds. Which services are experiencing slow scans?",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(sharedkernel_malware_scan_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "{{exported_job}}",
           "refId": "A"
         }
       ]

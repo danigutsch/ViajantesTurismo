@@ -83,9 +83,8 @@ The alert can also clear as the number of observations falls below the minimum.
 
 ## Management session ticket failures
 
-**Availability.** Live data requires ViajantesTurismo to adopt the separately approved SharedKernel
-BFF producer. Until adoption, the provisioned panel permits an empty result and the alert treats
-the absent series as OK.
+**Availability.** The panel permits an empty result before the ticket store records a failure.
+Grafana treats an absent series as OK.
 
 **What it means.** The Management Web ticket store could not protect or read a stored cookie
 ticket, or its backing cache operation failed. A cache miss and normal expiry do not raise this
@@ -101,13 +100,15 @@ sign-in and an authenticated request. The alert clears after ten minutes without
 
 ## Collector refusing telemetry
 
-**What it means.** A receiver refused spans, metric points, or log records. Privacy processors use
-`error_mode: propagate`, so a processor expression failure rejects the payload instead of forwarding it
-unsanitized. Telemetry is lost; nothing leaked.
+**What it means.** A receiver refused spans, metric points, or log records. A refusal in any signal
+counts toward the alert, including when the other signal counters are absent. A privacy processor
+expression failure rejects the affected payload under `error_mode: propagate`.
 
 **First checks.** Open the `collector-gateway` dashboard, then the Collector container logs for the
-processor error. Check whether a recent instrumentation change introduced an attribute the transform
-statements cannot handle.
+processor error. Confirm which signal and export routes are affected. Check whether a recent
+instrumentation change introduced an attribute the transform statements cannot handle. Review
+[the gateway routing boundary](OPEN_TELEMETRY.md#gateway-operator-responsibilities) when assessing
+the affected scope.
 
 **Rollback.** Revert the instrumentation or the `observability/otel-collector/privacy.yaml` change.
 
@@ -192,6 +193,38 @@ branding until the bounded freshness window expires.
 **First checks.** `branding-cache` for the source revision per instance and the invalidation outcomes.
 
 **Rollback.** Restart the affected instance to reload Branding settings.
+
+## Polling batch stalled
+
+**What it means.** A tracked polling batch stayed above its age threshold for four consecutive
+minutes while its reported age advanced within each three-minute window. The freshness check
+assumes the default one-minute metric export cadence. An idle worker reports zero, and a cached
+reading drops out once it has stopped advancing for the freshness window.
+
+The initial thresholds reflect the size and dependencies of one batch. The Catalog projection
+reads up to 100 events per batch and normally polls five seconds after a cycle drains. Media
+reconciliation lists references and objects before deleting eligible orphans. Branding
+reclamation runs hourly and deletes up to 128 unreferenced logos per batch. Admin retention
+workers run daily and each persistence batch selects at most 500 candidates. Fifteen minutes
+allows for object-store work and database transactions before investigation.
+
+| Worker | Batch age threshold | First check |
+| --- | --- | --- |
+| `catalog-projections` | 2 minutes | Catalog DB and event store health, then the checkpoint and projection backlog in Catalog Pipeline and Event Store |
+| `catalog-media-object-reconciliation` | 15 minutes | Object-store listing and delete latency, inventory size, then Admin and Catalog dependency health |
+| `branding-logo-reclamation` | 15 minutes | Branding PostgreSQL locks or timeouts, then the reclamation worker log |
+| `admin-document-draft-retention` | 15 minutes | Admin database locks or timeouts on draft retention, then the retention worker log |
+| `admin-document-audit-retention` | 15 minutes | Admin database locks or timeouts on audit retention, then the retention worker log |
+| `admin-document-idempotency-retention` | 15 minutes | Admin database locks or timeouts on idempotency retention, then the retention worker log |
+
+**First checks.** Open Advancing batch age and Completed cycles in 30 hours on
+Polling Liveness. Check the reported worker and its most recent successful cycle. A missing age
+series can accompany worker shutdown or loss of metric exports. Check host health and the Collector
+before diagnosing a missing signal.
+
+**Recovery.** Fix the dependency or blocking work, then let the worker continue or roll the affected
+host if the batch cannot finish. Verify the age returns to zero between batches and successful
+cycles resume. Keep document disposition holds in place during retention recovery.
 
 ## Document operation failures
 

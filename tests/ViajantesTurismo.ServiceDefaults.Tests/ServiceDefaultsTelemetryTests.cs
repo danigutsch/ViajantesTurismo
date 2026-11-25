@@ -47,7 +47,8 @@ public sealed class ServiceDefaultsTelemetryTests
     [InlineData("ViajantesTurismo.Catalog", "catalog.integration_event")]
     [InlineData("ViajantesTurismo.Branding", "branding.revision")]
     [InlineData("Npgsql", "db.client.connection.count")]
-    public void Host_defaults_export_the_application_and_npgsql_meters(string meterName, string instrumentName)
+    [InlineData("SharedKernel.AspNetCore.Authentication.Bff", "sharedkernel.bff.session_ticket.failures")]
+    public void Host_defaults_export_registered_meters(string meterName, string instrumentName)
     {
         // Arrange
         var exportedMetricNames = new ConcurrentQueue<string>();

@@ -1,0 +1,100 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose**\n\nCompare connection use and capacity on the local PostgreSQL server.\n\n**Audience**\n\nOperators investigating connection pressure.\n\n**Decision supported**\n\nWhether to investigate server capacity or an individual client pool."
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Current connections across all databases, including the monitor, compared with max_connections. Reserved slots can reduce the capacity available to ordinary clients. No series means the optional receiver is disabled or has no sample.",
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "max(postgresql_server_connections_used)",
+          "legendFormat": "Connections in use",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "max(postgresql_server_connections_limit)",
+          "legendFormat": "Configured limit",
+          "refId": "B"
+        }
+      ],
+      "title": "Server connections in use and configured limit",
+      "type": "timeseries",
+      "verify": "idle-ok"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 41,
+  "tags": [
+    "postgresql",
+    "observability"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PostgreSQL Server Health",
+  "uid": "postgresql-server-health",
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,0 +1,136 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose**\n\nSee advancing or idle polling batches and completed cycles.\n\n**Audience**\n\nOperators of Catalog projections, media reconciliation, Branding logo reclamation, and Admin retention.\n\n**Decision supported**\n\nIdentify the worker whose current batch needs investigation, even during its first cycle.\n"
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Advancing batch age",
+      "description": "Elapsed seconds of the longest advancing batch per worker. Idle workers report zero. A fixed cached reading drops out as its earlier increases leave the three-minute window.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "max by (sharedkernel_scheduling_service_name) ((sharedkernel_scheduling_polling_batch_active_duration_seconds{sharedkernel_scheduling_service_name=~\"catalog-projections|catalog-media-object-reconciliation|branding-logo-reclamation|admin-document-(draft|audit|idempotency)-retention\"} and (delta(sharedkernel_scheduling_polling_batch_active_duration_seconds[3m]) > 0)) or (sharedkernel_scheduling_polling_batch_active_duration_seconds{sharedkernel_scheduling_service_name=~\"catalog-projections|catalog-media-object-reconciliation|branding-logo-reclamation|admin-document-(draft|audit|idempotency)-retention\"} == 0))",
+          "legendFormat": "{{sharedkernel_scheduling_service_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Completed cycles in 30 hours",
+      "description": "Observed increases in completed cycle counts by worker and outcome. The window includes the daily Admin retention cadence.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (sharedkernel_scheduling_service_name, sharedkernel_scheduling_outcome) (increase(sharedkernel_scheduling_polling_cycle_duration_seconds_count{sharedkernel_scheduling_service_name=~\"catalog-projections|catalog-media-object-reconciliation|branding-logo-reclamation|admin-document-(draft|audit|idempotency)-retention\"}[30h]))",
+          "legendFormat": "{{sharedkernel_scheduling_service_name}} / {{sharedkernel_scheduling_outcome}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [
+    "admin",
+    "catalog",
+    "operations"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Polling Liveness",
+  "uid": "polling-liveness",
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using SharedKernel.AI;
 using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
@@ -8,9 +9,13 @@ namespace ViajantesTurismo.Catalog.Application.Media;
 /// <summary>Records privacy-safe generation and human review measurements through the Catalog meter.</summary>
 public static class MediaAccessibilityTelemetry
 {
+    private const string TokenTypeTag = "gen_ai.token.type";
+
     private static readonly Counter<long> Attempts = CatalogTelemetry.Meter.CreateCounter<long>("catalog.media_accessibility.generation.attempts", "{attempt}");
     private static readonly Counter<long> Completions = CatalogTelemetry.Meter.CreateCounter<long>("catalog.media_accessibility.generation.completed", "{attempt}");
     private static readonly Histogram<double> Duration = CatalogTelemetry.Meter.CreateHistogram<double>("catalog.media_accessibility.generation.duration", "s");
+    private static readonly Counter<long> Tokens = CatalogTelemetry.Meter.CreateCounter<long>("catalog.media_accessibility.generation.tokens", "{token}");
+    private static readonly Counter<double> CostUsd = CatalogTelemetry.Meter.CreateCounter<double>("catalog.media_accessibility.generation.cost_usd", "{USD}");
     private static readonly Counter<long> Evaluations = CatalogTelemetry.Meter.CreateCounter<long>("catalog.media_accessibility.evaluation.cases", "{case}");
     private static readonly Counter<long> PublicationBlockers = CatalogTelemetry.Meter.CreateCounter<long>("catalog.media_accessibility.publication.blocked", "{image}");
     private static readonly Counter<long> Reviews = CatalogTelemetry.Meter.CreateCounter<long>("catalog.media_accessibility.review.decisions", "{decision}");
@@ -59,6 +64,23 @@ public static class MediaAccessibilityTelemetry
     internal static void RecordAttempt(ContentCulture? language)
     {
         Attempts.Add(1, Tags("started", language));
+    }
+
+    /// <summary>Records each available provider measurement with no request or response text.</summary>
+    internal static void RecordUsage(ImageTextGenerationUsage? usage)
+    {
+        if (usage?.InputTokens is { } input && input >= 0)
+        {
+            Tokens.Add(input, new KeyValuePair<string, object?>(TokenTypeTag, "input"));
+        }
+        if (usage?.OutputTokens is { } output && output >= 0)
+        {
+            Tokens.Add(output, new KeyValuePair<string, object?>(TokenTypeTag, "output"));
+        }
+        if (usage?.CostUsd is { } cost && cost >= 0)
+        {
+            CostUsd.Add((double)cost);
+        }
     }
 
     /// <summary>Records an attempt outcome and its duration since the given <see cref="Stopwatch"/> timestamp.</summary>

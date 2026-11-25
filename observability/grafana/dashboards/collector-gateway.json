@@ -19,7 +19,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**Purpose:** Shows whether the privacy-gateway Collector is receiving, sanitizing, and forwarding telemetry. The gateway is fail-closed (error_mode: propagate), so a rejected payload means lost telemetry rather than leaked data.\n\n**Audience:** Developers and operators of the telemetry pipeline.\n\n**Decision supported:** Whether missing telemetry is caused by gateway rejection or exporter failure, and whether privacy processors are failing.\n"
+        "content": "**Purpose:** Shows whether the privacy-gateway Collector is receiving, sanitizing, and forwarding telemetry. A privacy processor expression error rejects the affected payload (error_mode: propagate).\n\n**Audience:** Developers and operators of the telemetry pipeline.\n\n**Decision supported:** Whether missing telemetry is caused by gateway rejection or exporter failure. Check the processor logs and configured export routes to establish the cause and affected scope.\n"
       }
     },
     {

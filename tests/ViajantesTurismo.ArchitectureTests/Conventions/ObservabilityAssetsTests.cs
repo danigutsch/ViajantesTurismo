@@ -113,9 +113,11 @@ public sealed class ObservabilityAssetsTests
     }
 
     [Theory]
-    [InlineData("Mediator spans", new[] { "time", "name", "duration", "mediator.request.name", "mediator.outcome" })]
-    [InlineData("Failed mediator results", new[] { "time", "name", "duration" })]
-    public void Mediator_trace_panels_display_only_bounded_span_fields(string title, string[] expectedFields)
+    [InlineData("Mediator spans", "SharedKernel.Mediator", new[] { "time", "name", "duration", "mediator.request.name", "mediator.outcome" })]
+    [InlineData("Failed mediator results", "SharedKernel.Mediator", new[] { "time", "name", "duration" })]
+    [InlineData("Malware scan spans", "SharedKernel.MalwareScanning.ClamAv", new[] { "time", "name", "duration", "sharedkernel.malware_scan.outcome" })]
+    [InlineData("Object storage spans", "SharedKernel.ObjectStorage.S3", new[] { "time", "name", "duration" })]
+    public void Scoped_trace_panels_display_only_bounded_span_fields(string title, string activitySource, string[] expectedFields)
     {
         // Arrange
         var dashboard = LoadDashboards()["traces"];
@@ -126,12 +128,16 @@ public sealed class ObservabilityAssetsTests
             .ShouldHaveSingleItem();
         var transformation = panel.GetProperty("transformations").EnumerateArray().ShouldHaveSingleItem();
         var target = panel.GetProperty("targets").EnumerateArray().ShouldHaveSingleItem();
+        var query = target.GetProperty("query").GetString();
         var displayedFields = transformation.GetProperty("options").GetProperty("include").GetProperty("names")
             .EnumerateArray().Select(static field => field.GetString()).ToArray();
 
         // Assert
         transformation.GetProperty("id").GetString().ShouldBe("filterFieldsByName");
         target.GetProperty("tableType").GetString().ShouldBe("spans");
+        query.ShouldNotBeNull();
+        query.StartsWith($"{{ instrumentation:name = \"{activitySource}\"", StringComparison.Ordinal).ShouldBeTrue();
+        target.GetProperty("expr").GetString().ShouldBe(query);
         displayedFields.ShouldBe(expectedFields);
     }
 
@@ -164,6 +170,26 @@ public sealed class ObservabilityAssetsTests
         }
 
         ForbiddenGrouping().IsMatch(rules).ShouldBe(false);
+    }
+
+    [Fact]
+    public void Collector_refusal_alert_counts_each_signal_when_other_signals_are_absent()
+    {
+        // Arrange
+        var rules = File.ReadAllText(Path.Combine(AlertingRoot(), "rules.yaml"));
+        var collectorRule = RuleSeparator().Split(rules)
+            .ShouldHaveSingleItem(rule => rule.StartsWith("collector-refusing-telemetry\n", StringComparison.Ordinal));
+
+        // Act
+        var terms = AlertExpressions(collectorRule).ShouldHaveSingleItem().Split(" + ", StringSplitOptions.None);
+
+        // Assert
+        terms.ShouldBe(
+        [
+            "(sum(increase(otelcol_receiver_refused_spans_total[5m])) or vector(0))",
+            "(sum(increase(otelcol_receiver_refused_metric_points_total[5m])) or vector(0))",
+            "(sum(increase(otelcol_receiver_refused_log_records_total[5m])) or vector(0))",
+        ]);
     }
 
     [Fact]
@@ -269,5 +295,21 @@ public sealed class ObservabilityAssetsTests
 
         // Assert
         metricNames.ShouldContain(prometheusName);
+    }
+
+    [Theory]
+    [InlineData("Scanner outcomes by service", "sharedkernel_malware_scan_scans_total")]
+    [InlineData("Scanner p95 by service", "sharedkernel_malware_scan_duration_seconds_bucket")]
+    public void Operation_health_panels_query_the_pinned_scanner_metrics(string title, string series)
+    {
+        // Arrange
+        var dashboard = DashboardTargets().Where(target => target.Dashboard == "operation-health");
+
+        // Act
+        var expression = dashboard.ShouldHaveSingleItem(target => target.Panel == title).Expression;
+        var metricNames = MetricNames(expression).ToArray();
+
+        // Assert
+        metricNames.ShouldBe([series]);
     }
 }

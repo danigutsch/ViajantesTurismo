@@ -55,7 +55,7 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "sum(increase(otelcol_receiver_refused_spans_total[5m])) + sum(increase(otelcol_receiver_refused_metric_points_total[5m])) + sum(increase(otelcol_receiver_refused_log_records_total[5m]))"
+              expr: "(sum(increase(otelcol_receiver_refused_spans_total[5m])) or vector(0)) + (sum(increase(otelcol_receiver_refused_metric_points_total[5m])) or vector(0)) + (sum(increase(otelcol_receiver_refused_log_records_total[5m])) or vector(0))"
               instant: true
               refId: A
           - refId: B
@@ -80,7 +80,7 @@ groups:
         for: 1m
         annotations:
           summary: Collector is refusing telemetry
-          description: The privacy gateway refused telemetry. Because privacy processors fail closed, this means telemetry is being lost rather than leaked.
+          description: A Collector receiver refused spans, metric points, or log records. Check the processor logs and export routes to establish the cause and affected scope.
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#collector-refusing-telemetry
         labels:
           severity: critical
@@ -138,7 +138,7 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "min(up{job=\"otel-collector-internal\"})"
+              expr: "min(up{job=\"otel-collector-internal\"}) or vector(0)"
               instant: true
               refId: A
           - refId: B
@@ -489,7 +489,7 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "sum by (operation) ((increase(bff_session_ticket_failures_total[10m]) > 0) or (bff_session_ticket_failures_total unless bff_session_ticket_failures_total offset 10m))"
+              expr: "sum by (sharedkernel_bff_session_ticket_operation) ((increase(sharedkernel_bff_session_ticket_failures_total[10m]) > 0) or (sharedkernel_bff_session_ticket_failures_total unless sharedkernel_bff_session_ticket_failures_total offset 10m))"
               instant: true
               refId: A
           - refId: B
@@ -555,5 +555,49 @@ groups:
           summary: Admin document operation failed
           description: An Admin document request or a scheduled retention batch reported an operational failure.
           runbook: docs/OBSERVABILITY_RUNBOOKS.md#document-operation-failures
+        labels:
+          severity: warning
+  - orgId: 1
+    name: Polling liveness
+    folder: ViajantesTurismo
+    interval: 1m
+    rules:
+      - uid: polling-batch-stalled
+        title: Polling batch age exceeds the investigation threshold
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: Prometheus
+            model:
+              expr: "max by (sharedkernel_scheduling_service_name) (((sharedkernel_scheduling_polling_batch_active_duration_seconds{sharedkernel_scheduling_service_name=\"catalog-projections\"} > 120) or (sharedkernel_scheduling_polling_batch_active_duration_seconds{sharedkernel_scheduling_service_name=~\"catalog-media-object-reconciliation|branding-logo-reclamation|admin-document-(draft|audit|idempotency)-retention\"} > 900)) and (delta(sharedkernel_scheduling_polling_batch_active_duration_seconds[3m]) > 0))"
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              expression: A
+              reducer: last
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+              refId: C
+        noDataState: OK
+        execErrState: Error
+        for: 4m
+        annotations:
+          summary: Polling batch age exceeds the investigation threshold
+          description: For four consecutive minutes, an advancing batch exceeded two minutes for Catalog projections or fifteen minutes for media reconciliation, Branding reclamation, or Admin retention.
+          runbook: docs/OBSERVABILITY_RUNBOOKS.md#polling-batch-stalled
         labels:
           severity: warning
