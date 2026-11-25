@@ -1,5 +1,6 @@
 using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Api;
+using ViajantesTurismo.Catalog.Application.Gallery;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
@@ -106,7 +107,7 @@ public sealed class PublicCatalogProxyRateLimitTests
         }
 
         // Act
-        foreach (var path in new[] { "/en/", "/en/group-bike-tours", "/pt/group-bike-tours/quota-gallery", "/pt/gallery", "/sitemap.xml", "/theme.css" })
+        foreach (var path in new[] { "/en/", "/en/group-bike-tours", "/pt/group-bike-tours/quota-gallery", "/pt/gallery", "/pt/gallery/quota-gallery", "/sitemap.xml", "/theme.css" })
         {
             using var response = await visitor.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
 
@@ -116,7 +117,7 @@ public sealed class PublicCatalogProxyRateLimitTests
     }
 
     [Fact]
-    public async Task A_legitimate_gallery_can_render_and_stream_more_than_sixty_images()
+    public async Task A_legitimate_gallery_can_page_through_and_stream_more_than_sixty_images()
     {
         // Arrange
         await using var proxy = new PublicCatalogProxyTestScope();
@@ -130,14 +131,22 @@ public sealed class PublicCatalogProxyRateLimitTests
         // Assert
         gallery.StatusCode.ShouldBe(HttpStatusCode.OK);
         html.ShouldContain("A full gallery", StringComparison.Ordinal);
-        foreach (var imageId in images)
+        foreach (var (photos, offset) in images.Chunk(CatalogGalleryProjection.PageSize).Select((photos, offset) => (photos, offset)))
         {
-            using var response = await visitor.GetAsync(
-                new Uri($"/catalog/media/{imageId}/640/jpg", UriKind.Relative), TestContext.Current.CancellationToken);
-            var content = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
-            response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
-            content.ShouldBe("gallery-media"u8.ToArray());
+            var path = offset == 0 ? "/en/gallery/quota-gallery" : $"/en/gallery/quota-gallery?page={offset + 1}";
+            using var page = await visitor.GetAsync(new Uri(path, UriKind.Relative), TestContext.Current.CancellationToken);
+            page.StatusCode.ShouldBe(HttpStatusCode.OK);
+            var pageHtml = await page.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            foreach (var imageId in photos)
+            {
+                var imagePath = $"/catalog/media/{imageId}/640/jpg";
+                pageHtml.ShouldContain($"src=\"{imagePath}\"", StringComparison.Ordinal);
+                using var response = await visitor.GetAsync(new Uri(imagePath, UriKind.Relative), TestContext.Current.CancellationToken);
+                var content = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
+                response.StatusCode.ShouldBe(HttpStatusCode.OK);
+                response.Content.Headers.ContentType.ShouldNotBeNull().MediaType.ShouldBe("image/jpeg");
+                content.ShouldBe("gallery-media"u8.ToArray());
+            }
         }
     }
 

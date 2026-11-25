@@ -10,6 +10,7 @@
     <ItemGroup>
         <PackageReference Include="PandaBear.SharedKernel.Results" />
         <PackageReference Include="PandaBear.SharedKernel.EventSourcing" />
+        <PackageReference Include="PandaBear.SharedKernel.Galleries" />
         <PackageReference Include="PandaBear.SharedKernel.Domain" />
         <PackageReference Include="PandaBear.SharedKernel.Domain.SourceGenerator" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.Domain.Analyzers" PrivateAssets="all" />

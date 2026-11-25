@@ -13,6 +13,7 @@ using SharedKernel.Testing.AspNetCore;
 using SharedKernel.Testing.ObjectStorage;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.Api;
+using ViajantesTurismo.Catalog.Application.Gallery;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -51,6 +52,14 @@ internal static class CatalogApiTestHost
     {
         return Create(null, tourStore, publicContentStore, mediaStore, null, null);
     }
+
+    /// <summary>Creates an authenticated host with an explicit gallery placement journal.</summary>
+    public static WebApplicationFactory<CatalogApiHostEntryPoint> CreateWithGalleryJournal(
+        TestCatalogTourReadModelStore tourStore,
+        TestPublicMediaImageStore mediaStore,
+        ICatalogGalleryPlacementIntentStore placementIntents,
+        TestEventStore eventStore) =>
+        Create(null, tourStore, null, mediaStore, null, null, eventStore: eventStore, galleryPlacementIntents: placementIntents);
 
     /// <summary>Creates an authenticated host backed by the given tour and public content stores and event store.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(
@@ -189,7 +198,8 @@ internal static class CatalogApiTestHost
         bool authenticateClient = true,
         TestEventStore? eventStore = null,
         Action<HttpClient>? configureClient = null,
-        Action<Dictionary<string, string?>>? configureConfiguration = null)
+        Action<Dictionary<string, string?>>? configureConfiguration = null,
+        ICatalogGalleryPlacementIntentStore? galleryPlacementIntents = null)
     {
         var configuredTourStore = tourStore ?? new TestCatalogTourReadModelStore();
         var configuredEventStore = eventStore ?? new TestEventStore();
@@ -242,6 +252,10 @@ internal static class CatalogApiTestHost
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourMutationLock>(new TestCatalogTourMutationLock()));
                 var images = mediaStore ?? new TestPublicMediaImageStore();
                 services.Replace(ServiceDescriptor.Singleton<IPublicMediaImageStore>(images));
+                services.Replace(ServiceDescriptor.Singleton<ICatalogGalleryReadStore>(new TestCatalogGalleryReadStore(configuredTourStore, images)));
+                services.Replace(ServiceDescriptor.Singleton<ICatalogGalleryPhotoOptionsQuery>(new TestCatalogGalleryPhotoOptionsQuery(configuredTourStore, images)));
+                services.Replace(ServiceDescriptor.Singleton(
+                    galleryPlacementIntents ?? new UnsupportedCatalogGalleryPlacementIntentStore()));
                 services.Replace(ServiceDescriptor.Singleton<IMediaImageUploadStore>(new DelegatingMediaImageUploadStore(images)));
                 services.Replace(ServiceDescriptor.Singleton<IObjectStore>(objectStore ?? MediaObjectStoreTestFactory.Create()));
                 services.Replace(ServiceDescriptor.Singleton<IIntegrationEventOutbox, TestIntegrationEventOutbox>());

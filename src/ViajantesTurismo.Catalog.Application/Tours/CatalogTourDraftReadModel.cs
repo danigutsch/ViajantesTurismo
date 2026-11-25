@@ -53,6 +53,27 @@ public sealed record CatalogTourDraftReadModel(
     /// </summary>
     public long StreamVersion { get; init; } = 1;
 
+    /// <summary>Gets the last applied gallery event position, or zero for legacy tour media placement.</summary>
+    public long GalleryPosition
+    {
+        get;
+        init;
+    }
+
+    /// <summary>Gets the authored photo order, or null while the tour uses its legacy placement.</summary>
+    public IReadOnlyList<Guid>? GalleryPhotoIds
+    {
+        get;
+        init;
+    }
+
+    /// <summary>Gets the optional cover chosen in the authored gallery.</summary>
+    public Guid? GalleryCoverId
+    {
+        get;
+        init;
+    }
+
     /// <summary>
     /// Gets a value indicating whether this tour can be shown on public endpoints.
     /// </summary>

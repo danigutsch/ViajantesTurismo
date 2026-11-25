@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <PackageReference Include="PandaBear.SharedKernel.BuildingBlocks" />
+        <PackageReference Include="PandaBear.SharedKernel.Galleries" />
         <PackageReference Include="PandaBear.SharedKernel.AI" />
         <PackageReference Include="PandaBear.SharedKernel.EventSourcing" />
         <PackageReference Include="PandaBear.SharedKernel.Idempotency.Abstractions" />

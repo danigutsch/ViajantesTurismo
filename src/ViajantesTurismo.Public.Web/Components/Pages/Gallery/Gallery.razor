@@ -2,69 +2,73 @@
 @page "/pt/gallery"
 @namespace ViajantesTurismo.Public.Web.Components.Pages
 @using Microsoft.AspNetCore.Routing
+@using SharedKernel.BuildingBlocks
 @inject IPublicCatalogApiClient CatalogApi
 @inject LinkGenerator LinkGenerator
+@inject NavigationManager Navigation
 
-<PublicPageHead Title="@DocumentTitle" Description="@Description" Path="/gallery" />
+<PublicPageHead Title="@DocumentTitle" Description="@Description" Path="@CanonicalPath" />
 
-<Section Title="@Heading" Level="1" Intro="@Description">
+<Section Title="@Links.Heading" Level="1" Intro="@Description">
     @if (_loadFailed)
     {
         <p>@(Culture.IsPortuguese ? "Não foi possível carregar a galeria. Tente novamente mais tarde." : "The gallery could not be loaded right now. Try again later.")</p>
     }
-    else if (_tours is null)
-    {
-        <p><em>@(Culture.IsPortuguese ? "Carregando galeria..." : "Loading gallery...")</em></p>
-    }
-    else if (!_tours.Any(tour => tour.Images.Count > 0))
+    else if (_gallery is { Albums.Count: 0 })
     {
         <p>@(Culture.IsPortuguese ? "Novas fotos serão publicadas em breve." : "New photos will be published soon.")</p>
     }
+    else if (_gallery is { } gallery)
+    {
+        <AlbumIndex Albums="@gallery.Albums.Select(MapSummary).ToArray()" HeadingLevel="2" />
+        <Pager Window="@PageWindow.Create(gallery.Page, gallery.PageSize, gallery.Total)"
+               PageHref="@IndexLink" Label="@Links.PagerLabel" PreviousText="@Links.Previous"
+               NextText="@Links.Next" PageLabelFormat="@Links.PageLabel" />
+    }
 </Section>
 
-@if (_tours is not null)
-{
-    @foreach (var tour in _tours.Where(tour => tour.Images.Count > 0))
-    {
-        <Section Title="@tour.Title" HeadingId="@GalleryHeadingId(tour)">
-            <ImageGrid Images="@TourImageRenditions.Gallery(LinkGenerator, tour.Images)" />
-        </Section>
-    }
-}
-
 @code {
+    [SupplyParameterFromQuery(Name = "page")]
+    private string? Page { get; set; }
+
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
     [CascadingParameter]
     private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
 
-    private TourSummaryDto[]? _tours;
+    private CatalogGalleryIndexDto? _gallery;
     private bool _loadFailed;
 
-    private string DocumentTitle => $"{Heading} - Viajantes Turismo";
+    private GalleryPageLinks Links => new(Culture);
 
-    private string Heading => Culture.IsPortuguese ? "Galeria" : "Gallery";
+    private string CanonicalPath => GalleryPageLinks.PagePath(GalleryPageLinks.IndexPath, _gallery?.Page ?? 1);
+
+    private string DocumentTitle => $"{Links.Heading} - Viajantes Turismo";
 
     private string Description => Culture.IsPortuguese
         ? "Momentos das viagens de bicicleta da Viajantes Turismo."
         : "Moments from Viajantes Turismo cycle tours.";
 
     /// <inheritdoc />
-    /// <remarks>
-    /// The public fallback is preserved when an API implementation reports an upstream timeout as cancellation, or
-    /// has not materialized transport outcomes and throws <see cref="HttpRequestException" />.
-    /// </remarks>
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         PublicWebHttpCache.SetNoStore(HttpContext);
+        _gallery = null;
+        _loadFailed = false;
         var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
         try
         {
-            var outcome = await CatalogApi.GetPublishedTours(requestAborted);
-            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tours })
+            var outcome = await CatalogApi.ListPublishedAlbums(Culture.ContentLanguage.Value, Page, requestAborted);
+            if (outcome.Kind == HttpOutcomeKind.NotFound)
             {
-                _tours = tours;
+                Navigation.NotFound();
+                return;
+            }
+
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } gallery })
+            {
+                _gallery = gallery;
                 return;
             }
         }
@@ -77,8 +81,15 @@
 
         PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
         _loadFailed = true;
-        _tours = [];
     }
 
-    private static string GalleryHeadingId(TourSummaryDto tour) => $"gallery-{tour.Slug}";
+    private LinkTarget IndexLink(int page) => Links.Link(GalleryPageLinks.IndexPath, page);
+
+    private AlbumSummary MapSummary(CatalogGallerySummaryDto album)
+    {
+        var cover = TourImageRenditions.Responsive(LinkGenerator,
+            album.Cover with { AltText = string.Empty, IsDecorative = true }, TourImageRenditions.HalfWidthSizes);
+        return new AlbumSummary(album.Title, Links.Link(GalleryPageLinks.AlbumPath(album.Slug)), cover,
+            Links.PhotoCount(album.PhotoCount), Links.TitleLanguage(album.TitleLanguage));
+    }
 }

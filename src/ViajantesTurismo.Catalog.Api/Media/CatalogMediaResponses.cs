@@ -1,4 +1,6 @@
+using ViajantesTurismo.Catalog.Application.Gallery;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;
 
@@ -15,10 +17,18 @@ internal static class CatalogMediaResponses
             .Select(MapImage)];
     }
 
-    /// <summary>Filters images eligible for public responses.</summary>
-    internal static IReadOnlyList<PublicMediaImage> GetReadyImages(IReadOnlyList<PublicMediaImage> images)
+    /// <summary>Maps the eligible photos in the current authored tour order, with legacy placement before initialization.</summary>
+    internal static CatalogTourImageDto[] MapPublicImages(CatalogTourDraftReadModel tour, IReadOnlyList<PublicMediaImage> images)
     {
-        return [.. images.Where(CanDeliverPublicImage)];
+        if (tour.GalleryPhotoIds is not { } authored)
+        {
+            return MapImages([.. images.Where(CanDeliverPublicImage)]);
+        }
+
+        var inventory = images.ToDictionary(image => image.Id);
+        var published = authored.Where(id => inventory.TryGetValue(id, out var image) && CanDeliverPublicImage(image)).ToArray();
+        var cover = tour.GalleryCoverId is { } chosen && published.Contains(chosen) ? chosen : published.FirstOrDefault();
+        return [.. published.Select((id, order) => MapImage(inventory[id], order, id == cover))];
     }
 
     /// <summary>Checks public rendition eligibility and records accessibility publication blockers.</summary>
@@ -32,30 +42,9 @@ internal static class CatalogMediaResponses
         return image.HasPublicVariants;
     }
 
-    private static CatalogTourImageDto MapImage(PublicMediaImage image)
-    {
-        return new CatalogTourImageDto
-        {
-            Id = image.Id,
-            SortOrder = image.DisplayOrder,
-            IsCover = image.IsCover,
-            AltText = image.AltText,
-            IsDecorative = image.IsDecorative,
-            Caption = image.Caption,
-            ResponsiveVariants = [.. image.ResponsiveVariants
-                .OrderBy(variant => variant.Width)
-                .Select(MapPublicResponsiveVariant)]
-        };
-    }
+    private static CatalogTourImageDto MapImage(PublicMediaImage image) =>
+        MapImage(image, image.DisplayOrder, image.IsCover);
 
-    private static CatalogMediaImageVariantDto MapPublicResponsiveVariant(MediaImageResponsiveVariant variant)
-    {
-        return new CatalogMediaImageVariantDto
-        {
-            Width = variant.Width,
-            Height = variant.Height,
-            ContentType = variant.ContentType,
-            FileSizeBytes = variant.FileSizeBytes
-        };
-    }
+    private static CatalogTourImageDto MapImage(PublicMediaImage image, int order, bool isCover) =>
+        CatalogGalleryProjection.MapImage(image, order, isCover, image.AltText, image.IsDecorative, image.Caption);
 }

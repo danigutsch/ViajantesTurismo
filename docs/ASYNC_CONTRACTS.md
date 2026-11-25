@@ -16,6 +16,7 @@ implementation facts, not as transport contracts.
 | `admin.tour.created` v1 | Integration event | Admin | Catalog | `admin.tour.created` | `EventId`, `OccurredAt`, `AdminTourId`, `Identifier`, `Name` | Admin outbox, Catalog inbox/idempotency |
 | `admin.tour.retired` v1 | Integration event | Admin | Catalog | `admin.tour.retired` | `EventId`, `OccurredAt`, `AdminTourId`, `RetirementId` | Admin outbox, Catalog retirement fence |
 | `branding.settings.changed` v1 | Integration event | Branding | Admin | `branding.settings.changed` | Settings revision and optional logo fields | Branding outbox, Admin inbox/idempotency |
+| `catalog.gallery-placement.queued` v1 | Integration event | Catalog | Catalog | `catalog.gallery-placement.queued` | `EventId`, `OccurredAt`, `CatalogTourId`, `Sequence` | Catalog intent journal, local outbox relay and Catalog idempotency |
 | `catalog.media-image.original-stored` v1 | Integration event | Catalog | Catalog | `catalog.media-image.original-stored` | `EventId`, `OccurredAt`, `MediaImageId`, `SourceObjectKey`, `ProcessingVersion` | Catalog outbox and in-process relay, Catalog inbox/idempotency |
 | `catalog.tour.retirement-applied` v1 | Integration event | Catalog | Admin | `catalog.tour.retirement-applied` | `EventId`, `OccurredAt`, `AdminTourId`, `RetirementId` | Catalog outbox, Admin retirement status |
 
@@ -32,6 +33,10 @@ Current integration-event handlers:
 - `AdminTourRetiredIntegrationHandler` consumes `admin.tour.retired` to withdraw the Catalog tour and
   record the source fence.
 - `BrandingSettingsChangedIntegrationHandler` consumes `branding.settings.changed` for the Admin Branding projection.
+- `CatalogGalleryPlacementQueuedHandler` consumes `catalog.gallery-placement.queued` to drain the
+  tour journal through the supplied sequence. A legacy bootstrap wake carries the committed
+  snapshot's event identity and captured journal watermark. Its independent identity allows the
+  inbox to accept it after earlier upload wake-ups completed.
 - `MediaImageOriginalStoredIntegrationHandler` consumes `catalog.media-image.original-stored` for Catalog
   public media processing.
 - `CatalogTourRetirementAppliedIntegrationHandler` consumes `catalog.tour.retirement-applied` and

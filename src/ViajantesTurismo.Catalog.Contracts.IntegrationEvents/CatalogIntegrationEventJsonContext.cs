@@ -7,4 +7,5 @@ namespace ViajantesTurismo.Catalog.Contracts.IntegrationEvents;
 /// <inheritdoc/>
 [JsonSerializable(typeof(MediaImageOriginalStoredIntegrationEvent))]
 [JsonSerializable(typeof(CatalogTourRetirementAppliedIntegrationEvent))]
+[JsonSerializable(typeof(CatalogGalleryPlacementQueuedIntegrationEvent))]
 public sealed partial class CatalogIntegrationEventJsonContext : JsonSerializerContext;

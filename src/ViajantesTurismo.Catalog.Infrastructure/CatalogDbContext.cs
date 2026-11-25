@@ -50,8 +50,16 @@ public sealed class CatalogDbContext(
 
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.HasPostgresExtension("unaccent");
         modelBuilder.ApplyConfiguration(new EditablePublicContentConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogTourReadModelEntityConfiguration());
+        modelBuilder.Entity<CatalogGalleryPlacementIntentEntity>(intent =>
+        {
+            intent.ToTable("CatalogGalleryPlacementIntents");
+            intent.HasKey(row => row.Id);
+            intent.Property(row => row.Id).ValueGeneratedNever();
+            intent.HasIndex(row => new { row.CatalogTourId, row.Sequence }).IsUnique();
+        });
         modelBuilder.Entity<CatalogTourRetirementEntity>(retirement =>
         {
             retirement.ToTable(CatalogTourRetirementEntity.TableName);

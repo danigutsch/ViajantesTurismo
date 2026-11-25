@@ -1,4 +1,5 @@
 using SharedKernel.EventSourcing;
+using ViajantesTurismo.Catalog.Application.Gallery;
 using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;
@@ -7,7 +8,8 @@ namespace ViajantesTurismo.Catalog.Application.Tours;
 /// Projects Catalog tour events into management/public tour read model rows.
 /// </summary>
 public sealed class CatalogTourReadModelProjection(
-    ICatalogTourReadModelStore readModelStore) : IProjection
+    ICatalogTourReadModelStore readModelStore,
+    ICatalogGalleryPlacementIntentStore? placementIntents = null) : IProjection
 {
     /// <inheritdoc />
     public string Name => "catalog.tours.read-model";
@@ -39,6 +41,27 @@ public sealed class CatalogTourReadModelProjection(
                     envelope.Position,
                     envelope.RecordedAt,
                     ct);
+                return;
+            case CatalogTourGalleryChanged gallery:
+                if (await readModelStore.UpdateGallery(gallery, envelope.Revision.Value, envelope.Position, envelope.RecordedAt, ct)
+                    is null)
+                {
+                    throw new InvalidOperationException("The Catalog tour draft must be projected before its gallery.");
+                }
+
+                if (gallery.LegacyBootstrapThroughSequence is { } throughSequence && throughSequence > 0)
+                {
+                    var journal = placementIntents ?? throw new InvalidOperationException("The Catalog gallery journal is missing.");
+                    await journal.ResumeBootstrap(gallery.CatalogTourId, throughSequence, envelope.EventId, ct).ConfigureAwait(false);
+                }
+
+                return;
+            case CatalogTourGalleryIntentRejected rejected:
+                if (!await readModelStore.AdvanceStreamVersion(rejected.CatalogTourId, envelope.Revision.Value, ct).ConfigureAwait(false))
+                {
+                    throw new InvalidOperationException("The Catalog tour draft must be projected before its placement outcome.");
+                }
+
                 return;
             case CatalogTourPublished published:
                 await readModelStore.SetPublicationStatus(

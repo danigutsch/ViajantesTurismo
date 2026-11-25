@@ -894,6 +894,7 @@
           "PandaBear.SharedKernel.AI": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.EventSourcing": "[0.1.0-alpha.860.1, )",
+          "PandaBear.SharedKernel.Galleries": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.IO": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.Idempotency.Abstractions": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.ImageProcessing": "[0.1.0-alpha.860.1, )",
@@ -935,6 +936,7 @@
           "PandaBear.SharedKernel.BuildingBlocks": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.Domain": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.EventSourcing": "[0.1.0-alpha.860.1, )",
+          "PandaBear.SharedKernel.Galleries": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.InputNormalization": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.ObjectStorage": "[0.1.0-alpha.860.1, )",
           "PandaBear.SharedKernel.Results": "[0.1.0-alpha.860.1, )"
@@ -1329,6 +1331,15 @@
           "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.860.1",
           "PandaBear.SharedKernel.EventSourcing": "0.1.0-alpha.860.1",
           "PandaBear.SharedKernel.Npgsql": "0.1.0-alpha.860.1"
+        }
+      },
+      "PandaBear.SharedKernel.Galleries": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0-alpha.860.1, )",
+        "resolved": "0.1.0-alpha.860.1",
+        "contentHash": "3IjfI1puDQWPGmCqAl7y+Xp8Q1lX275oqRJPar3PnlLh8qEpHIsIb068NH82amN0lEDsf8pXyZvdzZrKacZJkg==",
+        "dependencies": {
+          "PandaBear.SharedKernel.BuildingBlocks": "0.1.0-alpha.860.1"
         }
       },
       "PandaBear.SharedKernel.HttpCaching.AspNetCore": {

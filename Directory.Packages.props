@@ -145,6 +145,7 @@
     <PackageVersion Include="PandaBear.SharedKernel.EntityFrameworkCore.Npgsql" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.EventSourcing" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.EventSourcing.Npgsql" Version="0.1.0-alpha.860.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.Galleries" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.HttpClients" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.Idempotency.Abstractions" Version="0.1.0-alpha.860.1" />
