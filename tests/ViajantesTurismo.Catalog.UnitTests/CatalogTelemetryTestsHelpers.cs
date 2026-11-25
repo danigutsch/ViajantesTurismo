@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using PandaBear.EventSourcing;
+using SharedKernel.EventSourcing;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;

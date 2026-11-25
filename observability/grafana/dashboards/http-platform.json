@@ -211,7 +211,7 @@
       "id": 6,
       "type": "timeseries",
       "title": "Unhandled exceptions",
-      "description": "unhandled_exceptions_total from PandaBear.AspNetCore in exceptions/s by bounded error type. Question: is any request failing with an exception nobody handled?",
+      "description": "sharedkernel_aspnetcore_unhandled_exceptions_total from SharedKernel.AspNetCore in exceptions/s by bounded error type. Question: is any request failing with an exception nobody handled?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -246,7 +246,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (exported_job, error_type) (rate(unhandled_exceptions_total{exported_job=~\"$service\"}[$__rate_interval])) or vector(0)",
+          "expr": "sum by (exported_job, error_type) (rate(sharedkernel_aspnetcore_unhandled_exceptions_total{exported_job=~\"$service\"}[$__rate_interval])) or vector(0)",
           "legendFormat": "{{exported_job}} {{error_type}}",
           "refId": "A"
         }
@@ -256,7 +256,7 @@
       "id": 7,
       "type": "timeseries",
       "title": "Authentication events",
-      "description": "authentication_events_total from PandaBear.AspNetCore in events/s by event (challenge, authentication_failed, and similar). Question: are sign-ins failing or spiking?",
+      "description": "sharedkernel_aspnetcore_authentication_events_total from SharedKernel.AspNetCore in events/s by event (challenge, authentication_failed, and similar). Question: are sign-ins failing or spiking?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -291,8 +291,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (event) (rate(authentication_events_total{exported_job=~\"$service\"}[$__rate_interval]))",
-          "legendFormat": "{{event}}",
+          "expr": "sum by (sharedkernel_aspnetcore_authentication_event) (rate(sharedkernel_aspnetcore_authentication_events_total{exported_job=~\"$service\"}[$__rate_interval]))",
+          "legendFormat": "{{sharedkernel_aspnetcore_authentication_event}}",
           "refId": "A"
         }
       ]
@@ -301,7 +301,7 @@
       "id": 8,
       "type": "timeseries",
       "title": "Rate-limit rejections",
-      "description": "rate_limit_rejections_total from PandaBear.AspNetCore in rejections/s. Question: are clients being throttled?",
+      "description": "sharedkernel_aspnetcore_rate_limit_rejections_total from SharedKernel.AspNetCore in rejections/s. Question: are clients being throttled?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -336,7 +336,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (exported_job) (rate(rate_limit_rejections_total{exported_job=~\"$service\"}[$__rate_interval])) or vector(0)",
+          "expr": "sum by (exported_job) (rate(sharedkernel_aspnetcore_rate_limit_rejections_total{exported_job=~\"$service\"}[$__rate_interval])) or vector(0)",
           "legendFormat": "{{exported_job}}",
           "refId": "A"
         }
@@ -346,7 +346,7 @@
       "id": 9,
       "type": "timeseries",
       "title": "Handled UI failures",
-      "description": "handled_ui_failures_total from PandaBear.Blazor in failures/s by operation and error type. Question: which Management.Web operation shows users an error?",
+      "description": "sharedkernel_blazor_handled_failures_total from SharedKernel.Blazor in failures/s by operation and error type. Question: which Management.Web operation shows users an error?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -381,8 +381,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (operation, error_type) (rate(handled_ui_failures_total[$__rate_interval])) or vector(0)",
-          "legendFormat": "{{operation}} {{error_type}}",
+          "expr": "sum by (sharedkernel_blazor_operation, error_type) (rate(sharedkernel_blazor_handled_failures_total[$__rate_interval])) or vector(0)",
+          "legendFormat": "{{sharedkernel_blazor_operation}} {{error_type}}",
           "refId": "A"
         }
       ]

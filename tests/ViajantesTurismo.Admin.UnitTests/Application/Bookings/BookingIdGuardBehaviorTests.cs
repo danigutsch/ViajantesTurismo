@@ -1,5 +1,5 @@
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Application.Bookings.ConfirmBooking;
 using ViajantesTurismo.Admin.Application.Bookings.Pipeline;
@@ -8,7 +8,7 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, Infrastructure.TestTraits.CoreBehaviorCategory)]
+[Trait(TestTraitNames.CategoryName, Infrastructure.TestTraits.CoreBehaviorCategory)]
 public sealed class BookingIdGuardBehaviorTests
 {
     [Fact]

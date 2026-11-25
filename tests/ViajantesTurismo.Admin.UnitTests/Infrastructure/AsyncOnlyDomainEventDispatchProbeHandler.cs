@@ -1,5 +1,5 @@
-using PandaBear.Domain;
-using PandaBear.EntityFrameworkCore;
+using SharedKernel.Domain;
+using SharedKernel.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 

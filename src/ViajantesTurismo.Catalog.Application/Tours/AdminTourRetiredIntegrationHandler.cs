@@ -1,5 +1,5 @@
-using PandaBear.EventSourcing;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.EventSourcing;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
 

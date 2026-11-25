@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
 public sealed class CivilDateContractTests
 {
     [Fact]

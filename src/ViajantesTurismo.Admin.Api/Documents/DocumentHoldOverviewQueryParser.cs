@@ -1,6 +1,6 @@
 using System.Globalization;
-using PandaBear.DispositionHold;
-using PandaBear.Results;
+using SharedKernel.DispositionHold;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 
 namespace ViajantesTurismo.Admin.Api.Documents;

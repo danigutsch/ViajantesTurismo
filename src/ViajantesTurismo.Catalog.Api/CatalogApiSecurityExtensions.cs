@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
-using PandaBear.AspNetCore.Authentication;
+using SharedKernel.AspNetCore.Authentication;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Resources;
 

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.Blazor.Site;
+using SharedKernel.Blazor.Site;
 using ViajantesTurismo.Public.Web.Components.Shared;
 
 namespace ViajantesTurismo.Public.WebTests.Components.Shared;

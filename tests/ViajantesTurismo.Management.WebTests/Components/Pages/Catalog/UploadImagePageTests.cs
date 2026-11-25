@@ -1,7 +1,7 @@
-using PandaBear.Testing;
-using PandaBear.Blazor;
+using SharedKernel.Testing;
+using SharedKernel.Blazor;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using System.Globalization;
 using CatalogContractConstants = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants;
 using CatalogImageUploadFileReader = ViajantesTurismo.Management.Web.Components.Pages.Catalog.CatalogImageUploadFileReader;

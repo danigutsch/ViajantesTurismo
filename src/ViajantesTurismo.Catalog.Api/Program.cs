@@ -1,14 +1,14 @@
-using PandaBear.AspNetCore;
-using PandaBear.AspNetCore.Authentication;
-using PandaBear.AspNetCore.RateLimiting;
-using PandaBear.AspNetCore.Seo;
-using PandaBear.HttpCaching.AspNetCore;
-using PandaBear.OpenApi;
+using SharedKernel.AspNetCore;
+using SharedKernel.AspNetCore.Authentication;
+using SharedKernel.AspNetCore.RateLimiting;
+using SharedKernel.AspNetCore.Seo;
+using SharedKernel.HttpCaching.AspNetCore;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Api.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
-using PandaBear.ServiceDefaults;
+using SharedKernel.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 const string ApiRobotsTxt = "User-agent: *\nDisallow: /";

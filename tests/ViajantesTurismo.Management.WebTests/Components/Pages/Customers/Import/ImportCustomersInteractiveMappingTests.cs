@@ -1,6 +1,6 @@
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
-using PandaBear.Testing;
-using PandaBear.Blazor;
+using SharedKernel.Testing;
+using SharedKernel.Blazor;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;

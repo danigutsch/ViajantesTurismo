@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure.PublicContent;
@@ -8,7 +8,7 @@ namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure;
 
 /// <summary>Protects typed content identity against the actual PostgreSQL schema and converter.</summary>
 [TestScope(TestScope.Integration)]
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 public sealed class PublicContentKeyPostgreSqlTests(HostedTestFixture shared)
 {
     [Theory]

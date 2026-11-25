@@ -7,14 +7,14 @@ public sealed class NamingConventionAnalyzerTests
     private const string DomainAssembly = "ViajantesTurismo.Admin.Domain";
 
     private const string Support = """
-        namespace PandaBear.Messaging.IntegrationEvents
+        namespace SharedKernel.Messaging.IntegrationEvents
         {
             public interface IIntegrationEvent
             {
             }
         }
 
-        namespace PandaBear.Results
+        namespace SharedKernel.Results
         {
             public readonly struct Result
             {
@@ -51,7 +51,7 @@ public sealed class NamingConventionAnalyzerTests
             {{Support}}
             namespace Demo.Events
             {
-                using PandaBear.Messaging.IntegrationEvents;
+                using SharedKernel.Messaging.IntegrationEvents;
 
                 {{declaration}}
             }
@@ -74,7 +74,7 @@ public sealed class NamingConventionAnalyzerTests
             {{Support}}
             namespace Demo.Events
             {
-                using PandaBear.Messaging.IntegrationEvents;
+                using SharedKernel.Messaging.IntegrationEvents;
 
                 public sealed record TourCreatedIntegrationEvent(int Id) : IIntegrationEvent;
 
@@ -99,7 +99,7 @@ public sealed class NamingConventionAnalyzerTests
             {{Support}}
             namespace Demo.Tours
             {
-                using PandaBear.Results;
+                using SharedKernel.Results;
 
                 public static class TourFailures
                 {
@@ -127,7 +127,7 @@ public sealed class NamingConventionAnalyzerTests
             {{Support}}
             namespace Demo.Tours
             {
-                using PandaBear.Results;
+                using SharedKernel.Results;
 
                 public static class TourErrors
                 {
@@ -162,7 +162,7 @@ public sealed class NamingConventionAnalyzerTests
             {{Support}}
             namespace Demo.Api
             {
-                using PandaBear.Results;
+                using SharedKernel.Results;
 
                 public static class ApiFailures
                 {

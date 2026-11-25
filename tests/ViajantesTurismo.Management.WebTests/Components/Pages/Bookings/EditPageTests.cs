@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -23,7 +23,7 @@ public sealed class EditPageTests : BunitContext
 
     public EditPageTests()
     {
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(TimeProvider.System);
         Services.AddSingleton<IBookingsApiClient>(_fakeBookingsApi);
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);

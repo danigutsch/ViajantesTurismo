@@ -4,7 +4,7 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class AppHostVolumeTests
 {
     [Fact]

@@ -4,8 +4,8 @@ using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestT
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class BrandingCacheTelemetryTests
 {
     private const string PublicSettingsPath = $"/api/v1/{BrandingRoutes.PublicSettingsPath}";

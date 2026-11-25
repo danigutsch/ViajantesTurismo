@@ -1,6 +1,6 @@
 namespace ViajantesTurismo.Branding.InfrastructureTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
 public sealed class BrandingDbContextDiagnosticsTests
 {
     [Theory]

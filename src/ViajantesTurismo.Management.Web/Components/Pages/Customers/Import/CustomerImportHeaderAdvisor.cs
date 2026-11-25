@@ -1,6 +1,6 @@
 using System.Net.Mail;
 using System.Text;
-using PandaBear.Tabular;
+using SharedKernel.Tabular;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
 

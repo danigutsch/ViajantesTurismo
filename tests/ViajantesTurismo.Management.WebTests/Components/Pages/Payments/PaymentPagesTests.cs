@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -6,7 +6,7 @@ using ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class PaymentPagesTests : BunitContext
 {

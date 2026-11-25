@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 using System.Globalization;
-using PandaBear.Testing.Roslyn;
+using SharedKernel.Testing.Roslyn;
 
 namespace ViajantesTurismo.Architecture.Analyzers.Tests;
 
@@ -154,7 +154,7 @@ public sealed class SharedKernelHelperPlacementAnalyzerTests
             {
                 public static void Verify(string value)
                 {
-                    using var writer = new PandaBear.Testing.InvariantStringWriter();
+                    using var writer = new SharedKernel.Testing.InvariantStringWriter();
                     writer.Write(value);
                     Xunit.Assert.Equal(value, writer.ToString());
                 }
@@ -174,7 +174,7 @@ public sealed class SharedKernelHelperPlacementAnalyzerTests
         {
             var message = diagnostics[0].GetMessage(CultureInfo.InvariantCulture);
             message.ShouldContain("Xunit.Assert", StringComparison.Ordinal);
-            message.ShouldContain("PandaBear.Testing.InvariantStringWriter", StringComparison.Ordinal);
+            message.ShouldContain("SharedKernel.Testing.InvariantStringWriter", StringComparison.Ordinal);
         }
     }
 }

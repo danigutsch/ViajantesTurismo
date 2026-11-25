@@ -26,7 +26,7 @@
       "id": 2,
       "type": "timeseries",
       "title": "p95 append duration",
-      "description": "histogram_quantile(0.95) of eventsourcing_postgresql_append_duration_milliseconds in milliseconds. Question: is append slower than expected?",
+      "description": "histogram_quantile(0.95) of sharedkernel_event_sourcing_append_duration_seconds in seconds. Question: is append slower than expected?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -40,7 +40,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -61,7 +61,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(eventsourcing_postgresql_append_duration_milliseconds_bucket[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(sharedkernel_event_sourcing_append_duration_seconds_bucket[$__rate_interval])))",
           "legendFormat": "{{exported_job}}",
           "refId": "A"
         }
@@ -71,7 +71,7 @@
       "id": 3,
       "type": "timeseries",
       "title": "p95 load duration",
-      "description": "histogram_quantile(0.95) of eventsourcing_postgresql_load_duration_milliseconds in milliseconds. Question: is load slower than expected?",
+      "description": "histogram_quantile(0.95) of sharedkernel_event_sourcing_load_duration_seconds in seconds. Question: is load slower than expected?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -85,7 +85,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -106,7 +106,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(eventsourcing_postgresql_load_duration_milliseconds_bucket[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(sharedkernel_event_sourcing_load_duration_seconds_bucket[$__rate_interval])))",
           "legendFormat": "{{exported_job}}",
           "refId": "A"
         }
@@ -116,7 +116,7 @@
       "id": 4,
       "type": "timeseries",
       "title": "p95 checkpoint duration",
-      "description": "histogram_quantile(0.95) of eventsourcing_postgresql_checkpoint_duration_milliseconds in milliseconds. Question: is checkpoint slower than expected?",
+      "description": "histogram_quantile(0.95) of sharedkernel_event_sourcing_checkpoint_duration_seconds in seconds. Question: is checkpoint slower than expected?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -130,7 +130,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -151,7 +151,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(eventsourcing_postgresql_checkpoint_duration_milliseconds_bucket[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le, exported_job) (rate(sharedkernel_event_sourcing_checkpoint_duration_seconds_bucket[$__rate_interval])))",
           "legendFormat": "{{exported_job}}",
           "refId": "A"
         }
@@ -161,7 +161,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "Events appended and loaded",
-      "description": "eventsourcing_postgresql_event_appended_total and eventsourcing_postgresql_event_loaded_total in events/s. Question: how much event traffic does the store handle?",
+      "description": "sharedkernel_event_sourcing_events_appended_total and sharedkernel_event_sourcing_events_loaded_total in events/s. Question: how much event traffic does the store handle?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -196,7 +196,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum(rate(eventsourcing_postgresql_event_appended_total[$__rate_interval]))",
+          "expr": "sum(rate(sharedkernel_event_sourcing_events_appended_total[$__rate_interval]))",
           "legendFormat": "appended",
           "refId": "A"
         },
@@ -205,7 +205,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum(rate(eventsourcing_postgresql_event_loaded_total[$__rate_interval]))",
+          "expr": "sum(rate(sharedkernel_event_sourcing_events_loaded_total[$__rate_interval]))",
           "legendFormat": "loaded",
           "refId": "B"
         }
@@ -215,7 +215,7 @@
       "id": 6,
       "type": "timeseries",
       "title": "Append conflicts",
-      "description": "eventsourcing_postgresql_append_conflict_total in conflicts/s. Question: do concurrent writers collide on the same stream?",
+      "description": "sharedkernel_event_sourcing_append_conflicts_total in conflicts/s. Question: do concurrent writers collide on the same stream?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -250,7 +250,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum(rate(eventsourcing_postgresql_append_conflict_total[$__rate_interval])) or vector(0)",
+          "expr": "sum(rate(sharedkernel_event_sourcing_append_conflicts_total[$__rate_interval])) or vector(0)",
           "legendFormat": "conflicts",
           "refId": "A"
         }

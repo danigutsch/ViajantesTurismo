@@ -1,4 +1,4 @@
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing.Playwright;
 
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 

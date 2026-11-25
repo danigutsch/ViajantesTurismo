@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PandaBear.Messaging;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Messaging;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
@@ -37,7 +37,7 @@ internal sealed class CatalogInfrastructureScenario(ServiceProvider provider) : 
         return hostedServices.Any(service =>
         {
             var type = service.GetType();
-            return type.Assembly == typeof(PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxRelayOptions).Assembly
+            return type.Assembly == typeof(SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxRelayOptions).Assembly
                 && type.IsGenericType
                 && type.GetGenericTypeDefinition().Name == genericTypeName
                 && type.GenericTypeArguments.Single() == typeof(TContext);

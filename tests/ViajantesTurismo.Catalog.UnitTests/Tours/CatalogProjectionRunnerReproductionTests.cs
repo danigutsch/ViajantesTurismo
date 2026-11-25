@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using PandaBear.EventSourcing;
-using PandaBear.Testing.Snapshots;
-using PandaBear.Testing;
+using SharedKernel.EventSourcing;
+using SharedKernel.Testing.Snapshots;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Domain.Tours;

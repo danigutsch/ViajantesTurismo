@@ -2,7 +2,7 @@ extern alias AdminWorker;
 
 using System.Text;
 using System.Text.Json;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Admin.UnitTests.Application.Branding;
@@ -12,7 +12,7 @@ using ViajantesTurismo.Testing.Hosting;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class AdminIntegrationEventWorkerTests
 {
     [Fact]

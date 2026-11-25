@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PandaBear.Branding;
-using PandaBear.EntityFrameworkCore;
+using SharedKernel.Branding;
+using SharedKernel.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Branding.Infrastructure.ModelConfigurations;
 

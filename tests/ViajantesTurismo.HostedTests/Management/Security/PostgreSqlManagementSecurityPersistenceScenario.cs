@@ -1,7 +1,7 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Npgsql;
 using Microsoft.EntityFrameworkCore;
-using PandaBear.IntegrationTesting;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.HostedTests.Management.Security;

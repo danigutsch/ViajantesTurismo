@@ -1,4 +1,4 @@
-using PandaBear.Idempotency;
+using SharedKernel.Idempotency;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 

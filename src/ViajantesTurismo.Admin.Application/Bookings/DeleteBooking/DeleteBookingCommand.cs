@@ -1,5 +1,5 @@
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Application.Bookings.DeleteBooking;
 

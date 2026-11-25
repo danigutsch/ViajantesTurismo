@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
@@ -49,8 +49,7 @@ internal static class CreateCommandCommitAmbiguityPostgreSqlScenario
         builder.Services.AddSingleton(TimeProvider.System);
         builder.AddApplication();
         builder.AddInfrastructure(addRuntimeBackgroundServices: false);
-        var observerOptions = new DbContextOptionsBuilder<AdminWriteDbContext>().UseNpgsql(connectionString).Options;
-        var interceptor = new CommittedTimeoutInterceptor(observerOptions, selectIds);
+        var interceptor = new CommittedTimeoutInterceptor(connectionString, selectIds);
         builder.Services.ConfigureDbContext<AdminWriteDbContext>(options => options.AddInterceptors(interceptor));
 
         await using var provider = builder.Services.BuildServiceProvider();

@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.TestCoverageMatrixTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;

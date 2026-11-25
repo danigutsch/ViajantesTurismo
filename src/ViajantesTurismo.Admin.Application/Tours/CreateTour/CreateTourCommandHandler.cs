@@ -1,6 +1,6 @@
-using PandaBear.BuildingBlocks;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Application.Tours.CreateTour;

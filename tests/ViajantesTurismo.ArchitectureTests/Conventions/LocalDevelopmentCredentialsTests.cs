@@ -1,5 +1,5 @@
 using System.Text.Json.Nodes;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;

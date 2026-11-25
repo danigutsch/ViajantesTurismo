@@ -1,5 +1,5 @@
-using PandaBear.Testing;
-using PandaBear.Blazor;
+using SharedKernel.Testing;
+using SharedKernel.Blazor;
 using System.Globalization;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;

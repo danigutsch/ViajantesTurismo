@@ -1,4 +1,4 @@
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Behavior;
@@ -8,7 +8,7 @@ using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 namespace ViajantesTurismo.Admin.UnitTests.Application.Tours.DeleteTour;
 
 /// <summary>Checks retirement eligibility and the retained Tour record.</summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
 public sealed class DeleteTourCommandHandlerTests
 {
     private static readonly DateTimeOffset RequestedAt = new(2026, 11, 19, 10, 30, 0, TimeSpan.Zero);

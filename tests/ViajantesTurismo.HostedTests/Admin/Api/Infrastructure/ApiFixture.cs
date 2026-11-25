@@ -1,7 +1,7 @@
-using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using PostgreSqlTestDatabase = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using Npgsql;
-using PandaBear.IntegrationTesting;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Bookings;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 using ViajantesTurismo.Resources;

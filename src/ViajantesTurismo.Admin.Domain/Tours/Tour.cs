@@ -1,9 +1,9 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Shared;
-using PandaBear.Domain;
-using PandaBear.Results;
-using PandaBear.InputNormalization;
+using SharedKernel.Domain;
+using SharedKernel.Results;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

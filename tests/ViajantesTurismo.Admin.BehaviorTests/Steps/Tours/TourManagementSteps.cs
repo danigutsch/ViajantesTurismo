@@ -1,4 +1,4 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Steps.Tours;

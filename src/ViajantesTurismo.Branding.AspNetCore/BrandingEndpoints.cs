@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
 using ViajantesTurismo.Branding.Contracts.Http;
-using PandaBear.ApiVersioning.AspNetCore;
-using PandaBear.Branding;
-using PandaBear.BuildingBlocks;
-using PandaBear.HttpCaching.AspNetCore;
-using PandaBear.OpenApi;
-using PandaBear.Results;
+using SharedKernel.ApiVersioning.AspNetCore;
+using SharedKernel.Branding;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.HttpCaching.AspNetCore;
+using SharedKernel.OpenApi;
+using SharedKernel.Results;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Branding.AspNetCore;

@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using AngleSharp.Dom;
 using Microsoft.AspNetCore.Components;

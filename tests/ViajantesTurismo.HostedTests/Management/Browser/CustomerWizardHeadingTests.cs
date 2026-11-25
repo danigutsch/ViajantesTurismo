@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 using ViajantesTurismo.Management.Web.Services;

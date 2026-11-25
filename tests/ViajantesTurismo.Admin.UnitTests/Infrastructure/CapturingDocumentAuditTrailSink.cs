@@ -1,4 +1,4 @@
-using PandaBear.AuditTrail;
+using SharedKernel.AuditTrail;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;

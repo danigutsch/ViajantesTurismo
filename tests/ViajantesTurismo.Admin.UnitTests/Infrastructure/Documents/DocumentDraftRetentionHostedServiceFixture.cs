@@ -1,9 +1,9 @@
 using System.Diagnostics.Metrics;
-using PandaBear.DispositionHold;
-using PandaBear.Mediator;
-using PandaBear.Scheduling;
-using RecordedLog = PandaBear.Testing.Logging.RecordedLog;
-using RecordingLoggerProvider = PandaBear.Testing.Logging.RecordingLoggerProvider;
+using SharedKernel.DispositionHold;
+using SharedKernel.Mediator;
+using SharedKernel.Scheduling;
+using RecordedLog = SharedKernel.Testing.Logging.RecordedLog;
+using RecordingLoggerProvider = SharedKernel.Testing.Logging.RecordingLoggerProvider;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using Microsoft.Extensions.DependencyInjection;
@@ -124,7 +124,7 @@ internal sealed class DocumentDraftRetentionHostedServiceFixture : IAsyncDisposa
             await hostedService.StopAsync(ct);
         }
 
-        return Logs.Records.Single(record => record.EventId.Name == "LogPollingFailure");
+        return Logs.Records.Single(record => record.EventId.Id == 3001 && record.EventId.Name == "PollingCycleFailed");
     }
 
     /// <summary>

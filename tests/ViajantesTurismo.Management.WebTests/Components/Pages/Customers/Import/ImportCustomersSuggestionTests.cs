@@ -1,6 +1,6 @@
 using System.Text;
-using PandaBear.Blazor;
-using PandaBear.Testing;
+using SharedKernel.Blazor;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;

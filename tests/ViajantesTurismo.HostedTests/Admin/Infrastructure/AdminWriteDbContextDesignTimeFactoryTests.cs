@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, "unit")]
+[Trait(TestTraitNames.CategoryName, "unit")]
 [TestScope(TestScope.Integration)]
 public sealed class AdminWriteDbContextDesignTimeFactoryTests
 {

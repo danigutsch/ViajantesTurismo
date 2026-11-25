@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Hosting;
-using PandaBear.ServiceDefaults;
+using SharedKernel.ServiceDefaults;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 

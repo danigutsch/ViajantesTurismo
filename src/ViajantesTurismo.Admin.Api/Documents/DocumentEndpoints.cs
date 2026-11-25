@@ -1,10 +1,10 @@
-using PandaBear.AspNetCore.Authentication;
-using PandaBear.Idempotency.AspNetCore;
+using SharedKernel.AspNetCore.Authentication;
+using SharedKernel.Idempotency.AspNetCore;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;

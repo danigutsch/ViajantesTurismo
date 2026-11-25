@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PandaBear.MalwareScanning.ClamAv;
+using SharedKernel.MalwareScanning.ClamAv;
+using SharedKernel.Observability;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
@@ -120,7 +121,7 @@ internal static class CatalogInfrastructureTestServices
             [$"{MediaObjectStorageConfiguration.SectionName}:AccessKey"] = "access",
             [$"{MediaObjectStorageConfiguration.SectionName}:SecretKey"] = "secret"
         });
-        builder.Services.AddOpenTelemetry().WithTracing(static _ => { });
+        builder.Services.AddOpenTelemetry().WithTracing(static tracing => tracing.AddInstrumentation());
 
         builder.AddCatalogInfrastructure();
 

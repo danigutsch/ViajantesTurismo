@@ -1,8 +1,8 @@
-using PandaBear.ObjectStorage;
+using SharedKernel.ObjectStorage;
 using System.Globalization;
-using PandaBear.BuildingBlocks;
-using PandaBear.ImageProcessing;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.ImageProcessing;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Application.Tours;

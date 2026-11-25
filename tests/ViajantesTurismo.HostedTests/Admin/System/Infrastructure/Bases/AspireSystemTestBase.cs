@@ -1,7 +1,7 @@
 using Microsoft.Playwright;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing.Playwright;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;

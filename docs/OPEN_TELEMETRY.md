@@ -129,8 +129,9 @@ these fields in Loki. Application logging policy governs the raw records stored 
 ### Shared defaults registration
 
 `AddApplicationDefaults(ViajantesTurismoServiceDefaults.Configure)` registers the SharedKernel
-defaults, including `AddObservability()`. SharedKernel's `InstrumentationExtensions.NamePatterns`
-defines the shared meter and source subscriptions.
+defaults, including `AddObservability()`. SharedKernel subscribes to meters and activity sources
+under `SharedKernel.*`. Its metrics use the `sharedkernel.*` prefix.
+[SharedKernel telemetry standard](https://github.com/danigutsch/PandaBear.SharedKernel/blob/fd59cc194857bda1798839378e9089fda8f03f3e/docs/telemetry.md)
 
 Service defaults remove preconfigured logging providers before adding OpenTelemetry. This keeps the
 sanitized OpenTelemetry pipeline as the sole default logging provider; hosts must not add console,
@@ -220,26 +221,30 @@ cancellation, and failure paths.
 Repo-specific tags are required only when a span surface already defines a stable,
 surface-owned tag contract.
 
-- `SharedKernel.Mediator` runtime pipeline spans require:
+- `SharedKernel.Mediator` runtime pipeline spans use `mediator.handle` and require:
     - `sharedkernel.mediator.outcome`
     - `error.type` on failures only
 - Admin command request spans carry `mediator.result` (`ok` or `failed`), set by `ResultTagBehavior` for
   `IResultLike` responses. Prometheus counts returned failures such as a booking 404 under
-  `mediator.outcome="success"`. Use the Traces dashboard's Failed mediator results panel to
+  `sharedkernel.mediator.outcome="success"`. Use the Traces dashboard's Failed mediator results panel to
   identify those commands. The Mediator Dispatch dashboard's Request exception ratio shows
   thrown exceptions as a share of active dispatches. It shows 0% when commands are active
   and none throws in the query window.
-  `mediator.request.name` is the command type literal compiled into the generated mediator.
+  `sharedkernel.mediator.request.name` is the command type literal compiled into the generated mediator.
   It is bounded by the deployed command set and used to group request rate and duration.
 - `SharedKernel.Mediator` generated spans require:
-    - `mediator.outcome`
+    - `sharedkernel.mediator.outcome`
     - `error.type` on failures only
 - `ViajantesTurismo.MigrationService.DatabaseInitializationWorker` spans require:
     - `operation.type=database_initialization`
     - `worker.type=migration`
 - `ViajantesTurismo.Catalog` spans and metrics use Catalog-owned operation and outcome tags.
-- `SharedKernel.EventSourcing.Npgsql` spans and metrics use provider-owned operation, stream,
-  checkpoint, and outcome tags.
+- `SharedKernel.EventSourcing.Npgsql` spans and metrics use `db.system.name=postgresql`
+  and provider-owned attributes under `sharedkernel.event_sourcing.*`.
+
+Mediator and Event Store durations now use seconds. Their new Prometheus series begin at
+the candidate rollout. Compare earlier data in the previous series using their original
+milliseconds scale.
 
 Surfaces that do not define a stable repository tag contract should still follow the
 status and exception-event rules above without inventing extra tags.
@@ -342,15 +347,15 @@ least two production surfaces need the same lifecycle API and tag contract.
         - `catalog.tour.stream_update`
         - `catalog.projection.process`
     - Find PostgreSQL event-sourcing spans:
-        - `eventsourcing.postgresql.append`
-        - `eventsourcing.postgresql.load`
-        - `eventsourcing.postgresql.checkpoint`
+        - `event_sourcing.append`
+        - `event_sourcing.load`
+        - `event_sourcing.checkpoint`
 
 5. Verify metrics:
     - Meter: `SharedKernel.Mediator` (emits request measurements on dispatch)
     - Expected custom metric names:
-        - `mediator.requests`
-        - `mediator.request.duration`
+        - `sharedkernel.mediator.requests`
+        - `sharedkernel.mediator.request.duration`
     - Additional custom meters:
         - `ViajantesTurismo.Catalog`
         - `SharedKernel.EventSourcing.Npgsql`

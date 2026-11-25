@@ -163,6 +163,9 @@ dotnet_diagnostic.SKTEST005.severity = warning
 dotnet_diagnostic.SKTEST006.severity = warning
 dotnet_diagnostic.SKTEST018.severity = warning
 
+[tests/**/*.cs]
+sharedkernel_testing_additional_allowed_segments = WCAG
+
 # Shell scripts
 [*.{sh,bash}]
 indent_size = 4

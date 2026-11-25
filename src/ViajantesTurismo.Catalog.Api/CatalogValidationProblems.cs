@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using PandaBear.Results;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Catalog.Api;
 

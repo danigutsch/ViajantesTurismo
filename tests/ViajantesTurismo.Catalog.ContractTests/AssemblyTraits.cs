@@ -1,5 +1,5 @@
 using TestTraits = ViajantesTurismo.Catalog.ContractTests.Infrastructure.TestTraits;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 
 [assembly: TestScope(TestScope.Contract)]

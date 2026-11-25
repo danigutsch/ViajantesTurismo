@@ -1,6 +1,6 @@
-using PandaBear.Idempotency;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Idempotency;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Idempotency;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -12,7 +12,7 @@ namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
 /// <summary>Protects durable payment replay and lock identity while operation keys remain typed.</summary>
 [Trait(TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class PaymentCommandIdempotencyTests
 {
     [Theory]

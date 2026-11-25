@@ -75,7 +75,7 @@ await SendBookingsCommandTraffic([.. document.RootElement.GetProperty("resources
 return totalReached > 0 ? 0 : 1;
 
 // Drives Bookings commands through SharedKernel.Mediator with an authenticated Keycloak conformance token.
-// The empty id hits BookingIdGuardBehavior and the random id reaches the handler; both end as 404 with mediator.outcome=success.
+// The empty id hits BookingIdGuardBehavior and the random id reaches the handler; both end as 404 with sharedkernel.mediator.outcome=success.
 async Task SendBookingsCommandTraffic(JsonElement[] resources)
 {
     var api = resources.FirstOrDefault(resource => resource.GetProperty("name").GetString()!.StartsWith("api-", StringComparison.Ordinal));

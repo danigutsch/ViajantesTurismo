@@ -58,8 +58,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (outcome) (increase(postgresql_index_health_collections_total[$__rate_interval]))",
-          "legendFormat": "{{outcome}}",
+          "expr": "sum by (sharedkernel_index_health_outcome) (increase(sharedkernel_index_health_collections_total[$__rate_interval]))",
+          "legendFormat": "{{sharedkernel_index_health_outcome}}",
           "refId": "A"
         }
       ],
@@ -103,8 +103,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (action, reason) (increase(postgresql_index_health_assessments_total[$__rate_interval]))",
-          "legendFormat": "{{action}}: {{reason}}",
+          "expr": "sum by (sharedkernel_index_health_action, sharedkernel_index_health_reason) (increase(sharedkernel_index_health_assessments_total[$__rate_interval]))",
+          "legendFormat": "{{sharedkernel_index_health_action}}: {{sharedkernel_index_health_reason}}",
           "refId": "A"
         }
       ],

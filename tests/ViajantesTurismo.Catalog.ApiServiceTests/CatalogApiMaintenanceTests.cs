@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;

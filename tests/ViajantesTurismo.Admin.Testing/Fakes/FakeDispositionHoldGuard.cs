@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using PandaBear.DispositionHold;
+using SharedKernel.DispositionHold;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes;
 

@@ -1,6 +1,6 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.AspNetCore.Components;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -18,7 +18,7 @@ public sealed class AccommodationPageTests : BunitContext
     public AccommodationPageTests()
     {
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(_state);
     }
 

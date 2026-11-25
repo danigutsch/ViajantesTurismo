@@ -8,7 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Amazon.Runtime;
 using Amazon.S3;
-using PandaBear.IntegrationTesting;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;

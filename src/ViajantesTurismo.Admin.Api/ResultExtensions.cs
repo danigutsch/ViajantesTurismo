@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using PandaBear.Results;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Api;
 

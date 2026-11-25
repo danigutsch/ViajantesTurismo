@@ -1,5 +1,5 @@
-using PandaBear.ApiVersioning;
-using PandaBear.OpenApi;
+using SharedKernel.ApiVersioning;
+using SharedKernel.OpenApi;
 
 namespace ViajantesTurismo.Catalog.Api;
 

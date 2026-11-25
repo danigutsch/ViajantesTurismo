@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using ViajantesTurismo.Admin.Api;
-using PandaBear.Results;
+using SharedKernel.Results;
 using static ViajantesTurismo.Admin.UnitTests.Api.ResultExtensionsResponseMappingTestHelpers;
 
 namespace ViajantesTurismo.Admin.UnitTests.Api;

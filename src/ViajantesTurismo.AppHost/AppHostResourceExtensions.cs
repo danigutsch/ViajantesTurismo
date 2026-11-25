@@ -1,6 +1,6 @@
 using Aspire.Hosting.Dotnet;
 using Microsoft.Extensions.Configuration;
-using PandaBear.Aspire.Hosting;
+using SharedKernel.Aspire.Hosting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.AppHost;

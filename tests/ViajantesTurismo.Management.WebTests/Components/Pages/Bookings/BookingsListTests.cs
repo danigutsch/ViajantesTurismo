@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.AspNetCore.Components.QuickGrid;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;

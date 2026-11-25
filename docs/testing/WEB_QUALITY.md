@@ -69,14 +69,35 @@ input method and observable failure. [W3C quick accessibility checks](https://ww
 | Dynamic content | Check how loading, success and error status changes are announced. Use Escape to cancel a dropdown or dialog and confirm focus returns to its trigger. |
 | Media and uploads | Check informative image alternatives, decorative image treatment, upload progress, cancellation and retry with a keyboard and screen reader. |
 
-Playwright has an established axe integration. The official Deque .NET package depends on
-`Deque.AxeCore.Commons`, which carries an MPL-2.0 license outside the current dependency-review
-allowlist. Pa11y adds a separate browser CLI and runtime. Lighthouse is suitable for advisory
-diagnostics. Targeted Playwright assertions supply the current CI coverage. A general axe rule scan
-remains open until a pinned dependency passes license review. Start with the public tour list and
-one authenticated Management form. Include a deliberately broken synthetic page to prove detection
-and report confirmed WCAG A/AA failures with route and rule identifiers. Automation complements
-keyboard and screen-reader review.
-[Playwright accessibility testing](https://playwright.dev/docs/accessibility-testing),
-[Deque .NET package](https://github.com/dequelabs/axe-core-nuget/blob/develop/packages/playwright/README.md),
-and [Pa11y](https://pa11y.org/).
+The hosted browser check runs the pinned IBM Equal Access engine 4.0.35 with its WCAG 2.2 A/AA ruleset.
+It scans the English public tour list at `/en/group-bike-tours` with a synthetic published tour and
+the authenticated customer form at `/customers/create/personal-info`. A missing alternative on a
+synthetic image proved detection in Chromium. The smoke tests report confirmed violations by route and
+rule ID. Keep the targeted Playwright assertions and the manual keyboard and screen-reader checks above.
+[Engine usage](https://github.com/IBMa/equal-access/blob/4.0.35/accessibility-checker-engine/README.md)
+
+The archive declares Apache-2.0 and no runtime package dependencies. The browser bundle includes its
+own Apache-2.0 notice. CI checks the archive digest before extracting only the browser bundle. The
+SharedKernel Playwright helper also verifies the bundle digest before executing it. The engine remains
+a test input. [Pinned release](https://github.com/IBMa/equal-access/releases/tag/4.0.35)
+
+To run the same two routes locally, provision the verified test bundle and run this class through the
+existing hosted harness.
+
+```bash
+(
+  set -euo pipefail
+  archive="$(mktemp)"
+  bundle="$(mktemp)"
+  trap 'rm -f -- "$archive" "$bundle"' EXIT
+  curl --fail --silent --show-error --location --proto '=https' --max-time 60 --retry 3 \
+    --output "$archive" \
+    https://registry.npmjs.org/accessibility-checker-engine/-/accessibility-checker-engine-4.0.35.tgz
+  printf '%s  %s\n' 'e0d00253f68180a1064fa36467012fe8ed1682fffa0b2072b66a9cacaaff702e' "$archive" \
+    | sha256sum --check --strict
+  tar -xOzf "$archive" package/ace.js > "$bundle"
+  VT_WCAG_ENGINE_PATH="$bundle" dotnet test \
+    --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.HostedTests.csproj \
+    --filter-class '*BrowserAccessibilitySmokeTests'
+)
+```

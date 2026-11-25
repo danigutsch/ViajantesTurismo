@@ -1,5 +1,5 @@
-using PandaBear.ObjectStorage;
-using PandaBear.ObjectStorage.S3;
+using SharedKernel.ObjectStorage;
+using SharedKernel.ObjectStorage.S3;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using PandaBear.Testing;
-using PandaBear.EventSourcing;
-using PandaBear.EventSourcing.Npgsql;
-using PandaBear.MalwareScanning;
+using SharedKernel.Testing;
+using SharedKernel.EventSourcing;
+using SharedKernel.EventSourcing.Npgsql;
+using SharedKernel.MalwareScanning;
 using Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -23,7 +23,7 @@ using ViajantesTurismo.Catalog.UnitTests.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
 public sealed class InfrastructureDependencyInjectionTests
 {
     [Fact]

@@ -1,6 +1,6 @@
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Testing.Behavior;
-using PandaBear.Results;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 

@@ -1,4 +1,4 @@
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Branding;
 
 namespace ViajantesTurismo.Admin.Application.Documents;

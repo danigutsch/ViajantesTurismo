@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using PandaBear.Testing.Roslyn;
+using SharedKernel.Testing.Roslyn;
 
 namespace ViajantesTurismo.Architecture.Analyzers.Tests;
 
@@ -134,7 +134,7 @@ public sealed class ThinToolWrapperAnalyzerTests
             }
             """;
         var source = (topLevel ? topLevelEntryPoint : explicitEntryPoint) + "\n" + implementation;
-        var compilation = PandaBear.Testing.Roslyn.AnalyzerTestHarness.CreateCompilation(source, string.Empty);
+        var compilation = SharedKernel.Testing.Roslyn.AnalyzerTestHarness.CreateCompilation(source, string.Empty);
         var executable = compilation.WithOptions(compilation.Options.WithOutputKind(OutputKind.ConsoleApplication));
         var options = new AnalyzerOptions([], selected ? ToolOptions : new TestAnalyzerConfigOptionsProvider(null));
 

@@ -17,49 +17,49 @@
       "rollForward": false
     },
     "pandabear.sharedkernel.versioning.tool": {
-      "version": "0.1.0-alpha.795.1",
+      "version": "0.1.0-alpha.860.1",
       "commands": [
         "release"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.ci.tool": {
-      "version": "0.1.0-alpha.795.1",
+      "version": "0.1.0-alpha.860.1",
       "commands": [
         "ci"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.playwrightmcp.tool": {
-      "version": "0.1.0-alpha.795.1",
+      "version": "0.1.0-alpha.860.1",
       "commands": [
         "browsermcp"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.testing.codefixrunner": {
-      "version": "0.1.0-alpha.795.1",
+      "version": "0.1.0-alpha.860.1",
       "commands": [
         "codefix"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.repoconfig.tool": {
-      "version": "0.1.0-alpha.795.1",
+      "version": "0.1.0-alpha.860.1",
       "commands": [
         "repo"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.documentation.tool": {
-      "version": "0.1.0-alpha.795.1",
+      "version": "0.1.0-alpha.860.1",
       "commands": [
         "docs"
       ],
       "rollForward": false
     },
     "pandabear.sharedkernel.k6.tool": {
-      "version": "0.1.0-alpha.795.1",
+      "version": "0.1.0-alpha.860.1",
       "commands": [
         "loadtest"
       ],

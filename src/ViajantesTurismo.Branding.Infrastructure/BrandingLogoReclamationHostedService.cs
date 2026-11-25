@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PandaBear.Scheduling;
+using SharedKernel.Scheduling;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
 

@@ -2,11 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using PandaBear.Branding;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.Messaging.IntegrationEvents;
-using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
-using PandaBear.Npgsql;
+using SharedKernel.Branding;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Npgsql;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
@@ -86,9 +86,9 @@ public static class BrandingInfrastructureDependencyInjection
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        options.Schema = SharedKernelSchemas.Messaging;
+        options.Schema = DatabaseSchemas.Messaging;
         options.OutboxSchema = BrandingDbContext.SchemaName;
-        options.TransportSchema = SharedKernelSchemas.Messaging;
+        options.TransportSchema = DatabaseSchemas.Messaging;
         options.ExcludeTransportFromMigrations = true;
     }
 

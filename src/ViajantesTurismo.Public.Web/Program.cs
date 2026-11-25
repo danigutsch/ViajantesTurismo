@@ -1,12 +1,12 @@
 using System.Globalization;
-using PandaBear.AspNetCore;
-using PandaBear.AspNetCore.Localization;
-using PandaBear.AspNetCore.Seo;
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.AspNetCore;
+using SharedKernel.AspNetCore.Localization;
+using SharedKernel.AspNetCore.Seo;
+using SharedKernel.HttpCaching.AspNetCore;
 using ViajantesTurismo.Public.Web;
 using ViajantesTurismo.Public.Web.Branding;
 using ViajantesTurismo.Public.Web.Catalog;
-using PandaBear.ServiceDefaults;
+using SharedKernel.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -4,14 +4,14 @@ using System.Text.Json;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 [Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaAccessibilityEvaluationTests
 {

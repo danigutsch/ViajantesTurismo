@@ -1,4 +1,4 @@
-using PandaBear.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 

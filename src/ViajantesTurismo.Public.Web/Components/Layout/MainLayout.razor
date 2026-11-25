@@ -5,7 +5,7 @@
 
 <SiteHeader Label="@(Culture.IsPortuguese ? "Navegação principal" : "Main navigation")" Items="NavItems" CurrentPath="@CurrentPath">
     <Brand>
-        <a class="public-brand" href="@Culture.Localize("/")" aria-label="@HomeAriaLabel">
+        <a class="public-brand" href="@Culture.Localize("/")">
             @if (Logo is not null)
             {
                 <img class="public-brand__logo" src="@Logo.Value" alt="" />
@@ -38,8 +38,6 @@
     private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
 
     private string BrandName => PublicBranding.BrandName(Branding);
-
-    private string HomeAriaLabel => Culture.IsPortuguese ? $"Página inicial de {BrandName}" : $"{BrandName} home";
 
     private string BrandInitials => string.Concat(BrandName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(static part => char.ToUpperInvariant(part[0])));
 

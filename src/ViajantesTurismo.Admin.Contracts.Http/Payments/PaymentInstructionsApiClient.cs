@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json.Serialization.Metadata;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Contracts.Http;

@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using PandaBear.Mediator;
+using SharedKernel.Mediator;
 
 [assembly: InternalsVisibleTo("ViajantesTurismo.Admin.UnitTests")]
 [assembly: InternalsVisibleTo("ViajantesTurismo.HostedTests")]

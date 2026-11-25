@@ -1,7 +1,7 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore.Authentication;
-using PandaBear.AspNetCore.Authentication.Bff;
+using SharedKernel.AspNetCore.Authentication;
+using SharedKernel.AspNetCore.Authentication.Bff;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests;

@@ -1,4 +1,4 @@
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Testing.Builders;
 

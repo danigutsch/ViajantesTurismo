@@ -1,5 +1,5 @@
 using System.Net;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 

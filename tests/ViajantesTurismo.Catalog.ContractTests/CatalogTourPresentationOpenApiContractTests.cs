@@ -8,8 +8,8 @@ namespace ViajantesTurismo.Catalog.ContractTests;
 public sealed class CatalogTourPresentationOpenApiContractTests
 {
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Public_tour_contracts_separate_summary_and_details_from_management_fields()
     {
         // Arrange
@@ -55,8 +55,8 @@ public sealed class CatalogTourPresentationOpenApiContractTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Management_tour_mutations_document_not_found_and_conflict_responses()
     {
         // Arrange
@@ -89,8 +89,8 @@ public sealed class CatalogTourPresentationOpenApiContractTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Management_tour_contract_requires_a_positive_version()
     {
         // Arrange
@@ -114,8 +114,8 @@ public sealed class CatalogTourPresentationOpenApiContractTests
     [Theory]
     [InlineData("CatalogTourPublicationRequest")]
     [InlineData("UpsertCatalogTourPresentationRequest")]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Management_tour_mutation_requests_require_a_positive_expected_version(string schemaName)
     {
         // Arrange

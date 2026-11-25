@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
-using PandaBear.Testing.Logging;
+using SharedKernel.Testing.Logging;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
 public sealed class ServiceDefaultsPrivacyTelemetryTests
 {
     [Fact]

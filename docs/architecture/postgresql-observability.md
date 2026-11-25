@@ -86,17 +86,19 @@ Service defaults subscribe to these meters:
 
 | Meter | Metric | Tags |
 | --- | --- | --- |
-| `SharedKernel.Observability.Npgsql` | `postgresql.index_health.collections` (`{collection}` counter) | `outcome` |
-| `SharedKernel.Observability.Npgsql` | `postgresql.index_health.assessments` (`{assessment}` counter) | `action`, `reason` |
+| `SharedKernel.Observability.Npgsql` | `sharedkernel.index_health.collections` (`{collection}` counter) | `db.system.name`, `sharedkernel.index_health.outcome` |
+| `SharedKernel.Observability.Npgsql` | `sharedkernel.index_health.assessments` (`{assessment}` counter) | `db.system.name`, `sharedkernel.index_health.action`, `sharedkernel.index_health.reason` |
 
-`postgresql.index_health.collections` has only these `outcome` values:
+Both metrics report `db.system.name=postgresql`.
 
-- `outcome`: `collected`, `permission_denied`, `unsupported`, `unavailable`
+`sharedkernel.index_health.collections` reports these outcomes:
 
-`postgresql.index_health.assessments` has only these values:
+- `sharedkernel.index_health.outcome` is `collected`, `permission_denied`, `unsupported`, or `unavailable`.
 
-- `action`: `insufficient_evidence`, `review_creation`, `review_modification`
-- `reason`: `statistics_unavailable`, `statistics_window_too_short`, `table_too_small`,
+`sharedkernel.index_health.assessments` has only these values:
+
+- `sharedkernel.index_health.action` is `insufficient_evidence`, `review_creation`, or `review_modification`.
+- `sharedkernel.index_health.reason` is `statistics_unavailable`, `statistics_window_too_short`, `table_too_small`,
   `protected_index`, `unsupported_index_shape`, `per_object_statistics_window_unavailable`,
   `high_index_read_volume`, `high_sequential_scan_volume`, `insufficient_activity`
 

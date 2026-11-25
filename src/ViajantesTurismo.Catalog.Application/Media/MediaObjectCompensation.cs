@@ -1,4 +1,4 @@
-using PandaBear.ObjectStorage;
+using SharedKernel.ObjectStorage;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 

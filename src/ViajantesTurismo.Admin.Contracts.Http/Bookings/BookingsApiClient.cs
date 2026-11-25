@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using Microsoft.Extensions.Logging;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Contracts.Http;

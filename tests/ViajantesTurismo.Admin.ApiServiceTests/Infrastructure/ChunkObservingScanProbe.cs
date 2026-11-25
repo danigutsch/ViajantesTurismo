@@ -1,6 +1,6 @@
-using PandaBear.MalwareScanning;
-using PandaBear.Testing;
-using PandaBear.Testing.MalwareScanning;
+using SharedKernel.MalwareScanning;
+using SharedKernel.Testing;
+using SharedKernel.Testing.MalwareScanning;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Infrastructure;
 

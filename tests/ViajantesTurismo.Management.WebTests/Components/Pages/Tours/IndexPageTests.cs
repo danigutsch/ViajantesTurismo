@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Tours.Index;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Tours;

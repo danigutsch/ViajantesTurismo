@@ -1,9 +1,9 @@
 using ImageMagick;
-using PandaBear.ImageProcessing;
-using PandaBear.MalwareScanning;
-using PandaBear.Results;
-using PandaBear.Testing.MalwareScanning;
-using PandaBear.Testing;
+using SharedKernel.ImageProcessing;
+using SharedKernel.MalwareScanning;
+using SharedKernel.Results;
+using SharedKernel.Testing.MalwareScanning;
+using SharedKernel.Testing;
 using ViajantesTurismo.Branding.Infrastructure;
 using TestTraits = ViajantesTurismo.Branding.InfrastructureTests.Infrastructure.TestTraits;
 

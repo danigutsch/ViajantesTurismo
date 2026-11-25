@@ -1,4 +1,4 @@
-using PandaBear.EventSourcing;
+using SharedKernel.EventSourcing;
 
 namespace ViajantesTurismo.Catalog.Application.Tours;
 

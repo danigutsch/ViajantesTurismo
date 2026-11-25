@@ -1,11 +1,11 @@
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class PaymentAccountStoredStateTests
 {
     [Theory]

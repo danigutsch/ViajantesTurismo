@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.RequiredCheckContractTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;

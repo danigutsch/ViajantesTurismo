@@ -1,4 +1,4 @@
-using PandaBear.DispositionHold;
+using SharedKernel.DispositionHold;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 
 namespace ViajantesTurismo.Admin.Testing.Fakes;

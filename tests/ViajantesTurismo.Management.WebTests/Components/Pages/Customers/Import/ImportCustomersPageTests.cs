@@ -1,5 +1,5 @@
-using PandaBear.Testing;
-using PandaBear.HttpClients;
+using SharedKernel.Testing;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using System.Globalization;
 using System.Text;
@@ -17,7 +17,7 @@ public sealed class ImportCustomersPageTests : BunitContext
 
     public ImportCustomersPageTests()
     {
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(_failures);
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }

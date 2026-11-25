@@ -1,6 +1,6 @@
 using Npgsql;
-using PandaBear.Testing;
-using PandaBear.Branding;
+using SharedKernel.Testing;
+using SharedKernel.Branding;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Resources;
 

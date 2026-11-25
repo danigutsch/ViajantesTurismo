@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.AspNetCore.Components.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -16,7 +16,7 @@ public class EditPageTests : BunitContext
     {
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
         Services.AddSingleton<ICountryService>(new FakeCountryService());
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
     }
 
     [Fact]

@@ -1,5 +1,5 @@
 using Bunit;
-using PandaBear.Blazor.Site;
+using SharedKernel.Blazor.Site;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Components.Shared;

@@ -26,7 +26,7 @@
       "id": 2,
       "type": "timeseries",
       "title": "Requests by outcome",
-      "description": "mediator_requests_total in requests/s by mediator_outcome (success, cancelled, error). Success includes commands that return a failed Result. Question: do commands return, cancel, or throw an exception?",
+      "description": "sharedkernel_mediator_requests_total in requests/s by sharedkernel_mediator_outcome (success, cancelled, error). Success includes commands that return a failed Result. Question: do commands return, cancel, or throw an exception?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -66,8 +66,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (mediator_outcome) (rate(mediator_requests_total{otel_scope_name=\"SharedKernel.Mediator\"}[$__rate_interval]))",
-          "legendFormat": "{{mediator_outcome}}",
+          "expr": "sum by (sharedkernel_mediator_outcome) (rate(sharedkernel_mediator_requests_total{otel_scope_name=\"SharedKernel.Mediator\"}[$__rate_interval]))",
+          "legendFormat": "{{sharedkernel_mediator_outcome}}",
           "refId": "A"
         }
       ]
@@ -76,7 +76,7 @@
       "id": 3,
       "type": "timeseries",
       "title": "Request exception ratio",
-      "description": "mediator_requests_total with outcome error divided by all dispatched requests (percent). Shows 0% when requests are active and no exceptions are observed. Question: what share of requests throws an exception?",
+      "description": "sharedkernel_mediator_requests_total with outcome error divided by all dispatched requests (percent). Shows 0% when requests are active and no exceptions are observed. Question: what share of requests throws an exception?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -111,7 +111,7 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "(sum(rate(mediator_requests_total{otel_scope_name=\"SharedKernel.Mediator\",mediator_outcome=\"error\"}[$__rate_interval])) or vector(0)) / (sum(rate(mediator_requests_total{otel_scope_name=\"SharedKernel.Mediator\"}[$__rate_interval])) > 0)",
+          "expr": "(sum(rate(sharedkernel_mediator_requests_total{otel_scope_name=\"SharedKernel.Mediator\",sharedkernel_mediator_outcome=\"error\"}[$__rate_interval])) or vector(0)) / (sum(rate(sharedkernel_mediator_requests_total{otel_scope_name=\"SharedKernel.Mediator\"}[$__rate_interval])) > 0)",
           "legendFormat": "exception ratio",
           "refId": "A"
         }
@@ -121,7 +121,7 @@
       "id": 4,
       "type": "timeseries",
       "title": "Requests by request name",
-      "description": "mediator_requests_total in requests/s by mediator_request_name (a command type name). Question: which commands carry the traffic?",
+      "description": "sharedkernel_mediator_requests_total in requests/s by sharedkernel_mediator_request_name (a command type name). Question: which commands carry the traffic?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -161,8 +161,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "sum by (mediator_request_name) (rate(mediator_requests_total{otel_scope_name=\"SharedKernel.Mediator\"}[$__rate_interval]))",
-          "legendFormat": "{{mediator_request_name}}",
+          "expr": "sum by (sharedkernel_mediator_request_name) (rate(sharedkernel_mediator_requests_total{otel_scope_name=\"SharedKernel.Mediator\"}[$__rate_interval]))",
+          "legendFormat": "{{sharedkernel_mediator_request_name}}",
           "refId": "A"
         }
       ]
@@ -171,7 +171,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "p95 request duration by request name",
-      "description": "mediator_request_duration_milliseconds p95 in ms by mediator_request_name. Question: which command is slow?",
+      "description": "sharedkernel_mediator_request_duration_seconds p95 in seconds by sharedkernel_mediator_request_name. Question: which command is slow?",
       "datasource": {
         "type": "prometheus",
         "uid": "Prometheus"
@@ -185,7 +185,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -206,8 +206,8 @@
             "type": "prometheus",
             "uid": "Prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le, mediator_request_name) (rate(mediator_request_duration_milliseconds_bucket{otel_scope_name=\"SharedKernel.Mediator\"}[$__rate_interval])))",
-          "legendFormat": "{{mediator_request_name}}",
+          "expr": "histogram_quantile(0.95, sum by (le, sharedkernel_mediator_request_name) (rate(sharedkernel_mediator_request_duration_seconds_bucket{otel_scope_name=\"SharedKernel.Mediator\"}[$__rate_interval])))",
+          "legendFormat": "{{sharedkernel_mediator_request_name}}",
           "refId": "A"
         }
       ]

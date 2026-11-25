@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Media;

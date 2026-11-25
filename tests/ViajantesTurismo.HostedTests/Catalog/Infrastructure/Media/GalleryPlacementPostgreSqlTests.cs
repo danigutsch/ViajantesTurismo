@@ -1,11 +1,11 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class GalleryPlacementPostgreSqlTests(HostedTestFixture shared) : IAsyncLifetime
 {

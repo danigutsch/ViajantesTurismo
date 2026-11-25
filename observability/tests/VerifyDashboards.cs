@@ -12,7 +12,7 @@
 
 using System.Text.Json;
 using Microsoft.Playwright;
-using PandaBear.Documentation;
+using SharedKernel.Documentation;
 
 var grafana = args[0].TrimEnd('/');
 var output = Directory.CreateDirectory(args[1]).FullName;

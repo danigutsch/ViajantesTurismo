@@ -6,7 +6,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 /// Guards the Razor UIs whose Content-Security-Policy <c>style-src</c> omits <c>'unsafe-inline'</c>: the browser blocks every
 /// inline <c>style</c> attribute there, nonce or not, so the markup must use stylesheet classes instead.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
 public sealed partial class InlineStyleAttributeTests
 {
     private static readonly string[] StrictPolicyHosts =

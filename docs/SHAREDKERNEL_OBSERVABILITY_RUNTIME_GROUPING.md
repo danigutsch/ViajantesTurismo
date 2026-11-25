@@ -80,7 +80,7 @@ Belongs here:
 Current code that fits:
 
 - `src/SharedKernel/SharedKernel.Mediator.Abstractions/MediatorTelemetry.cs`
-- `src/SharedKernel/SharedKernel.Mediator/SharedKernelMediatorActivitySource.cs`
+- `src/SharedKernel/SharedKernel.Mediator/MediatorActivitySource.cs`
 - `src/SharedKernel/SharedKernel.Mediator/AppMediatorInstrumentation.cs`
 - `src/SharedKernel/SharedKernel.Mediator/ActivityBehavior.cs`
 

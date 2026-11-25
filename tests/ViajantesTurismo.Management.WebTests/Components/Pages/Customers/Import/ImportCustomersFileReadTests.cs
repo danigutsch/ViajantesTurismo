@@ -1,6 +1,6 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using System.Text;
-using PandaBear.Blazor;
+using SharedKernel.Blazor;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.ContractConstants;

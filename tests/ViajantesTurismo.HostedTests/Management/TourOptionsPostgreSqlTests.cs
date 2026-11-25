@@ -1,6 +1,6 @@
-using PandaBear.HttpClients;
-using PandaBear.Testing;
-using PandaBear.Testing.AspNetCore;
+using SharedKernel.HttpClients;
+using SharedKernel.Testing;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 

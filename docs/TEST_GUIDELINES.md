@@ -64,9 +64,8 @@ Declare `Scope` with `[TestScope(...)]` (assembly level for a homogeneous projec
 
 Use constants instead of hardcoded trait strings when a constant exists:
 
-- shared trait names: `PandaBear.Testing.TestTraitNames`
-- shared cross-project values: `PandaBear.Testing.TestTraitValues`
-- SharedKernel package taxonomy: `PandaBear.Testing.SharedKernelTestTraitNames`
+- shared trait names: `SharedKernel.Testing.TestTraitNames`
+- shared cross-project values: `SharedKernel.Testing.TestTraitValues`
 - `Area` and `Surface` values: constants defined once; seam values use the typed attributes, not constants
 
 `SKTEST009` reports `Trait` string literals when a canonical constant can be identified safely.
@@ -352,9 +351,9 @@ Benefits: Standard pattern, clear flow, helps identify tests doing too much.
 ### Assertion readability
 
 Use the repository-owned assertion package across maintained tests:
-`PandaBear.Testing.Assertions`. Wrapper-first is
+`SharedKernel.Testing.Assertions`. Wrapper-first is
 the policy for maintained test code. If a test project does not already reference the package,
-add the project reference and a global `<Using Include="PandaBear.Testing.Assertions" />`
+add the project reference and a global `<Using Include="SharedKernel.Testing.Assertions" />`
 (or a file `using`) rather than adding direct `Xunit.Assert` calls. `SKTEST006` reports direct
 `Xunit.Assert` calls, which are not permitted in test code.
 
@@ -362,7 +361,7 @@ Use extension-style wrapper APIs when they exist, such as `actual.ShouldBe(expec
 `actual.ShouldNotBeNull()`, `items.ShouldContain(expected)`,
 `text.ShouldContain(expected, StringComparison.Ordinal)`, and
 `action.ShouldThrow<InvalidOperationException>()`. Use `Should*` assertion extensions exclusively.
-The sole `Xunit.Assert` implementation boundary is the `PandaBear.Testing.Assertions` package
+The sole `Xunit.Assert` implementation boundary is the `PandaBear.SharedKernel.Testing.Assertions` package
 (`src/SharedKernel/SharedKernel.Testing.Assertions` in the PandaBear.SharedKernel repository),
 where wrappers delegate to xUnit. Add new extension wrappers only for assertion patterns with repeated
 callers; do not introduce an external fluent assertion package.

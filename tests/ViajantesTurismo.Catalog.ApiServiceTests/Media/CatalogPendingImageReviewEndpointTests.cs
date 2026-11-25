@@ -1,6 +1,6 @@
 using System.Text.Json;
-using PandaBear.BuildingBlocks;
-using PandaBear.Testing;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;

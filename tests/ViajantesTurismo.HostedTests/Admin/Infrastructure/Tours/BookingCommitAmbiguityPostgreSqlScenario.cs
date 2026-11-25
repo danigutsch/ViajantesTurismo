@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 using ViajantesTurismo.Admin.Application.Tours;
@@ -29,8 +29,7 @@ internal static class BookingCommitAmbiguityPostgreSqlScenario
         builder.Services.AddSingleton(TimeProvider.System);
         builder.AddApplication();
         builder.AddInfrastructure(addRuntimeBackgroundServices: false);
-        var observerOptions = new DbContextOptionsBuilder<AdminWriteDbContext>().UseNpgsql(connectionString).Options;
-        var interceptor = new CommittedTimeoutInterceptor(observerOptions,
+        var interceptor = new CommittedTimeoutInterceptor(connectionString,
             reader => reader.Set<Booking>().Select(booking => booking.Id));
         builder.Services.ConfigureDbContext<AdminWriteDbContext>(options => options.AddInterceptors(interceptor));
 

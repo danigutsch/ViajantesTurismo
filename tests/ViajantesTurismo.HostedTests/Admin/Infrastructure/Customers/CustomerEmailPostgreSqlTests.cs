@@ -1,12 +1,12 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Customers;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Customers;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CustomerEmailPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {

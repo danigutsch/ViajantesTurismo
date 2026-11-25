@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
-using PandaBear.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Migrations;
 
@@ -19,7 +19,7 @@ public sealed class LimitBrandingTransportPayload : Migration
         migrationBuilder.AddCheckConstraint(
             name: ConstraintName,
             table: TransportTable,
-            schema: SharedKernelSchemas.Messaging,
+            schema: DatabaseSchemas.Messaging,
             sql: """
                 "ConsumerName" <> 'admin'
                 OR "EventType" <> 'branding.settings.changed'
@@ -33,6 +33,6 @@ public sealed class LimitBrandingTransportPayload : Migration
         migrationBuilder.DropCheckConstraint(
             name: ConstraintName,
             table: TransportTable,
-            schema: SharedKernelSchemas.Messaging);
+            schema: DatabaseSchemas.Messaging);
     }
 }

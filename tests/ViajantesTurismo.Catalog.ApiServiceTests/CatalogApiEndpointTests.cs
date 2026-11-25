@@ -1,4 +1,4 @@
-using PandaBear.Testing.ObjectStorage;
+using SharedKernel.Testing.ObjectStorage;
 using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
 using System.Net.Http.Headers;
@@ -6,9 +6,10 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
-using PandaBear.AI;
-using PandaBear.EventSourcing;
-using PandaBear.Testing.Http;
+using SharedKernel.AI;
+using SharedKernel.Testing.AI;
+using SharedKernel.EventSourcing;
+using SharedKernel.Testing.Http;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Api.Media;
@@ -22,8 +23,8 @@ using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 [Collection(CatalogTelemetryGroup.Name)]
 public sealed class CatalogApiEndpointTests
 {
@@ -706,7 +707,7 @@ public sealed class CatalogApiEndpointTests
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
         var objectStore = MediaObjectStoreTestFactory.Create();
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", "Generated caption"));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", "Generated caption"));
         var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         objectStore.Seed(image.SourceObjectKey, [1, 2, 3], "image/jpeg", "sha256:abc");
@@ -727,8 +728,8 @@ public sealed class CatalogApiEndpointTests
         updated.Caption.ShouldBe("Generated caption");
         updated.RequiresHumanReview.ShouldBeTrue();
         updated.IsAiGenerated.ShouldBeTrue();
-        generator.Request.ShouldNotBeNull();
-        generator.Request.Context.ShouldBe("Hero image");
+        var recordedRequest = generator.LastRequest.ShouldNotBeNull();
+        recordedRequest.Context.ShouldBe("Hero image");
     }
 
     [Fact]
@@ -798,7 +799,7 @@ public sealed class CatalogApiEndpointTests
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
         var objectStore = MediaObjectStoreTestFactory.Create();
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", null));
         var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         await using var factory = CatalogApiTestHost.Create(mediaStore, objectStore, generator);
@@ -812,7 +813,7 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        generator.Request.ShouldBeNull();
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -821,8 +822,7 @@ public sealed class CatalogApiEndpointTests
         // Arrange
         var mediaStore = new TestPublicMediaImageStore();
         var objectStore = MediaObjectStoreTestFactory.Create();
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", null));
-        generator.Throw(new ImageTextGenerationException("Proxy failed."));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Generated beach alt", null)) { Exception = new ImageTextGenerationException("Proxy failed.") };
         var image = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "draft-source.jpg", "draft-640.jpg", "sha256:abc", "Reviewed alt", 0, true);
         await mediaStore.Upsert(image, TestContext.Current.CancellationToken);
         objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");

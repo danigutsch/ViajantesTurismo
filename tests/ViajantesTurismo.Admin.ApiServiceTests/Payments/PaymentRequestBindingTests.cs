@@ -2,8 +2,8 @@ using System.Text;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Payments;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, PandaBear.Testing.TestTraitValues.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, SharedKernel.Testing.TestTraitValues.TestServerHost)]
 public sealed class PaymentRequestBindingTests
 {
     [Theory]
@@ -20,7 +20,7 @@ public sealed class PaymentRequestBindingTests
         }, environment: environment, configureConfiguration: configuration => configuration["Payments:Enabled"] = "true");
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
-        client.DefaultRequestHeaders.Add(PandaBear.Idempotency.AspNetCore.IdempotencyKeyHeader.Name, Guid.CreateVersion7().ToString("N"));
+        client.DefaultRequestHeaders.Add(SharedKernel.Idempotency.AspNetCore.IdempotencyKeyHeader.Name, Guid.CreateVersion7().ToString("N"));
         using var input = new StringContent("{", Encoding.UTF8, "application/json");
 
         // Act

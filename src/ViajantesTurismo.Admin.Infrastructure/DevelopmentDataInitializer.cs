@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.Results;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;

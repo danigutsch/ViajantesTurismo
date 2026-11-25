@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using PandaBear.MalwareScanning.ClamAv;
-using PandaBear.Testing;
+using SharedKernel.MalwareScanning.ClamAv;
+using SharedKernel.Testing;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
 using ViajantesTurismo.Catalog.Infrastructure.Tours;
@@ -9,8 +9,8 @@ using ViajantesTurismo.Testing.Hosting;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
 public sealed class CatalogIntegrationEventWorkerProgramTests
 {
     private const string WorkerAssemblyName = "ViajantesTurismo.Catalog.IntegrationEventWorker";

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.Idempotency;
+using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.OpenApi;
-using PandaBear.EventSourcing;
-using PandaBear.HttpCaching.AspNetCore;
-using PandaBear.Results;
+using SharedKernel.EventSourcing;
+using SharedKernel.HttpCaching.AspNetCore;
+using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Api.Media;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;

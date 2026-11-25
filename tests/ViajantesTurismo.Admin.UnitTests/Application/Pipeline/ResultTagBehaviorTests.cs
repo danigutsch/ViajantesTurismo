@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Bookings.CancelBooking;
 using ViajantesTurismo.Admin.Application.Pipeline;
 

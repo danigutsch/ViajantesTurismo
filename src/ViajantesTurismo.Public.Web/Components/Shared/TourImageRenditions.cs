@@ -1,5 +1,5 @@
-using PandaBear.Blazor.Site;
-using PandaBear.InputNormalization;
+using SharedKernel.Blazor.Site;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Public.Web.Components.Shared;

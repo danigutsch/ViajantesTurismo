@@ -1,9 +1,9 @@
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
-using PandaBear.Results;
-using PandaBear.Testing;
-using PandaBear.Testing.Logging;
+using SharedKernel.Results;
+using SharedKernel.Testing;
+using SharedKernel.Testing.Logging;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests.Media;

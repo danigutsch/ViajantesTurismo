@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;
@@ -16,7 +16,7 @@ public sealed class ImportCustomersCancelRaceTests : BunitContext
 
     public ImportCustomersCancelRaceTests()
     {
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(failures);
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(failures);
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(fakeCustomersApi);
     }

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.DispositionHold.EntityFrameworkCore;
+using SharedKernel.DispositionHold.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 

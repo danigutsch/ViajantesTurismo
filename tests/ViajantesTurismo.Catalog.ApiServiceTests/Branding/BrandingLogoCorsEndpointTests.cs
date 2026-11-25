@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Configuration;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;

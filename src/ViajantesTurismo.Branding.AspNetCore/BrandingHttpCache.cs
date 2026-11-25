@@ -1,4 +1,4 @@
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Branding.AspNetCore;
 

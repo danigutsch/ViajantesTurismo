@@ -47,9 +47,13 @@ SKSTYLE013 reports invalid catalog entries. The catalog records each value, its 
 the fully qualified field published by its owner. The initial entries cover .NET host environment
 names, API authentication keys, and ClamAV configuration keys.
 
-Use the owning constant in application code. Record any required, narrowly scoped exception with
-its owner and review date. Test fixtures, launch settings, and the AppHost environment forms that
-use double underscores are outside this catalog.
+Use the owning constant in application code. The Solution Build job checks that every owner exists
+and that production C# does not duplicate or redirect a registered constant, including owners
+resolved from the pinned SharedKernel packages. To validate an intentional compatibility alias,
+add its declaring assembly and field to the catalog with a fourth column explaining the exception,
+its owner, and review date. Use the canonical value by reference in the alias initializer.
+Test fixtures, generated C# files, configuration files, and AppHost environment forms that use
+double underscores are outside the check.
 
 ### Specific Conventions
 

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using ViajantesTurismo.Resources;
 

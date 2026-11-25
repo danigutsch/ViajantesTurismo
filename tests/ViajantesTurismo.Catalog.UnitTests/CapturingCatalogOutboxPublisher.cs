@@ -1,4 +1,4 @@
-using PandaBear.Messaging;
+using SharedKernel.Messaging;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

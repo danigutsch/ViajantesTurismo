@@ -1,5 +1,5 @@
 using Npgsql;
-using PandaBear.Idempotency;
+using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;

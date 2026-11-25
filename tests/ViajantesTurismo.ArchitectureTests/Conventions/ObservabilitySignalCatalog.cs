@@ -3,7 +3,7 @@ using System.Diagnostics.Metrics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using PandaBear.Observability;
+using SharedKernel.Observability;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -16,27 +16,27 @@ internal static class ObservabilitySignalCatalog
     /// <summary>Sources owned by the pinned SharedKernel libraries that the application uses.</summary>
     public static readonly string[] SharedKernelActivitySources =
     [
-        PandaBear.Mediator.SharedKernelMediatorActivitySource.ActivitySourceName,
-        PandaBear.HttpClients.HttpOutcomeMapper.ActivitySourceName,
-        PandaBear.EventSourcing.Npgsql.PostgreSqlEventSourcingTelemetry.Name,
-        "SharedKernel.MalwareScanning",
-        PandaBear.ObjectStorage.S3.S3ObjectStoreTelemetry.Name,
-        PandaBear.Scheduling.SchedulingTelemetry.Name,
+        SharedKernel.Mediator.MediatorActivitySource.ActivitySourceName,
+        SharedKernel.HttpClients.HttpOutcomeMapper.ActivitySourceName,
+        SharedKernel.EventSourcing.Npgsql.PostgreSqlEventSourcingTelemetry.Name,
+        SharedKernel.MalwareScanning.ClamAv.ClamAvMalwareScannerTelemetry.Name,
+        SharedKernel.ObjectStorage.S3.S3ObjectStoreTelemetry.Name,
+        SharedKernel.Scheduling.SchedulingTelemetry.Name,
     ];
 
     /// <summary>Stable events owned by the pinned SharedKernel libraries and documented here.</summary>
     public static readonly string[] SharedKernelLogEvents =
     [
-        $"PandaBear.AspNetCore/{PandaBear.AspNetCore.AspNetCoreTelemetry.UnhandledExceptionEventId}",
-        $"PandaBear.AspNetCore/{PandaBear.AspNetCore.AspNetCoreTelemetry.AuthenticationEventId}",
-        $"PandaBear.AspNetCore/{PandaBear.AspNetCore.AspNetCoreTelemetry.RateLimitRejectionEventId}",
-        "PandaBear.Blazor/7001",
-        "PermanentRedirectExtensions/1",
-        "PollingBackgroundService/1",
-        "ApplicationVersionLogger/1",
-        "ResultTransactionBehavior/1",
-        "PostgreSqlIntegrationEventTransportConsumer/1",
-        "PostgreSqlIntegrationEventTransportConsumer/2",
+        $"SharedKernel.AspNetCore/{SharedKernel.AspNetCore.AspNetCoreTelemetry.UnhandledExceptionEventId}",
+        $"SharedKernel.AspNetCore/{SharedKernel.AspNetCore.AspNetCoreTelemetry.AuthenticationEventId}",
+        $"SharedKernel.AspNetCore/{SharedKernel.AspNetCore.AspNetCoreTelemetry.RateLimitRejectionEventId}",
+        "SharedKernel.Blazor/7001",
+        "PermanentRedirectExtensions/4004",
+        "PollingBackgroundService/3001",
+        "ApplicationVersionLogger/1001",
+        "ResultTransactionBehavior/2001",
+        "PostgreSqlIntegrationEventTransportConsumer/2101",
+        "PostgreSqlIntegrationEventTransportConsumer/2102",
     ];
 
     /// <summary>Gets keys in the first cell of a named catalog table.</summary>

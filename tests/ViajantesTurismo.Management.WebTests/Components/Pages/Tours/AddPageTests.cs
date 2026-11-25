@@ -1,6 +1,6 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Add = ViajantesTurismo.Management.Web.Components.Pages.Tours.Add;
 
@@ -14,7 +14,7 @@ public class AddPageTests : BunitContext
 
     public AddPageTests()
     {
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(TimeProvider.System);
         _fakeToursApi = new FakeToursApiClient();
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);

@@ -1,6 +1,6 @@
 using System.Text;
-using PandaBear.InputNormalization;
-using PandaBear.Results;
+using SharedKernel.InputNormalization;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Catalog.Domain.PublicContent;
 

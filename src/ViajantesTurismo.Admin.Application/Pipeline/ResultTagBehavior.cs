@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Application.Pipeline;
 

@@ -1,5 +1,5 @@
 using System.Reflection;
-using PandaBear.DocumentRendering;
+using SharedKernel.DocumentRendering;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
 

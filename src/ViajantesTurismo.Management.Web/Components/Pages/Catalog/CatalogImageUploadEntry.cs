@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.Forms;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Catalog;
 

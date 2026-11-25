@@ -1,3 +1,3 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 [assembly: TestScope(TestScope.Integration)]

@@ -1,10 +1,10 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
-using HttpOutcome = PandaBear.HttpClients.HttpOutcome;
-using HttpOutcomeKind = PandaBear.HttpClients.HttpOutcomeKind;
+using HttpOutcome = SharedKernel.HttpClients.HttpOutcome;
+using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
@@ -19,7 +19,7 @@ public sealed class ReviewPageTests : BunitContext
 
     public ReviewPageTests()
     {
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(_failures);
         Services.AddSingleton(_state);
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
     }

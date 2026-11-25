@@ -1,8 +1,8 @@
-using PandaBear.Testing.Http;
+using SharedKernel.Testing.Http;
 using ImageMagick;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using PandaBear.Testing;
-using PandaBear.Testing.MalwareScanning;
+using SharedKernel.Testing;
+using SharedKernel.Testing.MalwareScanning;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.UploadWire.Testing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;

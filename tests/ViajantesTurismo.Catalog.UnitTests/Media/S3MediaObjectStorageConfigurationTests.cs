@@ -1,5 +1,5 @@
-using PandaBear.ObjectStorage;
-using PandaBear.ObjectStorage.S3;
+using SharedKernel.ObjectStorage;
+using SharedKernel.ObjectStorage.S3;
 using Amazon.S3;
 using Microsoft.Extensions.Options;
 

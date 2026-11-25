@@ -1,5 +1,5 @@
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;
 

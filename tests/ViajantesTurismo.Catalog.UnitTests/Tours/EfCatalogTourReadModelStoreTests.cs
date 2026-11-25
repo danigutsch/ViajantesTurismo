@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Catalog.UnitTests.Tours;
 public sealed class EfCatalogTourReadModelStoreTests
 {
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
     public async Task Tour_reload_observes_public_visibility_committed_while_waiting_for_a_lease()
     {
         // Arrange

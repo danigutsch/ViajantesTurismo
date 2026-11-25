@@ -1,5 +1,5 @@
 using Microsoft.Playwright;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 

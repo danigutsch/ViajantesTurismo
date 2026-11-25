@@ -53,4 +53,19 @@ internal static class MigrationBaselineFixture
         return await File.ReadAllTextAsync(
             Path.Combine(AppContext.BaseDirectory, "Fixtures", "MigrationBaselines", asset + ".sql"), ct);
     }
+
+    /// <summary>Writes a test manifest with the reviewed Catalog causation expansion and verification assets.</summary>
+    internal static async Task<string> WriteCatalogCausationManifest(MigrationExecutionPostgreSqlScenario scope, CancellationToken ct)
+    {
+        var directory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "MigrationExpansions");
+        var expand = await File.ReadAllTextAsync(Path.Combine(directory, "catalog-event-causation.sql"), ct);
+        var verify = await ReadCatalogCausationVerification(ct);
+        return await scope.WriteManifest("catalog-event-causation",
+            [new("expand", expand), new("verify", verify)], ct, journalSchema: "governed_migration_catalog");
+    }
+
+    /// <summary>Reads the maintained Catalog event causation verification asset.</summary>
+    internal static Task<string> ReadCatalogCausationVerification(CancellationToken ct) =>
+        File.ReadAllTextAsync(
+            Path.Combine(AppContext.BaseDirectory, "Fixtures", "MigrationExpansions", "catalog-event-causation-verify.sql"), ct);
 }

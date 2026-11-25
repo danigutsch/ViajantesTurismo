@@ -39,7 +39,7 @@ internal static class ImportCustomersConflictLoader
         foreach (var batch in emails.Chunk(ContractConstants.CustomerImportConflictLookupMaxKeys))
         {
             var idsOutcome = await customersApi.FindCustomerImportConflictIds(batch, ct);
-            if (idsOutcome is not { Kind: PandaBear.HttpClients.HttpOutcomeKind.Succeeded, Value: { } ids } || ids.Length != batch.Length)
+            if (idsOutcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } ids } || ids.Length != batch.Length)
             {
                 throw new InvalidOperationException(LoadFailureMessage);
             }
@@ -52,12 +52,12 @@ internal static class ImportCustomersConflictLoader
                 }
 
                 var detailsOutcome = await customersApi.GetCustomerById(id, ct);
-                if (detailsOutcome.Kind == PandaBear.HttpClients.HttpOutcomeKind.NotFound)
+                if (detailsOutcome.Kind == SharedKernel.HttpClients.HttpOutcomeKind.NotFound)
                 {
                     continue;
                 }
 
-                if (detailsOutcome is not { Kind: PandaBear.HttpClients.HttpOutcomeKind.Succeeded, Value: { } details })
+                if (detailsOutcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } details })
                 {
                     throw new InvalidOperationException(LoadFailureMessage);
                 }

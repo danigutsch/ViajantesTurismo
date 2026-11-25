@@ -1,10 +1,10 @@
-using PandaBear.AspNetCore.Authentication;
+using SharedKernel.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
-using PandaBear.Blazor;
-using PandaBear.BuildingBlocks;
+using SharedKernel.Blazor;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 

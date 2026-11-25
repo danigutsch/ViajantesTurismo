@@ -1,6 +1,6 @@
-using PandaBear.Testing;
-using PandaBear.IntegrationTesting;
-using PandaBear.Npgsql.Testing;
+using SharedKernel.Testing;
+using SharedKernel.IntegrationTesting;
+using SharedKernel.Npgsql.Testing;
 
 namespace ViajantesTurismo.HostedTests.Management.Security;
 

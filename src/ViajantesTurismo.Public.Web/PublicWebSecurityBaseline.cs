@@ -1,4 +1,4 @@
-using PandaBear.AspNetCore.RateLimiting;
+using SharedKernel.AspNetCore.RateLimiting;
 
 namespace ViajantesTurismo.Public.Web;
 

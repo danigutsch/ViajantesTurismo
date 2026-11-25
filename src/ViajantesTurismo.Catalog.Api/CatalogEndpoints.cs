@@ -1,5 +1,5 @@
-using PandaBear.ApiVersioning.AspNetCore;
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.ApiVersioning.AspNetCore;
+using SharedKernel.HttpCaching.AspNetCore;
 using ViajantesTurismo.Catalog.Api.Media;
 using ViajantesTurismo.Catalog.Api.PublicContent;
 using ViajantesTurismo.Catalog.Api.Tours;

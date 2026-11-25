@@ -1,15 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using PandaBear.DispositionHold;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.DispositionHold;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
@@ -514,7 +514,8 @@ public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixt
         var successfulAudit = audits.ShouldHaveSingleItem(record => record.Operation == DocumentAuditOperation.ReleaseHold);
         successfulAudit.Outcome.ShouldBe(DocumentAuditOutcome.Succeeded);
         var hookFailure = Harness.ReleaseLogs.ShouldHaveSingleItem(record => record.Level == LogLevel.Error);
-        hookFailure.EventId.Name.ShouldBe("LogHookFailure");
+        hookFailure.EventId.Id.ShouldBe(2001);
+        hookFailure.EventId.Name.ShouldBe("OutcomeHookFailed");
     }
 
     [Fact]

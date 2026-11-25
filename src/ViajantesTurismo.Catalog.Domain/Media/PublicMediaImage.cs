@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using PandaBear.BuildingBlocks;
-using PandaBear.Results;
-using PandaBear.InputNormalization;
-using PandaBear.ObjectStorage;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Results;
+using SharedKernel.InputNormalization;
+using SharedKernel.ObjectStorage;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 
 namespace ViajantesTurismo.Catalog.Domain.Media;

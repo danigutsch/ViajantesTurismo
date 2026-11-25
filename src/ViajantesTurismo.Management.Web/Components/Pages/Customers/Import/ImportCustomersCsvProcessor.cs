@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
-using PandaBear.Results;
-using PandaBear.Tabular;
+using SharedKernel.Results;
+using SharedKernel.Tabular;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;

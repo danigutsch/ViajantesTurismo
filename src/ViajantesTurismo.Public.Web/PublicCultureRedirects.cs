@@ -1,6 +1,6 @@
-using PandaBear.AspNetCore;
-using PandaBear.AspNetCore.Localization;
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.AspNetCore;
+using SharedKernel.AspNetCore.Localization;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Public.Web;
 

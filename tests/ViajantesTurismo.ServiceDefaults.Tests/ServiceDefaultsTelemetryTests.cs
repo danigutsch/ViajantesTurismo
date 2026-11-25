@@ -9,7 +9,7 @@ using OpenTelemetry.Trace;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
 public sealed class ServiceDefaultsTelemetryTests
 {
     [Theory]

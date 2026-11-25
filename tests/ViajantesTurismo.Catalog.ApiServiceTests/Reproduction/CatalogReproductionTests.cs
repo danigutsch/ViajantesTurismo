@@ -1,5 +1,5 @@
-using PandaBear.Testing.Snapshots;
-using PandaBear.Testing;
+using SharedKernel.Testing.Snapshots;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Testing.Reproduction;
 

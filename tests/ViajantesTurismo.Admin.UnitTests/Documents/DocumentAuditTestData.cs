@@ -20,7 +20,7 @@ internal static class DocumentAuditTestData
         FakeUnitOfWork unitOfWork) => new(auditStore, unitOfWork, TimeProvider.System);
 
     /// <summary>Creates a hold place audit record for a document with fixed actor, correlation and time.</summary>
-    public static PandaBear.Results.Result<DocumentAuditRecord> CreateHoldRecord(
+    public static SharedKernel.Results.Result<DocumentAuditRecord> CreateHoldRecord(
         DocumentAuditOutcome outcome,
         DocumentAuditReasonCode reasonCode,
         Guid? holdId,

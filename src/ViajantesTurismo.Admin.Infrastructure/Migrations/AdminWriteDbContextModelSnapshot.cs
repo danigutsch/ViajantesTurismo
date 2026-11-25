@@ -24,7 +24,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "unaccent");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("PandaBear.DispositionHold.Hold", b =>
+            modelBuilder.Entity("SharedKernel.DispositionHold.Hold", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -84,7 +84,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("holds", "disposition_hold");
                 });
 
-            modelBuilder.Entity("PandaBear.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
+            modelBuilder.Entity("SharedKernel.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
                 {
                     b.Property<string>("Scope")
                         .HasMaxLength(200)
@@ -122,7 +122,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("idempotency_keys", "messaging");
                 });
 
-            modelBuilder.Entity("PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxMessage", b =>
+            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -220,7 +220,7 @@ namespace ViajantesTurismo.Admin.Infrastructure.Migrations
                     b.ToTable("outbox_messages", "messaging");
                 });
 
-            modelBuilder.Entity("PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventTransportMessage", b =>
+            modelBuilder.Entity("SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventTransportMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");

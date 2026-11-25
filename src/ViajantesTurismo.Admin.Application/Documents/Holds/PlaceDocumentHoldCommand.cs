@@ -1,5 +1,5 @@
-using PandaBear.DispositionHold;
-using PandaBear.Results;
+using SharedKernel.DispositionHold;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents.Holds;

@@ -1,11 +1,11 @@
 using System.Runtime.InteropServices;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentDraftTests
 {
     [Fact]
@@ -58,7 +58,7 @@ public sealed class DocumentDraftTests
         var result = draft.Finalize(artifact, now);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
         draft.Status.ShouldBe(DocumentStatus.Approved);
         draft.FinalizedAt.ShouldBeNull();
         draft.HasAvailableFinalizedArtifact.ShouldBeFalse();
@@ -103,7 +103,7 @@ public sealed class DocumentDraftTests
         var result = draft.EnsureSourceIsCurrent("CHANGED-SOURCE-VERSION");
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public sealed class DocumentDraftTests
         var result = draft.EnsureTemplateIsCurrent();
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-using PandaBear.Branding;
+using SharedKernel.Branding;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Public.Web.Branding;

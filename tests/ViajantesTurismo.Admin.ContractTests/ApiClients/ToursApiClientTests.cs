@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Http;
-using HttpOutcomeKind = PandaBear.HttpClients.HttpOutcomeKind;
-using CatalogToursApiClientTestsHelpers = PandaBear.Testing.Contracts.ContractHttpClientTestHelper;
+using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
+using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
 using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class ToursApiClientTests
 {
     [Fact]

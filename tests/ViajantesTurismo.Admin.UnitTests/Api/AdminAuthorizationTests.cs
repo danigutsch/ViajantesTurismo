@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Api;
 
 namespace ViajantesTurismo.Admin.UnitTests.Api;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
 public sealed class AdminAuthorizationTests
 {
     [Fact]

@@ -6,10 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using PandaBear.Domain;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.Idempotency;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Domain;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
@@ -30,7 +30,7 @@ internal sealed class AdminInfrastructureModuleTestScope(ServiceProvider service
     public bool HasOutboxRelay => HostedServices.Any(service =>
     {
         var type = service.GetType();
-        return type.Assembly == typeof(PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxRelayOptions).Assembly
+        return type.Assembly == typeof(SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.IntegrationEventOutboxRelayOptions).Assembly
             && type.IsGenericType
             && type.GetGenericTypeDefinition().Name == "IntegrationEventOutboxRelayHostedService`1"
             && type.GenericTypeArguments.Single() == typeof(AdminWriteDbContext);

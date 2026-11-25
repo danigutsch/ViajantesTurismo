@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.BuildingBlocks;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain;
 

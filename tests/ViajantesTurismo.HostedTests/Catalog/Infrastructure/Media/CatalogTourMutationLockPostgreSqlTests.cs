@@ -1,8 +1,8 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogTourMutationLockPostgreSqlTests(HostedTestFixture shared) : IAsyncLifetime

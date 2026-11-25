@@ -1,7 +1,7 @@
 using System.Reflection;
-using PandaBear.BuildingBlocks;
-using PandaBear.Domain;
-using PandaBear.Results;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Domain;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 

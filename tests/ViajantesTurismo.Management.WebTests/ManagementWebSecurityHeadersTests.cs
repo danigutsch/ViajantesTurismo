@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore;
-using PandaBear.Testing;
+using SharedKernel.AspNetCore;
+using SharedKernel.Testing;
 using System.Net;
 using ViajantesTurismo.Management.Web;
 

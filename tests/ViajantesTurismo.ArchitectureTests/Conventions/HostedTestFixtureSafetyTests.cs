@@ -4,11 +4,11 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 /// Pins the guards of <c>HostedTestFixture</c> that no other test reads: telemetry privacy, the shared-infrastructure marker of
 /// every application stack, and ownership of the run's files. Restructuring the fixture must not drop them silently.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class HostedTestFixtureSafetyTests
 {
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
     public void Fixture_gives_the_shared_collector_the_privacy_and_aspire_configuration()
     {
         // Arrange

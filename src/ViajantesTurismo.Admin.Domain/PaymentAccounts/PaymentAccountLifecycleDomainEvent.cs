@@ -1,4 +1,4 @@
-using PandaBear.Domain;
+using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.PaymentAccounts;
 

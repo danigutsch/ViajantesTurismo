@@ -1,4 +1,4 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 namespace ViajantesTurismo.Admin.Application.Import;
 
 /// <summary>
@@ -7,13 +7,13 @@ namespace ViajantesTurismo.Admin.Application.Import;
 public sealed class CsvRow : ValueObject, IImportRow
 {
     /// <summary>Wraps a parsed tabular CSV row.</summary>
-    internal CsvRow(PandaBear.Tabular.CsvRow row)
+    internal CsvRow(SharedKernel.Tabular.CsvRow row)
     {
         Row = row;
     }
 
     /// <summary>Underlying tabular CSV row.</summary>
-    internal PandaBear.Tabular.CsvRow Row
+    internal SharedKernel.Tabular.CsvRow Row
     {
         get;
     }
@@ -39,7 +39,7 @@ public sealed class CsvRow : ValueObject, IImportRow
     /// <exception cref="ArgumentNullException">Thrown when values or one of its values is null.</exception>
     public static CsvRow Create(IEnumerable<string> values)
     {
-        return new CsvRow(PandaBear.Tabular.CsvRow.Create(values));
+        return new CsvRow(SharedKernel.Tabular.CsvRow.Create(values));
     }
 
     /// <inheritdoc />

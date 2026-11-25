@@ -1,6 +1,6 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.AspNetCore.Components;
-using PandaBear.Blazor;
+using SharedKernel.Blazor;
 using ViajantesTurismo.Management.Web.Components.Layout;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 

@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using PandaBear.IO;
+using SharedKernel.IO;
 
 namespace ViajantesTurismo.MigrationService.GovernedMigrations;
 

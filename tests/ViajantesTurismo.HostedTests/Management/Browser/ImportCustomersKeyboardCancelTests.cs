@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 using ViajantesTurismo.Admin.Contracts.Application;

@@ -1,7 +1,7 @@
 @inject TimeProvider TimeProvider
 @page "/addtour"
 @using System.ComponentModel.DataAnnotations
-@using PandaBear.HttpClients
+@using SharedKernel.HttpClients
 @using ViajantesTurismo.Admin.Contracts.Application
 @using ViajantesTurismo.Management.Web.Helpers
 @implements IDisposable
@@ -251,7 +251,7 @@ Bike rental"/>
         public DateOnly EndDate { get; set; }
 
         [Required]
-        public string Currency { get; set; } = PandaBear.BuildingBlocks.Currency.Eur.Code;
+        public string Currency { get; set; } = SharedKernel.BuildingBlocks.Currency.Eur.Code;
 
         [Required, Range(0.01, ContractConstants.MaxPrice), Display(Name = "Base Price")]
         public decimal Price { get; set; }

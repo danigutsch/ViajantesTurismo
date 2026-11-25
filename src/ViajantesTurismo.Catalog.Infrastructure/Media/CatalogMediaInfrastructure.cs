@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PandaBear.MalwareScanning.ClamAv;
-using PandaBear.OpenApi;
+using SharedKernel.MalwareScanning.ClamAv;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Catalog.Application.Media;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Media;

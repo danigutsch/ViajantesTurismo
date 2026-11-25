@@ -1,4 +1,4 @@
-using PandaBear.Results;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 

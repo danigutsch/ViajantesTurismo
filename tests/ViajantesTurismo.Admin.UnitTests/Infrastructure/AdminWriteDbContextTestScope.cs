@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.Messaging;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Messaging;
+using SharedKernel.Messaging.IntegrationEvents;
 using Microsoft.Extensions.DependencyInjection;
 using ViajantesTurismo.Admin.Infrastructure;
 

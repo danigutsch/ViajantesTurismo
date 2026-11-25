@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using PandaBear.Messaging;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Messaging;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Branding.InfrastructureTests.Infrastructure;

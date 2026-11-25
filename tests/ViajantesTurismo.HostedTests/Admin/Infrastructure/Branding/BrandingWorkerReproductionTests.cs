@@ -1,11 +1,11 @@
-using PandaBear.Testing.Snapshots;
-using PandaBear.Testing;
+using SharedKernel.Testing.Snapshots;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Testing.Reproduction;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class BrandingWorkerReproductionTests(PostgreSqlTestServerFixture fixture)
     : IClassFixture<PostgreSqlTestServerFixture>

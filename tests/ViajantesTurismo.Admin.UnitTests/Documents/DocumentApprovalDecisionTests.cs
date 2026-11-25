@@ -1,9 +1,9 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentApprovalDecisionTests
 {
     [Fact]
@@ -152,6 +152,6 @@ public sealed class DocumentApprovalDecisionTests
         var result = lineage.WithdrawApproval(Guid.CreateVersion7(), now, DocumentAuditTestData.CreateContext());
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
     }
 }

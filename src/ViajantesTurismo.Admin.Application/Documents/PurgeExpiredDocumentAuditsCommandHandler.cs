@@ -1,6 +1,6 @@
-using PandaBear.BuildingBlocks;
-using PandaBear.DispositionHold;
-using PandaBear.Mediator;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.DispositionHold;
+using SharedKernel.Mediator;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 

@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Management.Web.Components.Pages;
 

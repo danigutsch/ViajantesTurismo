@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using PandaBear.EventSourcing.Npgsql;
-using PandaBear.Testing;
+using SharedKernel.EventSourcing.Npgsql;
+using SharedKernel.Testing;
 using ViajantesTurismo.ArchitectureTests.Repository;
 using ViajantesTurismo.RepositoryDocumentation.Architecture;
 

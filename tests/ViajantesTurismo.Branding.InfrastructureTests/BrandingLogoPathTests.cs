@@ -3,7 +3,7 @@ using TestTraits = ViajantesTurismo.Branding.InfrastructureTests.Infrastructure.
 
 namespace ViajantesTurismo.Branding.InfrastructureTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 public sealed class BrandingLogoPathTests
 {
     private static readonly string ValidHash = new('a', 64);

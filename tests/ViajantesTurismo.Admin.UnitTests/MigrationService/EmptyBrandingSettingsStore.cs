@@ -1,4 +1,4 @@
-using PandaBear.Branding;
+using SharedKernel.Branding;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 

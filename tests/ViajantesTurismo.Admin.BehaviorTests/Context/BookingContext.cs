@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Payments;
 
 namespace ViajantesTurismo.Admin.BehaviorTests.Context;

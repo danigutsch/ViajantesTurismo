@@ -1,16 +1,16 @@
-using PandaBear.Testing.AspNetCore;
+using SharedKernel.Testing.AspNetCore;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using PandaBear.MalwareScanning;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.MalwareScanning;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.Api.Customers.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
-using PandaBear.Testing.Logging;
-using PandaBear.Testing.MalwareScanning;
+using SharedKernel.Testing.Logging;
+using SharedKernel.Testing.MalwareScanning;
 
 namespace ViajantesTurismo.Admin.UnitTests.Api.Customers.Import;
 

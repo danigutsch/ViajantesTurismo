@@ -1,8 +1,8 @@
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PandaBear.AspNetCore.Authentication.Bff;
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.AspNetCore.Authentication.Bff;
+using SharedKernel.HttpCaching.AspNetCore;
 using Polly.Timeout;
 
 namespace ViajantesTurismo.Management.Web;

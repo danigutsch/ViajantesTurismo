@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using PandaBear.HttpClients;
-using PandaBear.Testing;
-using PandaBear.Testing.Contracts;
+using SharedKernel.HttpClients;
+using SharedKernel.Testing;
+using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 

@@ -1,11 +1,11 @@
 using System.Globalization;
-using PandaBear.BuildingBlocks;
-using PandaBear.DocumentRendering;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.DocumentRendering;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
-using RenderField = PandaBear.DocumentRendering.DocumentField;
-using RenderPrivacy = PandaBear.DocumentRendering.DocumentPrivacyClassification;
+using RenderField = SharedKernel.DocumentRendering.DocumentField;
+using RenderPrivacy = SharedKernel.DocumentRendering.DocumentPrivacyClassification;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
 

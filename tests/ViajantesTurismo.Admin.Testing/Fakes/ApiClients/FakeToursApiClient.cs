@@ -1,6 +1,6 @@
 using System.Net;
-using PandaBear.BuildingBlocks;
-using PandaBear.HttpClients;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Builders;
 

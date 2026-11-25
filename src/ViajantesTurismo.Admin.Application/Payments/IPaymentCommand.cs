@@ -1,4 +1,4 @@
-using PandaBear.Mediator.Transactions;
+using SharedKernel.Mediator.Transactions;
 
 namespace ViajantesTurismo.Admin.Application.Payments;
 

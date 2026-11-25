@@ -1,10 +1,10 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing.Playwright;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
@@ -13,7 +13,7 @@ namespace ViajantesTurismo.HostedTests.Admin.System.Documents;
 
 [Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
 [Trait(TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.System)]
 public sealed class DocumentLifecycleTests(AspireSystemTestFixture fixture)
     : AspireSystemTestBase<AspireSystemTestFixture>(fixture)

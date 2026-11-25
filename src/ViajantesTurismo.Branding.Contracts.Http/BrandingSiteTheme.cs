@@ -1,6 +1,6 @@
-using PandaBear.Blazor.Site.Theming;
-using PandaBear.Branding;
-using PandaBear.Results;
+using SharedKernel.Blazor.Site.Theming;
+using SharedKernel.Branding;
+using SharedKernel.Results;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Branding.Contracts.Http;

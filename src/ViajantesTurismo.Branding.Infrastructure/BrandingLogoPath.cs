@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using PandaBear.Branding;
+using SharedKernel.Branding;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
 

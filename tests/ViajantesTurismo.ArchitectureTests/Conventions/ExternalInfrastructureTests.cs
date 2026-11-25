@@ -1,12 +1,12 @@
 using Aspire.Hosting.ApplicationModel;
-using PandaBear.IntegrationTesting;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>Verifies that configured external infrastructure replaces the AppHost containers.</summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class ExternalInfrastructureTests
 {
     private static readonly Dictionary<string, string?> Everything = new(StringComparer.Ordinal)

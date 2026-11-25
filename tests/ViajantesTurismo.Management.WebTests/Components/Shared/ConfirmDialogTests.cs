@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 
 [TestScope(TestScope.Component)]

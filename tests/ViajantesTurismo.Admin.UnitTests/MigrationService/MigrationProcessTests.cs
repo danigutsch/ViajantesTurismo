@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.UnitTests.Infrastructure;
 using ViajantesTurismo.MigrationService;
 using ViajantesTurismo.Resources;
@@ -6,7 +6,7 @@ using ViajantesTurismo.Testing.Hosting;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class MigrationProcessTests
 {
     [Fact]

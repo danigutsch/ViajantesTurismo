@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using PandaBear.Testing.Http;
+using SharedKernel.Testing.Http;
 using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.HostedTests.Management.Browser;

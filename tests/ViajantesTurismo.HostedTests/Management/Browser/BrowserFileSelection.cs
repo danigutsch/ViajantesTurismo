@@ -1,6 +1,6 @@
 using System.Text;
 using Microsoft.Playwright;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing.Playwright;
 
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 

@@ -1,4 +1,4 @@
-using PandaBear.Testing.Logging;
+using SharedKernel.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 

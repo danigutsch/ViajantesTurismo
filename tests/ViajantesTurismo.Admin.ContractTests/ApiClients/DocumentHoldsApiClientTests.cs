@@ -1,12 +1,12 @@
 using System.Net;
-using PandaBear.HttpClients;
-using PandaBear.Testing.Contracts;
+using SharedKernel.HttpClients;
+using SharedKernel.Testing.Contracts;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class DocumentHoldsApiClientTests
 {
     private const string HoldJson = """

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.UploadWire.Testing;
 
@@ -32,13 +33,22 @@ public sealed class RequestProbeStartupFilter(RequestLifetimeProbe probe) : ISta
 
                 probe.OnStarted();
                 await using var registration = context.RequestAborted.Register(probe.OnAborted).ConfigureAwait(false);
-                context.Request.Body = new ReadObservingStream(context.Request.Body, probe);
+                var originalBody = context.Request.Body;
+                using var observedBody = new ReadObservingStream(originalBody.ReadAsync, probe.OnRead);
+                context.Request.Body = observedBody;
                 context.Response.OnCompleted(() =>
                 {
                     probe.OnFinished(context.Response.StatusCode);
                     return Task.CompletedTask;
                 });
-                await pipeline(context);
+                try
+                {
+                    await pipeline(context);
+                }
+                finally
+                {
+                    context.Request.Body = originalBody;
+                }
             });
             next(app);
         };

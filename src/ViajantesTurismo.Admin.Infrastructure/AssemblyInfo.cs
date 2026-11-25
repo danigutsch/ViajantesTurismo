@@ -1,3 +1,3 @@
-using PandaBear.Mediator;
+using SharedKernel.Mediator;
 
 [assembly: MediatorModule]

@@ -1,5 +1,5 @@
 using Aspire.Hosting.Dotnet;
-using PandaBear.AspNetCore;
+using SharedKernel.AspNetCore;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.AppHost;

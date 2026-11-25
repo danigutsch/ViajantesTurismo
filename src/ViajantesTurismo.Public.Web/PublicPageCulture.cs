@@ -1,5 +1,5 @@
-using PandaBear.AspNetCore.Localization;
-using PandaBear.BuildingBlocks;
+using SharedKernel.AspNetCore.Localization;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Public.Web;
 

@@ -1,15 +1,15 @@
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.TestHost;
-using PandaBear.AspNetCore.Authentication.Bff;
+using SharedKernel.AspNetCore.Authentication.Bff;
 using Polly.Timeout;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentArtifactProxyEndpointTests
 {

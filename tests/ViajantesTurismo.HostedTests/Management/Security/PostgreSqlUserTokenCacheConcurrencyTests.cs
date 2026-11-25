@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Npgsql;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Management.Security;
 

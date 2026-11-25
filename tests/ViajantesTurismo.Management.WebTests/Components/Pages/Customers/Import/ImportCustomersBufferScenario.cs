@@ -1,6 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
-using PandaBear.Blazor;
+using SharedKernel.Blazor;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.ContractConstants;
 

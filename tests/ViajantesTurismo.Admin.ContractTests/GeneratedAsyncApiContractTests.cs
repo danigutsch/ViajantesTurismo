@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-using PandaBear.Messaging.IntegrationEvents;
-using PandaBear.Testing;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.ContractTests.Infrastructure;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;

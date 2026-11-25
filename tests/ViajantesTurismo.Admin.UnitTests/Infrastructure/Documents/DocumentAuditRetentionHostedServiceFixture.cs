@@ -1,5 +1,5 @@
-using PandaBear.DispositionHold;
-using PandaBear.Mediator;
+using SharedKernel.DispositionHold;
+using SharedKernel.Mediator;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;

@@ -1,4 +1,4 @@
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
 using ViajantesTurismo.Catalog.UnitTests.Media;

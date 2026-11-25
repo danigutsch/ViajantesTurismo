@@ -30,6 +30,7 @@
     {"path":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","directOwner":"Management Web","requiredTypes":["Component","Integration","System","Unit"]},
     {"path":"src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj","directOwner":"Application platform","requiredTypes":["Unit"]},
     {"path":"src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj","directOwner":"Public Web","requiredTypes":["Component","Integration","Unit"]},
+    {"path":"src/ViajantesTurismo.RepositoryDocumentation/ViajantesTurismo.RepositoryDocumentation.csproj","directOwner":"Architecture","requiredTypes":["Architecture","Contract"]},
     {"path":"src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj","directOwner":"Application platform","requiredTypes":["Contract"]},
     {"path":"src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj","directOwner":"Application platform","requiredTypes":["Integration"]}
   ],
@@ -60,6 +61,7 @@
         {"sut":"src/ViajantesTurismo.Admin.Contracts.Application/ViajantesTurismo.Admin.Contracts.Application.csproj","type":"Contract","dependency":"in-process","capabilities":["application-contracts"],"lane":"fast-validation-1"},
         {"sut":"src/ViajantesTurismo.Admin.Contracts.Http/ViajantesTurismo.Admin.Contracts.Http.csproj","type":"Contract","dependency":"in-process","capabilities":["http-contracts"],"lane":"fast-validation-1"},
         {"sut":"src/ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj","type":"Contract","dependency":"in-process","capabilities":["integration-events"],"lane":"fast-validation-1"},
+        {"sut":"src/ViajantesTurismo.RepositoryDocumentation/ViajantesTurismo.RepositoryDocumentation.csproj","type":"Contract","dependency":"generated-artifacts","capabilities":["asyncapi-generation"],"lane":"fast-validation-1"},
         {"sut":"src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj","type":"Contract","dependency":"in-process","capabilities":["localization-resources"],"lane":"fast-validation-1"}
       ]
     },
@@ -91,7 +93,8 @@
       "seams": [
         {"sut":"src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj","type":"Architecture","dependency":"repository-and-compiled-assemblies","capabilities":["resource-topology","solution-boundaries"],"lane":"fast-validation-2"},
         {"sut":"src/ViajantesTurismo.Admin.Application/ViajantesTurismo.Admin.Application.csproj","type":"Architecture","dependency":"compiled-assemblies","capabilities":["application-boundaries"],"lane":"fast-validation-2"},
-        {"sut":"src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj","type":"Architecture","dependency":"compiled-assemblies","capabilities":["application-boundaries"],"lane":"fast-validation-2"}
+        {"sut":"src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj","type":"Architecture","dependency":"compiled-assemblies","capabilities":["application-boundaries"],"lane":"fast-validation-2"},
+        {"sut":"src/ViajantesTurismo.RepositoryDocumentation/ViajantesTurismo.RepositoryDocumentation.csproj","type":"Architecture","dependency":"repository-and-compiled-assemblies","capabilities":["architecture-catalog","data-ownership-diagram"],"lane":"fast-validation-2"}
       ]
     },
     {

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using PandaBear.DispositionHold;
+using SharedKernel.DispositionHold;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Application;

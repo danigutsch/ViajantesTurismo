@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using PandaBear.Blazor;
-using PandaBear.HttpClients;
-using PandaBear.Testing;
+using SharedKernel.Blazor;
+using SharedKernel.HttpClients;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Documents;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class DetailsPageHoldTests : BunitContext
 {

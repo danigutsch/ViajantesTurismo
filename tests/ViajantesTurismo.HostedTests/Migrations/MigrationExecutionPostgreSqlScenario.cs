@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Npgsql;
-using PandaBear.Npgsql.Testing;
+using SharedKernel.Npgsql.Testing;
 
 namespace ViajantesTurismo.HostedTests.Migrations;
 
@@ -131,6 +131,25 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_catalog_event_store($1, $2);");
         provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
         provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Verifier });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
+    /// <summary>Provisions a distinct, read-only fixture runtime for the Catalog events table.</summary>
+    public async Task ProvisionCatalogEventRuntime(CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.provision_catalog_event_runtime(runtime_role text, role_password text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN NOINHERIT PASSWORD %L', runtime_role, role_password);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA event_sourcing TO %I', runtime_role);
+                EXECUTE pg_catalog.format('GRANT SELECT ON event_sourcing.events TO %I', runtime_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_catalog_event_runtime($1, $2);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Runtime });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = password });
         await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
     }
 

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using PandaBear.Results;
-using PandaBear.Testing;
-using PandaBear.Testing.Logging;
+using SharedKernel.Results;
+using SharedKernel.Testing;
+using SharedKernel.Testing.Logging;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure;
@@ -9,8 +9,8 @@ using ViajantesTurismo.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentReviewTransactionPostgreSqlTests(PostgreSqlTestServerFixture fixture)
     : IClassFixture<PostgreSqlTestServerFixture>
@@ -94,7 +94,8 @@ public sealed class DocumentReviewTransactionPostgreSqlTests(PostgreSqlTestServe
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(expectedDetail);
         var logs = logger.Records;
         var hookFailure = logs.ShouldHaveSingleItem(record => record.Level == LogLevel.Error);
-        hookFailure.EventId.Name.ShouldBe("LogHookFailure");
+        hookFailure.EventId.Id.ShouldBe(2001);
+        hookFailure.EventId.Name.ShouldBe("OutcomeHookFailed");
         hookFailure.Message.ShouldContain(nameof(DocumentRejectionRollbackAudit<BeginDocumentReviewCommand, Result>), StringComparison.Ordinal);
         hookFailure.Message.ShouldNotContain(auditContext.ActorId, StringComparison.Ordinal);
         hookFailure.Message.ShouldNotContain(auditContext.CorrelationId, StringComparison.Ordinal);

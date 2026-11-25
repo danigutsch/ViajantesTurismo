@@ -1,5 +1,5 @@
-using PandaBear.Branding;
-using PandaBear.HttpClients;
+using SharedKernel.Branding;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Branding.Contracts.Http;
 
