@@ -602,7 +602,11 @@ jobs:
       - name: Check generated documentation
         run: |
           dotnet docs verify --config docs/architecture/generated-diagrams.json
+          dotnet docs verify --config docs/generated-tables-of-contents.json
           dotnet docs check --config docs/architecture/documentation-conformance.json
+          dotnet restore src/ViajantesTurismo.Admin.Api --locked-mode
+          dotnet build src/ViajantesTurismo.Admin.Api -c Release --no-restore -p:GenerateMediatorTopology=true
+          dotnet docs verify --config docs/architecture/mediator-topology.json
 
       - name: Write lint warning report
         if: ${{ !cancelled() }}

@@ -50,6 +50,12 @@
           "PandaBear.SharedKernel.InputNormalization": "0.1.0-alpha.860.1"
         }
       },
+      "PandaBear.SharedKernel.AspNetCore.Analyzers": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.860.1, )",
+        "resolved": "0.1.0-alpha.860.1",
+        "contentHash": "WsxREfdZ7OT3XiQ7W6bQNjbEKSfC3t0ieXey751nUZHNRhDQUJ7WUz5mxNF8DNVVbGyX4nAhBQ6CF2DxTDq4Vg=="
+      },
       "PandaBear.SharedKernel.AspNetCore.Authentication": {
         "type": "Direct",
         "requested": "[0.1.0-alpha.860.1, )",
@@ -62,6 +68,12 @@
           "PandaBear.SharedKernel.AspNetCore": "0.1.0-alpha.860.1",
           "PandaBear.SharedKernel.OpenApi": "0.1.0-alpha.860.1"
         }
+      },
+      "PandaBear.SharedKernel.AspNetCore.CodeFixes": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.860.1, )",
+        "resolved": "0.1.0-alpha.860.1",
+        "contentHash": "Z9T1wlYVPxFjzVLiiiZYBHrl/4Bq9zksme7Syz9WAWsHTyRDKgVNIw8NDDrg6ALcczyO8jwbx3La4bEBzuvlCQ=="
       },
       "PandaBear.SharedKernel.AspNetCore.RateLimiting": {
         "type": "Direct",

@@ -39,6 +39,63 @@ Admin, Catalog, and security databases and receives its own Keycloak realm and m
 The scanner, telemetry collector, and cache are owned by the test run. The concurrent AppHost
 test creates a customer through one Admin API and verifies that the sibling API cannot read it.
 
+## Isolated local Podman validation
+
+On Linux with rootless Podman and `pasta`, use the repository's `repo` tool after staging a
+[SharedKernel candidate](../../docs/sharedkernel/development.md#stage-the-candidate) that provides
+`run-isolated-podman` with `--runtime-parent`. Use an existing overlay image store with the Hosted
+fixtures' images. Run from a disk-backed checkout and keep transient engine state under the user
+runtime directory.
+
+```bash
+mkdir -p .local/hosted-podman
+podman_scratch=$(mktemp -d "$(pwd -P)/.local/hosted-podman/storage.XXXXXX")
+podman_image_store=$(podman --remote=false info --format '{{.Store.GraphRoot}}')
+TMPDIR="$podman_scratch" dotnet repo run-isolated-podman \
+  --image-store "$podman_image_store" --network-helper pasta \
+  --runtime-parent "${XDG_RUNTIME_DIR:?Set XDG_RUNTIME_DIR to the user runtime directory}" -- \
+  dotnet test --project tests/ViajantesTurismo.HostedTests -c Release -- \
+  --filter-class '*MediaInfrastructureContainerTests' \
+  --filter-class '*SeaweedFsWebIdentityTests'
+```
+
+The focused run covers malware scanning, signed and unsigned S3 operations, and TLS workload
+identity. The runner shares the image store read-only and verifies teardown of its private runtime.
+If teardown reports a retained runtime directory, use that path to inspect the failed run.
+
+For the full Hosted suite, use a candidate that supports `--runtime-parent` and run from an
+ext4 worktree with `pasta` installed. The runner captures up to 8,388,608 characters on each
+child stream. Redirecting `dotnet repo` output in the outer shell still leaves the child
+streams connected to that capture. Redirect both streams inside a trusted executable wrapper
+to logs in a caller-owned directory outside the disposable Podman directories.
+
+```bash
+checkout=$(pwd -P)
+mkdir -p "${checkout}/.local/hosted-podman"
+run_directory=$(mktemp -d "${checkout}/.local/hosted-podman/run.XXXXXX")
+mkdir "${run_directory}/tmp"
+wrapper="${run_directory}/run-hosted"
+cat > "${wrapper}" <<'WRAPPER'
+#!/usr/bin/env bash
+stdout_log=$1
+stderr_log=$2
+shift 2
+exec "$@" > "${stdout_log}" 2> "${stderr_log}"
+WRAPPER
+chmod 700 "${wrapper}"
+
+podman_image_store=$(podman --remote=false info --format '{{.Store.GraphRoot}}')
+TMPDIR="${run_directory}/tmp" dotnet repo run-isolated-podman \
+  --image-store "${podman_image_store}" --network-helper pasta \
+  --runtime-parent "${XDG_RUNTIME_DIR:?Set XDG_RUNTIME_DIR to the user runtime directory}" -- \
+  "${wrapper}" "${run_directory}/stdout.log" "${run_directory}/stderr.log" \
+  dotnet test --project tests/ViajantesTurismo.HostedTests -c Release
+```
+
+The wrapper passes the test command and each argument separately. Its `exec` preserves the
+test process's exit status. The private runtime uses the user runtime directory, while the
+engine graph, volumes and test scratch use ext4. The caller keeps both logs after teardown.
+
 ## Demand-driven infrastructure
 
 `HostedTestFixture.InitializeAsync` starts nothing, because xUnit creates an assembly fixture whenever one test is selected.

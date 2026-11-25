@@ -35,6 +35,8 @@
         <PackageReference Include="PandaBear.SharedKernel.IO.Analyzers" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.HttpCaching.AspNetCore" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Analyzers" PrivateAssets="all" />
+        <PackageReference Include="PandaBear.SharedKernel.AspNetCore.CodeFixes" PrivateAssets="all" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Seo" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" />
         <PackageReference Include="PandaBear.SharedKernel.AspNetCore.Authentication" />

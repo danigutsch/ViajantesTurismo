@@ -1,0 +1,12 @@
+{
+  "docsPath": "docs/architecture",
+  "generatorName": "sharedkernel-docs",
+  "blocks": [
+    {
+      "name": "admin-mediator-topology",
+      "targetPath": "generated-mediator-topology.md",
+      "kind": "mediator-topology",
+      "sourcePath": "src/ViajantesTurismo.Admin.Api/obj/mediator-topology/SharedKernel.Mediator.SourceGenerator/SharedKernel.Mediator.SourceGenerator.MediatorGenerator/SharedKernel.Mediator.Generated.CallGraph.g.cs"
+    }
+  ]
+}

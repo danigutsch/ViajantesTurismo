@@ -115,6 +115,8 @@
     <PackageVersion Include="PandaBear.SharedKernel.AI" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.ApiVersioning.AspNetCore" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore" Version="0.1.0-alpha.860.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Analyzers" Version="0.1.0-alpha.860.1" />
+    <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.CodeFixes" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Authentication" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.Authentication.Bff" Version="0.1.0-alpha.860.1" />
     <PackageVersion Include="PandaBear.SharedKernel.AspNetCore.RateLimiting" Version="0.1.0-alpha.860.1" />

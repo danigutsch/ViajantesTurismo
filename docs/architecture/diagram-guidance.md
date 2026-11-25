@@ -30,6 +30,8 @@ source is discoverable.
 - **Endpoint maps**: generate from Minimal API route declarations and configured route-group prefixes.
 - **Event-flow maps**: generate from integration-event contracts, source-created events, consumer
   registrations, and handlers. Missing producers stay explicit instead of inferred.
+- **Mediator dispatch**: generate the [Admin mediator topology](generated-mediator-topology.md) from
+  the call graph emitted by the source generator during an Admin API build.
 - **Data ownership maps**: generate from the [architecture metadata](architecture-metadata.json).
   Update ownership and table roles with their EF Core mappings or provider registrations. See the
   [data ownership view](data-ownership.md) for the metadata rules and refresh command.
