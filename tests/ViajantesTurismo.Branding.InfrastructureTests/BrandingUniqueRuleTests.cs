@@ -1,10 +1,9 @@
 using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Branding.Infrastructure;
-using TestTraits = ViajantesTurismo.Branding.InfrastructureTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Branding.InfrastructureTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.EndpointCategory)]
 public sealed class BrandingUniqueRuleTests
 {
     [Fact]

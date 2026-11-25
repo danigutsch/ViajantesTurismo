@@ -8,8 +8,9 @@ using ViajantesTurismo.Management.Web.Services;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Verifies the heading landmarks of the authenticated customer wizard.</summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class CustomerWizardHeadingTests : ManagementWebBrowserTestBase
 {
     /// <summary>Provides isolated dependencies for the wizard routes.</summary>

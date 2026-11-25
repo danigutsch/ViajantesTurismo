@@ -14,7 +14,7 @@ using ViajantesTurismo.Testing.Reproduction;
 namespace ViajantesTurismo.HostedTests.Admin.System.Tours;
 
 /// <summary>Repeats a protected Tour edit with fresh browser state and an independently owned tour each time.</summary>
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[TestHost(TestHost.Aspire)]
 [Trait(TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
 [TestScope(TestScope.System)]
 public sealed class TourEditReproductionTests(AspireSystemTestFixture fixture)

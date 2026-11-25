@@ -13,12 +13,10 @@ public static class TestTraits
     /// <summary>
     /// Area value for shared system test coverage.
     /// </summary>
-    public const string SharedArea = "shared";
 
     /// <summary>
     /// Host value for Aspire-hosted tests.
     /// </summary>
-    public const string AspireHost = "aspire";
 
     /// <summary>
     /// Area value for post-transport Catalog and Public Web validation.
@@ -28,7 +26,6 @@ public static class TestTraits
     /// <summary>
     /// Category value for integration-event transport validation.
     /// </summary>
-    public const string IntegrationEventTransportCategory = "integration-event-transport";
 
     /// <summary>
     /// Category value for authentication conformance tests.

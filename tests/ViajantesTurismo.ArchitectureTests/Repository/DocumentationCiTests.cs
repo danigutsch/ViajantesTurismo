@@ -76,6 +76,7 @@ public sealed class DocumentationCiTests
             lint.ShouldContain($"dotnet repo {check} --root .", StringComparison.Ordinal);
         }
 
+        lint.ShouldContain("dotnet repo verify-test-taxonomy --root . --report", StringComparison.Ordinal);
         lint.ShouldContain("dotnet docs verify --config docs/architecture/generated-diagrams.json", StringComparison.Ordinal);
         lint.ShouldContain("dotnet docs verify --config docs/generated-tables-of-contents.json", StringComparison.Ordinal);
         lint.ShouldContain("dotnet docs check --config docs/architecture/documentation-conformance.json", StringComparison.Ordinal);

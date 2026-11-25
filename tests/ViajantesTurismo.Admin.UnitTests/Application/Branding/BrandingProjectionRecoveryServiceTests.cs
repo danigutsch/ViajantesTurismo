@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Application.Branding;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Branding;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.CoreBehaviorCategory)]
+[SharedKernel.Testing.TestFocus(SharedKernel.Testing.TestFocus.CoreBehavior)]
 public sealed class BrandingProjectionRecoveryServiceTests
 {
     [Fact]

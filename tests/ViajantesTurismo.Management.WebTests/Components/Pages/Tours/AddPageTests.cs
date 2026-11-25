@@ -177,7 +177,7 @@ public class AddPageTests : BunitContext
     }
 
     [Theory]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     [InlineData("/api/v1/route")]
     [InlineData("/api/v1/tours-malformed/relative-id")]
@@ -295,7 +295,7 @@ public class AddPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Validation_problem_outcome_shows_server_validation_errors()
     {

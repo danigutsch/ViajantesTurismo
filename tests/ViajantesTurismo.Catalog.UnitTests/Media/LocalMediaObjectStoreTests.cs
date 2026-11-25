@@ -5,7 +5,7 @@ using ViajantesTurismo.Catalog.Infrastructure.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
-[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.Catalog)]
 [Trait(TestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class LocalMediaObjectStoreTests
 {

@@ -11,7 +11,7 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Documents;
 
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[TestHost(TestHost.Aspire)]
 [Trait(TestTraitNames.SurfaceName, TestTraits.AdminSurface)]
 [Trait(TestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.System)]

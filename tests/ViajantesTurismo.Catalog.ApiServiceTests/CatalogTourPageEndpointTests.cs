@@ -1,12 +1,12 @@
 using System.Text.Json;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 public sealed class CatalogTourPageEndpointTests
 {
     [Theory]

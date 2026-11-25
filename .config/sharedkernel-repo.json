@@ -40,6 +40,7 @@
     "src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj",
     "tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj",
     "tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj",
+    "tests/ViajantesTurismo.Testing/ViajantesTurismo.Testing.csproj",
     "tests/ViajantesTurismo.UploadWire.Testing/ViajantesTurismo.UploadWire.Testing.csproj"
   ],
   "licenseExceptions": {

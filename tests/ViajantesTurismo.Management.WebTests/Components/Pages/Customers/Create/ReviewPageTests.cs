@@ -1,6 +1,5 @@
 using SharedKernel.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
-using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using HttpOutcome = SharedKernel.HttpClients.HttpOutcome;
@@ -8,7 +7,7 @@ using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create;
 
-[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class ReviewPageTests : BunitContext
@@ -97,7 +96,7 @@ public sealed class ReviewPageTests : BunitContext
     public async Task When_state_is_incomplete_shows_warning_and_go_to_step_1_button_navigates()
     {
         // Arrange
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Review>();
 
         // Assert
@@ -186,7 +185,7 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Review>();
 
         // Act
@@ -208,7 +207,7 @@ public sealed class ReviewPageTests : BunitContext
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
         Services.AddSingleton<ICustomersApiClient>(new AbsoluteLocationCustomersApiClient());
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Review>();
 
         // Act
@@ -238,7 +237,7 @@ public sealed class ReviewPageTests : BunitContext
             StatusCode = System.Net.HttpStatusCode.Created,
             Location = new Uri(location, UriKind.Relative)
         });
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Review>();
 
         // Act
@@ -260,7 +259,7 @@ public sealed class ReviewPageTests : BunitContext
             Kind = HttpOutcomeKind.Succeeded,
             StatusCode = System.Net.HttpStatusCode.Created
         });
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Review>();
 
         // Act
@@ -277,7 +276,7 @@ public sealed class ReviewPageTests : BunitContext
     {
         // Arrange
         CustomerCreationStateTestHelper.SeedCompletedState(_state);
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Review>();
 
         // Act

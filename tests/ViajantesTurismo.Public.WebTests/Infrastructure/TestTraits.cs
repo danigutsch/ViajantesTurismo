@@ -6,22 +6,7 @@ namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 public static class TestTraits
 {
     /// <summary>
-    /// Category value for endpoint-focused tests.
-    /// </summary>
-    public const string EndpointCategory = TestTraitValues.EndpointCategory;
-
-    /// <summary>
-    /// Category value for security-focused tests.
-    /// </summary>
-    public const string SecurityCategory = TestTraitValues.SecurityCategory;
-
-    /// <summary>
     /// Area value for public web test coverage.
     /// </summary>
     public const string PublicWebArea = "public-web";
-
-    /// <summary>
-    /// Host value for TestServer-hosted tests.
-    /// </summary>
-    public const string TestServerHost = TestTraitValues.TestServerHost;
 }

@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.PaymentsCapability)]
 public sealed class PaymentAccountStoredStateTests
 {
     [Theory]

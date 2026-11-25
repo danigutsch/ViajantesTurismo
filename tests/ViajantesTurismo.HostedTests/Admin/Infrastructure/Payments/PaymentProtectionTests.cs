@@ -4,7 +4,7 @@ using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
-[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.PaymentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class PaymentProtectionTests
 {

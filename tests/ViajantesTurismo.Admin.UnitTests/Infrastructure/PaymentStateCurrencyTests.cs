@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
 /// <summary>Protects the ISO 4217 code that protected payment state stores for every currency.</summary>
 [Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
-[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.PaymentsCapability)]
 public sealed class PaymentStateCurrencyTests
 {
     [Fact]

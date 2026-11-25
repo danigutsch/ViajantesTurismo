@@ -4,7 +4,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestAreas.Catalog)]
 [Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class MediaObjectReconciliationServiceTests
 {

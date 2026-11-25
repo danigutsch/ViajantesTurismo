@@ -1,0 +1,10 @@
+[
+  {
+    "file": "Authentication/ManagementBffConformanceTests.cs",
+    "class": "ManagementBffConformanceTests",
+    "test": "Preserves_the_opaque_subject_through_bff_token_exchange_to_document_audit",
+    "operation": "GetRejectedDocumentReadAuditActor",
+    "review": "https://github.com/danigutsch/ViajantesTurismo/pull/1510",
+    "reason": "This conformance test verifies that the opaque subject reaches the restricted audit record after the browser and BFF token exchange. The actor check uses one fixture-owned read."
+  }
+]

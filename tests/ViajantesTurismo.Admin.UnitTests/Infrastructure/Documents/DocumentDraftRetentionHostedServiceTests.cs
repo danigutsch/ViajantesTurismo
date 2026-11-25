@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
+[TestFocus(TestFocus.CoreBehavior)]
 [Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentDraftRetentionHostedServiceTests
 {

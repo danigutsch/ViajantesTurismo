@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -32,9 +31,7 @@ public sealed class CustomerImportConflictEndpointTests
         // Act
         using var response = await client.PostAsJsonAsync(Route, keys, ct);
         var matches = await response.Content.ReadFromJsonAsync<Guid?[]>(ct);
-        var endpoint = host.Services.GetServices<EndpointDataSource>()
-            .SelectMany(source => source.Endpoints)
-            .OfType<RouteEndpoint>()
+        var endpoint = AdminApiTestHost.ReadRoutes(host)
             .Where(endpoint => string.Equals(endpoint.RoutePattern.RawText?.TrimStart('/'), Route.OriginalString.TrimStart('/'), StringComparison.Ordinal))
             .ShouldHaveSingleItem();
         var policies = endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Select(metadata => metadata.Policy);

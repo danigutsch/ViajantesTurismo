@@ -1,12 +1,11 @@
 using SharedKernel.Testing;
-using ViajantesTurismo.Admin.ContractTests.Infrastructure;
 using static ViajantesTurismo.Admin.ContractTests.AdminHypermediaOpenApiAssertions;
 
 namespace ViajantesTurismo.Admin.ContractTests;
 
 /// <summary>Verifies the link contract in the Admin boundary and versioned artifacts.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-[Trait(TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.DriftGuardCategory)]
+[Trait(TestTraitNames.SurfaceName, TestTraitValues.OpenApiSurface)]
 public sealed class AdminHypermediaOpenApiContractTests
 {
     [Theory]

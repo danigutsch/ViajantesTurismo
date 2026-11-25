@@ -1,7 +1,6 @@
 using System.Net;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
-using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
@@ -11,7 +10,7 @@ using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [Trait(TestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentApiEndpointTests(DocumentApiFixture fixture) : IClassFixture<DocumentApiFixture>

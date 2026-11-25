@@ -9,8 +9,9 @@ namespace ViajantesTurismo.HostedTests.Management.Browser;
 /// Browser journey for the Branding theme preview under the Management Web policy, whose <c>style-src</c> admits only the site
 /// and the response's nonce.
 /// </summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class BrandingThemePreviewCspTests : ManagementWebBrowserTestBase
 {
     private const string PreviewHeading = "#branding-preview .site-theme-preview__h1";

@@ -8,7 +8,6 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiClient
 {
     private const string RoutePrefix = "/api/v1/documents";
-    private const string HtmlMediaType = "text/html";
     private static readonly DocumentsApiClientJsonContext Json = DocumentsApiClientJsonContext.Default;
 
     /// <inheritdoc />
@@ -109,7 +108,7 @@ public sealed class DocumentsApiClient(HttpClient httpClient) : IDocumentsApiCli
                 response,
                 Json.ContractValidationProblemDto,
                 requestToken).ConfigureAwait(false);
-            if (!string.Equals(response.Content.Headers.ContentType?.MediaType, HtmlMediaType, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(response.Content.Headers.ContentType?.MediaType, DocumentArtifactResponse.MediaType, StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException("The document artifact response must be HTML.");
             }

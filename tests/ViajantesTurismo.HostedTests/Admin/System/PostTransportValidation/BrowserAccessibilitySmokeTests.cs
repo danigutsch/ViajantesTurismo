@@ -1,7 +1,6 @@
 using Microsoft.Playwright;
 using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Contracts.Http;
-using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
@@ -9,8 +8,8 @@ using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 namespace ViajantesTurismo.HostedTests.Admin.System.PostTransportValidation;
 
 /// <summary>Audits representative routes through the existing browser host with synthetic data.</summary>
-[Trait(TestTraitNames.AreaName, TestTraits.SharedArea)]
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.AreaName, TestAreas.Shared)]
+[TestHost(TestHost.Aspire)]
 [TestScope(TestScope.System)]
 public sealed class BrowserAccessibilitySmokeTests(AspireSystemTestFixture fixture)
     : AspireSystemTestBase<AspireSystemTestFixture>(fixture)

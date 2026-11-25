@@ -9,7 +9,7 @@ using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [Trait(TestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IClassFixture<ApiFixture>

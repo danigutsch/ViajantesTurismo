@@ -8,7 +8,7 @@ using SharedKernel.BuildingBlocks;
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.PaymentsCapability)]
 public sealed class BookingFinancialHistoryTests
 {
     [Fact]

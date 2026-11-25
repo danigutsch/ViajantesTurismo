@@ -8,8 +8,9 @@ using ViajantesTurismo.HostedTests.Catalog.Infrastructure;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser tests for progressive Catalog image folder intake.</summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class UploadImageFolderIntakeTests : ManagementWebBrowserTestBase
 {
     private const string AnimationNotice = "The gallery shows only the first frame of animated images.";

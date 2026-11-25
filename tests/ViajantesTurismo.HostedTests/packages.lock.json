@@ -1988,6 +1988,9 @@
           "ViajantesTurismo.Resources": "[0.1.0-alpha.0, )"
         }
       },
+      "viajantesturismo.testing": {
+        "type": "Project"
+      },
       "Aspire.Hosting.Dotnet": {
         "type": "CentralTransitive",
         "requested": "[17.0.0, )",

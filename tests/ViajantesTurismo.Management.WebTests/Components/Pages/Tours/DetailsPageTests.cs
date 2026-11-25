@@ -53,7 +53,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Booking_creation_on_tour_details_keeps_the_route_tour_fixed()
     {
@@ -219,7 +219,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_validation_problem_withholds_unknown_and_hostile_server_text()
     {
@@ -261,7 +261,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_non_success_outcome_shows_sanitized_error()
     {
@@ -293,7 +293,7 @@ public class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Create_booking_success_shows_confirmation_and_closes_form()
     {

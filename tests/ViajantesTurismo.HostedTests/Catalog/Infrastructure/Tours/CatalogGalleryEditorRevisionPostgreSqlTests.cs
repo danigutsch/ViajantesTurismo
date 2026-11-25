@@ -10,7 +10,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 /// <summary>Exercises editor admission and blocked placement on the real Catalog journal.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogGalleryEditorRevisionPostgreSqlTests(HostedTestFixture shared)
 {

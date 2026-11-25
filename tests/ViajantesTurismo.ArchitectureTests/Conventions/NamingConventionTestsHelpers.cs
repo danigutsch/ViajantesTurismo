@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -20,21 +21,10 @@ internal static partial class NamingConventionTestsHelpers
         var root = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath), path: filePath).GetRoot();
         var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
         var offendingMethods = new List<string>();
-        var xunitAliases = root.DescendantNodes()
-            .OfType<UsingDirectiveSyntax>()
-            .Where(static directive => directive.Alias is not null && directive.Name is not null)
-            .Where(static directive => IsQualifiedXunitAttribute(directive.Name?.ToString()))
-            .Select(static directive => directive.Alias?.Name.Identifier.ValueText)
-            .OfType<string>()
-            .ToHashSet(StringComparer.Ordinal);
-
-        foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
+        foreach (var method in FindXunitMethods(root))
         {
-            var isXunitMethod = method.AttributeLists
-                .SelectMany(static list => list.Attributes)
-                .Any(attribute => IsXunitAttribute(attribute.Name, xunitAliases));
             var methodName = method.Identifier.ValueText;
-            if (!isXunitMethod || XunitMethodNamingRegex().IsMatch(methodName))
+            if (XunitMethodNamingRegex().IsMatch(methodName))
             {
                 continue;
             }
@@ -44,6 +34,23 @@ internal static partial class NamingConventionTestsHelpers
         }
 
         return [.. offendingMethods];
+    }
+
+    /// <summary>Finds xUnit fact and theory declarations, including qualified and aliased attributes.</summary>
+    internal static IEnumerable<MethodDeclarationSyntax> FindXunitMethods(SyntaxNode root)
+    {
+        var xunitAliases = root.DescendantNodes()
+            .OfType<UsingDirectiveSyntax>()
+            .Where(static directive => directive.Alias is not null && directive.Name is not null)
+            .Where(static directive => IsQualifiedXunitAttribute(directive.Name?.ToString()))
+            .Select(static directive => directive.Alias?.Name.Identifier.ValueText)
+            .OfType<string>()
+            .ToHashSet(StringComparer.Ordinal);
+
+        return root.DescendantNodes().OfType<MethodDeclarationSyntax>()
+            .Where(method => method.AttributeLists
+                .SelectMany(static list => list.Attributes)
+                .Any(attribute => IsXunitAttribute(attribute.Name, xunitAliases)));
     }
 
     private static bool IsXunitAttribute(NameSyntax name, HashSet<string> aliases)

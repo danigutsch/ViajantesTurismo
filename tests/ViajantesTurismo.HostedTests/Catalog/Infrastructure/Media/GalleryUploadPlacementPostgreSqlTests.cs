@@ -8,7 +8,7 @@ using ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 
 /// <summary>Exercises the ordered placement producer in the real guarded upload transaction.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class GalleryUploadPlacementPostgreSqlTests(HostedTestFixture shared)
 {

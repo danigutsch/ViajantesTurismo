@@ -1,5 +1,4 @@
 using SharedKernel.Testing;
-using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -51,7 +50,7 @@ public sealed class AddressPageTests : BunitContext
     {
         // Arrange
         JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetVoidResult();
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Address>();
 
         // Act
@@ -82,7 +81,7 @@ public sealed class AddressPageTests : BunitContext
     public async Task Back_button_navigates_to_contact_and_updates_current_step()
     {
         // Arrange
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Address>();
 
         // Act

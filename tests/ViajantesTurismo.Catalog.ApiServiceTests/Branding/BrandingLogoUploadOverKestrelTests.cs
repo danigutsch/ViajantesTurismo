@@ -5,12 +5,11 @@ using SharedKernel.Testing;
 using SharedKernel.Testing.MalwareScanning;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.UploadWire.Testing;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.AreaName, TestTraits.BrandingArea)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[Trait(TestTraitNames.AreaName, TestAreas.Branding)]
 public sealed class BrandingLogoUploadOverKestrelTests
 {
     [Fact]

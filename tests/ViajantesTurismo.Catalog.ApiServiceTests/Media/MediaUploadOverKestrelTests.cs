@@ -5,7 +5,6 @@ using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.UploadWire.Testing;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Media;
 
@@ -13,8 +12,8 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests.Media;
 /// Issue 706: the Catalog tour image upload exercised over real HTTP on a loopback Kestrel server (not TestServer),
 /// proving disconnect, slow-client and oversize behavior of the upload intake.
 /// </summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[Trait(TestTraitNames.AreaName, TestAreas.Catalog)]
 public sealed class MediaUploadOverKestrelTests
 {
     [Theory]

@@ -5,11 +5,10 @@ using SharedKernel.Results;
 using SharedKernel.Testing.MalwareScanning;
 using SharedKernel.Testing;
 using ViajantesTurismo.Branding.Infrastructure;
-using TestTraits = ViajantesTurismo.Branding.InfrastructureTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Branding.InfrastructureTests;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 public sealed class BrandingLogoIntakeTests
 {
     private const string PngType = "image/png";

@@ -14,7 +14,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 /// <summary>Verifies durable gallery writes and their replay on the Catalog store.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogGalleryProjectionPostgreSqlTests(HostedTestFixture shared)
 {

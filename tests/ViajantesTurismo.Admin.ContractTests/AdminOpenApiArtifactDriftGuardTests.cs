@@ -1,4 +1,3 @@
-using ViajantesTurismo.Admin.ContractTests.Infrastructure;
 
 namespace ViajantesTurismo.Admin.ContractTests;
 
@@ -8,8 +7,8 @@ namespace ViajantesTurismo.Admin.ContractTests;
 public sealed class AdminOpenApiArtifactDriftGuardTests
 {
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, SharedKernel.Testing.TestTraitValues.OpenApiSurface)]
     public void Canonical_OpenApi_artifacts_match_the_generated_boundary_artifacts()
     {
         // Arrange

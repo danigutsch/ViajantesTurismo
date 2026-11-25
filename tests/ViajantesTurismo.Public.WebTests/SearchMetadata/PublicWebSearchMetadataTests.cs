@@ -1,11 +1,10 @@
 using System.Text.Json;
 using AngleSharp.Html.Parser;
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.SearchMetadata;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 [TestScope(TestScope.Integration)]
 public sealed class PublicWebSearchMetadataTests
 {

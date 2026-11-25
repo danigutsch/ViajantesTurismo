@@ -12,7 +12,7 @@ namespace ViajantesTurismo.HostedTests.Admin.Api.Bookings;
 public class BookingTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {
     [Fact]
-    [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
     public async Task Booking_details_and_owner_history_return_persisted_room_and_bike_selections()
     {
         // Arrange

@@ -20,7 +20,7 @@ public class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Customer_edit_does_not_load_the_customer_collection_for_companion_selection()
     {

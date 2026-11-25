@@ -8,7 +8,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 /// <summary>Verifies actual anonymous Gallery routes against the persisted review and placement state.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogGalleryLocaleHttpPostgreSqlTests(HostedTestFixture shared)
 {

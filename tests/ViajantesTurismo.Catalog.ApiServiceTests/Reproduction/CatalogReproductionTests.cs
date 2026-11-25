@@ -6,8 +6,8 @@ using ViajantesTurismo.Testing.Reproduction;
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Reproduction;
 
 /// <summary>Reproduces Catalog management and public outcomes with separately owned state.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 public sealed class CatalogReproductionTests
 {
     [Fact]

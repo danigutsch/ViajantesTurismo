@@ -13,7 +13,6 @@ public static class TestTraits
     /// <summary>
     /// Area value for shared architecture coverage.
     /// </summary>
-    public const string SharedArea = "shared";
 
     /// <summary>
     /// Area value for AppHost orchestration tests.

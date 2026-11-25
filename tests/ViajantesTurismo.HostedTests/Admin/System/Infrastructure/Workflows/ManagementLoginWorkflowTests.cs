@@ -3,7 +3,7 @@ using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
-[Trait(TestTraitNames.AreaName, TestTraits.SharedArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.Shared)]
 [TestScope(TestScope.Unit)]
 public sealed class ManagementLoginWorkflowTests
 {

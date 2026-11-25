@@ -6,7 +6,7 @@ using ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 
 /// <summary>Proves tours store the ISO 4217 code in a three-character column.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class TourCurrencyPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {

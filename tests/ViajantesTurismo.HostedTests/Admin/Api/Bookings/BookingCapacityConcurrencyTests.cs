@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.HostedTests.Admin.Api.Bookings;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [Trait(TestTraitNames.AreaName, TestTraits.BookingsArea)]
 [TestScope(TestScope.Integration)]
 public sealed class BookingCapacityConcurrencyTests(ApiFixture fixture) : IClassFixture<ApiFixture>

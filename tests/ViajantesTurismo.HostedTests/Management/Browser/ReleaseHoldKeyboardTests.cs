@@ -7,8 +7,9 @@ using ViajantesTurismo.Admin.Contracts.Http;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser keyboard journey for releasing a document hold through the modal dialog.</summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class ReleaseHoldKeyboardTests : ManagementWebBrowserTestBase
 {
     private readonly GetDocumentDto document = new()

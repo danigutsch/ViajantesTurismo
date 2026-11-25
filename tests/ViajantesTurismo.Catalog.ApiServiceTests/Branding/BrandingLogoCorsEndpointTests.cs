@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using SharedKernel.Testing;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(TestTraitNames.AreaName, TestTraits.BrandingArea)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[Trait(TestTraitNames.AreaName, TestAreas.Branding)]
 public sealed class BrandingLogoCorsEndpointTests
 {
     private const string AllowedOrigin = "https://management.example";

@@ -13,8 +13,9 @@ namespace ViajantesTurismo.HostedTests.Management.Browser;
 /// Browser journeys for pages that once relied on inline <c>style</c> attributes, which the Management Web policy blocks: their
 /// presentation comes from stylesheet classes and the browser reports no <c>style-src</c> violation.
 /// </summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class InlineStyleCspTests : ManagementWebBrowserTestBase
 {
     private readonly Guid bookingId = Guid.CreateVersion7();

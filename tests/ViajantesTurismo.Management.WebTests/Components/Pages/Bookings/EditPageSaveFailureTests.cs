@@ -7,7 +7,7 @@ using ViajantesTurismo.Management.WebTests.Infrastructure;
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.Component)]
 public sealed class EditPageSaveFailureTests : BunitContext
 {
@@ -139,7 +139,7 @@ public sealed class EditPageSaveFailureTests : BunitContext
         await cut.Find(".alert.alert-success button").ClickAsync();
 
         // Assert
-        Services.GetRequiredService<NavigationManager>().Uri.ShouldEndWith("/bookings", StringComparison.Ordinal);
+        this.GetNavigationManager().Uri.ShouldEndWith("/bookings", StringComparison.Ordinal);
     }
 
     [Fact]

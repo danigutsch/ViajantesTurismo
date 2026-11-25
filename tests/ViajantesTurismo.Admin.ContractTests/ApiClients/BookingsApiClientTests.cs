@@ -8,7 +8,7 @@ using SharedKernel.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
 public sealed class BookingsApiClientTests
 {
     [Fact]

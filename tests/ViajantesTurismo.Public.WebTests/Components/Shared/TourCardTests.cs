@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Bunit;
 using TourCard = ViajantesTurismo.Public.Web.Components.Shared.TourCard;
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Components.Shared;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Component)]
 public sealed class TourCardTests : BunitContext
 {

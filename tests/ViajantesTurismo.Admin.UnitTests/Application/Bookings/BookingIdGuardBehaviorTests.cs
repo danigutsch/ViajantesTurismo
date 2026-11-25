@@ -8,7 +8,7 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings;
 
-[Trait(TestTraitNames.CategoryName, Infrastructure.TestTraits.CoreBehaviorCategory)]
+[TestFocus(TestFocus.CoreBehavior)]
 public sealed class BookingIdGuardBehaviorTests
 {
     [Fact]

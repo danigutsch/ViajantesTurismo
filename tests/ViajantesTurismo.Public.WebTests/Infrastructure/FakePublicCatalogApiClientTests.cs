@@ -2,7 +2,7 @@ using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Public.WebTests.Infrastructure;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Unit)]
 public sealed class FakePublicCatalogApiClientTests
 {

@@ -1,10 +1,9 @@
 using Bunit;
 using SharedKernel.Blazor.Site;
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Components.Shared;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Component)]
 public sealed class TourImageRenditionsTests : BunitContext
 {

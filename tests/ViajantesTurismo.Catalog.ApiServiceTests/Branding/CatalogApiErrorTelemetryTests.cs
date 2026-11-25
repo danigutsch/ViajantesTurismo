@@ -1,12 +1,10 @@
-using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel.AspNetCore;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.EndpointCategory)]
+[SharedKernel.Testing.TestHost(SharedKernel.Testing.TestHost.TestServer)]
 public sealed class CatalogApiErrorTelemetryTests
 {
     [Fact]
@@ -18,7 +16,7 @@ public sealed class CatalogApiErrorTelemetryTests
         store.SaveException = new IOException(secret);
         await using var factory = BrandingApiTestHost.Create(store);
         using var client = factory.CreateClient();
-        using var recorder = new MeterFactoryRecorder(factory.Services.GetRequiredService<IMeterFactory>());
+        using var recorder = BrandingApiTestHost.RecordApiMetrics(factory);
 
         // Act
         using var response = await BrandingManagementRequests.PutSettings(client, BrandingSettingsTestData.CreateDto(), "*");

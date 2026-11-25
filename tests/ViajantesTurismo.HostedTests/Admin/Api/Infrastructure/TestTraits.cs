@@ -13,12 +13,10 @@ public static class TestTraits
     /// <summary>
     /// Category value for endpoint coverage.
     /// </summary>
-    public const string EndpointCategory = SharedKernel.Testing.TestTraitValues.EndpointCategory;
 
     /// <summary>
     /// Host value for Aspire-backed tests.
     /// </summary>
-    public const string AspireHost = "aspire";
 
     /// <summary>
     /// Area value for bookings tests.
@@ -28,7 +26,6 @@ public static class TestTraits
     /// <summary>
     /// Area value for Branding tests.
     /// </summary>
-    public const string BrandingArea = "branding";
 
     /// <summary>
     /// Trait name for test component ownership.

@@ -1,4 +1,7 @@
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SharedKernel.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
@@ -10,6 +13,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     [
         TestTraitNames.ScopeName,
         TestTraitNames.AreaName,
+        TestTraitNames.CapabilityName,
         TestTraitNames.CategoryName,
         TestTraitNames.HostName,
         TestTraitNames.SurfaceName
@@ -50,7 +54,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
         return [.. offenses];
     }
 
-    /// <summary>Finds hardcoded canonical trait names (scope, area, category, host, surface) outside raw strings, returned as offenses.</summary>
+    /// <summary>Finds hardcoded canonical trait names outside raw strings, returned as offenses.</summary>
     public static string[] FindHardcodedCanonicalTraitNames(string filePath)
     {
         if (IsCanonicalTraitNamesFile(filePath))
@@ -108,50 +112,30 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     public static string[] FindRawServiceProviderPlumbingInTestMethods(string filePath)
     {
         var repositoryRoot = RepositoryRoot.Locate("ViajantesTurismo.slnx");
-        var lines = File.ReadAllLines(filePath);
-        var offenses = new List<string>();
-        var insideTestMethod = false;
-        var awaitingMethodSignature = false;
-        var braceDepth = 0;
-
-        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
-        {
-            var line = lines[lineIndex];
-            var trimmedLine = line.TrimStart();
-
-            if (!insideTestMethod && !awaitingMethodSignature && IsTestAttributeLine(trimmedLine))
-            {
-                awaitingMethodSignature = true;
-                continue;
-            }
-
-            if (awaitingMethodSignature && TestMethodSignatureRegex().IsMatch(trimmedLine))
-            {
-                insideTestMethod = true;
-                awaitingMethodSignature = false;
-                braceDepth = CountBraceDelta(line);
-                continue;
-            }
-
-            if (!insideTestMethod)
-            {
-                continue;
-            }
-
-            if (RawServiceProviderPlumbingRegex().IsMatch(line))
-            {
-                offenses.Add($"{Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/')}:L{lineIndex + 1} {trimmedLine.Trim()}");
-            }
-
-            braceDepth += CountBraceDelta(line);
-            if (braceDepth <= 0)
-            {
-                insideTestMethod = false;
-            }
-        }
-
-        return [.. offenses];
+        var relativePath = Path.GetRelativePath(repositoryRoot, filePath).Replace('\\', '/');
+        var root = CSharpSyntaxTree.ParseText(File.ReadAllText(filePath), path: filePath).GetRoot();
+        return [.. NamingConventionTestsHelpers.FindXunitMethods(root)
+            .Select(static method => (SyntaxNode?)method.Body ?? method.ExpressionBody)
+            .OfType<SyntaxNode>()
+            .SelectMany(static body => body.DescendantNodes())
+            .Where(IsRawServiceProviderOperation)
+            .Select(node => $"{relativePath}:L{node.GetLocation().GetLineSpan().StartLinePosition.Line + 1} {node}")];
     }
+
+    private static bool IsRawServiceProviderOperation(SyntaxNode node) => node switch
+    {
+        InvocationExpressionSyntax invocation => InvokedMethodName(invocation.Expression) is "BuildServiceProvider" or "CreateScope" or "CreateAsyncScope",
+        ObjectCreationExpressionSyntax creation => creation.Type.GetLastToken().ValueText == "ServiceCollection",
+        _ => false
+    };
+
+    private static string? InvokedMethodName(ExpressionSyntax expression) => expression switch
+    {
+        MemberAccessExpressionSyntax access => access.Name.Identifier.ValueText,
+        MemberBindingExpressionSyntax binding => binding.Name.Identifier.ValueText,
+        SimpleNameSyntax name => name.Identifier.ValueText,
+        _ => null
+    };
 
     /// <summary>Finds serial collection definitions without a nearby SerialTestJustification attribute, returned as offenses.</summary>
     public static string[] FindUndocumentedSerialCollectionDefinitions(string filePath)
@@ -198,16 +182,10 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
             || normalizedPath.EndsWith(".feature.cs", StringComparison.Ordinal);
     }
 
-    [GeneratedRegex(@"\b(?:new\s+ServiceCollection\s*\(|BuildServiceProvider\s*\(|CreateScope\s*\(|CreateAsyncScope\s*\()", RegexOptions.Compiled)]
-    private static partial Regex RawServiceProviderPlumbingRegex();
-
-    [GeneratedRegex(@"^public\s+(?:async\s+)?(?:Task|ValueTask|void)\s+\w+\s*\(", RegexOptions.Compiled)]
-    private static partial Regex TestMethodSignatureRegex();
-
     [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
     private static partial Regex PublicServiceProviderReachThroughRegex();
 
-    [GeneratedRegex(@"const\s+string\s+\w+\s*=\s*(?:(?:global::)?SharedKernel\.Testing\.)?TestTraitNames\.\w+\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"const\s+string\s+\w+\s*=\s*(?:(?:global::)?PandaBear\.Testing\.)?TestTraitNames\.\w+\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
     private static partial Regex RedirectingCanonicalTraitNameRegex();
 
     [GeneratedRegex("\"{3,}", RegexOptions.Compiled)]
@@ -215,17 +193,6 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
 
     [GeneratedRegex(@"CollectionDefinition.*DisableParallelization\s*=\s*true", RegexOptions.Compiled)]
     private static partial Regex SerialCollectionDefinitionRegex();
-
-    private static bool IsTestAttributeLine(string trimmedLine)
-    {
-        return trimmedLine.StartsWith("[Fact", StringComparison.Ordinal)
-            || trimmedLine.StartsWith("[Theory", StringComparison.Ordinal);
-    }
-
-    private static int CountBraceDelta(string line)
-    {
-        return line.Count(static character => character == '{') - line.Count(static character => character == '}');
-    }
 
     private static bool IsCanonicalTraitNamesFile(string filePath)
     {

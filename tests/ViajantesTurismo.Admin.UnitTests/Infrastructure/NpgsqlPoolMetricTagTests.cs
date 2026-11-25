@@ -2,7 +2,7 @@ using SharedKernel.Testing;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[TestFocus(TestFocus.Security)]
 public sealed class NpgsqlPoolMetricTagTests
 {
     private const string ConnectionString =

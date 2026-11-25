@@ -48,7 +48,7 @@ public sealed class HoldsPageTests : BunitContext
         context.Services.AddSingleton<IDocumentsApiClient>(documentsApiClient);
         context.Services.AddUiFailureReporting();
         context.SetRendererInfo(new RendererInfo("Server", true));
-        context.Services.GetRequiredService<NavigationManager>().NavigateTo("/documents/holds");
+        context.GetNavigationManager().NavigateTo("/documents/holds");
 
         // Act
         var cut = context.Render<Routes>();

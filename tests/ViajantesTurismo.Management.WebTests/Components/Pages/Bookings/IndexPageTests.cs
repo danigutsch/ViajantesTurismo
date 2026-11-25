@@ -24,7 +24,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Load_failure_shows_a_sanitized_error_instead_of_an_empty_state()
     {
@@ -201,7 +201,7 @@ public class IndexPageTests : BunitContext
     [InlineData("Tour", BookingPageSort.TourName)]
     [InlineData("Customer", BookingPageSort.CustomerName)]
     [InlineData("Total Price", BookingPageSort.TotalPrice)]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Large_booking_overview_requests_pages_and_sorts_on_the_server(string title, BookingPageSort sort)
     {

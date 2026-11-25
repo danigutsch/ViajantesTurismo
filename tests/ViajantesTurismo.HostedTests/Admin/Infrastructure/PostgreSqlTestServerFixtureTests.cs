@@ -2,7 +2,7 @@ using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [Trait(TestTraitNames.CapabilityName, TestTraits.DatabaseInitializationCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class PostgreSqlTestServerFixtureTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>

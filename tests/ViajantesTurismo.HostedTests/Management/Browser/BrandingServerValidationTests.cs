@@ -6,8 +6,9 @@ using ViajantesTurismo.Branding.Contracts.Http;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser journey for a server validation problem on the Branding form.</summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class BrandingServerValidationTests : ManagementWebBrowserTestBase
 {
     private const string HostileMessage = "<script>window.injectedByServerMessage = true;</script> Brand name is not accepted.";

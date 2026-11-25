@@ -12,7 +12,7 @@ using ViajantesTurismo.Resources;
 namespace ViajantesTurismo.HostedTests.Admin.System.Authentication;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.AuthenticationCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[TestHost(TestHost.Aspire)]
 [TestScope(TestScope.System)]
 public sealed partial class ManagementBffConformanceTests(AspireSystemTestFixture fixture)
     : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
@@ -146,14 +146,17 @@ public sealed partial class ManagementBffConformanceTests(AspireSystemTestFixtur
         // Arrange
         var documentId = Guid.CreateVersion7();
         var since = TimeProvider.System.GetUtcNow().UtcDateTime;
+        var documentUri = new Uri(Fixture.WebAppUrl, $"/documents/{documentId}");
 
         // Act
         await ManagementLogin.SignIn(Fixture.WebAppUrl, Fixture.ConformanceUserPassword);
-        await NavigateTo($"/documents/{documentId}");
-        var expectedUrl = new Uri(Fixture.WebAppUrl, $"/documents/{documentId}").ToString();
-        Page.Url.ShouldBe(expectedUrl);
+
+        // The server-rendered result exercises the authenticated read during browser navigation.
+        await Page.GotoAsync(documentUri.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
+        await Expect(Page).ToHaveURLAsync(documentUri.ToString());
         var missingDocumentAlert = Page.GetByRole(AriaRole.Alert);
-        await Expect(missingDocumentAlert).ToContainTextAsync("Document not found.");
+        await Expect(missingDocumentAlert).ToBeVisibleAsync();
+        await Expect(missingDocumentAlert).ToHaveTextAsync("Document not found.");
         var actorId = await Fixture.GetRejectedDocumentReadAuditActor(since, TestContext.Current.CancellationToken);
 
         // Assert

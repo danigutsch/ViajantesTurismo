@@ -8,7 +8,7 @@ using ViajantesTurismo.Catalog.Infrastructure.Tours;
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 /// <summary>Exercises the Catalog retirement fence against the PostgreSQL stores.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogTourRetirementPostgreSqlTests(HostedTestFixture shared)
 {

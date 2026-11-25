@@ -52,13 +52,14 @@ public class BookingCreationTests(AspireSystemTestFixture fixture) : AspireSyste
         });
         await Expect(principalCustomerField).ToHaveCountAsync(0);
 
-        // Select the owned test tour (label includes dynamic date, so find the matching option by name).
-        var tourSelect = bookingForm.Locator("div.mb-3")
-            .Filter(new LocatorFilterOptions { HasText = "Tour" }).First.Locator("select");
-        var ownedTourOption = tourSelect.Locator("option", new LocatorLocatorOptions { HasText = tour.Name });
-        var optionValue = await ownedTourOption.GetAttributeAsync("value");
-        optionValue.ShouldNotBeNull();
-        await tourSelect.SelectOptionAsync(optionValue);
+        // Act: narrow the bounded options to the owned tour before selecting it by ID.
+        var tourSearch = bookingForm.GetByRole(AriaRole.Searchbox, new()
+        {
+            Name = "Search by tour name or identifier",
+            Exact = true
+        });
+        await tourSearch.FillAsync(tour.Identifier);
+        await bookingForm.Locator("select#tourId").SelectOptionAsync(tour.Id.ToString("D"));
 
         // Assert: availability and price breakdown appear for the selected owned tour.
         await Expect(bookingForm.GetByText("available")).ToBeVisibleAsync();

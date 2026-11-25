@@ -8,7 +8,7 @@ using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [Trait(TestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentHoldPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>

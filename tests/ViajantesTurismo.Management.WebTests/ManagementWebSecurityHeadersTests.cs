@@ -7,10 +7,11 @@ using SharedKernel.AspNetCore;
 using SharedKernel.Testing;
 using System.Net;
 using ViajantesTurismo.Management.Web;
+using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class ManagementWebSecurityHeadersTests
 {
@@ -85,8 +86,7 @@ public sealed class ManagementWebSecurityHeadersTests
                 .Configure(app =>
                 {
                     app.UseManagementWebSecurityHeaders();
-                    app.Run(static context => context.Response.WriteAsync(
-                        context.RequestServices.GetRequiredService<ICspNonce>().Value, context.RequestAborted));
+                    app.Run(ManagementWebEndpointTestHost.WriteCspNonce);
                 }))
             .StartAsync(Xunit.TestContext.Current.CancellationToken);
         using var client = host.GetTestClient();

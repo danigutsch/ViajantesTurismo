@@ -5,7 +5,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 /// <summary>Exercises DB-side photo counts, scope and search against the Catalog migrations.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogGalleryPhotoOptionsPostgreSqlTests(HostedTestFixture shared)
 {

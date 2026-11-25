@@ -3,7 +3,7 @@ using ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
 public sealed class FakeAdminApiClientParityTests
 {
     [Fact]

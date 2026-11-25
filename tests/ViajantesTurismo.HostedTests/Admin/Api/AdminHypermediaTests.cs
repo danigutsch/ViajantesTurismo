@@ -7,7 +7,7 @@ using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class AdminHypermediaTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {

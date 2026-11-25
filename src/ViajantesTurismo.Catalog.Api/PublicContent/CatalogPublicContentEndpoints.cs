@@ -4,6 +4,7 @@ using SharedKernel.BuildingBlocks;
 using SharedKernel.HttpCaching.AspNetCore;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Contracts.Application;
+using ViajantesTurismo.Catalog.Contracts.Http;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using static ViajantesTurismo.Catalog.Api.CatalogValidationProblems;
 
@@ -18,7 +19,7 @@ internal static class CatalogPublicContentEndpoints
         versionedApi.MapGet("/public/catalog/content/{**key}", GetPublicContent)
             .WithName("GetPublicContent")
             .Produces<PublicContentVariantDto>(StatusCodes.Status200OK)
-            .CacheOutput(policy => policy.Expire(PublicContentHttpCache.Freshness).SetVaryByQuery(PublicContentHttpCache.CultureQueryKey).Tag(PublicContentHttpCache.Tag))
+            .CacheOutput(policy => policy.Expire(PublicContentHttpCache.Freshness).SetVaryByQuery(PublicContentCultureQuery.Culture).Tag(PublicContentHttpCache.Tag))
             .RequireRateLimiting(CatalogSecurityBaseline.PublicReadRateLimitPolicy)
             .AllowAnonymous();
         managementCatalog.MapGet("/public-content", async (IPublicContentStore store, LinkGenerator routes, HttpContext context, CancellationToken ct) =>
@@ -86,7 +87,7 @@ internal static class CatalogPublicContentEndpoints
         var parameters = new RouteValueDictionary
         {
             ["key"] = content.Key,
-            [PublicContentHttpCache.CultureQueryKey] = variant.Language.Value
+            [PublicContentCultureQuery.Culture] = variant.Language.Value
         };
         var self = CatalogEndpointLinks.Get(routes, httpContext, "self", nameof(GetPublicContent), parameters);
         var dto = MapVariant(variant, [self]);

@@ -32,4 +32,8 @@
         <PackageReference Include="PandaBear.SharedKernel.Testing.Contracts" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="ViajantesTurismo.Testing" />
+        <ProjectReference Include="..\ViajantesTurismo.Testing\ViajantesTurismo.Testing.csproj" />
+    </ItemGroup>
 </Project>

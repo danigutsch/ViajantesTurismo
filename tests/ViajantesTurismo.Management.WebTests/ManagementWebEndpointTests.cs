@@ -11,7 +11,7 @@ using ViajantesTurismo.Management.WebTests.Infrastructure;
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class ManagementWebEndpointTests
 {

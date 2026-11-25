@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;
 
-[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.Unit)]
 public sealed class ImportCustomersDuplicateResolutionTestHelperTests
 {

@@ -61,11 +61,14 @@
     <ItemGroup>
         <Compile Include="../fixtures/reproduction/ReproductionFixtureEnvironment.cs" Link="Reproduction/ReproductionFixtureEnvironment.cs" />
         <Compile Include="../fixtures/hosting/EntryPointHost.cs" Link="Infrastructure/EntryPointHost.cs" />
-        <Compile Include="../fixtures/hosting/HostBuiltObserver.cs" Link="Infrastructure/HostBuiltObserver.cs" />
     </ItemGroup>
 
     <ItemGroup>
         <Compile Include="..\ViajantesTurismo.Admin.Testing\Fakes\FakeTimeProvider.cs" Link="Infrastructure\FakeTimeProvider.cs" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="ViajantesTurismo.Testing" />
+        <ProjectReference Include="..\ViajantesTurismo.Testing\ViajantesTurismo.Testing.csproj" />
+    </ItemGroup>
 </Project>

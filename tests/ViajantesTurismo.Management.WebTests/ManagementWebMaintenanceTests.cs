@@ -7,8 +7,8 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.HostName, TestTraitValues.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 [TestScope(TestScope.Integration)]
 public sealed class ManagementWebMaintenanceTests
 {

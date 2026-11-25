@@ -2,7 +2,7 @@ using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class BookingCommitAmbiguityPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {

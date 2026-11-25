@@ -4,7 +4,7 @@ using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing;
 namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentApiAuthorizationTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {

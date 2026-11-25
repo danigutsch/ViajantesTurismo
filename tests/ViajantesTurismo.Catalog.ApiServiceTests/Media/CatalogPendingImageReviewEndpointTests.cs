@@ -3,12 +3,11 @@ using SharedKernel.BuildingBlocks;
 using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Media;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 public sealed class CatalogPendingImageReviewEndpointTests
 {
     [Fact]

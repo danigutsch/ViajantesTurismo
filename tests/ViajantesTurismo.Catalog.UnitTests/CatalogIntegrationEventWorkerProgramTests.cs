@@ -10,7 +10,7 @@ using ViajantesTurismo.Testing.Hosting;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
-[Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraitValues.IntegrationEventTransport)]
 public sealed class CatalogIntegrationEventWorkerProgramTests
 {
     private const string WorkerAssemblyName = "ViajantesTurismo.Catalog.IntegrationEventWorker";

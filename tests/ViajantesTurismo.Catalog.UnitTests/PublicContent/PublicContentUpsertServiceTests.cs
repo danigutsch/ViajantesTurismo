@@ -5,7 +5,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests.PublicContent;
 
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestAreas.Catalog)]
 public sealed class PublicContentUpsertServiceTests
 {
     [Fact]

@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
 public sealed class DocumentHoldsApiClientTests
 {
     private const string HoldJson = """

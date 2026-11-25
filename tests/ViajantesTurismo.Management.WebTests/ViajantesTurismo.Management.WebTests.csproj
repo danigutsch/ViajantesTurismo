@@ -54,4 +54,8 @@
     </ItemGroup>
 
 
+    <ItemGroup>
+        <Using Include="ViajantesTurismo.Testing" />
+        <ProjectReference Include="..\ViajantesTurismo.Testing\ViajantesTurismo.Testing.csproj" />
+    </ItemGroup>
 </Project>

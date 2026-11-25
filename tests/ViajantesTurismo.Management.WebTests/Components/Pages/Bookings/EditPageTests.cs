@@ -63,7 +63,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Customer_options_failure_keeps_booking_edit_available_to_an_operator()
     {
@@ -264,7 +264,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Preloads_room_bikes_and_editable_companion_choices()
     {
@@ -306,7 +306,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Preloads_single_room_instead_of_the_form_default()
     {
@@ -326,7 +326,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Retained_companion_is_available_outside_the_first_option_window()
     {
@@ -358,7 +358,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Companion_search_finds_eligible_choices_after_the_first_five_hundred_customers()
     {
@@ -390,7 +390,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Read_only_booking_disables_the_picker_without_requesting_choices()
     {
@@ -415,7 +415,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Selecting_single_room_removes_companion_controls()
     {
@@ -443,7 +443,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Changed_details_are_updated_and_refreshed_before_redirect()
     {
@@ -490,7 +490,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Details_only_update_does_not_write_an_unchanged_default_discount()
     {
@@ -521,7 +521,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Successful_update_with_refresh_failure_is_not_reported_as_a_failed_update()
     {
@@ -550,7 +550,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Partial_save_failure_reloads_authoritative_state_without_overwriting_entered_values()
     {
@@ -579,7 +579,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Partial_save_with_failed_readback_locks_further_mutations()
     {
@@ -602,7 +602,7 @@ public sealed class EditPageTests : BunitContext
         cut.Find("button[type='submit']").HasAttribute(DisabledAttributeName).ShouldBeTrue();
     }
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Unchanged_details_do_not_call_details_update()
     {
@@ -627,7 +627,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Companion_requires_a_bike_selection()
     {
@@ -783,7 +783,7 @@ public sealed class EditPageTests : BunitContext
     [Theory]
     [InlineData(BookingStatusDto.Completed)]
     [InlineData(BookingStatusDto.Cancelled)]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Completed_and_cancelled_bookings_disable_booked_service_controls_but_keep_notes_editable(BookingStatusDto status)
     {
@@ -806,7 +806,7 @@ public sealed class EditPageTests : BunitContext
     [Theory]
     [InlineData(BookingStatusDto.Completed)]
     [InlineData(BookingStatusDto.Cancelled)]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Closed_bookings_save_only_their_notes(BookingStatusDto status)
     {
@@ -829,7 +829,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Edit_controls_follow_the_read_model_booked_services_fact()
     {
@@ -982,7 +982,7 @@ public sealed class EditPageTests : BunitContext
     [InlineData("complete", BookingStatusDto.Confirmed, "Complete Booking", null)]
     [InlineData("cancel", BookingStatusDto.Confirmed, "Cancel Booking", "Yes, Cancel")]
     [InlineData("delete", BookingStatusDto.Pending, "Delete Booking", "Yes, Delete")]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Action_controls_are_disabled_while_booking_request_is_in_flight(
         string actionKind,
@@ -1032,7 +1032,7 @@ public sealed class EditPageTests : BunitContext
     [Theory]
     [InlineData(BookingStatusDto.Pending)]
     [InlineData(BookingStatusDto.Confirmed)]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Disabled_action_controls_do_not_dispatch_callbacks(BookingStatusDto status)
     {
@@ -1060,7 +1060,7 @@ public sealed class EditPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Status_actions_follow_the_read_model_transition_facts()
     {
@@ -1223,7 +1223,7 @@ public sealed class EditPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Pending);
         _fakeBookingsApi.AddBooking(booking);
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
 
         var cut = Render<Edit>(parameters => parameters.Add(p => p.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find(HeadingOrAlertSelector));

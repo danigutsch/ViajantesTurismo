@@ -12,7 +12,7 @@ using ViajantesTurismo.Testing.Reproduction;
 namespace ViajantesTurismo.Management.WebTests.Reproduction;
 
 /// <summary>Repeats the Management download outcomes through independently created proxy test hosts.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentProxyReproductionTests
 {

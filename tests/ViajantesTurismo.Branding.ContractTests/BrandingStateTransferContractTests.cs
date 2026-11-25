@@ -13,7 +13,7 @@ public sealed class BrandingStateTransferContractTests
     [Theory]
     [InlineData("/api/v1/public/branding/logo/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
     [InlineData("/api/v1/public/branding/logo/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.IntegrationEventSurface)]
     public void Branding_state_transfer_contract_round_trips_complete_public_safe_state(string logoAddress)
     {

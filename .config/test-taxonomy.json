@@ -10,26 +10,26 @@
     {"path":"src/ViajantesTurismo.Admin.Contracts.IntegrationEvents/ViajantesTurismo.Admin.Contracts.IntegrationEvents.csproj","directOwner":"Admin","requiredTypes":["Contract"]},
     {"path":"src/ViajantesTurismo.Admin.Domain/ViajantesTurismo.Admin.Domain.csproj","directOwner":"Admin","requiredTypes":["Unit"]},
     {"path":"src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj","directOwner":"Admin","requiredTypes":["Integration","Unit"]},
-    {"path":"src/ViajantesTurismo.Admin.IntegrationEventWorker/ViajantesTurismo.Admin.IntegrationEventWorker.csproj","directOwner":"Admin","requiredTypes":["Unit"]},
+    {"path":"src/ViajantesTurismo.Admin.IntegrationEventWorker/ViajantesTurismo.Admin.IntegrationEventWorker.csproj","directOwner":"Admin","requiredTypes":["Integration","Unit"]},
     {"path":"src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj","directOwner":"Application platform","requiredTypes":["Architecture","System"]},
     {"path":"src/ViajantesTurismo.Architecture.Analyzers/ViajantesTurismo.Architecture.Analyzers.csproj","directOwner":"Architecture","requiredTypes":["Unit"]},
     {"path":"src/ViajantesTurismo.Branding.AspNetCore/ViajantesTurismo.Branding.AspNetCore.csproj","directOwner":"Branding","requiredTypes":["Api"]},
     {"path":"src/ViajantesTurismo.Branding.Contracts.Http/ViajantesTurismo.Branding.Contracts.Http.csproj","directOwner":"Branding","requiredTypes":["Contract"]},
     {"path":"src/ViajantesTurismo.Branding.Contracts.IntegrationEvents/ViajantesTurismo.Branding.Contracts.IntegrationEvents.csproj","directOwner":"Branding","requiredTypes":["Contract"]},
     {"path":"src/ViajantesTurismo.Branding.Infrastructure/ViajantesTurismo.Branding.Infrastructure.csproj","directOwner":"Branding","requiredTypes":["Integration"]},
-    {"path":"src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj","directOwner":"Catalog","requiredTypes":["Api","Contract"]},
+    {"path":"src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj","directOwner":"Catalog","requiredTypes":["Api","Contract","System"]},
     {"path":"src/ViajantesTurismo.Catalog.Application/ViajantesTurismo.Catalog.Application.csproj","directOwner":"Catalog","requiredTypes":["Architecture","Component","Unit"]},
     {"path":"src/ViajantesTurismo.Catalog.Contracts.Application/ViajantesTurismo.Catalog.Contracts.Application.csproj","directOwner":"Catalog","requiredTypes":["Contract"]},
     {"path":"src/ViajantesTurismo.Catalog.Contracts.Http/ViajantesTurismo.Catalog.Contracts.Http.csproj","directOwner":"Catalog","requiredTypes":["Contract"]},
     {"path":"src/ViajantesTurismo.Catalog.Contracts.IntegrationEvents/ViajantesTurismo.Catalog.Contracts.IntegrationEvents.csproj","directOwner":"Catalog","requiredTypes":["Contract"]},
     {"path":"src/ViajantesTurismo.Catalog.Domain/ViajantesTurismo.Catalog.Domain.csproj","directOwner":"Catalog","requiredTypes":["Unit"]},
     {"path":"src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj","directOwner":"Catalog","requiredTypes":["Integration","Unit"]},
-    {"path":"src/ViajantesTurismo.Catalog.IntegrationEventWorker/ViajantesTurismo.Catalog.IntegrationEventWorker.csproj","directOwner":"Catalog","requiredTypes":["Unit"]},
+    {"path":"src/ViajantesTurismo.Catalog.IntegrationEventWorker/ViajantesTurismo.Catalog.IntegrationEventWorker.csproj","directOwner":"Catalog","requiredTypes":["System","Unit"]},
     {"path":"src/ViajantesTurismo.DatabaseObservability/ViajantesTurismo.DatabaseObservability.csproj","directOwner":"Application platform","requiredTypes":["Component"]},
     {"path":"src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj","directOwner":"Management Web","requiredTypes":["Integration","Unit"]},
     {"path":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","directOwner":"Management Web","requiredTypes":["Component","Integration","System","Unit"]},
-    {"path":"src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj","directOwner":"Application platform","requiredTypes":["Unit"]},
-    {"path":"src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj","directOwner":"Public Web","requiredTypes":["Component","Integration","Unit"]},
+    {"path":"src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj","directOwner":"Application platform","requiredTypes":["Integration","Unit"]},
+    {"path":"src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj","directOwner":"Public Web","requiredTypes":["Component","Integration","System","Unit"]},
     {"path":"src/ViajantesTurismo.RepositoryDocumentation/ViajantesTurismo.RepositoryDocumentation.csproj","directOwner":"Architecture","requiredTypes":["Architecture","Contract"]},
     {"path":"src/ViajantesTurismo.Resources/ViajantesTurismo.Resources.csproj","directOwner":"Application platform","requiredTypes":["Contract"]},
     {"path":"src/ViajantesTurismo.ServiceDefaults/ViajantesTurismo.ServiceDefaults.csproj","directOwner":"Application platform","requiredTypes":["Integration"]}
@@ -169,10 +169,16 @@
       "seams": [
         {"sut":"src/ViajantesTurismo.Admin.Api/ViajantesTurismo.Admin.Api.csproj","type":"Integration","dependency":"aspire-services","capabilities":["http-and-postgresql"],"lane":"hosted-tests"},
         {"sut":"src/ViajantesTurismo.Admin.Infrastructure/ViajantesTurismo.Admin.Infrastructure.csproj","type":"Integration","dependency":"postgresql","capabilities":["migrations","locking","persistence"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Admin.IntegrationEventWorker/ViajantesTurismo.Admin.IntegrationEventWorker.csproj","type":"Integration","dependency":"postgresql","capabilities":["branding-projection","event-replay"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj","type":"System","dependency":"browser-and-aspire","capabilities":["hosted-application-composition"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Catalog.Api/ViajantesTurismo.Catalog.Api.csproj","type":"System","dependency":"aspire-services","capabilities":["cross-context-tour-delivery"],"lane":"hosted-tests"},
         {"sut":"src/ViajantesTurismo.Catalog.Infrastructure/ViajantesTurismo.Catalog.Infrastructure.csproj","type":"Integration","dependency":"postgresql-and-object-storage","capabilities":["persistence","catalog-media"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Catalog.IntegrationEventWorker/ViajantesTurismo.Catalog.IntegrationEventWorker.csproj","type":"System","dependency":"aspire-services","capabilities":["admin-tour-projection"],"lane":"hosted-tests"},
         {"sut":"src/ViajantesTurismo.Management.Security/ViajantesTurismo.Management.Security.csproj","type":"Integration","dependency":"postgresql","capabilities":["protected-tickets","token-store"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","type":"Integration","dependency":"browser-and-loopback-kestrel","capabilities":["keyboard-navigation","server-rendered-form-validation"],"lane":"hosted-tests"},
         {"sut":"src/ViajantesTurismo.Management.Web/ViajantesTurismo.Management.Web.csproj","type":"System","dependency":"browser-and-aspire","capabilities":["admin-staff-workflows"],"lane":"hosted-tests"},
-        {"sut":"src/ViajantesTurismo.AppHost/ViajantesTurismo.AppHost.csproj","type":"System","dependency":"browser-and-aspire","capabilities":["hosted-application-composition"],"lane":"hosted-tests"}
+        {"sut":"src/ViajantesTurismo.MigrationService/ViajantesTurismo.MigrationService.csproj","type":"Integration","dependency":"postgresql","capabilities":["migration-baselines","forward-rehearsal"],"lane":"hosted-tests"},
+        {"sut":"src/ViajantesTurismo.Public.Web/ViajantesTurismo.Public.Web.csproj","type":"System","dependency":"browser-and-aspire","capabilities":["public-tour-browsing","publication-visibility"],"lane":"hosted-tests"}
       ]
     },
     {
@@ -207,6 +213,7 @@
   "supportProjects": [
     "tests/ViajantesTurismo.Admin.Testing/ViajantesTurismo.Admin.Testing.csproj",
     "tests/ViajantesTurismo.Catalog.Testing/ViajantesTurismo.Catalog.Testing.csproj",
+    "tests/ViajantesTurismo.Testing/ViajantesTurismo.Testing.csproj",
     "tests/ViajantesTurismo.UploadWire.Testing/ViajantesTurismo.UploadWire.Testing.csproj"
   ]
 }

@@ -1,11 +1,9 @@
-using System.Diagnostics.Metrics;
 using ViajantesTurismo.Branding.AspNetCore;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.EndpointCategory)]
+[SharedKernel.Testing.TestHost(SharedKernel.Testing.TestHost.TestServer)]
 public sealed class BrandingCacheTelemetryTests
 {
     private const string PublicSettingsPath = $"/api/v1/{BrandingRoutes.PublicSettingsPath}";
@@ -16,7 +14,7 @@ public sealed class BrandingCacheTelemetryTests
         // Arrange
         await using var factory = BrandingApiTestHost.CreateAnonymous(TestBrandingSettingsStore.Seeded());
         using var client = factory.CreateClient();
-        using var recorder = new BrandingMetricRecorder(factory.Services.GetRequiredService<IMeterFactory>());
+        using var recorder = BrandingApiTestHost.RecordBrandingMetrics(factory);
 
         // Act
         using var first = await client.GetAsync(new Uri(PublicSettingsPath, UriKind.Relative), TestContext.Current.CancellationToken);
@@ -36,7 +34,7 @@ public sealed class BrandingCacheTelemetryTests
         await using var factory = BrandingApiTestHost.CreateAnonymous(store);
         using var client = factory.CreateClient();
         BrandingApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
-        using var recorder = new BrandingMetricRecorder(factory.Services.GetRequiredService<IMeterFactory>());
+        using var recorder = BrandingApiTestHost.RecordBrandingMetrics(factory);
         var request = new BrandingSettingsDto
         {
             BrandName = "Updated",
@@ -67,7 +65,7 @@ public sealed class BrandingCacheTelemetryTests
         var cacheStore = new RecordingOutputCacheStore { EvictionException = new InvalidOperationException("synthetic") };
         await using var factory = BrandingApiTestHost.Create(store, cacheStore);
         using var client = factory.CreateClient();
-        using var recorder = new BrandingMetricRecorder(factory.Services.GetRequiredService<IMeterFactory>());
+        using var recorder = BrandingApiTestHost.RecordBrandingMetrics(factory);
         var request = new BrandingSettingsDto
         {
             BrandName = "Updated",

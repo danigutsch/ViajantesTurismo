@@ -9,8 +9,9 @@ using ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser keyboard journey for cancelling a held customer import.</summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class ImportCustomersKeyboardCancelTests : ManagementWebBrowserTestBase
 {
     private readonly FakeCustomersApiClient customers = new();

@@ -1,4 +1,3 @@
-using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SharedKernel.AspNetCore;
@@ -25,7 +24,7 @@ public sealed class AdminApiErrorTelemetryTests
         });
         using var client = factory.CreateClient();
         AdminApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
-        using var recorder = new MeterFactoryRecorder(factory.Services.GetRequiredService<IMeterFactory>());
+        using var recorder = AdminApiTestHost.RecordMetrics(factory);
 
         // Act
         using var response = await client.PostAsJsonAsync(
@@ -55,7 +54,7 @@ public sealed class AdminApiErrorTelemetryTests
         // Arrange
         await using var factory = AdminApiTestHost.Create();
         using var client = factory.CreateClient();
-        using var recorder = new MeterFactoryRecorder(factory.Services.GetRequiredService<IMeterFactory>());
+        using var recorder = AdminApiTestHost.RecordMetrics(factory);
 
         // Act
         using var response = await client.GetAsync(new Uri("/api/v1/tours/page", UriKind.Relative), TestContext.Current.CancellationToken);

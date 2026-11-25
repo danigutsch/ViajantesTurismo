@@ -16,11 +16,6 @@ internal static class TestTraits
     public const string PersistenceCategory = "persistence";
 
     /// <summary>
-    /// Trait value for security tests.
-    /// </summary>
-    public const string SecurityCategory = SharedKernel.Testing.TestTraitValues.SecurityCategory;
-
-    /// <summary>
     /// Trait value for the integration event relay capability.
     /// </summary>
     public const string IntegrationEventRelayCapability = "integration-event-relay";
@@ -29,10 +24,5 @@ internal static class TestTraits
     /// Trait value for core behavior tests.
     /// </summary>
     public const string CoreBehaviorCategory = "core-behavior";
-
-    /// <summary>
-    /// Trait value for the payments capability.
-    /// </summary>
-    public const string PaymentsCapability = "Payments";
 
 }

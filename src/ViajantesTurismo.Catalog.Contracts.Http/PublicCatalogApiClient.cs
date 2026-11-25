@@ -62,7 +62,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
             httpClient,
             new HttpRequestMessage(
                 HttpMethod.Get,
-                new Uri($"{RoutePrefix}/content/{escapedKey}?culture={escapedCulture}", UriKind.Relative)),
+                new Uri($"{RoutePrefix}/content/{escapedKey}?{PublicContentCultureQuery.Culture}={escapedCulture}", UriKind.Relative)),
             HttpStatusCode.OK,
             Json.PublicContentVariantDto,
             Json.ContractValidationProblemDto,
@@ -103,7 +103,7 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
         ArgumentException.ThrowIfNullOrWhiteSpace(culture);
 
         var pagination = page is null ? string.Empty : $"&page={Uri.EscapeDataString(page)}";
-        return new Uri($"{RoutePrefix}{path}?culture={Uri.EscapeDataString(culture)}{pagination}", UriKind.Relative);
+        return new Uri($"{RoutePrefix}{path}?{PublicContentCultureQuery.Culture}={Uri.EscapeDataString(culture)}{pagination}", UriKind.Relative);
     }
 
     private static string EscapePath(string path)

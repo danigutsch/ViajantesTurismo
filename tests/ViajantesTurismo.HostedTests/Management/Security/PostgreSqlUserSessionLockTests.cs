@@ -10,8 +10,8 @@ namespace ViajantesTurismo.HostedTests.Management.Security;
 /// instances, so a rotated refresh token is never redeemed twice.
 /// </summary>
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[TestHost(TestHost.Aspire)]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.Integration)]
 public sealed class PostgreSqlUserSessionLockTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>, IAsyncLifetime
 {

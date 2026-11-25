@@ -1,5 +1,4 @@
 using SharedKernel.Testing;
-using TestTraits = ViajantesTurismo.Branding.InfrastructureTests.Infrastructure.TestTraits;
 
 [assembly: TestScope(TestScope.Integration)]
-[assembly: Trait(TestTraitNames.AreaName, TestTraits.BrandingArea)]
+[assembly: Trait(TestTraitNames.AreaName, TestAreas.Branding)]

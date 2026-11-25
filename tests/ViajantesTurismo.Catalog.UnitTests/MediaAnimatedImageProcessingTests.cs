@@ -4,7 +4,7 @@ using SharedKernel.ImageProcessing;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 /// <summary>Documents what the shared image processor does with animated input; the Catalog pipeline accepts animated uploads.</summary>
-[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestAreas.Catalog)]
 [Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class MediaAnimatedImageProcessingTests
 {

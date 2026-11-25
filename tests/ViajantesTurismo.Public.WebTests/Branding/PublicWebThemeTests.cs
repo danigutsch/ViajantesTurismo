@@ -1,12 +1,11 @@
 using System.Text;
 using ViajantesTurismo.Public.Web.Branding;
 using SharedKernel.Blazor.Site.Theming;
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Branding;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 [TestScope(TestScope.Integration)]
 public sealed class PublicWebThemeTests
 {

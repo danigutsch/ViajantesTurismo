@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Http;
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Hosting;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Unit)]
 public sealed class PublicWebSecurityBaselineTests
 {

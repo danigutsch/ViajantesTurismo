@@ -7,7 +7,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
-[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.Catalog)]
 [Trait(TestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class MediaImageUploadIntakeHardeningTests
 {

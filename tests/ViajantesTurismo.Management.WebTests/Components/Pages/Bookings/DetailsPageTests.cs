@@ -1,6 +1,5 @@
 using SharedKernel.Blazor;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
-using Microsoft.AspNetCore.Components;
 using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
@@ -27,7 +26,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void API_failure_shows_a_sanitized_unavailable_message_instead_of_not_found()
     {
@@ -115,7 +114,7 @@ public sealed class DetailsPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Booking_details_show_room_and_bike_selections_semantically()
     {
@@ -182,7 +181,7 @@ public sealed class DetailsPageTests : BunitContext
         };
         _fakeBookingsApi.AddBooking(booking);
         _fakeDocumentsApi.GeneratedDocument = document;
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         navigationManager.NavigateTo($"/bookings/{booking.Id}");
         var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("h1"));
@@ -202,7 +201,7 @@ public sealed class DetailsPageTests : BunitContext
         // Arrange
         var booking = BuildBookingDto(status: BookingStatusDto.Confirmed);
         _fakeBookingsApi.AddBooking(booking);
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         navigationManager.NavigateTo($"/bookings/{booking.Id}");
         var cut = Render<Details>(parameters => parameters.Add(page => page.Id, booking.Id));
         await cut.WaitForAssertionAsync(() => cut.Find("h1"));

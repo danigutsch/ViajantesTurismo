@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using SharedKernel.Testing;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Tours.Index;
@@ -154,7 +153,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Renders_available_spots_from_the_read_model_fact()
     {
@@ -181,7 +180,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Renders_fully_booked_badge_from_the_read_model_fact()
     {
@@ -208,7 +207,7 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public void Renders_below_minimum_badge_from_the_read_model_fact()
     {
@@ -245,7 +244,7 @@ public class IndexPageTests : BunitContext
         // Act
         var nameSortLink = cut.FindAll("a.col-title").ShouldHaveSingleItem(link => link.TextContent.Trim() == "Name");
         // QuickGrid 11 renders a sortable header as a link to the sorted URL, which the browser follows.
-        Services.GetRequiredService<NavigationManager>().NavigateTo(nameSortLink.GetAttribute("href").ShouldNotBeNull());
+        this.GetNavigationManager().NavigateTo(nameSortLink.GetAttribute("href").ShouldNotBeNull());
 
         // Assert
         IndexPageTestsHelper.AssertNameSortIsAscending(cut);

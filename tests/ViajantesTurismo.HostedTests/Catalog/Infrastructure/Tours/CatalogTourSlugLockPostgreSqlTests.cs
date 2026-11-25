@@ -9,7 +9,7 @@ using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogTourSlugLockPostgreSqlTests(HostedTestFixture shared) : IAsyncLifetime
 {

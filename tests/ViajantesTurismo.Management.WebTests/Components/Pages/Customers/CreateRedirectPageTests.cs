@@ -1,5 +1,4 @@
 using SharedKernel.Testing;
-using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers;
@@ -11,7 +10,7 @@ public sealed class CreateRedirectPageTests : BunitContext
     public void Redirects_to_personal_info_page_on_first_render()
     {
         // Arrange
-        var navManager = Services.GetRequiredService<NavigationManager>();
+        var navManager = this.GetNavigationManager();
 
         // Act
         var cut = Render<CreateRedirect>();

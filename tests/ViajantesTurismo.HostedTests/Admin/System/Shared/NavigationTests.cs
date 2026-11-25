@@ -10,8 +10,8 @@ using TestTraits = ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Test
 namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.MigrationCategory)]
-[Trait(TestTraitNames.AreaName, TestTraits.SharedArea)]
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[Trait(TestTraitNames.AreaName, TestAreas.Shared)]
+[TestHost(TestHost.Aspire)]
 [TestScope(TestScope.System)]
 public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTestBase<AspireSystemTestFixture>(fixture)
 {
@@ -72,7 +72,9 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
         var content = Page.Locator("article.content");
         await Expect(content.GetLink(AddTourTitle)).ToBeVisibleAsync();
         await Expect(content.GetLink("Add Customer")).ToBeVisibleAsync();
-        await Expect(content.GetLink("View All")).ToHaveCountAsync(3);
+        await Expect(NavigationTestHelpers.GetDashboardListLink(content, "tours")).ToBeVisibleAsync();
+        await Expect(NavigationTestHelpers.GetDashboardListLink(content, "customers")).ToBeVisibleAsync();
+        await Expect(NavigationTestHelpers.GetDashboardListLink(content, "bookings")).ToBeVisibleAsync();
         await Expect(Page.GetLink("About")).ToBeVisibleAsync();
         await Expect(sidebar.GetLink("Home")).ToHaveClassAsync(NavigationTestRegexes.Active());
     }
@@ -164,23 +166,21 @@ public class NavigationTests(AspireSystemTestFixture fixture) : AspireSystemTest
 
         // Act
         await NavigateTo("/");
-        var viewAllLinks = content.GetLink("View All");
-
-        await viewAllLinks.Nth(0).ClickAsync();
+        await NavigationTestHelpers.GetDashboardListLink(content, "tours").ClickAsync();
 
         // Assert
         await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Tours());
 
         // Act
         await NavigateTo("/");
-        await viewAllLinks.Nth(1).ClickAsync();
+        await NavigationTestHelpers.GetDashboardListLink(content, "customers").ClickAsync();
 
         // Assert
         await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Customers());
 
         // Act
         await NavigateTo("/");
-        await viewAllLinks.Nth(2).ClickAsync();
+        await NavigationTestHelpers.GetDashboardListLink(content, "bookings").ClickAsync();
 
         // Assert
         await Expect(Page).ToHaveURLAsync(NavigationTestRegexes.Bookings());

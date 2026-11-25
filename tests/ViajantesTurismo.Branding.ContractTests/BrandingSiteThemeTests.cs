@@ -5,7 +5,7 @@ using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.Branding.ContractTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
 public sealed class BrandingSiteThemeTests
 {
     [Fact]
