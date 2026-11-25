@@ -35,6 +35,17 @@ builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => 
 builder.Services.AddPaymentWorkflows();
 builder.Services.AddHttpClient<IDocumentsApiClient, DocumentsApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
     .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IDocumentMaintenanceApiClient, DocumentMaintenanceApiClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IDocumentMaintenanceTimelineApiClient, DocumentMaintenanceApiClient>(
+    client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IDocumentMaintenanceExecutionsApiClient, DocumentMaintenanceApiClient>(
+    client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
+builder.Services.AddHttpClient<IDocumentMaintenanceControlApiClient, DocumentMaintenanceControlApiClient>(
+    client => client.BaseAddress = new Uri($"https+http://{ResourceNames.Api}"))
+    .AddTokenExchangeHandler(ApiAudienceNames.Admin, scope: ApiAudienceNames.Admin);
 builder.Services.AddCatalogWorkflows();
 builder.Services.AddHttpClient<IBrandingManagementClient, BrandingManagementClient>(client => client.BaseAddress = new Uri($"https+http://{ResourceNames.CatalogApi}"))
     .AddTokenExchangeHandler(ApiAudienceNames.Branding, scope: ApiAudienceNames.Branding);

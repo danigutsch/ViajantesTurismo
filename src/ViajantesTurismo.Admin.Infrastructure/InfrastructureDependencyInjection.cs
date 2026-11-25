@@ -22,6 +22,7 @@ using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
+using ViajantesTurismo.Admin.Application.Documents.Maintenance;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -137,8 +138,22 @@ public static class InfrastructureDependencyInjection
 
         var shouldAddRuntimeBackgroundServices = addRuntimeBackgroundServices
             ?? !OpenApiGenerationMode.IsEnabled(builder.Environment);
+        builder.AddAdminRuntimeBackgroundServices(shouldAddRuntimeBackgroundServices);
+        builder.Services.AddScoped(services =>
+            new DocumentMaintenanceHistoryQuery(services.GetRequiredService<AdminReadDbContext>(),
+                services.GetRequiredService<PostgreSqlJobScheduler>(),
+                services.GetRequiredService<TimeProvider>()));
+        builder.Services.AddScoped<IDocumentMaintenanceHistoryQuery>(services => services.GetRequiredService<DocumentMaintenanceHistoryQuery>());
+        builder.Services.AddScoped<IDocumentMaintenanceTimelineQuery>(services => services.GetRequiredService<DocumentMaintenanceHistoryQuery>());
+        builder.Services.AddScoped<IDocumentMaintenanceExecutionsQuery>(services => services.GetRequiredService<DocumentMaintenanceHistoryQuery>());
+        builder.AddKeyedNpgsqlDataSource(ResourceNames.AdminDatabase,
+            configureDataSourceBuilder: dataSourceBuilder => ConfigureNpgsqlDataSource(dataSourceBuilder, AdminDataSourceName));
+        builder.Services.AddSingleton(services => new PostgreSqlJobScheduler(
+            services.GetRequiredKeyedService<NpgsqlDataSource>(ResourceNames.AdminDatabase),
+            DocumentMaintenanceSchedule.DurableSchema));
+        builder.Services.AddScoped<IDocumentMaintenanceControlStore, DocumentMaintenanceControlStore>();
 
-        return builder.AddAdminRuntimeBackgroundServices(shouldAddRuntimeBackgroundServices);
+        return builder;
     }
 
     /// <summary>
@@ -226,9 +241,8 @@ public static class InfrastructureDependencyInjection
     {
         if (addRuntimeBackgroundServices)
         {
-            builder.Services.AddHostedService<DocumentDraftRetentionHostedService>();
-            builder.Services.AddHostedService<DocumentAuditRetentionHostedService>();
-            builder.Services.AddHostedService<DocumentIdempotencyRetentionHostedService>();
+            builder.Services.AddScoped<DocumentMaintenanceDrain>();
+            builder.Services.AddHostedService<DurableDocumentMaintenanceHostedService>();
             builder.Services.AddIntegrationEventOutboxRelay<AdminWriteDbContext>();
             builder.Services.AddPostgreSqlIntegrationEventOutboxRelayAtomicClaims<AdminWriteDbContext>();
         }

@@ -48,7 +48,8 @@ internal static class MigrationBaselineFixture
         return await scope.WriteManifest("baseline-" + context, steps, ct, context: context, journalSchema: journalSchema);
     }
 
-    private static async Task<string> ReadScript(string asset, CancellationToken ct)
+    /// <summary>Reads the maintained PostgreSQL baseline asset included by the test host.</summary>
+    internal static async Task<string> ReadScript(string asset, CancellationToken ct)
     {
         return await File.ReadAllTextAsync(
             Path.Combine(AppContext.BaseDirectory, "Fixtures", "MigrationBaselines", asset + ".sql"), ct);
@@ -68,4 +69,14 @@ internal static class MigrationBaselineFixture
     internal static Task<string> ReadCatalogCausationVerification(CancellationToken ct) =>
         File.ReadAllTextAsync(
             Path.Combine(AppContext.BaseDirectory, "Fixtures", "MigrationExpansions", "catalog-event-causation-verify.sql"), ct);
+
+    /// <summary>Writes a test manifest for the maintained Admin scheduler assets.</summary>
+    internal static async Task<string> WriteAdminSchedulerManifest(MigrationExecutionPostgreSqlScenario scope, CancellationToken ct)
+    {
+        var directory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "MigrationExpansions");
+        var expand = await File.ReadAllTextAsync(Path.Combine(directory, "admin-document-maintenance-scheduler.sql"), ct);
+        var verify = await File.ReadAllTextAsync(Path.Combine(directory, "admin-document-maintenance-scheduler-verify.sql"), ct);
+        return await scope.WriteManifest("admin-document-maintenance-scheduler",
+            [new("expand", expand), new("verify", verify)], ct, context: "admin");
+    }
 }

@@ -1,0 +1,58 @@
+@page "/operations/document-maintenance"
+@attribute [Authorize(Roles = DocumentMaintenanceAccess.ReadRoles)]
+@using SharedKernel.AspNetCore.Authentication.Bff
+@inject IDocumentMaintenanceApiClient MaintenanceApi
+
+<PageTitle>Document maintenance</PageTitle>
+
+<h1>Document maintenance</h1>
+
+<nav aria-label="Maintenance job timelines" class="d-flex flex-wrap gap-3 mb-3">
+    @foreach (var job in Enum.GetValues<DocumentMaintenanceJob>())
+    {
+        var schedule = _history?.Schedules.FirstOrDefault(item => item.Job == job);
+        <div>
+            <a href="@($"operations/document-maintenance/{job.ToString().ToLowerInvariant()}")">@DocumentMaintenanceScheduleDisplay.JobTitle(job) timeline</a>
+            @if (schedule is not null)
+            {
+                <span class="d-block small text-body-secondary" data-schedule-state>@DocumentMaintenanceScheduleDisplay.ScheduleState(schedule)</span>
+            }
+        </div>
+    }
+</nav>
+
+@if (_loading)
+{
+    <p role="status">Loading maintenance history…</p>
+}
+else if (_history is null)
+{
+    <p role="alert">Maintenance history is unavailable.</p>
+}
+else
+{
+    <p>Each row records the outcome of one batch.</p>
+    <DocumentMaintenanceRunTable Title="Draft retention" Runs="_history.DraftRuns" />
+    <DocumentMaintenanceRunTable Title="Audit retention" Runs="_history.AuditRuns" />
+    <DocumentMaintenanceRunTable Title="Idempotency retention" Runs="_history.IdempotencyRuns" />
+}
+
+@code {
+    private DocumentMaintenanceHistoryDto? _history;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var outcome = await MaintenanceApi.Read(CancellationToken.None);
+            _history = outcome is { Kind: HttpOutcomeKind.Succeeded } ? outcome.Value : null;
+        }
+        catch (UserTokenUnavailableException)
+        {
+            _history = null;
+        }
+
+        _loading = false;
+    }
+}

@@ -7,24 +7,23 @@ namespace ViajantesTurismo.Admin.UnitTests.Infrastructure.Documents;
 
 [TestFocus(TestFocus.CoreBehavior)]
 [Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
-public sealed class DocumentDraftRetentionHostedServiceTests
+public sealed class DocumentDraftRetentionDrainTests
 {
     [Fact]
-    public async Task Scheduled_purge_failure_records_private_document_and_polling_signals()
+    public async Task Purge_failure_records_metadata_without_private_details()
     {
         // Arrange
         const string privateData = "SYNTHETIC_PII_PURGE_6A71";
         var now = new DateTimeOffset(2026, 7, 11, 0, 0, 0, TimeSpan.Zero);
         var expired = DocumentDraftTestData.Create(now.UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays));
-        await using var fixture = DocumentDraftRetentionHostedServiceFixture.Create(now, expired, new InvalidOperationException(privateData));
+        await using var fixture = DocumentDraftRetentionDrainFixture.Create(now, expired, new InvalidOperationException(privateData));
 
         // Act
-        var pollingLog = await fixture.ObserveScheduledFailure(TestContext.Current.CancellationToken);
+        Func<Task> purge = () => fixture.RunDrain(TestContext.Current.CancellationToken).AsTask();
+        await purge.ShouldThrow<InvalidOperationException>();
 
         // Assert
         fixture.DocumentStore.Documents.ContainsKey(expired.Id).ShouldBeTrue();
-        pollingLog.Exception.ShouldBeNull();
-        pollingLog.Message.ShouldNotContain(privateData, StringComparison.Ordinal);
         var (count, tags) = fixture.Metrics.Measurements.ShouldHaveSingleItem();
         count.ShouldBe(1L);
         tags.ShouldBe(
@@ -45,7 +44,7 @@ public sealed class DocumentDraftRetentionHostedServiceTests
         var now = new DateTimeOffset(2026, 7, 11, 0, 0, 0, TimeSpan.Zero);
         var expired = DocumentDraftTestData.Create(now.UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays));
         using var stopping = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        await using var fixture = DocumentDraftRetentionHostedServiceFixture.Create(now, expired, new OperationCanceledException(stopping.Token));
+        await using var fixture = DocumentDraftRetentionDrainFixture.Create(now, expired, new OperationCanceledException(stopping.Token));
         await stopping.CancelAsync();
 
         // Act
@@ -72,7 +71,7 @@ public sealed class DocumentDraftRetentionHostedServiceTests
         // Arrange
         var now = new DateTimeOffset(2026, 7, 11, 0, 0, 0, TimeSpan.Zero);
         var expired = DocumentDraftTestData.Create(now.UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays));
-        await using var fixture = DocumentDraftRetentionHostedServiceFixture.Create(now, expired);
+        await using var fixture = DocumentDraftRetentionDrainFixture.Create(now, expired);
 
         // Act
         var removedCount = await fixture.RunBatch(TestContext.Current.CancellationToken);
@@ -87,5 +86,22 @@ public sealed class DocumentDraftRetentionHostedServiceTests
             new KeyValuePair<string, object?>("document.operation", "purge_drafts"),
             new KeyValuePair<string, object?>("document.outcome", "succeeded"),
         ]);
+    }
+
+    [Fact]
+    public async Task A_single_drain_finishes_after_the_first_empty_batch()
+    {
+        // Arrange
+        var now = new DateTimeOffset(2026, 7, 11, 0, 0, 0, TimeSpan.Zero);
+        var expired = DocumentDraftTestData.Create(now.UtcDateTime.AddDays(-DocumentLimits.DraftRetentionDays));
+        await using var fixture = DocumentDraftRetentionDrainFixture.Create(now, expired);
+
+        // Act
+        await fixture.RunDrain(TestContext.Current.CancellationToken);
+
+        // Assert
+        fixture.DocumentStore.Documents.ContainsKey(expired.Id).ShouldBeFalse();
+        var completed = fixture.Logs.Records.Count(record => record.EventId.Name == "DocumentOperationCompleted");
+        completed.ShouldBe(2);
     }
 }

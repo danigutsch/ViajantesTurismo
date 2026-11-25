@@ -11,6 +11,7 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Security candidate renewal](#security-candidate-renewal)
 - [Payments rebase candidate](#payments-rebase-candidate)
 - [Rate-limit and reconciliation candidate renewal](#rate-limit-and-reconciliation-candidate-renewal)
+- [Durable maintenance scheduler candidate](#durable-maintenance-scheduler-candidate)
 - [DDD standards candidate](#ddd-standards-candidate)
 - [ShouldThrow message candidate](#shouldthrow-message-candidate)
 - [Published testing helpers candidate](#published-testing-helpers-candidate)
@@ -19,6 +20,16 @@ or by January 20, 2027, whichever comes first. This record does not grant genera
 - [Playwright ObjectModel dependency](#playwright-objectmodel-dependency)
 - [Remaining decision](#remaining-decision)
 - [Candidate that targets net11 only](#candidate-that-targets-net11-only)
+
+## Durable maintenance scheduler candidate
+
+Candidate `0.1.0-alpha.927.1` uses clean library revision `b0c75f3193a352bf95fb80453008c023ca8f07c5`.
+The locked application restore preserves all three StreamJsonRpc `2.25.29` contexts and all eleven
+Magick.NET-Q8-AnyCPU `15.1.0` contexts from `0.1.0-alpha.860.1`, with identical package versions
+and NuGet content hashes. The restored archives match their previously approved SHA-256 values.
+The two license-metadata exceptions remain bound to this candidate's version and clean revision.
+Native redistribution remains under the [application compliance policy](../FOSS_COMPLIANCE.md).
+[SharedKernel candidate validation](https://github.com/danigutsch/PandaBear.SharedKernel/actions/runs/45663147899)
 
 ## Published testing helpers candidate
 

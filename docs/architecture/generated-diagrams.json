@@ -118,6 +118,7 @@
         "importGroup": "/api/v1/customers/import",
         "managementBranding": "/api/v1/branding/settings",
         "managementCatalog": "/api/v1/catalog",
+        "operations": "/api/v1/operations",
         "paymentAccountsGroup": "/api/v1/payment-accounts",
         "publicBranding": "/api/v1/public/branding",
         "toursGroup": "/api/v1/tours",
@@ -134,7 +135,7 @@
       "routeAudiences": {
         "^/public/": "public API",
         "^/api/v[0-9]+(?:[.][0-9]+)?/public/": "public API",
-        "^/api/v[0-9]+(?:[.][0-9]+)?/(?:bookings|branding/settings|catalog|customers|docs/errors|documents|payment-accounts|tours)(?:/|$)": "management API"
+        "^/api/v[0-9]+(?:[.][0-9]+)?/(?:bookings|branding/settings|catalog|customers|docs/errors|documents|operations|payment-accounts|tours)(?:/|$)": "management API"
       },
       "defaultAudience": "internal",
       "openApiAuthorizationDocuments": {

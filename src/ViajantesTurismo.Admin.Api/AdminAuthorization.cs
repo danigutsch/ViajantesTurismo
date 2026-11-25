@@ -25,6 +25,10 @@ internal static class AdminAuthorization
     public const string DocumentHold = "document.hold";
     /// <summary>Permission to read generated error documentation.</summary>
     public const string DocumentationRead = "documentation.read";
+    /// <summary>Permission to read document maintenance schedules and their execution history.</summary>
+    public const string OperationsScheduleRead = "operations.schedule.read";
+    /// <summary>Permission to perform confirmed and audited maintenance controls.</summary>
+    public const string OperationsScheduleControl = "operations.schedule.control";
     /// <summary>Permission to manage payment accounts, schedules and instructions, including sensitive payment data.</summary>
     public const string PaymentManage = "payment.manage";
     /// <summary>Permission to read masked payment data.</summary>
@@ -57,6 +61,7 @@ internal static class AdminAuthorization
                 DocumentManage,
                 DocumentHold,
                 DocumentationRead,
+                OperationsScheduleRead,
                 PaymentManage,
                 PaymentRead,
                 PaymentWrite,
@@ -81,6 +86,11 @@ internal static class AdminAuthorization
                 CustomerSensitiveRead,
                 PaymentRead,
                 TourRead
+            ],
+            ["OperationsScheduleController"] =
+            [
+                OperationsScheduleRead,
+                OperationsScheduleControl
             ]
         };
 }

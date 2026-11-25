@@ -116,6 +116,44 @@ internal sealed class MigrationExecutionPostgreSqlScenario(PostgreSqlTestDatabas
         await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
     }
 
+    /// <summary>Allows the governed role to append the Admin expansion's existing migration history.</summary>
+    public async Task GrantAdminHistoryAppend(CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.grant_admin_history_append(owner_role text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('GRANT INSERT ON public."__EFMigrationsHistory" TO %I', owner_role);
+            END;
+            $fixture$;
+            """);
+        var grant = new NpgsqlBatchCommand("SELECT pg_temp.grant_admin_history_append($1);");
+        grant.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Owner });
+        await ExecuteRoleStatement(database.ConnectionString, define, grant, ct);
+    }
+
+    /// <summary>Provisions a disposable scheduler login that can append audit but cannot edit or delete it.</summary>
+    public async Task ProvisionAdminSchedulerRuntime(CancellationToken ct)
+    {
+        var define = new NpgsqlBatchCommand("""
+            CREATE FUNCTION pg_temp.provision_admin_scheduler_runtime(runtime_role text, role_password text)
+            RETURNS void LANGUAGE plpgsql SET search_path = pg_catalog, pg_temp AS $fixture$
+            BEGIN
+                EXECUTE pg_catalog.format('CREATE ROLE %I LOGIN NOINHERIT PASSWORD %L', runtime_role, role_password);
+                EXECUTE pg_catalog.format('GRANT USAGE ON SCHEMA document_maintenance TO %I', runtime_role);
+                EXECUTE pg_catalog.format(
+                    'GRANT SELECT, INSERT, UPDATE ON document_maintenance.scheduler_jobs, document_maintenance.scheduler_executions TO %I',
+                    runtime_role);
+                EXECUTE pg_catalog.format('GRANT SELECT, INSERT ON document_maintenance.control_audit TO %I', runtime_role);
+            END;
+            $fixture$;
+            """);
+        var provision = new NpgsqlBatchCommand("SELECT pg_temp.provision_admin_scheduler_runtime($1, $2);");
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = Runtime });
+        provision.Parameters.Add(new NpgsqlParameter<string> { TypedValue = password });
+        await ExecuteRoleStatement(database.ConnectionString, define, provision, ct);
+    }
+
     /// <summary>Pre-provisions Catalog's provider schema and grants the verifier metadata visibility.</summary>
     public async Task ProvisionCatalogEventStoreSchema(CancellationToken ct)
     {

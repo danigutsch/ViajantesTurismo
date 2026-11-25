@@ -3,7 +3,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using SharedKernel.EventSourcing.Npgsql;
+using SharedKernel.Npgsql;
 using SharedKernel.Testing;
+using ViajantesTurismo.Admin.Application.Documents.Maintenance;
+using ViajantesTurismo.Admin.Contracts.Application;
+using ViajantesTurismo.Admin.Infrastructure.Documents;
+using ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.HostedTests.Migrations;
 
@@ -68,6 +73,86 @@ public sealed class MigrationBaselinePostgreSqlTests(PostgreSqlTestServerFixture
         repeated.ExitCode.ShouldBe(0);
         history.ShouldBe((await ef.Database.GetAppliedMigrationsAsync(ct)).ToArray());
         shape.ShouldBe(await MigrationBaselineSchema.Read(expected.ConnectionString, ct));
+    }
+
+    [Fact]
+    public async Task The_governed_maintenance_expansion_matches_EF_and_keeps_runtime_audit_append_only()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var expected = await fixture.CreateDatabase(ct);
+        var database = await fixture.CreateDatabase(ct);
+        await using var scope = new MigrationExecutionPostgreSqlScenario(database);
+        await scope.Provision(ct);
+        await scope.GrantBaselineCreation(asBranding: false, ct);
+        await using var predecessor = MigrationBaselineFixture.CreateContext("admin", database.ConnectionString);
+        await predecessor.GetService<IMigrator>().MigrateAsync("20261123164511_IndexPaymentAuditsByTargetAndSequence", ct);
+        await scope.GrantAdminHistoryAppend(ct);
+        await using var ef = MigrationBaselineFixture.CreateContext("admin", expected.ConnectionString);
+        await ef.Database.MigrateAsync(ct);
+        var manifest = await MigrationBaselineFixture.WriteAdminSchedulerManifest(scope, ct);
+
+        // Act
+        var (expandCode, _, expandError) = await scope.Run(manifest, ct);
+        var (repeatCode, _, repeatError) = await scope.Run(manifest, ct);
+        await scope.ProvisionAdminSchedulerRuntime(ct);
+        await using var dataSource = NpgsqlDataSource.Create(scope.RuntimeConnectionString);
+        var scheduler = new PostgreSqlJobScheduler(dataSource, DocumentMaintenanceSchedule.DurableSchema);
+        var jobName = DocumentMaintenanceSchedule.GetJobName(DocumentMaintenanceJob.Drafts);
+        await scheduler.Register(jobName, TimeProvider.System.GetUtcNow().AddDays(1), DocumentMaintenanceSchedule.FixedDelay, ct);
+        var result = await PostgreSqlDocumentStoreScenario.ControlMaintenanceAt(
+            scope.RuntimeConnectionString,
+            new ControlDocumentMaintenanceCommand(DocumentMaintenanceJob.Drafts, DocumentMaintenanceControlAction.Pause,
+                new CreateDocumentMaintenanceControlDto
+                {
+                    RequestId = Guid.CreateVersion7(),
+                    Confirmed = true,
+                    Reason = "Synthetic migration rehearsal."
+                },
+                "synthetic-migration-operator"),
+            ct);
+        await using var runtime = await scope.OpenRuntime(ct);
+        await using var delete = new NpgsqlCommand("DELETE FROM document_maintenance.control_audit;", runtime);
+        Func<Task> deleteAsRuntime = () => delete.ExecuteNonQueryAsync(ct);
+        var denied = await deleteAsRuntime.ShouldThrow<PostgresException>();
+
+        // Assert
+        expandError.ShouldBe(string.Empty);
+        expandCode.ShouldBe(0);
+        repeatError.ShouldBe(string.Empty);
+        repeatCode.ShouldBe(0);
+        result.IsSuccess.ShouldBeTrue();
+        (await scheduler.ReadJob(jobName, ct)).ShouldNotBeNull().IsPaused.ShouldBeTrue();
+        denied.SqlState.ShouldBe(PostgresErrorCodes.InsufficientPrivilege);
+        (await predecessor.Database.GetAppliedMigrationsAsync(ct)).ToArray().ShouldBe(
+            (await ef.Database.GetAppliedMigrationsAsync(ct)).ToArray());
+        (await MigrationBaselineSchema.Read(database.ConnectionString, ct)).ShouldBe(
+            await MigrationBaselineSchema.Read(expected.ConnectionString, ct));
+    }
+
+    [Fact]
+    public async Task The_EF_scheduler_rollback_removes_its_additions_and_restores_the_predecessor()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var database = await fixture.CreateDatabase(ct);
+        await using var ef = MigrationBaselineFixture.CreateContext("admin", database.ConnectionString);
+        const string predecessor = "20261123164511_IndexPaymentAuditsByTargetAndSequence";
+        var migrator = ef.GetService<IMigrator>();
+        await migrator.MigrateAsync(predecessor, ct);
+        var before = await MigrationBaselineSchema.Read(database.ConnectionString, ct);
+        var history = (await ef.Database.GetAppliedMigrationsAsync(ct)).ToArray();
+
+        // Act
+        await migrator.MigrateAsync(targetMigration: null, ct);
+        var expanded = await MigrationBaselineSchema.Read(database.ConnectionString, ct);
+        await migrator.MigrateAsync(predecessor, ct);
+        var contracted = await MigrationBaselineSchema.Read(database.ConnectionString, ct);
+
+        // Assert
+        expanded.ShouldNotBe(before);
+        contracted.ShouldBe(before);
+        (await ef.Database.GetAppliedMigrationsAsync(ct)).ToArray().ShouldBe(history);
     }
 
     [Theory]

@@ -35,6 +35,12 @@
         <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/catalog-event-causation-verify.sql"
                  Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
                  CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/admin-document-maintenance-scheduler.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/admin-document-maintenance-scheduler-verify.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>
         <Compile Include="../fixtures/reproduction/ReproductionFixtureEnvironment.cs" Link="Reproduction/ReproductionFixtureEnvironment.cs" />

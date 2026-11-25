@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using SharedKernel.Mediator;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
 using ViajantesTurismo.Admin.UnitTests.Documents;
@@ -27,10 +28,10 @@ internal static class DocumentIdempotencyRetentionBatch
         services.AddMediator();
 
         await using var provider = services.BuildServiceProvider();
-        using var job = new DocumentIdempotencyRetentionHostedService(
+        var job = new DocumentMaintenanceDrain(
             provider.GetRequiredService<IServiceScopeFactory>(),
             provider.GetRequiredService<DocumentOperationTelemetry>(),
-            NullLogger<DocumentIdempotencyRetentionHostedService>.Instance);
-        return await job.RunBatch(ct);
+            NullLogger<DocumentMaintenanceDrain>.Instance);
+        return await job.RunBatch(DocumentMaintenanceJob.Idempotency, ct);
     }
 }

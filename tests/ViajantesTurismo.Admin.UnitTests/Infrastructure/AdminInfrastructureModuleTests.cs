@@ -177,8 +177,7 @@ public sealed class AdminInfrastructureModuleTests
         outbox.ShouldNotBeNull();
         idempotencyStore.ShouldNotBeNull();
         brandingProjectionStore.ShouldBeOfType<EfBrandingProjectionStore>();
-        hostedServices.ShouldContain(service => service is DocumentDraftRetentionHostedService);
-        hostedServices.ShouldContain(service => service is DocumentAuditRetentionHostedService);
+        hostedServices.OfType<DurableDocumentMaintenanceHostedService>().ShouldHaveSingleItem();
         services.HasOutboxRelay.ShouldBeTrue();
     }
 
@@ -249,8 +248,7 @@ public sealed class AdminInfrastructureModuleTests
         var hostedServices = services.HostedServices;
 
         // Assert
-        hostedServices.ShouldNotContain(service => service is DocumentDraftRetentionHostedService);
-        hostedServices.ShouldNotContain(service => service is DocumentAuditRetentionHostedService);
+        hostedServices.ShouldNotContain(service => service is DurableDocumentMaintenanceHostedService);
         services.HasOutboxRelay.ShouldBeFalse();
     }
 

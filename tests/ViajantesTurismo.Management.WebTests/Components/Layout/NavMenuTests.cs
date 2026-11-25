@@ -27,6 +27,7 @@ public class NavMenuTests : BunitContext
         var holdsLink = cut.Find("a[href='documents/holds']");
         holdsLink.TextContent.ShouldContain("Document holds", StringComparison.Ordinal);
         holdsLink.InnerHtml.ShouldContain("bi-lock", StringComparison.Ordinal);
+        cut.Find("a[href='operations/document-maintenance']").TextContent.ShouldContain("Document maintenance", StringComparison.Ordinal);
     }
 
     [Fact]
@@ -40,6 +41,22 @@ public class NavMenuTests : BunitContext
         var cut = Render<NavMenu>();
 
         // Assert
+        cut.FindAll("a[href='documents/holds']").ShouldBeEmpty();
+        cut.FindAll("a[href='operations/document-maintenance']").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Dedicated_schedule_controller_can_reach_document_maintenance_without_admin_navigation()
+    {
+        // Arrange
+        authorization.SetAuthorized("scheduler@example.test", AuthorizationState.Authorized);
+        authorization.SetRoles("OperationsScheduleController");
+
+        // Act
+        var cut = Render<NavMenu>();
+
+        // Assert
+        cut.Find("a[href='operations/document-maintenance']").TextContent.ShouldContain("Document maintenance", StringComparison.Ordinal);
         cut.FindAll("a[href='documents/holds']").ShouldBeEmpty();
     }
 

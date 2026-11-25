@@ -116,6 +116,10 @@ Source: `src/**/*.cs` route declarations plus route-group prefixes in
 | `POST` | `/api/v1/documents/{id:guid}/regenerate` | RegenerateDocument | management API | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
 | `POST` | `/api/v1/documents/{id:guid}/review` | BeginDocumentReview | management API | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
 | `POST` | `/api/v1/documents/{id:guid}/void` | VoidDocument | management API | required | `ViajantesTurismo.Admin.Api/Documents/DocumentEndpoints.cs` |
+| `GET` | `/api/v1/operations/document-maintenance` | GetDocumentMaintenanceHistory | management API | required | `ViajantesTurismo.Admin.Api/Operations/DocumentMaintenanceEndpoints.cs` |
+| `GET` | `/api/v1/operations/document-maintenance/{job}` | GetDocumentMaintenanceTimeline | management API | required | `ViajantesTurismo.Admin.Api/Operations/DocumentMaintenanceEndpoints.cs` |
+| `GET` | `/api/v1/operations/document-maintenance/{job}/executions` | GetDocumentMaintenanceExecutions | management API | required | `ViajantesTurismo.Admin.Api/Operations/DocumentMaintenanceEndpoints.cs` |
+| `POST` | `/api/v1/operations/document-maintenance/{job}/{action}` | ControlDocumentMaintenance | management API | required | `ViajantesTurismo.Admin.Api/Operations/DocumentMaintenanceEndpoints.cs` |
 | `GET` | `/api/v1/payment-accounts` | ListPaymentAccounts | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `POST` | `/api/v1/payment-accounts` | CreatePaymentAccount | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |
 | `GET` | `/api/v1/payment-accounts/page` | ListPaymentAccountPage | management API | required | `ViajantesTurismo.Admin.Api/Payments/PaymentAccountEndpoints.cs` |

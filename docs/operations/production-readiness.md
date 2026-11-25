@@ -3,6 +3,40 @@
 This runbook defines the current minimum production-readiness baseline for the Aspire-hosted
 application. It is intentionally platform-neutral until a target hosting platform is selected.
 
+## Document maintenance history
+
+Administrators and users with `OperationsScheduleController` can open **Document maintenance** in
+Management Web. The page shows the last 20 recorded batches for each retention job. Each row shows
+its UTC timestamp, outcome, removed count, and hold count. The Admin response uses no-store caching.
+
+Each job shows the current schedule state, next recurring due time, active execution, and paged
+execution history. A separate batch timeline shows the retention work completed during executions.
+The job view identifies unregistered schedules, paused schedules, and recurring work due for a
+worker. An execution whose lease expired can have an unrecorded outcome.
+
+The `OperationsScheduleController` role can confirm pause, resume, queue, and retry actions. The
+audit records the actor, action, target, and reason. A queued manual run or retry waits while the
+schedule is paused. An active execution can finish.
+
+### Document maintenance scheduler rollout
+
+The Admin API starts the PostgreSQL scheduler for its three retention jobs. The scheduler advances
+the one-day delay from scheduled completion on the database clock. Manual runs and retries leave
+that cadence intact.
+
+1. Apply and verify the governed Admin document maintenance scheduler expansion before starting the
+   release. The runtime requires the migrated schema.
+2. Stop every Admin instance from the previous polling release before starting the scheduler
+   release. Those instances run their retention jobs outside lease coordination.
+3. Check that the three jobs have registered and that their runs and next due times appear in the
+   database-backed scheduling data. Apply the environment's approved operator role assignment before
+   exposing actions. Confirmed controls require `operations.schedule.control`.
+
+During an interruption, an unfinished execution can be recovered under the same run ID after its
+lease expires. Completed purge batches and their recorded evidence remain committed. If the
+deployment must return to the previous release, stop the scheduler and let in-flight work settle
+before starting that release. Preserve the scheduler and control audit records.
+
 ## Deployment and promotion model
 
 Use the AppHost model as the source of truth for service relationships, dependency order, and
