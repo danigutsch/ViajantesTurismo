@@ -120,6 +120,7 @@ public sealed class MediaImageAccessibilityDraftService(
                 return Result.Unavailable<PublicMediaImage>("AI image text generation is unavailable.");
             }
 
+            MediaAccessibilityTelemetry.RecordUsage(draft.Usage);
             var result = image.SetAiDraftAccessibilityText(input.Language, draft.AltText, draft.Caption, (timeProvider ?? TimeProvider.System).GetUtcNow());
             if (result.IsFailure)
             {

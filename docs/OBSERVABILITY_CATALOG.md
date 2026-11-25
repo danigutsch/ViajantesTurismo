@@ -28,16 +28,14 @@ use is a removal candidate. Verdicts:
 | `ViajantesTurismo.Admin.Documents` | `AddViajantesTurismoTelemetry`, `ViajantesTurismo.*` | `document-operations` |
 | `ViajantesTurismo.Branding` | `AddViajantesTurismoTelemetry`, `ViajantesTurismo.*` | `branding-cache` |
 | `SharedKernel.AspNetCore` | SharedKernel defaults, `SharedKernel.*` | `http-platform` |
+| `SharedKernel.AspNetCore.Authentication.Bff` | SharedKernel defaults, `SharedKernel.*` | `operation-health` |
 | `SharedKernel.Blazor` | SharedKernel defaults, `SharedKernel.*` | `http-platform` |
 | `SharedKernel.EventSourcing.Npgsql` | SharedKernel defaults, `SharedKernel.*` | `event-store` |
 | `SharedKernel.Observability.Npgsql` | `DatabaseObservabilityHostConfiguration` | `postgresql-observability` |
 | `ViajantesTurismo.MigrationService` | `AddViajantesTurismoTelemetry`, `ViajantesTurismo.*` | `platform-smoke` |
-| `Npgsql` | `AddViajantesTurismoTelemetry` | none yet; pool panels are planned |
-| `SharedKernel.MalwareScanning.ClamAv` | SharedKernel defaults, `SharedKernel.*` | Prometheus scan diagnosis |
-| `SharedKernel.Scheduling` | SharedKernel defaults, `SharedKernel.*` | Prometheus poller diagnosis |
-
-The session-ticket panel and alert are prepared for the separate BFF metric adoption.
-They currently have no data.
+| `Npgsql` | `AddViajantesTurismoTelemetry` | `npgsql-client-pools` |
+| `SharedKernel.MalwareScanning.ClamAv` | SharedKernel defaults, `SharedKernel.*` | `operation-health` |
+| `SharedKernel.Scheduling` | SharedKernel defaults, `SharedKernel.*` | `polling-liveness` |
 
 Platform meters (ASP.NET Core, HttpClient, Kestrel, .NET runtime, AWS SDK) are consumed
 through the `http-platform` and `runtime` dashboards. Collector self-telemetry (`otelcol_*`) is consumed
@@ -61,6 +59,8 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | `catalog.media_accessibility.generation.attempts` | `ViajantesTurismo.Catalog` | `{attempt}` | outcome, supported language | Are generations attempted? | `media-accessibility` | keep |
 | `catalog.media_accessibility.generation.completed` | `ViajantesTurismo.Catalog` | `{attempt}` | outcome, supported language | Do generations finish? | `media-accessibility` | keep |
 | `catalog.media_accessibility.generation.duration` | `ViajantesTurismo.Catalog` | `s` | outcome, supported language | Is generation slow? | `media-accessibility` | keep |
+| `catalog.media_accessibility.generation.tokens` | `ViajantesTurismo.Catalog` | `{token}` | `gen_ai.token.type` (input, output) | Is provider-reported token usage rising? | `media-accessibility` | keep |
+| `catalog.media_accessibility.generation.cost_usd` | `ViajantesTurismo.Catalog` | `{USD}` | none | How much did sampled provider cost increase over the selected period? | `media-accessibility` | keep |
 | `catalog.media_accessibility.evaluation.cases` | `ViajantesTurismo.Catalog` | `{case}` | `catalog.outcome` (pass, fail) | Is generated text passing evaluation? | `media-accessibility` | keep |
 | `catalog.media_accessibility.publication.blocked` | `ViajantesTurismo.Catalog` | `{image}` | `catalog.outcome` (missing_alt, unreviewed) | What blocks publication? | `media-accessibility` | keep |
 | `catalog.media_accessibility.review.decisions` | `ViajantesTurismo.Catalog` | `{decision}` | `catalog.outcome` (approved, edited, rejected, failed, missing_alt), supported language | Are editors working the queue? | `media-accessibility` | keep |
@@ -83,19 +83,25 @@ and `ms` or `s` units become `_milliseconds` or `_seconds`.
 | `sharedkernel.event_sourcing.events.appended` | `SharedKernel.EventSourcing.Npgsql` | `{event}` | schema | How much is written? | `event-store` | keep |
 | `sharedkernel.event_sourcing.events.loaded` | `SharedKernel.EventSourcing.Npgsql` | `{event}` | schema, operation | How much is read? | `event-store` | keep |
 | `sharedkernel.event_sourcing.append.conflicts` | `SharedKernel.EventSourcing.Npgsql` | `{conflict}` | schema | Do writers collide? | `event-store` | keep |
-| `sharedkernel.malware_scan.scans` | `SharedKernel.MalwareScanning.ClamAv` | `{scan}` | engine, transport, mode, outcome, error type | Are scans rejecting content or failing to run? | Prometheus, filter `sharedkernel_malware_scan_outcome` | keep |
-| `sharedkernel.malware_scan.duration` | `SharedKernel.MalwareScanning.ClamAv` | `s` | engine, transport, mode, outcome, error type | Is the scanner delaying uploads? | Prometheus scan latency diagnosis | keep |
-| `sharedkernel.scheduling.polling.cycle.duration` | `SharedKernel.Scheduling` | `s` | service, outcome | Which background poller is slow or failing? | Prometheus, group by `sharedkernel_scheduling_service_name` | keep |
+| `sharedkernel.malware_scan.scans` | `SharedKernel.MalwareScanning.ClamAv` | `{scan}` | engine, transport, mode, outcome, error type | Are scans rejecting content or failing to run? | `operation-health`, Scanner outcomes by service | keep |
+| `sharedkernel.malware_scan.duration` | `SharedKernel.MalwareScanning.ClamAv` | `s` | engine, transport, mode, outcome, error type | Is the scanner delaying uploads? | `operation-health`, Scanner p95 by service | keep |
+| `sharedkernel.scheduling.polling.cycle.duration` | `SharedKernel.Scheduling` | `s` | service, outcome | Which background poller is slow or failing? | `polling-liveness`, Completed cycles in 30 hours | keep |
 | `sharedkernel.scheduling.polling.batches` | `SharedKernel.Scheduling` | `{batch}` | `sharedkernel.scheduling.service.name` | Is the poller completing batches? | Prometheus poller diagnosis | keep |
 | `sharedkernel.scheduling.polling.items` | `SharedKernel.Scheduling` | `{item}` | service | Is the poller making progress? | Prometheus poller diagnosis | keep |
 | `sharedkernel.scheduling.polling.failures` | `SharedKernel.Scheduling` | `{failure}` | service, error type | Is the poller repeatedly failing with the same error? | Prometheus poller diagnosis | keep |
 | `sharedkernel.index_health.collections` | `SharedKernel.Observability.Npgsql` | `{collection}` | `db.system.name`, `sharedkernel.index_health.outcome` | Does index-health collection work? | `postgresql-observability` | keep |
 | `sharedkernel.index_health.assessments` | `SharedKernel.Observability.Npgsql` | `{assessment}` | `db.system.name`, `sharedkernel.index_health.action`, `sharedkernel.index_health.reason` | Is any index worth human review? | `postgresql-observability` | keep |
+| `sharedkernel.scheduling.polling.batch.active.duration` | `SharedKernel.Scheduling` | `s` | `sharedkernel.scheduling.service.name` | How long has the current batch been running, including the first? | `polling-liveness`, Advancing batch age, alert `polling-batch-stalled` | keep |
+| `postgresql.server.connections.used` | `sqlquery/postgresql_server` | `{connection}` | none | How many server connections are in use? | `postgresql-server-health` | keep |
+| `postgresql.server.connections.limit` | `sqlquery/postgresql_server` | `{connection}` | none | What is the configured server connection limit? | `postgresql-server-health` | keep |
+| `db.client.connection.count` | `Npgsql` | `{connection}` | pool name, state | Are client pools nearing capacity? | `npgsql-client-pools` | keep |
+| `db.client.connection.max` | `Npgsql` | `{connection}` | pool name | What is the total configured pool capacity? | `npgsql-client-pools` | keep |
+| `db.client.operation.duration` | `Npgsql` | `s` | pool name, database system | Are database commands taking longer? | `npgsql-client-pools` | keep |
 | `admin.customer_import.attempts` | `ViajantesTurismo.Admin.CustomerImport` | `{attempt}` | `import.operation`, `import.outcome`, `import.size_bucket` | Are import workflows succeeding? | `operation-health`, alert `customer-import-failures` | keep |
 | `admin.customer_import.duration` | `ViajantesTurismo.Admin.CustomerImport` | `s` | `import.operation`, `import.outcome`, `import.size_bucket` | Are imports slow for a particular size bucket? | `operation-health`, alert `customer-import-latency` | keep |
 | `catalog.media_upload.attempts` | `ViajantesTurismo.Catalog` | `{attempt}` | `upload.outcome` | Are media uploads succeeding or being rejected? | `operation-health`, alert `catalog-media-upload-failures` | keep |
 | `catalog.media_upload.stage.duration` | `ViajantesTurismo.Catalog` | `s` | `upload.stage` | Is scanning or writing originals slow? | `operation-health`, alert `catalog-media-upload-latency` | keep |
-| `bff.session_ticket.failures` | Pending BFF metric adoption | `{failure}` | `operation` | Are protection or cache errors disrupting sessions? | `operation-health`, alert `management-session-ticket-failures` | gap |
+| `sharedkernel.bff.session_ticket.failures` | `SharedKernel.AspNetCore.Authentication.Bff` | `{failure}` | `sharedkernel.bff.session_ticket.operation` | Are protection or cache errors disrupting sessions? | `operation-health`, alert `management-session-ticket-failures` | keep |
 
 ## Activity sources
 
@@ -137,14 +143,14 @@ attributes for diagnosis. Keep metric labels bounded independently of those trac
 | `tours.create` | `ViajantesTurismo.Admin.Contracts.Clients` | Admin API area, operation, HTTP status, command outcome kind | How did the tour create command end? | Tempo search by scope and command outcome | keep |
 | `bookings.create` | `ViajantesTurismo.Admin.Contracts.Clients` | Admin API area, operation, HTTP status, command outcome kind | How did the booking create command end? | Tempo search by scope and command outcome | keep |
 | `http_client.outcome` | `SharedKernel.HttpClients` | HTTP method, status, generic outcome kind | Did transport, decoding, or outcome mapping fail for a typed HTTP client? | Tempo search by `span.sharedkernel.http_client.outcome` | keep |
-| `malware_scan.scan` | `SharedKernel.MalwareScanning.ClamAv` | engine, transport, mode, outcome, error type | Did scanning reject the upload or fail? | Tempo search by operation and outcome | keep |
-| `object_storage.put` | `SharedKernel.ObjectStorage.S3` | operation | Did storing an object delay the request? | Tempo object-store diagnosis | keep |
-| `object_storage.open_read` | `SharedKernel.ObjectStorage.S3` | operation | Did opening a stored object delay the request? | Tempo object-store diagnosis | keep |
-| `object_storage.exists` | `SharedKernel.ObjectStorage.S3` | operation | How long did the existence check take? | Tempo object-store diagnosis | keep |
-| `object_storage.list` | `SharedKernel.ObjectStorage.S3` | operation | Did listing objects delay reconciliation? | Tempo object-store diagnosis | keep |
-| `object_storage.create_upload_url` | `SharedKernel.ObjectStorage.S3` | operation | How long did issuing an upload URL take? | Tempo object-store diagnosis when presigned uploads run | idle-ok |
-| `object_storage.delete` | `SharedKernel.ObjectStorage.S3` | operation | Did deleting an object delay cleanup? | Tempo object-store diagnosis | keep |
-| `object_storage.health` | `SharedKernel.ObjectStorage.S3` | operation | Is the object-store health check slow? | Tempo object-store diagnosis | keep |
+| `malware_scan.scan` | `SharedKernel.MalwareScanning.ClamAv` | engine, transport, mode, outcome, error type | Did scanning reject the upload or fail? | `traces`, Malware scan spans | keep |
+| `object_storage.put` | `SharedKernel.ObjectStorage.S3` | operation | Did storing an object delay the request? | `traces`, Object storage spans | keep |
+| `object_storage.open_read` | `SharedKernel.ObjectStorage.S3` | operation | Did opening a stored object delay the request? | `traces`, Object storage spans | keep |
+| `object_storage.exists` | `SharedKernel.ObjectStorage.S3` | operation | How long did the existence check take? | `traces`, Object storage spans | keep |
+| `object_storage.list` | `SharedKernel.ObjectStorage.S3` | operation | Did listing objects delay reconciliation? | `traces`, Object storage spans | keep |
+| `object_storage.create_upload_url` | `SharedKernel.ObjectStorage.S3` | operation | How long did issuing an upload URL take? | `traces`, Object storage spans when presigned uploads run | idle-ok |
+| `object_storage.delete` | `SharedKernel.ObjectStorage.S3` | operation | Did deleting an object delay cleanup? | `traces`, Object storage spans | keep |
+| `object_storage.health` | `SharedKernel.ObjectStorage.S3` | operation | Is the object-store health check slow? | `traces`, Object storage spans | keep |
 | `scheduling.poll` | `SharedKernel.Scheduling` | service, outcome, item count, error type | Did a projection, reconciliation, or retention poller finish its drain cycle? | Tempo search by `span.sharedkernel.scheduling.service.name` | keep |
 
 Use the Admin client spans to distinguish the command and its typed result from the generic
@@ -235,11 +241,10 @@ shows intake outcomes and p95 scan and store times. Alerts cover
 
 ## Session ticket measurements
 
-The Management Web ticket store emits this counter after ViajantesTurismo adopts the
-separately approved SharedKernel BFF producer. Until adoption, the provisioned panel
-permits an empty result and Grafana treats the absent alert series as OK.
+The session-ticket panel permits an empty result when the store has recorded no errors. Grafana treats
+the absent alert series as OK.
 
-Once active, the counter uses one dimension. `operation` is `protect`, `unprotect`,
+The counter uses one dimension. `sharedkernel.bff.session_ticket.operation` is `protect`, `unprotect`,
 `cache_get`, `cache_set`, or `cache_remove`. Ordinary misses, valid expiration, and
 cooperative cancellation do not increment the counter. Ticket keys, claims, encrypted
 payloads, and exception messages are excluded.

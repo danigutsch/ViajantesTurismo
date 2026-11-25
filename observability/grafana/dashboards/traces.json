@@ -243,6 +243,105 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Malware scan spans",
+      "description": "Find recent ClamAV scans by outcome and duration to distinguish a rejected upload from a scanner failure or delay.",
+      "datasource": {
+        "type": "tempo",
+        "uid": "Tempo"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 59
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "time",
+                "name",
+                "duration",
+                "sharedkernel.malware_scan.outcome"
+              ]
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "Tempo"
+          },
+          "queryType": "traceql",
+          "query": "{ instrumentation:name = \"SharedKernel.MalwareScanning.ClamAv\" } | select(name, span.sharedkernel.malware_scan.outcome)",
+          "expr": "{ instrumentation:name = \"SharedKernel.MalwareScanning.ClamAv\" } | select(name, span.sharedkernel.malware_scan.outcome)",
+          "tableType": "spans",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Object storage spans",
+      "description": "Find which S3-compatible object-store operations spent time in a trace by comparing fixed operation names and span durations.",
+      "datasource": {
+        "type": "tempo",
+        "uid": "Tempo"
+      },
+      "verify": "idle-ok",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 59
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "time",
+                "name",
+                "duration"
+              ]
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "tempo",
+            "uid": "Tempo"
+          },
+          "queryType": "traceql",
+          "query": "{ instrumentation:name = \"SharedKernel.ObjectStorage.S3\" } | select(name)",
+          "expr": "{ instrumentation:name = \"SharedKernel.ObjectStorage.S3\" } | select(name)",
+          "tableType": "spans",
+          "limit": 20,
+          "refId": "A"
+        }
+      ]
     }
   ],
   "refresh": "1m",

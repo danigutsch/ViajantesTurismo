@@ -8,15 +8,28 @@ once to both production databases: `admin-database` and `catalog-database`.
 
 Assumptions:
 
-- Locally tested with PostgreSQL 18.4; compatibility with other PostgreSQL versions requires validation.
-- a dedicated, least-privilege monitoring `NpgsqlDataSource`
-- PostgreSQL cumulative statistics are reset-dependent and are not workload history
+- Index-health collection uses a dedicated, least-privilege monitoring `NpgsqlDataSource`.
+- PostgreSQL cumulative statistics describe activity since the last statistics reset.
 
 Sources:
 
 - [PostgreSQL statistics views](https://www.postgresql.org/docs/16/monitoring-stats.html)
 - [PostgreSQL predefined roles](https://www.postgresql.org/docs/16/predefined-roles.html)
 - [Npgsql data sources](https://www.npgsql.org/doc/basic-usage.html#data-source)
+
+## Index-health PostgreSQL versions
+
+The index-health collector supports PostgreSQL major versions 16 through 18.
+The read-only, monitoring-role, and bounded telemetry tests were verified on these official PostgreSQL images.
+
+| Boundary | PostgreSQL version | Image |
+| --- | --- | --- |
+| Oldest supported major | 16.16 | `docker.io/library/postgres@sha256:72d22ce26d04fe56a5384e9f6b026152d1cf05db602a7a3524a3ed337d5f5752` |
+| Current AppHost image | 18.4 | `docker.io/library/postgres@sha256:4aabea78cf39b90e834caf3af7d602a18565f6fe2508705c8d01aa63245c2e20` |
+
+For other majors, the advisory collector reports `unsupported` and emits no assessments. It
+checks the server version on the dedicated monitoring connection before querying the catalog.
+Application database connections and traffic continue independently of the collection result.
 
 ## PostgreSQL server connection metrics
 
@@ -31,10 +44,14 @@ timeout is five seconds.
 | `postgresql.server.connections.used` | `postgresql_server_connections_used` | Connections, current sum of `pg_stat_database.numbackends` across databases |
 | `postgresql.server.connections.limit` | `postgresql_server_connections_limit` | Connections, configured `max_connections` |
 
-The server connection total includes the monitoring connection. Use the two gauges together
-to assess headroom. Reserved connection slots mean an ordinary client can exhaust available
-slots before the configured limit. Npgsql client pools and index-health advisories keep
-their separate signals and operator questions.
+Open the PostgreSQL Server Health dashboard to compare the two connection counts. The
+used count includes the monitoring connection. Reserved slots can prevent ordinary clients
+from connecting before the total reaches the configured limit. If headroom stays low, check
+server capacity and per-pool usage together. An empty panel calls for checking the feature
+setting and Collector scrape progress before drawing conclusions about capacity.
+Set `Aspire:Features:PostgreSqlServerMetrics=false` to stop the server scrape while retaining
+the optional LGTM stack.
+[PostgreSQL Server Health dashboard](../../observability/grafana/dashboards/postgresql-server-health.json) ·
 [PostgreSQL table of cumulative statistics](https://www.postgresql.org/docs/18/monitoring-stats.html#PG-STAT-DATABASE-VIEW)
 
 The Collector uses `sqlquery/postgresql_server` from the pinned Contrib image. It reads only
@@ -80,6 +97,28 @@ fixture login. Run `healthy` with an authorized role, `denied` with a role barre
 the maintenance database, `unavailable` against an unbound port, and `disabled` to check
 the gateway alone. The verifier checks that normal OTLP export works in each case.
 
+## Npgsql client pools
+
+The [Npgsql client pools dashboard](../../observability/grafana/dashboards/npgsql-client-pools.json)
+shows native client behavior. PostgreSQL Server Health shows the connections accepted
+across the server. The index-health dashboard tracks advisory catalog assessments.
+
+The connection panel sums in-use connections and configured capacity across instances
+sharing a fixed pool name. In-use counts range from zero to the combined capacity.
+If use stays near capacity, inspect connection ownership, long-running requests, and
+server headroom. The p95 panel shows
+native command duration in seconds over the selected rate window. An idle pool can
+have no latency series. Compare a sustained increase with the request latency and
+server views before changing pool settings.
+
+Service Defaults allows only the fixed pool name, connection state, and database
+system on this meter. Pool names identify configured roles in the application. Management
+and migration use `management-security` for data protection keys and `management-ticket-cache`
+for distributed session tickets. The index-health monitor uses fixed ordinal pool names.
+A local rollback can remove the pool dashboard from provisioning or disable the
+optional LGTM stack while leaving the application's database configuration in place.
+[Npgsql metrics and data-source naming](https://www.npgsql.org/doc/diagnostics/metrics.html)
+
 ## Index-health metrics
 
 Service defaults subscribe to these meters:
@@ -104,6 +143,14 @@ Both metrics report `db.system.name=postgresql`.
 
 No schema, table, index, role, tenant, connection-string, SQL, parameter, or error-text value is a
 metric tag.
+
+The collection panel counts each attempt. A healthy cycle records one `collected` outcome per
+configured monitoring connection. For repeated `permission_denied`, check the dedicated role
+grants. For `unsupported`, check the PostgreSQL version and catalog capabilities. For
+`unavailable`, check monitoring connectivity and the command timeout. The advisory
+panel can show `insufficient_evidence` when a recent statistics reset or a small table
+prevents a recommendation. Set `Aspire:Features:DatabaseObservability=false` to stop both
+advisory panels' data collection while retaining server and client-pool telemetry.
 
 ## Read-only collection
 

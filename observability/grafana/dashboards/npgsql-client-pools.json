@@ -1,0 +1,144 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "What this dashboard is for",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**Purpose**\n\nCompare Npgsql pool use with capacity and inspect database command latency.\n\n**Audience**\n\nOperators investigating connection pressure or slow database commands.\n\n**Decision supported**\n\nWhether to inspect client pools, command latency, or PostgreSQL server health first.\n"
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Counts are summed across instances with the same configured pool name.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (db_client_connection_pool_name) (db_client_connection_count{db_client_connection_state=\"used\"})",
+          "legendFormat": "{{db_client_connection_pool_name}} in use",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "sum by (db_client_connection_pool_name) (db_client_connection_max)",
+          "legendFormat": "{{db_client_connection_pool_name}} capacity",
+          "refId": "B"
+        }
+      ],
+      "title": "Connections in use and pool capacity",
+      "type": "timeseries",
+      "verify": "idle-ok"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
+      "description": "Native PostgreSQL command duration in seconds. Idle pools may have no observations in the window.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (db_client_connection_pool_name, le) (rate(db_client_operation_duration_seconds_bucket{db_system_name=\"postgresql\"}[$__rate_interval])))",
+          "legendFormat": "{{db_client_connection_pool_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Command duration p95",
+      "type": "timeseries",
+      "verify": "idle-ok"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 41,
+  "tags": [
+    "postgresql",
+    "observability"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Npgsql client pools",
+  "uid": "npgsql-client-pools",
+  "version": 1,
+  "weekStart": ""
+}

@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using SharedKernel.Observability;
 using SharedKernel.ServiceDefaults;
@@ -22,6 +23,10 @@ public static class ViajantesTurismoServiceDefaults
 
     /// <summary>The native Npgsql meter: connection-pool and command metrics.</summary>
     private const string NpgsqlMeterName = "Npgsql";
+
+    /// <summary>Approved dimensions on exported native Npgsql metrics.</summary>
+    private static readonly string[] NpgsqlMetricTagKeys =
+        ["db.client.connection.pool.name", "db.client.connection.state", "db.system.name"];
 
     /// <summary>Business attribute names that may carry personal data, compared without case.</summary>
     private static readonly string[] SensitiveAttributeNames =
@@ -72,7 +77,11 @@ public static class ViajantesTurismoServiceDefaults
         builder.AddTelemetryPrivacy(static name => SensitiveAttributePrefixes.Any(prefix => name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)));
         builder.AddApplicationVersionLogging();
         builder.Services.AddOpenTelemetry()
-            .WithMetrics(static metrics => metrics.AddMeter(NamePattern, NpgsqlMeterName))
+            .WithMetrics(static metrics => metrics
+                .AddMeter(NamePattern, NpgsqlMeterName)
+                .AddView(static instrument => instrument.Meter.Name == NpgsqlMeterName
+                    ? new MetricStreamConfiguration { TagKeys = NpgsqlMetricTagKeys }
+                    : null))
             .WithTracing(static tracing => tracing
                 .AddSource(NamePattern)
                 .AddGrpcClientInstrumentation()
