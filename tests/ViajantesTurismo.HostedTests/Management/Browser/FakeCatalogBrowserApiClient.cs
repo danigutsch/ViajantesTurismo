@@ -38,10 +38,6 @@ internal sealed class FakeCatalogBrowserApiClient(CatalogTourDto tour) : ICatalo
     public IReadOnlyList<string> UploadedNames => uploadedNames.AsReadOnly();
 
     /// <inheritdoc />
-    public Task<HttpOutcome<CatalogTourDto[]>> GetTours(CancellationToken ct) =>
-        Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new[] { Tour }));
-
-    /// <inheritdoc />
     public Task<HttpOutcome<CatalogTourPageDto>> GetTourPage(int page, CatalogTourListSort sort, bool descending, CancellationToken ct) =>
         Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogTourPageDto(
             [new(Tour.Id, Tour.Identifier, Tour.Title, Tour.Slug, Tour.IsPublished, Tour.UpdatedAt)], 1)));

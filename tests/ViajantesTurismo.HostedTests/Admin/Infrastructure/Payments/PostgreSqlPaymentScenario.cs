@@ -1,16 +1,28 @@
 using PostgreSqlTestDatabase = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Npgsql;
+using SharedKernel.AspNetCore.Authentication;
 using SharedKernel.BuildingBlocks;
+using SharedKernel.MalwareScanning.ClamAv;
+using SharedKernel.Testing.AspNetCore;
+using ViajantesTurismo.Admin.Api;
+using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Testing.Fakes;
+using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 /// <summary>Arranges an isolated PostgreSQL database with ephemeral payment protection and a controllable clock for payment tests.</summary>
 internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
 {
+    private const string Audience = "admin-api";
     private readonly PostgreSqlTestDatabase _database;
     private readonly PaymentProtection _protection = new(new EphemeralDataProtectionProvider());
     /// <summary>Controllable clock starting at 2030-01-05 12:00 UTC.</summary>
@@ -24,6 +36,31 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
     public string ConnectionString => _database.ConnectionString;
     /// <summary>Opens a payment test session against the scenario database.</summary>
     public PaymentTestSession Open() => PaymentTestSession.Create(_database.ConnectionString, _protection, Clock);
+
+    /// <summary>Starts the actual Admin API using the scenario's verified instruction snapshots.</summary>
+    public WebApplicationFactory<AdminApiHostEntryPoint> StartAdminApi(params IInterceptor[] interceptors) =>
+        WebApplicationTestHost.Create<AdminApiHostEntryPoint>(
+            environment: Environments.Development,
+            configuration: new Dictionary<string, string?>
+            {
+                [$"ConnectionStrings:{ResourceNames.AdminDatabase}"] = ConnectionString,
+                [ApiAuthenticationDefaults.AuthorityConfigurationKey] = ApiTestAuthentication.Authority,
+                [ApiAuthenticationDefaults.IssuerConfigurationKey] = ApiTestAuthentication.Authority,
+                [ClamAvMalwareScannerConfigurationKeys.DisabledConfigurationKey] = bool.TrueString,
+                ["Payments:Enabled"] = bool.TrueString,
+                ["Payments:BusinessTimeZone"] = "UTC",
+            },
+            configureTestServices: services =>
+            {
+                ApiTestAuthentication.ConfigureJwtBearer(services, Audience);
+                services.RemoveAll<IHostedService>();
+                services.Replace(ServiceDescriptor.Singleton(_protection));
+                services.Replace(ServiceDescriptor.Singleton<TimeProvider>(Clock));
+                services.ConfigureDbContext<AdminWriteDbContext>(options => options.AddInterceptors(interceptors));
+            });
+
+    /// <summary>Authenticates an Admin API test client's synthetic user.</summary>
+    public static void Authenticate(HttpClient client, string role) => ApiTestAuthentication.ConfigureAuthenticatedClient(client, Audience, role);
 
     /// <summary>Waits until PostgreSQL reports a payment contender queued on the owning booking's advisory lock.</summary>
     public async Task WaitForPaymentContention(CancellationToken ct)
@@ -98,6 +135,10 @@ internal sealed class PostgreSqlPaymentScenario : IAsyncDisposable
         history.WithdrawApproval(history.Version, quote,
             ViajantesTurismo.Admin.Domain.Payments.FinancialApproval.Create("owner", now, ViajantesTurismo.Admin.Domain.Payments.FinancialReason.ApprovalWithdrawn, true).Value).IsSuccess.ShouldBeTrue();
         var erroneous = RecordReceipt(tour, booking, installment, 10m, now);
+        var erroneousSelection = ViajantesTurismo.Admin.Domain.Payments.InstallmentAllocation.Create(installment.Id, 10m).Value;
+        var erroneousReconciliation = history.DraftReconciliation(history.Version, erroneous, 10m, null, [erroneousSelection], "owner", now).Value;
+        history.ApproveReconciliation(history.Version, erroneousReconciliation,
+            ViajantesTurismo.Admin.Domain.Payments.FinancialApproval.Create("owner", now, ViajantesTurismo.Admin.Domain.Payments.FinancialReason.LateReceipt, true).Value).IsSuccess.ShouldBeTrue();
         history.ReverseReceipt(history.Version, erroneous,
             ViajantesTurismo.Admin.Domain.Payments.FinancialApproval.Create("owner", now, ViajantesTurismo.Admin.Domain.Payments.FinancialReason.ReceiptError, true).Value).IsSuccess.ShouldBeTrue();
         await using var session = Open();

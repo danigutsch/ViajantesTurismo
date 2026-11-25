@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ViajantesTurismo.Catalog.Application.Tours;
+using ViajantesTurismo.Catalog.Contracts.Application;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
@@ -8,6 +9,59 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 [Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogTourPageEndpointTests
 {
+    [Theory]
+    [InlineData("/api/v1/catalog/tours")]
+    [InlineData("/api/v1/public/catalog/tours")]
+    public async Task Superseded_tour_collections_are_not_exposed(string path)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var factory = CatalogApiTestHost.Create();
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative), ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Canonical_public_tour_details_return_the_requested_photo_page()
+    {
+        // Arrange
+        const int imageCount = PublishedTourDetailsPageDto.PhotosPerPage + 2;
+        var ct = TestContext.Current.CancellationToken;
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(new CatalogTourDraftReadModel(
+            tourId, Guid.CreateVersion7(), "TOUR-PAGED-DETAILS", "Paged Details",
+            "paged-details", true, 1, DateTimeOffset.UnixEpoch), ct);
+        var mediaStore = new TestPublicMediaImageStore();
+        for (var index = 0; index < imageCount; index++)
+        {
+            await mediaStore.Upsert(PublicMediaImageTestFactory.CreateReadyImage(
+                tourId, $"source-{index}.jpg", $"photo-{index}-640.jpg",
+                $"sha256:{index}", $"Photo {index}", index, index == 0), ct);
+        }
+
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
+        using var client = factory.CreateClient();
+
+        // Act
+        using var response = await client.GetAsync(
+            new Uri("/api/v1/public/catalog/tours/paged-details?page=2", UriKind.Relative), ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(ct);
+        var page = payload.ShouldNotBeNull();
+        page.Page.ShouldBe(2);
+        page.PageSize.ShouldBe(PublishedTourDetailsPageDto.PhotosPerPage);
+        page.Total.ShouldBe(imageCount - 1);
+        page.Tour.Images.Select(image => image.AltText).ShouldBe(["Photo 0", $"Photo {imageCount - 1}"]);
+    }
+
     [Fact]
     public async Task Large_catalog_returns_one_ordered_page_of_lightweight_rows()
     {

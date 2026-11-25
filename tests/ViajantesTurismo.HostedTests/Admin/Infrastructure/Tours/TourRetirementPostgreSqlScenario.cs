@@ -176,7 +176,7 @@ internal sealed class TourRetirementPostgreSqlScenario(ServiceProvider provider)
         var queries = services.GetRequiredService<IQueryService>();
         var active = await queries.GetActiveTourById(tourId, ct);
         var historical = await queries.GetTourById(tourId, ct);
-        var activeList = await queries.GetAllTours(ct);
+        var activeList = (await queries.GetTourPage(page: null, TourPageSort.Default, descending: false, ct)).Items;
         var status = await queries.GetTourRetirement(tourId, ct);
         var audits = await db.TourRetirementAuditRecords.Where(audit => audit.TourId == tourId).ToArrayAsync(ct);
         var payloads = await db.Database.SqlQuery<string>($"""

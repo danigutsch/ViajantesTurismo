@@ -23,9 +23,11 @@ internal static class EditPageTestsHelper
         };
 
         await fakeToursApi.CreateTour(createDto, CancellationToken.None);
-        var outcome = await fakeToursApi.GetTours(CancellationToken.None);
-        var tours = outcome.Value ?? throw new InvalidOperationException("The fake tours client did not return created tours.");
-        return tours[0];
+        var outcome = await fakeToursApi.GetTourPage(1, TourPageSort.Default, descending: false, CancellationToken.None);
+        var page = outcome.Value.ShouldNotBeNull();
+        var tour = page.Items.ShouldHaveSingleItem();
+        var details = await fakeToursApi.GetTourById(tour.Id, CancellationToken.None);
+        return details.Value.ShouldNotBeNull();
     }
 
     /// <summary>Adds a tour with three current customers to the fake API and returns it.</summary>

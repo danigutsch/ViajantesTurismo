@@ -27,8 +27,14 @@ public sealed class CustomerPageEndpointTests
         page.Total.ShouldBe(1);
         var expected = queries.Customer;
         var row = page.Items.ShouldHaveSingleItem();
-        row.ShouldBe(new GetCustomerListItemDto(expected.Id, expected.FirstName, expected.LastName,
+        var fields = row with
+        {
+            Links = null
+        };
+        fields.ShouldBe(new GetCustomerListItemDto(expected.Id, expected.FirstName, expected.LastName,
             expected.Email, expected.Mobile, expected.Nationality));
+        row.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "collection")
+            .Href.ShouldBe($"{AdminHypermediaPathBase.Prefix}/api/v1/customers/page");
     }
 
     [Theory]

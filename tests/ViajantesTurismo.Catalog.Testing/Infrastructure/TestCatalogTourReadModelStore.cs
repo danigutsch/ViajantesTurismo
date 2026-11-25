@@ -1,13 +1,11 @@
 using System.Collections.Concurrent;
-using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Catalog.Application.Tours;
-using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 
-public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore, ICatalogTourRetirementStore, ICatalogTourListReader
+public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore, ICatalogTourRetirementStore
 {
     private readonly ConcurrentDictionary<Guid, CatalogTourDraftReadModel> toursById = new();
     private readonly ConcurrentDictionary<Guid, Guid> retirements = new();
@@ -49,31 +47,6 @@ public sealed class TestCatalogTourReadModelStore : ICatalogTourReadModelStore, 
 
     /// <summary>Returns a point-in-time copy of all stored tour drafts.</summary>
     internal IReadOnlyCollection<CatalogTourDraftReadModel> GetSnapshot() => [.. toursById.Values];
-
-    /// <inheritdoc />
-    public ValueTask<CatalogTourPageDto> ListPage(string? page, CatalogTourListSort sort, bool descending, CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        var snapshot = GetSnapshot();
-        var window = PageWindow.Create(page, CatalogTourPageDto.ItemsPerPage, snapshot.Count);
-        var ordered = (sort, descending) switch
-        {
-            (CatalogTourListSort.Identifier, false) => snapshot.OrderBy(tour => tour.Identifier, StringComparer.Ordinal),
-            (CatalogTourListSort.Identifier, true) => snapshot.OrderByDescending(tour => tour.Identifier, StringComparer.Ordinal),
-            (CatalogTourListSort.Slug, false) => snapshot.OrderBy(tour => tour.Slug, StringComparer.Ordinal),
-            (CatalogTourListSort.Slug, true) => snapshot.OrderByDescending(tour => tour.Slug, StringComparer.Ordinal),
-            (CatalogTourListSort.IsPublished, false) => snapshot.OrderBy(tour => tour.IsPublished),
-            (CatalogTourListSort.IsPublished, true) => snapshot.OrderByDescending(tour => tour.IsPublished),
-            (_, true) => snapshot.OrderByDescending(tour => tour.Title, StringComparer.Ordinal),
-            _ => snapshot.OrderBy(tour => tour.Title, StringComparer.Ordinal),
-        };
-        var items = ordered.ThenBy(tour => tour.CatalogTourId)
-            .Skip(window.Skip).Take(window.Take)
-            .Select(tour => new CatalogTourListItemDto(
-                tour.CatalogTourId, tour.Identifier, tour.Title, tour.Slug, tour.IsPublished, tour.UpdatedAt))
-            .ToArray();
-        return ValueTask.FromResult(new CatalogTourPageDto(items, window.Total));
-    }
 
     /// <inheritdoc />
     public ValueTask<bool> AdvanceStreamVersion(Guid catalogTourId, long streamVersion, CancellationToken ct)

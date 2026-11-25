@@ -156,7 +156,7 @@ else if (_errorMessage is not null)
     {
         _errorMessage = null;
 
-        var outcome = await CatalogToursApi.GetTour(Id, CancellationToken.None);
+        var outcome = await CatalogToursApi.GetTour(Id, includeImages: false, CancellationToken.None);
         if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } tour })
         {
             _model = new CatalogTourPresentationFormModel
@@ -208,6 +208,7 @@ else if (_errorMessage is not null)
                     SeoDescription = _model.SeoDescription,
                     ExpectedVersion = _model.ExpectedVersion
                 },
+                includeImages: false,
                 CancellationToken.None);
 
             if (outcome.Kind == HttpOutcomeKind.ValidationProblem)

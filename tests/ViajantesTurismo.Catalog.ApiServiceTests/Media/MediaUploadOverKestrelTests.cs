@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.Timeouts;
 using SharedKernel.Testing;
 using SharedKernel.Testing.Http;
 using ViajantesTurismo.Catalog.Application.Media;
+using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.UploadWire.Testing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
@@ -16,6 +17,42 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests.Media;
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
 public sealed class MediaUploadOverKestrelTests
 {
+    [Theory]
+    [InlineData(0)]
+    [InlineData(803)]
+    public async Task Upload_keeps_gallery_placement_without_loading_the_collection(int existingCount)
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var scenario = await MediaUploadKestrelScenario.Start();
+        for (var order = 0; order < existingCount; order++)
+        {
+            var image = PublicMediaImageTestFactory.CreateReadyImage(scenario.TourId, "source.jpg", "preview.jpg",
+                "sha256:seed", "Existing photo", order, isCover: order == 0);
+            await scenario.MediaStore.Upsert(image, ct);
+        }
+
+        var unrelated = PublicMediaImageTestFactory.CreateReadyImage(Guid.CreateVersion7(), "other.jpg", "other-preview.jpg",
+            "sha256:unrelated", "Other tour's photo", 0, isCover: true);
+        await scenario.MediaStore.Upsert(unrelated, ct);
+        using var form = new MultipartFormDataContent();
+        form.Add(MultipartPayload.FilePart(MediaUploadKestrelScenario.Png, "image/png"), "file", "tour.png");
+        form.Add(new StringContent("Sunset over the mountains"), "altText");
+
+        // Act
+        using var response = await scenario.Client.PostAsync(new Uri(scenario.Route, UriKind.Relative), form, ct);
+        var created = await response.Content.ReadFromJsonAsync<CatalogMediaImageDto>(ct);
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.Created);
+        var stored = await scenario.MediaStore.GetImage(created.ShouldNotBeNull().Id, ct);
+        var placement = stored.ShouldNotBeNull().TourLinks.ShouldHaveSingleItem();
+        placement.CatalogTourId.ShouldBe(scenario.TourId);
+        placement.DisplayOrder.ShouldBe(existingCount);
+        placement.IsCover.ShouldBe(existingCount == 0);
+        scenario.MediaStore.ListByTourCallCount.ShouldBe(0);
+    }
+
     [Fact]
     public async Task JSON_mutation_rejects_a_request_above_the_host_backstop()
     {

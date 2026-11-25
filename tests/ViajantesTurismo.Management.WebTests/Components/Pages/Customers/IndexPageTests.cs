@@ -127,7 +127,6 @@ public class IndexPageTests : BunitContext
         var (_, ascendingSort, stillDescending) = ascendingRequest.ShouldNotBeNull();
         ascendingSort.ShouldBe(sort);
         stillDescending.ShouldBeFalse();
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Fact]

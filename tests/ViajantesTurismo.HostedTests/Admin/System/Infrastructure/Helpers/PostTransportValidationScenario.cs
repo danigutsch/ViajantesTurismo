@@ -27,18 +27,24 @@ internal sealed class PostTransportValidationScenario(
     }
 
     /// <summary>Waits until the admin tour is projected into the Catalog, tolerating transient server errors.</summary>
-    public async Task<CatalogTourDto> WaitForCatalogTour(Guid adminTourId, CancellationToken ct)
+    public async Task<CatalogTourDto> WaitForCatalogTour(Guid adminTourId, string identifier, CancellationToken ct)
     {
         return await Eventually.Until(
             async ct =>
             {
-                var outcome = await catalogTours.GetTours(ct);
-                if (outcome is { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } tours })
+                var matches = await FindCatalogTours(identifier, ct);
+                if (matches?.SingleOrDefault() is not { } match)
                 {
-                    return tours.SingleOrDefault(tour => tour.AdminTourId == adminTourId);
+                    return null;
                 }
 
-                if (outcome.StatusCode == HttpStatusCode.InternalServerError)
+                var outcome = await catalogTours.GetTour(match.Id, includeImages: false, ct);
+                if (outcome is { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } tour })
+                {
+                    return tour.AdminTourId == adminTourId ? tour : null;
+                }
+
+                if (outcome.StatusCode is HttpStatusCode.InternalServerError or HttpStatusCode.NotFound)
                 {
                     return null;
                 }
@@ -47,6 +53,31 @@ internal sealed class PostTransportValidationScenario(
             },
             ProjectionTimeout,
             ct);
+    }
+
+    /// <summary>Finds Catalog rows with the scenario's unique tour identifier, returning null on a transient error.</summary>
+    public async Task<IReadOnlyList<CatalogTourListItemDto>?> FindCatalogTours(string identifier, CancellationToken ct)
+    {
+        var matches = new List<CatalogTourListItemDto>();
+        for (var page = 1; ; page++)
+        {
+            var outcome = await catalogTours.GetTourPage(page, CatalogTourListSort.Identifier, descending: false, ct);
+            if (outcome.StatusCode == HttpStatusCode.InternalServerError)
+            {
+                return null;
+            }
+
+            if (outcome is not { Kind: SharedKernel.HttpClients.HttpOutcomeKind.Succeeded, Value: { } result })
+            {
+                throw new HttpRequestException("Catalog request failed.", null, outcome.StatusCode);
+            }
+
+            matches.AddRange(result.Items.Where(tour => string.Equals(tour.Identifier, identifier, StringComparison.Ordinal)));
+            if ((long)page * CatalogTourPageDto.ItemsPerPage >= result.Total)
+            {
+                return matches;
+            }
+        }
     }
 
     /// <summary>Sets the Catalog presentation of the tour, publishes it and returns the reloaded published tour.</summary>

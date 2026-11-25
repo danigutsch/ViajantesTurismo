@@ -35,21 +35,13 @@ public sealed partial class Finances : IDisposable
     private string _instructionId = string.Empty;
     private string? _action;
     private Guid _target;
+    private long _confirmationVersion;
     private string _summary = string.Empty;
     private FinancialReasonDto _reason;
     private bool _confirmed;
     private bool _changesRequested;
     private long Version => _history?.Version ?? 0;
     private bool Blocked => _loading || _submission.IsBusy || _submission.HasPending;
-    private IReadOnlyList<GetBookingReceiptDto> Receipts => _history?.Receipts ?? [];
-    private IReadOnlyList<GetPaymentQuoteDto> Quotes => _history?.Quotes ?? [];
-    private IReadOnlyList<PaymentTargetChoice> InstallmentChoices => _history?.Schedules.Where(item => item.Status == PaymentScheduleStatusDto.Approved)
-        .SelectMany(item => item.Installments).Select(item => new PaymentTargetChoice(item.Id, $"{item.DueDate}: {item.OutstandingEuro} EUR outstanding ({item.Id})")).ToArray() ?? [];
-    private IReadOnlyList<PaymentTargetChoice> ReceiptInstallmentChoices => _history is { Schedules.Count: > 0 } history
-        ? history.Schedules[^1].Installments.Select(item => new PaymentTargetChoice(item.Id, $"{item.DueDate}: {item.EuroAmount} EUR proposed terms ({item.Id})")).ToArray() : [];
-    private IReadOnlyList<PaymentTargetChoice> AllocationChoices => _history?.Allocations.Where(item => item.ActiveEuroCredit > 0)
-        .Select(item => new PaymentTargetChoice(item.Id, $"Receipt {item.ReceiptId}: {item.ActiveEuroCredit} EUR ({item.Id})")).ToArray() ?? [];
-    private bool RequiresAttention(Guid id) => _history?.Reviews.LastOrDefault(item => item.TargetId == id)?.ChangesRequested == true;
     private IEnumerable<FinancialReasonDto> Reasons => _action switch
     {
         "schedule" => [FinancialReasonDto.InitialObligation, FinancialReasonDto.TermsChanged, FinancialReasonDto.CancellationAdjustment],
@@ -57,7 +49,11 @@ public sealed partial class Finances : IDisposable
         _ => [_reason]
     };
     /// <inheritdoc />
-    public void Dispose() => Authentication.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    public void Dispose()
+    {
+        _requestSerial++;
+        Authentication.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized() => Authentication.AuthenticationStateChanged += OnAuthenticationStateChanged;
@@ -68,6 +64,8 @@ public sealed partial class Finances : IDisposable
         await InvokeAsync(() =>
         {
             _actor = actor;
+            _authenticationSerial++;
+            _evidence = null;
             StateHasChanged();
         });
     }
@@ -79,11 +77,24 @@ public sealed partial class Finances : IDisposable
     }
     private async Task Load()
     {
+        var serial = ++_requestSerial;
+        var bookingId = BookingId;
+        if (_booking?.Id != bookingId)
+        {
+            _booking = null;
+            ResetProjection();
+            Cancel();
+        }
         _loading = true;
         _error = null;
+        _evidence = null;
         try
         {
-            var booking = await BookingsApi.GetBookingById(BookingId, CancellationToken.None);
+            var booking = await BookingsApi.GetBookingById(bookingId, CancellationToken.None);
+            if (serial != _requestSerial)
+            {
+                return;
+            }
             if (booking is not { Kind: HttpOutcomeKind.Succeeded, Value: { } value })
             {
                 _error = "Booking could not be loaded.";
@@ -92,41 +103,52 @@ public sealed partial class Finances : IDisposable
             _booking = value;
             if (value.Currency != Currency.Eur.Code)
             {
+                ResetProjection();
+                Cancel();
                 return;
             }
-            var result = await PaymentsApi.GetByBookingId(BookingId, CancellationToken.None);
-            if (result is { Kind: HttpOutcomeKind.Succeeded, Value: { } history })
+            var result = await PaymentsApi.GetPage(bookingId, new BookingFinancialPageRequestDto(), CancellationToken.None);
+            if (serial != _requestSerial)
             {
-                _history = history;
+                return;
+            }
+            if (result is { Kind: HttpOutcomeKind.Succeeded, Value: { } page })
+            {
+                if (Version != page.History.Version)
+                {
+                    Cancel();
+                }
+                ApplyInitialPage(page);
             }
             else if (result.Kind == HttpOutcomeKind.NotFound && value.FinancialVersion is null)
             {
-                _history = null;
+                ResetProjection();
+                Cancel();
             }
             else
             {
                 _error = new HttpOutcomeMessages("Financial history could not be loaded.").For(result.Kind);
             }
         }
-        finally { _loading = false; }
+        finally
+        {
+            if (serial == _requestSerial)
+            {
+                _loading = false;
+            }
+        }
     }
-    private async Task LoadEvidence()
+
+    private void SelectReconciliation(GetReceiptReconciliationDto reconciliation)
     {
-        if (Blocked)
+        var summary = $"Approve the full reconciliation for receipt {reconciliation.ReceiptId}, crediting {reconciliation.EuroCredit} EUR";
+        if (Window(BookingFinancialSection.ReconciliationSelections, reconciliation.Id) is { } window)
         {
-            return;
+            summary += $". The total number of allocations across all pages is {window.TotalCount}";
         }
-        _error = null;
-        var result = await PaymentsApi.GetSensitiveDetails(BookingId, CancellationToken.None);
-        if (result is { Kind: HttpOutcomeKind.Succeeded, Value: { } history })
-        {
-            _history = history;
-        }
-        else
-        {
-            _error = new HttpOutcomeMessages("Sensitive evidence could not be loaded.").For(result.Kind);
-        }
+        Select("reconciliation", reconciliation.Id, summary, FinancialReasonDto.MismatchedReceipt);
     }
+
     private void Select(string action, Guid target, string summary, FinancialReasonDto reason)
     {
         if (Blocked)
@@ -135,6 +157,7 @@ public sealed partial class Finances : IDisposable
         }
         _action = action;
         _target = target;
+        _confirmationVersion = Version;
         _summary = summary;
         _reason = reason;
         _confirmed = false;
@@ -233,9 +256,9 @@ public sealed partial class Finances : IDisposable
             return;
         }
         var target = _target;
-        var input = new ApproveFinancialRecordDto { ExpectedVersion = Version, Reason = _reason, Confirmed = true };
-        var review = new ReviewFinancialRecordDto { ExpectedVersion = Version, ChangesRequested = _changesRequested };
-        var allocation = new AllocatePaymentCreditDto { ExpectedVersion = Version, Reason = _reason, Confirmed = true, Allocations = Selections(_action == "release" ? _releases : _allocations) };
+        var input = new ApproveFinancialRecordDto { ExpectedVersion = _confirmationVersion, Reason = _reason, Confirmed = true };
+        var review = new ReviewFinancialRecordDto { ExpectedVersion = _confirmationVersion, ChangesRequested = _changesRequested };
+        var allocation = new AllocatePaymentCreditDto { ExpectedVersion = _confirmationVersion, Reason = _reason, Confirmed = true, Allocations = Selections(_action == "release" ? _releases : _allocations) };
         Func<string, CancellationToken, Task<HttpOutcome<GetPaymentCommandResultDto>>>? command = _action switch
         {
             "schedule" => (key, ct) => PaymentsApi.ApproveSchedule(BookingId, target, input, key, ct),

@@ -896,13 +896,12 @@ public sealed class CatalogApiEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var tours = await response.Content.ReadFromJsonAsync<TourSummaryDto[]>(TestContext.Current.CancellationToken);
-        _ = tours.ShouldNotBeNull();
-        var tour = tours.ShouldHaveSingleItem();
+        var tours = await response.Content.ReadFromJsonAsync<PublishedTourPageDto>(TestContext.Current.CancellationToken);
+        var tour = tours.ShouldNotBeNull().Tours.ShouldHaveSingleItem();
         tour.Slug.ShouldBe("camino-norte");
         var image = tour.Images.ShouldHaveSingleItem();
         image.Id.ShouldNotBe(Guid.Empty);
@@ -934,25 +933,27 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/api/v1/public/catalog/tours", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative),
             TestContext.Current.CancellationToken);
         using var document = await JsonDocument.ParseAsync(
             await response.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken),
             cancellationToken: TestContext.Current.CancellationToken);
-        var tour = document.RootElement.EnumerateArray().ShouldHaveSingleItem();
+        var tours = document.RootElement.GetProperty("tours");
+        var tour = tours.EnumerateArray().ShouldHaveSingleItem();
         using var details = await client.GetAsync(
             new Uri("/api/v1/public/catalog/tours/public-tour", UriKind.Relative),
             TestContext.Current.CancellationToken);
-        var detailPayload = await details.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
+        var envelope = await details.Content.ReadFromJsonAsync<JsonElement>(TestContext.Current.CancellationToken);
+        var detailPayload = envelope.GetProperty("tour");
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        document.RootElement.ShouldAllHaveLink("self");
+        tours.ShouldAllHaveLink("self");
         tour.ShouldHaveGetLink("self", "/api/v1/public/catalog/tours/public-tour");
         tour.GetProperty("links").GetArrayLength().ShouldBe(1);
         details.StatusCode.ShouldBe(HttpStatusCode.OK);
         detailPayload.ShouldHaveGetLink("self", "/api/v1/public/catalog/tours/public-tour");
-        detailPayload.ShouldHaveGetLink("collection", "/api/v1/public/catalog/tours");
+        detailPayload.ShouldHaveGetLink("collection", "/api/v1/public/catalog/tours/browse/page");
         detailPayload.GetProperty("links").GetArrayLength().ShouldBe(2);
         tour.GetProperty("title").GetString().ShouldBe("Public Tour");
         tour.TryGetProperty("summary", out _).ShouldBeTrue();
@@ -960,6 +961,73 @@ public sealed class CatalogApiEndpointTests
         tour.TryGetProperty("adminTourId", out _).ShouldBeFalse();
         tour.TryGetProperty("identifier", out _).ShouldBeFalse();
         tour.TryGetProperty("isPublished", out _).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task Presentation_reads_and_saves_can_omit_a_large_legacy_gallery()
+    {
+        // Arrange
+        const int imageCount = 803;
+        var ct = TestContext.Current.CancellationToken;
+        var tourId = Guid.CreateVersion7();
+        var tourStore = new TestCatalogTourReadModelStore();
+        await tourStore.UpsertDraft(
+            new CatalogTourDraftReadModel(
+                tourId, Guid.CreateVersion7(), "TOUR-LARGE-GALLERY", "Draft Tour",
+                "draft-tour", false, 1, DateTimeOffset.UnixEpoch), ct);
+        var mediaStore = new TestPublicMediaImageStore();
+        for (var index = 0; index < imageCount; index++)
+        {
+            await mediaStore.Upsert(PublicMediaImageTestFactory.CreateReadyImage(
+                tourId, $"source-{index}.jpg", $"legacy-{index}-640.jpg",
+                $"sha256:{index}", $"Legacy image {index}", index, index == 0), ct);
+        }
+
+        await using var factory = CatalogApiTestHost.Create(tourStore, new TestPublicContentStore(), mediaStore);
+        using var client = factory.CreateClient();
+        var tourPath = $"/api/v1/catalog/tours/{tourId}";
+        var update = new UpsertCatalogTourPresentationRequest
+        {
+            Title = "Edited tour",
+            Slug = "draft-tour",
+            ExpectedVersion = 1
+        };
+        var legacyUpdate = update with
+        {
+            Title = "Edited again",
+            ExpectedVersion = 2
+        };
+
+        // Act
+        using var read = await client.GetAsync(new Uri($"{tourPath}?includeImages=false", UriKind.Relative), ct);
+        using var save = await client.PutAsJsonAsync(
+            new Uri($"{tourPath}/presentation?includeImages=false", UriKind.Relative),
+            update, ct);
+        using var legacy = await client.GetAsync(new Uri(tourPath, UriKind.Relative), ct);
+        using var legacySave = await client.PutAsJsonAsync(
+            new Uri($"{tourPath}/presentation", UriKind.Relative),
+            legacyUpdate, ct);
+
+        // Assert
+        read.StatusCode.ShouldBe(HttpStatusCode.OK);
+        save.StatusCode.ShouldBe(HttpStatusCode.OK);
+        legacy.StatusCode.ShouldBe(HttpStatusCode.OK);
+        legacySave.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var initial = await read.Content.ReadFromJsonAsync<CatalogTourDto>(ct);
+        var updated = await save.Content.ReadFromJsonAsync<CatalogTourDto>(ct);
+        var full = await legacy.Content.ReadFromJsonAsync<CatalogTourDto>(ct);
+        var fullSave = await legacySave.Content.ReadFromJsonAsync<CatalogTourDto>(ct);
+        initial.ShouldNotBeNull();
+        updated.ShouldNotBeNull();
+        full.ShouldNotBeNull();
+        fullSave.ShouldNotBeNull();
+        var imageCounts = new[] { initial.Images.Count, updated.Images.Count, full.Images.Count, fullSave.Images.Count };
+        imageCounts.ShouldBe([0, 0, imageCount, imageCount]);
+        mediaStore.ListByTourCallCount.ShouldBe(2);
+        initial.Title.ShouldBe("Draft Tour");
+        initial.Version.ShouldBe(1);
+        updated.Title.ShouldBe("Edited tour");
+        updated.Version.ShouldBe(2);
     }
 
     [Fact]
@@ -1395,12 +1463,12 @@ public sealed class CatalogApiEndpointTests
 
         // Act
         using var response = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/published-tour", UriKind.Relative), TestContext.Current.CancellationToken);
-        var tour = await response.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
+        var tour = await response.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         tour.ShouldNotBeNull();
-        tour.Images.ShouldBeEmpty();
+        tour.Tour.Images.ShouldBeEmpty();
     }
 
     [Fact]
@@ -2205,9 +2273,9 @@ public sealed class CatalogApiEndpointTests
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var tour = await response.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
+        var tour = await response.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(TestContext.Current.CancellationToken);
         _ = tour.ShouldNotBeNull();
-        tour.Images.ShouldMatchCollection(image =>
+        tour.Tour.Images.ShouldMatchCollection(image =>
             {
                 image.IsCover.ShouldBeTrue();
                 image.Id.ShouldNotBe(Guid.Empty);
@@ -2254,9 +2322,9 @@ public sealed class CatalogApiEndpointTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        var publicTour = await publicTourResponse.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
+        var publicTour = await publicTourResponse.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(TestContext.Current.CancellationToken);
         _ = publicTour.ShouldNotBeNull();
-        publicTour.Images.ShouldBeEmpty();
+        publicTour.Tour.Images.ShouldBeEmpty();
         var managementTour = await managementTourResponse.Content.ReadFromJsonAsync<CatalogTourDto>(TestContext.Current.CancellationToken);
         _ = managementTour.ShouldNotBeNull();
         managementTour.Images.ShouldBeEmpty();

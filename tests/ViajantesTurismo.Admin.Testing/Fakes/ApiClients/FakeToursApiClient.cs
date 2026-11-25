@@ -15,38 +15,13 @@ public sealed class FakeToursApiClient : IToursApiClient
     private Exception? _getTourByIdException;
     private Func<Guid, CancellationToken, Task<HttpOutcome<GetTourDto>>>? _getTourByIdHandler;
     private HttpOutcome<GetTourDto>? _getTourByIdOutcome;
-    private Exception? _getToursException;
-    private HttpOutcome<GetTourDto[]>? _getToursOutcome;
     private HttpOutcome<GetTourPageDto>? _getTourPageOutcome;
     private Func<TourOptionSearchDto, CancellationToken, Task<HttpOutcome<GetTourOptionsDto>>>? _searchTourOptionsHandler;
     private Exception? _updateTourException;
     private HttpOutcome? _updateTourOutcome;
 
-    public int GetToursCallCount
-    {
-        get; private set;
-    }
-
     /// <summary>Gets the page requests made by the overview grid.</summary>
     public IReadOnlyList<(int Page, TourPageSort Sort, bool Descending)> TourPageRequests => _tourPageRequests.AsReadOnly();
-
-    public Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue)
-    {
-        ct.ThrowIfCancellationRequested();
-        GetToursCallCount++;
-
-        if (_getToursException is not null)
-        {
-            throw _getToursException;
-        }
-
-        if (_getToursOutcome is not null)
-        {
-            return Task.FromResult(_getToursOutcome);
-        }
-
-        return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, _tours.Take(maxItems).ToArray()));
-    }
 
     /// <inheritdoc />
     public Task<HttpOutcome<GetTourPageDto>> GetTourPage(int page, TourPageSort sort, bool descending, CancellationToken ct)
@@ -217,10 +192,6 @@ public sealed class FakeToursApiClient : IToursApiClient
     public void SetGetTourByIdException(Exception exception) => _getTourByIdException = exception;
 
     public void SetGetTourByIdOutcome(HttpOutcome<GetTourDto> outcome) => _getTourByIdOutcome = outcome;
-
-    public void SetGetToursException(Exception exception) => _getToursException = exception;
-
-    public void SetGetToursOutcome(HttpOutcome<GetTourDto[]> outcome) => _getToursOutcome = outcome;
 
     public void SetCreateTourException(Exception exception) => _createTourException = exception;
 

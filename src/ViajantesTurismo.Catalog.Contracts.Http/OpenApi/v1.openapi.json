@@ -5,40 +5,6 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/v1/catalog/tours": {
-      "get": {
-        "tags": [
-          "CatalogEndpoints"
-        ],
-        "operationId": "GetTours",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CatalogTourDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required."
-          },
-          "403": {
-            "description": "The authenticated caller lacks the required permission."
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
     "/api/v1/catalog/tours/page": {
       "get": {
         "tags": [
@@ -111,6 +77,14 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "includeImages",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
             }
           }
         ],
@@ -414,6 +388,14 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "includeImages",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
             }
           }
         ],
@@ -1201,12 +1183,81 @@
         ]
       }
     },
-    "/api/v1/public/catalog/tours": {
+    "/api/v1/public/catalog/tours/browse/page": {
       "get": {
         "tags": [
           "CatalogEndpoints"
         ],
-        "operationId": "GetPublishedTours",
+        "operationId": "GetPublishedTourPage",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedTourPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/tours/browse/sitemap": {
+      "get": {
+        "tags": [
+          "CatalogEndpoints"
+        ],
+        "operationId": "GetPublishedTourSitemapEntries",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1215,8 +1266,18 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/TourSummaryDto"
+                    "$ref": "#/components/schemas/PublishedTourSitemapEntryDto"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -1238,6 +1299,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1246,10 +1314,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TourDetailsDto"
+                  "$ref": "#/components/schemas/PublishedTourDetailsPageDto"
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "404": {
             "description": "Not Found"
@@ -2900,6 +2971,101 @@
           },
           "isDecorative": {
             "type": "boolean"
+          }
+        }
+      },
+      "PublishedTourDetailsPageDto": {
+        "required": [
+          "tour",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "tour": {
+            "$ref": "#/components/schemas/TourDetailsDto"
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "PublishedTourPageDto": {
+        "required": [
+          "page",
+          "pageSize",
+          "total",
+          "tours"
+        ],
+        "type": "object",
+        "properties": {
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tours": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TourSummaryDto"
+            }
+          }
+        }
+      },
+      "PublishedTourSitemapEntryDto": {
+        "required": [
+          "slug",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },

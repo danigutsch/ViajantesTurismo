@@ -14,36 +14,38 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
     private static readonly PublicCatalogApiClientJsonContext Json = PublicCatalogApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<TourSummaryDto[]>> GetPublishedTours(CancellationToken ct)
+    public Task<HttpOutcome<PublishedTourPageDto>> GetPublishedTourPage(string? page, int pageSize, CancellationToken ct)
     {
-        var outcome = await HttpOutcomeMapper.Send(
-            httpClient,
-            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours", UriKind.Relative)),
-            HttpStatusCode.OK,
-            Json.TourSummaryDtoArray,
-            Json.ContractValidationProblemDto,
-            ct).ConfigureAwait(false);
-        return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with
-            {
-                Value = outcome.Value?.OfType<TourSummaryDto>().ToArray() ?? []
-            }
-            : outcome;
+        var path = FormattableString.Invariant($"{RoutePrefix}/tours/browse/page?pageSize={pageSize}");
+        if (page is not null)
+        {
+            path += $"&page={Uri.EscapeDataString(page)}";
+        }
+
+        return HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.Relative)),
+            HttpStatusCode.OK, Json.PublishedTourPageDto, Json.ContractValidationProblemDto, ct);
     }
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<TourDetailsDto>> GetPublishedTourBySlug(string slug, CancellationToken ct)
+    public Task<HttpOutcome<PublishedTourSitemapEntryDto[]>> GetPublishedTourSitemapEntries(int limit, CancellationToken ct)
+    {
+        var path = FormattableString.Invariant($"{RoutePrefix}/tours/browse/sitemap?limit={limit}");
+        return HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.Relative)),
+            HttpStatusCode.OK, Json.PublishedTourSitemapEntryDtoArray, Json.ContractValidationProblemDto, ct);
+    }
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<PublishedTourDetailsPageDto>> GetPublishedTourDetailsPage(string slug, string? page, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(slug);
+        var path = $"{RoutePrefix}/tours/{Uri.EscapeDataString(slug)}";
+        if (page is not null)
+        {
+            path += $"?page={Uri.EscapeDataString(page)}";
+        }
 
-        var escapedSlug = Uri.EscapeDataString(slug);
-        return await HttpOutcomeMapper.Send(
-            httpClient,
-            new HttpRequestMessage(HttpMethod.Get, new Uri($"{RoutePrefix}/tours/{escapedSlug}", UriKind.Relative)),
-            HttpStatusCode.OK,
-            Json.TourDetailsDto,
-            Json.ContractValidationProblemDto,
-            ct).ConfigureAwait(false);
+        return HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.Relative)),
+            HttpStatusCode.OK, Json.PublishedTourDetailsPageDto, Json.ContractValidationProblemDto, ct);
     }
 
     /// <inheritdoc />

@@ -67,17 +67,17 @@ public sealed class CatalogApiClientIntegrationTests
         // Act
         var savedOutcome = await managementClient.UpdatePresentation(tourId, request, cancellationToken);
         var managementItem = await managementClient.GetTour(tourId, cancellationToken);
-        var managementList = await managementClient.GetTours(cancellationToken);
+        var managementList = await managementClient.GetTourPage(1, CatalogTourListSort.Title, descending: false, cancellationToken);
         var publishOutcome = await managementClient.Publish(
             tourId,
             new CatalogTourPublicationRequest { ExpectedVersion = 2 },
             cancellationToken);
-        var publishedOutcome = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
+        var publishedOutcome = await publicClient.GetPublishedTourDetailsPage("contract-client-tour", page: null, cancellationToken);
         var unpublishOutcome = await managementClient.Unpublish(
             tourId,
             new CatalogTourPublicationRequest { ExpectedVersion = 3 },
             cancellationToken);
-        var unpublishedOutcome = await publicClient.GetPublishedTourBySlug("contract-client-tour", cancellationToken);
+        var unpublishedOutcome = await publicClient.GetPublishedTourDetailsPage("contract-client-tour", page: null, cancellationToken);
 
         // Assert
         savedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
@@ -87,10 +87,10 @@ public sealed class CatalogApiClientIntegrationTests
         saved.Links.ShouldContain(link => link.Rel == "self" && link.Href == $"/api/v1/catalog/tours/{tourId}" && link.Method == "GET");
         saved.Links.ShouldContain(link => link.Rel == "images" && link.Href == $"/api/v1/catalog/tours/{tourId}/images" && link.Method == "GET");
         managementItem.Value.ShouldNotBeNull().Links.ShouldBe(saved.Links);
-        managementList.Value.ShouldNotBeNull().ShouldHaveSingleItem().Links.ShouldBe(saved.Links);
+        managementList.Value.ShouldNotBeNull().Items.ShouldHaveSingleItem().Id.ShouldBe(saved.Id);
         publishOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
         publishedOutcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
-        var published = publishedOutcome.Value.ShouldNotBeNull();
+        var published = publishedOutcome.Value.ShouldNotBeNull().Tour;
         published.Title.ShouldBe("Contract Client Tour");
         published.Slug.ShouldBe("contract-client-tour");
         published.Summary.ShouldBe("A contract-tested tour.");

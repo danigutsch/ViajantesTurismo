@@ -49,6 +49,8 @@ public sealed class EditPresentationPageTests : BunitContext
         updated.IsPublished.ShouldBeFalse();
         catalogApi.LastPresentationRequest.ShouldNotBeNull();
         catalogApi.LastPresentationRequest.ExpectedVersion.ShouldBe(1);
+        catalogApi.LastTourReadIncludedImages.ShouldBe(false);
+        catalogApi.LastPresentationResponseIncludedImages.ShouldBe(false);
         cut.FindAll("#isPublished").ShouldBeEmpty();
     }
 

@@ -186,13 +186,13 @@ public sealed class PublicCatalogProxyRateLimitTests
         using var otherCaller = proxy.CreateDirectCatalogCaller(IPAddress.Parse("203.0.113.20"));
         for (var requestNumber = 0; requestNumber < CatalogSecurityBaseline.PublicReadPermitLimit; requestNumber++)
         {
-            using var response = await caller.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+            using var response = await caller.GetAsync(new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative), TestContext.Current.CancellationToken);
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
 
         // Act
-        using var limitedResponse = await caller.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
-        using var otherResponse = await otherCaller.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var limitedResponse = await caller.GetAsync(new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var otherResponse = await otherCaller.GetAsync(new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         limitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
@@ -208,17 +208,17 @@ public sealed class PublicCatalogProxyRateLimitTests
         using var otherCaller = proxy.CreateDirectCatalogCaller(IPAddress.Parse("203.0.113.20"));
         for (var requestNumber = 0; requestNumber < CatalogSecurityBaseline.PublicReadPermitLimit; requestNumber++)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/api/v1/public/catalog/tours", UriKind.Relative));
+            using var request = new HttpRequestMessage(HttpMethod.Get, new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative));
             request.Headers.Add("X-Forwarded-For", $"198.51.100.{requestNumber}");
             using var response = await caller.SendAsync(request, TestContext.Current.CancellationToken);
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
 
         // Act
-        using var finalRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("/api/v1/public/catalog/tours", UriKind.Relative));
+        using var finalRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative));
         finalRequest.Headers.Add("X-Forwarded-For", "2001:db8::1, 198.51.100.250");
         using var limitedResponse = await caller.SendAsync(finalRequest, TestContext.Current.CancellationToken);
-        using var otherResponse = await otherCaller.GetAsync(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var otherResponse = await otherCaller.GetAsync(new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         limitedResponse.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);

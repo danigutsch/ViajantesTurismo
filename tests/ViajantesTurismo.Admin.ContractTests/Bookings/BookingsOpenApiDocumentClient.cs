@@ -39,10 +39,10 @@ internal static class BookingsOpenApiDocumentClient
         }
 
         if (!document.Paths.TryGetValue(RoutePrefix, out var bookingsPath) ||
-            bookingsPath.Get is null ||
+            bookingsPath.Get is not null ||
             bookingsPath.Post is null)
         {
-            throw new InvalidOperationException("The bookings collection path is missing required operations.");
+            throw new InvalidOperationException("The bookings collection path must define POST without the superseded GET operation.");
         }
 
         if (!document.Paths.TryGetValue($"{RoutePrefix}/page", out var bookingPagePath) ||
@@ -94,6 +94,11 @@ internal static class BookingsOpenApiDocumentClient
             throw new InvalidOperationException("The booking complete path is missing the required operation.");
         }
 
+        if (document.Paths.ContainsKey($"{RoutePrefix}/tour/{{tourId}}") ||
+            document.Paths.ContainsKey($"{RoutePrefix}/customer/{{customerId}}"))
+        {
+            throw new InvalidOperationException("The superseded booking history paths must be absent.");
+        }
 
         var createBookingSchemaReference = bookingsPath.Post.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
         var updateBookingDiscountSchemaReference = discountPath.Put.RequestBody?.Content?.ApplicationJson?.Schema?.Reference;
@@ -111,14 +116,11 @@ internal static class BookingsOpenApiDocumentClient
         return new BookingsOpenApiContractDto(
             document.OpenApi,
             document.Info.Title,
-            bookingsPath.Get.OperationId,
             bookingPagePath.Get.OperationId,
             bookingByIdPath.Get.OperationId,
             bookingsPath.Post.OperationId,
             createBookingSchemaReference,
             bookingByIdPath.Delete.OperationId,
-            GetRequiredReadOperationId(document.Paths, $"{RoutePrefix}/tour/{{tourId}}"),
-            GetRequiredReadOperationId(document.Paths, $"{RoutePrefix}/customer/{{customerId}}"),
             GetRequiredReadOperationId(document.Paths, $"{RoutePrefix}/tour/{{tourId}}/page"),
             GetRequiredReadOperationId(document.Paths, $"{RoutePrefix}/customer/{{customerId}}/page"),
             discountPath.Put.OperationId,

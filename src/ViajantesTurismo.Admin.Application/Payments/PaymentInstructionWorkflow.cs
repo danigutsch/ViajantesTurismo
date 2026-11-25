@@ -91,8 +91,9 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
                     result = current.Lineage.Approve(documentId, now.UtcDateTime, audit.Value);
                     break;
                 case PaymentInstructionAuditOperation.Finalized:
-                    var audits = await instructions.GetAudits(documentId, ct);
-                    if (audits.LastOrDefault(item => item.Operation is PaymentInstructionAuditOperation.Approved or PaymentInstructionAuditOperation.ApprovalWithdrawn)?.Operation != PaymentInstructionAuditOperation.Approved)
+                    var approvalDecision = await instructions.GetLatestAudit(documentId,
+                        [PaymentInstructionAuditOperation.Approved, PaymentInstructionAuditOperation.ApprovalWithdrawn], ct);
+                    if (approvalDecision?.Operation != PaymentInstructionAuditOperation.Approved)
                     {
                         return FinancialErrors.Unavailable().ConvertError<Guid>();
                     }
@@ -247,27 +248,44 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
 
     /// <summary>Lists retained booking instruction revisions without exposing recipient details.</summary>
     public async Task<IReadOnlyList<GetPaymentInstructionDto>> ListForBooking(Guid bookingId, CancellationToken ct) =>
-        await ProjectRevisions(await instructions.GetDocumentIds(bookingId, ct), ct);
+        await ProjectRevisions(await instructions.GetDocumentIds(bookingId, ct), latestReviewOnly: false, ct);
 
     /// <summary>Lists one page of retained booking instruction revisions without exposing recipient details.</summary>
-    public async Task<GetPaymentInstructionPageDto> ListPageForBooking(Guid bookingId, int? page, int pageSize, CancellationToken ct)
+    public Task<GetPaymentInstructionPageDto> ListPageForBooking(Guid bookingId, int? page, int pageSize, CancellationToken ct) =>
+        ListPageForBooking(bookingId, page, pageSize, latestReviewOnly: false, ct);
+
+    /// <summary>Lists one page of retained booking instructions with optional latest-review summaries.</summary>
+    public async Task<GetPaymentInstructionPageDto> ListPageForBooking(Guid bookingId, int? page, int pageSize, bool latestReviewOnly, CancellationToken ct)
     {
         var (ids, window) = await instructions.GetDocumentIdPage(bookingId, page, pageSize, ct);
         return new GetPaymentInstructionPageDto
         {
-            Items = await ProjectRevisions(ids, ct),
+            Items = await ProjectRevisions(ids, latestReviewOnly, ct),
             Page = window.Page,
             PageSize = window.PageSize,
             Total = window.Total
         };
     }
 
-    private async Task<IReadOnlyList<GetPaymentInstructionDto>> ProjectRevisions(IReadOnlyList<Guid> ids, CancellationToken ct)
+    /// <summary>Lists one page of independent reviews for the specified instruction revision.</summary>
+    public async Task<GetPaymentInstructionReviewPageDto?> GetReviewPage(Guid documentId, int? page, int pageSize, CancellationToken ct)
+    {
+        var reviews = await instructions.GetReviewPage(documentId, page, pageSize, ct);
+        return reviews is { } result ? new GetPaymentInstructionReviewPageDto
+        {
+            Items = [.. result.Items.Select(ProjectReview)],
+            Page = result.Window.Page,
+            PageSize = result.Window.PageSize,
+            Total = result.Window.Total
+        } : null;
+    }
+
+    private async Task<IReadOnlyList<GetPaymentInstructionDto>> ProjectRevisions(IReadOnlyList<Guid> ids, bool latestReviewOnly, CancellationToken ct)
     {
         var results = new List<GetPaymentInstructionDto>(ids.Count);
         foreach (var id in ids)
         {
-            var item = await GetById(id, ct);
+            var item = await GetById(id, latestReviewOnly, ct);
             if (item is not null)
             {
                 results.Add(item);
@@ -277,7 +295,10 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
     }
 
     /// <summary>Projects generated financial fields and masked recipient metadata for Admin confirmation.</summary>
-    public async Task<GetPaymentInstructionDto?> GetById(Guid documentId, CancellationToken ct)
+    public Task<GetPaymentInstructionDto?> GetById(Guid documentId, CancellationToken ct) => GetById(documentId, latestReviewOnly: false, ct);
+
+    /// <summary>Projects generated financial fields and masked recipient metadata with optional latest-review summary.</summary>
+    public async Task<GetPaymentInstructionDto?> GetById(Guid documentId, bool latestReviewOnly, CancellationToken ct)
     {
         var state = await instructions.GetDocumentState(documentId, ct);
         var snapshot = await instructions.GetSnapshot(documentId, ct);
@@ -290,8 +311,7 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
         {
             return null;
         }
-        var audits = await instructions.GetAudits(documentId, ct);
-        var approval = audits.LastOrDefault(item => item.Operation == PaymentInstructionAuditOperation.Approved);
+        var (approval, reviews) = await ProjectAudits(documentId, latestReviewOnly, ct);
         return new GetPaymentInstructionDto
         {
             Document = dto,
@@ -314,17 +334,33 @@ public sealed class PaymentInstructionWorkflow(ISender sender, PaymentCommandIde
                 ApprovalReason = approval is null ? null : FinancialReasonDto.InstructionApproved,
                 SelfApproved = approval?.SelfApproved ?? false
             },
-            Reviews = [.. audits.Where(item => item.Operation is PaymentInstructionAuditOperation.ReviewAccepted or PaymentInstructionAuditOperation.ReviewChangesRequested)
-                .Select(item => new GetFinancialReviewDto
-                {
-                    TargetId = documentId,
-                    TargetRevision = item.Revision,
-                    ReviewerId = item.ActorId,
-                    ReviewedAt = item.OccurredAt,
-                    ChangesRequested = item.Operation == PaymentInstructionAuditOperation.ReviewChangesRequested
-                })]
+            Reviews = reviews
         };
     }
+
+    private async Task<(PaymentInstructionAuditMetadata? Approval, IReadOnlyList<GetFinancialReviewDto> Reviews)> ProjectAudits(Guid documentId, bool latestReviewOnly, CancellationToken ct)
+    {
+        if (latestReviewOnly)
+        {
+            var approval = await instructions.GetLatestAudit(documentId, [PaymentInstructionAuditOperation.Approved], ct);
+            var review = await instructions.GetLatestAudit(documentId,
+                [PaymentInstructionAuditOperation.ReviewAccepted, PaymentInstructionAuditOperation.ReviewChangesRequested], ct);
+            return (approval, review is null ? [] : [ProjectReview(review)]);
+        }
+
+        var audits = await instructions.GetAudits(documentId, ct);
+        return (audits.LastOrDefault(item => item.Operation == PaymentInstructionAuditOperation.Approved),
+            [.. audits.Where(item => item.Operation is PaymentInstructionAuditOperation.ReviewAccepted or PaymentInstructionAuditOperation.ReviewChangesRequested).Select(ProjectReview)]);
+    }
+
+    private static GetFinancialReviewDto ProjectReview(PaymentInstructionAuditMetadata review) => new()
+    {
+        TargetId = review.DocumentId,
+        TargetRevision = review.Revision,
+        ReviewerId = review.ActorId,
+        ReviewedAt = review.OccurredAt,
+        ChangesRequested = review.Operation == PaymentInstructionAuditOperation.ReviewChangesRequested
+    };
 
     private async Task<Result<PaymentInstructionSources>> Load(Guid documentId, CancellationToken ct)
     {

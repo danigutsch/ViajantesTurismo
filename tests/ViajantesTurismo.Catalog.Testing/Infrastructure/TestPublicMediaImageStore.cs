@@ -9,6 +9,7 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
     private readonly ConcurrentDictionary<Guid, PublicMediaImage> imagesById = new();
 
     private int getImageCallCount;
+    private int listByTourCallCount;
 
     public Exception? UpsertException
     {
@@ -21,6 +22,9 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
     }
 
     public int GetImageCallCount => getImageCallCount;
+
+    /// <summary>Gets the number of full per-tour image reads.</summary>
+    public int ListByTourCallCount => Volatile.Read(ref listByTourCallCount);
 
     public ValueTask Upsert(PublicMediaImage image, CancellationToken ct)
     {
@@ -48,12 +52,20 @@ public sealed class TestPublicMediaImageStore : IPublicMediaImageStore
     public ValueTask<IReadOnlyList<PublicMediaImage>> ListByTour(Guid catalogTourId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        Interlocked.Increment(ref listByTourCallCount);
         if (ListByTourException is not null)
         {
             throw ListByTourException;
         }
 
         return ValueTask.FromResult(ListByTour(catalogTourId));
+    }
+
+    /// <summary>Counts the test images linked to the tour.</summary>
+    public int CountByTour(Guid catalogTourId, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        return imagesById.Count(entry => entry.Value.BelongsToTour(catalogTourId));
     }
 
     public ValueTask<PublicMediaImage?> GetNextPendingReviewByTour(Guid catalogTourId, CancellationToken ct)

@@ -15,10 +15,6 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     private static readonly BookingsApiClientJsonContext Json = BookingsApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<GetBookingDto[]>> GetAllBookings(CancellationToken ct) =>
-        await ReadBookings(RoutePrefix, ct).ConfigureAwait(false);
-
-    /// <inheritdoc />
     public async Task<HttpOutcome<GetBookingPageDto>> GetBookingPage(int page, BookingPageSort sort, bool descending, CancellationToken ct)
     {
         var route = FormattableString.Invariant($"{RoutePrefix}/page?page={page}&sort={sort}&descending={descending}");
@@ -54,14 +50,6 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
             Json.ContractValidationProblemDto,
             ct).ConfigureAwait(false);
     }
-
-    /// <inheritdoc />
-    public async Task<HttpOutcome<GetBookingDto[]>> GetBookingsByTourId(Guid tourId, CancellationToken ct) =>
-        await ReadBookings($"{RoutePrefix}/tour/{tourId}", ct).ConfigureAwait(false);
-
-    /// <inheritdoc />
-    public async Task<HttpOutcome<GetBookingDto[]>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct) =>
-        await ReadBookings($"{RoutePrefix}/customer/{customerId}", ct).ConfigureAwait(false);
 
     /// <inheritdoc />
     public async Task<HttpOutcome> CreateBooking(CreateBookingDto dto, CancellationToken ct)
@@ -138,24 +126,6 @@ public sealed partial class BookingsApiClient(HttpClient httpClient, ILogger<Boo
     /// <inheritdoc />
     public async Task<HttpOutcome> DeleteBooking(Guid id, CancellationToken ct) =>
         await SendCommand(HttpMethod.Delete, $"{RoutePrefix}/{id}", content: null, HttpStatusCode.NoContent, ct).ConfigureAwait(false);
-
-    private async Task<HttpOutcome<GetBookingDto[]>> ReadBookings(string requestUri, CancellationToken ct)
-    {
-        var outcome = await HttpOutcomeMapper.Send(
-            httpClient,
-            new HttpRequestMessage(HttpMethod.Get, new Uri(requestUri, UriKind.Relative)),
-            HttpStatusCode.OK,
-            Json.GetBookingDtoArray,
-            Json.ContractValidationProblemDto,
-            ct).ConfigureAwait(false);
-
-        return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with
-            {
-                Value = outcome.Value?.OfType<GetBookingDto>().ToArray() ?? []
-            }
-            : outcome;
-    }
 
     private async Task<HttpOutcome<GetBookingHistoryPageDto>> ReadHistory(string requestUri, CancellationToken ct) =>
         await HttpOutcomeMapper.Send(

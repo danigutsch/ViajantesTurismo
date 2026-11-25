@@ -2,7 +2,7 @@ using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
-/// <summary>Verifies that shared photos cannot expand the placements read for a public gallery page.</summary>
+/// <summary>Verifies that shared photos cannot expand the placements read for a public photo page.</summary>
 [Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogGalleryLinkBoundsPostgreSqlTests(HostedTestFixture shared)
@@ -23,5 +23,7 @@ public sealed class CatalogGalleryLinkBoundsPostgreSqlTests(HostedTestFixture sh
         read.Album.Photos.ShouldHaveSingleItem().Id.ShouldBe(read.SharedPhoto);
         read.IndexLinks.Distinct().Order().ShouldBe(read.ExpectedIndexTours.Order());
         read.AlbumLinks.Distinct().ShouldBe([read.AlbumTour]);
+        read.DetailImages.ShouldHaveSingleItem().Id.ShouldBe(read.SharedPhoto);
+        read.DetailLinks.Distinct().ShouldBe([read.AlbumTour]);
     }
 }

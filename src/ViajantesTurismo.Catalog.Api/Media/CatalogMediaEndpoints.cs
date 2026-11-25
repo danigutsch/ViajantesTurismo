@@ -267,7 +267,7 @@ internal static class CatalogMediaEndpoints
         Guid id,
         [AsParameters] MediaImageUploadFormDto form,
         ICatalogTourReadModelStore store,
-        IPublicMediaImageStore imageStore,
+        IMediaImageUploadStore uploadStore,
         MediaImageUploadIntake intake,
         CatalogGalleryMutationGuard galleryGuard,
         IAuthorizationService authorization,
@@ -294,7 +294,7 @@ internal static class CatalogMediaEndpoints
         }
 
         await using var mutationLease = permission.Value;
-        var existingImages = await imageStore.ListByTour(id, ct).ConfigureAwait(false);
+        var existingImageCount = await uploadStore.CountByTour(id, ct).ConfigureAwait(false);
 
         await using var content = form.File.OpenReadStream();
         var result = await intake.Accept(
@@ -305,7 +305,7 @@ internal static class CatalogMediaEndpoints
                 form.File.ContentType,
                 form.File.Length,
                 altText,
-                [new MediaImageTourLink(id, existingImages.Count, existingImages.Count == 0)],
+                [new MediaImageTourLink(id, existingImageCount, existingImageCount == 0)],
                 Caption: form.Caption,
                 Attribution: form.Attribution,
                 Copyright: form.Copyright,

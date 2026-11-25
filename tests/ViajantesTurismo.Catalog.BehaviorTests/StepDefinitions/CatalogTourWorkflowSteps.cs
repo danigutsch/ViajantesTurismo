@@ -93,9 +93,10 @@ public sealed class CatalogTourWorkflowSteps
         using var publicResponse = await Client.GetAsync(new Uri($"/api/v1/public/catalog/tours/{slug}", UriKind.Relative), TestContext.Current.CancellationToken);
         publicResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        var tour = await publicResponse.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
-        tour.ShouldNotBeNull();
-        tour.Slug.ShouldBe(slug);
+        var page = await publicResponse.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(TestContext.Current.CancellationToken);
+        page.ShouldNotBeNull();
+        page.Tour.Slug.ShouldBe(slug);
+        page.Page.ShouldBe(1);
     }
 
     [Then("the catalog tour should not be visible publicly by slug {string}")]

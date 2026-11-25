@@ -12,25 +12,6 @@ namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 public sealed class BookingsApiClientTests
 {
     [Fact]
-    public async Task GetAllBookings_requests_bookings_endpoint_and_skips_null_items()
-    {
-        var requestPath = string.Empty;
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
-        {
-            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
-            return CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.BookingJson}, null]");
-        });
-        var sut = new BookingsApiClient(httpClient);
-
-        var outcome = await sut.GetAllBookings(TestContext.Current.CancellationToken);
-
-        requestPath.ShouldBe("/api/v1/bookings");
-        var bookings = outcome.Value.ShouldNotBeNull();
-        var booking = bookings.ShouldHaveSingleItem();
-        booking.TourIdentifier.ShouldBe("TOUR-1");
-    }
-
-    [Fact]
     public async Task Get_booking_page_requests_the_selected_page_and_reads_overview_counts()
     {
         // Arrange
@@ -98,29 +79,6 @@ public sealed class BookingsApiClientTests
 
         outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);
         outcome.Value.ShouldBeNull();
-    }
-
-    [Theory]
-    [InlineData("tour", "/api/v1/bookings/tour/22222222-2222-2222-2222-222222222222")]
-    [InlineData("customer", "/api/v1/bookings/customer/22222222-2222-2222-2222-222222222222")]
-    public async Task GetBookingsByOwner_requests_expected_endpoint(string ownerKind, string expectedPath)
-    {
-        var requestPath = string.Empty;
-        var ownerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
-        {
-            requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
-            return CatalogToursApiClientTestsHelpers.JsonResponse($"[{AdminApiClientTestsHelpers.BookingJson}]");
-        });
-        var sut = new BookingsApiClient(httpClient);
-
-        var outcome = ownerKind == "tour"
-            ? await sut.GetBookingsByTourId(ownerId, TestContext.Current.CancellationToken)
-            : await sut.GetBookingsByCustomerId(ownerId, TestContext.Current.CancellationToken);
-
-        requestPath.ShouldBe(expectedPath);
-        var bookings = outcome.Value.ShouldNotBeNull();
-        bookings.ShouldHaveSingleItem();
     }
 
     [Theory]

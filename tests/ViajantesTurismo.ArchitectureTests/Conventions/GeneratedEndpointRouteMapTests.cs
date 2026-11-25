@@ -39,7 +39,13 @@ public sealed class GeneratedEndpointRouteMapTests
     [InlineData("GET", "/api/v1/payment-accounts", "ListPaymentAccounts", "management API", "required")]
     [InlineData("GET", "/api/v1/documents/bookings/{bookingId:guid}/payment-instructions", "ListBookingPaymentInstructions", "management API", "required")]
     [InlineData("POST", "/api/v1/documents/{id:guid}/holds", "PlaceDocumentHold", "management API", "required")]
-    [InlineData("GET", "/api/v1/public/catalog/tours", "GetPublishedTours", "public API", "anonymous")]
+    [InlineData("GET", "/api/v1/public/catalog/tours/browse/page", "GetPublishedTourPage", "public API", "anonymous")]
+    [InlineData("GET", "/api/v1/bookings/page", "GetBookingPage", "management API", "required")]
+    [InlineData("GET", "/api/v1/bookings/tour/{tourId:guid}/page", "GetTourBookingPage", "management API", "required")]
+    [InlineData("GET", "/api/v1/bookings/customer/{customerId:guid}/page", "GetCustomerBookingPage", "management API", "required")]
+    [InlineData("GET", "/api/v1/customers/page", "GetCustomerPage", "management API", "required")]
+    [InlineData("GET", "/api/v1/tours/page", "GetTourPage", "management API", "required")]
+    [InlineData("GET", "/api/v1/catalog/tours/page", "GetTourPage", "management API", "required")]
     [InlineData("GET", "/documents/{id:guid}/download", "Download", "management web", "required")]
     public void The_route_map_preserves_full_paths_audiences_and_declared_authorization(
         string method, string path, string operation, string audience, string authorization)
@@ -53,5 +59,27 @@ public sealed class GeneratedEndpointRouteMapTests
 
         // Assert
         artifact.ShouldContain(expected, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("/api/v1/bookings")]
+    [InlineData("/api/v1/bookings/tour/{tourId:guid}")]
+    [InlineData("/api/v1/bookings/customer/{customerId:guid}")]
+    [InlineData("/api/v1/customers")]
+    [InlineData("/api/v1/tours")]
+    [InlineData("/api/v1/catalog/tours")]
+    [InlineData("/api/v1/public/catalog/tours")]
+    [InlineData("/api/v1/public/catalog/tours/{slug}/photo-page")]
+    public void The_route_map_omits_replaced_collection_reads_and_the_photo_page_alias(string path)
+    {
+        // Arrange
+        var document = Path.Combine(RepositoryRoot.Locate("ViajantesTurismo.slnx"), "docs", "architecture", "generated-endpoint-route-map.md");
+        var retiredRoute = $"| `GET` | `{path}` |";
+
+        // Act
+        var artifact = File.ReadAllText(document);
+
+        // Assert
+        artifact.ShouldNotContain(retiredRoute, StringComparison.Ordinal);
     }
 }

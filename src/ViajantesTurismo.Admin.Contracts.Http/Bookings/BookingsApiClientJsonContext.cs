@@ -9,7 +9,6 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 [JsonSerializable(typeof(ContractValidationProblemDto))]
 [JsonSerializable(typeof(GetBookingDto))]
-[JsonSerializable(typeof(GetBookingDto[]))]
 [JsonSerializable(typeof(GetBookingPageDto))]
 [JsonSerializable(typeof(GetBookingHistoryPageDto))]
 [JsonSerializable(typeof(CreateBookingDto))]

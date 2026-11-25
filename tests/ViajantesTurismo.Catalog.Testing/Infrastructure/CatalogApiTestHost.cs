@@ -245,7 +245,7 @@ internal static class CatalogApiTestHost
             {
                 services.Replace(ServiceDescriptor.Singleton<IPublicContentStore>(publicContentStore ?? new TestPublicContentStore()));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourReadModelStore>(configuredTourStore));
-                services.Replace(ServiceDescriptor.Singleton<ICatalogTourListReader>(configuredTourStore));
+                services.Replace(ServiceDescriptor.Scoped<ICatalogTourListReader, TestCatalogTourListReader>());
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourRetirementStore>(configuredTourStore));
                 services.Replace(ServiceDescriptor.Singleton<IEventStore>(configuredEventStore));
                 services.Replace(ServiceDescriptor.Singleton<ICatalogTourSlugLock>(new TestCatalogTourSlugLock()));

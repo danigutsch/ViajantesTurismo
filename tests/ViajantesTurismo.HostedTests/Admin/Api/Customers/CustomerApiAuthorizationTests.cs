@@ -17,10 +17,10 @@ public sealed class CustomerApiAuthorizationTests(ApiFixture fixture) : IClassFi
 
         // Act
         using var toursResponse = await client.GetAsync(
-            new Uri("/api/v1/tours/", UriKind.Relative),
+            new Uri("/api/v1/tours/page", UriKind.Relative),
             TestContext.Current.CancellationToken);
         using var customersResponse = await client.GetAsync(
-            new Uri("/api/v1/customers/", UriKind.Relative),
+            new Uri("/api/v1/customers/page", UriKind.Relative),
             TestContext.Current.CancellationToken);
         using var customerResponse = await client.GetAsync(
             new Uri($"/api/v1/customers/{customerId}", UriKind.Relative),

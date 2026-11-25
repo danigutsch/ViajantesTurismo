@@ -25,7 +25,7 @@ public sealed class CatalogApiCachingTests
         using var second = secondHost.CreateClient();
         first.DefaultRequestHeaders.Authorization = null;
         second.DefaultRequestHeaders.Authorization = null;
-        var listUri = new Uri("/api/v1/public/catalog/tours", UriKind.Relative);
+        var listUri = new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative);
         var detailUri = new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative);
         using var warmList = await first.GetAsync(listUri, ct);
         using var warmDetail = await second.GetAsync(detailUri, ct);
@@ -36,18 +36,18 @@ public sealed class CatalogApiCachingTests
         await store.Withdraw(new CatalogTourRetired(tour.AdminTourId, Guid.CreateVersion7()), ct);
         using var list = await first.GetAsync(listUri, ct);
         using var detail = await second.GetAsync(detailUri, ct);
-        var returnedTourList = await list.Content.ReadFromJsonAsync<TourSummaryDto[]>(ct);
+        var returnedTourList = await list.Content.ReadFromJsonAsync<PublishedTourPageDto>(ct);
 
         // Assert
-        returnedTourList.ShouldNotBeNull().ShouldBeEmpty();
+        returnedTourList.ShouldNotBeNull().Tours.ShouldBeEmpty();
         detail.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Theory]
-    [InlineData("/api/v1/public/catalog/tours", false)]
+    [InlineData("/api/v1/public/catalog/tours/browse/page", false)]
     [InlineData("/api/v1/public/catalog/tours/camino-norte", false)]
     [InlineData("/api/v1/public/catalog/content/home.hero?culture=en-US", true)]
-    [InlineData("/API/V1/PUBLIC/CATALOG/TOURS", false)]
+    [InlineData("/API/V1/PUBLIC/CATALOG/TOURS/BROWSE/PAGE", false)]
     public async Task Public_catalog_reads_emit_cache_metadata(string path, bool cacheable)
     {
         // Arrange
@@ -156,7 +156,7 @@ public sealed class CatalogApiCachingTests
 
         // Act
         using var firstResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
-        var firstTour = await firstResponse.Content.ReadFromJsonAsync<TourDetailsDto>(cancellationToken);
+        var firstTour = await firstResponse.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(cancellationToken);
         _ = await tourStore.UpdatePresentation(
             tourId,
             CatalogApiCachingTestData.CreatePresentationUpdate("Fresh store-only change", "camino-norte"),
@@ -165,7 +165,7 @@ public sealed class CatalogApiCachingTests
             TimeProvider.System.GetUtcNow(),
             cancellationToken);
         using var freshResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
-        var freshTour = await freshResponse.Content.ReadFromJsonAsync<TourDetailsDto>(cancellationToken);
+        var freshTour = await freshResponse.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(cancellationToken);
         CatalogApiTestHost.ConfigureAuthenticatedClient(client);
         using var unpublishResponse = await client.PostAsJsonAsync(
             new Uri($"/api/v1/catalog/tours/{tourId}/unpublish", UriKind.Relative),
@@ -183,21 +183,21 @@ public sealed class CatalogApiCachingTests
             new CatalogTourPublicationRequest { ExpectedVersion = 5 },
             cancellationToken);
         using var refreshedResponse = await client.GetAsync(new Uri("/api/v1/public/catalog/tours/camino-norte", UriKind.Relative), cancellationToken);
-        var refreshedTour = await refreshedResponse.Content.ReadFromJsonAsync<TourDetailsDto>(cancellationToken);
+        var refreshedTour = await refreshedResponse.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(cancellationToken);
 
         // Assert
         firstResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         firstTour.ShouldNotBeNull();
-        firstTour.Title.ShouldBe("Original tour");
+        firstTour.Tour.Title.ShouldBe("Original tour");
         freshResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         freshTour.ShouldNotBeNull();
-        freshTour.Title.ShouldBe("Fresh store-only change");
+        freshTour.Tour.Title.ShouldBe("Fresh store-only change");
         unpublishResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
         updateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         publishResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
         refreshedResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
         refreshedTour.ShouldNotBeNull();
-        refreshedTour.Title.ShouldBe("Invalidated tour");
+        refreshedTour.Tour.Title.ShouldBe("Invalidated tour");
     }
 
     [Fact]

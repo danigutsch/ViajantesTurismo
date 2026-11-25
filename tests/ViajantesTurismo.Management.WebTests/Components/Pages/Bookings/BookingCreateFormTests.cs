@@ -347,7 +347,6 @@ public class BookingCreateFormTests : BunitContext
         model.CompanionBikeType.ShouldBeNull();
         cut.WaitForAssertion(() => cut.FindAll("#companionId option")
             .ShouldNotContain(option => option.GetAttribute("value") == replacement.Id.ToString()));
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Fact]

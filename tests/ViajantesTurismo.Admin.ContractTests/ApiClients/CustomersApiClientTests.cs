@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using HttpOutcomeKind = SharedKernel.HttpClients.HttpOutcomeKind;
 using CatalogToursApiClientTestsHelpers = SharedKernel.Testing.Contracts.ContractHttpClientTestHelper;
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using SharedKernel.Testing.Logging;
 
@@ -28,7 +29,7 @@ public sealed class CustomersApiClientTests
     }
 
     [Fact]
-    public async Task GetCustomers_requests_customers_endpoint_and_limits_items()
+    public async Task Reads_the_requested_customer_page_and_total()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -36,73 +37,34 @@ public sealed class CustomersApiClientTests
         {
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
-                [
-                  {
-                    "id":"11111111-1111-1111-1111-111111111111",
-                    "firstName":"Alice",
-                    "lastName":"Rider",
-                    "email":"alice@example.test",
-                    "mobile":"+15550000001",
-                    "nationality":"Brazilian",
-                    "bikeType":1
-                  },
-                  {
-                    "id":"22222222-2222-2222-2222-222222222222",
-                    "firstName":"Bob",
-                    "lastName":"Rider",
-                    "email":"bob@example.test",
-                    "mobile":"+15550000002",
-                    "nationality":"Brazilian",
-                    "bikeType":2
-                  }
-                ]
+                {"items":[{"id":"11111111-1111-1111-1111-111111111111","firstName":"Alice","lastName":"Rider",
+                           "email":"alice@example.test","mobile":"+15550000001","nationality":"Brazilian"}],"total":27}
                 """);
         });
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 1);
+        var outcome = await sut.GetCustomerPage(2, CustomerPageSort.Name, descending: true, TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe("/api/v1/customers");
-        var customers = outcome.Value.ShouldNotBeNull();
-        var customer = customers.ShouldHaveSingleItem();
-        customer.FirstName.ShouldBe("Alice");
-        customer.Links.ShouldBeNull();
+        requestPath.ShouldBe("/api/v1/customers/page?page=2&sort=Name&descending=True");
+        outcome.Kind.ShouldBe(HttpOutcomeKind.Succeeded);
+        var page = outcome.Value.ShouldNotBeNull();
+        page.Total.ShouldBe(27);
+        page.Items.ShouldHaveSingleItem().FirstName.ShouldBe("Alice");
     }
 
     [Fact]
-    public async Task GetCustomers_returns_empty_without_request_when_max_items_is_zero()
-    {
-        // Arrange
-        var requestCount = 0;
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
-        {
-            requestCount++;
-            return CatalogToursApiClientTestsHelpers.JsonResponse("[]");
-        });
-        var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
-
-        // Act
-        var outcome = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 0);
-
-        // Assert
-        var customers = outcome.Value.ShouldNotBeNull();
-        customers.ShouldBeEmpty();
-        requestCount.ShouldBe(0);
-    }
-
-    [Fact]
-    public async Task GetCustomers_rejects_an_oversized_list_before_applying_max_items()
+    public async Task Customer_page_rejects_an_oversized_response()
     {
         // Arrange
         const int oversizedResponseLength = 2 * 1024 * 1024;
         using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ =>
-            CatalogToursApiClientTestsHelpers.JsonResponse($"[{{\"firstName\":\"{new string('x', oversizedResponseLength)}\"}}]"));
+            CatalogToursApiClientTestsHelpers.JsonResponse($"{{\"items\":[{{\"firstName\":\"{new string('x', oversizedResponseLength)}\"}}],\"total\":1}}"));
         var sut = CustomersApiClientTestsHelpers.CreateSut(httpClient);
 
         // Act
-        var outcome = await sut.GetCustomers(TestContext.Current.CancellationToken, maxItems: 1);
+        var outcome = await sut.GetCustomerPage(1, CustomerPageSort.Name, descending: false, TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(HttpOutcomeKind.MalformedBody);

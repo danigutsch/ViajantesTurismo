@@ -73,7 +73,7 @@ public sealed class CustomerOptionsPrerenderTests(HostedTestFixture fixture)
         PrerenderedComponentState.ShouldKeepServerStateBelow(editHtml);
         detailReads.ShouldBe(2);
         limitedDetailReads.ShouldBe(2);
-        tours.GetToursCallCount.ShouldBe(0);
+        tours.TourPageRequests.ShouldBeEmpty();
         tourHtml.ShouldContain("Tour Details", StringComparison.Ordinal);
         customerHtml.ShouldContain("Customer Details", StringComparison.Ordinal);
         tourHtml.ShouldNotContain("id=\"customerSearch\"", StringComparison.Ordinal);

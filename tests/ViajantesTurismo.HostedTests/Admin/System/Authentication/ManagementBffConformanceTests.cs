@@ -121,8 +121,8 @@ public sealed partial class ManagementBffConformanceTests(AspireSystemTestFixtur
             ct, realm: Fixture.IdentityProviderRealm);
         using var adminApiClient = Fixture.CreateResourceClient(ResourceNames.Api);
         using var catalogApiClient = Fixture.CreateResourceClient(ResourceNames.CatalogApi);
-        using var adminRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/bookings/");
-        using var catalogRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/catalog/tours");
+        using var adminRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/bookings/page");
+        using var catalogRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/catalog/tours/page");
         using var brandingRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/branding/settings");
         adminRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", catalogAccessToken);
         catalogRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", brandingAccessToken);

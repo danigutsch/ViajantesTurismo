@@ -9,4 +9,10 @@ public interface IPaymentFinancialQueryService
     Task<GetBookingFinancialHistoryDto?> GetByBookingId(Guid bookingId, CancellationToken ct);
     /// <summary>Gets full evidence references after explicit Admin authorization, auditing access before returning.</summary>
     Task<GetBookingFinancialHistoryDto?> GetSensitiveDetails(Guid bookingId, string actorId, CancellationToken ct);
+
+    /// <summary>Gets authoritative balances and requested masked financial windows.</summary>
+    Task<GetBookingFinancialPageDto?> GetPage(Guid bookingId, BookingFinancialPageRequestDto request, CancellationToken ct);
+
+    /// <summary>Gets requested financial windows after recording explicit sensitive access.</summary>
+    Task<GetBookingFinancialPageDto?> GetSensitivePage(Guid bookingId, string actorId, BookingFinancialPageRequestDto request, CancellationToken ct);
 }

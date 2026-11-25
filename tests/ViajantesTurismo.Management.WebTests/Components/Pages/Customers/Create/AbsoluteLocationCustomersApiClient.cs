@@ -7,8 +7,6 @@ namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Create
 internal sealed class AbsoluteLocationCustomersApiClient : ICustomersApiClient
 {
     /// <inheritdoc />
-    public Task<HttpOutcome<GetCustomerDto[]>> GetCustomers(CancellationToken ct, int maxItems = 100) => throw new NotImplementedException();
-
     /// <inheritdoc />
     public Task<HttpOutcome<GetCustomerPageDto>> GetCustomerPage(int page, CustomerPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();

@@ -73,7 +73,7 @@ public sealed class CatalogApiPrivacyTests
     }
 
     [Theory]
-    [InlineData("/api/v1/public/catalog/tours")]
+    [InlineData("/api/v1/public/catalog/tours/browse/page")]
     [InlineData("/api/v1/public/catalog/tours/privacy-tour")]
     public async Task Public_tour_payloads_do_not_expose_admin_only_customer_or_booking_fields(string path)
     {

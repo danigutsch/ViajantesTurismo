@@ -34,7 +34,7 @@ public sealed class PublicWebCatalogClientPipelineTests
     public async Task Catalog_client_does_not_retry_a_public_catalog_quota_answer()
     {
         // Arrange
-        const string quotaPath = "/api/v1/public/catalog/tours";
+        const string quotaPath = "/api/v1/public/catalog/tours/browse/page";
         using var catalog = new RecordingHttpMessageHandler(HttpStatusCode.TooManyRequests);
         await using var host = PublicWebTestHost.CreateFactory(
             configuration: new Dictionary<string, string?> { ["services:catalog-api:https:0"] = "https://catalog.test" });

@@ -8,14 +8,6 @@ namespace ViajantesTurismo.Admin.Contracts.Http;
 /// </summary>
 public interface IToursApiClient
 {
-    /// <summary>
-    /// Gets a list of tours with optional pagination.
-    /// </summary>
-    /// <param name="ct">Cancellation token for the request.</param>
-    /// <param name="maxItems">Maximum number of items to return (default: all items).</param>
-    /// <returns>The materialized tour-list outcome.</returns>
-    Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue);
-
     /// <summary>Gets a bounded page of active tour summaries.</summary>
     /// <param name="page">The one-based page to request.</param>
     /// <param name="sort">The requested column.</param>

@@ -37,7 +37,6 @@ public class EditPageTests : BunitContext
         cut.WaitForElement("button:contains('Update Customer')");
 
         // Assert
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Fact]
@@ -80,7 +79,6 @@ public class EditPageTests : BunitContext
         results.ShouldNotContain(customer.Id.ToString());
         var update = _fakeCustomersApi.LastUpdatedCustomer.ShouldNotBeNull();
         update.AccommodationPreferences.CompanionId.ShouldBe(replacement.Id);
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
     }
 
     [Theory]

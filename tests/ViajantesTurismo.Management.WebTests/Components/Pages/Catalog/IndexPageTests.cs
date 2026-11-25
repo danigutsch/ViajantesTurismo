@@ -80,7 +80,6 @@ public sealed class IndexPageTests : BunitContext
         // Assert
         cut.Markup.ShouldContain("pagination", StringComparison.OrdinalIgnoreCase);
         cut.Markup.ShouldNotContain("TOUR-011", StringComparison.Ordinal);
-        catalogApi.GetToursCallCount.ShouldBe(0);
         catalogApi.TourPageRequests.ShouldHaveSingleItem().ShouldBe((1, CatalogTourListSort.Title, false));
     }
 

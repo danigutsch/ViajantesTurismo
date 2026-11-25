@@ -38,7 +38,7 @@ public sealed class AdminApiClientIntegrationTests(ApiFixture fixture) : IClassF
         customer.PersonalInfo.FirstName.ShouldBe("Contract");
         customer.PersonalInfo.LastName.ShouldBe("Client");
         customer.Links.ShouldNotBeNull().ShouldHaveSingleItem(link => link.Rel == "collection")
-            .Href.ShouldBe("/api/v1/customers");
+            .Href.ShouldBe("/api/v1/customers/page");
     }
 
     [Fact]

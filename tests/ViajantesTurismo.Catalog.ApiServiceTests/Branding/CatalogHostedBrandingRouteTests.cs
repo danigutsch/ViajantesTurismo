@@ -57,7 +57,7 @@ public sealed class CatalogHostedBrandingRouteTests
         BrandingApiTestHost.ConfigureAuthenticatedClient(client, "Admin");
 
         // Act
-        using var response = await client.GetAsync(new Uri("/api/v1/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/catalog/tours/page", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);

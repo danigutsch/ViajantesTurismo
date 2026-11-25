@@ -17,15 +17,15 @@ public sealed class PublicAuthoredGalleryEndpointTests
         using var client = host.CreateClient();
 
         // Act
-        var list = await client.GetFromJsonAsync<TourSummaryDto[]>(new Uri("/api/v1/public/catalog/tours", UriKind.Relative), ct);
-        var detail = await client.GetFromJsonAsync<TourDetailsDto>(new Uri("/api/v1/public/catalog/tours/first", UriKind.Relative), ct);
+        var list = await client.GetFromJsonAsync<PublishedTourPageDto>(new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative), ct);
+        var detail = await client.GetFromJsonAsync<PublishedTourDetailsPageDto>(new Uri("/api/v1/public/catalog/tours/first", UriKind.Relative), ct);
 
         // Assert
-        var summary = list.ShouldNotBeNull().Where(tour => tour.Slug == "first").ShouldHaveSingleItem();
-        summary.Images.Select(photo => photo.Id).ShouldBe([scenario.FirstId, scenario.CoverId]);
+        var summary = list.ShouldNotBeNull().Tours.Where(tour => tour.Slug == "first").ShouldHaveSingleItem();
+        summary.Images.Select(photo => photo.Id).ShouldBe([scenario.CoverId]);
         summary.Images.Where(photo => photo.IsCover).ShouldHaveSingleItem().Id.ShouldBe(scenario.CoverId);
-        var tour = detail.ShouldNotBeNull();
-        tour.Images.Select(photo => photo.Id).ShouldBe([scenario.FirstId, scenario.CoverId]);
+        var tour = detail.ShouldNotBeNull().Tour;
+        tour.Images.Select(photo => photo.Id).ShouldBe([scenario.CoverId, scenario.FirstId]);
         tour.Images.Where(photo => photo.IsCover).ShouldHaveSingleItem().Id.ShouldBe(scenario.CoverId);
     }
 

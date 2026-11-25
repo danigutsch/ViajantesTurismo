@@ -26,7 +26,7 @@ public sealed class CatalogToursApiClientTests
     }
 
     [Fact]
-    public async Task GetTours_requests_management_catalog_endpoint_and_skips_null_items()
+    public async Task GetTourPage_requests_the_selected_management_page_and_sort()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -34,59 +34,28 @@ public sealed class CatalogToursApiClientTests
         {
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return CatalogToursApiClientTestsHelpers.JsonResponse("""
-                [
+                {"total":11,"items":[
                   {
                     "id":"11111111-1111-1111-1111-111111111111",
-                    "adminTourId":"22222222-2222-2222-2222-222222222222",
                     "identifier":"TOUR-1",
                     "title":"First tour",
                     "slug":"first-tour",
                     "isPublished":false,
-                    "version":1,
-                    "images":[],
                     "updatedAt":"2026-06-25T10:00:00+00:00"
-                  },
-                  null,
-                  {
-                    "id":"33333333-3333-3333-3333-333333333333",
-                    "adminTourId":"44444444-4444-4444-4444-444444444444",
-                    "identifier":"TOUR-2",
-                    "title":"Second tour",
-                    "slug":"second-tour",
-                    "isPublished":true,
-                    "version":2,
-                    "images":[],
-                    "updatedAt":"2026-06-25T11:00:00+00:00"
                   }
-                ]
+                ]}
                 """);
         });
         var sut = new CatalogToursApiClient(httpClient);
 
         // Act
-        var outcome = await sut.GetTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTourPage(2, CatalogTourListSort.Slug, descending: true, TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe("/api/v1/catalog/tours");
-        var tours = outcome.Value.ShouldNotBeNull();
-        tours.Length.ShouldBe(2);
-        tours[0].Slug.ShouldBe("first-tour");
-        tours[1].Slug.ShouldBe("second-tour");
-    }
-
-    [Fact]
-    public async Task GetTours_returns_empty_array_when_catalog_returns_only_nulls()
-    {
-        // Arrange
-        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(_ => CatalogToursApiClientTestsHelpers.JsonResponse("[null,null]"));
-        var sut = new CatalogToursApiClient(httpClient);
-
-        // Act
-        var outcome = await sut.GetTours(TestContext.Current.CancellationToken);
-
-        // Assert
-        var tours = outcome.Value.ShouldNotBeNull();
-        tours.ShouldBeEmpty();
+        requestPath.ShouldBe("/api/v1/catalog/tours/page?page=2&sort=Slug&descending=True");
+        var page = outcome.Value.ShouldNotBeNull();
+        page.Total.ShouldBe(11);
+        page.Items.ShouldHaveSingleItem().Slug.ShouldBe("first-tour");
     }
 
     [Fact]
@@ -142,6 +111,38 @@ public sealed class CatalogToursApiClientTests
         requestBody.ShouldContain("\"expectedVersion\":4", StringComparison.Ordinal);
         requestBody.ShouldNotContain("\"isPublished\"", StringComparison.Ordinal);
         updated.IsPublished.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Presentation_requests_can_omit_images_on_both_endpoints()
+    {
+        // Arrange
+        var requests = new List<string>();
+        var tourId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        using var httpClient = CatalogToursApiClientTestsHelpers.CreateClient(request =>
+        {
+            requests.Add($"{request.Method} {request.RequestUri?.PathAndQuery}");
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
+        });
+        var sut = new CatalogToursApiClient(httpClient);
+        var ct = TestContext.Current.CancellationToken;
+        var update = new UpsertCatalogTourPresentationRequest
+        {
+            Title = "Draft tour",
+            Slug = "draft-tour",
+            ExpectedVersion = 1
+        };
+
+        // Act
+        await sut.GetTour(tourId, includeImages: false, ct);
+        await sut.UpdatePresentation(tourId, update, includeImages: false, ct);
+
+        // Assert
+        requests.ShouldBe(
+        [
+            "GET /api/v1/catalog/tours/11111111-1111-1111-1111-111111111111?includeImages=false",
+            "PUT /api/v1/catalog/tours/11111111-1111-1111-1111-111111111111/presentation?includeImages=false"
+        ]);
     }
 
     [Fact]

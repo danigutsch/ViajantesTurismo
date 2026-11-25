@@ -19,7 +19,7 @@ namespace ViajantesTurismo.Admin.Api.Bookings;
 /// </summary>
 internal static class BookingEndpoints
 {
-    private const string ListEndpoint = nameof(GetBookings);
+    private const string ListEndpoint = nameof(GetBookingPage);
     private const string ItemEndpoint = nameof(GetBookingById);
 
     /// <summary>
@@ -33,31 +33,19 @@ internal static class BookingEndpoints
 
         var bookingsGroup = app.MapBookingsGroup();
 
-        bookingsGroup.MapGet("/", GetBookings)
-            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
-            .WithAdminMetadata(ListEndpoint, "Retrieves all bookings.", "Retrieves all bookings.");
-
         bookingsGroup.MapGet("/page", GetBookingPage)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
-            .WithAdminMetadata(nameof(GetBookingPage), "Retrieves a page of bookings.",
+            .WithAdminMetadata(ListEndpoint, "Retrieves a page of bookings.",
                 "Retrieves bounded booking summaries and the overview counts. The optional page number is one-based.");
 
         bookingsGroup.MapGet("/{id:guid}", GetBookingById)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata(ItemEndpoint, "Retrieves a booking by its ID.", "Retrieves a booking by its ID.");
 
-        bookingsGroup.MapGet("/tour/{tourId:guid}", GetBookingsByTourId)
-            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
-            .WithAdminMetadata("GetBookingsByTourId", "Retrieves all bookings for a specific tour.", "Retrieves all bookings for a specific tour.");
-
         bookingsGroup.MapGet("/tour/{tourId:guid}/page", GetTourBookingPage)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
             .WithAdminMetadata(nameof(GetTourBookingPage), "Retrieves a page from a tour's booking history.",
                 "Retrieves bookings for the requested tour. The optional page number is one-based.");
-
-        bookingsGroup.MapGet("/customer/{customerId:guid}", GetBookingsByCustomerId)
-            .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
-            .WithAdminMetadata("GetBookingsByCustomerId", "Retrieves all bookings for a specific customer (as primary or companion).", "Retrieves all bookings for a specific customer.");
 
         bookingsGroup.MapGet("/customer/{customerId:guid}/page", GetCustomerBookingPage)
             .RequireAuthorization(AdminAuthorization.BookingRead, AdminAuthorization.PaymentRead)
@@ -73,16 +61,6 @@ internal static class BookingEndpoints
         bookingsGroup.MapConfirmBookingEndpoint();
         bookingsGroup.MapUpdateBookingNotesEndpoint();
         bookingsGroup.MapCompleteBookingEndpoint();
-    }
-
-    private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetBookings(
-        [FromServices] IQueryService queryService,
-        LinkGenerator linkGenerator,
-        HttpContext context,
-        CancellationToken ct)
-    {
-        var bookings = await queryService.GetAllBookings(ct);
-        return TypedResults.Ok(WithResourceLinks(bookings, context, linkGenerator));
     }
 
     private static async Task<Results<Ok<GetBookingPageDto>, BadRequest>> GetBookingPage(
@@ -123,28 +101,6 @@ internal static class BookingEndpoints
         {
             Links = GetResourceLinks(context, linkGenerator).For(id).Links
         });
-    }
-
-    private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetBookingsByTourId(
-        [FromRoute] Guid tourId,
-        [FromServices] IQueryService queryService,
-        LinkGenerator linkGenerator,
-        HttpContext context,
-        CancellationToken ct)
-    {
-        var bookings = await queryService.GetBookingsByTourId(tourId, ct);
-        return TypedResults.Ok(WithResourceLinks(bookings, context, linkGenerator));
-    }
-
-    private static async Task<Ok<IReadOnlyList<GetBookingDto>>> GetBookingsByCustomerId(
-        [FromRoute] Guid customerId,
-        [FromServices] IQueryService queryService,
-        LinkGenerator linkGenerator,
-        HttpContext context,
-        CancellationToken ct)
-    {
-        var bookings = await queryService.GetBookingsByCustomerId(customerId, ct);
-        return TypedResults.Ok(WithResourceLinks(bookings, context, linkGenerator));
     }
 
     private static async Task<Results<Ok<GetBookingHistoryPageDto>, BadRequest>> GetTourBookingPage(

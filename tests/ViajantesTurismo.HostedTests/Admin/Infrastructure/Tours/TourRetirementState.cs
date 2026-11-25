@@ -7,7 +7,7 @@ namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 /// <summary>Captures the persisted Tour views, retirement evidence and retained booking identifiers.</summary>
 /// <param name="Active">The tour in the active view, if visible.</param>
 /// <param name="Historical">The tour in the historical view.</param>
-/// <param name="ActiveList">Tours visible in the active list.</param>
+/// <param name="ActiveList">Tour summaries visible on the first active page.</param>
 /// <param name="Status">The current retirement state, if accepted.</param>
 /// <param name="Audits">Audit evidence for the tour.</param>
 /// <param name="Events">Retirement events staged for Catalog.</param>
@@ -15,7 +15,7 @@ namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 internal sealed record TourRetirementState(
     GetTourDto? Active,
     GetTourDto? Historical,
-    IReadOnlyList<GetTourDto> ActiveList,
+    IReadOnlyList<GetTourListItemDto> ActiveList,
     GetTourRetirementDto? Status,
     TourRetirementAuditRecord[] Audits,
     AdminTourRetiredIntegrationEvent[] Events,

@@ -21,7 +21,7 @@ public sealed class AuthenticatedApiClientFactoryTests(AspireSystemTestFixture f
         // Act
         firstClient.Dispose();
         using var response = await secondClient.GetAsync(
-            new Uri("/api/v1/bookings", UriKind.Relative),
+            new Uri("/api/v1/bookings/page", UriKind.Relative),
             TestContext.Current.CancellationToken);
 
         // Assert

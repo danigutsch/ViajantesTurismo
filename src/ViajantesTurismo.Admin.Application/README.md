@@ -13,8 +13,8 @@ in Clean Architecture, coordinating between domain entities and API/infrastructu
 ### Interfaces
 
 - **IQueryService**: Read-only query operations returning DTOs
-    - GetAllTours(), GetTourById(), GetAllCustomers(), GetCustomerById()
-    - GetAllBookings(), GetBookingById(), GetBookingsByTourId(), GetBookingsByCustomerId()
+    - GetTourPage(), GetTourById(), GetCustomerPage(), GetCustomerDetailsById()
+    - GetBookingPage(), GetBookingById(), GetTourBookingPage(), GetCustomerBookingPage()
     - Optimized for read operations with direct DTO projections
 
 - **IUnitOfWork**: Transaction management interface
@@ -110,11 +110,12 @@ var roomType = BookingMapper.MapToRoomType(dto.RoomType);
 
 ```csharp
 // Query operation (GET endpoint)
-private static async Task<Ok<IReadOnlyList<GetTourDto>>> GetAllTours(
+private static async Task<Ok<GetTourPageDto>> GetTourPage(
+    string? page,
     IQueryService queryService,
     CancellationToken ct)
 {
-    var tours = await queryService.GetAllTours(ct);
+    var tours = await queryService.GetTourPage(page, TourPageSort.Default, descending: false, ct);
     return TypedResults.Ok(tours);
 }
 

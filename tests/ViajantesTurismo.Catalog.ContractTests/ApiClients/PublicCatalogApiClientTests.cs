@@ -10,7 +10,7 @@ namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 public sealed class PublicCatalogApiClientTests
 {
     [Fact]
-    public async Task GetPublishedTours_requests_public_catalog_endpoint_and_skips_null_items()
+    public async Task GetPublishedTourPage_requests_the_selected_public_catalog_page()
     {
         // Arrange
         var requestPath = string.Empty;
@@ -18,7 +18,7 @@ public sealed class PublicCatalogApiClientTests
         {
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return PublicCatalogApiClientTestsHelpers.JsonResponse("""
-                [
+                {"page":2,"pageSize":2,"total":4,"tours":[
                   {
                     "title":"First tour",
                     "slug":"first-tour",
@@ -26,7 +26,6 @@ public sealed class PublicCatalogApiClientTests
                     "images":[],
                     "updatedAt":"2026-06-25T10:00:00+00:00"
                   },
-                  null,
                   {
                     "title":"Second tour",
                     "slug":"second-tour",
@@ -34,29 +33,33 @@ public sealed class PublicCatalogApiClientTests
                     "images":[],
                     "updatedAt":"2026-06-25T11:00:00+00:00"
                   }
-                ]
+                ]}
                 """);
         });
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var outcome = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourPage("2", 2, TestContext.Current.CancellationToken);
 
         // Assert
-        requestPath.ShouldBe("/api/v1/public/catalog/tours");
-        var tours = outcome.Value.ShouldNotBeNull();
-        tours.Length.ShouldBe(2);
+        requestPath.ShouldBe("/api/v1/public/catalog/tours/browse/page?pageSize=2&page=2");
+        var page = outcome.Value.ShouldNotBeNull();
+        page.Page.ShouldBe(2);
+        page.PageSize.ShouldBe(2);
+        page.Total.ShouldBe(4);
+        var tours = page.Tours;
+        tours.Count.ShouldBe(2);
         tours[0].Slug.ShouldBe("first-tour");
         tours[1].Slug.ShouldBe("second-tour");
         tours[0].Links.ShouldBeEmpty();
     }
 
     [Fact]
-    public async Task GetPublishedTours_deserializes_public_media_images_and_variants()
+    public async Task GetPublishedTourPage_deserializes_public_media_images_and_variants()
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => PublicCatalogApiClientTestsHelpers.JsonResponse("""
-            [
+            {"page":1,"pageSize":12,"total":1,"tours":[
               {
                 "title":"First tour",
                 "slug":"first-tour",
@@ -77,15 +80,15 @@ public sealed class PublicCatalogApiClientTests
                 ],
                 "updatedAt":"2026-06-25T10:00:00+00:00"
               }
-            ]
+            ]}
             """));
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var outcome = await sut.GetPublishedTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourPage(page: null, 12, TestContext.Current.CancellationToken);
 
         // Assert
-        var tours = outcome.Value.ShouldNotBeNull();
+        var tours = outcome.Value.ShouldNotBeNull().Tours;
         var tour = tours.ShouldHaveSingleItem();
         var self = tour.Links.ShouldHaveSingleItem();
         self.Rel.ShouldBe("self");
@@ -168,7 +171,7 @@ public sealed class PublicCatalogApiClientTests
     [InlineData("group tour", "/api/v1/public/catalog/tours/group%20tour")]
     [InlineData("camino/norte", "/api/v1/public/catalog/tours/camino%2Fnorte")]
     [InlineData("tour?#fragment", "/api/v1/public/catalog/tours/tour%3F%23fragment")]
-    public async Task GetPublishedTourBySlug_escapes_the_slug_route_segment(string slug, string expectedPath)
+    public async Task GetPublishedTourDetailsPage_escapes_the_slug_route_segment(string slug, string expectedPath)
     {
         // Arrange
         var requestPath = string.Empty;
@@ -176,7 +179,7 @@ public sealed class PublicCatalogApiClientTests
         {
             requestPath = request.RequestUri?.PathAndQuery ?? string.Empty;
             return PublicCatalogApiClientTestsHelpers.JsonResponse("""
-                {
+                {"page":2,"pageSize":6,"total":7,"tour":{
                   "title":"First tour",
                   "slug":"first-tour",
                   "summary":"First tour summary",
@@ -184,28 +187,30 @@ public sealed class PublicCatalogApiClientTests
                   "itinerary":"Day one: ride.",
                   "images":[],
                   "updatedAt":"2026-06-25T10:00:00+00:00"
-                }
+                }}
                 """);
         });
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var outcome = await sut.GetPublishedTourBySlug(slug, TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourDetailsPage(slug, "2", TestContext.Current.CancellationToken);
 
         // Assert
-        outcome.Value.ShouldNotBeNull();
-        requestPath.ShouldBe(expectedPath);
+        var page = outcome.Value.ShouldNotBeNull();
+        page.Page.ShouldBe(2);
+        page.Tour.Slug.ShouldBe("first-tour");
+        requestPath.ShouldBe($"{expectedPath}?page=2");
     }
 
     [Fact]
-    public async Task GetPublishedTourBySlug_returns_null_when_catalog_returns_notfound()
+    public async Task GetPublishedTourDetailsPage_returns_null_when_catalog_returns_notfound()
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var outcome = await sut.GetPublishedTourBySlug("missing-tour", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourDetailsPage("missing-tour", page: null, TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(HttpOutcomeKind.NotFound);
@@ -213,7 +218,7 @@ public sealed class PublicCatalogApiClientTests
     }
 
     [Fact]
-    public async Task GetPublishedTourBySlug_respects_cancellation_before_the_response_factory_runs()
+    public async Task GetPublishedTourDetailsPage_respects_cancellation_before_the_response_factory_runs()
     {
         // Arrange
         var responseFactoryWasCalled = false;
@@ -227,7 +232,7 @@ public sealed class PublicCatalogApiClientTests
         await cancellationTokenSource.CancelAsync();
 
         // Act
-        Func<Task> act = async () => await sut.GetPublishedTourBySlug("cancelled", cancellationTokenSource.Token);
+        Func<Task> act = async () => await sut.GetPublishedTourDetailsPage("cancelled", page: null, cancellationTokenSource.Token);
 
         // Assert
         await act.ShouldThrow<OperationCanceledException>();
@@ -237,7 +242,7 @@ public sealed class PublicCatalogApiClientTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task GetPublishedTourBySlug_returns_explicit_outcome_for_empty_or_null_body(bool jsonNull)
+    public async Task GetPublishedTourDetailsPage_returns_explicit_outcome_for_empty_or_null_body(bool jsonNull)
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => jsonNull
@@ -246,7 +251,7 @@ public sealed class PublicCatalogApiClientTests
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var outcome = await sut.GetPublishedTourBySlug("missing-body", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourDetailsPage("missing-body", page: null, TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(jsonNull
@@ -256,14 +261,14 @@ public sealed class PublicCatalogApiClientTests
     }
 
     [Fact]
-    public async Task GetPublishedTourBySlug_returns_unexpected_status_when_catalog_returns_unexpected_error()
+    public async Task GetPublishedTourDetailsPage_returns_unexpected_status_when_catalog_returns_unexpected_error()
     {
         // Arrange
         using var httpClient = PublicCatalogApiClientTestsHelpers.CreateClient(_ => new HttpResponseMessage(HttpStatusCode.BadGateway));
         var sut = new PublicCatalogApiClient(httpClient);
 
         // Act
-        var outcome = await sut.GetPublishedTourBySlug("error-tour", TestContext.Current.CancellationToken);
+        var outcome = await sut.GetPublishedTourDetailsPage("error-tour", page: null, TestContext.Current.CancellationToken);
 
         // Assert
         outcome.Kind.ShouldBe(HttpOutcomeKind.UnexpectedStatus);

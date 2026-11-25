@@ -57,8 +57,7 @@ public sealed record DocumentHoldSearch(DocumentHoldState? State, HoldBasis? Bas
 
         if (RestrainingOnly)
         {
-            filtered = filtered.Where(hold => hold.ReleasedAt == null && hold.EffectiveFrom <= now
-                && (hold.ExpiresAt == null || now < hold.ExpiresAt));
+            filtered = filtered.WhereRestrainingAt(now);
         }
 
         return filtered.OrderBy(hold => hold.PlacedAt).ThenBy(hold => hold.Id);

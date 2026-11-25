@@ -15,30 +15,6 @@ public sealed partial class ToursApiClient(HttpClient httpClient, ILogger<ToursA
     private static readonly ToursApiClientJsonContext Json = ToursApiClientJsonContext.Default;
 
     /// <inheritdoc />
-    public async Task<HttpOutcome<GetTourDto[]>> GetTours(CancellationToken ct, int maxItems = int.MaxValue)
-    {
-        if (maxItems <= 0)
-        {
-            return HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, Array.Empty<GetTourDto>());
-        }
-
-        var outcome = await HttpOutcomeMapper.Send(
-            httpClient,
-            new HttpRequestMessage(HttpMethod.Get, new Uri(RoutePrefix, UriKind.Relative)),
-            HttpStatusCode.OK,
-            Json.GetTourDtoArray,
-            Json.ContractValidationProblemDto,
-            ct).ConfigureAwait(false);
-
-        return outcome.Kind == HttpOutcomeKind.Succeeded
-            ? outcome with
-            {
-                Value = outcome.Value?.OfType<GetTourDto>().Take(maxItems).ToArray() ?? []
-            }
-            : outcome;
-    }
-
-    /// <inheritdoc />
     public async Task<HttpOutcome<GetTourPageDto>> GetTourPage(int page, TourPageSort sort, bool descending, CancellationToken ct)
     {
         var route = FormattableString.Invariant($"{RoutePrefix}/page?page={page}&sort={sort}&descending={descending}");

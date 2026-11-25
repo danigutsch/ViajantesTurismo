@@ -69,8 +69,7 @@ public sealed class DetailsPageTests : BunitContext
         cut.WaitForElement("button:contains('Add Booking')");
 
         // Assert
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
-        _fakeToursApi.GetToursCallCount.ShouldBe(0);
+        _fakeToursApi.TourPageRequests.ShouldBeEmpty();
     }
 
     [Fact]
@@ -114,8 +113,7 @@ public sealed class DetailsPageTests : BunitContext
         form.WaitForAssertion(() => form.Markup.ShouldContain("7 spots available", StringComparison.Ordinal));
         form.Markup.ShouldContain("Price Breakdown", StringComparison.Ordinal);
         detailIds.ShouldBe([selected.Id]);
-        _fakeToursApi.GetToursCallCount.ShouldBe(0);
-        _fakeCustomersApi.LastGetCustomersMaxItems.ShouldBeNull();
+        _fakeToursApi.TourPageRequests.ShouldBeEmpty();
     }
 
     [Fact]
@@ -663,7 +661,6 @@ public sealed class DetailsPageTests : BunitContext
             cut.Markup.ShouldNotContain("No bookings found.", StringComparison.Ordinal);
         });
         _fakeBookingsApi.HistoryRequests.ShouldBe(Enumerable.Repeat((customer.Id, false, 1, BookingPageSort.Default, false), 2));
-        _fakeBookingsApi.GetBookingHistoryCollectionCallCount.ShouldBe(0);
     }
 
     [Fact]

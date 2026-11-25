@@ -22,9 +22,6 @@ internal sealed class TourRetirementQueries(Tour tour, DateTimeOffset? completed
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct) => throw new NotSupportedException();
-
-    /// <inheritdoc />
     public Task<GetTourPageDto> GetTourPage(string? page, TourPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();
 
@@ -35,9 +32,6 @@ internal sealed class TourRetirementQueries(Tour tour, DateTimeOffset? completed
     /// <inheritdoc />
     public Task<GetTourDto?> GetActiveTourById(Guid id, CancellationToken ct) => throw new NotSupportedException();
     /// <inheritdoc />
-    public Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct) => throw new NotSupportedException();
-
-    /// <inheritdoc />
     public Task<GetCustomerPageDto> GetCustomerPage(string? page, CustomerPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();
 
@@ -46,9 +40,6 @@ internal sealed class TourRetirementQueries(Tour tour, DateTimeOffset? completed
         throw new NotSupportedException();
     /// <inheritdoc />
     public Task<CustomerDetailsDto?> GetCustomerDetailsById(Guid id, CancellationToken ct) => throw new NotSupportedException();
-    /// <inheritdoc />
-    public Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct) => throw new NotSupportedException();
-
     /// <inheritdoc />
     public Task<GetBookingPageDto> GetBookingPage(string? page, BookingPageSort sort, bool descending, CancellationToken ct) =>
         throw new NotSupportedException();
@@ -62,8 +53,4 @@ internal sealed class TourRetirementQueries(Tour tour, DateTimeOffset? completed
 
     /// <inheritdoc />
     public Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct) => throw new NotSupportedException();
-    /// <inheritdoc />
-    public Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct) => throw new NotSupportedException();
-    /// <inheritdoc />
-    public Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct) => throw new NotSupportedException();
 }

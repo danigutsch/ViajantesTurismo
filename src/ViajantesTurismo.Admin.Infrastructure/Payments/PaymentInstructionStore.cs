@@ -132,9 +132,39 @@ internal sealed class PaymentInstructionStore(AdminWriteDbContext context, Payme
     {
         var rows = await context.Set<PaymentAuditRow>().AsNoTracking().Where(row => row.TargetId == documentId && row.Operation.StartsWith("Instruction"))
             .OrderBy(row => row.Sequence).ToArrayAsync(ct);
-        return [.. rows.Select(row => new PaymentInstructionAuditMetadata(documentId, checked((int)row.Revision), row.ActorId, row.OccurredAt,
-            Enum.Parse<PaymentInstructionAuditOperation>(row.Operation["Instruction".Length..]), Enum.Parse<FinancialReason>(row.Reason), row.SelfApproved))];
+        return [.. rows.Select(row => ToAudit(documentId, row))];
     }
+
+    /// <inheritdoc />
+    public async Task<PaymentInstructionAuditMetadata?> GetLatestAudit(Guid documentId, IReadOnlyList<PaymentInstructionAuditOperation> operations, CancellationToken ct)
+    {
+        var names = operations.Select(static operation => "Instruction" + operation).ToArray();
+        var row = await context.Set<PaymentAuditRow>().AsNoTracking()
+            .Where(row => row.TargetId == documentId && names.Contains(row.Operation))
+            .OrderByDescending(row => row.Sequence).FirstOrDefaultAsync(ct);
+        return row is null ? null : ToAudit(documentId, row);
+    }
+
+    /// <inheritdoc />
+    public async Task<(IReadOnlyList<PaymentInstructionAuditMetadata> Items, PageWindow Window)?> GetReviewPage(Guid documentId, int? page, int pageSize, CancellationToken ct)
+    {
+        if (!await context.Set<PaymentInstructionRow>().AnyAsync(row => row.DocumentId == documentId, ct))
+        {
+            return null;
+        }
+
+        const string accepted = "Instruction" + nameof(PaymentInstructionAuditOperation.ReviewAccepted);
+        const string changes = "Instruction" + nameof(PaymentInstructionAuditOperation.ReviewChangesRequested);
+        var query = context.Set<PaymentAuditRow>().AsNoTracking()
+            .Where(row => row.TargetId == documentId && (row.Operation == accepted || row.Operation == changes));
+        var total = await query.CountAsync(ct);
+        var window = PageWindow.Create(page, pageSize, total);
+        var rows = await query.OrderBy(row => row.Sequence).Skip(window.Skip).Take(window.Take).ToArrayAsync(ct);
+        return (rows.Select(row => ToAudit(documentId, row)).ToArray(), window);
+    }
+
+    private static PaymentInstructionAuditMetadata ToAudit(Guid documentId, PaymentAuditRow row) => new(documentId, checked((int)row.Revision), row.ActorId, row.OccurredAt,
+        Enum.Parse<PaymentInstructionAuditOperation>(row.Operation["Instruction".Length..]), Enum.Parse<FinancialReason>(row.Reason), row.SelfApproved);
 
     /// <inheritdoc />
     public byte[] ProtectArtifact(Guid documentId, byte[] artifact) => protection.InstructionArtifacts.Protect(documentId.ToString("N"), artifact);

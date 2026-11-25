@@ -18,13 +18,6 @@ namespace ViajantesTurismo.Admin.Application;
 /// </remarks>
 public interface IQueryService
 {
-    /// <summary>
-    /// Retrieves the active tours.
-    /// </summary>
-    /// <param name="ct">Cancellation token to cancel the operation.</param>
-    /// <returns>A read-only list of <see cref="GetTourDto"/> representing all tours.</returns>
-    Task<IReadOnlyList<GetTourDto>> GetAllTours(CancellationToken ct);
-
     /// <summary>Retrieves a bounded page of active tour summaries.</summary>
     /// <param name="page">The optional one-based page number.</param>
     /// <param name="sort">The requested column.</param>
@@ -53,13 +46,6 @@ public interface IQueryService
     /// <summary>Retrieves the accepted retirement for a tour or null if it has no retirement.</summary>
     Task<GetTourRetirementDto?> GetTourRetirement(Guid id, CancellationToken ct);
 
-    /// <summary>
-    /// Retrieves all customers.
-    /// </summary>
-    /// <param name="ct">Cancellation token to cancel the operation.</param>
-    /// <returns>A read-only list of customer DTOs.</returns>
-    Task<IReadOnlyList<GetCustomerDto>> GetAllCustomers(CancellationToken ct);
-
     /// <summary>Retrieves a bounded page of customer summaries.</summary>
     /// <param name="page">The optional one-based page number.</param>
     /// <param name="sort">The requested column.</param>
@@ -81,13 +67,6 @@ public interface IQueryService
     /// <param name="ct">Cancellation token to cancel the operation.</param>
     /// <returns>The customer details DTO or null if not found.</returns>
     Task<CustomerDetailsDto?> GetCustomerDetailsById(Guid id, CancellationToken ct);
-
-    /// <summary>
-    /// Retrieves all bookings.
-    /// </summary>
-    /// <param name="ct">Cancellation token to cancel the operation.</param>
-    /// <returns>A read-only list of booking DTOs.</returns>
-    Task<IReadOnlyList<GetBookingDto>> GetAllBookings(CancellationToken ct);
 
     /// <summary>Retrieves a bounded page of summaries and overall booking counts.</summary>
     /// <param name="page">The optional one-based page number.</param>
@@ -121,19 +100,4 @@ public interface IQueryService
     /// <returns>The booking DTO or null if not found.</returns>
     Task<GetBookingDto?> GetBookingById(Guid id, CancellationToken ct);
 
-    /// <summary>
-    /// Retrieves all bookings for a specific tour.
-    /// </summary>
-    /// <param name="tourId">The tour ID.</param>
-    /// <param name="ct">Cancellation token to cancel the operation.</param>
-    /// <returns>A read-only list of booking DTOs for the tour.</returns>
-    Task<IReadOnlyList<GetBookingDto>> GetBookingsByTourId(Guid tourId, CancellationToken ct);
-
-    /// <summary>
-    /// Retrieves all bookings for a specific customer.
-    /// </summary>
-    /// <param name="customerId">The customer ID.</param>
-    /// <param name="ct">Cancellation token to cancel the operation.</param>
-    /// <returns>A read-only list of booking DTOs for the customer.</returns>
-    Task<IReadOnlyList<GetBookingDto>> GetBookingsByCustomerId(Guid customerId, CancellationToken ct);
 }

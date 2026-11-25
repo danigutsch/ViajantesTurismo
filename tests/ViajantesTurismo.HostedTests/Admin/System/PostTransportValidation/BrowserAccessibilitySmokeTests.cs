@@ -29,7 +29,7 @@ public sealed class BrowserAccessibilitySmokeTests(AspireSystemTestFixture fixtu
         var title = $"Accessibility tour {unique}";
         var identifier = $"A11Y-{unique}";
         var adminTour = await scenario.CreateAdminTour(identifier, title);
-        var catalogTour = await scenario.WaitForCatalogTour(adminTour.Id, cancellationToken);
+        var catalogTour = await scenario.WaitForCatalogTour(adminTour.Id, identifier, cancellationToken);
         await scenario.PublishCatalogTour(catalogTour, title, $"accessibility-tour-{unique}", cancellationToken);
 
         // Act

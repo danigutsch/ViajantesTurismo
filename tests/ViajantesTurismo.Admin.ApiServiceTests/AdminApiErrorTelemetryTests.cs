@@ -58,7 +58,7 @@ public sealed class AdminApiErrorTelemetryTests
         using var recorder = new MeterFactoryRecorder(factory.Services.GetRequiredService<IMeterFactory>());
 
         // Act
-        using var response = await client.GetAsync(new Uri("/api/v1/tours/", UriKind.Relative), TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/tours/page", UriKind.Relative), TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);

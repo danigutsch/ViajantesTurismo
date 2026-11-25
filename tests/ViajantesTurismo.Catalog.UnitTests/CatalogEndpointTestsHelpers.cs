@@ -8,6 +8,7 @@ using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
+using ViajantesTurismo.Catalog.Testing.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
@@ -25,6 +26,7 @@ internal static class CatalogEndpointTestsHelpers
                 services.RemoveAll<IPublicMediaImageStore>();
                 services.AddSingleton(store);
                 services.AddSingleton<IPublicMediaImageStore, StubPublicMediaImageStore>();
+                services.Replace(ServiceDescriptor.Singleton<ICatalogTourListReader, TestCatalogTourListReader>());
                 ApiTestAuthentication.ConfigureJwtBearer(services, "catalog-api");
             },
             configureClient: client => ApiTestAuthentication.ConfigureAuthenticatedClient(client, "catalog-api", "Admin"),

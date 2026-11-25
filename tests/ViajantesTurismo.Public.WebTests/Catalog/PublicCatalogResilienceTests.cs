@@ -11,9 +11,9 @@ namespace ViajantesTurismo.Public.WebTests.Catalog;
 public sealed class PublicCatalogResilienceTests
 {
     [Theory]
-    [InlineData("/api/v1/public/catalog/tours", HttpStatusCode.TooManyRequests, false)]
+    [InlineData("/api/v1/public/catalog/tours/browse/page", HttpStatusCode.TooManyRequests, false)]
     [InlineData("/api/v1/public/branding", HttpStatusCode.TooManyRequests, true)]
-    [InlineData("/api/v1/public/catalog/tours", HttpStatusCode.ServiceUnavailable, true)]
+    [InlineData("/api/v1/public/catalog/tours/browse/page", HttpStatusCode.ServiceUnavailable, true)]
     public async Task Only_a_public_catalog_quota_answer_is_final(string path, HttpStatusCode status, bool retried)
     {
         // Arrange

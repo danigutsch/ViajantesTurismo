@@ -86,40 +86,6 @@
             "Bearer": [ ]
           }
         ]
-      },
-      "get": {
-        "tags": [
-          "Tours"
-        ],
-        "summary": "Retrieves all available tours.",
-        "description": "Retrieves all available tours.",
-        "operationId": "GetTours",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/GetTourDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required."
-          },
-          "403": {
-            "description": "The authenticated caller lacks the required permission."
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
       }
     },
     "/api/v1/tours/page": {
@@ -481,123 +447,6 @@
         ]
       }
     },
-    "/api/v1/customers": {
-      "get": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Retrieves all customers.",
-        "description": "Retrieves all customers.",
-        "operationId": "GetCustomers",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/GetCustomerDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required."
-          },
-          "403": {
-            "description": "The authenticated caller lacks the required permission."
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "Customers"
-        ],
-        "summary": "Creates a new customer.",
-        "description": "Creates a new customer with all required information.",
-        "operationId": "CreateCustomer",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCustomerDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "headers": {
-              "Location": {
-                "description": "URI reference for the created resource, also returned as its self link.",
-                "required": true,
-                "schema": {
-                  "type": "string",
-                  "format": "uri-reference"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GetCustomerDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required."
-          },
-          "403": {
-            "description": "The authenticated caller lacks the required permission."
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
     "/api/v1/customers/page": {
       "get": {
         "tags": [
@@ -895,6 +744,89 @@
         ]
       }
     },
+    "/api/v1/customers": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Creates a new customer.",
+        "description": "Creates a new customer with all required information.",
+        "operationId": "CreateCustomer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "description": "URI reference for the created resource, also returned as its self link.",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uri-reference"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCustomerDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/customers/import": {
       "post": {
         "tags": [
@@ -1011,123 +943,6 @@
           },
           "504": {
             "description": "Gateway Timeout"
-          },
-          "401": {
-            "description": "Authentication is required."
-          },
-          "403": {
-            "description": "The authenticated caller lacks the required permission."
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
-    "/api/v1/bookings": {
-      "get": {
-        "tags": [
-          "Bookings"
-        ],
-        "summary": "Retrieves all bookings.",
-        "description": "Retrieves all bookings.",
-        "operationId": "GetBookings",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/GetBookingDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required."
-          },
-          "403": {
-            "description": "The authenticated caller lacks the required permission."
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      },
-      "post": {
-        "tags": [
-          "Bookings"
-        ],
-        "summary": "Creates a new booking.",
-        "description": "Creates a new booking for a tour.",
-        "operationId": "CreateBooking",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateBookingDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
-            "headers": {
-              "Location": {
-                "description": "URI reference for the created resource, also returned as its self link.",
-                "required": true,
-                "schema": {
-                  "type": "string",
-                  "format": "uri-reference"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GetBookingDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
           },
           "401": {
             "description": "Authentication is required."
@@ -1321,53 +1136,6 @@
         ]
       }
     },
-    "/api/v1/bookings/tour/{tourId}": {
-      "get": {
-        "tags": [
-          "Bookings"
-        ],
-        "summary": "Retrieves all bookings for a specific tour.",
-        "description": "Retrieves all bookings for a specific tour.",
-        "operationId": "GetBookingsByTourId",
-        "parameters": [
-          {
-            "name": "tourId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/GetBookingDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required."
-          },
-          "403": {
-            "description": "The authenticated caller lacks the required permission."
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
     "/api/v1/bookings/tour/{tourId}/page": {
       "get": {
         "tags": [
@@ -1436,53 +1204,6 @@
         ]
       }
     },
-    "/api/v1/bookings/customer/{customerId}": {
-      "get": {
-        "tags": [
-          "Bookings"
-        ],
-        "summary": "Retrieves all bookings for a specific customer.",
-        "description": "Retrieves all bookings for a specific customer (as primary or companion).",
-        "operationId": "GetBookingsByCustomerId",
-        "parameters": [
-          {
-            "name": "customerId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/GetBookingDto"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication is required."
-          },
-          "403": {
-            "description": "The authenticated caller lacks the required permission."
-          }
-        },
-        "security": [
-          {
-            "Bearer": [ ]
-          }
-        ]
-      }
-    },
     "/api/v1/bookings/customer/{customerId}/page": {
       "get": {
         "tags": [
@@ -1536,6 +1257,89 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings": {
+      "post": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Creates a new booking.",
+        "description": "Creates a new booking for a tour.",
+        "operationId": "CreateBooking",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBookingDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "description": "URI reference for the created resource, also returned as its self link.",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uri-reference"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "401": {
             "description": "Authentication is required."
@@ -2068,6 +1872,198 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetBookingFinancialHistoryDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/projection": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves a page of booking finances.",
+        "description": "Retrieves authoritative balances and bounded masked financial windows.",
+        "operationId": "GetBookingFinancialPage",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Section",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/BookingFinancialSection"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ParentId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingFinancialPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/bookings/{bookingId}/finances/projection/details": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "summary": "Retrieves a page of sensitive financial evidence.",
+        "description": "Audits Admin access to a bounded window of settlement evidence references.",
+        "operationId": "GetBookingFinancialEvidencePage",
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Section",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/BookingFinancialSection"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ParentId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBookingFinancialPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
                 }
               }
             }
@@ -4670,6 +4666,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -4753,7 +4756,7 @@
           "Documents"
         ],
         "summary": "Lists a page of booking payment instructions.",
-        "description": "Lists up to 100 masked retained instruction revisions, newest first.",
+        "description": "Lists up to 100 masked retained instruction revisions, newest first. The optional latestReviewOnly query returns at most the latest review per revision.",
         "operationId": "ListBookingPaymentInstructionPage",
         "parameters": [
           {
@@ -4787,6 +4790,13 @@
                 "string"
               ],
               "format": "int32"
+            }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -4872,6 +4882,87 @@
         ]
       }
     },
+    "/api/v1/documents/{id}/payment-instructions/reviews": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Lists one page of payment instruction reviews.",
+        "description": "Lists up to 100 independent reviews of one payment instruction revision in recorded order.",
+        "operationId": "ListPaymentInstructionReviewPage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPaymentInstructionReviewPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "403": {
+            "description": "The authenticated caller lacks the required permission."
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/documents/bookings/{bookingId}/payment-instructions/{id}/regenerate": {
       "post": {
         "tags": [
@@ -4897,6 +4988,13 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -4992,6 +5090,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -5085,6 +5190,13 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -5180,6 +5292,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -5274,6 +5393,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {
@@ -5367,6 +5493,13 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "latestReviewOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -6439,6 +6572,64 @@
         "type": "integer"
       },
       "BikeTypeDto": {
+        "type": "integer"
+      },
+      "BookingFinancialPageWindowDto": {
+        "required": [
+          "section",
+          "parentId",
+          "page",
+          "pageSize",
+          "totalCount",
+          "pageCount"
+        ],
+        "type": "object",
+        "properties": {
+          "section": {
+            "$ref": "#/components/schemas/BookingFinancialSection"
+          },
+          "parentId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "BookingFinancialSection": {
         "type": "integer"
       },
       "BookingOverviewCountsDto": {
@@ -7604,6 +7795,67 @@
           }
         }
       },
+      "GetBookingFinancialPageDto": {
+        "required": [
+          "history",
+          "windows"
+        ],
+        "type": "object",
+        "properties": {
+          "history": {
+            "$ref": "#/components/schemas/GetBookingFinancialHistoryDto"
+          },
+          "windows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookingFinancialPageWindowDto"
+            }
+          },
+          "attentionRequested": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "receiptChoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetBookingReceiptDto"
+            }
+          },
+          "settlementQuoteChoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentQuoteDto"
+            }
+          },
+          "refundQuoteChoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentQuoteDto"
+            }
+          },
+          "approvedInstallmentChoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentInstallmentDto"
+            }
+          },
+          "proposedInstallmentChoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentInstallmentDto"
+            }
+          },
+          "activeAllocationChoices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetPaymentAllocationDto"
+            }
+          }
+        }
+      },
       "GetBookingHistoryPageDto": {
         "required": [
           "items",
@@ -7844,6 +8096,15 @@
           },
           "nationality": {
             "type": "string"
+          },
+          "links": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
           }
         }
       },
@@ -8695,6 +8956,47 @@
           }
         }
       },
+      "GetPaymentInstructionReviewPageDto": {
+        "required": [
+          "items",
+          "page",
+          "pageSize",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetFinancialReviewDto"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "GetPaymentQuoteDto": {
         "required": [
           "id",
@@ -9186,6 +9488,15 @@
           },
           "isAtMinimumCapacity": {
             "type": "boolean"
+          },
+          "links": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/HypermediaLink"
+            }
           }
         }
       },

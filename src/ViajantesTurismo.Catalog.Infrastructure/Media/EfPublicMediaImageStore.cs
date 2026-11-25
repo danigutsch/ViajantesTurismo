@@ -23,6 +23,12 @@ internal sealed class EfPublicMediaImageStore(
     private static readonly NpgsqlUniqueViolationParser UniqueViolationParser = new();
 
     /// <inheritdoc />
+    public async ValueTask<int> CountByTour(Guid catalogTourId, CancellationToken ct) =>
+        await dbContext.PublicMediaImages
+            .CountAsync(image => image.TourLinks.Any(link => link.CatalogTourId == catalogTourId), ct)
+            .ConfigureAwait(false);
+
+    /// <inheritdoc />
     public async ValueTask<IMediaImageUploadLease> Reserve(string fingerprint, CancellationToken ct)
     {
         var transaction = await dbContext.Database.BeginTransactionAsync(ct).ConfigureAwait(false);

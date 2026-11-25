@@ -114,12 +114,20 @@ public sealed class PaymentInstructionPostgreSqlTests(PostgreSqlTestServerFixtur
         var withdrawn = await restarted.Instructions.GetById(documentId, ct);
         withdrawn.ShouldNotBeNull();
         withdrawn.Document.Status.ShouldBe(DocumentStatusDto.ChangesRequested);
+        var finalizationAfterWithdrawal = await restarted.Instructions.Change(documentId,
+            new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = withdrawn.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionFinalized },
+            "owner", IdempotencyKey.From("instruction-finalize-withdrawn"), PaymentInstructionAuditOperation.Finalized, ct);
+        finalizationAfterWithdrawal.IsFailure.ShouldBeTrue();
         var reapproval = await restarted.Instructions.Change(documentId,
             new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = withdrawn.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionApproved },
             "owner", IdempotencyKey.From("instruction-reapprove"), PaymentInstructionAuditOperation.Approved, ct);
         reapproval.IsSuccess.ShouldBeTrue();
         var reapproved = await restarted.Instructions.GetById(documentId, ct);
         reapproved.ShouldNotBeNull();
+        var reviewAfterReapproval = await restarted.Instructions.Review(documentId,
+            new ReviewPaymentInstructionsDto { ExpectedDocumentVersion = reapproved.DocumentVersion, ChangesRequested = false },
+            "reviewer", IdempotencyKey.From("instruction-review-after-reapproval"), ct);
+        reviewAfterReapproval.IsSuccess.ShouldBeTrue();
         var finalized = await restarted.Instructions.Change(documentId,
             new UpdatePaymentInstructionsDto { ExpectedDocumentVersion = reapproved.DocumentVersion, Confirmed = true, Reason = FinancialReasonDto.InstructionFinalized }, "owner", IdempotencyKey.From("instruction-finalize"), PaymentInstructionAuditOperation.Finalized, ct);
         finalized.IsSuccess.ShouldBeTrue();

@@ -7,7 +7,7 @@ namespace ViajantesTurismo.Catalog.UnitTests;
 public sealed class CatalogEndpointTests
 {
     [Fact]
-    public async Task Catalog_tour_list_returns_all_tours()
+    public async Task Catalog_tour_list_returns_a_page_of_tour_summaries()
     {
         // Arrange
         var store = new StubCatalogTourReadModelStore(CatalogEndpointTestsHelpers.CreateTour("TOUR-002", "Dolomites"));
@@ -15,13 +15,12 @@ public sealed class CatalogEndpointTests
         using var client = factory.CreateClient();
 
         // Act
-        using var response = await client.GetAsync(new Uri("/api/v1/catalog/tours", UriKind.Relative), TestContext.Current.CancellationToken);
-        var tours = await response.Content.ReadFromJsonAsync<CatalogTourDto[]>(TestContext.Current.CancellationToken);
+        using var response = await client.GetAsync(new Uri("/api/v1/catalog/tours/page", UriKind.Relative), TestContext.Current.CancellationToken);
+        var page = await response.Content.ReadFromJsonAsync<CatalogTourPageDto>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        tours.ShouldNotBeNull();
-        var tour = tours.ShouldHaveSingleItem();
+        var tour = page.ShouldNotBeNull().Items.ShouldHaveSingleItem();
         tour.Title.ShouldBe("Dolomites");
         tour.Slug.ShouldBe("TOUR-002");
         tour.IsPublished.ShouldBeFalse();
@@ -75,14 +74,13 @@ public sealed class CatalogEndpointTests
 
         // Act
         using var response = await client.GetAsync(
-            new Uri("/api/v1/public/catalog/tours", UriKind.Relative),
+            new Uri("/api/v1/public/catalog/tours/browse/page", UriKind.Relative),
             TestContext.Current.CancellationToken);
-        var tours = await response.Content.ReadFromJsonAsync<TourSummaryDto[]>(TestContext.Current.CancellationToken);
+        var page = await response.Content.ReadFromJsonAsync<PublishedTourPageDto>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        tours.ShouldNotBeNull();
-        tours.ShouldBeEmpty();
+        page.ShouldNotBeNull().Tours.ShouldBeEmpty();
     }
 
     [Fact]
@@ -133,11 +131,11 @@ public sealed class CatalogEndpointTests
         using var response = await client.GetAsync(
             new Uri("/api/v1/public/catalog/tours/%20published-tour%20", UriKind.Relative),
             TestContext.Current.CancellationToken);
-        var dto = await response.Content.ReadFromJsonAsync<TourDetailsDto>(TestContext.Current.CancellationToken);
+        var dto = await response.Content.ReadFromJsonAsync<PublishedTourDetailsPageDto>(TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         dto.ShouldNotBeNull();
-        dto.Slug.ShouldBe("published-tour");
+        dto.Tour.Slug.ShouldBe("published-tour");
     }
 }

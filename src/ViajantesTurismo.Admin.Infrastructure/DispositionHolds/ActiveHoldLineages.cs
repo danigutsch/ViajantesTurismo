@@ -18,9 +18,7 @@ internal static class ActiveHoldLineages
         var now = new DateTimeOffset(DateTime.SpecifyKind(databaseNow, DateTimeKind.Utc));
         var scopes = await dbContext.Set<Hold>()
             .AsNoTracking()
-            .Where(hold => hold.ReleasedAt == null
-                && hold.EffectiveFrom <= now
-                && (hold.ExpiresAt == null || now < hold.ExpiresAt))
+            .WhereRestrainingAt(now)
             .Select(hold => hold.Scope)
             .ToListAsync(ct);
         var lineages = new HashSet<Guid>();

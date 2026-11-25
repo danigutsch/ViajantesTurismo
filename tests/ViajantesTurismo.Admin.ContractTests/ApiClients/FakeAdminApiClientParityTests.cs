@@ -1,3 +1,4 @@
+using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
@@ -11,11 +12,11 @@ public sealed class FakeAdminApiClientParityTests
         // Arrange
         var expected = new InvalidOperationException("programmer fault");
         var sut = new FakeToursApiClient();
-        sut.SetGetToursException(expected);
+        sut.SetGetTourByIdException(expected);
 
         // Act
         var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(async () =>
-            await sut.GetTours(TestContext.Current.CancellationToken));
+            await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken));
 
         // Assert
         exception.ShouldBeSameAs(expected);
@@ -27,11 +28,11 @@ public sealed class FakeAdminApiClientParityTests
         // Arrange
         var expected = new InvalidOperationException("programmer fault");
         var sut = new FakeCustomersApiClient();
-        sut.SetGetCustomersException(expected);
+        sut.SetGetCustomerByIdException(expected);
 
         // Act
         var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(async () =>
-            await sut.GetCustomers(TestContext.Current.CancellationToken));
+            await sut.GetCustomerById(Guid.CreateVersion7(), TestContext.Current.CancellationToken));
 
         // Assert
         exception.ShouldBeSameAs(expected);
@@ -43,11 +44,11 @@ public sealed class FakeAdminApiClientParityTests
         // Arrange
         var expected = new InvalidOperationException("programmer fault");
         var sut = new FakeBookingsApiClient();
-        sut.SetGetAllBookingsException(expected);
+        sut.SetGetBookingPageException(expected);
 
         // Act
         var exception = await ShouldAssertionExtensions.ShouldThrow<InvalidOperationException>(async () =>
-            await sut.GetAllBookings(TestContext.Current.CancellationToken));
+            await sut.GetBookingPage(1, BookingPageSort.Default, descending: false, TestContext.Current.CancellationToken));
 
         // Assert
         exception.ShouldBeSameAs(expected);
@@ -57,12 +58,12 @@ public sealed class FakeAdminApiClientParityTests
     public async Task FakeToursApiClient_returns_an_explicit_transport_outcome()
     {
         // Arrange
-        var expected = FakeApiClientOutcomes.TransportFailure<Contracts.Application.GetTourDto[]>();
+        var expected = FakeApiClientOutcomes.TransportFailure<GetTourDto>();
         var sut = new FakeToursApiClient();
-        sut.SetGetToursOutcome(expected);
+        sut.SetGetTourByIdOutcome(expected);
 
         // Act
-        var outcome = await sut.GetTours(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetTourById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.ShouldBeSameAs(expected);
@@ -72,12 +73,12 @@ public sealed class FakeAdminApiClientParityTests
     public async Task FakeCustomersApiClient_returns_an_explicit_transport_outcome()
     {
         // Arrange
-        var expected = FakeApiClientOutcomes.TransportFailure<Contracts.Application.GetCustomerDto[]>();
+        var expected = FakeApiClientOutcomes.TransportFailure<CustomerDetailsDto>();
         var sut = new FakeCustomersApiClient();
-        sut.SetGetCustomersOutcome(expected);
+        sut.SetGetCustomerByIdOutcome(expected);
 
         // Act
-        var outcome = await sut.GetCustomers(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetCustomerById(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
         outcome.ShouldBeSameAs(expected);
@@ -87,12 +88,12 @@ public sealed class FakeAdminApiClientParityTests
     public async Task FakeBookingsApiClient_returns_an_explicit_transport_outcome()
     {
         // Arrange
-        var expected = FakeApiClientOutcomes.TransportFailure<Contracts.Application.GetBookingDto[]>();
+        var expected = FakeApiClientOutcomes.TransportFailure<GetBookingPageDto>();
         var sut = new FakeBookingsApiClient();
-        sut.SetGetAllBookingsOutcome(expected);
+        sut.SetGetBookingPageOutcome(expected);
 
         // Act
-        var outcome = await sut.GetAllBookings(TestContext.Current.CancellationToken);
+        var outcome = await sut.GetBookingPage(1, BookingPageSort.Default, descending: false, TestContext.Current.CancellationToken);
 
         // Assert
         outcome.ShouldBeSameAs(expected);
@@ -108,7 +109,7 @@ public sealed class FakeAdminApiClientParityTests
 
         // Act
         var exception = await ShouldAssertionExtensions.ShouldThrowAssignableTo<OperationCanceledException>(async () =>
-            await sut.GetTours(cts.Token));
+            await sut.GetTourById(Guid.CreateVersion7(), cts.Token));
 
         // Assert
         exception.CancellationToken.ShouldBe(cts.Token);
@@ -124,7 +125,7 @@ public sealed class FakeAdminApiClientParityTests
 
         // Act
         var exception = await ShouldAssertionExtensions.ShouldThrowAssignableTo<OperationCanceledException>(async () =>
-            await sut.GetCustomers(cts.Token));
+            await sut.GetCustomerById(Guid.CreateVersion7(), cts.Token));
 
         // Assert
         exception.CancellationToken.ShouldBe(cts.Token);
@@ -140,7 +141,7 @@ public sealed class FakeAdminApiClientParityTests
 
         // Act
         var exception = await ShouldAssertionExtensions.ShouldThrowAssignableTo<OperationCanceledException>(async () =>
-            await sut.GetAllBookings(cts.Token));
+            await sut.GetBookingPage(1, BookingPageSort.Default, descending: false, cts.Token));
 
         // Assert
         exception.CancellationToken.ShouldBe(cts.Token);

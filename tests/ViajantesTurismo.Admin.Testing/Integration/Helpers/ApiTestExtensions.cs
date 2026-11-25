@@ -170,28 +170,6 @@ public static class ApiTestExtensions
     }
 
     /// <summary>
-    /// Returns all bookings from the API.
-    /// </summary>
-    public static async Task<GetBookingDto[]> GetAllBookings(this HttpClient client)
-    {
-        ArgumentNullException.ThrowIfNull(client);
-
-        var response = await client.GetAsync(new Uri(BookingsRoutePrefix, UriKind.Relative));
-        return await response.ReadRequiredJson<GetBookingDto[]>(HttpStatusCode.OK);
-    }
-
-    /// <summary>
-    /// Returns all tours from the API.
-    /// </summary>
-    public static async Task<GetTourDto[]> GetAllTours(this HttpClient client)
-    {
-        ArgumentNullException.ThrowIfNull(client);
-
-        var response = await client.GetAsync(new Uri(ToursRoutePrefix, UriKind.Relative));
-        return await response.ReadRequiredJson<GetTourDto[]>(HttpStatusCode.OK);
-    }
-
-    /// <summary>
     /// Confirms a booking via the API and returns the updated <see cref="GetBookingDto"/>.
     /// </summary>
     public static async Task<GetBookingDto> ConfirmBooking(this HttpClient client, Guid bookingId)

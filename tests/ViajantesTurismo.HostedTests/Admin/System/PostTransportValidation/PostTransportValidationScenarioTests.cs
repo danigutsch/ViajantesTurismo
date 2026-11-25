@@ -34,11 +34,12 @@ public sealed class PostTransportValidationScenarioTests
         // Act
         var catalogTour = await scenario.WaitForCatalogTour(
             expectedTour.AdminTourId,
+            expectedTour.Identifier,
             TestContext.Current.CancellationToken);
 
         // Assert
         catalogTour.ShouldBe(expectedTour);
-        catalogTours.GetToursCallCount.ShouldBe(2);
+        catalogTours.GetTourPageCallCount.ShouldBe(2);
     }
 
     [Theory]
@@ -67,11 +68,12 @@ public sealed class PostTransportValidationScenarioTests
         // Act
         Func<Task> action = () => scenario.WaitForCatalogTour(
             expectedTour.AdminTourId,
+            expectedTour.Identifier,
             TestContext.Current.CancellationToken);
         var exception = await action.ShouldThrow<HttpRequestException>();
 
         // Assert
         exception.StatusCode.ShouldBe(statusCode);
-        catalogTours.GetToursCallCount.ShouldBe(1);
+        catalogTours.GetTourPageCallCount.ShouldBe(1);
     }
 }
