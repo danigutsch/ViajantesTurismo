@@ -59,7 +59,8 @@
       ".mcp.json",
       "aspire.config.json",
       "CODEOWNERS",
-      "docs/architecture/*.json",
+      "docs/architecture/documentation-conformance.json",
+      "docs/architecture/mediator-topology.json",
       "tests/AGENTS.md",
       "tests/ASSEMBLY_FIXTURE_GUIDANCE.md",
       "tests/BDD_GUIDE.md",
@@ -72,6 +73,16 @@
     ],
     "requireCoveringTests": true,
     "testPaths": [
+      {
+        "paths": [
+          "docs/architecture/generated-diagrams.json"
+        ],
+        "tests": [
+          "tests/ViajantesTurismo.Admin.ContractTests/ViajantesTurismo.Admin.ContractTests.csproj",
+          "tests/ViajantesTurismo.Branding.ContractTests/ViajantesTurismo.Branding.ContractTests.csproj",
+          "tests/ViajantesTurismo.Catalog.ContractTests/ViajantesTurismo.Catalog.ContractTests.csproj"
+        ]
+      },
       {
         "paths": [
           "roadmap/config.json",

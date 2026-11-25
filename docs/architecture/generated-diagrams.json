@@ -136,7 +136,11 @@
         "^/api/v[0-9]+(?:[.][0-9]+)?/public/": "public API",
         "^/api/v[0-9]+(?:[.][0-9]+)?/(?:bookings|branding/settings|catalog|customers|docs/errors|documents|payment-accounts|tours)(?:/|$)": "management API"
       },
-      "defaultAudience": "internal"
+      "defaultAudience": "internal",
+      "openApiAuthorizationDocuments": {
+        "ViajantesTurismo.Admin.Api/": "src/ViajantesTurismo.Admin.Contracts.Http/OpenApi/v1.openapi.json",
+        "ViajantesTurismo.Catalog.Api/": "src/ViajantesTurismo.Catalog.Contracts.Http/OpenApi/v1.openapi.json"
+      }
     },
     {
       "name": "integration-events",
