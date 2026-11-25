@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Behavior;

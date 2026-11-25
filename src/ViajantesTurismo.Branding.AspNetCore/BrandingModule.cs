@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore.Authentication;
+using SharedKernel.AspNetCore.Authentication;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Branding.AspNetCore;

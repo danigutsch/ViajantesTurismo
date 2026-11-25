@@ -1,4 +1,4 @@
-using PandaBear.Testing.Snapshots;
+using SharedKernel.Testing.Snapshots;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Reproduction;

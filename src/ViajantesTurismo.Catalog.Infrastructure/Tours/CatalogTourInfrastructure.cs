@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using PandaBear.EventSourcing;
-using PandaBear.EventSourcing.Npgsql;
+using SharedKernel.EventSourcing;
+using SharedKernel.EventSourcing.Npgsql;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Tours;

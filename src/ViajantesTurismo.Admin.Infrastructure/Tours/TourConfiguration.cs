@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Domain;
 

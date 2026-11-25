@@ -2,12 +2,12 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.AuditTrail;
-using PandaBear.Domain.EntityFrameworkCore;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.Idempotency.EntityFrameworkCore;
-using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
-using PandaBear.Testing;
+using SharedKernel.AuditTrail;
+using SharedKernel.Domain.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Idempotency.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;
@@ -16,7 +16,7 @@ using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
 using ViajantesTurismo.Resources;
-using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using PostgreSqlTestDatabase = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Initialization;
 

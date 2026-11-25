@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using PandaBear.EventSourcing;
+using SharedKernel.EventSourcing;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Catalog.Infrastructure.Tours;

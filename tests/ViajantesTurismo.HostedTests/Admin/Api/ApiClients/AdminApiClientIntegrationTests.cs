@@ -1,11 +1,11 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using System.Net;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Builders;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using Microsoft.Extensions.Logging.Abstractions;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.ApiClients;
 

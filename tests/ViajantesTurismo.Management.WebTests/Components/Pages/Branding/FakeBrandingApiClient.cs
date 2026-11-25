@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Branding;

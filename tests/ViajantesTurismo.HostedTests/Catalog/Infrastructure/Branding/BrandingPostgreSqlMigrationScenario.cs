@@ -1,12 +1,12 @@
-using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using PostgreSqlTestDatabase = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.IntegrationTesting;
-using PandaBear.Messaging.IntegrationEvents;
-using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.IntegrationTesting;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Branding;

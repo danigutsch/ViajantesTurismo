@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
-using PandaBear.Results;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.UnitTests.Api;
 

@@ -1,11 +1,11 @@
 extern alias AdminWorker;
 
-using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using PostgreSqlTestDatabase = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PandaBear.Branding;
+using SharedKernel.Branding;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
@@ -94,7 +94,7 @@ internal sealed class BrandingStateTransferScenario : IAsyncDisposable
     }
 
     /// <summary>Captures the document branding snapshot from the Admin worker's current projection.</summary>
-    public async Task<PandaBear.Results.Result<DocumentBrandingSnapshotValues>> CaptureDocumentBranding(CancellationToken ct)
+    public async Task<SharedKernel.Results.Result<DocumentBrandingSnapshotValues>> CaptureDocumentBranding(CancellationToken ct)
     {
         await using var scope = adminWorkerHost.Services.CreateAsyncScope();
         var source = new DocumentBrandingSource(scope.ServiceProvider.GetRequiredService<IBrandingProjectionStore>());

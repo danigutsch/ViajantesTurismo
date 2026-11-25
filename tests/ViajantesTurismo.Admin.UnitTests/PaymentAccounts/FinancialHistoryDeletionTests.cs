@@ -2,8 +2,8 @@ using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class FinancialHistoryDeletionTests
 {
     [Fact]

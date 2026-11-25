@@ -6,7 +6,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 /// SharedKernel's <c>OnDemandResources</c> guarantees one start per key, and <c>AspireTestApplication.StartResource</c> bounds each start
 /// and names the pending resource when its budget expires.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class HostedTestFixtureOnDemandTests
 {
     private const string Creation = "private Task<AspireTestApplication> CreateInfrastructure(";

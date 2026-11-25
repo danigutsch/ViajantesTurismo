@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class CustomerEmailModelTests
 {
     [Fact]

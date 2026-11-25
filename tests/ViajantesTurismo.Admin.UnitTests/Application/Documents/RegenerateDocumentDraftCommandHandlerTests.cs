@@ -1,7 +1,7 @@
-using PandaBear.Branding;
-using PandaBear.Idempotency;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Branding;
+using SharedKernel.Idempotency;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -13,7 +13,7 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class RegenerateDocumentDraftCommandHandlerTests
 {
     [Fact]

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using PandaBear.Messaging;
-using PandaBear.Messaging.IntegrationEvents;
-using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.Messaging;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Branding.InfrastructureTests.Infrastructure;

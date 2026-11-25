@@ -1,9 +1,9 @@
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Branding;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Branding;
 
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CategoryName, Infrastructure.TestTraits.CoreBehaviorCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.CoreBehaviorCategory)]
 public sealed class BrandingProjectionRecoveryServiceTests
 {
     [Fact]

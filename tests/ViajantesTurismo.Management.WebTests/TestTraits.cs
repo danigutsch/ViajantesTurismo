@@ -10,7 +10,7 @@ internal static class TestTraits
     /// <summary>Category value for component tests.</summary>
     public const string ComponentCategory = "component";
     /// <summary>Category value for endpoint tests.</summary>
-    public const string EndpointCategory = PandaBear.Testing.TestTraitValues.EndpointCategory;
+    public const string EndpointCategory = SharedKernel.Testing.TestTraitValues.EndpointCategory;
     /// <summary>Category value for security tests.</summary>
-    public const string SecurityCategory = PandaBear.Testing.TestTraitValues.SecurityCategory;
+    public const string SecurityCategory = SharedKernel.Testing.TestTraitValues.SecurityCategory;
 }

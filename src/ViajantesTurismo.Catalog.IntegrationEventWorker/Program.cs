@@ -1,5 +1,5 @@
 using ViajantesTurismo.Catalog.Infrastructure;
-using PandaBear.ServiceDefaults;
+using SharedKernel.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = Host.CreateApplicationBuilder(args);

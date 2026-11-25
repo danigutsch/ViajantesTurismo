@@ -1,6 +1,6 @@
 using System.Text.Json;
-using PandaBear.Documentation;
-using PandaBear.Testing;
+using SharedKernel.Documentation;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 

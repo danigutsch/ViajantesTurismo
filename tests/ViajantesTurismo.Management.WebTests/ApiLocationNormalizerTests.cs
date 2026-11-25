@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Helpers;
 
 namespace ViajantesTurismo.Management.WebTests;

@@ -1,5 +1,5 @@
-using PandaBear.Results;
-using PandaBear.Tabular;
+using SharedKernel.Results;
+using SharedKernel.Tabular;
 
 namespace ViajantesTurismo.Admin.Application.Import;
 
@@ -10,10 +10,10 @@ public sealed class CsvDocument : IImportDocument
 {
     private static readonly CsvParseOptions ParseOptions = new() { SkipBlankLines = false };
 
-    private readonly PandaBear.Tabular.CsvDocument document;
+    private readonly SharedKernel.Tabular.CsvDocument document;
     private readonly IReadOnlyList<IImportRow> rows;
 
-    private CsvDocument(PandaBear.Tabular.CsvDocument document)
+    private CsvDocument(SharedKernel.Tabular.CsvDocument document)
     {
         this.document = document;
         rows = [.. document.Rows.Select(row => (IImportRow)new CsvRow(row))];
@@ -34,10 +34,10 @@ public sealed class CsvDocument : IImportDocument
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="content"/> is null.</exception>
     public static Result<CsvDocument> Parse(string content, IReadOnlyList<string>? requiredHeaderNames = null)
     {
-        var parsed = PandaBear.Tabular.CsvDocument.Parse(content, requiredHeaderNames, ParseOptions);
+        var parsed = SharedKernel.Tabular.CsvDocument.Parse(content, requiredHeaderNames, ParseOptions);
         return parsed.IsSuccess
             ? Result.Ok(new CsvDocument(parsed.Value))
-            : parsed.ConvertError<PandaBear.Tabular.CsvDocument, CsvDocument>();
+            : parsed.ConvertError<SharedKernel.Tabular.CsvDocument, CsvDocument>();
     }
 
     /// <summary>
@@ -48,10 +48,10 @@ public sealed class CsvDocument : IImportDocument
     /// <returns>A parsed CSV document, or the same failure that <see cref="Parse"/> reports for the decoded text.</returns>
     public static Result<CsvDocument> ParseUtf8(ReadOnlySpan<byte> utf8Content, IReadOnlyList<string>? requiredHeaderNames = null)
     {
-        var parsed = PandaBear.Tabular.CsvDocument.ParseUtf8(utf8Content, requiredHeaderNames, ParseOptions);
+        var parsed = SharedKernel.Tabular.CsvDocument.ParseUtf8(utf8Content, requiredHeaderNames, ParseOptions);
         return parsed.IsSuccess
             ? Result.Ok(new CsvDocument(parsed.Value))
-            : parsed.ConvertError<PandaBear.Tabular.CsvDocument, CsvDocument>();
+            : parsed.ConvertError<SharedKernel.Tabular.CsvDocument, CsvDocument>();
     }
 
     /// <summary>
@@ -67,9 +67,9 @@ public sealed class CsvDocument : IImportDocument
     {
         ArgumentNullException.ThrowIfNull(rows);
 
-        var created = PandaBear.Tabular.CsvDocument.Create(headers, [.. rows.Select(row => row.Row)]);
+        var created = SharedKernel.Tabular.CsvDocument.Create(headers, [.. rows.Select(row => row.Row)]);
         return created.IsSuccess
             ? Result.Ok(new CsvDocument(created.Value))
-            : created.ConvertError<PandaBear.Tabular.CsvDocument, CsvDocument>();
+            : created.ConvertError<SharedKernel.Tabular.CsvDocument, CsvDocument>();
     }
 }

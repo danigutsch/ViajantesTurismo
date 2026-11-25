@@ -2,9 +2,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using PandaBear.EventSourcing;
-using PandaBear.EventSourcing.Npgsql;
-using PandaBear.MalwareScanning.ClamAv;
+using SharedKernel.EventSourcing;
+using SharedKernel.EventSourcing.Npgsql;
+using SharedKernel.MalwareScanning.ClamAv;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -15,13 +15,13 @@ namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 /// <summary>Catalog tour slug lock scenario backed by a leased PostgreSQL database and the Catalog event store.</summary>
 internal sealed class CatalogTourSlugLockPostgreSqlScenario : IAsyncDisposable
 {
-    private readonly PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease app;
+    private readonly SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease app;
     private readonly ServiceProvider serviceProvider;
     private readonly IEventStore eventStore;
     private readonly AdminTourCreatedIntegrationHandler handler;
 
     private CatalogTourSlugLockPostgreSqlScenario(
-        PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease app,
+        SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease app,
         ServiceProvider serviceProvider,
         IEventStore eventStore,
         AdminTourCreatedIntegrationHandler handler)

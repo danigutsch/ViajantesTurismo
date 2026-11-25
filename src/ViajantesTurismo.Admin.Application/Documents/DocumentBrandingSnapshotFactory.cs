@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using PandaBear.InputNormalization;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Domain.Documents;
 

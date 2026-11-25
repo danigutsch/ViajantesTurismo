@@ -1,9 +1,9 @@
 using ViajantesTurismo.Catalog.Api;
-using PandaBear.Testing.Logging;
+using SharedKernel.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
 public sealed class CatalogCacheLogPrivacyTests
 {
     [Fact]

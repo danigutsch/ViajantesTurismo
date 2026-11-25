@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
-using PandaBear.Testing.Http;
+using SharedKernel.Testing.Http;
 
 namespace ViajantesTurismo.Branding.ContractTests.Infrastructure;
 

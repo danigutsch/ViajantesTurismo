@@ -1,7 +1,7 @@
 using System.Net;
 using Amazon.S3;
 using Amazon.S3.Model;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.HostedTests.Catalog.Media.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Catalog.Media;

@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using PandaBear.AI;
-using PandaBear.BuildingBlocks;
-using PandaBear.Testing;
+using SharedKernel.AI;
+using SharedKernel.Testing.AI;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
@@ -10,7 +11,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 [Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaImageAccessibilityDraftServiceTests
 {
@@ -23,7 +24,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var objects = MediaObjectStoreTestFactory.Create();
         objects.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var generatedAt = new DateTimeOffset(2026, 10, 21, 12, 0, 0, TimeSpan.Zero);
-        var service = new MediaImageAccessibilityDraftService(store, objects, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), new FakeTimeProvider(generatedAt));
+        var service = new MediaImageAccessibilityDraftService(store, objects, new TestImageTextGenerator(new ImageTextGenerationResult("A beach", null)), new FakeTimeProvider(generatedAt));
 
         // Act
         var result = await service.GenerateDraft(image.Id, new MediaImageAccessibilityDraftInput { Language = PublicContentCultures.PortugueseBrazil }, TestContext.Current.CancellationToken);
@@ -43,7 +44,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
         var provenance = new MediaImageAccessibilityGenerationProvenance("litellm", "configured-model", "artifact-version", "configuration-fingerprint");
-        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new StubImageTextGenerator(new ImageTextGenerationResult("A beach", null)), provenance: provenance);
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new TestImageTextGenerator(new ImageTextGenerationResult("A beach", null)), provenance: provenance);
         var activities = new ConcurrentQueue<Activity>();
         using var activityListener = CatalogTelemetryTestsHelpers.CreateActivityListener(activities);
         var measurements = new ConcurrentQueue<string>();
@@ -77,7 +78,11 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
-        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, new CancellingImageTextGenerator(cancellation));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null))
+        {
+            BeforeResult = _ => new ValueTask(cancellation.CancelAsync()),
+        };
+        var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
         var activities = new ConcurrentQueue<Activity>();
         using var listener = CatalogTelemetryTestsHelpers.CreateActivityListener(activities);
 
@@ -88,6 +93,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Assert
         var generation = activities.ShouldHaveSingleItem(activity => activity.OperationName == "catalog.media_accessibility.generate");
         generation.GetTagItem("catalog.outcome").ShouldBe("cancelled");
+        generator.LastRequest.ShouldNotBeNull();
         imageStore.Current.IsAiGenerated.ShouldBeFalse();
     }
 
@@ -97,7 +103,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7()));
         var objectStore = MediaObjectStoreTestFactory.Create();
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -107,8 +113,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -117,7 +123,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7()));
         var objectStore = MediaObjectStoreTestFactory.Create();
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -127,8 +133,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -139,7 +145,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.Seed(image.SourceObjectKey, [1, 2, 3], "image/jpeg", "sha256:abc");
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft beach alt", "Draft beach caption"));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft beach alt", "Draft beach caption"));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -167,12 +173,12 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         draft.IsAiGenerated.ShouldBeTrue();
         draft.RequiresHumanReview.ShouldBeTrue();
 
-        generator.Request.ShouldNotBeNull();
-        generator.Request.ContentType.ShouldBe("image/jpeg");
-        generator.Request.Language.ShouldBe("en-US");
-        generator.Request.Context.ShouldBe("Homepage hero");
-        generator.Request.Latitude.ShouldBe(-23.55m);
-        generator.Request.Longitude.ShouldBe(-46.63m);
+        var recordedRequest = generator.LastRequest.ShouldNotBeNull();
+        recordedRequest.ContentType.ShouldBe("image/jpeg");
+        recordedRequest.Language.ShouldBe("en-US");
+        recordedRequest.Context.ShouldBe("Homepage hero");
+        recordedRequest.Latitude.ShouldBe(-23.55m);
+        recordedRequest.Longitude.ShouldBe(-46.63m);
     }
 
     [Fact]
@@ -181,7 +187,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         // Arrange
         var imageStore = new InMemoryPublicMediaImageStore(PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7()));
         var objectStore = MediaObjectStoreTestFactory.Create();
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -191,8 +197,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -202,7 +208,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -212,8 +218,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -224,7 +230,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.FailNext(ObjectStoreOperation.OpenRead, new IOException("Source unreadable."));
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -234,8 +240,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Unavailable);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -246,7 +252,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.FailNext(ObjectStoreOperation.OpenRead, new FileNotFoundException("Source missing."));
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -256,8 +262,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -268,7 +274,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.FailNext(ObjectStoreOperation.OpenRead, new DirectoryNotFoundException("Source directory missing."));
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -278,8 +284,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -290,7 +296,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.FailNext(ObjectStoreOperation.OpenRead, new UnauthorizedAccessException("Source denied."));
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -300,8 +306,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Unavailable);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -311,7 +317,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var image = PublicMediaImageTestFactory.CreateImage(Guid.CreateVersion7(), 0, true, imageId: Guid.CreateVersion7());
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -321,8 +327,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        generator.LastRequest.ShouldBeNull();
     }
 
     [Fact]
@@ -333,8 +339,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
-        generator.Throw(new ImageTextGenerationException("Proxy failed."));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null)) { Exception = new ImageTextGenerationException("Proxy failed.") };
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -344,7 +349,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Unavailable);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
         imageStore.Current.IsAiGenerated.ShouldBeFalse();
     }
 
@@ -356,8 +361,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
-        generator.Throw(new InvalidOperationException("Missing model."));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null)) { Exception = new InvalidOperationException("Missing model.") };
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -367,7 +371,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Unavailable);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Unavailable);
         imageStore.Current.IsAiGenerated.ShouldBeFalse();
     }
 
@@ -379,7 +383,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult(string.Empty, null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult(string.Empty, null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -389,7 +393,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
         imageStore.Current.IsAiGenerated.ShouldBeFalse();
     }
 
@@ -401,7 +405,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Rascunho", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Rascunho", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -412,8 +416,8 @@ public sealed class MediaImageAccessibilityDraftServiceTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        generator.Request.ShouldNotBeNull();
-        generator.Request.Language.ShouldBe("pt-BR");
+        var recordedRequest = generator.LastRequest.ShouldNotBeNull();
+        recordedRequest.Language.ShouldBe("pt-BR");
     }
 
     [Fact]
@@ -424,7 +428,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
         var imageStore = new InMemoryPublicMediaImageStore(image);
         var objectStore = MediaObjectStoreTestFactory.Create();
         objectStore.Seed(image.SourceObjectKey, [1], "image/jpeg", "sha256:abc");
-        var generator = new StubImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
+        var generator = new TestImageTextGenerator(new ImageTextGenerationResult("Draft alt", null));
         var service = new MediaImageAccessibilityDraftService(imageStore, objectStore, generator);
 
         // Act
@@ -434,7 +438,7 @@ public sealed class MediaImageAccessibilityDraftServiceTests
             TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
-        generator.Request.ShouldBeNull();
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
+        generator.LastRequest.ShouldBeNull();
     }
 }

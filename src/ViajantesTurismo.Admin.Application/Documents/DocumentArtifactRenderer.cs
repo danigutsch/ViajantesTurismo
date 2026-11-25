@@ -1,8 +1,8 @@
-using PandaBear.DocumentRendering;
+using SharedKernel.DocumentRendering;
 using ViajantesTurismo.Admin.Domain.Documents;
 using DomainPrivacy = ViajantesTurismo.Admin.Domain.Documents.DocumentPrivacyClassification;
-using RenderField = PandaBear.DocumentRendering.DocumentField;
-using RenderPrivacy = PandaBear.DocumentRendering.DocumentPrivacyClassification;
+using RenderField = SharedKernel.DocumentRendering.DocumentField;
+using RenderPrivacy = SharedKernel.DocumentRendering.DocumentPrivacyClassification;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
 

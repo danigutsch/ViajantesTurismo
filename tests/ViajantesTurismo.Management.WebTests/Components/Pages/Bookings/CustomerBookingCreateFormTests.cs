@@ -1,9 +1,9 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using System.Net;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Bookings;
@@ -19,7 +19,7 @@ public class CustomerBookingCreateFormTests : BunitContext
     {
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(_failures);
     }
 
     [Fact]

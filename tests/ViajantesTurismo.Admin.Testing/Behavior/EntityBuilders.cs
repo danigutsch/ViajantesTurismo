@@ -1,4 +1,4 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Shared;
 using ViajantesTurismo.Admin.Domain.Tours;

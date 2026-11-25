@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Catalog.Contracts.Application;
 

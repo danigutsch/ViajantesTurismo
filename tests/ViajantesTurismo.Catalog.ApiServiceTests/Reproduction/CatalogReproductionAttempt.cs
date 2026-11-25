@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
-using PandaBear.Testing.Snapshots;
+using SharedKernel.Testing.Snapshots;
 using ViajantesTurismo.Catalog.Api;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Reproduction;

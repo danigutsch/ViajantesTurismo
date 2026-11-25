@@ -1,4 +1,4 @@
-using PandaBear.Testing.ObjectStorage;
+using SharedKernel.Testing.ObjectStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http.Resilience;
 using ViajantesTurismo.Catalog.Api;

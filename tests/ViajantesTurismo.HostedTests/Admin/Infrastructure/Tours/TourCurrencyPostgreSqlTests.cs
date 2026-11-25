@@ -1,12 +1,12 @@
-using PandaBear.BuildingBlocks;
-using PandaBear.Testing;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 
 /// <summary>Proves tours store the ISO 4217 code in a three-character column.</summary>
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class TourCurrencyPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {

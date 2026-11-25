@@ -1,6 +1,6 @@
 using System.Reflection;
-using PandaBear.IO;
-using PandaBear.Testing;
+using SharedKernel.IO;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.Testing.Reproduction;
 

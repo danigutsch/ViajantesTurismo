@@ -1,9 +1,9 @@
 using System.Text;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using PandaBear.MalwareScanning;
-using PandaBear.Testing;
-using PandaBear.Testing.MalwareScanning;
+using SharedKernel.MalwareScanning;
+using SharedKernel.Testing;
+using SharedKernel.Testing.MalwareScanning;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.UploadWire.Testing;

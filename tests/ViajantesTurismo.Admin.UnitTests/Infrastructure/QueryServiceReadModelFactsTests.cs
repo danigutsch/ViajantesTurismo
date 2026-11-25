@@ -1,11 +1,11 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class QueryServiceReadModelFactsTests
 {
     [Fact]

@@ -4,7 +4,7 @@ using static ViajantesTurismo.ArchitectureTests.Conventions.AppHostPaymentsTests
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class AppHostPaymentsTests : IDisposable
 {
     private readonly string _directory = Path.Combine(Path.GetTempPath(), $"vt-local-payments-{Guid.NewGuid():N}");

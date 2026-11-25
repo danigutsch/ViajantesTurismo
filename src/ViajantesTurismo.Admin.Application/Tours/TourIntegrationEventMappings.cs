@@ -1,4 +1,4 @@
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 

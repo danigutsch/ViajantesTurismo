@@ -1,5 +1,5 @@
-using PandaBear.AspNetCore;
-using PandaBear.AspNetCore.RateLimiting;
+using SharedKernel.AspNetCore;
+using SharedKernel.AspNetCore.RateLimiting;
 
 namespace ViajantesTurismo.Branding.AspNetCore;
 

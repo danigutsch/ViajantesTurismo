@@ -11,7 +11,7 @@
         <Using Include="Microsoft.AspNetCore.Hosting" />
         <Using Include="Microsoft.AspNetCore.Mvc.Testing" />
         <Using Include="Microsoft.Extensions.DependencyInjection" />
-        <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="SharedKernel.Testing.Assertions" />
         <Using Include="ViajantesTurismo.Admin.ApiServiceTests.Infrastructure" />
         <Using Include="Xunit" />
     </ItemGroup>

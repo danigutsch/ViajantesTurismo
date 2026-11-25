@@ -1,5 +1,5 @@
 using System.Text;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Import;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;

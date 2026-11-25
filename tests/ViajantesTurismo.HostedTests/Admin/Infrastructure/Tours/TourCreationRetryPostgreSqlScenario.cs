@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;

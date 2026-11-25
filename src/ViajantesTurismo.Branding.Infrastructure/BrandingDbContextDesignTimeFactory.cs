@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
 

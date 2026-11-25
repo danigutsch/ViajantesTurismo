@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using PandaBear.Idempotency;
-using PandaBear.Results;
+using SharedKernel.Idempotency;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;

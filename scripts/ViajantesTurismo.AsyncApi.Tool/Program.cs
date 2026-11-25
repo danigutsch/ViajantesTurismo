@@ -13,7 +13,7 @@ if (args[0] == "generate")
     return 0;
 }
 
-if (PandaBear.Documentation.AsyncApiDocument.MatchesFile(artifactPath, generated))
+if (SharedKernel.Documentation.AsyncApiDocument.MatchesFile(artifactPath, generated))
 {
     return 0;
 }

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.Domain;
+using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 

@@ -7,10 +7,16 @@ namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.CommitAmbiguity;
 
 /// <summary>Throws one retryable timeout after another connection has observed the committed identifiers.</summary>
 internal sealed class CommittedTimeoutInterceptor(
-    DbContextOptions<AdminWriteDbContext> observerOptions,
+    string connectionString,
     Func<AdminWriteDbContext, IQueryable<Guid>> selectIds)
     : DbTransactionInterceptor
 {
+    // This observer omits the SharedKernel mappings used by the Admin migration model.
+    private readonly DbContextOptions<AdminWriteDbContext> observerOptions =
+        new DbContextOptionsBuilder<AdminWriteDbContext>()
+            .UseNpgsql(connectionString)
+            .EnableServiceProviderCaching(false)
+            .Options;
     private bool armed;
 
     /// <summary>Gets the identifiers verified on a separate connection before the timeout.</summary>

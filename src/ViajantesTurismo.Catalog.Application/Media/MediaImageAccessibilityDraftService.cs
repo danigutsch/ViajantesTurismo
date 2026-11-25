@@ -1,7 +1,7 @@
-using PandaBear.ObjectStorage;
+using SharedKernel.ObjectStorage;
 using System.Diagnostics;
-using PandaBear.AI;
-using PandaBear.Results;
+using SharedKernel.AI;
+using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 

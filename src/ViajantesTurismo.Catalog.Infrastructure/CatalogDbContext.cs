@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.Catalog.Infrastructure.Media;

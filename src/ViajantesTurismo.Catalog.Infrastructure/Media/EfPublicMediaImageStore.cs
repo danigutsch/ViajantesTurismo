@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
-using PandaBear.BuildingBlocks;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.EntityFrameworkCore.Npgsql;
-using PandaBear.Npgsql;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore.Npgsql;
+using SharedKernel.Npgsql;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
-using PandaBear.InputNormalization;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Media;
 

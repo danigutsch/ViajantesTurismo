@@ -1,4 +1,4 @@
-using PandaBear.Blazor;
+using SharedKernel.Blazor;
 
 namespace ViajantesTurismo.Management.WebTests.Infrastructure;
 

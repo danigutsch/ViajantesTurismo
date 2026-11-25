@@ -1,6 +1,6 @@
 using System.Text;
 using ViajantesTurismo.Public.Web.Branding;
-using PandaBear.Blazor.Site.Theming;
+using SharedKernel.Blazor.Site.Theming;
 using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Branding;

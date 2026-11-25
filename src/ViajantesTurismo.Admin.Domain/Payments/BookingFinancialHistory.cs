@@ -1,5 +1,5 @@
-using PandaBear.Domain;
-using PandaBear.Results;
+using SharedKernel.Domain;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;

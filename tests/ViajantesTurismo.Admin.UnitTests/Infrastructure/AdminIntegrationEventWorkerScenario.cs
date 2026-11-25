@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Infrastructure;
-using PandaBear.Messaging;
+using SharedKernel.Messaging;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;

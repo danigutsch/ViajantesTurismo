@@ -1,5 +1,5 @@
 using System.Net;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Helpers;

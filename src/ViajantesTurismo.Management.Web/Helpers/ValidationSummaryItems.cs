@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.Forms;
-using PandaBear.Blazor;
+using SharedKernel.Blazor;
 
 namespace ViajantesTurismo.Management.Web.Helpers;
 

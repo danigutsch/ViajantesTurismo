@@ -1,5 +1,5 @@
 using System.Net;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 

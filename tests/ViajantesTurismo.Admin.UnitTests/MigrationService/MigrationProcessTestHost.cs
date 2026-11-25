@@ -4,7 +4,7 @@ using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using PandaBear.Testing.AspNetCore;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.MigrationService;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;

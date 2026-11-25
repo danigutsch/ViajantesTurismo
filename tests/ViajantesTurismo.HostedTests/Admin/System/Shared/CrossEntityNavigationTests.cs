@@ -1,8 +1,8 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing.Playwright;
 namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 [TestScope(TestScope.System)]

@@ -1,6 +1,6 @@
-using PandaBear.DispositionHold;
-using PandaBear.Mediator.Transactions;
-using PandaBear.Results;
+using SharedKernel.DispositionHold;
+using SharedKernel.Mediator.Transactions;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents.Holds;

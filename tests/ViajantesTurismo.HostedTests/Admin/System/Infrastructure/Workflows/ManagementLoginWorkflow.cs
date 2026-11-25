@@ -1,5 +1,5 @@
 using Microsoft.Playwright;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing.Playwright;
 namespace ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Workflows;
 
 /// <summary>Signs the conformance user in to the management web app through the Keycloak login page.</summary>

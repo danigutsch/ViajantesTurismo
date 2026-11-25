@@ -109,7 +109,7 @@ internal sealed class DocumentHoldHarness
     /// <summary>Creates a valid place command for the synthetic document.</summary>
     public PlaceDocumentHoldCommand CreatePlaceCommand(string purposeCode = "purpose.claim-001") => new(
         DocumentId,
-        PandaBear.DispositionHold.HoldBasis.LegalClaim,
+        SharedKernel.DispositionHold.HoldBasis.LegalClaim,
         purposeCode,
         "authority:case-0001",
         Now.AddDays(90),

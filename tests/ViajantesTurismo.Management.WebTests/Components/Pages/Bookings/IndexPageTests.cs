@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.QuickGrid;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Bookings.Index;
 
@@ -13,7 +13,7 @@ public class IndexPageTests : BunitContext
 
     public IndexPageTests()
     {
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(_failures);
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(_failures);
         JSInterop.Mode = JSRuntimeMode.Loose;
 
         _fakeBookingsApi = new FakeBookingsApiClient();

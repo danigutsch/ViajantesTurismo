@@ -1,5 +1,5 @@
-using PandaBear.AuditTrail;
-using PandaBear.Results;
+using SharedKernel.AuditTrail;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

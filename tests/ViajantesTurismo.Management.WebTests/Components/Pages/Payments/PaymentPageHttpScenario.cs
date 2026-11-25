@@ -2,8 +2,8 @@ using System.Net;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
-using PandaBear.BuildingBlocks;
-using PandaBear.Testing.Http;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Testing.Http;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 

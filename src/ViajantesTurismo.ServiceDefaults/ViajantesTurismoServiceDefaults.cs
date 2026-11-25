@@ -3,8 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Trace;
-using PandaBear.Observability;
-using PandaBear.ServiceDefaults;
+using SharedKernel.Observability;
+using SharedKernel.ServiceDefaults;
 
 namespace ViajantesTurismo.ServiceDefaults;
 

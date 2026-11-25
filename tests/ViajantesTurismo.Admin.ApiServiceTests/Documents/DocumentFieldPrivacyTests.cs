@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Application;

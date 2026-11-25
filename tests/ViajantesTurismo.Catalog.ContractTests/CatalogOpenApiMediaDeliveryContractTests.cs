@@ -10,8 +10,8 @@ public sealed class CatalogOpenApiMediaDeliveryContractTests
     [Theory]
     [InlineData("public-catalog", "/api/v1/public/catalog/media/{id}/{width}/{format}")]
     [InlineData("catalog", "/api/v1/catalog/media/images/{id}/preview/{width}/{format}")]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Media_delivery_declares_image_media_types_and_not_found(string boundary, string path)
     {
         // Arrange

@@ -1,12 +1,12 @@
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Mvc;
-using PandaBear.AspNetCore;
+using SharedKernel.AspNetCore;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiErrorTelemetryTests
 {
     [Fact]
@@ -36,6 +36,6 @@ public sealed class CatalogApiErrorTelemetryTests
         recorder.Sum(
             AspNetCoreTelemetry.UnhandledExceptionsCounterName,
             AspNetCoreTelemetry.ErrorTypeTag,
-            nameof(IOException)).ShouldBe(1);
+            typeof(IOException).FullName.ShouldNotBeNull()).ShouldBe(1);
     }
 }

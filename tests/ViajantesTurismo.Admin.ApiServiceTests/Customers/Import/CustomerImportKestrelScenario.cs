@@ -1,6 +1,6 @@
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using PandaBear.Testing.AspNetCore;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Api;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Application;

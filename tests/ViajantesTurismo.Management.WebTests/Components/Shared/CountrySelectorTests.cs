@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web;
 namespace ViajantesTurismo.Management.WebTests.Components.Shared;
 

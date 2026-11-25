@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Options;
-using PandaBear.Idempotency;
-using PandaBear.BuildingBlocks;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Idempotency;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Messaging.IntegrationEvents;
 
 namespace ViajantesTurismo.Catalog.Application.IntegrationEvents;
 

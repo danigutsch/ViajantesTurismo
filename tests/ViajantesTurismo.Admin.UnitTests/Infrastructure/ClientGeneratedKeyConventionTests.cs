@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class ClientGeneratedKeyConventionTests
 {
     [Fact]

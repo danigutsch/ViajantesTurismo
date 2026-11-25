@@ -1,8 +1,8 @@
-using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using PostgreSqlTestDatabase = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection;
 using Npgsql;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Testing.Fakes;
 

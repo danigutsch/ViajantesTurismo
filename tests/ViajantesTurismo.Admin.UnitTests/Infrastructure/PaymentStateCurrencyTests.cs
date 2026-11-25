@@ -1,6 +1,6 @@
 using System.Text.Json;
-using PandaBear.BuildingBlocks;
-using PandaBear.Testing;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Payments;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
@@ -9,8 +9,8 @@ using ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
 /// <summary>Protects the ISO 4217 code that protected payment state stores for every currency.</summary>
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class PaymentStateCurrencyTests
 {
     [Fact]

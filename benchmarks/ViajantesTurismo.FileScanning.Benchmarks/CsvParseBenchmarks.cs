@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 using BenchmarkDotNet.Attributes;
-using PandaBear.Tabular;
+using SharedKernel.Tabular;
 
 namespace ViajantesTurismo.FileScanning.Benchmarks;
 

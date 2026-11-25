@@ -3,7 +3,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 

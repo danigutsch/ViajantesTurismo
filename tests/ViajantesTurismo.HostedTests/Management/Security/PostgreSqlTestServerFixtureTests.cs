@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 namespace ViajantesTurismo.HostedTests.Management.Security;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]

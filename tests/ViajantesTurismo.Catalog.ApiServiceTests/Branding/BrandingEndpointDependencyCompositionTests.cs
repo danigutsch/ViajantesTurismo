@@ -5,8 +5,8 @@ using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestT
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.DependencyInjectionCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.DependencyInjectionCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class BrandingEndpointDependencyCompositionTests
 {
     [Fact]

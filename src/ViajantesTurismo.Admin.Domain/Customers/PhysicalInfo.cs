@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using ViajantesTurismo.Admin.Domain.Shared;
-using PandaBear.Results;
+using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;

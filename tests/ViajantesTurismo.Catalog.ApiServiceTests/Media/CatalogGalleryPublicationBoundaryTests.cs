@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
-using PandaBear.Testing;
-using PandaBear.EventSourcing;
+using SharedKernel.Testing;
+using SharedKernel.EventSourcing;
 using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Application.Tours;

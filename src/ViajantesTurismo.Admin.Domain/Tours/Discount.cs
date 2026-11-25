@@ -1,6 +1,6 @@
-using PandaBear.BuildingBlocks;
-using PandaBear.Results;
-using PandaBear.InputNormalization;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Results;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

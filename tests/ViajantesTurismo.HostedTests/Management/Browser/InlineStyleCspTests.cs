@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
-using PandaBear.Testing;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing;
+using SharedKernel.Testing.Playwright;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Testing.Builders;

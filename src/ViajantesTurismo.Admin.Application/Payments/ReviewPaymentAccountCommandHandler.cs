@@ -1,7 +1,7 @@
 using ViajantesTurismo.Admin.Application.Idempotency;
 using System.Text.Json;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Application.Mappings;

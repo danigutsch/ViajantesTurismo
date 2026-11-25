@@ -18,7 +18,7 @@ internal static class TestTraits
     /// <summary>
     /// Trait value for security tests.
     /// </summary>
-    public const string SecurityCategory = PandaBear.Testing.TestTraitValues.SecurityCategory;
+    public const string SecurityCategory = SharedKernel.Testing.TestTraitValues.SecurityCategory;
 
     /// <summary>
     /// Trait value for the integration event relay capability.

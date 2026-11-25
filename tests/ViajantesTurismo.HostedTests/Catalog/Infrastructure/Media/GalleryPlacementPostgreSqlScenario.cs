@@ -4,11 +4,11 @@ using ViajantesTurismo.Catalog.Application.Tours;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.Messaging.IntegrationEvents;
-using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
-using PandaBear.ObjectStorage;
-using PandaBear.Results;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.ObjectStorage;
+using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -20,12 +20,12 @@ namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 /// <summary>Gallery placement scenario backed by a leased PostgreSQL test database.</summary>
 internal sealed class GalleryPlacementPostgreSqlScenario : IAsyncDisposable
 {
-    private readonly PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease app;
+    private readonly SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease app;
     private readonly NpgsqlDataSource mutationDataSource;
     private readonly string connectionString;
     private readonly ServiceProvider serviceProvider;
 
-    private GalleryPlacementPostgreSqlScenario(PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease app, string connectionString, ServiceProvider serviceProvider)
+    private GalleryPlacementPostgreSqlScenario(SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease app, string connectionString, ServiceProvider serviceProvider)
     {
         this.app = app;
         this.connectionString = connectionString;

@@ -1,5 +1,5 @@
-using PandaBear.Blazor;
-using PandaBear.Testing;
+using SharedKernel.Blazor;
+using SharedKernel.Testing;
 using CatalogContractConstants = ViajantesTurismo.Catalog.Contracts.Application.ContractConstants;
 using UploadImage = ViajantesTurismo.Management.Web.Components.Pages.Catalog.UploadImage;
 

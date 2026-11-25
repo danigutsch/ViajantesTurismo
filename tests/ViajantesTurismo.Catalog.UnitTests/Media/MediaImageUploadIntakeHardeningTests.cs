@@ -1,6 +1,6 @@
 using ImageMagick;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Testing.Infrastructure;
@@ -8,7 +8,7 @@ using ViajantesTurismo.Catalog.Testing.Infrastructure;
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class MediaImageUploadIntakeHardeningTests
 {
     [Theory]
@@ -68,7 +68,7 @@ public sealed class MediaImageUploadIntakeHardeningTests
         // Assert
         result.IsFailure.ShouldBeTrue();
         var errors = result.ErrorDetails.ShouldNotBeNull().ValidationErrors.ShouldNotBeNull();
-        errors["Content"].ShouldBe([PandaBear.UploadSanitizing.Images.ImageSanitizer.MalformedMessage]);
+        errors["Content"].ShouldBe([SharedKernel.UploadSanitizing.Images.ImageSanitizer.MalformedMessage]);
         scanner.ScanCount.ShouldBe(1);
         objectStore.ObjectKeys.ShouldBeEmpty();
     }

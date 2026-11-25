@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using PandaBear.Testing.Snapshots;
+using SharedKernel.Testing.Snapshots;
 using ViajantesTurismo.Admin.Application.Tours;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Application;

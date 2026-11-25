@@ -14,8 +14,8 @@ namespace ViajantesTurismo.Admin.ContractTests;
 public sealed class AsyncApiContractArtifactTests
 {
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.AsyncApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.AsyncApiSurface)]
     public void Canonical_async_API_artifact_matches_current_integration_event_contracts()
     {
         // Arrange

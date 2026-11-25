@@ -1,4 +1,4 @@
-using PandaBear.Testing.Contracts;
+using SharedKernel.Testing.Contracts;
 
 namespace ViajantesTurismo.Admin.ContractTests.Tours;
 

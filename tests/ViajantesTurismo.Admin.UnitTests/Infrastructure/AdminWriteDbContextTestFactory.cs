@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.AuditTrail;
-using PandaBear.Domain;
-using PandaBear.Domain.EntityFrameworkCore;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.AuditTrail;
+using SharedKernel.Domain;
+using SharedKernel.Domain.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Tours;

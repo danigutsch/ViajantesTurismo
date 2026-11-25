@@ -1,10 +1,10 @@
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Testing.Behavior;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class TourCustomerDocumentEligibilityTests
 {
     [Fact]

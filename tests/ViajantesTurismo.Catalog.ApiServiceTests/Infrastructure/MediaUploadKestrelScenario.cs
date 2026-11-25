@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.TestHost;
-using PandaBear.Testing.ObjectStorage;
+using SharedKernel.Testing.ObjectStorage;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;

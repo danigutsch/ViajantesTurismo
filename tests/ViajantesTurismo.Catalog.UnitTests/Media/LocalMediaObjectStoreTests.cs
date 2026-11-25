@@ -1,12 +1,12 @@
-using PandaBear.ObjectStorage;
-using PandaBear.Testing;
+using SharedKernel.ObjectStorage;
+using SharedKernel.Testing;
 using Microsoft.Extensions.Options;
 using ViajantesTurismo.Catalog.Infrastructure.Media;
 
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class LocalMediaObjectStoreTests
 {
     [Theory]

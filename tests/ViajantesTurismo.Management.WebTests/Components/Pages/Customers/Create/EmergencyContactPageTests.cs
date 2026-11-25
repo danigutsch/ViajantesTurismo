@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;

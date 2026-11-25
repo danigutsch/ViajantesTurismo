@@ -51,7 +51,7 @@ internal static class AnalyzerTestSupport
             }
         }
 
-        namespace PandaBear.Branding
+        namespace SharedKernel.Branding
         {
             public interface IBrandingApiClient
             {

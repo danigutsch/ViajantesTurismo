@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -207,7 +207,7 @@ internal static partial class AdminTestArchitectureGuardTestsHelpers
     [GeneratedRegex(@"^\s*public\s+.*\b(?:IServiceProvider|IServiceScope|CreateScope|CreateAsyncScope|RunInScope)\b", RegexOptions.Compiled)]
     private static partial Regex PublicServiceProviderReachThroughRegex();
 
-    [GeneratedRegex(@"const\s+string\s+\w+\s*=\s*(?:(?:global::)?SharedKernel\.Testing\.)?(?:TestTraitNames|SharedKernelTestTraitNames)\.\w+\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"const\s+string\s+\w+\s*=\s*(?:(?:global::)?SharedKernel\.Testing\.)?TestTraitNames\.\w+\s*;", RegexOptions.Compiled | RegexOptions.CultureInvariant)]
     private static partial Regex RedirectingCanonicalTraitNameRegex();
 
     [GeneratedRegex("\"{3,}", RegexOptions.Compiled)]

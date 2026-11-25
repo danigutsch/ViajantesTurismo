@@ -1,10 +1,10 @@
 using System.Net;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure;
 using ViajantesTurismo.Catalog.Contracts.Http;
 

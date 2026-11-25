@@ -1,13 +1,13 @@
-using PandaBear.AspNetCore;
-using PandaBear.AspNetCore.Authentication.Bff;
-using PandaBear.Blazor;
+using SharedKernel.AspNetCore;
+using SharedKernel.AspNetCore.Authentication.Bff;
+using SharedKernel.Blazor;
 using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Management.Web;
 using ViajantesTurismo.Management.Web.Components.Pages.Catalog;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.Web.Components.Pages.Payments;
 using ViajantesTurismo.Resources;
-using PandaBear.ServiceDefaults;
+using SharedKernel.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);

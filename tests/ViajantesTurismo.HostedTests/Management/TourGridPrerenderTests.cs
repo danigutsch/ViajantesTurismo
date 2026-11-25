@@ -1,6 +1,6 @@
 using System.Net;
-using PandaBear.Testing;
-using PandaBear.Testing.AspNetCore;
+using SharedKernel.Testing;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Domain.Tours;

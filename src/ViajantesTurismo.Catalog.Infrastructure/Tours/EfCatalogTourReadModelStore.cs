@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.BuildingBlocks;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.EntityFrameworkCore.Npgsql;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore.Npgsql;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
-using PandaBear.InputNormalization;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Tours;
 

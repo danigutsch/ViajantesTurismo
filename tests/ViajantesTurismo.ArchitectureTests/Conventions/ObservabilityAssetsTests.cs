@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilityAssetsTestsHelpers;
 using static ViajantesTurismo.ArchitectureTests.Conventions.ObservabilitySignalCatalog;
 
@@ -260,7 +260,7 @@ public sealed class ObservabilityAssetsTests
     public void The_event_store_append_conflict_panel_queries_the_pinned_counter()
     {
         // Arrange
-        var counter = PandaBear.EventSourcing.Npgsql.PostgreSqlEventSourcingTelemetry.MetricAppendConflicts;
+        var counter = SharedKernel.EventSourcing.Npgsql.PostgreSqlEventSourcingTelemetry.MetricAppendConflicts;
         var prometheusName = $"{counter.Replace('.', '_')}_total";
 
         // Act

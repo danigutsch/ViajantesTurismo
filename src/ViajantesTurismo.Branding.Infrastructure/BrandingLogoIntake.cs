@@ -1,11 +1,11 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
-using PandaBear.BuildingBlocks;
-using PandaBear.ImageProcessing;
-using PandaBear.IO;
-using PandaBear.MalwareScanning;
-using PandaBear.Results;
-using PandaBear.UploadSanitizing.Images;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.ImageProcessing;
+using SharedKernel.IO;
+using SharedKernel.MalwareScanning;
+using SharedKernel.Results;
+using SharedKernel.UploadSanitizing.Images;
 
 namespace ViajantesTurismo.Branding.Infrastructure;
 

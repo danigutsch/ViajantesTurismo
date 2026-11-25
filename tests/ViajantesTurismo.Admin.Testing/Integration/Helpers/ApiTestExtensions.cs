@@ -283,16 +283,16 @@ public static class ApiTestExtensions
         async Task<GetBookingFinancialHistoryDto> Read()
         {
             var outcome = await payments.GetByBookingId(bookingId, CancellationToken.None);
-            if (outcome.Kind != PandaBear.HttpClients.HttpOutcomeKind.Succeeded || outcome.Value is null)
+            if (outcome.Kind != SharedKernel.HttpClients.HttpOutcomeKind.Succeeded || outcome.Value is null)
             {
                 throw new InvalidOperationException($"Financial test setup failed: {outcome.Kind}.");
             }
             return outcome.Value;
         }
 
-        GetPaymentCommandResultDto Confirm(PandaBear.HttpClients.HttpOutcome<GetPaymentCommandResultDto> outcome)
+        GetPaymentCommandResultDto Confirm(SharedKernel.HttpClients.HttpOutcome<GetPaymentCommandResultDto> outcome)
         {
-            if (outcome.Kind != PandaBear.HttpClients.HttpOutcomeKind.Succeeded || outcome.Value is null)
+            if (outcome.Kind != SharedKernel.HttpClients.HttpOutcomeKind.Succeeded || outcome.Value is null)
             {
                 throw new InvalidOperationException($"Financial test setup failed: {outcome.Kind}.");
             }

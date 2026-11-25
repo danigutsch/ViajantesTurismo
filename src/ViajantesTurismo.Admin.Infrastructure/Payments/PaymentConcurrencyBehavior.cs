@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Payments;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;

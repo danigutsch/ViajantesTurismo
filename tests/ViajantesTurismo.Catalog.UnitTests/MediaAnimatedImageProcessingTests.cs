@@ -1,11 +1,11 @@
 using ImageMagick;
-using PandaBear.ImageProcessing;
+using SharedKernel.ImageProcessing;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 /// <summary>Documents what the shared image processor does with animated input; the Catalog pipeline accepts animated uploads.</summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class MediaAnimatedImageProcessingTests
 {
     [Theory]

@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Behavior;
 using ViajantesTurismo.Admin.Testing.Fakes;
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Customers;
 using ViajantesTurismo.Admin.Testing.Builders;
 

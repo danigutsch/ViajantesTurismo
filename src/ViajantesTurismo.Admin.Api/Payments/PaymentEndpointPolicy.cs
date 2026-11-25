@@ -1,5 +1,5 @@
-using PandaBear.Idempotency;
-using PandaBear.Results;
+using SharedKernel.Idempotency;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Api.Payments;

@@ -1,5 +1,5 @@
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Customers.Import;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Testing.Fakes;

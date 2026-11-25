@@ -1,12 +1,12 @@
-using PandaBear.DispositionHold;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.DispositionHold;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents.Holds;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentHoldAuditTests
 {
     [Fact]

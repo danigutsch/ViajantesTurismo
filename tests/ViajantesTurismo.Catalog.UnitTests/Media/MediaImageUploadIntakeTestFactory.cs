@@ -1,4 +1,4 @@
-using PandaBear.ObjectStorage;
+using SharedKernel.ObjectStorage;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;

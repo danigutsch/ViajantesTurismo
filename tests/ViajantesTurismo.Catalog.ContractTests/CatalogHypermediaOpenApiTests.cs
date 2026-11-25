@@ -3,8 +3,8 @@ using ViajantesTurismo.Catalog.ContractTests.Infrastructure;
 namespace ViajantesTurismo.Catalog.ContractTests;
 
 /// <summary>Guards the hypermedia schema for Catalog resource responses.</summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
 public sealed class CatalogHypermediaOpenApiTests
 {
     [Theory]

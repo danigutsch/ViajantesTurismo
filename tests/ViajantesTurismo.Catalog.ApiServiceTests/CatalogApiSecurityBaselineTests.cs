@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore;
+using SharedKernel.AspNetCore;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Api;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiSecurityBaselineTests
 {
     [Fact]

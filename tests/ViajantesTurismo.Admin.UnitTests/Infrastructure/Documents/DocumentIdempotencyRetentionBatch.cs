@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using PandaBear.Mediator;
+using SharedKernel.Mediator;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Infrastructure.Documents;

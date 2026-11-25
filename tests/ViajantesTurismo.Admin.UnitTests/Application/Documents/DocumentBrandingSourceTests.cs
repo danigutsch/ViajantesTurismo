@@ -1,7 +1,7 @@
 using System.Text;
 using ImageMagick;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Testing.Builders;
@@ -11,7 +11,7 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentBrandingSourceTests
 {
     [Fact]

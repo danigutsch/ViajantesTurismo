@@ -4,7 +4,7 @@ using ViajantesTurismo.Admin.Domain.Customers;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
 public sealed class CivilDatePersistenceTests
 {
     [Theory]
@@ -40,7 +40,7 @@ public sealed class CivilDatePersistenceTests
         var restored = converter.ConvertFromProvider(stored);
 
         // Assert
-        restored.ShouldBe(PandaBear.BuildingBlocks.BirthDate.Restore(stored));
+        restored.ShouldBe(SharedKernel.BuildingBlocks.BirthDate.Restore(stored));
         converter.ConvertToProvider(restored).ShouldBe(stored);
     }
 }

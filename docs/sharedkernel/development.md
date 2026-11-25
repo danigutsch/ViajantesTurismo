@@ -31,6 +31,27 @@ preview versions while their package lines have only preview releases.
 [S3 package](https://www.nuget.org/packages/AWSSDK.S3/4.1.2) ·
 [Dependency review](../ci/dependency-license-evidence.md)
 
+## Runtime identifier upgrade
+
+The SharedKernel runtime identifier rename changes the Management Web token-session claims.
+An existing Management Web session signs out at its first authenticated request after adoption.
+Complete the rollout before asking operators to sign in again. Old and new Management Web
+instances recognize different claim names, so a mixed rollout can prompt another sign-in.
+After rollback, wait until all Management Web instances run the restored version before signing in again.
+Older server-side tickets still decrypt with the same Data Protection purpose and use
+`IssuedUtc` in place of the old session-start item. Cookie sign-out removes a rejected ticket.
+Remaining cached tokens expire under the established session policy.
+[SharedKernel runtime identifier change](https://github.com/danigutsch/PandaBear.SharedKernel/commit/aa5bbfd128b895f32d7af29ac4907d91bca5b13d)
+
+The EF package now records unique-rule names as `SharedKernel:UniqueRule`. The rename
+produces zero relational migration operations for Admin, Catalog, and Branding. Each context's
+next model-driven migration records the canonical key in its generated snapshot while preserving
+its committed migration history.
+
+The named HTTP clients now use `SharedKernel.AspNetCore.Authentication.Bff.IdentityProvider`,
+`SharedKernel.AspNetCore.WebAnalytics.Umami`, and `SharedKernel.Aspire.Hosting.Umami` in their
+log and HTTP client identifiers.
+
 ## Earlier candidates
 
 Candidate [`0.1.0-alpha.774.1`](https://github.com/danigutsch/PandaBear.SharedKernel/releases/tag/v0.1.0-alpha.774.1)

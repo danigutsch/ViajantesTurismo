@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -6,7 +6,7 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentAuditWriterTests
 {
     [Fact]

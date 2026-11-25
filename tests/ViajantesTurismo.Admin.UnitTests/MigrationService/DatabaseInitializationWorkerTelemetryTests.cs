@@ -1,14 +1,14 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.UnitTests.Infrastructure;
 using ViajantesTurismo.MigrationService;
-using PandaBear.Testing.Logging;
+using SharedKernel.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.UnitTests.MigrationService;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class DatabaseInitializationWorkerTelemetryTests
 {
     [Fact]

@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Tours;
-using PandaBear.InputNormalization;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;
 

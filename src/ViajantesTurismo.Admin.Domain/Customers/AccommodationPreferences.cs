@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Shared;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;

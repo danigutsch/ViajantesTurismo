@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
-using PandaBear.MalwareScanning;
+using SharedKernel.MalwareScanning;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Api;
-using PandaBear.Testing.Logging;
+using SharedKernel.Testing.Logging;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure;
 

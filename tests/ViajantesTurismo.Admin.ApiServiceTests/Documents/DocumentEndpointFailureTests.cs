@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using PandaBear.Testing;
-using PandaBear.Idempotency;
+using SharedKernel.Testing;
+using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -14,7 +14,7 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentEndpointFailureTests
 {
     private const string OversizedIdempotencyKey =

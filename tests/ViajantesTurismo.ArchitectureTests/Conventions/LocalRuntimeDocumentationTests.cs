@@ -1,6 +1,6 @@
 using Aspire.Hosting.ApplicationModel;
-using PandaBear.IntegrationTesting;
-using PandaBear.Testing;
+using SharedKernel.IntegrationTesting;
+using SharedKernel.Testing;
 using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
 

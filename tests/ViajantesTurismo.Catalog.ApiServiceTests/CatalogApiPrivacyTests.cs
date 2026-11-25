@@ -4,8 +4,8 @@ using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogApiPrivacyTests
 {
     [Fact]

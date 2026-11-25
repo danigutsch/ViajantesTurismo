@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using PandaBear.Results;
-using PandaBear.Testing.MalwareScanning;
+using SharedKernel.Results;
+using SharedKernel.Testing.MalwareScanning;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Branding.InfrastructureTests.Infrastructure;

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.BuildingBlocks;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Fakes;

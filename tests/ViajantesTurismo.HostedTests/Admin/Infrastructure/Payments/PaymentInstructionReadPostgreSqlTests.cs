@@ -1,6 +1,6 @@
-using PandaBear.BuildingBlocks;
-using PandaBear.Idempotency;
-using PandaBear.Testing;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Idempotency;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
@@ -9,8 +9,8 @@ using ViajantesTurismo.Admin.Testing.Behavior;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class PaymentInstructionReadPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {

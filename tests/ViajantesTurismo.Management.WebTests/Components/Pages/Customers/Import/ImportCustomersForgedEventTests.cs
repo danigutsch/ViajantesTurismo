@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
@@ -12,7 +12,7 @@ public sealed class ImportCustomersForgedEventTests : BunitContext
 
     public ImportCustomersForgedEventTests()
     {
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<ICustomersApiClient>(fakeCustomersApi);
     }

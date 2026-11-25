@@ -1,10 +1,10 @@
 using ViajantesTurismo.Admin.Testing;
 using Npgsql;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class BookingCancellationAtDocumentPersistenceScenarioTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {

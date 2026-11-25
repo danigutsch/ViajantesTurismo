@@ -1,4 +1,4 @@
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 

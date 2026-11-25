@@ -1,10 +1,10 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.Playwright;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing.Playwright;
 using TestTraits = ViajantesTurismo.HostedTests.Admin.System.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.HostedTests.Admin.System.Shared;

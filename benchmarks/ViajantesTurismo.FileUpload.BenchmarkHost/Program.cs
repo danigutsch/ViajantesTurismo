@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
-using PandaBear.IO;
+using SharedKernel.IO;
 
 const byte TargetByte = 0x5A;
 const int BufferLength = 64 * 1024;

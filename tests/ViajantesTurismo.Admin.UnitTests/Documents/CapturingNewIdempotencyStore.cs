@@ -1,4 +1,4 @@
-using PandaBear.Idempotency;
+using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;

@@ -1,8 +1,8 @@
-using PandaBear.Mediator;
+using SharedKernel.Mediator;
 using ViajantesTurismo.Admin.Application.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Customers;
-using PandaBear.Results;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Application.Customers.Import;
 

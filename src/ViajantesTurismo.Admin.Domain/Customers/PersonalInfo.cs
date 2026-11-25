@@ -1,8 +1,8 @@
-using PandaBear.BuildingBlocks;
-using SharedBirthDate = PandaBear.BuildingBlocks.BirthDate;
-using PandaBear.Results;
+using SharedKernel.BuildingBlocks;
+using SharedBirthDate = SharedKernel.BuildingBlocks.BirthDate;
+using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
-using PandaBear.InputNormalization;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 

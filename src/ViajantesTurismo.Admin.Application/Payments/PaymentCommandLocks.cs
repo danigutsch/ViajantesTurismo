@@ -1,4 +1,4 @@
-using PandaBear.Idempotency;
+using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.Application.Idempotency;
 
 namespace ViajantesTurismo.Admin.Application.Payments;

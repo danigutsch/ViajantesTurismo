@@ -5,7 +5,7 @@ using ViajantesTurismo.Management.Security;
 using ViajantesTurismo.MigrationService;
 using ViajantesTurismo.MigrationService.GovernedMigrations;
 using ViajantesTurismo.Resources;
-using PandaBear.ServiceDefaults;
+using SharedKernel.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
 if (args is ["plan", ..])

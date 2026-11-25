@@ -1,10 +1,10 @@
-using PandaBear.Branding;
-using PandaBear.Testing;
+using SharedKernel.Branding;
+using SharedKernel.Testing;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class BrandingStateTransferPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Infrastructure.DispositionHolds;
 

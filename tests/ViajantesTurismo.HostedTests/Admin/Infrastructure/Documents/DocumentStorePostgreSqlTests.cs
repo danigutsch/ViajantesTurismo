@@ -1,11 +1,11 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using PandaBear.Idempotency;
-using PandaBear.Testing;
+using SharedKernel.Idempotency;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Documents;
@@ -14,8 +14,8 @@ using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CapabilityName, ViajantesTurismo.Admin.Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fixture) : IAsyncLifetime, IClassFixture<PostgreSqlTestServerFixture>
 {
@@ -762,7 +762,7 @@ public sealed class DocumentStorePostgreSqlTests(PostgreSqlTestServerFixture fix
         // Assert
         Attempts.Count(attempt => attempt.IsSuccess).ShouldBe(1);
         Attempts.ShouldHaveSingleItem(attempt => attempt.IsFailure)
-            .Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+            .Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         var returnedDocumentIds = Attempts
             .Where(attempt => attempt.IsSuccess)
             .Select(attempt => attempt.Value)

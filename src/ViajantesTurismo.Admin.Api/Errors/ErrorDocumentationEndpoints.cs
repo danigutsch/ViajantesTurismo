@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.HttpCaching.AspNetCore;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Domain.Tours;

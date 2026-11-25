@@ -1,5 +1,5 @@
 using System.Net;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
@@ -256,7 +256,7 @@ internal sealed class FakeCatalogToursApiClient : ICatalogToursApiClient
             return Task.FromResult(TransportFailure<CatalogTourPageDto>());
         }
 
-        var window = PandaBear.BuildingBlocks.PageWindow.Create(page, CatalogTourPageDto.ItemsPerPage, Tours.Length);
+        var window = SharedKernel.BuildingBlocks.PageWindow.Create(page, CatalogTourPageDto.ItemsPerPage, Tours.Length);
         var items = Tours.Skip(window.Skip).Take(window.Take).Select(tour => new CatalogTourListItemDto(
             tour.Id, tour.Identifier, tour.Title, tour.Slug, tour.IsPublished, tour.UpdatedAt)).ToArray();
         return Task.FromResult(HttpOutcomeMapper.Succeeded(HttpStatusCode.OK, new CatalogTourPageDto(items, window.Total)));

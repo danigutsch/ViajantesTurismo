@@ -1,7 +1,7 @@
-using PandaBear.Mediator;
+using SharedKernel.Mediator;
 using ViajantesTurismo.Admin.Domain.Customers;
-using PandaBear.Results;
-using PandaBear.InputNormalization;
+using SharedKernel.Results;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Application.Customers.UpdateCustomer;
 

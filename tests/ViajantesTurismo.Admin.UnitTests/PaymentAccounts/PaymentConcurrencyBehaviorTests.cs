@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.Idempotency;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Idempotency;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
@@ -10,7 +10,7 @@ using ViajantesTurismo.Admin.UnitTests.Infrastructure;
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 public sealed class PaymentConcurrencyBehaviorTests
 {
     [Fact]

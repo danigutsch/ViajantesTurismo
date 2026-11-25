@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using AdminContractConstants = ViajantesTurismo.Admin.Contracts.Application.ContractConstants;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;

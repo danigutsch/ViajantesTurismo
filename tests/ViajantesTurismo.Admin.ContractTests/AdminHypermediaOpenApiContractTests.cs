@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.ContractTests.Infrastructure;
 using static ViajantesTurismo.Admin.ContractTests.AdminHypermediaOpenApiAssertions;
 

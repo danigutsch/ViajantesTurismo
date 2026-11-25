@@ -1,6 +1,6 @@
 using Microsoft.Playwright;
-using PandaBear.Testing.Playwright;
-using PandaBear.Testing.Snapshots;
+using SharedKernel.Testing.Playwright;
+using SharedKernel.Testing.Snapshots;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;

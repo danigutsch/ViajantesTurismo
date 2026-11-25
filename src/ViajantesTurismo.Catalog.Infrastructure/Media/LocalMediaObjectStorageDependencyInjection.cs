@@ -1,4 +1,4 @@
-using PandaBear.ObjectStorage;
+using SharedKernel.ObjectStorage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;

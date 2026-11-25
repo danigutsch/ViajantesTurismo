@@ -1,4 +1,4 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using Microsoft.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Application.Bookings;
 using ViajantesTurismo.Admin.Application.Mappings;

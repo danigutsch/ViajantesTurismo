@@ -1,6 +1,6 @@
 using System.Text;
 using System.Xml.Linq;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Repository;
 

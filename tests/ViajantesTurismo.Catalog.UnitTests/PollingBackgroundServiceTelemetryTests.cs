@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using PandaBear.Scheduling;
+using SharedKernel.Scheduling;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

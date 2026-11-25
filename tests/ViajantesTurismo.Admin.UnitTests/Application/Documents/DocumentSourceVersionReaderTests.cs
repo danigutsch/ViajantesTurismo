@@ -15,7 +15,7 @@ public sealed class DocumentSourceVersionReaderTests
         var result = await reader.Read(Guid.CreateVersion7(), TestContext.Current.CancellationToken);
 
         // Assert
-        result.Result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.Result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
         result.MissingSource.ShouldBe(DocumentSourceKind.Booking);
     }
 
@@ -31,7 +31,7 @@ public sealed class DocumentSourceVersionReaderTests
         var result = await reader.Read(bookingId, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.Result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
         result.MissingSource.ShouldBe(DocumentSourceKind.Tour);
     }
 

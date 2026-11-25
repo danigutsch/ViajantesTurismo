@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 

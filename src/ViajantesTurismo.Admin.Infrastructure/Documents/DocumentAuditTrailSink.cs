@@ -1,5 +1,5 @@
-using PandaBear.AuditTrail;
-using PandaBear.EntityFrameworkCore;
+using SharedKernel.AuditTrail;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;

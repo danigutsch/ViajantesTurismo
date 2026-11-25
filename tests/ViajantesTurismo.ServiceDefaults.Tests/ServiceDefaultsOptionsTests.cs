@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PandaBear.ServiceDefaults;
+using SharedKernel.ServiceDefaults;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.ServiceDefaultsArea)]
 public static class ServiceDefaultsOptionsTests
 {
     [Fact]

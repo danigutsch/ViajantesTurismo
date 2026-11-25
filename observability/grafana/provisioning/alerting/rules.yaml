@@ -216,7 +216,7 @@ groups:
               to: 0
             datasourceUid: Prometheus
             model:
-              expr: "(sum(increase(unhandled_exceptions_total[5m])) or vector(0)) + (sum(unhandled_exceptions_total unless unhandled_exceptions_total offset 5m) or vector(0))"
+              expr: "(sum(increase(sharedkernel_aspnetcore_unhandled_exceptions_total[5m])) or vector(0)) + (sum(sharedkernel_aspnetcore_unhandled_exceptions_total unless sharedkernel_aspnetcore_unhandled_exceptions_total offset 5m) or vector(0))"
               instant: true
               refId: A
           - refId: B

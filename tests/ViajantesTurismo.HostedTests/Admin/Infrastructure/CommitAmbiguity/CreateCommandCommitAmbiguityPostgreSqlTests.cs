@@ -1,11 +1,11 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Customers.CreateCustomer;
 using ViajantesTurismo.Admin.Application.Tours.CreateTour;
 using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.CommitAmbiguity;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CreateCommandCommitAmbiguityPostgreSqlTests(PostgreSqlTestServerFixture fixture)
     : IClassFixture<PostgreSqlTestServerFixture>

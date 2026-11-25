@@ -1,6 +1,6 @@
-using PandaBear.Idempotency;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Idempotency;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Contracts.Application;
 
 namespace ViajantesTurismo.Admin.Application.Payments;

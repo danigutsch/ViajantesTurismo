@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Hosting;
-using PandaBear.Observability.Npgsql;
-using PandaBear.Testing;
+using SharedKernel.Observability.Npgsql;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.DatabaseObservability.Tests;
 

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization.Metadata;
 
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 
 namespace ViajantesTurismo.RepositoryDocumentation.AsyncApi;
 

@@ -1,8 +1,8 @@
 
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(PandaBear.Testing.SharedKernelTestTraitNames.CapabilityName, TestTraits.MediaCapability)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.MediaCapability)]
 public sealed class MediaObjectReconciliationHostedServiceTests
 {
     [Fact]

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -8,7 +8,7 @@ using ViajantesTurismo.Catalog.Infrastructure.Tours;
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 /// <summary>Exercises the Catalog retirement fence against the PostgreSQL stores.</summary>
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogTourRetirementPostgreSqlTests(HostedTestFixture shared)
 {

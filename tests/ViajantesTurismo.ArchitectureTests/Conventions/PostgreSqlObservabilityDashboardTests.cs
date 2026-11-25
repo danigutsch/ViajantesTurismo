@@ -1,5 +1,5 @@
 using System.Text.Json;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
@@ -32,10 +32,10 @@ public sealed class PostgreSqlObservabilityDashboardTests
         // Assert
         dashboardUid.ShouldBe("postgresql-observability");
         expressions.ShouldContain(expression => expression.Contains(
-            "postgresql_index_health_collections_total",
+            "sharedkernel_index_health_collections_total",
             StringComparison.Ordinal));
         expressions.ShouldContain(expression => expression.Contains(
-            "postgresql_index_health_assessments_total",
+            "sharedkernel_index_health_assessments_total",
             StringComparison.Ordinal));
         foreach (var expression in expressions)
         {

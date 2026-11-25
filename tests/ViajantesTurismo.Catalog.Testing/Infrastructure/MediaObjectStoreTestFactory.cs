@@ -1,4 +1,4 @@
-using PandaBear.Testing.ObjectStorage;
+using SharedKernel.Testing.ObjectStorage;
 using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Testing.Infrastructure;

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
-using PandaBear.BuildingBlocks;
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.HttpCaching.AspNetCore;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.PublicContent;

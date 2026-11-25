@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-using PandaBear.Documentation;
+using SharedKernel.Documentation;
 
 namespace ViajantesTurismo.RepositoryDocumentation.Architecture;
 

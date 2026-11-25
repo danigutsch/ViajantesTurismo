@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Application.Documents.Holds;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentLifecycleCommandHandlerTests
 {
     [Fact]
@@ -127,7 +127,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
         command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.ValidationRejected);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }
@@ -178,7 +178,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         document.Status.ShouldBe(DocumentStatus.InReview);
         command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
     }
@@ -205,7 +205,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(DocumentErrors.TemplateChangedSinceDraft().ErrorDetails!.Detail);
         document.Status.ShouldBe(DocumentStatus.InReview);
         command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
@@ -243,7 +243,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         result.ErrorDetails.ShouldNotBeNull().Detail.ShouldBe(
             DocumentErrors.InvalidStatusTransition(status, DocumentStatus.Approved).ErrorDetails!.Detail);
         document.Status.ShouldBe(status);
@@ -272,7 +272,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
         document.Status.ShouldBe(DocumentStatus.InReview);
         command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.TourNotFound);
     }
@@ -299,7 +299,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
         document.Status.ShouldBe(DocumentStatus.InReview);
         command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.BookingNotFound);
     }
@@ -551,7 +551,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         document.Status.ShouldBe(DocumentStatus.Finalized);
         command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.StateConflict);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
@@ -576,7 +576,7 @@ public sealed class DocumentLifecycleCommandHandlerTests
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Status.ShouldBe(PandaBear.Results.ResultStatus.Invalid);
+        result.Status.ShouldBe(SharedKernel.Results.ResultStatus.Invalid);
         command.TakeRejectionAudit().ShouldNotBeNull().ReasonCode.ShouldBe(DocumentAuditReasonCode.ValidationRejected);
         unitOfWork.SaveEntitiesCallCount.ShouldBe(0);
     }

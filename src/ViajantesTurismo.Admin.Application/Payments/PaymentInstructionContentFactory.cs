@@ -1,5 +1,5 @@
 using ViajantesTurismo.Admin.Application.Idempotency;
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Domain.Payments;

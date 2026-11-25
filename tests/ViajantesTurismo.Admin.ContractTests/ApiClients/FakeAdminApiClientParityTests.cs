@@ -2,7 +2,7 @@ using ViajantesTurismo.Admin.Testing.Fakes.ApiClients;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
 public sealed class FakeAdminApiClientParityTests
 {
     [Fact]

@@ -2,11 +2,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Management.Security;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 [Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
 [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
 [TestScope(TestScope.Integration)]

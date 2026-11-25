@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using System.Text;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Customers.Import;

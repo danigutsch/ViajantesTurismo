@@ -2,8 +2,8 @@ using ViajantesTurismo.Admin.Infrastructure.Customers;
 using ViajantesTurismo.Admin.Infrastructure.Tours;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
-using PandaBear.Messaging.IntegrationEvents;
-using PandaBear.Testing;
+using SharedKernel.Messaging.IntegrationEvents;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -11,7 +11,7 @@ using ViajantesTurismo.Admin.UnitTests.Application.IntegrationEvents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
 public sealed class AdminInfrastructureModuleTests
 {
     [Theory]
@@ -32,7 +32,7 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    [Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
     public void AddInfrastructure_registers_npgsql_tracing_and_metrics()
     {
         // Arrange

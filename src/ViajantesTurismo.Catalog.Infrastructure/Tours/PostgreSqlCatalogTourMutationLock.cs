@@ -1,6 +1,6 @@
 using System.Globalization;
 using Npgsql;
-using PandaBear.Npgsql;
+using SharedKernel.Npgsql;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Tours;

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using PandaBear.BuildingBlocks;
-using PandaBear.Results;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Domain.Payments;
 

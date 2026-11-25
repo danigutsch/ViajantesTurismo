@@ -1,9 +1,9 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Documents;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentLineageLifecycleTests
 {
     [Fact]
@@ -71,14 +71,14 @@ public sealed class DocumentLineageLifecycleTests
         var lineage = DocumentLineageTestData.Create();
         var auditContext = DocumentAuditTestData.CreateContext();
         var revision = lineage.Revisions.ShouldHaveSingleItem();
-        lineage.EnsureCanApprove(revision.Id).Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        lineage.EnsureCanApprove(revision.Id).Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         lineage.BeginReview(revision.Id, now, auditContext).IsSuccess.ShouldBeTrue();
 
         // Act and Assert
         lineage.EnsureCanApprove(revision.Id).IsSuccess.ShouldBeTrue();
-        lineage.EnsureCanFinalize(revision.Id).Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        lineage.EnsureCanFinalize(revision.Id).Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         lineage.Approve(revision.Id, now, auditContext).IsSuccess.ShouldBeTrue();
-        lineage.EnsureCanApprove(revision.Id).Status.ShouldBe(PandaBear.Results.ResultStatus.Conflict);
+        lineage.EnsureCanApprove(revision.Id).Status.ShouldBe(SharedKernel.Results.ResultStatus.Conflict);
         lineage.EnsureCanFinalize(revision.Id).IsSuccess.ShouldBeTrue();
         revision.Status.ShouldBe(DocumentStatus.Approved);
     }
@@ -90,7 +90,7 @@ public sealed class DocumentLineageLifecycleTests
         var lineage = DocumentLineageTestData.Create();
 
         // Act and Assert
-        lineage.EnsureCanApprove(Guid.CreateVersion7()).Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
-        lineage.EnsureCanFinalize(Guid.CreateVersion7()).Status.ShouldBe(PandaBear.Results.ResultStatus.NotFound);
+        lineage.EnsureCanApprove(Guid.CreateVersion7()).Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
+        lineage.EnsureCanFinalize(Guid.CreateVersion7()).Status.ShouldBe(SharedKernel.Results.ResultStatus.NotFound);
     }
 }

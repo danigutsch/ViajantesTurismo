@@ -1,8 +1,8 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using JetBrains.Annotations;
-using PandaBear.Results;
+using SharedKernel.Results;
 using static ViajantesTurismo.Admin.Domain.Customers.CustomerErrors;
-using PandaBear.InputNormalization;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Admin.Domain.Customers;
 

@@ -1,5 +1,5 @@
 using System.Text;
-using PandaBear.IO;
+using SharedKernel.IO;
 
 namespace ViajantesTurismo.MigrationService.GovernedMigrations;
 

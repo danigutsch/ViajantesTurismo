@@ -1,8 +1,8 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 public sealed class NpgsqlPoolMetricTagTests
 {
     private const string ConnectionString =

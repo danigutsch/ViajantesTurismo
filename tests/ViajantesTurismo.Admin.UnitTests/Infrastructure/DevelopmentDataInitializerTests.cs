@@ -1,8 +1,8 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.Admin.UnitTests.Infrastructure;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.PersistenceCategory)]
 public sealed class DevelopmentDataInitializerTests
 {
     [Fact]

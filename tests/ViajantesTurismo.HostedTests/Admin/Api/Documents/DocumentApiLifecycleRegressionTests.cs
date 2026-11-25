@@ -5,12 +5,12 @@ using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using System.Text;
 using System.Text.Json;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentApiLifecycleRegressionTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {

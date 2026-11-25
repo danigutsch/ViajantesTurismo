@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
-using PandaBear.IntegrationTesting;
-using PandaBear.Testing;
+using SharedKernel.IntegrationTesting;
+using SharedKernel.Testing;
 using Xunit.Sdk;
 using Xunit.v3;
 

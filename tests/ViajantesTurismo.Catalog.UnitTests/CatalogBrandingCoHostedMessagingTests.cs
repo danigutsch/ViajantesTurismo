@@ -1,11 +1,11 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.Catalog.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
 public sealed class CatalogBrandingCoHostedMessagingTests
 {
     [Fact]

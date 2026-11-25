@@ -1,4 +1,4 @@
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing.Playwright;
 using Microsoft.Playwright;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using static Microsoft.Playwright.Assertions;

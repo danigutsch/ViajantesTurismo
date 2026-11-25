@@ -1,10 +1,10 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.Customers;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.UnitTests.Domain;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, "Regression")]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, "Regression")]
 public sealed class CivilDateBoundaryTests
 {
     [Theory]

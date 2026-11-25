@@ -68,13 +68,13 @@ Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exerci
 | Rate limiting and input size limits | Implemented | `docs/security/security-baseline.md` (named rate-limit policies, import size caps) |
 | Do not send exception text or stack traces to clients | Implemented | No exception text is sent to clients; development exception pages are gated by environment in `src/ViajantesTurismo.Management.Web/Program.cs` and `src/ViajantesTurismo.Public.Web/Program.cs` |
 | Global exception handler on every service | Partial | The Admin and Catalog API hosts (the Catalog API also hosts Branding) register `AddUnhandledExceptionHandler` and `UseExceptionHandler` in their `Program.cs`; Management.Web and Public.Web keep `/Error` pages |
-| Consistent 4xx/5xx mapping and monitoring | Partial | The mapping exists; the API hosts export `unhandled_exceptions_total`, but no alert or 5xx ratio rule consumes it yet |
+| Consistent 4xx/5xx mapping and monitoring | Partial | Local Grafana tracks the HTTP 5xx ratio and the `sharedkernel_aspnetcore_unhandled_exceptions_total` counter from the API hosts. Production routing is pending. |
 | Validation text authored by us, no echo of input | Implemented | Domain errors echo only domain enum names, integers and limits, never caller-supplied text; see the rule under Tier 2 and [ADR-043](../adr/20261028-domain-error-messages-may-echo-domain-terms.md). The documentation 404 uses a fixed detail |
-| Log security events (authentication, authorization, rate limit, validation failures) | Partial | The Admin and Catalog API hosts call `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry` (JWT bearer failure, challenge, forbidden, rate-limit rejection; `EventId` 4101 and 4102); validation failures are not logged as security events |
-| Handle UI-level errors without losing the session | Implemented | `src/ViajantesTurismo.Management.Web/Components/Layout/MainLayout.razor` wraps page content in the SharedKernel `RecoveryErrorBoundary`, which shows fixed recovery copy, resets on navigation and logs through `IUiFailureReporter`; `blazor-error-ui` remains as the last resort. Handled failures are logged and counted in `handled_ui_failures_total` (meter `PandaBear.Blazor`, tags `error_type` and `operation`) |
+| Log security events (authentication, authorization, rate limit, validation failures) | Partial | The Admin and Catalog API hosts call `AddAuthenticationEventTelemetry` and `AddRateLimitEventTelemetry` (JWT bearer failure, challenge, forbidden, rate-limit rejection; `EventId` 4002 and 4003); validation failures are not logged as security events |
+| Handle UI-level errors without losing the session | Implemented | `src/ViajantesTurismo.Management.Web/Components/Layout/MainLayout.razor` wraps page content in the SharedKernel `RecoveryErrorBoundary`, which shows fixed recovery copy, resets on navigation and logs through `IUiFailureReporter`; `blazor-error-ui` remains as the last resort. Handled failures are logged and counted in `sharedkernel_blazor_handled_failures_total` (meter `SharedKernel.Blazor`, attributes `error.type` and `sharedkernel.blazor.operation`) |
 | Incident response process | Partial | Notes only in `docs/operations/production-readiness.md`; `SECURITY.md` covers vulnerability reporting only |
 | Protect logs from tampering and unauthorized access | Partial | The observability stack under `observability/` is local-only |
-| Alert on errors and suspicious activity | Missing | The signals now exist (`unhandled_exceptions_total`, `authentication_events_total`, `rate_limit_rejections_total`), but `observability/` has no alert rules; `docs/operations/production-readiness.md` says thresholds are undecided |
+| Alert on errors and suspicious activity | Partial | Grafana has local alerts for unhandled exceptions and the HTTP 5xx ratio. The HTTP platform dashboard also shows authentication and rate-limit counts. Production routing is pending. |
 | Summarize repeated errors | Missing | No aggregation of repeated errors |
 | Never swallow exceptions silently | Partial | The malware-scanner catch in `src/ViajantesTurismo.Admin.Api/Customers/Import/CustomerImportEndpoints.cs` now logs `EventId` 1 `CustomerImportScannerFailed` with the failure type and still fails closed; the Management.Web pages that catch `Exception` report through `IUiFailureReporter` (`EventId` 7001, exception type and trace id only) and still show fixed copy |
 | Honeytokens | Missing | Not expected now |
@@ -83,9 +83,11 @@ Status as of 2026-10-27, from a read-only audit. Runtime behavior was not exerci
 
 Triage uses regular telemetry only. There is no separate error-tracking system.
 
-1. Unhandled failures are logged with `EventId` 4001 and counted in `unhandled_exceptions_total` tagged `error_type`, `route_template`, and `handled`.
+1. Unhandled failures are logged with `EventId` 4001 and counted in
+   `sharedkernel_aspnetcore_unhandled_exceptions_total` tagged `error.type`, `http.route`,
+   and `sharedkernel.aspnetcore.handled`.
    Handled failures that would otherwise be swallowed are logged with their own stable `EventId`.
-2. An alert fires when a first-seen `error_type` appears, or when the 5xx ratio breaches its threshold.
+2. Check the unhandled-exceptions alert for observations in its query window and the HTTP 5xx ratio alert for elevated server errors.
 3. The responder opens the trace id in the logs and traces backend and classifies the error as known or new.
 4. The fix starts with a failing test, as required by the repository `AGENTS.md`. Then add or adjust fixed copy or a mapped error.
 5. Close the alert, or silence it with a recorded reason.
@@ -95,8 +97,8 @@ Current state:
 - Adopted in the Admin and Catalog API hosts: the SharedKernel exception handler (`AddUnhandledExceptionHandler`), which answers 500 with an RFC 9457
   `application/problem+json` body holding only `status`, `title`, `type`, and `traceId`; and `AddAuthenticationEventTelemetry` and
   `AddRateLimitEventTelemetry` for authentication and rate-limit events and rate-limit rejections. `ServiceDefaults` exports the
-  `PandaBear.AspNetCore` meter, so `unhandled_exceptions_total`, `authentication_events_total`, and `rate_limit_rejections_total` reach the
-  OpenTelemetry pipeline.
+  `SharedKernel.AspNetCore` meter. The Collector translates its unhandled exception, authentication event, and
+  rate-limit counters for Prometheus.
 - Existing RFC 9457 error bodies and the error documentation links are unchanged; the handler only covers exceptions that no endpoint maps.
 - Not adopted: Management.Web and Public.Web render an error page through `UseExceptionHandler("/Error")`, so they do not register the handler.
   Reporting from those hosts is tracked separately.

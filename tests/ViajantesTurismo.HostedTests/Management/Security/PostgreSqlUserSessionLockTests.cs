@@ -1,6 +1,6 @@
 using Npgsql;
-using PostgreSqlTestDatabaseLease = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
-using PandaBear.Testing;
+using PostgreSqlTestDatabaseLease = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.HostedTests.Management.Security;

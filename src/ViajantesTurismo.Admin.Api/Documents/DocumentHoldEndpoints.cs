@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using PandaBear.DispositionHold;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.DispositionHold;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Contracts.Application;

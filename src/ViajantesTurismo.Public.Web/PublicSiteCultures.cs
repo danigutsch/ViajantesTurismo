@@ -1,5 +1,5 @@
-using PandaBear.BuildingBlocks;
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Public.Web;
 

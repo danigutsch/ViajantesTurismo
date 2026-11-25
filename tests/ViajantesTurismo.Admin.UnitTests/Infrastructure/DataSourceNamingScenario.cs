@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using PandaBear.MalwareScanning.ClamAv;
+using SharedKernel.MalwareScanning.ClamAv;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Admin.Infrastructure.Branding;
 using ViajantesTurismo.Branding.Infrastructure;

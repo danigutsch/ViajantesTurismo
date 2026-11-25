@@ -1,15 +1,13 @@
-using Microsoft.EntityFrameworkCore;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.Contracts.Application;
-using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.HostedTests.Admin.Infrastructure.CommitAmbiguity;
 using ViajantesTurismo.HostedTests.Admin.Infrastructure.Documents;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Tours;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class TourRetirementPostgreSqlTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {
@@ -21,8 +19,7 @@ public sealed class TourRetirementPostgreSqlTests(PostgreSqlTestServerFixture fi
         // Arrange
         var ct = TestContext.Current.CancellationToken;
         await using var database = await fixture.CreateDatabase(ct);
-        var observer = new DbContextOptionsBuilder<AdminWriteDbContext>().UseNpgsql(database.ConnectionString).Options;
-        var interceptor = new CommittedTimeoutInterceptor(observer,
+        var interceptor = new CommittedTimeoutInterceptor(database.ConnectionString,
             db => db.TourRetirementAuditRecords.Select(record => record.RetirementId));
         var (scenario, tourId, _) = await TourRetirementPostgreSqlScenario.Create(database.ConnectionString, ct, interceptor);
         await using var ownedScenario = scenario;

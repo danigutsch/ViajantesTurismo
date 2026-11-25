@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
-using PandaBear.Testing;
-using PandaBear.Testing.Http;
+using SharedKernel.Testing;
+using SharedKernel.Testing.Http;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api;

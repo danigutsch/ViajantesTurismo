@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.Idempotency;
-using PandaBear.Messaging;
-using PandaBear.Testing;
+using SharedKernel.Idempotency;
+using SharedKernel.Messaging;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -12,8 +12,8 @@ using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
 public sealed class CatalogIntegrationEventTransportRegistrationTests
 {
     [Fact]

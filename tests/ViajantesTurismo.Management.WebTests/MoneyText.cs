@@ -1,5 +1,5 @@
 using System.Globalization;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.WebTests;
 

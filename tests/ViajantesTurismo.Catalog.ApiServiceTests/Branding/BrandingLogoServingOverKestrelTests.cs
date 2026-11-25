@@ -1,5 +1,5 @@
 using ImageMagick;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Branding.Infrastructure;
 using ViajantesTurismo.UploadWire.Testing;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;

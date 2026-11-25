@@ -1,4 +1,4 @@
-using PandaBear.ObjectStorage;
+using SharedKernel.ObjectStorage;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.UnitTests.Media;

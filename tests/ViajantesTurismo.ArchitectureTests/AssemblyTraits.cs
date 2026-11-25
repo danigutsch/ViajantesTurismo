@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 [assembly: TestScope(TestScope.Architecture)]
 [assembly: Trait(TestTraitNames.SurfaceName, ViajantesTurismo.ArchitectureTests.TestTraits.SolutionSurface)]

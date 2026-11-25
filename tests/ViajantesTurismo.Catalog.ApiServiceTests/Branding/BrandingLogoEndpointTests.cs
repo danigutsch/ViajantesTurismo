@@ -1,14 +1,14 @@
 using ImageMagick;
-using PandaBear.MalwareScanning;
-using PandaBear.Testing.MalwareScanning;
+using SharedKernel.MalwareScanning;
+using SharedKernel.Testing.MalwareScanning;
 using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Branding.Contracts.Http;
 using ViajantesTurismo.Branding.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class BrandingLogoEndpointTests
 {
     private const string PngType = "image/png";

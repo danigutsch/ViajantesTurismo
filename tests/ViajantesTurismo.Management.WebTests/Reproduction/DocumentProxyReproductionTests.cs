@@ -3,8 +3,8 @@ using System.Net;
 using System.Text.Json.Nodes;
 using System.Text;
 using Microsoft.AspNetCore.TestHost;
-using PandaBear.Testing.Snapshots;
-using PandaBear.Testing;
+using SharedKernel.Testing.Snapshots;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.WebTests.Components.Pages.Documents;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using ViajantesTurismo.Testing.Reproduction;
@@ -12,7 +12,7 @@ using ViajantesTurismo.Testing.Reproduction;
 namespace ViajantesTurismo.Management.WebTests.Reproduction;
 
 /// <summary>Repeats the Management download outcomes through independently created proxy test hosts.</summary>
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentProxyReproductionTests
 {

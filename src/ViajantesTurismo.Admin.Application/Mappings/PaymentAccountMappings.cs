@@ -1,8 +1,8 @@
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
-using PandaBear.BuildingBlocks;
-using PandaBear.Results;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Admin.Application.Mappings;
 

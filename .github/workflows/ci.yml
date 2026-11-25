@@ -202,6 +202,20 @@ jobs:
             esac
           fi
 
+      - name: Stage the pinned WCAG browser engine
+        if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs['hosted-tests_required'] == 'true' && matrix.id == 'hosted-tests' }}
+        shell: bash
+        run: |
+          archive="$RUNNER_TEMP/accessibility-checker-engine-4.0.35.tgz"
+          bundle="$RUNNER_TEMP/vt-equal-access-4.0.35.js"
+          source="https://registry.npmjs.org/accessibility-checker-engine/-/accessibility-checker-engine-4.0.35.tgz"
+          curl --fail --silent --show-error --location --proto '=https' --max-time 60 --retry 3 \
+            --output "$archive" "$source"
+          printf '%s  %s\n' 'e0d00253f68180a1064fa36467012fe8ed1682fffa0b2072b66a9cacaaff702e' "$archive" \
+            | sha256sum --check --strict
+          tar -xOzf "$archive" package/ace.js > "$bundle"
+          printf 'VT_WCAG_ENGINE_PATH=%s\n' "$bundle" >> "$GITHUB_ENV"
+
       - name: Run test slice
         if: ${{ needs.detect-changes.result == 'success' && needs.detect-changes.outputs[format('{0}_required', matrix.id)] == 'true' }}
         id: run-test-slice
@@ -319,6 +333,10 @@ jobs:
       - name: Build all solution projects
         id: build
         run: dotnet build ViajantesTurismo.slnx -c Release --no-restore
+      - name: Verify governed constant ownership
+        run: >-
+          dotnet test --project tests/ViajantesTurismo.ArchitectureTests/ViajantesTurismo.ArchitectureTests.csproj
+          -c Release --no-build --no-restore -- --filter-class '*GovernedConstantTests' --explicit only
       - name: Write build warning report
         if: ${{ !cancelled() && steps.build.outcome != 'skipped' }}
         run: dotnet run --project "$SHAREDKERNEL_SOURCE/tools/SharedKernel.CI.Tool" -c Release --no-build -- warning-report --tool Build --outcome "${{ steps.build.outcome }}" --report TestResults/build-warnings.json
@@ -547,7 +565,7 @@ jobs:
         uses: ./.github/actions/build-sharedkernel-tool
         with:
           tool: SharedKernel.RepoConfig.Tool
-          revision: b9bbffe72f8c0899eed6606a229e4bf451344fa4
+          revision: c2debaecef793c27dc6c882ade624cadc9383cda
           sparse-extra: .github
 
       - name: Verify action pins

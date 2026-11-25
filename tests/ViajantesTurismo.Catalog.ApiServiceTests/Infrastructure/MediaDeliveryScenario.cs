@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Application.Tours;
 

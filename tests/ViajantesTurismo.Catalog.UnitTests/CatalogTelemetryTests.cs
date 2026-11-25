@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
-using PandaBear.EventSourcing;
+using SharedKernel.EventSourcing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;

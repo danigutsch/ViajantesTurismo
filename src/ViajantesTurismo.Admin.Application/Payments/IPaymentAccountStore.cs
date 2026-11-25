@@ -1,4 +1,4 @@
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 
 namespace ViajantesTurismo.Admin.Application.Payments;

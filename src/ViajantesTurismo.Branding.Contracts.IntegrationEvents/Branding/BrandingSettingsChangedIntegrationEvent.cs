@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 
 namespace ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 

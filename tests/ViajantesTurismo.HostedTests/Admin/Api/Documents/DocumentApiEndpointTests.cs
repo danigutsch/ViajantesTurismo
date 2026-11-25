@@ -6,13 +6,13 @@ using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using System.Text.Json;
-using PandaBear.Testing;
-using PandaBear.HttpClients;
+using SharedKernel.Testing;
+using SharedKernel.HttpClients;
 
 namespace ViajantesTurismo.HostedTests.Admin.Api.Documents;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, AdminTestTraitValues.GeneratedDocumentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class DocumentApiEndpointTests(DocumentApiFixture fixture) : IClassFixture<DocumentApiFixture>
 {

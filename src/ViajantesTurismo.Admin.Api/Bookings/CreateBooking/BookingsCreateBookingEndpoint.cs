@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using PandaBear.Mediator;
+using SharedKernel.Mediator;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Bookings.CreateBooking;
 using ViajantesTurismo.Admin.Contracts.Application;
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Tours;
 
 namespace ViajantesTurismo.Admin.Api.Bookings.CreateBooking;

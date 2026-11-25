@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
-using PandaBear.ObjectStorage;
-using PandaBear.ObjectStorage.FileSystem;
+using SharedKernel.ObjectStorage;
+using SharedKernel.ObjectStorage.FileSystem;
 using ViajantesTurismo.Catalog.Domain;
 
 namespace ViajantesTurismo.Catalog.Infrastructure.Media;

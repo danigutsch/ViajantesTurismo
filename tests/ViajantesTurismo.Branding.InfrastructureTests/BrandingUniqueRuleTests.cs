@@ -1,10 +1,10 @@
-using PandaBear.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore;
 using ViajantesTurismo.Branding.Infrastructure;
 using TestTraits = ViajantesTurismo.Branding.InfrastructureTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Branding.InfrastructureTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
 public sealed class BrandingUniqueRuleTests
 {
     [Fact]

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Payments;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Payments;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, TestTraits.ComponentCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
 [TestScope(TestScope.Component)]
 public sealed class PaymentPageAuthenticationTests : BunitContext
 {

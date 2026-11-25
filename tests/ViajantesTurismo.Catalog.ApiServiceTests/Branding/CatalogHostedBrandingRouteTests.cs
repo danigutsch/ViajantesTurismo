@@ -7,8 +7,8 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 /// <summary>
 /// Verifies that Catalog.Api hosts the Branding module behind its own exact-audience scheme.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(PandaBear.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
 public sealed class CatalogHostedBrandingRouteTests
 {
     private const string ManagementBrandingPath = "/api/v1/branding/settings";

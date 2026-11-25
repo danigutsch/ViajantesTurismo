@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;

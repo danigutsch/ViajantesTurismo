@@ -7,8 +7,9 @@
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Http" />
-        <Using Include="PandaBear.Testing.Http" />
+        <Using Include="SharedKernel.Testing.Http" />
     </ItemGroup>
 
 </Project>

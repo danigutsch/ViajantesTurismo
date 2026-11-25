@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PandaBear.Mediator;
-using PandaBear.Mediator.EntityFrameworkCore;
-using PandaBear.Results;
-using PortableLockDeclaration = PandaBear.Mediator.Transactions.ITransactionLockDeclaration;
+using SharedKernel.Mediator;
+using SharedKernel.Mediator.EntityFrameworkCore;
+using SharedKernel.Results;
+using PortableLockDeclaration = SharedKernel.Mediator.Transactions.ITransactionLockDeclaration;
 
 namespace ViajantesTurismo.Admin.Infrastructure;
 

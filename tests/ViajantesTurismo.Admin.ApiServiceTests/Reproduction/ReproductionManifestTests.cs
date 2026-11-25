@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json;
-using PandaBear.Testing.Snapshots;
-using PandaBear.Testing;
+using SharedKernel.Testing.Snapshots;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Reproduction;
 

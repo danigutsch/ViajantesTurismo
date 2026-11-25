@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 namespace ViajantesTurismo.HostedTests.Admin.Api.Bookings;

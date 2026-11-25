@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
-using PandaBear.ServiceDefaults;
+using SharedKernel.ServiceDefaults;
 using ViajantesTurismo.Admin.Application.Branding;
 using ViajantesTurismo.Admin.Infrastructure;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
@@ -17,9 +17,9 @@ using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Resources;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.HostedTests.Catalog.Infrastructure.Branding;
-using PandaBear.Testing.Snapshots;
+using SharedKernel.Testing.Snapshots;
 using ViajantesTurismo.Testing.Reproduction;
-using PostgreSqlTestDatabaseLease = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using PostgreSqlTestDatabaseLease = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Branding;
 

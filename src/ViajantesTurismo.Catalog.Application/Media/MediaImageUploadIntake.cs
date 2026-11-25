@@ -1,20 +1,20 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using PandaBear.ObjectStorage;
+using SharedKernel.ObjectStorage;
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PandaBear.ImageProcessing;
-using PandaBear.IO;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.ImageProcessing;
+using SharedKernel.IO;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Catalog.Contracts.IntegrationEvents.Media;
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain;
-using PandaBear.BuildingBlocks;
-using PandaBear.UploadSanitizing.Images;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.UploadSanitizing.Images;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 

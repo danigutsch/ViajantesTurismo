@@ -1,5 +1,5 @@
-using PandaBear.BuildingBlocks;
-using PandaBear.Results;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.PaymentAccounts;
 using ViajantesTurismo.Admin.Domain.Tours;
 

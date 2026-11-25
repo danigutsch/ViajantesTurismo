@@ -1,4 +1,4 @@
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Domain.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Documents;
@@ -15,7 +15,7 @@ public sealed record DocumentSourceVersionRead(Result<string> Result, DocumentSo
 
     /// <summary>Creates a successful read.</summary>
     /// <param name="version">The current source version.</param>
-    public static DocumentSourceVersionRead Found(string version) => new(PandaBear.Results.Result.Ok(version));
+    public static DocumentSourceVersionRead Found(string version) => new(SharedKernel.Results.Result.Ok(version));
 
     /// <summary>Creates a failed read for a source record that was not found.</summary>
     /// <param name="source">The source that was missing.</param>

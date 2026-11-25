@@ -1,6 +1,6 @@
-using PandaBear.ApiVersioning;
-using PandaBear.ApiVersioning.AspNetCore;
-using PandaBear.HttpCaching.AspNetCore;
+using SharedKernel.ApiVersioning;
+using SharedKernel.ApiVersioning.AspNetCore;
+using SharedKernel.HttpCaching.AspNetCore;
 
 namespace ViajantesTurismo.Admin.Api;
 

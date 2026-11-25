@@ -12,9 +12,10 @@ internal sealed class BrandingWorkerRetryTraceExporter(TaskCompletionSource<Acti
     {
         foreach (var record in batch)
         {
-            if (record.EventId.Name == "LogConsumeFailed"
+            if (record.EventId.Id == 2101
+                && record.EventId.Name == "MessageHandlingFailed"
                 && record.CategoryName?.StartsWith(
-                    "PandaBear.Messaging.IntegrationEvents.EntityFrameworkCore.PostgreSqlIntegrationEventTransportConsumer",
+                    "SharedKernel.Messaging.IntegrationEvents.EntityFrameworkCore.PostgreSqlIntegrationEventTransportConsumer",
                     StringComparison.Ordinal) == true
                 && record.TraceId != default)
             {

@@ -1,11 +1,11 @@
-using PandaBear.Blazor.Site.Theming;
-using PandaBear.Branding;
+using SharedKernel.Blazor.Site.Theming;
+using SharedKernel.Branding;
 using ViajantesTurismo.Branding.ContractTests.Infrastructure;
 using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.Branding.ContractTests;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
 public sealed class BrandingSiteThemeTests
 {
     [Fact]

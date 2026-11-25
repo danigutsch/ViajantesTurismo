@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Components.QuickGrid;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using ViajantesTurismo.Management.Web.Components.Pages.Bookings;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
@@ -15,7 +15,7 @@ public sealed class BookingHistoryTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IBookingsApiClient>(api);
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
     }
 
     [Theory]

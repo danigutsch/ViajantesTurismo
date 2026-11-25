@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Microsoft.EntityFrameworkCore.Storage;
 using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
@@ -8,7 +8,7 @@ using ViajantesTurismo.Catalog.UnitTests.PublicContent;
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
 [Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 public sealed class EfPublicMediaImageStoreTests
 {
     [Fact]

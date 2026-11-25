@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using PandaBear.Mediator;
+using SharedKernel.Mediator;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Payments;
 using ViajantesTurismo.Admin.Domain.Tours;

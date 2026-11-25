@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using ViajantesTurismo.Admin.Contracts.Application;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;
 

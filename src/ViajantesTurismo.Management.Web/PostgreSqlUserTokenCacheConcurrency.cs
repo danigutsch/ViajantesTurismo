@@ -1,6 +1,6 @@
 using Npgsql;
 using NpgsqlTypes;
-using PandaBear.AspNetCore.Authentication.Bff;
+using SharedKernel.AspNetCore.Authentication.Bff;
 using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.Management.Web;

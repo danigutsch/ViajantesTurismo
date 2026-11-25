@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using PandaBear.BuildingBlocks;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Contracts.Application;
 

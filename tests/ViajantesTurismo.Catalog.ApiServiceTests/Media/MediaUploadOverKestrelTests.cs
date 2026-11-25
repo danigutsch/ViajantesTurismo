@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http.Timeouts;
-using PandaBear.Testing;
-using PandaBear.Testing.Http;
+using SharedKernel.Testing;
+using SharedKernel.Testing.Http;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.ServiceDefaults;
 using ViajantesTurismo.UploadWire.Testing;

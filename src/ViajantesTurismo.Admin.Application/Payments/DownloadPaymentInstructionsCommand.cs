@@ -1,5 +1,5 @@
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.Admin.Application.Payments;

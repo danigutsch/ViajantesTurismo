@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
-using PandaBear.Observability.Npgsql;
+using SharedKernel.Observability.Npgsql;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Observability;
 

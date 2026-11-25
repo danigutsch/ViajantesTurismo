@@ -1,4 +1,4 @@
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Admin.Domain.Tours;
 using ViajantesTurismo.Admin.Testing.Fakes;
@@ -26,10 +26,10 @@ internal sealed class OutboxEnqueuingDomainEventDispatcher(TimeProvider timeProv
 
     public override async ValueTask Dispatch<TDomainEvent>(TDomainEvent domainEvent, CancellationToken ct)
     {
-        await Dispatch((PandaBear.Domain.IDomainEvent)domainEvent, ct);
+        await Dispatch((SharedKernel.Domain.IDomainEvent)domainEvent, ct);
     }
 
-    public override async ValueTask Dispatch(PandaBear.Domain.IDomainEvent domainEvent, CancellationToken ct)
+    public override async ValueTask Dispatch(SharedKernel.Domain.IDomainEvent domainEvent, CancellationToken ct)
     {
         await base.Dispatch(domainEvent, ct);
 

@@ -1,12 +1,12 @@
 using Aspire.Hosting.ApplicationModel;
-using PandaBear.IntegrationTesting;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;
 
 /// <summary>Verifies the AppHost wiring from its application model, without starting anything.</summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class AppHostModelTests
 {
     [Fact]

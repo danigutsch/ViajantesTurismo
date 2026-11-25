@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Http.Resilience;
-using PandaBear.AspNetCore;
-using PandaBear.HttpClients;
+using SharedKernel.AspNetCore;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Public.Web.Catalog;

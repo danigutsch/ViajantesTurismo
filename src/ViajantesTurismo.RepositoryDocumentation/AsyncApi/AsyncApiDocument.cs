@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 
-using PandaBear.Documentation;
+using SharedKernel.Documentation;
 
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents;
@@ -83,7 +83,7 @@ public static class AsyncApiDocument
 
     /// <summary>Creates deterministic, indented AsyncAPI JSON with a trailing newline.</summary>
     /// <returns>The JSON document as text.</returns>
-    public static string Render() => PandaBear.Documentation.AsyncApiDocument.Render(
+    public static string Render() => SharedKernel.Documentation.AsyncApiDocument.Render(
         "ViajantesTurismo integration events",
         "1.0.0",
         "Generated from the runtime JSON contracts and durable integration-event topology.",

@@ -152,7 +152,7 @@ its current counter value, so its first failure is visible at low traffic. The d
 **What it means.** A request failed with an exception no code handled
 (`unhandled_exceptions_total`, log EventId 4001).
 
-**First checks.** The `error_type` label on the `http-platform` panel, then the matching log record and
+**First checks.** The `error_type` label (OTLP `error.type`) on the `http-platform` panel, then the matching log record and
 its trace.
 
 **Rollback.** Roll back the change that introduced the exception type.

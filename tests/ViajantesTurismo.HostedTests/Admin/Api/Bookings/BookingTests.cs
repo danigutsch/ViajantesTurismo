@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using System.Net;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;

@@ -1,4 +1,4 @@
-using PandaBear.AspNetCore.Authentication.Bff;
+using SharedKernel.AspNetCore.Authentication.Bff;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.Management.Web.Components.Pages.Payments;

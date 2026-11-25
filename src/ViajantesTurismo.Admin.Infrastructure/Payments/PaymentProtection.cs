@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
-using PandaBear.Idempotency.AspNetCore;
+using SharedKernel.Idempotency.AspNetCore;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Payments;
 

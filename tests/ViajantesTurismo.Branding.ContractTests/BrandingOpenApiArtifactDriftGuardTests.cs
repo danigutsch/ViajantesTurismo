@@ -8,8 +8,8 @@ namespace ViajantesTurismo.Branding.ContractTests;
 public sealed class BrandingOpenApiArtifactDriftGuardTests
 {
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Canonical_branding_OpenApi_artifacts_match_the_generated_boundary_artifacts()
     {
         // Arrange
@@ -24,8 +24,8 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Branding_mutation_keeps_its_published_response_contract()
     {
         // Arrange
@@ -46,8 +46,8 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Management_logo_upload_publishes_image_bodies_and_its_response_contract()
     {
         // Arrange
@@ -70,8 +70,8 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Public_logo_route_publishes_ok_not_modified_and_not_found()
     {
         // Arrange
@@ -89,8 +89,8 @@ public sealed class BrandingOpenApiArtifactDriftGuardTests
     }
 
     [Fact]
-    [Trait(PandaBear.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(PandaBear.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
     public void Management_logo_removal_publishes_its_precondition_and_response_contract()
     {
         // Arrange

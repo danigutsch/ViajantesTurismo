@@ -115,7 +115,7 @@
             "uid": "Tempo"
           },
           "queryType": "traceql",
-          "query": "{ name =~ \"eventsourcing.*\" }",
+          "query": "{ instrumentation:name = \"SharedKernel.EventSourcing.Npgsql\" && name =~ \"event_sourcing[.].*\" }",
           "limit": 20,
           "refId": "A"
         }
@@ -191,8 +191,8 @@
             "uid": "Tempo"
           },
           "queryType": "traceql",
-          "query": "{ instrumentation:name = \"SharedKernel.Mediator\" && (name = \"mediator.send\" || span.sharedkernel.mediator.outcome != nil) } | select(name, span.mediator.request.name, span.mediator.outcome)",
-          "expr": "{ instrumentation:name = \"SharedKernel.Mediator\" && (name = \"mediator.send\" || span.sharedkernel.mediator.outcome != nil) } | select(name, span.mediator.request.name, span.mediator.outcome)",
+          "query": "{ instrumentation:name = \"SharedKernel.Mediator\" && (name = \"mediator.send\" || span.sharedkernel.mediator.outcome != nil) } | select(name, span.sharedkernel.mediator.request.name, span.sharedkernel.mediator.outcome)",
+          "expr": "{ instrumentation:name = \"SharedKernel.Mediator\" && (name = \"mediator.send\" || span.sharedkernel.mediator.outcome != nil) } | select(name, span.sharedkernel.mediator.request.name, span.sharedkernel.mediator.outcome)",
           "tableType": "spans",
           "limit": 20,
           "refId": "A"

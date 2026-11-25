@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Using Include="PandaBear.Testing.Assertions" />
-        <Using Include="PandaBear.Testing.RepositoryRoot" Alias="RepositoryRoot" />
+        <Using Include="SharedKernel.Testing.Assertions" />
+        <Using Include="SharedKernel.Testing.RepositoryRoot" Alias="RepositoryRoot" />
         <Using Include="Xunit"/>
     </ItemGroup>
 
@@ -24,6 +24,7 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.AppHost\ViajantesTurismo.AppHost.csproj" IsAspireProjectResource="false" />
         <PackageReference Include="PandaBear.SharedKernel.Testing" />
         <PackageReference Include="PandaBear.SharedKernel.Testing.Assertions" />
+        <PackageReference Include="PandaBear.SharedKernel.Testing.Roslyn" />
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Api\ViajantesTurismo.Admin.Api.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Application\ViajantesTurismo.Admin.Application.csproj"/>
         <ProjectReference Include="..\..\src\ViajantesTurismo.Admin.Contracts.Application\ViajantesTurismo.Admin.Contracts.Application.csproj"/>

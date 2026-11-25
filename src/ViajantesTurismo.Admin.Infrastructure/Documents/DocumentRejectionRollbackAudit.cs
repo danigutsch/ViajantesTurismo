@@ -1,5 +1,5 @@
-using PandaBear.Mediator.EntityFrameworkCore;
-using PandaBear.Results;
+using SharedKernel.Mediator.EntityFrameworkCore;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 
 namespace ViajantesTurismo.Admin.Infrastructure.Documents;

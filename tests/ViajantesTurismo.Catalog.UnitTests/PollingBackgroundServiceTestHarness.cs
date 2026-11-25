@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
-using PandaBear.Scheduling;
+using SharedKernel.Scheduling;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 

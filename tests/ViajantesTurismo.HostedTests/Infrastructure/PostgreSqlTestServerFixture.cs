@@ -1,5 +1,5 @@
 using Npgsql;
-using PandaBear.Npgsql.Testing;
+using SharedKernel.Npgsql.Testing;
 
 namespace ViajantesTurismo.HostedTests.Infrastructure;
 

@@ -1,8 +1,8 @@
 using BookingFormModel = ViajantesTurismo.Management.Web.Components.Pages.Bookings.BookingFormModel;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using System.Globalization;
 using System.Net;
-using PandaBear.HttpClients;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.Web.Components.Pages.Tours;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 
@@ -24,7 +24,7 @@ public class DetailsPageTests : BunitContext
         Services.AddSingleton<IToursApiClient>(_fakeToursApi);
         Services.AddSingleton<IBookingsApiClient>(_fakeBookingsApi);
         Services.AddSingleton<ICustomersApiClient>(_fakeCustomersApi);
-        Services.AddSingleton<PandaBear.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
+        Services.AddSingleton<SharedKernel.Blazor.IUiFailureReporter>(new RecordingUiFailureReporter());
     }
 
     [Fact]

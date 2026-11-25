@@ -1,4 +1,4 @@
-using PandaBear.Testing;
+using SharedKernel.Testing;
 using Index = ViajantesTurismo.Management.Web.Components.Pages.Catalog.Index;
 
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;

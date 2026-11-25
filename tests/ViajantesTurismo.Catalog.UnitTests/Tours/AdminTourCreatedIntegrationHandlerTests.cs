@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
-using PandaBear.EventSourcing;
-using PandaBear.Idempotency;
-using PandaBear.Testing;
+using SharedKernel.EventSourcing;
+using SharedKernel.Idempotency;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Catalog.Application.IntegrationEvents;
 using ViajantesTurismo.Catalog.Application.Tours;
@@ -180,7 +180,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    [Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
     public async Task Handle_surfaces_an_existing_started_entry_for_transport_retry()
     {
         // Arrange
@@ -210,7 +210,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    [Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
     public async Task Handle_retries_a_failed_event_after_the_lease_is_reacquired()
     {
         // Arrange
@@ -240,7 +240,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    [Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
     public async Task Handle_completes_retry_when_append_succeeded_before_idempotency_completion_failed()
     {
         // Arrange
@@ -271,7 +271,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    [Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    [Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
     public async Task Handle_preserves_conflict_when_existing_initial_event_has_a_different_source_event_ID()
     {
         // Arrange

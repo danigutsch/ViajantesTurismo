@@ -12,10 +12,10 @@ public sealed class NamingConventionAnalyzer : DiagnosticAnalyzer
 {
     private const string DomainAssemblySuffix = ".Domain";
     private const string ErrorClassSuffix = "Errors";
-    private const string IntegrationEventMetadataName = "PandaBear.Messaging.IntegrationEvents.IIntegrationEvent";
+    private const string IntegrationEventMetadataName = "SharedKernel.Messaging.IntegrationEvents.IIntegrationEvent";
     private const string IntegrationEventSuffix = "IntegrationEvent";
-    private const string ResultMetadataName = "PandaBear.Results.Result";
-    private const string GenericResultMetadataName = "PandaBear.Results.Result`1";
+    private const string ResultMetadataName = "SharedKernel.Results.Result";
+    private const string GenericResultMetadataName = "SharedKernel.Results.Result`1";
 
     private static readonly DiagnosticDescriptor IntegrationEventNameRule = new(
         ArchitectureDiagnosticIds.IntegrationEventName,

@@ -1,4 +1,4 @@
-using PostgreSqlTestDatabase = PandaBear.Npgsql.Testing.PostgreSqlTestDatabaseLease;
+using PostgreSqlTestDatabase = SharedKernel.Npgsql.Testing.PostgreSqlTestDatabaseLease;
 using System.Diagnostics.CodeAnalysis;
 using ViajantesTurismo.Admin.Domain.Shared;
 using Microsoft.EntityFrameworkCore;

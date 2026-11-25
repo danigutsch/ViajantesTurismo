@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using PandaBear.Blazor;
+using SharedKernel.Blazor;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Management.Web.Helpers;
 

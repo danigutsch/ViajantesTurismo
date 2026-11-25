@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Configuration;
-using PandaBear.AspNetCore.Authentication;
+using SharedKernel.AspNetCore.Authentication;
 
 namespace ViajantesTurismo.Management.WebTests;
 

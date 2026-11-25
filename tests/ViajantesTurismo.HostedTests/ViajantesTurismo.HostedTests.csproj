@@ -9,7 +9,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Using Include="Xunit" />
-        <Using Include="PandaBear.Testing.Assertions" />
+        <Using Include="SharedKernel.Testing.Assertions" />
         <Using Include="ViajantesTurismo.HostedTests.Infrastructure" />
     </ItemGroup>
     <ItemGroup>
@@ -27,6 +27,12 @@
                  CopyToOutputDirectory="PreserveNewest" />
         <Content Include="../../src/ViajantesTurismo.MigrationService/Baselines/PostgreSql/management-security.sql"
                  Link="Fixtures/MigrationBaselines/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/catalog-event-causation.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="../../src/ViajantesTurismo.MigrationService/Expansions/PostgreSql/catalog-event-causation-verify.sql"
+                 Link="Fixtures/MigrationExpansions/%(Filename)%(Extension)"
                  CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>

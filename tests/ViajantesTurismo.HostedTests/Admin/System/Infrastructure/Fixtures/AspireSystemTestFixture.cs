@@ -1,7 +1,7 @@
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Helpers;
 using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using Npgsql;
-using PandaBear.IntegrationTesting;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
 using ViajantesTurismo.Resources;
 

@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Npgsql;
-using PandaBear.Observability.Npgsql;
-using PandaBear.Testing;
+using SharedKernel.Observability.Npgsql;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Observability;
 
@@ -90,21 +90,29 @@ public sealed class PostgreSqlIndexHealthCollectorTests(PostgreSqlIndexHealthCol
         var recordedTags = new ConcurrentQueue<string>();
         using var meterListener = PostgreSqlIndexHealthTelemetryTestListener.Create(recordedTags);
         var collector = new PostgreSqlIndexHealthCollector(scenario.MonitoringDataSource);
+        const string collection = PostgreSqlIndexHealthTelemetry.CollectionMetricName;
+        const string assessment = PostgreSqlIndexHealthTelemetry.AssessmentMetricName;
+        const string collectionOutcome = $"{collection}:sharedkernel.index_health.outcome=collected";
+        const string collectionDatabase = $"{collection}:db.system.name=postgresql";
+        const string assessmentAction = $"{assessment}:sharedkernel.index_health.action=";
+        const string assessmentReason = $"{assessment}:sharedkernel.index_health.reason=";
         var allowedTags = new[]
         {
-            $"{PostgreSqlIndexHealthTelemetry.CollectionMetricName}:outcome=collected",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:action=insufficient_evidence",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:action=review_creation",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:action=review_modification",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=statistics_unavailable",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=statistics_window_too_short",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=table_too_small",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=protected_index",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=unsupported_index_shape",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=per_object_statistics_window_unavailable",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=high_index_read_volume",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=high_sequential_scan_volume",
-            $"{PostgreSqlIndexHealthTelemetry.AssessmentMetricName}:reason=insufficient_activity",
+            collectionOutcome,
+            collectionDatabase,
+            $"{assessment}:db.system.name=postgresql",
+            $"{assessmentAction}insufficient_evidence",
+            $"{assessmentAction}review_creation",
+            $"{assessmentAction}review_modification",
+            $"{assessmentReason}statistics_unavailable",
+            $"{assessmentReason}statistics_window_too_short",
+            $"{assessmentReason}table_too_small",
+            $"{assessmentReason}protected_index",
+            $"{assessmentReason}unsupported_index_shape",
+            $"{assessmentReason}per_object_statistics_window_unavailable",
+            $"{assessmentReason}high_index_read_volume",
+            $"{assessmentReason}high_sequential_scan_volume",
+            $"{assessmentReason}insufficient_activity",
         };
 
         // Act
@@ -112,7 +120,8 @@ public sealed class PostgreSqlIndexHealthCollectorTests(PostgreSqlIndexHealthCol
         var tags = recordedTags.ToArray();
 
         // Assert
-        tags.ShouldNotBeEmpty();
+        tags.ShouldContain(collectionOutcome);
+        tags.ShouldContain(collectionDatabase);
         foreach (var tag in tags)
         {
             allowedTags.ShouldContain(tag);

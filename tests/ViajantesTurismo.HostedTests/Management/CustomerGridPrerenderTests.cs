@@ -1,7 +1,7 @@
 using System.Net;
 using Microsoft.Extensions.Logging.Abstractions;
-using PandaBear.Testing;
-using PandaBear.Testing.AspNetCore;
+using SharedKernel.Testing;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Contracts.Http;
 using ViajantesTurismo.Admin.Domain.Customers;

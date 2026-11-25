@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Aspire.Hosting;
-using PandaBear.IntegrationTesting;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.Resources;
 
 namespace ViajantesTurismo.ArchitectureTests.Conventions;

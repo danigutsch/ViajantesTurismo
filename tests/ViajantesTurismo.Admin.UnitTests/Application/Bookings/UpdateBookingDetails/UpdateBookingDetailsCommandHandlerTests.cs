@@ -1,4 +1,4 @@
-using PandaBear.Results;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Bookings.UpdateBookingDetails;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Domain.Shared;
@@ -7,7 +7,7 @@ using ViajantesTurismo.Admin.Testing.Fakes;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Bookings.UpdateBookingDetails;
 
-[Trait(PandaBear.Testing.TestTraitNames.CategoryName, PandaBear.Testing.TestTraitValues.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
 public sealed class UpdateBookingDetailsCommandHandlerTests
 {
     [Theory]

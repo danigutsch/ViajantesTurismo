@@ -19,6 +19,6 @@ public static class ServiceDefaultsVersionTests
         // Assert
         hostedServices.ShouldContain(service =>
             string.Equals(service.GetType().Name, "ApplicationVersionLoggingService", StringComparison.Ordinal)
-            && string.Equals(service.GetType().Namespace, "PandaBear.Observability", StringComparison.Ordinal));
+            && string.Equals(service.GetType().Namespace, "SharedKernel.Observability", StringComparison.Ordinal));
     }
 }

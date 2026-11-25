@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.Testing;
-using PandaBear.Testing.Playwright;
+using SharedKernel.Testing;
+using SharedKernel.Testing.Playwright;
 using ViajantesTurismo.Branding.Contracts.Http;
 
 namespace ViajantesTurismo.HostedTests.Management.Browser;

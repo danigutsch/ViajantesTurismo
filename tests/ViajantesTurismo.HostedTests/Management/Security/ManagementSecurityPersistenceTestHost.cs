@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore.Authentication;
-using PandaBear.AspNetCore.Authentication.Bff;
-using PandaBear.Testing.AspNetCore;
+using SharedKernel.AspNetCore.Authentication;
+using SharedKernel.AspNetCore.Authentication.Bff;
+using SharedKernel.Testing.AspNetCore;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.HostedTests.Management.Security;

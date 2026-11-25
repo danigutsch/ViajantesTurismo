@@ -11,7 +11,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using PandaBear.Documentation;
+using SharedKernel.Documentation;
 
 var dashboardUid = args is [_, "--dashboard", var requestedUid] ? requestedUid : null;
 if ((args.Length != 1 && string.IsNullOrWhiteSpace(dashboardUid))

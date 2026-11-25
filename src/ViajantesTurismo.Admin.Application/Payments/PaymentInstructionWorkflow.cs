@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
-using PandaBear.Idempotency;
-using PandaBear.Mediator;
-using PandaBear.Results;
+using SharedKernel.Idempotency;
+using SharedKernel.Mediator;
+using SharedKernel.Results;
 using ViajantesTurismo.Admin.Application.Documents;
 using ViajantesTurismo.Admin.Application.Mappings;
 using ViajantesTurismo.Admin.Application.Tours;

@@ -1,11 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
-using PandaBear.Testing;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Payments;
 
-[Trait(SharedKernelTestTraitNames.CategoryName, SharedKernelTestTraitNames.UnitScope)]
-[Trait(SharedKernelTestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
 [TestScope(TestScope.Integration)]
 public sealed class PaymentProtectionTests
 {

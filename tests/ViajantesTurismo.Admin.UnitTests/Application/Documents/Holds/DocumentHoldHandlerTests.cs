@@ -1,12 +1,12 @@
-using PandaBear.Mediator.Transactions;
-using PandaBear.Results;
-using PandaBear.Testing;
+using SharedKernel.Mediator.Transactions;
+using SharedKernel.Results;
+using SharedKernel.Testing;
 using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.UnitTests.Documents;
 
 namespace ViajantesTurismo.Admin.UnitTests.Application.Documents.Holds;
 
-[Trait(SharedKernelTestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.GeneratedDocumentsCapability)]
 public sealed class DocumentHoldHandlerTests
 {
     [Fact]

@@ -1,6 +1,6 @@
-using PandaBear.EventSourcing;
-using PandaBear.InputNormalization;
-using PandaBear.Results;
+using SharedKernel.EventSourcing;
+using SharedKernel.InputNormalization;
+using SharedKernel.Results;
 
 namespace ViajantesTurismo.Catalog.Domain.Tours;
 

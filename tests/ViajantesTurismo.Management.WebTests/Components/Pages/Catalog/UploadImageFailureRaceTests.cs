@@ -1,6 +1,6 @@
-using PandaBear.Testing;
-using PandaBear.Blazor;
-using PandaBear.HttpClients;
+using SharedKernel.Testing;
+using SharedKernel.Blazor;
+using SharedKernel.HttpClients;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
 using UploadImage = ViajantesTurismo.Management.Web.Components.Pages.Catalog.UploadImage;
 

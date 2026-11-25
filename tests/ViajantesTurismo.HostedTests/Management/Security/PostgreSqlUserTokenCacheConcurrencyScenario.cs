@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using PandaBear.Npgsql.Testing;
+using SharedKernel.Npgsql.Testing;
 using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.HostedTests.Management.Security;

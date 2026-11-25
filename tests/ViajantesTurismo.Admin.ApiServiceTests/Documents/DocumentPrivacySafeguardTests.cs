@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PandaBear.Testing;
-using PandaBear.Idempotency;
+using SharedKernel.Testing;
+using SharedKernel.Idempotency;
 using ViajantesTurismo.Admin.ApiServiceTests.Infrastructure.Documents;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Documents;
@@ -16,7 +16,7 @@ using ViajantesTurismo.Admin.Application.Documents.Holds;
 using ViajantesTurismo.Admin.Domain.Documents;
 using ViajantesTurismo.Admin.Testing;
 using ViajantesTurismo.Admin.Testing.Fakes;
-using PandaBear.Testing.Logging;
+using SharedKernel.Testing.Logging;
 
 namespace ViajantesTurismo.Admin.ApiServiceTests.Documents;
 

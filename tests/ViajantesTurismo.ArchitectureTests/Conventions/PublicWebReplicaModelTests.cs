@@ -1,7 +1,7 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Dotnet;
-using PandaBear.IntegrationTesting;
+using SharedKernel.IntegrationTesting;
 using ViajantesTurismo.AppHost;
 using ViajantesTurismo.Resources;
 
@@ -10,7 +10,7 @@ namespace ViajantesTurismo.ArchitectureTests.Conventions;
 /// <summary>
 /// Verifies replica configuration without starting application processes or containers.
 /// </summary>
-[Trait(PandaBear.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
+[Trait(SharedKernel.Testing.TestTraitNames.AreaName, TestTraits.AppHostArea)]
 public sealed class PublicWebReplicaModelTests
 {
     [Theory]

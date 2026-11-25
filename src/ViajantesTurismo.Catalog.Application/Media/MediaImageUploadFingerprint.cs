@@ -1,7 +1,7 @@
 using System.Buffers;
 using System.Security.Cryptography;
 using System.Text.Json;
-using PandaBear.InputNormalization;
+using SharedKernel.InputNormalization;
 
 namespace ViajantesTurismo.Catalog.Application.Media;
 

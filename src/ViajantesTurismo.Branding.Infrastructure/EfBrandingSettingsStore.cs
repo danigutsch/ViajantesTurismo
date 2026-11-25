@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PandaBear.Branding;
-using PandaBear.BuildingBlocks;
-using PandaBear.EntityFrameworkCore;
-using PandaBear.EntityFrameworkCore.Npgsql;
-using PandaBear.Messaging.IntegrationEvents;
+using SharedKernel.Branding;
+using SharedKernel.BuildingBlocks;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.EntityFrameworkCore.Npgsql;
+using SharedKernel.Messaging.IntegrationEvents;
 using ViajantesTurismo.Branding.Contracts.IntegrationEvents.Branding;
 using ViajantesTurismo.Resources;
 

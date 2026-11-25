@@ -2,7 +2,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.TestHost;
-using PandaBear.MalwareScanning;
+using SharedKernel.MalwareScanning;
 using ViajantesTurismo.Branding.AspNetCore;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.UploadWire.Testing;

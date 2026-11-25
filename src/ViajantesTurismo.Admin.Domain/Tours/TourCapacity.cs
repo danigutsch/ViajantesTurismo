@@ -1,5 +1,5 @@
-using PandaBear.Results;
-using PandaBear.BuildingBlocks;
+using SharedKernel.Results;
+using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

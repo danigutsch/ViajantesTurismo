@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
-using PandaBear.AspNetCore;
+using SharedKernel.AspNetCore;
 using ViajantesTurismo.Management.Web;
 
 namespace ViajantesTurismo.Management.WebTests.Infrastructure;
