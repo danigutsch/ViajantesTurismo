@@ -1,5 +1,5 @@
 using SharedKernel.Results;
-using SharedKernel.BuildingBlocks;
+using SharedKernel.Domain;
 
 namespace ViajantesTurismo.Admin.Domain.Tours;
 

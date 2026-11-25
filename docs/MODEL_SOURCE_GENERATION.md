@@ -17,6 +17,8 @@ Use an attribute-first model with optional assembly defaults. Attributes keep th
 its generated behavior reviewable in the same diff.
 
 ```csharp
+using SharedKernel.Domain;
+
 [GenerateModelSupport(Identity = true)]
 public sealed partial class Customer : IIdentified<Guid>
 {
@@ -173,7 +175,7 @@ Diagnostics should name the attribute option, the affected type, and the smalles
 
 ## Identity interfaces
 
-`SharedKernel.BuildingBlocks.IIdentified<TId>` exposes a stable `Id` for any identified model.
+`SharedKernel.Domain.IIdentified<TId>` exposes a stable `Id` for any identified model.
 
 `SharedKernel.Domain.IEntity<TId>` extends `IIdentified<TId>` for domain entities.
 `SharedKernel.Domain.IAggregateRoot<TId>` extends `IEntity<TId>` and the non-generic

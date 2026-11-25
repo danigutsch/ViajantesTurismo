@@ -1,6 +1,7 @@
 using System.Net;
 using SharedKernel.BuildingBlocks;
 using SharedKernel.HttpClients;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Admin.Contracts.Application;
 using ViajantesTurismo.Admin.Testing.Builders;
 

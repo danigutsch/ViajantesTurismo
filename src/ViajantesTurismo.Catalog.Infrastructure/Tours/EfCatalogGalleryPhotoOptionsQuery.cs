@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using SharedKernel.BuildingBlocks;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Catalog.Application.Gallery;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Domain.Media;

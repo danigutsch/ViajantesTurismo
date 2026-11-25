@@ -47,6 +47,12 @@ bounded context.
    Rejected because aggregate and value-object conventions should remain consistent across the
    solution.
 
+## Package placement follow-up
+
+`ValueObject` and `IIdentified<TId>` moved to `SharedKernel.Domain` alongside `IEntity<TId>`.
+`SharedKernel.BuildingBlocks` now depends on Domain and still owns reusable values such as `DateRange`.
+[SharedKernel package placement guidance](https://github.com/danigutsch/PandaBear.SharedKernel/blob/fd3f435766518bd6793fb554a22ae1c4ef8af283/docs/package-development.md#type-placement)
+
 ## Links
 
 - [Back to ADR Index](../ARCHITECTURE_DECISIONS.md)

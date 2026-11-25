@@ -1,0 +1,27 @@
+[
+  ["dotnet", "tool", "restore"],
+  ["dotnet", "restore", "ViajantesTurismo.slnx", "--locked-mode", "--disable-parallel", "-m:1"],
+  ["dotnet", "release", "verify-lock-coverage"],
+  ["dotnet", "build", "ViajantesTurismo.slnx", "-c", "Release", "--no-restore", "--disable-build-servers", "-m:1"],
+  ["dotnet", "ci", "openapi", "generate"],
+  [
+    "dotnet", "repo", "run-isolated-podman",
+    "--image-store", {"input": "image-store"}, "--runtime-parent", {"input": "runtime-parent"},
+    "--network-helper", "pasta", "--timeout-seconds", "1260",
+    "--log-directory", {"input": "solution-results"}, "--max-log-bytes", "67108864", "--",
+    "dotnet", "test", "--solution", "ViajantesTurismo.slnx", "-c", "Release", "--no-build", "--no-restore",
+    "--max-parallel-test-modules", "1", "--", "--max-threads", "1", "--fail-skips", "on",
+    "--report-xunit-junit", "--results-directory", {"input": "solution-results"}
+  ],
+  [
+    "dotnet", "repo", "run-isolated-podman",
+    "--image-store", {"input": "image-store"}, "--runtime-parent", {"input": "runtime-parent"},
+    "--network-helper", "pasta", "--timeout-seconds", "180",
+    "--log-directory", {"input": "storage-results"}, "--max-log-bytes", "67108864", "--",
+    "dotnet", "tests/ViajantesTurismo.HostedTests/bin/Release/net11.0/ViajantesTurismo.HostedTests.dll",
+    "--filter-class", "*MediaInfrastructureContainerTests", "*SeaweedFsWebIdentityTests",
+    "--minimum-expected-tests", "6", "--max-threads", "1", "--fail-skips", "on",
+    "--report-xunit-xml", "--report-xunit-xml-filename", "storage.xml",
+    "--results-directory", {"input": "storage-results"}
+  ]
+]

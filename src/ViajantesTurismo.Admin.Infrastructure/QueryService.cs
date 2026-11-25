@@ -2,6 +2,8 @@ using ViajantesTurismo.Admin.Application.Bookings;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel.BuildingBlocks;
+using SharedKernel.EntityFrameworkCore;
+using SharedKernel.InputNormalization;
 using ViajantesTurismo.Admin.Infrastructure.Payments;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Customers;

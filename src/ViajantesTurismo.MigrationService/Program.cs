@@ -8,14 +8,19 @@ using ViajantesTurismo.Resources;
 using SharedKernel.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
+if (args is ["report", ..])
+{
+    return await RunOperatorCommand(args, FinalizedArtifactIntegrityCommand.Run);
+}
+
 if (args is ["plan", ..])
 {
-    return await RunGovernedCommand(args, MigrationPlanCommand.Run);
+    return await RunOperatorCommand(args, MigrationPlanCommand.Run);
 }
 
 if (args is ["execute" or "contract" or "recover", ..])
 {
-    return await RunGovernedCommand(args, MigrationExecutionCommand.Run);
+    return await RunOperatorCommand(args, MigrationExecutionCommand.Run);
 }
 
 return await MigrationProcess.Run(() =>
@@ -36,7 +41,7 @@ return await MigrationProcess.Run(() =>
     return builder.Build();
 });
 
-static async Task<int> RunGovernedCommand(
+static async Task<int> RunOperatorCommand(
     string[] args, Func<string[], TextWriter, TextWriter, CancellationToken, Task<int>> command)
 {
     using var cancellation = new CancellationTokenSource();

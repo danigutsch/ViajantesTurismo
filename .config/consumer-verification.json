@@ -1,0 +1,8 @@
+[
+  ["dotnet", "tool", "restore"],
+  ["dotnet", "restore", "ViajantesTurismo.slnx", "--locked-mode"],
+  ["dotnet", "release", "verify-lock-coverage"],
+  ["dotnet", "build", "ViajantesTurismo.slnx", "-c", "Release", "--no-restore"],
+  ["dotnet", "ci", "openapi", "generate"],
+  ["dotnet", "test", "--solution", "ViajantesTurismo.slnx", "-c", "Release", "--no-build", "--no-restore"]
+]

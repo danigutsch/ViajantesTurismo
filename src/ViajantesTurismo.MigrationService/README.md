@@ -57,6 +57,21 @@ above for the complete sequence. Local databases created before the reset requir
 Starts the Generic Host, runs `DatabaseInitializationWorker` through `MigrationProcess`, stops the host,
 and returns an explicit process status. Dependent services wait for successful completion before starting.
 
+## Finalized artifact integrity report
+
+Run this private command from an authorized operations environment. Supply a dedicated read-only
+Admin PostgreSQL connection through `VT_DOCUMENT_ARTIFACT_REPORT_CONNECTION` using the environment's
+existing secret mechanism. Grant this identity read access to the mapped revision and artifact columns.
+The report runs outside service startup and reads through a bounded, read-only PostgreSQL transaction.
+
+```bash
+dotnet run --project src/ViajantesTurismo.MigrationService -- report finalized-artifacts
+```
+
+Each page contains up to 100 rows in PostgreSQL UUID order, with only revision ID and integrity status.
+To continue, pass `--after` and the last revision UUID. An empty page contains only the column header.
+See the [retention and artifact integrity policy](../../docs/operations/document-retention-and-legal-hold.md#artifact-integrity-reconciliation).
+
 ## Governed migration planning
 
 Use the native plan command to validate a release manifest and its artifacts before the database

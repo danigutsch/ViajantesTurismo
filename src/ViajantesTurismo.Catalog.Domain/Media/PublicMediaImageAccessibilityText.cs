@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using SharedKernel.BuildingBlocks;
+using SharedKernel.Domain;
 using SharedKernel.InputNormalization;
 using SharedKernel.Results;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
