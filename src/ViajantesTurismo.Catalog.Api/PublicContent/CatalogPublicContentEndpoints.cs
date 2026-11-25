@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
+using SharedKernel.AspNetCore;
 using SharedKernel.BuildingBlocks;
 using SharedKernel.HttpCaching.AspNetCore;
 using ViajantesTurismo.Catalog.Application.PublicContent;
@@ -89,7 +90,7 @@ internal static class CatalogPublicContentEndpoints
             ["key"] = content.Key,
             [PublicContentCultureQuery.Culture] = variant.Language.Value
         };
-        var self = CatalogEndpointLinks.Get(routes, httpContext, "self", nameof(GetPublicContent), parameters);
+        var self = HypermediaLink.CreateGet("self", routes.GetRequiredPathByName(httpContext, nameof(GetPublicContent), parameters));
         var dto = MapVariant(variant, [self]);
         PublicContentHttpCache.SetPublicHeaders(httpContext);
         return Results.Ok(dto);
@@ -148,11 +149,12 @@ internal static class CatalogPublicContentEndpoints
 
     private static PublicContentDto MapPublicContent(EditablePublicContent content, LinkGenerator routes, HttpContext context)
     {
+        var values = new RouteValueDictionary { ["key"] = content.Key };
         var dto = new PublicContentDto
         {
             Links =
             [
-                CatalogEndpointLinks.Get(routes, context, "self", nameof(GetPublicContentForManagement), new RouteValueDictionary { ["key"] = content.Key })
+                HypermediaLink.CreateGet("self", routes.GetRequiredPathByName(context, nameof(GetPublicContentForManagement), values))
             ],
             Key = content.Key,
             SourceLanguage = content.SourceLanguage.Value,

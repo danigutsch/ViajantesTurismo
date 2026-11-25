@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OpenApi;
-using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi;
 using SharedKernel.AspNetCore.Authentication;
 using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Mediator;
+using SharedKernel.OpenApi;
 using ViajantesTurismo.Admin.Application;
 using ViajantesTurismo.Admin.Application.Tours.DeleteTour;
 using ViajantesTurismo.Admin.Contracts.Application;
@@ -25,28 +23,12 @@ internal static class ToursDeleteTourEndpoint
             .RequireRateLimiting(AdminSecurityBaseline.MutationRateLimitPolicy)
             .RequireAuthorization(AdminAuthorization.TourDelete)
             .Produces(StatusCodes.Status429TooManyRequests)
-            .AddOpenApiOperationTransformer(DescribeRetirementStatusLocation)
+            .WithLocationResponseHeader("Relative URI to poll for Catalog withdrawal status.", StatusCodes.Status202Accepted)
             .WithAdminMetadata("DeleteTour", "Retires a tour and preserves its booking history.", "Retires a tour.");
 
         toursGroup.MapGet("/{id:guid}/retirement", GetTourRetirement)
             .RequireAuthorization(AdminAuthorization.TourDelete)
             .WithAdminMetadata("GetTourRetirement", "Retrieves the current tour retirement status.", "Retrieves tour retirement status.");
-    }
-
-    private static Task DescribeRetirementStatusLocation(OpenApiOperation operation, OpenApiOperationTransformerContext _, CancellationToken ct)
-    {
-        if (operation.Responses?.TryGetValue("202", out var acceptedResponse) == true && acceptedResponse is OpenApiResponse response)
-        {
-            response.Headers ??= new Dictionary<string, IOpenApiHeader>(StringComparer.Ordinal);
-            response.Headers[HeaderNames.Location] = new OpenApiHeader
-            {
-                Description = "Relative URI to poll for Catalog withdrawal status.",
-                Required = true,
-                Schema = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uri-reference" }
-            };
-        }
-
-        return Task.CompletedTask;
     }
 
     private static async Task<Results<Accepted, NoContent, NotFound<ProblemDetails>, Conflict<ProblemDetails>, UnauthorizedHttpResult>> DeleteTour(

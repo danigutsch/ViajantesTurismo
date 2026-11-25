@@ -1,3 +1,4 @@
+using SharedKernel.AspNetCore;
 using SharedKernel.BuildingBlocks;
 
 namespace ViajantesTurismo.Admin.Api;
@@ -16,17 +17,13 @@ internal sealed class AdminResourceLinks
         _context = context;
         _linkGenerator = linkGenerator;
         _itemEndpoint = itemEndpoint;
-        _collection = new HypermediaLink("collection", GetPath(collectionEndpoint), HttpMethods.Get);
+        _collection = HypermediaLink.CreateGet("collection", _linkGenerator.GetRequiredPathByName(_context, collectionEndpoint));
     }
 
     /// <summary>Returns the resource address and its navigation links.</summary>
     internal (string Location, IReadOnlyList<HypermediaLink> Links) For(Guid id)
     {
-        var location = GetPath(_itemEndpoint, new RouteValueDictionary { ["id"] = id });
-        return (location, [new HypermediaLink("self", location, HttpMethods.Get), _collection]);
+        var location = _linkGenerator.GetRequiredPathByName(_context, _itemEndpoint, new RouteValueDictionary { ["id"] = id });
+        return (location, [HypermediaLink.CreateGet("self", location), _collection]);
     }
-
-    private string GetPath(string endpoint, RouteValueDictionary? values = null) =>
-        _linkGenerator.GetPathByName(_context, endpoint, values)
-        ?? throw new InvalidOperationException($"Could not generate a path for Admin endpoint '{endpoint}'.");
 }

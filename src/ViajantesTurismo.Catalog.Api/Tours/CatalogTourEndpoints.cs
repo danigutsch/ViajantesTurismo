@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.OpenApi;
+using SharedKernel.AspNetCore;
+using SharedKernel.BuildingBlocks;
 using SharedKernel.EventSourcing;
 using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.Results;
@@ -200,9 +202,9 @@ internal static class CatalogTourEndpoints
         catch (CatalogTourProjectionPendingException exception)
         {
             logger.TourProjectionPending(exception.GetType().Name);
-            var editor = CatalogEndpointLinks.Get(routes, context, "gallery-editor", nameof(GetGalleryEditor),
+            var editorPath = routes.GetRequiredPathByName(context, nameof(GetGalleryEditor),
                 new RouteValueDictionary { ["id"] = id });
-            return TypedResults.Accepted(new Uri(editor.Href, UriKind.Relative));
+            return TypedResults.Accepted(new Uri(editorPath, UriKind.Relative));
         }
 
         return initialized.Status switch
@@ -282,9 +284,9 @@ internal static class CatalogTourEndpoints
                 throw new InvalidOperationException($"Unexpected Catalog gallery placement result status '{queued.Status}'.");
         }
 
-        var outcome = CatalogEndpointLinks.Get(routes, context, "placement-outcome", nameof(GetGalleryEditor),
+        var outcomePath = routes.GetRequiredPathByName(context, nameof(GetGalleryEditor),
             new RouteValueDictionary { ["id"] = id, ["placementSequence"] = queued.Value });
-        return TypedResults.Accepted(new Uri(outcome.Href, UriKind.Relative));
+        return TypedResults.Accepted(new Uri(outcomePath, UriKind.Relative));
     }
 
     private static async Task<Results<Ok<PublishedTourDetailsPageDto>, BadRequest, NotFound>> GetPublishedTour(
@@ -366,7 +368,10 @@ internal static class CatalogTourEndpoints
         {
             Tours = [.. result.Tours.Select(tour => tour with
             {
-                Links = [CatalogEndpointLinks.Get(routes, context, "self", nameof(GetPublishedTour), new RouteValueDictionary { ["slug"] = tour.Slug })]
+                Links =
+                [
+                    HypermediaLink.CreateGet("self", routes.GetRequiredPathByName(context, nameof(GetPublishedTour), new RouteValueDictionary { ["slug"] = tour.Slug }))
+                ]
             })]
         });
     }
@@ -562,8 +567,8 @@ internal static class CatalogTourEndpoints
         {
             Links =
             [
-                CatalogEndpointLinks.Get(routes, context, "self", nameof(GetTour), id),
-                CatalogEndpointLinks.Get(routes, context, "images", CatalogMediaEndpoints.TourImagesEndpointName, id)
+                HypermediaLink.CreateGet("self", routes.GetRequiredPathByName(context, nameof(GetTour), id)),
+                HypermediaLink.CreateGet("images", routes.GetRequiredPathByName(context, CatalogMediaEndpoints.TourImagesEndpointName, id))
             ],
             Id = tour.CatalogTourId,
             AdminTourId = tour.AdminTourId,
@@ -585,12 +590,13 @@ internal static class CatalogTourEndpoints
     private static TourDetailsDto MapPublicTourDetail(
         CatalogTourDraftReadModel tour, IReadOnlyList<CatalogTourImageDto> images, LinkGenerator routes, HttpContext context)
     {
+        var slug = new RouteValueDictionary { ["slug"] = tour.Slug };
         return new TourDetailsDto
         {
             Links =
             [
-                CatalogEndpointLinks.Get(routes, context, "self", nameof(GetPublishedTour), new RouteValueDictionary { ["slug"] = tour.Slug }),
-                CatalogEndpointLinks.Get(routes, context, "collection", nameof(GetPublishedTourPage))
+                HypermediaLink.CreateGet("self", routes.GetRequiredPathByName(context, nameof(GetPublishedTour), slug)),
+                HypermediaLink.CreateGet("collection", routes.GetRequiredPathByName(context, nameof(GetPublishedTourPage)))
             ],
             Title = tour.Title,
             Slug = tour.Slug,

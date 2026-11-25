@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi;
+using SharedKernel.AspNetCore;
 using SharedKernel.BuildingBlocks;
 using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.ObjectStorage;
@@ -525,8 +526,8 @@ internal static class CatalogMediaEndpoints
         PublicMediaImage image, IReadOnlyList<MediaImageResponsiveVariant> variants, LinkGenerator routes, HttpContext context)
     {
         List<HypermediaLink> links = [.. image.TourLinks.OrderBy(link => link.CatalogTourId).Select(link =>
-            CatalogEndpointLinks.Get(routes, context, "collection", TourImagesEndpointName,
-                new RouteValueDictionary { ["id"] = link.CatalogTourId }))];
+            HypermediaLink.CreateGet("collection", routes.GetRequiredPathByName(context, TourImagesEndpointName,
+                new RouteValueDictionary { ["id"] = link.CatalogTourId })))];
 
         foreach (var variant in variants)
         {
@@ -534,12 +535,13 @@ internal static class CatalogMediaEndpoints
                 string.Equals(pair.Value, variant.ContentType, StringComparison.OrdinalIgnoreCase)).Key;
             if (format is not null)
             {
-                links.Add(CatalogEndpointLinks.Get(routes, context, "preview", nameof(GetManagementMediaPreview), new RouteValueDictionary
+                var values = new RouteValueDictionary
                 {
                     ["id"] = image.Id,
                     ["width"] = variant.Width,
                     ["format"] = format
-                }));
+                };
+                links.Add(HypermediaLink.CreateGet("preview", routes.GetRequiredPathByName(context, nameof(GetManagementMediaPreview), values)));
             }
         }
 
