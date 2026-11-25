@@ -1,0 +1,385 @@
+@page "/catalog/tours/{Id:guid}/gallery-editor"
+@using Microsoft.AspNetCore.Routing
+@using SharedKernel.InputNormalization
+@using ViajantesTurismo.Catalog.Contracts.Application
+@inject ICatalogGalleryEditorApiClient GalleryApi
+@inject LinkGenerator Routes
+@implements IDisposable
+
+<PageTitle>Edit gallery</PageTitle>
+
+<h1>Edit gallery</h1>
+
+@if (_loading)
+{
+    <p role="status">Loading gallery…</p>
+}
+else
+{
+    @if (_error is not null)
+    {
+        <div class="alert alert-danger" role="alert">@_error</div>
+    }
+
+    @if (_editor is { } editor)
+    {
+        @if (PlacementMessage is { } message)
+        {
+            <p role="status">@message</p>
+        }
+
+        @if (editor.IsRetired)
+        {
+            <p>This tour has been retired.</p>
+        }
+        else if (editor.PhotoIds is null && editor.CanEditGallery && editor.StreamVersion == editor.ProjectedStreamVersion)
+        {
+            <p>Initialize this gallery to edit its existing photo order and cover.</p>
+            <button type="button" class="btn btn-primary" disabled="@(!RendererInfo.IsInteractive || _saving)" @onclick="Initialize">
+                Initialize gallery
+            </button>
+        }
+        else if (WaitingForPlacement)
+        {
+            <p>Wait for the current gallery change to finish before editing.</p>
+        }
+        else if (!editor.CanEditGallery)
+        {
+            <p>Editing this gallery requires publication permission.</p>
+        }
+        else if (_photos is { } photos)
+        {
+            <fieldset disabled="@(_saving || _refreshRequired)">
+                <ImagePicker TKey="Guid" TOption="CatalogGalleryPhotoOptionDto" Id="gallery-photos" Label="Photos"
+                             Values="_photoIds" ValuesChanged="SetPhotos" Reorderable="true" MaxCount="editor.MaximumPhotoCount"
+                             Search="SearchLibrary" Lookup="Lookup" Catalog="photos" LabelOf="option => option.Label"
+                             ThumbnailOf="Thumbnail" />
+                @if (_photoIds.Count > 0)
+                {
+                    <ImagePicker TKey="Guid" TOption="CatalogGalleryPhotoOptionDto" Id="gallery-cover" Label="Cover photo"
+                                 Help="If you leave the cover empty, the gallery uses its first eligible photo."
+                                 Value="_coverId" ValueChanged="SetCover" Search="SearchCover" Lookup="Lookup" Catalog="photos"
+                                 LabelOf="option => option.Label" ThumbnailOf="Thumbnail" />
+                }
+                <button type="button" class="btn btn-primary" disabled="@(!RendererInfo.IsInteractive || !HasChanges)" @onclick="Save">
+                    Save gallery
+                </button>
+            </fieldset>
+        }
+    }
+
+    <button type="button" class="btn btn-outline-secondary" disabled="@(!RendererInfo.IsInteractive || _saving)" @onclick="Refresh">
+        Refresh gallery
+    </button>
+}
+
+<NavLink class="btn btn-link" href="/catalog/tours">Back to Catalog Tours</NavLink>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    [PersistentState]
+    public List<CatalogGalleryPhotoOptionDto>? FirstChoices { get; set; }
+
+    private readonly CancellationTokenSource _lifetime = new();
+    private PickerCatalog<Guid, CatalogGalleryPhotoOptionDto>? _photos;
+    private Guid? _loadedTour;
+    private int _visitVersion;
+    private CatalogGalleryEditorStateDto? _editor;
+    private IReadOnlyList<Guid> _photoIds = [];
+    private Guid? _coverId;
+    private long? _placementSequence;
+    private string? _error;
+    private bool _loading;
+    private bool _saving;
+    private bool _placementAccepted;
+    private bool _refreshRequired;
+
+    private bool WaitingForPlacement => _placementAccepted || _editor is { } editor
+        && (editor.AcceptedPlacementSequence != editor.ResolvedPlacementSequence || editor.StreamVersion != editor.ProjectedStreamVersion);
+
+    private bool HasChanges => _editor is { PhotoIds: { } saved }
+        && (_coverId != _editor.CoverId || !_photoIds.SequenceEqual(saved));
+
+    private string? PlacementMessage => _editor?.Outcome?.Status switch
+    {
+        CatalogGalleryPlacementStatusDto.Pending => "The gallery change is queued.",
+        CatalogGalleryPlacementStatusDto.Applied => "The gallery change was applied.",
+        CatalogGalleryPlacementStatusDto.RejectedAfterPublication => "Publication prevented the queued change from being applied.",
+        CatalogGalleryPlacementStatusDto.ClosedByRetirement => "The tour was retired before the queued change was applied.",
+        _ => _placementAccepted ? "The gallery change was accepted. Refresh to check its status." : null
+    };
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (_loadedTour == Id)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (_loadedTour is not null)
+        {
+            FirstChoices = null;
+            _placementSequence = null;
+            _placementAccepted = false;
+        }
+
+        _loadedTour = Id;
+        _visitVersion++;
+        _saving = false;
+        return Load();
+    }
+
+    private Task Refresh()
+    {
+        FirstChoices = null;
+        return Load();
+    }
+
+    private async Task Load()
+    {
+        _loading = true;
+        _error = null;
+        _editor = null;
+        _photos = null;
+        _refreshRequired = false;
+        var tourId = Id;
+        var visit = _visitVersion;
+        var ct = _lifetime.Token;
+        try
+        {
+            var outcome = await GalleryApi.GetState(tourId, _placementSequence, ct);
+            if (visit != _visitVersion)
+            {
+                return;
+            }
+
+            if (outcome is not { Kind: HttpOutcomeKind.Succeeded, Value: { } editor })
+            {
+                _error = new HttpOutcomeMessages("The gallery could not be loaded. Refresh to try again.").For(outcome.Kind);
+                return;
+            }
+
+            _editor = editor;
+            if (editor.Outcome is not null)
+            {
+                _placementAccepted = false;
+            }
+
+            if (WaitingForPlacement || !editor.CanEditGallery || editor.PhotoIds is null)
+            {
+                return;
+            }
+
+            var keys = ImagePicker.FirstChosenPage(editor.PhotoIds, CatalogGalleryPhotoOptionsRequest.MaxPageSize).ToList();
+            if (editor.CoverId is { } coverId && !keys.Contains(coverId))
+            {
+                keys.Add(coverId);
+            }
+
+            var choices = (FirstChoices ?? []).Where(photo => keys.Contains(photo.Id)).ToList();
+            foreach (var missing in keys.Where(key => choices.All(photo => photo.Id != key)).Chunk(CatalogGalleryPhotoOptionsRequest.MaxPageSize))
+            {
+                var page = await GalleryApi.SearchPhotos(tourId, new CatalogGalleryPhotoOptionsRequest(null, IncludedPhotoIds: missing), ct);
+                if (visit != _visitVersion)
+                {
+                    return;
+                }
+
+                if (page is not { Kind: HttpOutcomeKind.Succeeded, Value: { } options })
+                {
+                    _error = new HttpOutcomeMessages("The selected photos could not be loaded. Refresh to try again.").For(page.Kind);
+                    return;
+                }
+
+                choices.AddRange(options.Items);
+            }
+
+            FirstChoices = choices;
+            _photoIds = editor.PhotoIds;
+            _coverId = editor.CoverId;
+            _photos = new PickerCatalog<Guid, CatalogGalleryPhotoOptionDto>(photo => photo.Id, choices);
+        }
+        finally
+        {
+            if (visit == _visitVersion)
+            {
+                _loading = false;
+            }
+        }
+    }
+
+    private Task<ListSlice<CatalogGalleryPhotoOptionDto>> SearchLibrary(string query, int take, CancellationToken ct) =>
+        Search(new CatalogGalleryPhotoOptionsRequest(query, take), ct);
+
+    private Task<ListSlice<CatalogGalleryPhotoOptionDto>> SearchCover(string query, int take, CancellationToken ct) =>
+        Search(new CatalogGalleryPhotoOptionsRequest(query, take, _photoIds), ct);
+
+    private async Task<ListSlice<CatalogGalleryPhotoOptionDto>> Search(CatalogGalleryPhotoOptionsRequest request, CancellationToken ct)
+    {
+        var result = await GalleryApi.SearchPhotos(Id, request, ct);
+        if (result is { Kind: HttpOutcomeKind.Succeeded, Value: { } page })
+        {
+            return new ListSlice<CatalogGalleryPhotoOptionDto>(page.Items, page.Total);
+        }
+
+        throw new HttpRequestException("The gallery photo search failed.");
+    }
+
+    private async Task<IReadOnlyList<CatalogGalleryPhotoOptionDto>> Lookup(IReadOnlyList<Guid> keys, CancellationToken ct)
+    {
+        var visit = _visitVersion;
+        var result = await GalleryApi.SearchPhotos(Id, new CatalogGalleryPhotoOptionsRequest(null, IncludedPhotoIds: keys), ct);
+        if (visit != _visitVersion)
+        {
+            return [];
+        }
+
+        if (result is { Kind: HttpOutcomeKind.Succeeded, Value: { } page })
+        {
+            return page.Items;
+        }
+
+        _error = new HttpOutcomeMessages("The selected photos could not be loaded. Refresh to try again.").For(result.Kind);
+        return [];
+    }
+
+    private void SetPhotos(IReadOnlyList<Guid> photoIds)
+    {
+        _photoIds = photoIds;
+        if (_coverId is { } cover && !_photoIds.Contains(cover))
+        {
+            _coverId = null;
+        }
+    }
+
+    private void SetCover(Guid? coverId)
+    {
+        if (coverId is null || _photoIds.Contains(coverId.Value))
+        {
+            _coverId = coverId;
+        }
+    }
+
+    private async Task Save()
+    {
+        if (_refreshRequired)
+        {
+            return;
+        }
+
+        if (_loading || _saving || WaitingForPlacement || !HasChanges || _editor is not { CanEditGallery: true } editor)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        var tourId = Id;
+        var visit = _visitVersion;
+        try
+        {
+            var request = new QueueCatalogGalleryPlacementRequest
+            {
+                StreamVersion = editor.StreamVersion,
+                AcceptedPlacementSequence = editor.AcceptedPlacementSequence,
+                PhotoIds = _photoIds,
+                CoverId = _coverId
+            };
+            var result = await GalleryApi.QueuePlacement(tourId, request, _lifetime.Token);
+            if (visit != _visitVersion)
+            {
+                return;
+            }
+
+            if (result.Kind == HttpOutcomeKind.Succeeded)
+            {
+                _placementAccepted = true;
+                _placementSequence = PlacementSequence(result.Location);
+                await Refresh();
+                return;
+            }
+
+            _refreshRequired = result.Kind == HttpOutcomeKind.Conflict;
+            _error = _refreshRequired
+                ? "The gallery changed while you were editing. Refresh before trying again."
+                : new HttpOutcomeMessages("The gallery could not be saved. Check your selected photos and try again.").For(result.Kind);
+        }
+        finally
+        {
+            if (visit == _visitVersion)
+            {
+                _saving = false;
+            }
+        }
+    }
+
+    private async Task Initialize()
+    {
+        if (_loading || _saving || _editor is not { PhotoIds: null, CanEditGallery: true })
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        var tourId = Id;
+        var visit = _visitVersion;
+        try
+        {
+            var result = await GalleryApi.Initialize(tourId, _lifetime.Token);
+            if (visit != _visitVersion)
+            {
+                return;
+            }
+
+            if (result.Kind == HttpOutcomeKind.Succeeded)
+            {
+                await Refresh();
+            }
+            else
+            {
+                _error = new HttpOutcomeMessages("The gallery could not be initialized. Refresh to check its state.").For(result.Kind);
+            }
+        }
+        finally
+        {
+            if (visit == _visitVersion)
+            {
+                _saving = false;
+            }
+        }
+    }
+
+    private static long? PlacementSequence(Uri? location)
+    {
+        if (location is null || location.IsAbsoluteUri)
+        {
+            return null;
+        }
+
+        const string parameter = "?placementSequence=";
+        var path = location.OriginalString.AsSpan();
+        var start = path.IndexOf(parameter, StringComparison.Ordinal);
+        return start >= 0 && long.TryParse(path[(start + parameter.Length)..], NumberStyles.None, CultureInfo.InvariantCulture, out var sequence)
+            && sequence > 0 ? sequence : null;
+    }
+
+    private string? Thumbnail(CatalogGalleryPhotoOptionDto photo)
+    {
+        if (photo.PreviewWidth is not { } width || RasterImageMediaType.Find(photo.PreviewContentType) is not { } mediaType)
+        {
+            return null;
+        }
+
+        return Routes.GetPathByName(ManagementWebEndpoints.MediaPreviewByRenditionEndpointName,
+            new { id = photo.Id, width, format = mediaType.FileExtension });
+    }
+
+    public void Dispose()
+    {
+        _lifetime.Cancel();
+        _lifetime.Dispose();
+    }
+}

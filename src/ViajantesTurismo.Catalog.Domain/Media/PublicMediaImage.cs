@@ -221,6 +221,24 @@ public sealed class PublicMediaImage
     /// </summary>
     public bool HasReviewedAccessibilityText => !RequiresHumanReview && (IsDecorative || !string.IsNullOrWhiteSpace(AltText));
 
+    /// <summary>Gets reviewed gallery text in the requested culture, using the default when no translation exists.</summary>
+    /// <remarks>A pending translation makes the photo unavailable in its culture until review is complete.</remarks>
+    public PublicMediaImageAccessibilityText? GetGalleryAccessibility(ContentCulture culture)
+    {
+        if (!HasPublicVariants)
+        {
+            return null;
+        }
+
+        var defaultCulture = PublicContentCultures.Supported.Default;
+        if (culture != defaultCulture && _accessibilityTexts.Find(text => text.Language == culture) is { } translated)
+        {
+            return translated.IsReviewedForPublication ? translated : null;
+        }
+
+        return PublicMediaImageAccessibilityText.Create(defaultCulture, AltText, Caption, IsDecorative, RequiresHumanReview, IsAiGenerated).Value;
+    }
+
     /// <summary>
     /// Finds a processed rendition by its width and media content type.
     /// </summary>

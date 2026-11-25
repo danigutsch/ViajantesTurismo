@@ -140,6 +140,53 @@ internal sealed class EfCatalogTourReadModelStore(
     }
 
     /// <inheritdoc />
+    public async ValueTask<CatalogTourDraftReadModel?> UpdateGallery(
+        CatalogTourGalleryChanged gallery, long streamVersion, long position, DateTimeOffset updatedAt, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(gallery);
+
+        for (var attempt = 1; attempt <= MaxProjectionSaveAttempts; attempt++)
+        {
+            var existing = await dbContext.CatalogTourReadModels
+                .SingleOrDefaultAsync(current => current.CatalogTourId == gallery.CatalogTourId, ct)
+                .ConfigureAwait(false);
+            if (existing is null)
+            {
+                return null;
+            }
+
+            if (position <= existing.GalleryPosition)
+            {
+                return ToReadModel(existing);
+            }
+
+            existing.GalleryPhotoIds = [.. gallery.PhotoIds];
+            existing.GalleryCoverId = gallery.CoverId;
+            existing.GalleryPosition = position;
+            existing.StreamVersion = Math.Max(existing.StreamVersion, streamVersion);
+            existing.Position = Math.Max(existing.Position, position);
+            existing.UpdatedAt = existing.UpdatedAt >= updatedAt ? existing.UpdatedAt : updatedAt;
+
+            if (await SaveProjection(slug: null, ct).ConfigureAwait(false))
+            {
+                return ToReadModel(existing);
+            }
+        }
+
+        throw new DbUpdateConcurrencyException("Catalog tour gallery projection remained stale after retries.");
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<bool> AdvanceStreamVersion(Guid catalogTourId, long streamVersion, CancellationToken ct)
+    {
+        var tour = dbContext.CatalogTourReadModels.Where(current => current.CatalogTourId == catalogTourId);
+        var changed = await tour.Where(current => current.StreamVersion < streamVersion)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(current => current.StreamVersion, streamVersion), ct)
+            .ConfigureAwait(false);
+        return changed > 0 || await tour.AnyAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async ValueTask<IReadOnlyList<CatalogTourDraftReadModel>> ListTours(CancellationToken ct)
     {
         return await dbContext.CatalogTourReadModels
@@ -171,14 +218,17 @@ internal sealed class EfCatalogTourReadModelStore(
             return null;
         }
 
-        var tour = await dbContext.CatalogTourReadModels
-            .Where(tour => tour.IsPublished
-                && !dbContext.CatalogTourRetirements.Any(retirement => retirement.AdminTourId == tour.AdminTourId))
+        var tour = await VisibleTours(dbContext)
             .SingleOrDefaultAsync(tour => tour.Slug == normalizedSlug, ct)
             .ConfigureAwait(false);
 
         return tour is null ? null : ToReadModel(tour);
     }
+
+    /// <summary>Queries tours with a current public publication and no durable retirement.</summary>
+    internal static IQueryable<CatalogTourReadModelEntity> VisibleTours(CatalogDbContext context) =>
+        context.CatalogTourReadModels.AsNoTracking().Where(tour => tour.IsPublished
+            && !context.CatalogTourRetirements.Any(retirement => retirement.AdminTourId == tour.AdminTourId));
 
     private static CatalogTourReadModelEntity ToEntity(CatalogTourDraftReadModel tour)
     {
@@ -195,6 +245,9 @@ internal sealed class EfCatalogTourReadModelStore(
             SeoTitle = StringSanitizer.Sanitize(tour.SeoTitle) ?? string.Empty,
             SeoDescription = StringSanitizer.Sanitize(tour.SeoDescription) ?? string.Empty,
             IsPublished = tour.IsPublished,
+            GalleryPosition = tour.GalleryPosition,
+            GalleryPhotoIds = tour.GalleryPhotoIds is { } photoIds ? [.. photoIds] : null,
+            GalleryCoverId = tour.GalleryCoverId,
             StreamVersion = tour.StreamVersion,
             PresentationPosition = tour.Position,
             PublicationPosition = tour.IsPublished ? tour.Position : 0,
@@ -220,7 +273,10 @@ internal sealed class EfCatalogTourReadModelStore(
             Itinerary = tour.Itinerary,
             SeoTitle = tour.SeoTitle,
             SeoDescription = tour.SeoDescription,
-            StreamVersion = tour.StreamVersion
+            StreamVersion = tour.StreamVersion,
+            GalleryPosition = tour.GalleryPosition,
+            GalleryPhotoIds = tour.GalleryPhotoIds is { } photoIds ? Array.AsReadOnly([.. photoIds]) : null,
+            GalleryCoverId = tour.GalleryCoverId
         };
     }
 

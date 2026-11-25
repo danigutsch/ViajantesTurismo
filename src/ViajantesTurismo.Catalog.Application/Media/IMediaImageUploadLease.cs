@@ -11,8 +11,9 @@ public interface IMediaImageUploadLease : IAsyncDisposable
         get;
     }
 
-    /// <summary>Commits a new image with the upload fingerprint and any staged integration events.</summary>
+    /// <summary>Commits a new image, its fingerprint, any authorized placement and staged integration events.</summary>
     /// <param name="image">The new image.</param>
+    /// <param name="canPublishGalleryPlacement">The authorized editor's publication capability, if placement is required.</param>
     /// <param name="ct">The cancellation token.</param>
-    ValueTask Save(PublicMediaImage image, CancellationToken ct);
+    ValueTask Save(PublicMediaImage image, bool? canPublishGalleryPlacement, CancellationToken ct);
 }

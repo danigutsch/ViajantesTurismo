@@ -21,6 +21,7 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "unaccent");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("SharedKernel.Idempotency.EntityFrameworkCore.IdempotencyEntryEntity", b =>
@@ -364,6 +365,41 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                     b.ToTable("PublicContent", (string)null);
                 });
 
+            modelBuilder.Entity("ViajantesTurismo.Catalog.Infrastructure.Tours.CatalogGalleryPlacementIntentEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("AppendsUploadedPhoto")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("BootstrapWakeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("CanPublish")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("CatalogTourId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CoverId")
+                        .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<Guid[]>("PhotoIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
+
+                    b.Property<long>("Sequence")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CatalogTourId", "Sequence")
+                        .IsUnique();
+
+                    b.ToTable("CatalogGalleryPlacementIntents", (string)null);
+                });
+
             modelBuilder.Entity("ViajantesTurismo.Catalog.Infrastructure.Tours.CatalogTourReadModelEntity", b =>
                 {
                     b.Property<Guid>("CatalogTourId")
@@ -376,6 +412,16 @@ namespace ViajantesTurismo.Catalog.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid?>("GalleryCoverId")
+                        .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<Guid[]>("GalleryPhotoIds")
+                        .HasColumnType("uuid[]");
+
+                    b.Property<long>("GalleryPosition")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Identifier")
                         .IsRequired()

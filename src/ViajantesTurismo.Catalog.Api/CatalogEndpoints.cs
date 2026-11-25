@@ -1,5 +1,6 @@
 using SharedKernel.ApiVersioning.AspNetCore;
 using SharedKernel.HttpCaching.AspNetCore;
+using ViajantesTurismo.Catalog.Api.Gallery;
 using ViajantesTurismo.Catalog.Api.Media;
 using ViajantesTurismo.Catalog.Api.PublicContent;
 using ViajantesTurismo.Catalog.Api.Tours;
@@ -20,6 +21,7 @@ internal static class CatalogEndpoints
             .WithNoStoreResponses($"/api/{CatalogOpenApiDocuments.CurrentApiVersion.RouteSegment}/catalog");
 
         versionedApi.MapCatalogTourEndpoints(managementCatalog);
+        versionedApi.MapCatalogGalleryEndpoints();
         versionedApi.MapCatalogMediaEndpoints(managementCatalog);
         versionedApi.MapCatalogPublicContentEndpoints(managementCatalog);
 

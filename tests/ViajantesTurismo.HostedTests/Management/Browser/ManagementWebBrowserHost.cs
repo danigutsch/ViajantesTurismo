@@ -114,6 +114,7 @@ internal sealed class ManagementWebBrowserHost : IAsyncDisposable
         app.UseAntiforgery();
         app.MapStaticAssets().AllowAnonymous();
         app.MapRazorComponents<App>().AddInteractiveServerRenderMode().RequireAuthorization();
+        app.MapManagementWebEndpoints();
 
         await app.StartAsync(ct);
         var address = (app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>() ?? throw new InvalidOperationException("The server publishes no addresses.")).Addresses.Single();

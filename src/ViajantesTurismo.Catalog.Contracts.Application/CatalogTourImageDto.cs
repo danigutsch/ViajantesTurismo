@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace ViajantesTurismo.Catalog.Contracts.Application;
 
@@ -58,6 +59,16 @@ public sealed record CatalogTourImageDto
     /// </summary>
     [StringLength(ContractConstants.MaxCaptionLength)]
     public string? Caption
+    {
+        get; init;
+    }
+
+    /// <summary>
+    /// Gets the language tag of the reviewed alternative text and caption when they use a fallback language.
+    /// </summary>
+    [StringLength(ContractConstants.MaxDefaultLength)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TextLanguage
     {
         get; init;
     }

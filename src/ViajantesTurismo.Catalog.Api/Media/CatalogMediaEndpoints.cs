@@ -7,6 +7,7 @@ using SharedKernel.BuildingBlocks;
 using SharedKernel.HttpCaching.AspNetCore;
 using SharedKernel.ObjectStorage;
 using SharedKernel.Results;
+using ViajantesTurismo.Catalog.Application.Gallery;
 using ViajantesTurismo.Catalog.Application.Media;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
@@ -14,7 +15,6 @@ using ViajantesTurismo.Catalog.Domain.Media;
 using ViajantesTurismo.Catalog.Domain.PublicContent;
 using ViajantesTurismo.ServiceDefaults;
 using static ViajantesTurismo.Catalog.Api.CatalogValidationProblems;
-using static ViajantesTurismo.Catalog.Api.Media.CatalogMediaResponses;
 
 namespace ViajantesTurismo.Catalog.Api.Media;
 
@@ -111,8 +111,7 @@ internal static class CatalogMediaEndpoints
         Guid id,
         int width,
         string format,
-        ICatalogTourReadModelStore tourStore,
-        IPublicMediaImageStore imageStore,
+        ICatalogGalleryReadStore gallery,
         IObjectStore objectStore,
         HttpContext httpContext,
         CancellationToken ct)
@@ -130,27 +129,26 @@ internal static class CatalogMediaEndpoints
             return Results.NotFound();
         }
 
-        var image = await imageStore.GetImage(id, ct).ConfigureAwait(false);
-        if (image is null || !CanDeliverPublicImage(image) || !await IsLinkedToPublishedTour(image, tourStore, ct).ConfigureAwait(false))
+        var (objectKey, hasAccessibilityBlocker, isMissingAltText) = await gallery.FindPublicRendition(id, width, contentType, ct)
+            .ConfigureAwait(false);
+        if (hasAccessibilityBlocker)
+        {
+            MediaAccessibilityTelemetry.RecordPublicationBlocker(isMissingAltText);
+        }
+
+        if (objectKey is null)
         {
             HttpCacheHeaders.SetNoStore(httpContext);
             return Results.NotFound();
         }
 
-        var variant = image.FindResponsiveVariant(width, contentType);
-        if (variant is null)
+        if (!await objectStore.Exists(objectKey, ct).ConfigureAwait(false))
         {
             HttpCacheHeaders.SetNoStore(httpContext);
             return Results.NotFound();
         }
 
-        if (!await objectStore.Exists(variant.ObjectKey, ct).ConfigureAwait(false))
-        {
-            HttpCacheHeaders.SetNoStore(httpContext);
-            return Results.NotFound();
-        }
-
-        var media = await TryOpenMediaObject(objectStore, variant.ObjectKey, ct).ConfigureAwait(false);
+        var media = await TryOpenMediaObject(objectStore, objectKey, ct).ConfigureAwait(false);
         if (media is null)
         {
             HttpCacheHeaders.SetNoStore(httpContext);
@@ -310,7 +308,8 @@ internal static class CatalogMediaEndpoints
                 [new MediaImageTourLink(id, existingImages.Count, existingImages.Count == 0)],
                 Caption: form.Caption,
                 Attribution: form.Attribution,
-                Copyright: form.Copyright),
+                Copyright: form.Copyright,
+                CanPublishGalleryPlacement: canPublish),
             ct).ConfigureAwait(false);
 
         return result.Status switch
@@ -577,19 +576,5 @@ internal static class CatalogMediaEndpoints
         {
             return null;
         }
-    }
-
-    private static async Task<bool> IsLinkedToPublishedTour(PublicMediaImage image, ICatalogTourReadModelStore tourStore, CancellationToken ct)
-    {
-        foreach (var link in image.TourLinks)
-        {
-            var tour = await tourStore.GetTour(link.CatalogTourId, ct).ConfigureAwait(false);
-            if (tour?.IsPubliclyVisible == true)
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

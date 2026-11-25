@@ -1,3 +1,4 @@
+using ViajantesTurismo.Catalog.Infrastructure.Tours;
 using SharedKernel.EventSourcing;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Tours;
@@ -107,5 +108,73 @@ public sealed class CatalogTourReadModelProjectionTests
         Position.ShouldBe(7);
         UpdatedAt.ShouldBe(recordedAt);
         store.PresentationUpdates.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Applying_a_gallery_event_advances_the_editor_revision()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var context = CatalogDbContextTestFactory.Create();
+        var store = new EfCatalogTourReadModelStore(context);
+        var projection = new CatalogTourReadModelProjection(store);
+        var tour = CatalogTour.CreateDraft(Guid.CreateVersion7(), "andes", "Andes", Guid.CreateVersion7());
+        var start = CatalogTourDraftReadModel.FromDraftCreated(
+            tour.GetUncommittedEvents().ShouldHaveSingleItem().ShouldBeOfType<CatalogTourDraftCreated>(), 3, TimeProvider.System.GetUtcNow());
+        await store.UpsertDraft(start, ct);
+        var photo = Guid.CreateVersion7();
+        var changed = new CatalogTourGalleryChanged(tour.Id, [photo], photo);
+        var recordedAt = start.UpdatedAt.AddMinutes(1);
+        var update = new EventEnvelope(CatalogTourStreamIds.FromAdminTourId(tour.AdminTourId), 7, StreamRevision.From(2),
+            Guid.CreateVersion7(), "catalog.tours.gallery-changed.v1", changed, recordedAt);
+
+        // Act
+        await projection.Apply(update, ct);
+        var projected = await store.GetTour(tour.Id, ct);
+
+        // Assert
+        projected.ShouldNotBeNull();
+        projected.StreamVersion.ShouldBe(2);
+        projected.Position.ShouldBe(7);
+        projected.UpdatedAt.ShouldBe(recordedAt);
+        projected.IsPublished.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task An_older_gallery_event_cannot_replace_an_explicit_empty_snapshot_or_lower_the_tour_revision()
+    {
+        // Arrange
+        var ct = TestContext.Current.CancellationToken;
+        await using var context = CatalogDbContextTestFactory.Create();
+        var store = new EfCatalogTourReadModelStore(context);
+        var projection = new CatalogTourReadModelProjection(store);
+        var tour = CatalogTour.CreateDraft(Guid.CreateVersion7(), "andes", "Andes", Guid.CreateVersion7());
+        var stream = CatalogTourStreamIds.FromAdminTourId(tour.AdminTourId);
+        var start = CatalogTourDraftReadModel.FromDraftCreated(
+            tour.GetUncommittedEvents().ShouldHaveSingleItem().ShouldBeOfType<CatalogTourDraftCreated>(), 3, TimeProvider.System.GetUtcNow());
+        await store.UpsertDraft(start, ct);
+        var publishedAt = start.UpdatedAt.AddMinutes(3);
+        await store.SetPublicationStatus(tour.Id, true, 5, 20, publishedAt, ct);
+        var oldPhoto = Guid.CreateVersion7();
+        var old = new EventEnvelope(stream, 7, StreamRevision.From(2), Guid.CreateVersion7(), "catalog.tours.gallery-changed.v1",
+            new CatalogTourGalleryChanged(tour.Id, [oldPhoto], oldPhoto), start.UpdatedAt.AddMinutes(1));
+        var empty = new EventEnvelope(stream, 12, StreamRevision.From(3), Guid.CreateVersion7(), "catalog.tours.gallery-changed.v1",
+            new CatalogTourGalleryChanged(tour.Id, [], null), start.UpdatedAt.AddMinutes(2));
+
+        // Act
+        await projection.Apply(empty, ct);
+        await projection.Apply(old, ct);
+        await projection.Apply(empty, ct);
+
+        // Assert
+        var current = await store.GetTour(tour.Id, ct);
+        var row = current.ShouldNotBeNull();
+        row.StreamVersion.ShouldBe(5);
+        row.Position.ShouldBe(20);
+        row.UpdatedAt.ShouldBe(publishedAt);
+        row.IsPublished.ShouldBeTrue();
+        row.GalleryPosition.ShouldBe(12);
+        row.GalleryPhotoIds.ShouldNotBeNull().ShouldBeEmpty();
+        row.GalleryCoverId.ShouldBeNull();
     }
 }

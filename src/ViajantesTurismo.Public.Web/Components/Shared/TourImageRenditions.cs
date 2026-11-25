@@ -104,7 +104,10 @@ internal static class TourImageRenditions
 
         return [.. images.Select(image => new GalleryImage(
             Responsive(linkGenerator, image, HalfWidthSizes),
-            string.IsNullOrWhiteSpace(image.Caption) ? null : image.Caption))];
+            string.IsNullOrWhiteSpace(image.Caption) ? null : image.Caption)
+        {
+            TextLanguage = image.TextLanguage
+        })];
     }
 
     /// <summary>Gets the accessibility decision of a catalog image: its alternative text, or decorative when it has none.</summary>

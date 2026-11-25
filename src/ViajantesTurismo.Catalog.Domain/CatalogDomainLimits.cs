@@ -20,6 +20,9 @@ public static class CatalogDomainLimits
     /// </summary>
     public const int MaxSlugLength = 128;
 
+    /// <summary>The maximum number of photos in one Catalog tour album.</summary>
+    public const int MaxGalleryPhotos = 500;
+
     /// <summary>
     /// The maximum length for image alternative text.
     /// </summary>

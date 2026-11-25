@@ -81,6 +81,29 @@ public sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCatal
             ct).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public Task<HttpOutcome<CatalogGalleryIndexDto>> ListPublishedAlbums(string culture, string? page, CancellationToken ct) =>
+        HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get, GalleryUri("/gallery", culture, page)),
+            HttpStatusCode.OK, Json.CatalogGalleryIndexDto, Json.ContractValidationProblemDto, ct);
+
+    /// <inheritdoc />
+    public Task<HttpOutcome<CatalogGalleryAlbumDto>> GetPublishedAlbum(string slug, string culture, string? page, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(slug);
+
+        return HttpOutcomeMapper.Send(httpClient, new HttpRequestMessage(HttpMethod.Get,
+            GalleryUri($"/gallery/{Uri.EscapeDataString(slug)}", culture, page)),
+            HttpStatusCode.OK, Json.CatalogGalleryAlbumDto, Json.ContractValidationProblemDto, ct);
+    }
+
+    private static Uri GalleryUri(string path, string culture, string? page)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(culture);
+
+        var pagination = page is null ? string.Empty : $"&page={Uri.EscapeDataString(page)}";
+        return new Uri($"{RoutePrefix}{path}?culture={Uri.EscapeDataString(culture)}{pagination}", UriKind.Relative);
+    }
+
     private static string EscapePath(string path)
     {
         return string.Join('/', path

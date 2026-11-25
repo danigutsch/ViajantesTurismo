@@ -1,3 +1,4 @@
+using ViajantesTurismo.Catalog.Domain.Tours;
 using ViajantesTurismo.Catalog.Application.Tours;
 
 namespace ViajantesTurismo.Catalog.UnitTests.Tours;
@@ -55,4 +56,12 @@ public sealed class RecordingCatalogTourReadModelStore : ICatalogTourReadModelSt
     {
         throw new NotSupportedException();
     }
+
+    public ValueTask<CatalogTourDraftReadModel?> UpdateGallery(
+        CatalogTourGalleryChanged gallery, long streamVersion, long position, DateTimeOffset updatedAt, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public ValueTask<bool> AdvanceStreamVersion(Guid catalogTourId, long streamVersion, CancellationToken ct) =>
+        throw new NotSupportedException();
 }

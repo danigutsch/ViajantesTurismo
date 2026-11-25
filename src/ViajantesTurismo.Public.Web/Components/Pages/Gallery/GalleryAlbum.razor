@@ -1,0 +1,84 @@
+@page "/en/gallery/{AlbumSlug}"
+@page "/pt/gallery/{AlbumSlug}"
+@namespace ViajantesTurismo.Public.Web.Components.Pages
+@using Microsoft.AspNetCore.Routing
+@using SharedKernel.BuildingBlocks
+@inject IPublicCatalogApiClient CatalogApi
+@inject LinkGenerator LinkGenerator
+@inject NavigationManager Navigation
+
+@if (_album is { } album)
+{
+    <PublicPageHead Title="@($"{album.Title} - {Links.Heading} - Viajantes Turismo")"
+                    Path="@GalleryPageLinks.PagePath(GalleryPageLinks.AlbumPath(album.Slug), album.Page)" />
+
+    <AlbumSection Title="@album.Title" TitleLanguage="@Links.TitleLanguage(album.TitleLanguage)" Slug="@Slug.Restore(album.Slug)" Level="1"
+                  Photos="@TourImageRenditions.Gallery(LinkGenerator, album.Photos)"
+                  Window="@PageWindow.Create(album.Page, album.PageSize, album.PhotoCount)"
+                  PageHref="@AlbumLink" PagerLabel="@Links.PagerLabel" PreviousText="@Links.Previous" NextText="@Links.Next"
+                  PageLabelFormat="@Links.PageLabel">
+        <p><a href="@Culture.Localize(GalleryPageLinks.IndexPath)">@Links.Heading</a></p>
+    </AlbumSection>
+}
+else if (_loadFailed)
+{
+    <PageTitle>@Links.Heading - Viajantes Turismo</PageTitle>
+    <Section Title="@Links.Heading" Level="1">
+        <p>@(Culture.IsPortuguese ? "Não foi possível carregar este álbum. Tente novamente mais tarde." : "This album could not be loaded right now. Try again later.")</p>
+    </Section>
+}
+
+@code {
+    /// <summary>Gets or sets the slug of the requested Catalog album.</summary>
+    [Parameter]
+    public string AlbumSlug { get; set; } = string.Empty;
+
+    [SupplyParameterFromQuery(Name = "page")]
+    private string? Page { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [CascadingParameter]
+    private PublicPageCulture Culture { get; set; } = PublicPageCulture.FromPath(PathString.Empty);
+
+    private CatalogGalleryAlbumDto? _album;
+    private bool _loadFailed;
+
+    private GalleryPageLinks Links => new(Culture);
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        PublicWebHttpCache.SetNoStore(HttpContext);
+        _album = null;
+        _loadFailed = false;
+        var requestAborted = HttpContext?.RequestAborted ?? CancellationToken.None;
+        try
+        {
+            var outcome = await CatalogApi.GetPublishedAlbum(AlbumSlug, Culture.ContentLanguage.Value, Page, requestAborted);
+            if (outcome.Kind == HttpOutcomeKind.NotFound)
+            {
+                Navigation.NotFound();
+                return;
+            }
+
+            if (outcome is { Kind: HttpOutcomeKind.Succeeded, Value: { } album })
+            {
+                _album = album;
+                return;
+            }
+        }
+        catch (OperationCanceledException) when (!requestAborted.IsCancellationRequested)
+        {
+        }
+        catch (HttpRequestException)
+        {
+        }
+
+        PublicWebHttpCache.SetServiceUnavailableNoStore(HttpContext);
+        _loadFailed = true;
+    }
+
+    private LinkTarget AlbumLink(int page) => Links.Link(GalleryPageLinks.AlbumPath(_album!.Slug), page);
+}

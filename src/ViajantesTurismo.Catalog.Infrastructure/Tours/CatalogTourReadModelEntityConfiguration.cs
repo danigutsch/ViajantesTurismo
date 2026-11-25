@@ -30,6 +30,7 @@ internal sealed class CatalogTourReadModelEntityConfiguration : IEntityTypeConfi
         entity.Property(tour => tour.SeoDescription).HasMaxLength(CatalogDomainLimits.MaxBodyLength).IsRequired();
         entity.Property(tour => tour.StreamVersion).HasDefaultValue(1L).IsRequired();
         entity.Property(tour => tour.PresentationPosition).IsRequired().IsConcurrencyToken();
+        entity.Property(tour => tour.GalleryPosition).IsRequired().IsConcurrencyToken();
         entity.Property(tour => tour.PublicationPosition).IsRequired().IsConcurrencyToken();
         entity.Property(tour => tour.Position).IsConcurrencyToken();
         entity.Property(tour => tour.UpdatedAt).IsRequired();
