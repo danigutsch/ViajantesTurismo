@@ -1,5 +1,4 @@
-using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi;
+using SharedKernel.OpenApi;
 
 namespace ViajantesTurismo.Admin.Api;
 
@@ -22,23 +21,6 @@ internal static class AdminEndpointMetadata
     }
 
     /// <summary>Describes the canonical resource address returned on creation.</summary>
-    public static RouteHandlerBuilder WithCreatedResourceLocation(this RouteHandlerBuilder builder)
-    {
-        return builder.AddOpenApiOperationTransformer((operation, _, _) =>
-        {
-            if (operation.Responses?.TryGetValue("201", out var createdResponse) == true
-                && createdResponse is OpenApiResponse response)
-            {
-                response.Headers ??= new Dictionary<string, IOpenApiHeader>(StringComparer.Ordinal);
-                response.Headers[HeaderNames.Location] = new OpenApiHeader
-                {
-                    Description = "URI reference for the created resource, also returned as its self link.",
-                    Required = true,
-                    Schema = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uri-reference" }
-                };
-            }
-
-            return Task.CompletedTask;
-        });
-    }
+    public static RouteHandlerBuilder WithCreatedResourceLocation(this RouteHandlerBuilder builder) =>
+        builder.WithLocationResponseHeader("URI reference for the created resource, also returned as its self link.");
 }
