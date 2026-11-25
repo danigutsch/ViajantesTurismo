@@ -23,7 +23,7 @@ public class CustomerBookingCreateFormTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Late_tour_details_do_not_replace_a_newer_choice()
     {

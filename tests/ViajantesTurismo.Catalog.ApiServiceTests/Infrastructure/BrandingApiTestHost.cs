@@ -1,4 +1,6 @@
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
 using SharedKernel.MalwareScanning;
@@ -16,6 +18,18 @@ internal static class BrandingApiTestHost
     private const string AdministratorRole = "Admin";
     private const string UntrustedIssuer = "https://untrusted.test";
     private const string WrongAudience = "wrong-audience";
+
+    /// <summary>Records Branding cache metrics from this test host's meter factory.</summary>
+    internal static BrandingMetricRecorder RecordBrandingMetrics(WebApplicationFactory<CatalogApiHostEntryPoint> factory) =>
+        new(factory.Services.GetRequiredService<IMeterFactory>());
+
+    /// <summary>Records API metrics from this test host's meter factory.</summary>
+    internal static MeterFactoryRecorder RecordApiMetrics(WebApplicationFactory<CatalogApiHostEntryPoint> factory) =>
+        new(factory.Services.GetRequiredService<IMeterFactory>());
+
+    /// <summary>Reads the routed endpoints recognized by the Catalog host.</summary>
+    internal static IEnumerable<RouteEndpoint> ReadRoutes(WebApplicationFactory<CatalogApiHostEntryPoint> factory) =>
+        factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>();
 
     /// <summary>Creates an authenticated host for the optional environment with empty in-memory Branding settings.</summary>
     public static WebApplicationFactory<CatalogApiHostEntryPoint> Create(string? environment = null) =>

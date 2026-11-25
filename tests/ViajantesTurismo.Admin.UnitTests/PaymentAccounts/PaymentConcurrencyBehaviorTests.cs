@@ -10,7 +10,7 @@ using ViajantesTurismo.Admin.UnitTests.Infrastructure;
 namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
-[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.PaymentsCapability)]
 public sealed class PaymentConcurrencyBehaviorTests
 {
     [Fact]

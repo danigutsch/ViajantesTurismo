@@ -14,7 +14,7 @@ using ViajantesTurismo.Resources;
 namespace ViajantesTurismo.Admin.ContractTests;
 
 /// <summary>Checks the published document against the current event contracts and AsyncAPI references.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.DriftGuardCategory)]
 [Trait(TestTraitNames.SurfaceName, TestTraits.AsyncApiSurface)]
 public sealed class GeneratedAsyncApiContractTests
 {

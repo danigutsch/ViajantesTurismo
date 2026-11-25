@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
-using ViajantesTurismo.Admin.UnitTests.Infrastructure;
 using ViajantesTurismo.Management.Security;
 
 namespace ViajantesTurismo.Admin.UnitTests.ManagementSecurity;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.SecurityCategory)]
 public sealed class ManagementSecurityDbContextFactoryTests
 {
     [Fact]

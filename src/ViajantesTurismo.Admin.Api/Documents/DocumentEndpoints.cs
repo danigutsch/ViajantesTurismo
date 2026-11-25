@@ -16,8 +16,6 @@ namespace ViajantesTurismo.Admin.Api.Documents;
 /// <summary>Defines Admin-only endpoints for generated document lifecycle operations.</summary>
 internal static class DocumentEndpoints
 {
-    private const string HtmlMediaType = "text/html; charset=utf-8";
-
     /// <summary>Maps generated-document endpoints to the Admin API.</summary>
     public static void MapDocumentEndpoints(this WebApplication app)
     {
@@ -419,7 +417,7 @@ internal static class DocumentEndpoints
         httpContext.Response.Headers.Expires = "0";
         httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
         httpContext.Response.Headers.ContentSecurityPolicy = DocumentArtifactDelivery.ContentSecurityPolicy;
-        return TypedResults.Bytes(artifact.Content, HtmlMediaType, artifact.FileName, enableRangeProcessing: false);
+        return TypedResults.Bytes(artifact.Content, DocumentArtifactResponse.ContentType, artifact.FileName, enableRangeProcessing: false);
     }
 
     private static async Task<IResult> GetDocumentAfterCommand(

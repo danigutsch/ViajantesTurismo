@@ -2,11 +2,10 @@ using Microsoft.Extensions.Http.Resilience;
 using Polly;
 using Polly.Retry;
 using ViajantesTurismo.Public.Web.Catalog;
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Catalog;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Unit)]
 public sealed class PublicCatalogResilienceTests
 {

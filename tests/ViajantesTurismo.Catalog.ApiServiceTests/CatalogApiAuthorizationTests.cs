@@ -1,5 +1,4 @@
 using System.Text.Json;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 
@@ -8,8 +7,8 @@ namespace ViajantesTurismo.Catalog.ApiServiceTests;
 /// <summary>
 /// Verifies the authorization boundary between management and public Catalog endpoints.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.EndpointCategory)]
+[SharedKernel.Testing.TestHost(SharedKernel.Testing.TestHost.TestServer)]
 public sealed class CatalogApiAuthorizationTests
 {
     [Theory]

@@ -56,6 +56,7 @@ When tags or traits are used, keep them orthogonal:
 - `Priority`: smoke, critical
 - `Surface`: domain, application, api, web, workflow, solution
 - `Area`: bookings, customers, tours, payments, shared
+- `Capability`: repository-specific behaviors such as document generation or payment processing
 
 Declare `Scope` with `[TestScope(...)]` (assembly level for a homogeneous project, per class for a mixed one).
 `SKTEST018` enforces it. The taxonomy, tie-breaks, and project mapping are in `tests/README.md`; the decision is
@@ -66,7 +67,9 @@ Use constants instead of hardcoded trait strings when a constant exists:
 
 - shared trait names: `SharedKernel.Testing.TestTraitNames`
 - shared cross-project values: `SharedKernel.Testing.TestTraitValues`
-- `Area` and `Surface` values: constants defined once; seam values use the typed attributes, not constants
+- `Area`, `Capability`, and `Surface` values: constants defined once; declare `Scope` with `TestScope`
+
+The [shared constants inventory](CONSTANT_OWNERSHIP.md) maps the app-specific trait values to their test projects.
 
 `SKTEST009` reports `Trait` string literals when a canonical constant can be identified safely.
 

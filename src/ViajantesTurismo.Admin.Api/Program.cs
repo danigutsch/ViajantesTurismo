@@ -20,8 +20,6 @@ using ViajantesTurismo.Resources;
 using SharedKernel.ServiceDefaults;
 using ViajantesTurismo.ServiceDefaults;
 
-const string ApiRobotsTxt = "User-agent: *\nDisallow: /";
-
 var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.WebHost.UseKestrelHttpsConfiguration();
@@ -101,7 +99,7 @@ app.MapPaymentAccountEndpoints();
 app.MapBookingFinancialEndpoints();
 app.MapPaymentInstructionEndpoints();
 app.MapErrorDocumentationEndpoints();
-app.MapRobotsTxt(ApiRobotsTxt);
+app.MapRobotsTxt(ApiCrawlerPolicy.RobotsText);
 
 app.MapHealthEndpoints();
 

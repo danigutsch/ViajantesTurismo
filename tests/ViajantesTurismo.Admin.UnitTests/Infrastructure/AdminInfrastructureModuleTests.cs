@@ -32,7 +32,7 @@ public sealed class AdminInfrastructureModuleTests
     }
 
     [Fact]
-    [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+    [TestFocus(TestFocus.Security)]
     public void AddInfrastructure_registers_npgsql_tracing_and_metrics()
     {
         // Arrange

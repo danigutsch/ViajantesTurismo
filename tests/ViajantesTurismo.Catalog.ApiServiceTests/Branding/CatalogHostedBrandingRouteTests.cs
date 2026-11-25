@@ -1,14 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Routing;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Branding;
 
 /// <summary>
 /// Verifies that Catalog.Api hosts the Branding module behind its own exact-audience scheme.
 /// </summary>
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.EndpointCategory)]
+[SharedKernel.Testing.TestHost(SharedKernel.Testing.TestHost.TestServer)]
 public sealed class CatalogHostedBrandingRouteTests
 {
     private const string ManagementBrandingPath = "/api/v1/branding/settings";
@@ -84,7 +82,7 @@ public sealed class CatalogHostedBrandingRouteTests
         // Arrange
         await using var factory = CatalogApiTestHost.CreateAnonymous();
         using var client = factory.CreateClient();
-        var endpoints = factory.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
+        var endpoints = BrandingApiTestHost.ReadRoutes(factory)
             .Where(endpoint => endpoint.RoutePattern.RawText is { } route
                 && route.Contains("branding", StringComparison.OrdinalIgnoreCase))
             .ToArray();

@@ -8,7 +8,7 @@ namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Branding;
 
 /// <summary>Verifies the Branding event payload guard on the migrated transport database.</summary>
 [TestScope(TestScope.Integration)]
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 public sealed class BrandingTransportPostgreSqlTests(HostedTestFixture shared)
 {
     [Fact]

@@ -1,14 +1,13 @@
 using System.Net.Http.Headers;
 using SharedKernel.Testing;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Media;
 
 /// <summary>
 /// Contract tests for the range and disposal behavior of Catalog media delivery.
 /// </summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 public sealed class MediaStreamingContractTests
 {
     [Theory]

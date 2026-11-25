@@ -28,7 +28,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
     private const string RequestUriParameterName = "requestUri";
     private const string RequestUriPropertyName = "RequestUri";
     private const string RelativeUriParameterName = "relativeUri";
-    private const string SharedKernelBrandingNamespace = "SharedKernel.Branding";
+    private const string BrandingRoutesNamespace = "SharedKernel.Branding";
     private const string SystemNetHttpNamespace = "System.Net.Http";
     private const string ResourceNamesTypeName = "ViajantesTurismo.Resources.ResourceNames";
 
@@ -1100,7 +1100,7 @@ public sealed class ProductionApiHttpAnalyzer : DiagnosticAnalyzer
 
         if (IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Catalog.Contracts.Http")
             || IsNamespaceOrChild(namespaceName, "ViajantesTurismo.Branding.Contracts.Http")
-            || (string.Equals(namespaceName, SharedKernelBrandingNamespace, StringComparison.Ordinal)
+            || (string.Equals(namespaceName, BrandingRoutesNamespace, StringComparison.Ordinal)
                 && type.Name is BrandingApiClientInterfaceTypeName or BrandingApiClientTypeName))
         {
             return ApiDestination.Catalog;

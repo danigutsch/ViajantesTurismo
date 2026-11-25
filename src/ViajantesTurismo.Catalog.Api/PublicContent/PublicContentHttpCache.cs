@@ -1,4 +1,5 @@
 using SharedKernel.HttpCaching.AspNetCore;
+using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Catalog.Api.PublicContent;
 
@@ -8,9 +9,6 @@ internal static class PublicContentHttpCache
     /// <summary>Cache invalidation area name.</summary>
     public const string Area = "public-content";
 
-    /// <summary>Query key carrying the response culture.</summary>
-    public const string CultureQueryKey = "culture";
-
     /// <summary>Cache tag applied to responses.</summary>
     public const string Tag = "public-content";
 
@@ -18,8 +16,6 @@ internal static class PublicContentHttpCache
     public static readonly TimeSpan Freshness = TimeSpan.FromSeconds(60);
 
     private const string InvalidCultureCacheKey = "invalid";
-
-    private const string LanguageQueryKey = "language";
 
     private static readonly string PathPrefix =
         $"/api/{CatalogOpenApiDocuments.CurrentApiVersion.RouteSegment}/public/catalog/content";
@@ -39,7 +35,8 @@ internal static class PublicContentHttpCache
         {
             if (httpContext.Request.Path.StartsWithSegments(PathPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                HttpCacheCultures.NormalizeQueryAliases(httpContext, CultureQueryKey, LanguageQueryKey, InvalidCultureCacheKey);
+                HttpCacheCultures.NormalizeQueryAliases(
+                    httpContext, PublicContentCultureQuery.Culture, PublicContentCultureQuery.Language, InvalidCultureCacheKey);
             }
 
             await next(httpContext);

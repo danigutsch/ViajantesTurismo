@@ -26,8 +26,8 @@ public sealed class ServiceDefaultsTelemetryTests
         HostDefaults.Add(builder);
         builder.Services.AddOpenTelemetry().WithTracing(tracing =>
             tracing.AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(exportedActivities))));
-        using var host = builder.Build();
-        var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
+        using var host = HostDefaults.Build(builder);
+        var tracerProvider = host.TracerProvider;
 
         // Act
         using (var activity = activitySource.StartActivity("operation", ActivityKind.Client))
@@ -59,8 +59,8 @@ public sealed class ServiceDefaultsTelemetryTests
         HostDefaults.Add(builder);
         builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
             metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames))));
-        using var host = builder.Build();
-        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
+        using var host = HostDefaults.Build(builder);
+        var meterProvider = host.MeterProvider;
 
         // Act
         counter.Add(1);
@@ -82,8 +82,8 @@ public sealed class ServiceDefaultsTelemetryTests
         HostDefaults.Add(builder);
         builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
             metrics.AddReader(new PeriodicExportingMetricReader(new CollectingMetricExporter(exportedMetricNames))));
-        using var host = builder.Build();
-        var meterProvider = host.Services.GetRequiredService<MeterProvider>();
+        using var host = HostDefaults.Build(builder);
+        var meterProvider = host.MeterProvider;
 
         // Act
         counter.Add(1);

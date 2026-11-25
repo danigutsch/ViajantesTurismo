@@ -2,8 +2,8 @@ using SharedKernel.Testing;
 namespace ViajantesTurismo.HostedTests.Management.Security;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[TestHost(TestHost.Aspire)]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.Integration)]
 public sealed class PostgreSqlTestServerFixtureTests(PostgreSqlTestServerFixture fixture) : IClassFixture<PostgreSqlTestServerFixture>
 {

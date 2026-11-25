@@ -5,7 +5,7 @@ using ViajantesTurismo.Admin.Testing.Builders;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.CommitAmbiguity;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CreateCommandCommitAmbiguityPostgreSqlTests(PostgreSqlTestServerFixture fixture)
     : IClassFixture<PostgreSqlTestServerFixture>

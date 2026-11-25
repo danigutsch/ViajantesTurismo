@@ -90,7 +90,7 @@ public sealed class AccommodationPageTests : BunitContext
             firstName: "Alice",
             lastName: "Brown",
             email: "alice@example.com"));
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Accommodation>();
         await cut.InvokeAsync(() => Task.CompletedTask);
 
@@ -113,7 +113,7 @@ public sealed class AccommodationPageTests : BunitContext
     public async Task Back_button_navigates_to_physical_and_updates_current_step()
     {
         // Arrange
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Accommodation>();
         await cut.InvokeAsync(() => Task.CompletedTask);
 
@@ -204,7 +204,7 @@ public sealed class AccommodationPageTests : BunitContext
     }
 
     [Fact]
-    [Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+    [Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
     [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
     public async Task Superseded_search_is_cancelled_and_cannot_replace_the_latest_choices()
     {

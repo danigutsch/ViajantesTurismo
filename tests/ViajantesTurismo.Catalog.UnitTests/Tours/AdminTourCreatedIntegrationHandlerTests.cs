@@ -180,7 +180,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    [Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    [Trait(TestTraitNames.CapabilityName, TestTraitValues.IntegrationEventTransport)]
     public async Task Handle_surfaces_an_existing_started_entry_for_transport_retry()
     {
         // Arrange
@@ -210,7 +210,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    [Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    [Trait(TestTraitNames.CapabilityName, TestTraitValues.IntegrationEventTransport)]
     public async Task Handle_retries_a_failed_event_after_the_lease_is_reacquired()
     {
         // Arrange
@@ -240,7 +240,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    [Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    [Trait(TestTraitNames.CapabilityName, TestTraitValues.IntegrationEventTransport)]
     public async Task Handle_completes_retry_when_append_succeeded_before_idempotency_completion_failed()
     {
         // Arrange
@@ -271,7 +271,7 @@ public sealed class AdminTourCreatedIntegrationHandlerTests
     }
 
     [Fact]
-    [Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+    [Trait(TestTraitNames.CapabilityName, TestTraitValues.IntegrationEventTransport)]
     public async Task Handle_preserves_conflict_when_existing_initial_event_has_a_different_source_event_ID()
     {
         // Arrange

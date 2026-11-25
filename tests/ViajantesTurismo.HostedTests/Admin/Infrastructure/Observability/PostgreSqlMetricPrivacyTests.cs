@@ -3,7 +3,7 @@ using SharedKernel.Testing;
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure.Observability;
 
 [Trait(Api.Infrastructure.TestTraits.ComponentName, Api.Infrastructure.TestTraits.PostgreSqlObservabilityComponent)]
-[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[TestFocus(TestFocus.Security)]
 [TestScope(TestScope.Integration)]
 public sealed class PostgreSqlMetricPrivacyTests(PostgreSqlTestServerFixture server) : IClassFixture<PostgreSqlTestServerFixture>
 {

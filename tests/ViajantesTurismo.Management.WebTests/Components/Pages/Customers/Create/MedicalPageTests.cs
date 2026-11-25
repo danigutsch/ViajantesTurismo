@@ -1,5 +1,4 @@
 using SharedKernel.Testing;
-using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 
@@ -41,7 +40,7 @@ public sealed class MedicalPageTests : BunitContext
     public async Task Submit_when_form_is_valid_saves_state_and_navigates_to_review()
     {
         // Arrange
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Medical>();
 
         // Act
@@ -61,7 +60,7 @@ public sealed class MedicalPageTests : BunitContext
     public async Task Back_button_navigates_to_emergency_contact_and_updates_current_step()
     {
         // Arrange
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Medical>();
 
         // Act

@@ -9,7 +9,7 @@ using ViajantesTurismo.Admin.Contracts.Http;
 
 namespace ViajantesTurismo.Admin.ContractTests.ApiClients;
 
-[Trait(TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.ContractCategory)]
 public sealed class DocumentsApiClientTests
 {
     private const string DocumentJson = """

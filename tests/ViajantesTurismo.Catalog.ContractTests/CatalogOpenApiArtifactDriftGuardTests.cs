@@ -1,4 +1,3 @@
-using ViajantesTurismo.Catalog.ContractTests.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.ContractTests;
 
@@ -8,8 +7,8 @@ namespace ViajantesTurismo.Catalog.ContractTests;
 public sealed class CatalogOpenApiArtifactDriftGuardTests
 {
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, SharedKernel.Testing.TestTraitValues.OpenApiSurface)]
     public void Canonical_catalog_OpenApi_artifacts_match_the_generated_boundary_artifacts()
     {
         // Arrange

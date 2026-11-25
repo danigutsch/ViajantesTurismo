@@ -1,9 +1,7 @@
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
-
 namespace ViajantesTurismo.Public.WebTests.Hosting;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[TestHost(TestHost.TestServer)]
 [TestScope(TestScope.Integration)]
 public sealed class PublicWebSecurityHeadersTests
 {

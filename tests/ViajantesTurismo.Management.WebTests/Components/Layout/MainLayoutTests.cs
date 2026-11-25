@@ -42,7 +42,7 @@ public sealed class MainLayoutTests : BunitContext
         // Act
         cut.Render(parameters => parameters.Add(layout => layout.Body, "Healthy page"));
         var stillFailedBeforeNavigation = cut.FindAll("article.content [role=alert]").Count;
-        Services.GetRequiredService<NavigationManager>().NavigateTo("/another-page");
+        this.GetNavigationManager().NavigateTo("/another-page");
 
         // Assert
         stillFailedBeforeNavigation.ShouldBe(1);
@@ -174,7 +174,7 @@ public sealed class MainLayoutTests : BunitContext
         cut.Render(parameters => parameters.Add(layout => layout.Body, "Healthy page"));
 
         // Act
-        Services.GetRequiredService<NavigationManager>().NavigateTo("/?tab=2#section");
+        this.GetNavigationManager().NavigateTo("/?tab=2#section");
 
         // Assert
         cut.FindAll("article.content [role=alert]").Count.ShouldBe(1);

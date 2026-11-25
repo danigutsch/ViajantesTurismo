@@ -22,10 +22,6 @@ internal static class ManagementAuthenticationDefaults
     /// </summary>
     internal const string TokenExchangeProviderConfigurationKey = "Authentication:TokenExchange:Provider";
     /// <summary>
-    /// Provider name for Keycloak token exchange.
-    /// </summary>
-    internal const string KeycloakTokenExchangeProvider = "Keycloak";
-    /// <summary>
     /// Connection string name of the security database.
     /// </summary>
     internal const string SecurityDatabaseConnectionName = "security-database";

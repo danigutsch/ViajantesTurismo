@@ -1,11 +1,10 @@
 using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Api;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
+[TestHost(TestHost.TestServer)]
 public sealed class PublicCatalogDeploymentTrustTests
 {
     [Theory]

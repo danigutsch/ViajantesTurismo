@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Xml.Linq;
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.SearchMetadata;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 [TestScope(TestScope.Integration)]
 public sealed class PublicSitemapTests
 {

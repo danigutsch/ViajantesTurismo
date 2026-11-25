@@ -10,7 +10,7 @@ namespace ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 /// Verifies DCP isolation when multiple test AppHosts start concurrently.
 /// </summary>
 [Trait(TestTraitNames.CategoryName, TestTraits.SmokeCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
+[TestHost(TestHost.Aspire)]
 [TestScope(TestScope.Integration)]
 public sealed class ConcurrentAspireTestApplicationTests(HostedTestFixture shared)
 {

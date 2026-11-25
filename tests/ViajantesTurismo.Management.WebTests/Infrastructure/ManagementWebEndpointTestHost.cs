@@ -19,6 +19,10 @@ internal static class ManagementWebEndpointTestHost
     private const string AntiforgeryRequestTokenHeader = "X-Test-Antiforgery-Request-Token";
     private const string AntiforgeryTokenPath = "/_test/antiforgery";
 
+    /// <summary>Writes the current request's CSP nonce for the security-header test.</summary>
+    public static Task WriteCspNonce(HttpContext context) =>
+        context.Response.WriteAsync(context.RequestServices.GetRequiredService<ICspNonce>().Value, context.RequestAborted);
+
     /// <summary>Starts a test host whose authentication always succeeds and records challenges and sign-outs.</summary>
     public static async Task<IHost> StartWithRecordingAuthentication(
         CancellationToken ct,

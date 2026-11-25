@@ -3,7 +3,7 @@ using System.Net;
 using ViajantesTurismo.HostedTests.Admin.Api.Infrastructure;
 namespace ViajantesTurismo.HostedTests.Admin.Api;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class AdminApiEndpointTests(ApiFixture fixture) : IClassFixture<ApiFixture>
 {

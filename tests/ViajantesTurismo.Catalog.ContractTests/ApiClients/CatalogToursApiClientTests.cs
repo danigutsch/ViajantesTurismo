@@ -8,7 +8,7 @@ using ViajantesTurismo.Catalog.Contracts.Http;
 
 namespace ViajantesTurismo.Catalog.ContractTests.ApiClients;
 
-[Trait(TestTraitNames.CategoryName, Infrastructure.TestTraits.ContractCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.ContractCategory)]
 public sealed class CatalogToursApiClientTests
 {
     [Fact]

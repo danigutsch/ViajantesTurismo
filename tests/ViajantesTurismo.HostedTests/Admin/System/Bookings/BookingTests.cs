@@ -38,6 +38,26 @@ public class BookingTests(AspireSystemTestFixture fixture) : AspireSystemTestBas
     }
 
     [Fact]
+    public async Task Creating_a_booking_returns_the_selected_customers_booking_when_names_match()
+    {
+        // Arrange
+        var tour = await ApiClient.CreateTour(new CreateTourOptions { Currency = "USD" });
+        var previousCustomer = await ApiClient.CreateCustomer();
+        var customer = await ApiClient.CreateCustomer(previousCustomer.FirstName, previousCustomer.LastName);
+        var previousBooking = await ApiClient.CreateBooking(tour.Id, previousCustomer.Id);
+        await ApiClient.CancelBooking(previousBooking.Id);
+
+        // Act
+        var bookingId = await BookingWorkflow.CreateFromTourDetails(tour, customer, MoneyText.Of(1300.00m, "USD"));
+        var booking = await ApiClient.GetBooking(bookingId);
+
+        // Assert
+        bookingId.ShouldNotBe(previousBooking.Id);
+        booking.CustomerId.ShouldBe(customer.Id);
+        booking.TourId.ShouldBe(tour.Id);
+    }
+
+    [Fact]
     public async Task Can_apply_discount_confirm_booking_and_approve_receipt_credit()
     {
         // Arrange

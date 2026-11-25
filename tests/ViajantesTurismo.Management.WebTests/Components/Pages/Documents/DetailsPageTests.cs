@@ -42,7 +42,7 @@ public sealed class DetailsPageTests : BunitContext
     {
         // Arrange
         var documentId = Guid.CreateVersion7();
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         navigationManager.NavigateTo($"/documents/{documentId}");
 
         // Act
@@ -67,7 +67,7 @@ public sealed class DetailsPageTests : BunitContext
         staticContext.Services.AddUiFailureReporting();
         staticContext.SetRendererInfo(new RendererInfo("Static", false));
         var documentId = Guid.CreateVersion7();
-        var navigationManager = staticContext.Services.GetRequiredService<NavigationManager>();
+        var navigationManager = staticContext.GetNavigationManager();
         navigationManager.NavigateTo($"/documents/{documentId}");
 
         // Act
@@ -90,7 +90,7 @@ public sealed class DetailsPageTests : BunitContext
         context.Services.AddUiFailureReporting();
         context.SetRendererInfo(new RendererInfo("Server", true));
         var documentId = Guid.CreateVersion7();
-        var navigationManager = context.Services.GetRequiredService<NavigationManager>();
+        var navigationManager = context.GetNavigationManager();
         navigationManager.NavigateTo($"/documents/{documentId}");
 
         // Act
@@ -238,7 +238,7 @@ public sealed class DetailsPageTests : BunitContext
         await cut.InvokeAsync(() => cut.Find("button").Click());
 
         // Assert
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         navigationManager.Uri.ShouldBe($"http://localhost/documents/{replacement.Id}");
 
         // Act

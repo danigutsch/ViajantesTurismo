@@ -5,7 +5,6 @@ using ViajantesTurismo.Admin.Infrastructure;
 
 namespace ViajantesTurismo.HostedTests.Admin.Infrastructure;
 
-[Trait(TestTraitNames.CategoryName, "unit")]
 [TestScope(TestScope.Integration)]
 public sealed class AdminWriteDbContextDesignTimeFactoryTests
 {

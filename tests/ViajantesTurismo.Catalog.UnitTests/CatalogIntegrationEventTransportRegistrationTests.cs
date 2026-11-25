@@ -13,7 +13,7 @@ using ViajantesTurismo.Resources;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
-[Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraitValues.IntegrationEventTransport)]
 public sealed class CatalogIntegrationEventTransportRegistrationTests
 {
     [Fact]

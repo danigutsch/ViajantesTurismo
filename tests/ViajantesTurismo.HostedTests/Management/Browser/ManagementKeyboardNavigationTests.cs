@@ -6,8 +6,9 @@ using ViajantesTurismo.Catalog.Contracts.Http;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Keyboard navigation through the shared layout of a Management form.</summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class ManagementKeyboardNavigationTests : ManagementWebBrowserTestBase
 {
     private readonly FakeCatalogBrowserApiClient catalog = new(CatalogTourBrowserData.DraftTour());

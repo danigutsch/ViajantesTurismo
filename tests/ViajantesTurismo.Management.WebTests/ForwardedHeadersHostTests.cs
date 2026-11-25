@@ -5,7 +5,7 @@ using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 
 namespace ViajantesTurismo.Management.WebTests;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [Trait(TestTraitNames.HostName, TestTraitValues.TestServerHost)]
 [TestScope(TestScope.Integration)]
 public sealed class ForwardedHeadersHostTests

@@ -1,10 +1,6 @@
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using SharedKernel.Testing;
 using SharedKernel.Testing.AspNetCore;
-using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Contracts.Application;
 using ViajantesTurismo.Catalog.Contracts.Http;
 using ViajantesTurismo.Catalog.Infrastructure;
@@ -42,22 +38,9 @@ public sealed class CatalogTourListPrerenderTests(HostedTestFixture fixture)
         }));
         await databaseContext.SaveChangesAsync(ct);
 
-        var pageReads = 0;
+        var scenario = new CatalogTourListPrerenderScenario();
         await using var baseApi = CatalogApiTestHost.Create();
-        await using var catalogApi = baseApi.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
-        {
-            services.Replace(ServiceDescriptor.Scoped(_ =>
-            {
-                var context = new CatalogDbContextDesignTimeFactory().CreateDbContext([]);
-                context.Database.SetConnectionString(database.ConnectionString);
-                return context;
-            }));
-            services.Replace(ServiceDescriptor.Scoped<ICatalogTourListReader>(provider =>
-            {
-                Interlocked.Increment(ref pageReads);
-                return new EfCatalogTourListReader(provider.GetRequiredService<CatalogDbContext>());
-            }));
-        }));
+        await using var catalogApi = scenario.WithObservedPageReads(baseApi, database.ConnectionString);
         using var catalogHttp = catalogApi.CreateClient();
         var catalogClient = new CatalogToursApiClient(catalogHttp);
         await using var management = await ManagementWebBrowserHost.StartWithClients(ct, catalog: catalogClient);
@@ -78,7 +61,7 @@ public sealed class CatalogTourListPrerenderTests(HostedTestFixture fixture)
         // Act
         var secondPage = await catalogClient.GetTourPage(2, CatalogTourListSort.Title, descending: false, ct);
         var html = await browser.GetStringAsync(new Uri("/catalog/tours", UriKind.Relative), ct);
-        var firstViewReads = Volatile.Read(ref pageReads);
+        var firstViewReads = scenario.PageReads;
         var orderedPages = new List<CatalogTourPageDto?>(orderingCases.Length);
         foreach (var (sort, descending, _) in orderingCases)
         {
@@ -97,7 +80,7 @@ public sealed class CatalogTourListPrerenderTests(HostedTestFixture fixture)
         html.ShouldNotContain("SSRTOUR-010", StringComparison.Ordinal);
         PrerenderedComponentState.ShouldKeepServerStateBelow(html);
         firstViewReads.ShouldBe(2);
-        pageReads.ShouldBe(2 + orderingCases.Length);
+        scenario.PageReads.ShouldBe(2 + orderingCases.Length);
         for (var index = 0; index < orderingCases.Length; index++)
         {
             var orderedPage = orderedPages[index].ShouldNotBeNull();

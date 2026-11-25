@@ -5,7 +5,7 @@ using ViajantesTurismo.Catalog.Infrastructure;
 namespace ViajantesTurismo.Catalog.UnitTests;
 
 [Trait(TestTraitNames.CategoryName, TestTraitValues.DependencyInjectionCategory)]
-[Trait(TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+[Trait(TestTraitNames.CapabilityName, TestTraitValues.IntegrationEventTransport)]
 public sealed class CatalogBrandingCoHostedMessagingTests
 {
     [Fact]

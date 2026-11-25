@@ -79,11 +79,13 @@ internal sealed class BookingWorkflow(IPage page, Func<string, Task> navigateTo)
 
         await toastTask;
 
-        var createdBookingRow = page.Locator("table tbody tr")
-            .Filter(new LocatorFilterOptions { HasText = customerFullName });
-        await createdBookingRow.First.WaitForAsync();
+        var customerLink = page.Locator($"a[href='/customers/{customer.Id:D}']");
+        var createdBookingLink = page.GetByRole(AriaRole.Row)
+            .Filter(new LocatorFilterOptions { Has = customerLink })
+            .GetLink("View");
+        await Expect(createdBookingLink).ToHaveCountAsync(1);
 
-        var bookingHref = await createdBookingRow.First.GetLink("View").GetAttributeAsync("href");
+        var bookingHref = await createdBookingLink.GetAttributeAsync("href");
         _ = bookingHref.ShouldNotBeNull();
 
         var bookingHrefSegments = bookingHref.Split('/');

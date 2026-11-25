@@ -10,7 +10,7 @@ using ViajantesTurismo.Catalog.Application;
 
 namespace ViajantesTurismo.Catalog.UnitTests;
 
-[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.Catalog)]
 [Trait(TestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 [Collection(CatalogTelemetryGroup.Name)]
 public sealed class MediaAccessibilityEvaluationTests

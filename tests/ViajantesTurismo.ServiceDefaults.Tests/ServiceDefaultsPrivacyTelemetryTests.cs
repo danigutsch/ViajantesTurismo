@@ -24,8 +24,8 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
 
         // Act
         HostDefaults.Add(builder);
-        using var host = builder.Build();
-        var logger = host.Services.GetRequiredService<ILogger<ServiceDefaultsPrivacyTelemetryTests>>();
+        using var host = HostDefaults.Build(builder);
+        var logger = host.Logger<ServiceDefaultsPrivacyTelemetryTests>();
         PrivacyTestLogger.LogFailure(
             logger,
             new InvalidOperationException("traveler@example.com at /customers/private"),
@@ -49,8 +49,8 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
         HostDefaults.Add(builder);
         builder.Logging.AddOpenTelemetry(logging =>
             logging.AddProcessor(_ => new SimpleLogRecordExportProcessor(new CollectingLogRecordExporter(exportedLogs))));
-        using var host = builder.Build();
-        var logger = host.Services.GetRequiredService<ILogger<ServiceDefaultsPrivacyTelemetryTests>>();
+        using var host = HostDefaults.Build(builder);
+        var logger = host.Logger<ServiceDefaultsPrivacyTelemetryTests>();
 
         // Act
         PrivacyTestLogger.LogStructuredFailure(logger, new InvalidOperationException("failure"), "retryable");
@@ -75,8 +75,8 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
         builder.Services.AddOpenTelemetry().WithTracing(tracing =>
             tracing.AddSource(activitySource.Name)
                 .AddProcessor(new SimpleActivityExportProcessor(new CollectingActivityExporter(exportedActivities))));
-        using var host = builder.Build();
-        var tracerProvider = host.Services.GetRequiredService<TracerProvider>();
+        using var host = HostDefaults.Build(builder);
+        var tracerProvider = host.TracerProvider;
         var customerId = Guid.CreateVersion7().ToString();
         var bookingId = Guid.CreateVersion7().ToString();
         string[] sensitive =
@@ -120,8 +120,8 @@ public sealed class ServiceDefaultsPrivacyTelemetryTests
         HostDefaults.Add(builder);
         builder.Logging.AddOpenTelemetry(logging =>
             logging.AddProcessor(_ => new SimpleLogRecordExportProcessor(new CollectingLogRecordExporter(exportedLogs))));
-        using var host = builder.Build();
-        var logger = host.Services.GetRequiredService<ILogger<ServiceDefaultsPrivacyTelemetryTests>>();
+        using var host = HostDefaults.Build(builder);
+        var logger = host.Logger<ServiceDefaultsPrivacyTelemetryTests>();
         var customerId = Guid.CreateVersion7();
         var bookingId = Guid.CreateVersion7();
         var keyId = Guid.CreateVersion7();

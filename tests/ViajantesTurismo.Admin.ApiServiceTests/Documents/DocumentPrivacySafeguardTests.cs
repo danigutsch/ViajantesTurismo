@@ -37,10 +37,7 @@ public sealed class DocumentPrivacySafeguardTests
             .ToArray();
 
         // Act
-        var endpoints = factory.Services
-            .GetServices<EndpointDataSource>()
-            .SelectMany(dataSource => dataSource.Endpoints)
-            .OfType<RouteEndpoint>()
+        var endpoints = AdminApiTestHost.ReadRoutes(factory)
             .Where(endpoint => endpoint.RoutePattern.RawText?
                 .TrimStart('/')
                 .StartsWith("api/v1/documents", StringComparison.Ordinal) is true)

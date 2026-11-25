@@ -6,8 +6,9 @@ using ViajantesTurismo.Catalog.Contracts.Http;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Browser keyboard journey for cancelling a held Catalog image upload.</summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class UploadImageKeyboardCancelTests : ManagementWebBrowserTestBase
 {
     private readonly FakeCatalogBrowserApiClient catalog = new(CatalogTourBrowserData.DraftTour());

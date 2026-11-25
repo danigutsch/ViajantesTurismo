@@ -77,3 +77,16 @@ Assembly-wide sharing is a specialized tool, not the default architecture.
 ## Tagging reminder
 
 Use tag dimensions such as `Scope`, `Surface`, `Area`, `Category`, and `Host` so host migration does not force the taxonomy to change.
+
+## Integration and system test seams
+
+Each entry links to an existing test exercising the suite's declared entrypoint and dependency mode.
+See the [hosted register](ViajantesTurismo.HostedTests/README.md#integration-and-system-test-seams)
+for the browser, Aspire, and database lanes.
+
+| Suite | SUT | Type | Dependency mode | Tested entry point |
+| --- | --- | --- | --- | --- |
+| `ViajantesTurismo.Branding.InfrastructureTests` | `ViajantesTurismo.Branding.Infrastructure` | `Integration` | `storage-and-database-fixtures` | [Branding settings store through the persistence scenario](ViajantesTurismo.Branding.InfrastructureTests/BrandingSettingsRevisionTests.cs) |
+| `ViajantesTurismo.Management.WebTests` | `ViajantesTurismo.Management.Web` | `Integration` | `test-server` | [HTTP requests through the Management Web test host](ViajantesTurismo.Management.WebTests/ForwardedHeadersHostTests.cs) |
+| `ViajantesTurismo.Public.WebTests` | `ViajantesTurismo.Public.Web` | `Integration` | `test-server` | [HTTP requests through the Public Web test host](ViajantesTurismo.Public.WebTests/Hosting/PublicWebEndpointTests.cs) |
+| `ViajantesTurismo.ServiceDefaults.Tests` | `ViajantesTurismo.ServiceDefaults` | `Integration` | `in-process-host` | [Host defaults with test-owned telemetry exporters](ViajantesTurismo.ServiceDefaults.Tests/ServiceDefaultsTelemetryTests.cs) |

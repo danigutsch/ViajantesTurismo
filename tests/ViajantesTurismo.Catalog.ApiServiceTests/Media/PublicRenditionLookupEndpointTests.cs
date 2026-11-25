@@ -1,13 +1,12 @@
 using SharedKernel.Testing;
 using ViajantesTurismo.Catalog.Application.Tours;
 using ViajantesTurismo.Catalog.Domain.Media;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests.Media;
 
 /// <summary>Checks bounded public image lookup through the ordinary Catalog HTTP route.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[Trait(TestTraitNames.AreaName, TestAreas.Catalog)]
 public sealed class PublicRenditionLookupEndpointTests
 {
     [Fact]

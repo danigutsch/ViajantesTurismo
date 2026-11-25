@@ -11,7 +11,7 @@ using ViajantesTurismo.HostedTests.Catalog.Infrastructure.Media;
 namespace ViajantesTurismo.HostedTests.Catalog.Infrastructure.Tours;
 
 /// <summary>Verifies recovery of the legacy baseline and its separate durable placement wake.</summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.DatabaseIntegrationCategory)]
+[Trait(TestTraitNames.CategoryName, SharedKernel.IntegrationTesting.IntegrationTestTraitValues.DatabaseIntegrationCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class CatalogGalleryBootstrapPostgreSqlTests(HostedTestFixture shared)
 {

@@ -9,7 +9,7 @@ using ViajantesTurismo.Management.Web.Components.Pages.Catalog;
 namespace ViajantesTurismo.Management.WebTests.Components.Pages.Catalog;
 
 [Trait(TestTraitNames.CategoryName, TestTraits.ComponentCategory)]
-[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.Component)]
 public sealed class GalleryEditorNavigationTests : BunitContext
 {

@@ -10,7 +10,6 @@ using SharedKernel.AI;
 using SharedKernel.Testing.AI;
 using SharedKernel.EventSourcing;
 using SharedKernel.Testing.Http;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Api;
 using ViajantesTurismo.Catalog.Api.Media;
 using ViajantesTurismo.Catalog.Api.PublicContent;
@@ -23,8 +22,8 @@ using ViajantesTurismo.Catalog.Domain.Tours;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.EndpointCategory)]
+[SharedKernel.Testing.TestHost(SharedKernel.Testing.TestHost.TestServer)]
 [Collection(CatalogTelemetryGroup.Name)]
 public sealed class CatalogApiEndpointTests
 {

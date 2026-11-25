@@ -1,6 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SharedKernel.ServiceDefaults;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
 
@@ -15,8 +13,8 @@ public static class ServiceDefaultsOptionsTests
 
         // Act
         HostDefaults.Add(builder);
-        using var host = builder.Build();
-        var options = host.Services.GetRequiredService<ServiceDefaultsOptions>();
+        using var host = HostDefaults.Build(builder);
+        var options = host.Options;
 
         // Assert
         options.AddResilience.ShouldBeTrue();

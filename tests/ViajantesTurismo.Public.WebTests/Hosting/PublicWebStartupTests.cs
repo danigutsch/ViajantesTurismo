@@ -2,7 +2,7 @@ using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Hosting;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
 [Trait(TestTraitNames.AreaName, TestTraits.PublicWebArea)]
 [TestScope(TestScope.Integration)]
 public sealed class PublicWebStartupTests

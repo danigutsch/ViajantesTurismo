@@ -9,7 +9,7 @@ namespace ViajantesTurismo.Management.WebTests;
 /// <summary>
 /// Verifies Management Web authentication startup configuration.
 /// </summary>
-[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 [TestScope(TestScope.Integration)]
 public sealed class ManagementAuthenticationServiceCollectionExtensionsTests
 {

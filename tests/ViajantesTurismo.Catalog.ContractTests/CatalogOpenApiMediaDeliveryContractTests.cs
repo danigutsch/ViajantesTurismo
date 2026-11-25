@@ -1,4 +1,3 @@
-using ViajantesTurismo.Catalog.ContractTests.Infrastructure;
 
 namespace ViajantesTurismo.Catalog.ContractTests;
 
@@ -10,8 +9,8 @@ public sealed class CatalogOpenApiMediaDeliveryContractTests
     [Theory]
     [InlineData("public-catalog", "/api/v1/public/catalog/media/{id}/{width}/{format}")]
     [InlineData("catalog", "/api/v1/catalog/media/images/{id}/preview/{width}/{format}")]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.DriftGuardCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, SharedKernel.Testing.TestTraitValues.OpenApiSurface)]
     public void Media_delivery_declares_image_media_types_and_not_found(string boundary, string path)
     {
         // Arrange

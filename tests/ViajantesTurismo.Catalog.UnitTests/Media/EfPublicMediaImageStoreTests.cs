@@ -7,7 +7,7 @@ using ViajantesTurismo.Catalog.UnitTests.PublicContent;
 
 namespace ViajantesTurismo.Catalog.UnitTests.Media;
 
-[Trait(TestTraitNames.AreaName, TestTraits.CatalogArea)]
+[Trait(TestTraitNames.AreaName, TestAreas.Catalog)]
 [Trait(TestTraitNames.CapabilityName, TestTraits.AiAccessibilityCapability)]
 public sealed class EfPublicMediaImageStoreTests
 {

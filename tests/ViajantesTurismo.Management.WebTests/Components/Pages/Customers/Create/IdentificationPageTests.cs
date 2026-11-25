@@ -1,5 +1,4 @@
 using SharedKernel.Testing;
-using Microsoft.AspNetCore.Components;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers.Create;
 using ViajantesTurismo.Management.Web.Components.Pages.Customers;
 using ViajantesTurismo.Management.WebTests.Infrastructure;
@@ -42,7 +41,7 @@ public sealed class IdentificationPageTests : BunitContext
     {
         // Arrange
         JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetVoidResult();
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Identification>();
         await cut.InvokeAsync(() => Task.CompletedTask);
 
@@ -64,7 +63,7 @@ public sealed class IdentificationPageTests : BunitContext
     public async Task Back_button_navigates_to_personal_info_and_updates_current_step()
     {
         // Arrange
-        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var navigationManager = this.GetNavigationManager();
         var cut = Render<Identification>();
         await cut.InvokeAsync(() => Task.CompletedTask);
 

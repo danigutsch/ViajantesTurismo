@@ -1,8 +1,11 @@
+using Microsoft.Playwright;
 using SharedKernel.Testing;
+using SharedKernel.Testing.Playwright;
+using ViajantesTurismo.Admin.Testing.Builders;
+using ViajantesTurismo.Admin.Testing.Integration.Helpers;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Bases;
 using ViajantesTurismo.HostedTests.Admin.System.Infrastructure.Fixtures;
-using ViajantesTurismo.Admin.Testing.Integration.Helpers;
-using SharedKernel.Testing.Playwright;
+
 namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 [TestScope(TestScope.System)]
@@ -16,16 +19,41 @@ public class CrossEntityNavigationTests(AspireSystemTestFixture fixture) : Aspir
         // Arrange
         var tour = await ApiClient.CreateTour();
         var customer = await ApiClient.CreateCustomer();
-        var booking = await ApiClient.CreateBooking(tour.Id, customer.Id);
+        var companion = await ApiClient.CreateCustomer(customer.FirstName, customer.LastName);
+        var request = DtoBuilders.BuildCreateBookingDto(
+            tourId: tour.Id,
+            principalCustomerId: customer.Id,
+            companionCustomerId: companion.Id);
+        var booking = await ApiClient.CreateBookingAndRead(request, TestContext.Current.CancellationToken);
+        var bookingPath = $"/bookings/{booking.Id}";
+        var tourPath = $"/tours/{tour.Id}";
+        var customerPath = $"/customers/{customer.Id}";
+        var companionPath = $"/customers/{companion.Id}";
+        var customerName = $"{customer.FirstName} {customer.LastName}";
+        var customerLinks = Page.GetByRole(AriaRole.Main).GetByRole(AriaRole.Link, new()
+        {
+            Name = customerName,
+            Exact = true
+        });
 
         // Act
-        await NavigateTo($"/bookings/{booking.Id}");
-        await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, Page.Locator("a[href^='/tours/']").First, "Tour Details");
-        await NavigateTo($"/bookings/{booking.Id}");
-        await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, Page.Locator("a[href^='/customers/']").First, CustomerDetailsTitle);
+        await NavigateTo(bookingPath);
+        var tourLink = Page.Locator($"a[href='{tourPath}']");
+        await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, tourLink, "Tour Details");
+        await Expect(Page).ToHaveURLAsync(new Uri(Fixture.WebAppUrl, tourPath).AbsoluteUri);
+
+        await NavigateTo(bookingPath);
+        await Expect(customerLinks).ToHaveCountAsync(2);
+        var principalLink = customerLinks.And(Page.Locator($"a[href='{customerPath}']"));
+        await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, principalLink, CustomerDetailsTitle);
+        await Expect(Page).ToHaveURLAsync(new Uri(Fixture.WebAppUrl, customerPath).AbsoluteUri);
+
+        await NavigateTo(bookingPath);
+        var companionLink = customerLinks.And(Page.Locator($"a[href='{companionPath}']"));
+        await CrossEntityNavigationTestHelpers.FollowLinkAndExpectTitle(Page, companionLink, CustomerDetailsTitle);
 
         // Assert
-        await Page.ShouldHaveTitle(CustomerDetailsTitle);
+        await Expect(Page).ToHaveURLAsync(new Uri(Fixture.WebAppUrl, companionPath).AbsoluteUri);
     }
 
     [Fact]

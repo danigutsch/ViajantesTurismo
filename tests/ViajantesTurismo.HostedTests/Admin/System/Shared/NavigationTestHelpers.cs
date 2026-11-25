@@ -8,6 +8,13 @@ namespace ViajantesTurismo.HostedTests.Admin.System.Shared;
 
 public static class NavigationTestHelpers
 {
+    /// <summary>Finds the dashboard's list link for a specific route.</summary>
+    /// <param name="content">The dashboard content.</param>
+    /// <param name="destination">The link's app-relative destination.</param>
+    /// <returns>The locator for the matching dashboard link.</returns>
+    internal static ILocator GetDashboardListLink(ILocator content, string destination) =>
+        content.GetLink("View All", exact: true).And(content.Locator($"a[href='{destination}']"));
+
     public static async Task AssertDeepLink(IPage page, Func<string, Task> navigateTo, string path, string expectedTitle)
     {
         ArgumentNullException.ThrowIfNull(page);

@@ -1,4 +1,5 @@
 using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -32,6 +33,10 @@ internal static class AdminApiTestHost
     /// <summary>Records measurements from this test host's meter factory.</summary>
     internal static MeterFactoryRecorder RecordMetrics(WebApplicationFactory<AdminApiHostEntryPoint> factory) =>
         new(factory.Services.GetRequiredService<IMeterFactory>());
+
+    /// <summary>Reads the routed endpoints recognized by this test host.</summary>
+    internal static IEnumerable<RouteEndpoint> ReadRoutes(WebApplicationFactory<AdminApiHostEntryPoint> factory) =>
+        factory.Services.GetServices<EndpointDataSource>().SelectMany(source => source.Endpoints).OfType<RouteEndpoint>();
 
     /// <summary>Captures traces from this test host's document operation source.</summary>
     internal static DocumentPrivacyTelemetryCapture RecordDocumentTraces(WebApplicationFactory<AdminApiHostEntryPoint> factory) =>

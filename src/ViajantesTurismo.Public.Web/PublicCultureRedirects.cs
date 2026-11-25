@@ -11,12 +11,6 @@ namespace ViajantesTurismo.Public.Web;
 /// </summary>
 internal static class PublicCultureRedirects
 {
-    /// <summary>The former query-string key of the requested culture.</summary>
-    public const string CultureQueryKey = "culture";
-
-    /// <summary>The former alias of <see cref="CultureQueryKey" />.</summary>
-    public const string LanguageQueryKey = "language";
-
     /// <summary>Returns the short culture path of the request, or <see langword="null" /> when it already has one or names no culture.</summary>
     public static ValueTask<PermanentRedirect?> Resolve(HttpContext httpContext)
     {
@@ -56,8 +50,8 @@ internal static class PublicCultureRedirects
 
     private static PermanentRedirect? FromCultureQuery(HttpRequest request)
     {
-        var requested = HttpCacheCultures.Normalize(request.Query[CultureQueryKey].ToString())
-            ?? HttpCacheCultures.Normalize(request.Query[LanguageQueryKey].ToString());
+        var requested = HttpCacheCultures.Normalize(request.Query[PublicContentCultureQuery.Culture].ToString())
+            ?? HttpCacheCultures.Normalize(request.Query[PublicContentCultureQuery.Language].ToString());
         var culture = PublicSiteCultures.Supported.Resolve(requested);
         return culture is null
             ? null

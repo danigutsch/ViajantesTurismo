@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace ViajantesTurismo.ServiceDefaults.Tests;
@@ -13,8 +12,8 @@ public static class ServiceDefaultsVersionTests
 
         // Act
         HostDefaults.Add(builder);
-        using var host = builder.Build();
-        var hostedServices = host.Services.GetServices<IHostedService>();
+        using var host = HostDefaults.Build(builder);
+        var hostedServices = host.HostedServices;
 
         // Assert
         hostedServices.ShouldContain(service =>

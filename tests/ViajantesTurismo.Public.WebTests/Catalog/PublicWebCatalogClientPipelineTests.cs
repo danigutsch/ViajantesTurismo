@@ -1,16 +1,14 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
-using TestTraits = ViajantesTurismo.Public.WebTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Public.WebTests.Catalog;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.EndpointCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.TestServerHost)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.EndpointCategory)]
+[TestHost(TestHost.TestServer)]
 [TestScope(TestScope.Integration)]
 public sealed class PublicWebCatalogClientPipelineTests
 {
-    private const string CatalogClientName = nameof(IPublicCatalogApiClient);
     private const string ResolvingHandlerTypeName = "Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpDelegatingHandler";
 
     [Fact]
@@ -18,13 +16,13 @@ public sealed class PublicWebCatalogClientPipelineTests
     {
         // Arrange
         await using var factory = PublicWebTestHost.CreateFactory();
-        var handlers = factory.Services.GetRequiredService<IHttpMessageHandlerFactory>();
 
         // Act
-        var chain = PublicWebCatalogClientPipelineTestsHelpers.HandlerTypeNames(handlers.CreateHandler(CatalogClientName));
+        var chain = PublicWebCatalogClientPipelineTestsHelpers.CatalogHandlerTypeNames(factory);
 
         // Assert
-        var resilience = chain.IndexOf(typeof(ResilienceHandler).FullName!);
+        var resilienceHandlerName = typeof(ResilienceHandler).FullName.ShouldNotBeNull();
+        var resilience = chain.IndexOf(resilienceHandlerName);
         resilience.ShouldBeGreaterThanOrEqualTo(0);
         chain.Count(static name => name == ResolvingHandlerTypeName).ShouldBe(1);
         chain.IndexOf(ResolvingHandlerTypeName).ShouldBeGreaterThan(resilience);
@@ -40,7 +38,7 @@ public sealed class PublicWebCatalogClientPipelineTests
             configuration: new Dictionary<string, string?> { ["services:catalog-api:https:0"] = "https://catalog.test" });
         await using var factory = host.WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
                 services.ConfigureHttpClientDefaults(http => http.ConfigurePrimaryHttpMessageHandler(() => catalog))));
-        using var client = factory.Services.GetRequiredService<IHttpClientFactory>().CreateClient(CatalogClientName);
+        using var client = PublicWebCatalogClientPipelineTestsHelpers.CreateCatalogClient(factory);
 
         // Act
         using var response = await client.GetAsync(new Uri(quotaPath, UriKind.Relative), TestContext.Current.CancellationToken);

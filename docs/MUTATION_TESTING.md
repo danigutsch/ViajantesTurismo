@@ -25,9 +25,10 @@ Relevant local references:
 
 - Stryker.NET documentation exposes an `mtp` test-runner option, but marks Microsoft
   Testing Platform support as **preview**.
-- `dotnet-stryker` `5.0.0` can run contained xUnit v3 + MTP smoke targets in this repository
-  when `test-runner` is set to `mtp` explicitly, and loads the SharedKernel source generators that
-  `4.15.0` could not.
+- `dotnet-stryker` `5.0.0` discovers the Catalog domain smoke tests when `test-runner` is set to
+  `mtp`. Its bundled compiler skips the SharedKernel Domain and Results source generators through
+  `ReferencesNewerCompiler` because they target a newer Roslyn version. The ordinary Release build
+  loads those generators.
 - Upstream compatibility reports indicate that Stryker.NET can still struggle with xUnit v3
   even without MTP enabled, producing unexpected test-case warnings and unusable mutation
   results.
@@ -42,9 +43,8 @@ repository.
 
 ## Decision
 
-Mutation testing with `Stryker.NET` remains **local-only and non-gating**. `dotnet-stryker` 5.0.0 runs xUnit v3 + MTP smoke targets with
-`test-runner` set to `mtp`, but upstream still documents the `mtp` runner as preview. Revisit when it
-leaves preview.
+Mutation testing with `Stryker.NET` remains **local-only and non-gating**. Revisit when the MTP
+runner leaves preview and the mutation compiler can load the generators used by the app.
 
 ## Why it stays local-only
 

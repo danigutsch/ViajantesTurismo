@@ -2,12 +2,11 @@ using System.Globalization;
 using System.Text.Json;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents;
 using ViajantesTurismo.Admin.Contracts.IntegrationEvents.Tours;
-using TestTraits = ViajantesTurismo.Admin.ContractTests.Infrastructure.TestTraits;
 
 namespace ViajantesTurismo.Admin.ContractTests.Tours;
 
-[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, TestTraits.IntegrationEventTransportCapability)]
+[Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
+[Trait(SharedKernel.Testing.TestTraitNames.CapabilityName, SharedKernel.Testing.TestTraitValues.IntegrationEventTransport)]
 public sealed class AdminTourCreatedIntegrationEventContractTests
 {
     [Fact]

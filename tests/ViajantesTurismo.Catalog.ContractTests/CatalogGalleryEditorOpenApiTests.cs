@@ -1,4 +1,4 @@
-using ViajantesTurismo.Catalog.ContractTests.Infrastructure;
+using SharedKernel.Testing;
 
 namespace ViajantesTurismo.Catalog.ContractTests;
 
@@ -6,8 +6,8 @@ namespace ViajantesTurismo.Catalog.ContractTests;
 public sealed class CatalogGalleryEditorOpenApiTests
 {
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.DriftGuardCategory)]
-    [Trait(SharedKernel.Testing.TestTraitNames.SurfaceName, TestTraits.OpenApiSurface)]
+    [TestFocus(TestFocus.DriftGuard)]
+    [Trait(TestTraitNames.SurfaceName, TestTraitValues.OpenApiSurface)]
     public void Editor_placement_uses_the_private_management_contract_and_returns_an_outcome_link()
     {
         // Arrange

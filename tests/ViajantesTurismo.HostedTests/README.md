@@ -19,7 +19,7 @@ tests run.
 | --- | --- |
 | Admin/Infrastructure | Direct persistence, migrations, PostgreSQL locking and constraints |
 | Admin/Api | HTTP contracts and API persistence interactions |
-| Admin/System | Browser workflows and semantic UI assertions |
+| Admin/System | Browser workflows, semantic UI assertions and cross-deployable HTTP checks |
 | Catalog/Infrastructure | Persistence and storage adapters |
 | Catalog/Media | Real malware scanning and SeaweedFS protocol behavior |
 | Management/Security | Real security persistence, protected tickets and token storage |
@@ -27,6 +27,12 @@ tests run.
 Compiler isolation between these test groups is replaced by explicit namespaces and architecture
 checks. Keep test bodies at their intended entry points; database setup and fault injection remain
 in typed scenario helpers. Retain repository parallelism and create owned data instead of global resets.
+The Admin browser guard checks calls to private fixture operations. The
+[exception list](../../.config/hosted-browser-state-exceptions.json) records the reviewed audit actor
+lookup for BFF conformance. Duplicate event delivery uses the nonbrowser System fixture with typed
+clients and test-owned transport replay.
+The persistence guard checks `Catalog/Media` test bodies at the scanner and object-storage seams.
+Catalog tests that require PostgreSQL belong in `Catalog/Infrastructure` with a test-owned database lease.
 SharedKernel owns PostgreSQL database leasing and bounded cleanup; application-specific fixtures,
 configuration, authentication and business assertions stay in this project.
 
@@ -160,3 +166,23 @@ dotnet test --project tests/ViajantesTurismo.HostedTests/ViajantesTurismo.Hosted
   --filter-class '*GalleryPlacementPostgreSqlTests' \
   --filter-class '*ManagementSecurityPersistencePostgreSqlTests'
 ```
+
+## Integration and system test seams
+
+Each entry links to an existing test exercising a registered entrypoint. Keep this table aligned with
+the [test taxonomy inventory](../../.config/test-taxonomy.json) when the suite adds or moves a seam.
+
+| Suite | SUT | Type | Dependency mode | Tested entry point |
+| --- | --- | --- | --- | --- |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Admin.Api` | `Integration` | `aspire-services` | [Admin HTTP clients against separate Aspire stacks](Admin/Api/Infrastructure/ConcurrentAspireTestApplicationTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Admin.Infrastructure` | `Integration` | `postgresql` | [Document persistence in the leased PostgreSQL fixture](Admin/Infrastructure/Documents/DocumentStorePostgreSqlTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Admin.IntegrationEventWorker` | `Integration` | `postgresql` | [Branding event replay through the PostgreSQL worker scenario](Admin/Infrastructure/Branding/BrandingWorkerReproductionTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.AppHost` | `System` | `browser-and-aspire` | [Booking journey through the hosted system stack](Admin/System/Bookings/AspireHostedBookingTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Catalog.Api` | `System` | `aspire-services` | [Catalog HTTP lookup after Admin event delivery](Admin/System/PostTransportValidation/PostTransportValidationTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Catalog.Infrastructure` | `Integration` | `postgresql-and-object-storage` | [Media persistence with PostgreSQL and test-owned objects](Catalog/Infrastructure/Media/MediaUploadPostgreSqlTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Catalog.IntegrationEventWorker` | `System` | `aspire-services` | [Tour projection after duplicate delivery through the hosted event transport](Admin/System/PostTransportValidation/PostTransportReplayTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Management.Security` | `Integration` | `postgresql` | [Security stores with leased PostgreSQL databases](Management/Security/ManagementSecurityPersistencePostgreSqlTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Management.Web` | `Integration` | `browser-and-loopback-kestrel` | [Keyboard navigation through the single-host browser fixture](Management/Browser/ManagementKeyboardNavigationTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Management.Web` | `System` | `browser-and-aspire` | [Staff booking workflow on the hosted Management Web](Admin/System/Bookings/WorkflowIntegrityTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.MigrationService` | `Integration` | `postgresql` | [MigrationService forward and rollback rehearsal](Migrations/CatalogMigrationRehearsalPostgreSqlTests.cs) |
+| `ViajantesTurismo.HostedTests` | `ViajantesTurismo.Public.Web` | `System` | `browser-and-aspire` | [Public Web published-tour browsing through the hosted stack](Admin/System/PostTransportValidation/PostTransportValidationTests.cs) |

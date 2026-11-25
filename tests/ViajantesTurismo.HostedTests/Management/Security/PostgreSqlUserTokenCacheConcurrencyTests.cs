@@ -6,8 +6,8 @@ namespace ViajantesTurismo.HostedTests.Management.Security;
 
 /// <summary>Verifies conditional writes and deletes through independent Management authentication registrations.</summary>
 [Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
-[Trait(TestTraitNames.HostName, TestTraits.AspireHost)]
-[Trait(TestTraitNames.AreaName, TestTraits.ManagementWebArea)]
+[TestHost(TestHost.Aspire)]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.Integration)]
 public sealed class PostgreSqlUserTokenCacheConcurrencyTests(HostedTestFixture shared)
 {

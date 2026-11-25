@@ -6,8 +6,9 @@ using ViajantesTurismo.Management.Web.Services;
 namespace ViajantesTurismo.HostedTests.Management.Browser;
 
 /// <summary>Keyboard navigation through country selectors on authenticated customer forms.</summary>
-[Trait(TestTraitNames.AreaName, "management-web")]
+[Trait(TestTraitNames.AreaName, TestAreas.ManagementWeb)]
 [TestScope(TestScope.System)]
+[TestHost(TestHost.Browser)]
 public sealed class CountrySelectorKeyboardTests : ManagementWebBrowserTestBase
 {
     /// <summary>Provides a fixed set of reference countries to the real form.</summary>

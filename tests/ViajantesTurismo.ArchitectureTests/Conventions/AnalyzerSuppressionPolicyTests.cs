@@ -121,6 +121,8 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.Admin.ApiServiceTests/Documents/DocumentPrivacyTelemetryCapture.cs:none",
             "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.HostedTests/Catalog/Infrastructure/Tours/CatalogTourSlugLockPostgreSqlTests.cs:none",
             "custom-config:.editorconfig:SKTEST010:tests/ViajantesTurismo.Catalog.UnitTests/PollingBackgroundServiceTestHarness.cs:none",
+            "custom-config:.editorconfig:SKTEST023:tests/**.cs:warning",
+            "custom-config:.editorconfig:SKTEST024:tests/**.cs:warning",
             "import:tests/Directory.Build.props:$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))",
             "package:Directory.Build.props:PandaBear.SharedKernel.Style.Analyzers",
             "package:Directory.Build.props:PandaBear.SharedKernel.Style.CodeFixes",
@@ -201,7 +203,7 @@ public sealed partial class AnalyzerSuppressionPolicyTests
             var value = line[diagnosticPrefix.Length..];
             var diagnosticId = value[..value.IndexOf('.', StringComparison.Ordinal)];
             var surface = $"custom-config:.editorconfig:{diagnosticId}";
-            if (diagnosticId == "SKTEST010")
+            if (diagnosticId is "SKTEST010" or "SKTEST023" or "SKTEST024")
             {
                 surface += $":{section}:{line[(line.IndexOf('=', StringComparison.Ordinal) + 1)..].Trim()}";
             }

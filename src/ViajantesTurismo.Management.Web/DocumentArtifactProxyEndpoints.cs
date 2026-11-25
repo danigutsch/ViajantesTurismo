@@ -13,8 +13,6 @@ internal static class DocumentArtifactProxyEndpoints
     /// <summary>The endpoint name used to select the attachment response policy.</summary>
     internal const string DownloadEndpointName = "DownloadFinalizedDocumentArtifact";
 
-    private const string HtmlMediaType = "text/html; charset=utf-8";
-
     /// <summary>Maps the authenticated document artifact proxy endpoint.</summary>
     public static IEndpointRouteBuilder MapDocumentArtifactProxy(this IEndpointRouteBuilder app)
     {
@@ -43,7 +41,7 @@ internal static class DocumentArtifactProxyEndpoints
 
             HttpCacheHeaders.SetNoStore(httpContext);
             httpContext.Response.Headers["X-Content-Type-Options"] = "nosniff";
-            return TypedResults.File(artifact.Content.ToArray(), HtmlMediaType, artifact.FileName, enableRangeProcessing: false);
+            return TypedResults.File(artifact.Content.ToArray(), DocumentArtifactResponse.ContentType, artifact.FileName, enableRangeProcessing: false);
         }
         catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.Conflict)
         {

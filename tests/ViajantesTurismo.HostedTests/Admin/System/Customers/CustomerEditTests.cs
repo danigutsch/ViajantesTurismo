@@ -14,10 +14,10 @@ public class CustomerEditTests(AspireSystemTestFixture fixture) : AspireSystemTe
     public async Task Customer_edit_renders_all_sections_with_populated_data()
     {
         // Arrange
-        var customer = await ApiClient.CreateCustomer(firstName: "Alice", lastName: "Owned");
-        var companion = await ApiClient.CreateCustomer(firstName: "Bob", lastName: "Owned");
-        var customerFullName = $"{customer.FirstName} {customer.LastName}";
-        var companionFullName = $"{companion.FirstName} {companion.LastName}";
+        var ownedFamilyName = $"Owned{Guid.NewGuid():N}";
+        var customer = await ApiClient.CreateCustomer(firstName: "Alice", lastName: ownedFamilyName);
+        var companion = await ApiClient.CreateCustomer(firstName: "Bob", lastName: ownedFamilyName);
+        var sameNameCustomer = await ApiClient.CreateCustomer(firstName: "Alice", lastName: ownedFamilyName);
 
         // Act
         await NavigateTo($"/customers/{customer.Id}/edit");
@@ -52,12 +52,33 @@ public class CustomerEditTests(AspireSystemTestFixture fixture) : AspireSystemTe
         await Expect(Page.Locator("#city")).ToHaveValueAsync("Test City");
         await Expect(Page.Locator("#country")).ToContainTextAsync("Brazil");
 
-        // Assert: companion combobox excludes the current customer and includes another owned customer.
-        var companionSelect = Page.Locator("select[name=\"_model.AccommodationPreferences.CompanionId\"]");
+        // Arrange: use the companion picker's bounded search.
+        var companionSearch = Page.GetByRole(AriaRole.Searchbox, new()
+        {
+            Name = "Search for a companion",
+            Exact = true
+        });
+        var companionSelect = Page.GetByRole(AriaRole.Combobox, new()
+        {
+            Name = "Companion (Optional)",
+            Exact = true
+        });
+
+        // Act
+        await companionSearch.FillAsync(customer.Id.ToString("D"));
+
+        // Assert
+        await Expect(Page.GetByText("No customers match.", new PageGetByTextOptions { Exact = true })).ToBeVisibleAsync();
+
+        // Act
+        await companionSearch.FillAsync(ownedFamilyName);
+
+        // Assert: the edited customer is excluded while both eligible records remain available.
         await Expect(companionSelect).ToBeVisibleAsync();
-        await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = "-- No Companion --" })).ToBeAttachedAsync();
-        await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = customerFullName })).Not.ToBeAttachedAsync();
-        await Expect(companionSelect.Locator("option", new LocatorLocatorOptions { HasText = companionFullName })).ToBeAttachedAsync();
+        await Expect(companionSelect.Locator("option[value='']")).ToHaveTextAsync("-- No Companion --");
+        await Expect(companionSelect.Locator($"option[value='{sameNameCustomer.Id:D}']")).ToBeAttachedAsync();
+        await Expect(companionSelect.Locator($"option[value='{companion.Id:D}']")).ToBeAttachedAsync();
+        await Expect(companionSelect.Locator($"option[value='{customer.Id:D}']")).Not.ToBeAttachedAsync();
 
         // Assert: standard actions are visible.
         await Expect(Page.GetButton("Update Customer")).ToBeVisibleAsync();

@@ -38,4 +38,8 @@
         <ProjectReference Include="..\..\src\ViajantesTurismo.Branding.Infrastructure\ViajantesTurismo.Branding.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="ViajantesTurismo.Testing" />
+        <ProjectReference Include="..\ViajantesTurismo.Testing\ViajantesTurismo.Testing.csproj" />
+    </ItemGroup>
 </Project>

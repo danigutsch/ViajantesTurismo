@@ -341,6 +341,9 @@
       "viajantesturismo.resources": {
         "type": "Project"
       },
+      "viajantesturismo.testing": {
+        "type": "Project"
+      },
       "Aspire.Npgsql": {
         "type": "CentralTransitive",
         "requested": "[17.0.0, )",

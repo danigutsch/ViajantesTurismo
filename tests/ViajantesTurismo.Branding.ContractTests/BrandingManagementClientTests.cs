@@ -13,7 +13,7 @@ public sealed class BrandingManagementClientTests
         """{"brandName":"Viajantes","primaryColor":"#112233","accentColor":"#445566","backgroundColor":"#FFFFFF","textColor":"#000000","headingFontFamily":"Inter","bodyFontFamily":"Verdana","logoUri":null,"sourceEpoch":"0192f3a4-0000-7000-8000-000000000001","sourceRevision":4}""";
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Read_returns_the_document_with_its_strong_entity_tag()
     {
         // Arrange
@@ -36,7 +36,7 @@ public sealed class BrandingManagementClientTests
     [Theory]
     [InlineData("W/\"weak\"")]
     [InlineData(null)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Read_reports_a_malformed_body_without_a_strong_entity_tag(string? tag)
     {
         // Arrange
@@ -57,7 +57,7 @@ public sealed class BrandingManagementClientTests
     [InlineData(HttpStatusCode.NotFound, HttpOutcomeKind.NotFound)]
     [InlineData(HttpStatusCode.Unauthorized, HttpOutcomeKind.Unauthorized)]
     [InlineData(HttpStatusCode.Forbidden, HttpOutcomeKind.Forbidden)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Read_reports_the_documented_failure_status_as_an_outcome(HttpStatusCode status, HttpOutcomeKind kind)
     {
         // Arrange
@@ -75,7 +75,7 @@ public sealed class BrandingManagementClientTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Write_sends_the_entity_tag_as_if_match()
     {
         // Arrange
@@ -99,7 +99,7 @@ public sealed class BrandingManagementClientTests
     [Theory]
     [InlineData(HttpStatusCode.PreconditionFailed)]
     [InlineData(HttpStatusCode.PreconditionRequired)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Write_reports_a_precondition_status_without_retrying(HttpStatusCode status)
     {
         // Arrange
@@ -120,7 +120,7 @@ public sealed class BrandingManagementClientTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Write_reports_a_malformed_if_match_as_a_bad_request_without_validation_errors()
     {
         // Arrange
@@ -143,7 +143,7 @@ public sealed class BrandingManagementClientTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Write_reports_an_empty_success_body()
     {
         // Arrange
@@ -163,7 +163,7 @@ public sealed class BrandingManagementClientTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Upload_sends_the_raw_body_content_type_and_entity_tag_to_the_logo_route()
     {
         // Arrange
@@ -189,7 +189,7 @@ public sealed class BrandingManagementClientTests
     [InlineData(HttpStatusCode.PreconditionFailed)]
     [InlineData(HttpStatusCode.PreconditionRequired)]
     [InlineData(HttpStatusCode.ServiceUnavailable)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Upload_reports_a_precondition_or_scanner_status_without_retrying(HttpStatusCode status)
     {
         // Arrange
@@ -212,7 +212,7 @@ public sealed class BrandingManagementClientTests
     }
 
     [Fact]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Remove_sends_a_delete_with_the_entity_tag_to_the_logo_route()
     {
         // Arrange
@@ -236,7 +236,7 @@ public sealed class BrandingManagementClientTests
     [InlineData(HttpStatusCode.PreconditionFailed)]
     [InlineData(HttpStatusCode.PreconditionRequired)]
     [InlineData(HttpStatusCode.ServiceUnavailable)]
-    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, TestTraits.ContractCategory)]
+    [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.ContractCategory)]
     public async Task Remove_reports_a_precondition_or_availability_status_without_retrying(HttpStatusCode status)
     {
         // Arrange

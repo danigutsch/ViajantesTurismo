@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using SharedKernel.MalwareScanning;
 using SharedKernel.Results;
 using SharedKernel.Testing;
-using TestTraits = ViajantesTurismo.Admin.UnitTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Admin.Api.Customers.Import;
 using ViajantesTurismo.Admin.Contracts.Application;
 using SharedKernel.Testing.Logging;
@@ -14,7 +13,7 @@ using SharedKernel.Testing.MalwareScanning;
 
 namespace ViajantesTurismo.Admin.UnitTests.Api.Customers.Import;
 
-[Trait(TestTraitNames.CategoryName, TestTraits.SecurityCategory)]
+[Trait(TestTraitNames.CategoryName, TestTraitValues.SecurityCategory)]
 public sealed class CustomerImportEndpointsTests
 {
     [Fact]

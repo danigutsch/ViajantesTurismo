@@ -36,7 +36,6 @@ internal static class AppHostResourceExtensions
     private const string AuthenticationClientSecretEnvironmentVariable = "Authentication__ClientSecret";
     private const string AuthenticationTokenExchangeEnabledEnvironmentVariable = "Authentication__TokenExchange__Enabled";
     private const string AuthenticationTokenExchangeProviderEnvironmentVariable = "Authentication__TokenExchange__Provider";
-    private const string KeycloakTokenExchangeProvider = "Keycloak";
     private const string KeycloakBootstrapAdminUsernameEnvironmentVariable = "KC_BOOTSTRAP_ADMIN_USERNAME";
     private const string KeycloakBootstrapAdminPasswordEnvironmentVariable = "KC_BOOTSTRAP_ADMIN_PASSWORD";
     private const string KeycloakManagementClientSecretEnvironmentVariable = "MANAGEMENT_WEB_CLIENT_SECRET";
@@ -459,7 +458,7 @@ internal static class AppHostResourceExtensions
             .WaitForCompletion(migrationService)
             .WithLocalIdentityProvider(identityProvider)
             .WithEnvironment(AuthenticationTokenExchangeEnabledEnvironmentVariable, "true")
-            .WithEnvironment(AuthenticationTokenExchangeProviderEnvironmentVariable, KeycloakTokenExchangeProvider)
+            .WithEnvironment(AuthenticationTokenExchangeProviderEnvironmentVariable, TokenExchangeProviderNames.Keycloak)
             .WithReference(adminApi)
             .WaitForHttpDependency(adminApi)
             .WithReference(catalogApi)

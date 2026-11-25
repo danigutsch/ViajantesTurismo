@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ViajantesTurismo.Catalog.Application.Media;
 
@@ -12,10 +11,10 @@ public sealed class MediaUploadValidationOptionsValidatorTests
     public void Validate_fails_when_max_length_is_not_positive(long maxLengthBytes)
     {
         // Arrange
-        using var provider = CatalogMediaTestServices.CreateProvider(options => options.MaxLengthBytes = maxLengthBytes);
+        using var fixture = new CatalogMediaTestServices(options => options.MaxLengthBytes = maxLengthBytes);
 
         // Act
-        Action action = () => _ = provider.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value;
+        Action action = () => _ = fixture.ValidationOptions;
 
         // Assert
         var exception = action.ShouldThrow<OptionsValidationException>();
@@ -26,11 +25,11 @@ public sealed class MediaUploadValidationOptionsValidatorTests
     public void Validate_fails_when_no_content_types_are_allowed()
     {
         // Arrange
-        using var provider = CatalogMediaTestServices.CreateProvider(options =>
+        using var fixture = new CatalogMediaTestServices(options =>
             options.AllowedExtensionsByContentType = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase));
 
         // Act
-        Action action = () => _ = provider.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value;
+        Action action = () => _ = fixture.ValidationOptions;
 
         // Assert
         var exception = action.ShouldThrow<OptionsValidationException>();
@@ -41,11 +40,11 @@ public sealed class MediaUploadValidationOptionsValidatorTests
     public void Validate_fails_when_decoded_width_exceeds_the_web_limit()
     {
         // Arrange
-        using var provider = CatalogMediaTestServices.CreateProvider(options =>
+        using var fixture = new CatalogMediaTestServices(options =>
             options.MaxDecodedWidth = MediaUploadValidationOptions.DefaultMaxDecodedWidth + 1);
 
         // Act
-        Action action = () => _ = provider.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value;
+        Action action = () => _ = fixture.ValidationOptions;
 
         // Assert
         var exception = action.ShouldThrow<OptionsValidationException>();
@@ -56,11 +55,11 @@ public sealed class MediaUploadValidationOptionsValidatorTests
     public void Validate_fails_when_decoded_height_exceeds_the_web_limit()
     {
         // Arrange
-        using var provider = CatalogMediaTestServices.CreateProvider(options =>
+        using var fixture = new CatalogMediaTestServices(options =>
             options.MaxDecodedHeight = MediaUploadValidationOptions.DefaultMaxDecodedHeight + 1);
 
         // Act
-        Action action = () => _ = provider.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value;
+        Action action = () => _ = fixture.ValidationOptions;
 
         // Assert
         var exception = action.ShouldThrow<OptionsValidationException>();
@@ -71,11 +70,11 @@ public sealed class MediaUploadValidationOptionsValidatorTests
     public void Validate_fails_when_decoded_pixel_count_exceeds_the_web_limit()
     {
         // Arrange
-        using var provider = CatalogMediaTestServices.CreateProvider(options =>
+        using var fixture = new CatalogMediaTestServices(options =>
             options.MaxDecodedPixelCount = MediaUploadValidationOptions.DefaultMaxDecodedPixelCount + 1);
 
         // Act
-        Action action = () => _ = provider.GetRequiredService<IOptions<MediaUploadValidationOptions>>().Value;
+        Action action = () => _ = fixture.ValidationOptions;
 
         // Assert
         var exception = action.ShouldThrow<OptionsValidationException>();
@@ -86,10 +85,10 @@ public sealed class MediaUploadValidationOptionsValidatorTests
     public void Validate_succeeds_when_options_are_valid()
     {
         // Arrange
-        using var provider = CatalogMediaTestServices.CreateProvider();
+        using var fixture = new CatalogMediaTestServices();
 
         // Act
-        var validator = provider.GetRequiredService<IMediaUploadValidator>();
+        var validator = fixture.Validator;
 
         // Assert
         validator.ShouldBeOfType<MediaUploadValidator>();

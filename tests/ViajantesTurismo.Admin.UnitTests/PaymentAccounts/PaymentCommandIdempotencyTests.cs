@@ -12,7 +12,7 @@ namespace ViajantesTurismo.Admin.UnitTests.PaymentAccounts;
 
 /// <summary>Protects durable payment replay and lock identity while operation keys remain typed.</summary>
 [Trait(TestTraitNames.CategoryName, TestTraits.CoreBehaviorCategory)]
-[Trait(TestTraitNames.CapabilityName, TestTraits.PaymentsCapability)]
+[Trait(TestTraitNames.CapabilityName, Testing.AdminTestTraitValues.PaymentsCapability)]
 public sealed class PaymentCommandIdempotencyTests
 {
     [Theory]

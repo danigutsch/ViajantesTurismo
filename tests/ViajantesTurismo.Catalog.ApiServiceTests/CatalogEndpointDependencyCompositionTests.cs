@@ -1,12 +1,11 @@
 using System.Text;
 using Microsoft.AspNetCore.TestHost;
-using TestTraits = ViajantesTurismo.Catalog.ApiServiceTests.Infrastructure.TestTraits;
 using ViajantesTurismo.Catalog.Application.PublicContent;
 
 namespace ViajantesTurismo.Catalog.ApiServiceTests;
 
 [Trait(SharedKernel.Testing.TestTraitNames.CategoryName, SharedKernel.Testing.TestTraitValues.DependencyInjectionCategory)]
-[Trait(SharedKernel.Testing.TestTraitNames.HostName, TestTraits.TestServerHost)]
+[SharedKernel.Testing.TestHost(SharedKernel.Testing.TestHost.TestServer)]
 public sealed class CatalogEndpointDependencyCompositionTests
 {
     [Fact]
