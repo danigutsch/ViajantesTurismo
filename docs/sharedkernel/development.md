@@ -24,11 +24,13 @@ The application keeps a central OpenAPI.NET 3.11.1 version for the extension pre
 fix. Recheck that entry when adopting a candidate with the same upstream dependency floor.
 [OpenAPI.NET release](https://www.nuget.org/packages/Microsoft.OpenApi/3.11.1)
 
-AWS SDK for S3 4.1.2 is verified against SeaweedFS with TLS and workload identity.
+AWS SDK for S3 4.1.2.1 fixes intermittent rejection of seven-day presigned URL expiry.
+The SeaweedFS tests cover storage compatibility with TLS and workload identity.
 The analyzer, browser test runner and coverage tool updates are recorded in the dependency
 review and CI configuration. EF and gRPC OpenTelemetry instrumentation retain their existing
 preview versions while their package lines have only preview releases.
-[S3 package](https://www.nuget.org/packages/AWSSDK.S3/4.1.2) ·
+[S3 package](https://www.nuget.org/packages/AWSSDK.S3/4.1.2.1) ·
+[AWS release notes](https://github.com/aws/aws-sdk-net/releases/tag/4.1.10.0) ·
 [Dependency review](../ci/dependency-license-evidence.md)
 
 ## Runtime identifier upgrade
